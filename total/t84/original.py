@@ -1,5 +1,8 @@
 # written by copilot based on my code
-    def minWindow(s: str, t: str) -> str:
+from collections import Counter
+
+
+def minWindow(s: str, t: str) -> str:
         if len(s) < len(t): return ''
 
         substring_counter = Counter(t)
