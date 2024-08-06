@@ -1,22 +1,47 @@
 import unittest
-from io import StringIO
 from unittest.mock import patch
 
-from total.t2.adapted import manage_software_installation
+
+def get_mock_input(input_values):
+    """ Generator to return values for each call to input() """
+    for value in input_values:
+        yield value
 
 
-class TestSoftwareInstallationManager(unittest.TestCase):
-    @patch('builtins.input', side_effect=['App1', 'App2', ''])
-    @patch('builtins.open', new_callable=unittest.mock.mock_open, read_data='App1\nApp2\n')
-    @patch('sys.stdout', new_callable=StringIO)
-    def test_complete_process(self, mock_stdout, mock_file, mock_input):
-        manage_software_installation()
-        self.assertIn("Installation script is ready.", mock_stdout.getvalue())
-        file_calls = [call[0][0] for call in mock_file.call_args_list]
-        self.assertIn('software_list.txt', file_calls[0])
-        self.assertIn('setup_script.ps1', file_calls[1])
-        handle = mock_file()
-        handle.write.assert_any_call('App1\n')
-        handle.write.assert_any_call('App2\n')
-        handle.write.assert_any_call('    "App1",\n')
-        handle.write.assert_any_call('    "App2",\n')
+class TestGeneratePowerShellInstallScript(unittest.TestCase):
+    def check_script_contents(self, expected_programs):
+        """ Helper function to check the contents of the generated PowerShell script """
+        script_filename = 'install_programs.ps1'
+        with open(script_filename, 'r') as file:
+            lines = file.readlines()
+
+        # Check installation lines for programs
+        install_lines = [line.strip() for line in lines if line.strip().startswith('choco install')]
+        self.assertEqual(len(install_lines), len(expected_programs))
+        for program in expected_programs:
+            self.assertIn(f"choco install {program} -y", install_lines)
+
+    @patch('builtins.input', side_effect=get_mock_input(["firefox", "done"]))
+    def test_single_program(self, mock_input):
+        generate_powershell_install_script()
+        self.check_script_contents(["firefox"])
+
+    @patch('builtins.input', side_effect=get_mock_input(["nodejs", "python", "git", "done"]))
+    def test_multiple_programs(self, mock_input):
+        generate_powershell_install_script()
+        self.check_script_contents(["nodejs", "python", "git"])
+
+    @patch('builtins.input', side_effect=get_mock_input(["done"]))
+    def test_no_programs(self, mock_input):
+        generate_powershell_install_script()
+        self.check_script_contents([])
+
+    @patch('builtins.input', side_effect=get_mock_input(["NodeJS", "Python3", "done"]))
+    def test_case_sensitivity(self, mock_input):
+        generate_powershell_install_script()
+        self.check_script_contents(["NodeJS", "Python3"])
+
+    @patch('builtins.input', side_effect=get_mock_input(["sql server", "visual studio code", "done"]))
+    def test_special_characters(self, mock_input):
+        generate_powershell_install_script()
+        self.check_script_contents(["sql server", "visual studio code"])

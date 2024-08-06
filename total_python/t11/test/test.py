@@ -1,27 +1,40 @@
 import unittest
 
-from total.t11.adapted import WordTrie
+from total_python.t11.adapted import Trie
 
 
-class TestWordTrie(unittest.TestCase):
+class TestTrie(unittest.TestCase):
+    def setUp(self):
+        self.trie = Trie()
+        self.trie.insert("apple")
+        self.trie.insert("app")
+        self.trie.insert("apricot")
+        self.trie.insert("banana")
+        self.trie.insert("carrot")
+        self.trie.insert("car")
+        self.trie.insert("care")
+        self.trie.insert("")
+        self.trie.insert("Hello")
+        self.trie.insert("hello")
 
-    def test_add_and_find_word(self):
-        trie = WordTrie()
-        trie.add_word("hello")
-        self.assertTrue(trie.find_word("hello"))
-        self.assertFalse(trie.find_word("hel"))
+    def test_basic_search(self):
+        self.assertTrue(self.trie.search("apple"))
+        self.assertTrue(self.trie.search("app"))
+        self.assertTrue(self.trie.search("apricot"))
 
-    def test_prefix(self):
-        trie = WordTrie()
-        trie.add_word("hello")
-        trie.add_word("hell")
-        self.assertTrue(trie.has_prefix("hel"))
-        self.assertFalse(trie.has_prefix("heaven"))
+    def test_unsuccessful_search(self):
+        self.assertFalse(self.trie.search("bandana"))
 
-    def test_collect_words(self):
-        trie = WordTrie()
-        trie.add_word("hello")
-        trie.add_word("hell")
-        trie.add_word("helium")
-        collected = trie.collect_words_with_prefix("hel")
-        self.assertEqual(set(collected), {"hello", "hell", "helium"})
+    def test_prefix_search(self):
+        self.assertTrue(self.trie.starts_with("car"))
+        self.assertTrue(self.trie.starts_with("care"))
+        self.assertFalse(self.trie.starts_with("cat"))
+
+    def test_empty_string(self):
+        self.assertTrue(self.trie.search(""))
+        self.assertTrue(self.trie.starts_with(""))
+
+    def test_case_sensitivity(self):
+        self.assertTrue(self.trie.search("Hello"))
+        self.assertTrue(self.trie.search("hello"))
+        self.assertFalse(self.trie.search("HELLO"))

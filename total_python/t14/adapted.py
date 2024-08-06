@@ -1,46 +1,30 @@
-import os
-import glob
 import json
+import os
+from typing import List
 
-def list_json_reports(directory, keyword="report"):
+
+def find_json_files_with_keyword(directory:str, keyword:str) ->List[str]:
     """
-    在指定目录中列出所有包含特定关键字的 JSON 文件名。
+    Search all JSON files in the specified directory for a given keyword
+    and return a list of filenames that contain the keyword.
+
+    Args:
+        directory (str): Path to the directory where JSON files are stored.
+        keyword (str): Keyword to search for within the JSON files.
+
+    Returns:
+        list: A list of filenames (str) of JSON files containing the keyword.
     """
-    pattern = os.path.join(directory, f'*{keyword}*.json')
-    json_files = glob.glob(pattern)
-    return json_files
-
-def select_file(files):
-    """
-    显示可用文件并提示用户通过索引选择一个文件。
-    """
-    if not files:
-        print("未找到合适的 JSON 文件。")
-        return None
-
-    print("请选择一个要加载的 JSON 文件：")
-    for idx, file_name in enumerate(files):
-        print(f"{idx}: {file_name}")
-
-    try:
-        selected_index = int(input("请输入您想读取的 JSON 文件的编号："))
-        return files[selected_index]
-    except (ValueError, IndexError):
-        print("选择无效。请输入一个有效的编号。")
-        return None
-
-def read_json_file(file_path):
-    """
-    读取并返回一个 JSON 文件的内容。
-    """
-    if file_path is None:
-        return None
-
-    with open(file_path, 'r') as file:
-        content = json.load(file)
-    return content
-
-def pick_json_file(parent_directory):
-    json_files = list_json_reports(parent_directory)
-    selected_file_path = select_file(json_files)
-    return read_json_file(selected_file_path)
+    matching_files = []
+    for root, dirs, files in os.walk(directory):
+        for file in files:
+            if file.endswith('.json'):
+                file_path = os.path.join(root, file)
+                try:
+                    with open(file_path, 'r', encoding='utf-8') as f:
+                        data = json.load(f)
+                    if keyword in json.dumps(data):
+                        matching_files.append(file)
+                except Exception as e:
+                    print(f"Error reading {file_path}: {e}")
+    return matching_files

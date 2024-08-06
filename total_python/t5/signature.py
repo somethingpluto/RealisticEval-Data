@@ -1,7 +1,13 @@
-def multiply_matrices(mat1, mat2):
-    """
+from typing import List
 
-    :param mat1:
-    :param mat2:
-    :return:
+
+def matrix_multiply(matrixA: List[List[int]], matrixB: List[List[int]]) -> List[List[int]]:
+    """
+    Implementing matrix multiplication
+    Args:
+        matrixA (): matrix A
+        matrixB (): matrix B
+
+    Returns: matrixA matrixB multiplication result
+
     """

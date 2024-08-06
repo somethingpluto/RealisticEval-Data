@@ -1,23 +1,32 @@
-def parse_markdown_table(markdown_table: str) -> list[tuple[str, ...]]:
+from typing import List
+
+
+def parse_markdown_table(md_table: str) -> List[tuple]:
     """
-    Parses a Markdown formatted table string and returns a list of tuples,
-    each representing a row in the table, including the header row.
+    Parses a Markdown formatted table into a list of tuples, each tuple representing a row.
+
+    Args:
+        md_table (str): A string representing a Markdown table.
+
+    Returns:
+        list of tuples: A list where each tuple represents a row in the table.
     """
-    lines = markdown_table.strip().split("\n")
-    column_names = [name.strip() for name in lines[0].split("|")[1:-1]]
-    num_columns = len(column_names)
+    # Split the input string into lines and strip whitespace
+    lines = md_table.strip().split('\n')
 
-    # Initialize a list to hold the data for each column
-    column_data = [[] for _ in range(num_columns)]
+    # Filter out the separator line for the header (which usually contains "---")
+    lines = [line for line in lines if not '---' in line.strip()]
 
-    # Process the data rows, skipping the header separator row (lines[1])
-    for line in lines[2:]:
-        cells = [cell.strip() for cell in line.split("|")[1:-1]]
-        if len(cells) != num_columns:
-            raise ValueError(f"Row contains {len(cells)} cells, expected {num_columns}")
+    # Initialize the list to store each row as a tuple
+    table_data = []
 
-        for index, cell in enumerate(cells):
-            column_data[index].append(cell)
+    # Process each line
+    for line in lines:
+        # Strip leading and trailing spaces and pipes, then split by "|"
+        row = line.strip().strip('|').split('|')
+        # Process each cell, strip spaces, handle empty cells, and create a tuple
+        tuple_row = tuple(cell.strip() if cell.strip() != '' else '' for cell in row)
+        # Add the tuple to the list
+        table_data.append(tuple_row)
 
-    # Combine the column names with the data from each column
-    return [tuple(column_names)] + list(zip(*column_data))
+    return table_data

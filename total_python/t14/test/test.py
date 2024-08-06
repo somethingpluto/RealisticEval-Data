@@ -1,18 +1,57 @@
 import unittest
-from unittest.mock import patch
+from unittest.mock import patch, mock_open
 
-class TestJsonFilePicker(unittest.TestCase):
 
-    @patch('builtins.input', side_effect=['1'])
-    @patch('builtins.print')
-    def test_pick_json_file(self, mock_print, mock_input):
-        directory = '/path/to/directory'
-        # 假设 `list_json_reports` 和 `read_json_file` 函数已经有效且适当地被模拟
-        # 模拟有两个文件存在，用户选择第二个
-        with patch('glob.glob', return_value=[
-            '/path/to/directory/report1.json',
-            '/path/to/directory/report2.json'
-        ]), patch('os.path.join', return_value='/path/to/directory/*report*.json'):
-            content = pick_json_file(directory)
-            mock_print.assert_called_with("请选择一个要加载的 JSON 文件：")
-            self.assertIsNotNone(content)
+class TestFindJsonFilesWithKeyword(unittest.TestCase):
+    @patch('os.walk')
+    @patch('builtins.open', new_callable=mock_open, read_data='{"key": "value with keyword"}')
+    @patch('json.load', return_value={"key": "value with keyword"})
+    def test_keyword_in_single_file(self, mock_json_load, mock_file, mock_os_walk):
+        mock_os_walk.return_value = [
+            ('/some/folder', (), ('test.json',)),
+        ]
+        expected = ['test.json']
+        result = find_json_files_with_keyword('/some/folder', 'keyword')
+        self.assertEqual(result, expected)
+
+    @patch('os.walk')
+    @patch('builtins.open', new_callable=mock_open, read_data='{"key": "no keyword here"}')
+    @patch('json.load', return_value={"key": "no keyword here"})
+    def test_keyword_not_in_file(self, mock_json_load, mock_file, mock_os_walk):
+        mock_os_walk.return_value = [
+            ('/some/folder', (), ('test.json',)),
+        ]
+        expected = []
+        result = find_json_files_with_keyword('/some/folder', 'wc')
+        self.assertEqual(result, expected)
+
+    @patch('os.walk')
+    def test_no_json_files_in_directory(self, mock_os_walk):
+        mock_os_walk.return_value = [
+            ('/some/folder', (), ('test.txt', 'image.png')),
+        ]
+        expected = []
+        result = find_json_files_with_keyword('/some/folder', 'keyword')
+        self.assertEqual(result, expected)
+
+    @patch('os.walk')
+    @patch('builtins.open', new_callable=mock_open, read_data='{"key": "keyword present here"}')
+    @patch('json.load', return_value={"key": "keyword present here"})
+    def test_multiple_json_files(self, mock_json_load, mock_file, mock_os_walk):
+        mock_os_walk.return_value = [
+            ('/some/folder', (), ('file1.json', 'file2.json')),
+        ]
+        expected = ['file1.json', 'file2.json']
+        result = find_json_files_with_keyword('/some/folder', 'keyword')
+        self.assertEqual(result, expected)
+
+    @patch('os.walk')
+    @patch('builtins.open', new_callable=mock_open, read_data='{"key": "error expected"}')
+    @patch('json.load', side_effect=Exception("Failed to load JSON"))
+    def test_json_parsing_error(self, mock_json_load, mock_file, mock_os_walk):
+        mock_os_walk.return_value = [
+            ('/some/folder', (), ('corrupt.json',)),
+        ]
+        expected = []  # Assuming the function does not crash and handles errors gracefully
+        result = find_json_files_with_keyword('/some/folder', 'keyword')
+        self.assertEqual(result, expected)

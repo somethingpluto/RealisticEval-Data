@@ -1,20 +1,18 @@
 import unittest
 
-from total.t6.adapted import get_name
 
+class TestSimplifyPath(unittest.TestCase):
+    def test_windows_path(self):
+        self.assertEqual(simplify_path(r"D:\downloads\test.py"), "D_downloads_test.py")
 
-class TestGetName(unittest.TestCase):
-    def test_get_name_case1(self):
-        self.assertEqual(get_name("/artifacts/bundle/items/workspace/properties_include"), "workspace")
+    def test_linux_path(self):
+        self.assertEqual(simplify_path("/home/user/test.py"), "home_user_test.py")
 
-    def test_get_name_case2(self):
-        self.assertEqual(get_name("/resources/items/environment/"), "environment")
+    def test_path_with_illegal_characters(self):
+        self.assertEqual(simplify_path("/invalid<name>|file?.py"), "invalid_name_file_.py")
 
-    def test_get_name_case3(self):
-        self.assertEqual(get_name("items/artifacts/"), "")
+    def test_mixed_separator_path(self):
+        self.assertEqual(simplify_path("C:/path\\to/some\directory/file.py"), "C_path_to_some_directory_file.py")
 
-    def test_get_name_case4(self):
-        self.assertEqual(get_name("/environments/bundle_items"), "bundle")
-
-    def test_get_name_case5(self):
-        self.assertEqual(get_name("/include/environments_artifacts/items_properties"), "environments_artifacts")
+    def test_empty_path(self):
+        self.assertEqual(simplify_path(""), "")

@@ -1,9 +1,15 @@
-def quaternion_to_yaw(x, y, z, w):
+import math
+
+
+def quaternion_to_yaw(w:float, x:float, y:float, z:float) -> float:
     """
-    Convert a quaternion into yaw (rotation around z-axis in radians)
-    :param x: Quaternion component 1
-    :param y: Quaternion component 2
-    :param z: Quaternion component 3
-    :param w: Quaternion component 4
-    :return:
+    The quaternion is converted to a selected yaw Angle around the z-axis
+    Args:
+        w (float): The scalar component of the quaternion.
+        x (float): The x-component of the quaternion vector part.
+        y (float): The y-component of the quaternion vector part.
+        z (float): The z-component of the quaternion vector part.
+
+    Returns: The yaw angle in radians.
+
     """

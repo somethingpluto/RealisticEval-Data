@@ -1,27 +1,26 @@
 import unittest
 
-from total.t8.adapted import perform_polynomial_decryption
+
+class TestDecryptFunction(unittest.TestCase):
+    def test_basic_functionality(self):
+        self.assertEqual(perform_polynomial_decryption(4, 5, [1, 2, 3, 4], [5, 6, 7, 8]), [4, 4, 4, 4])
+
+    def test_zero_secret_key(self):
+        self.assertEqual(perform_polynomial_decryption(3, 7, [0, 0, 0], [6, 13, 20]), [6, 6, 6])
+
+    def test_zero_ciphertext(self):
+        self.assertEqual(perform_polynomial_decryption(3, 9, [1, 2, 3], [0, 0, 0]), [8, 7, 6])
+
+    def test_large_values(self):
+        self.assertEqual(perform_polynomial_decryption(2, 1000, [500, 500], [1000, 1000]), [500, 500])
 
 
-class TestPolynomialDecryption(unittest.TestCase):
+def perform_polynomial_decryption(degree, modulus, key, encrypted_data):
+    # Decrypts the polynomial based encryption by reversing the encryption steps
+    decrypted_data = [0] * degree
 
-    def test_basic_decryption(self):
-        # Test basic decryption functionality
-        self.assertEqual(
-            perform_polynomial_decryption(3, 5, [1, 2, 3], [4, 0, 2]),
-            [3, 3, 4]
-        )
+    for index in range(degree):
+        # Reversing encryption: subtract key and take modulo
+        decrypted_data[index] = (encrypted_data[index] - key[index]) % modulus
 
-    def test_with_zero_modulus(self):
-        # Test with modulus as zero (should handle modulus zero case, but here just for logical completeness)
-        self.assertEqual(
-            perform_polynomial_decryption(3, 0, [1, 1, 1], [1, 1, 1]),
-            [0, 0, 0]
-        )
-
-    def test_with_large_numbers(self):
-        # Test with larger numbers and wrap-around functionality
-        self.assertEqual(
-            perform_polynomial_decryption(2, 100, [50, 75], [150, 200]),
-            [100, 25]
-        )
+    return decrypted_data

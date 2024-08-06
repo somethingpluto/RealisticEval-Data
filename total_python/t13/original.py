@@ -1,4 +1,7 @@
-def parse_table(md_table: str) -> list[tuple[str, ...]]:
+from typing import List
+
+
+def parse_table(md_table: str) -> List[tuple[str, ...]]:
     """
     Created by ChatGPT 3.5 Turbo model
     """
