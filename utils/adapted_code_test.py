@@ -77,7 +77,7 @@ def execute_clear():
 
 if __name__ == '__main__':
     TASK_LANGUAGE = "python"
-    TASK_ID = "14"
+    TASK_ID = "280"
     TASK_SUFFIX = "py"
     task_dir_path = os.path.abspath(f"../total_{TASK_LANGUAGE}/t{TASK_ID}")
     create_test_temp_env()

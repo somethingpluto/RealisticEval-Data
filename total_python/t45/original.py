@@ -3,12 +3,11 @@
 from datetime import datetime
 
 
-def get_today(y = datetime.now().year, m = datetime.now().month, d = datetime.now().day):
-
+def get_today(y=datetime.now().year, m=datetime.now().month, d=datetime.now().day):
     return datetime(y, m, d)
 
 
-def get_today_y_m_n_k(today = datetime.now()):
+def get_today_y_m_n_k(today=datetime.now()):
     y = today.year
     m = today.month
     k = today.weekday()  # 月曜日が0、日曜日が6

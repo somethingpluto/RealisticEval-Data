@@ -3,6 +3,7 @@
 
 import re
 
+
 def transform_text(input_file, output_file):
     with open(input_file, 'r') as file:
         content = file.read()
@@ -11,6 +12,7 @@ def transform_text(input_file, output_file):
 
     with open(output_file, 'w') as file:
         file.write(transformed_content)
+
 
 def transform_parentheses(text):
     pattern = re.compile(r'\(\*(.*?)\*\)')
@@ -23,8 +25,9 @@ def transform_parentheses(text):
     transformed_text = pattern.sub(replace, text)
     return transformed_text
 
+
 # Example usage
-input_file_path = '_build/markdown/metaphor_python.md' # replace with your input file path
-output_file_path = '_build/markdown/metaphor_python.md' # replace with your output file path
+input_file_path = '_build/markdown/metaphor_python.md'  # replace with your input file path
+output_file_path = '_build/markdown/metaphor_python.md'  # replace with your output file path
 
 transform_text(input_file_path, output_file_path)

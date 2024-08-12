@@ -2,28 +2,23 @@ import os
 import json
 
 
-def merge_json_list_data(input_dir: str, output_json: str) -> None:
-    """
-    Reads all the JSON files from the specified directory and merges the data in those files into a list
-    :param input_dir: json file dir path
-    :param output_json:
-    :return:
-    """
+def concatenate_json_arrays(directory: str):
     combined_data = []
 
-    for file_name in os.listdir(input_dir):
-        if file_name.endswith('.json'):
-            file_path = os.path.join(input_dir, file_name)
-            with open(file_path, 'r', encoding="utf8") as file:
-                try:
-                    data = json.load(file)
-                    if isinstance(data, list):
-                        combined_data.extend(data)
-                        print(f"Added {file_name} to the combined data.")
-                    else:
-                        print(f"Skipped: {file_name} (root is not a list)")
-                except json.JSONDecodeError:
-                    print(f"Error: {file_name} is not a valid JSON file and will be skipped.")
+    # Loop through all files in the directory
+    for filename in os.listdir(directory):
+        # Check if the file is a JSON file
+        if filename.endswith('.json'):
+            # Construct the full file path
+            file_path = os.path.join(directory, filename)
+            # Open and read the JSON file
+            with open(file_path, 'r') as file:
+                data = json.load(file)
+                # Check if the data is a list (array at root)
+                if isinstance(data, list):
+                    combined_data.extend(data)
+                else:
+                    print(f"Warning: {filename} does not contain a root-level array.")
 
-    with open(output_json, 'w', encoding="utf8") as output_file:
-        json.dump(combined_data, output_file, indent=4)
+    return combined_data
+

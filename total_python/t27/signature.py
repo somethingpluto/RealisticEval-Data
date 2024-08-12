@@ -1,11 +1,14 @@
 import os
 import json
+from typing import List
 
 
-def merge_json_list_data(input_dir: str, output_json: str) -> None:
+def concatenate_json_arrays(directory: str) -> List:
     """
-    Reads all the JSON files from the specified directory and merges the data in those files into a list
-    :param input_dir: json file dir path
-    :param output_json:
-    :return:
+    concatenate the root-level array JSON files in the specified directory
+    Args:
+        directory (str): directory dir path
+
+    Returns: merged data
+
     """

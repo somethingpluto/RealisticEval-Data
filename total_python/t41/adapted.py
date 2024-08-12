@@ -1,32 +1,28 @@
-from bitarray import bitarray
 import hashlib
+from bitarray import bitarray
 
-def simple_hash(item, seed):
-    result = int(hashlib.sha256(f"{item}{seed}".encode()).hexdigest(), 16)
-    return result
 
 class BloomFilter:
-    def __init__(self, size, num_hash_functions, hash_f=simple_hash):
+    def __init__(self, size, hash_count):
         self.size = size
-        self.num_hash_functions = num_hash_functions
+        self.hash_count = hash_count
         self.bit_array = bitarray(size)
-        self.bit_array.setall(False)
-        self.hash_f = hash_f
+        self.bit_array.setall(0)
+
+    def _hashes(self, item):
+        # Generate multiple hashes for an item
+        item = item.encode('utf-8')
+        for i in range(self.hash_count):
+            # Create a new hash for each hash count using a seed
+            hash_result = hashlib.sha256(item).hexdigest()
+            hash_result = int(hash_result, 16) + i
+            yield hash_result % self.size
 
     def add(self, item):
-        for seed in range(self.num_hash_functions):
-            index = self.hash_f(item, seed) % self.size
-            self.bit_array[index] = True
+        # Add an item to the bloom filter
+        for hash_value in self._hashes(item):
+            self.bit_array[hash_value] = True
 
     def __contains__(self, item):
-        for seed in range(self.num_hash_functions):
-            index = self.hash_f(item, seed) % self.size
-            if not self.bit_array[index]:
-                return False
-        return True
-
-# Usage
-b_filter = BloomFilter(1024, 5)
-b_filter.add("test")
-print("test" in b_filter)  # Expected True
-print("hello" in b_filter)  # Expected False (most likely)
+        # Implement the in keyword functionality
+        return all(self.bit_array[hash_value] for hash_value in self._hashes(item))

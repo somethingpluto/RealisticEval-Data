@@ -1,3 +1,6 @@
+import re
+
+
 def codeBlockRemover(
         markdown_string):  # This function was written by chatgpt! Not much else was since much of the other code is really context dependent and uses recent updates to the openai library (that's not in gpt's training data)
     # Use regex to look for the codeblock markdown syntax

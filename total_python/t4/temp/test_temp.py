@@ -37,6 +37,7 @@ class TestQuaternionToYaw(unittest.TestCase):
         expected_yaw = -math.pi / 3
         result = quaternion_to_yaw(w, x, y, z)
         self.assertAlmostEqual(result, expected_yaw, msg="Failed negative rotation test")
+
 import math
 
 
