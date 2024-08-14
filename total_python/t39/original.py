@@ -1,3 +1,6 @@
+import random
+
+
 def search(crossover: bool) -> None:
     group: list[float] = [0.01 * k for k in range(10)]  # create the N = 10 individuals
 

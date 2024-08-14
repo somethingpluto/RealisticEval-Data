@@ -1,15 +1,31 @@
 import re
 
 
-def process_markdown_content(content):
-    # Regular expression to find asterisks with spaces and characters in between
-    pattern = r"\*[^*]*\*"
+def process_markdown(content):
+    """
+    Process a string to remove unnecessary inner asterisks from Markdown-like formatting,
+    keeping only the outermost asterisks for emphasis.
 
-    # Function to remove spaces near asterisks within the found patterns
-    def remove_extra_stars(match):
-        # Remove spaces right after an opening asterisk and right before a closing asterisk
-        return match.group().replace(" *", "*").replace("* ", "*")
+    Args:
+    content (str): A string containing the Markdown content.
 
-    # Apply the function to all occurrences in the content
-    processed_content = re.sub(pattern, remove_extra_stars, content)
+    Returns:
+    str: The processed Markdown content with adjusted asterisks.
+    """
+
+    # Regex to match any text enclosed with asterisks including nested ones
+    regex_pattern = r'\*[^*]+\*'
+
+    # Function to replace inner asterisks
+    def replace_inner_asterisks(match):
+        # Extract the matched text without the outermost asterisks
+        inner_text = match.group(0)[1:-1]
+        # Replace all inner asterisks with spaces
+        processed_text = inner_text.replace('*', ' ')
+        # Re-enclose the text with asterisks
+        return '*' + processed_text + '*'
+
+    # Use re.sub to apply the replacement function to all occurrences
+    processed_content = re.sub(regex_pattern, replace_inner_asterisks, content)
+
     return processed_content

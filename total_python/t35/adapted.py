@@ -1,31 +1,30 @@
-from line_seg_int import intersect_coords
-
-
-def is_point_in_polygon(polygon: list, point: tuple) -> bool:
+def is_point_in_polygon(point, polygon):
     """
-    Determines if a point is inside a polygon using the raycasting algorithm.
+    Determine if the point (x, y) is inside the given polygon.
+    The polygon is defined as a list of tuples (x, y) representing the vertices.
 
     Args:
-    - polygon: A list of (float, float) tuples representing the vertices of the polygon.
-    - point: A (float, float) tuple representing the point to check.
+    point: A tuple (x, y) representing the point to check.
+    polygon: A list of tuples (x, y) representing the vertices of the polygon.
 
     Returns:
-    - bool: True if the point is inside the polygon or on its edge, False otherwise.
+    bool: True if the point is inside the polygon, False otherwise.
     """
-    is_inside = False
-    x_p, y_p = point
-    cast_ray = (point, (float('inf'), y_p))
 
-    # Loop through each pair of vertices, including the wrap-around pair
-    for i in range(len(polygon)):
-        current_vertex = polygon[i]
-        next_vertex = polygon[(i + 1) % len(polygon)]  # Wrap-around using modulo
+    x, y = point
+    inside = False
+    n = len(polygon)
+    p1x, p1y = polygon[0]
 
-        if current_vertex == point:
-            return True
+    for i in range(n + 1):
+        p2x, p2y = polygon[i % n]
+        if y > min(p1y, p2y):
+            if y <= max(p1y, p2y):
+                if x <= max(p1x, p2x):
+                    if p1y != p2y:
+                        xinters = (y - p1y) * (p2x - p1x) / (p2y - p1y) + p1x
+                    if p1x == p2x or x <= xinters:
+                        inside = not inside
+        p1x, p1y = p2x, p2y
 
-        # Check for intersection with the ray
-        if intersect_coords(cast_ray, (current_vertex, next_vertex)) is not None:
-            is_inside = not is_inside
-
-    return is_inside
+    return inside

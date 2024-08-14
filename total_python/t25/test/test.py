@@ -1,42 +1,88 @@
 import unittest
+import json
 import os
+from tempfile import NamedTemporaryFile
 
-class TestJsonFiltering(unittest.TestCase):
+
+class TestClassifyJsonObjectsByPid(unittest.TestCase):
     def setUp(self):
-        # Create a sample JSON data file
-        self.test_data = [
-            {"name": "Alice", "pid": 123},
-            {"name": "Bob"},
-            {"name": "Charlie", "pid": 456}
+        # Create a temporary file to write the source JSON data
+        self.source_file = NamedTemporaryFile(delete=False, mode='w', suffix='.json', encoding="utf8")
+        self.source_file_name = self.source_file.name
+
+        # Create temporary files for match and mismatch results
+        self.match_file = NamedTemporaryFile(delete=False, mode='w+', suffix='.json', encoding="utf8")
+        self.match_file_name = self.match_file.name
+        self.mismatch_file = NamedTemporaryFile(delete=False, mode='w+', suffix='.json', encoding="utf8")
+        self.mismatch_file_name = self.mismatch_file.name
+
+        # Example data
+        self.data = [
+            {"pid": 123, "name": "Alice"},
+            {"pid": 456, "name": "Bob"},
+            {"pid": 789, "name": "Charlie"},
+            {"pid": 101, "name": "Dave"},
+            {"pid": 102, "name": "Eve"}
         ]
-        self.input_file = 'test_input.json'
-        with open(self.input_file, 'w') as file:
-            json.dump(self.test_data, file)
 
-        self.output_file1 = 'test_output_matched.json'
-        self.output_file2 = 'test_output_unmatched.json'
+        # Write the example data to the source file
+        json.dump(self.data, self.source_file)
+        self.source_file.close()
 
-    def test_filter_json(self):
-        # Run the segregation function
-        target_pids = [123]
-        segregate_entries_by_pid(self.input_file, self.output_file1, self.output_file2, target_pids)
-
-        # Check output files for correctness
-        with open(self.output_file1, 'r') as f1:
-            matched_data = json.load(f1)
-        with open(self.output_file2, 'r') as f2:
-            unmatched_data = json.load(f2)
-
-        self.assertEqual(len(matched_data), 1)
-        self.assertEqual(matched_data[0]['pid'], 123)
-        self.assertEqual(len(unmatched_data), 2)
+        # PID list for testing
+        self.pid_list = [123, 789, 456]
 
     def tearDown(self):
-        # Clean up created files
-        os.remove(self.input_file)
-        os.remove(self.output_file1)
-        os.remove(self.output_file2)
+        # Clean up temporary files
+        os.unlink(self.source_file_name)
+        os.unlink(self.match_file_name)
+        os.unlink(self.mismatch_file_name)
 
-# Run tests
-if __name__ == '__main__':
-    unittest.main()
+    def test_all_matches(self):
+        # All items should match
+        classify_json_objects_by_pid(self.source_file_name, [123, 456, 789, 101, 102], self.match_file_name,
+                                     self.mismatch_file_name)
+        with open(self.match_file_name, 'r', encoding="utf8") as f:
+            results = json.load(f)
+        self.assertEqual(len(results), 5)
+        self.assertEqual(results, self.data)
+
+    def test_no_matches(self):
+        # No items should match
+        classify_json_objects_by_pid(self.source_file_name, [], self.match_file_name, self.mismatch_file_name)
+        with open(self.mismatch_file_name, 'r', encoding="utf8") as f:
+            results = json.load(f)
+        self.assertEqual(len(results), 5)
+        self.assertEqual(results, self.data)
+
+    def test_partial_matches(self):
+        # Only some items should match
+        classify_json_objects_by_pid(self.source_file_name, self.pid_list, self.match_file_name,
+                                     self.mismatch_file_name)
+        with open(self.match_file_name, 'r', encoding="utf8") as f:
+            match_results = json.load(f)
+        with open(self.mismatch_file_name, 'r', encoding="utf8") as f:
+            mismatch_results = json.load(f)
+        self.assertEqual(len(match_results), 3)
+        self.assertEqual(len(mismatch_results), 2)
+
+    def test_empty_source(self):
+        # Test with an empty source file
+        with open(self.source_file_name, 'w') as f:
+            json.dump([], f)
+        classify_json_objects_by_pid(self.source_file_name, self.pid_list, self.match_file_name,
+                                     self.mismatch_file_name)
+        with open(self.match_file_name, 'r', encoding="utf8") as f:
+            match_results = json.load(f)
+        with open(self.mismatch_file_name, 'r', encoding="utf8") as f:
+            mismatch_results = json.load(f)
+        self.assertEqual(len(match_results), 0)
+        self.assertEqual(len(mismatch_results), 0)
+
+    def test_invalid_pid_list(self):
+        # Test with an invalid pid list (non-matching types)
+        classify_json_objects_by_pid(self.source_file_name, ['123', '789', '456'], self.match_file_name,
+                                     self.mismatch_file_name)
+        with open(self.match_file_name, 'r', encoding="utf8") as f:
+            match_results = json.load(f)
+        self.assertEqual(len(match_results), 0)  # Assumes no conversion between types

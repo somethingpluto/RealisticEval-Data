@@ -1,6 +1,5 @@
 import unittest
 
-from task_code.t5.adapted import parse_and_format
 
 
 class TestParseAndFormat(unittest.TestCase):
