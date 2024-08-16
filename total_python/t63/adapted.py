@@ -1,23 +1,29 @@
+import pandas as pd
+
+
 def dataframe_to_markdown(df):
     """
-    Converts a pandas DataFrame to a Markdown table format string.
+    Convert a pandas DataFrame to a Markdown table format.
 
     Args:
     df (pd.DataFrame): The DataFrame to convert.
 
     Returns:
-    str: The Markdown table representation of the DataFrame.
+    str: A string representation of the DataFrame in Markdown table format.
     """
-    # Start with the header
-    header = "| " + " | ".join(df.columns) + " |\n"
-    # Add the separator
-    separator = "| " + " | ".join(["---"] * len(df.columns)) + " |\n"
-    # Initialize markdown table string
-    markdown_table = header + separator
+    # Start with an empty list to collect rows
+    markdown_lines = []
 
-    # Add each row of the DataFrame
+    # Add the header with alignment (assuming left alignment for simplicity)
+    header = "| " + " | ".join(df.columns) + " |"
+    markdown_lines.append(header)
+    markdown_lines.append("|" + "|".join(['---' * (len(col) // 3 + 1) for col in df.columns]) + "|")
+
+    # Add the data rows
     for index, row in df.iterrows():
-        row_str = "| " + " | ".join(str(x) for x in row.values) + " |\n"
-        markdown_table += row_str
+        row_str = "| " + " | ".join(str(value) for value in row.values) + " |"
+        markdown_lines.append(row_str)
 
-    return markdown_table
+    # Join all lines into a single string
+    markdown_str = "\n".join(markdown_lines)
+    return markdown_str

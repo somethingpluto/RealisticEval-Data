@@ -1,6 +1,8 @@
 font_width = 16
 font_height = 36
 font_chars = "CRHpm1234567890.°%$Є"
+
+
 def bytes_get_character(bytes_array, character):
     if character not in font_chars:
         return

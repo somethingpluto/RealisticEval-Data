@@ -3,7 +3,9 @@
 import json
 
 # The keys you want to remove
-keys_to_remove = {"email", "pc_conflicts", "metadata", "eligible_student_paper_prize", "talk_poster", "submitted_at", "decision", "status", "submitted", "submission"}
+keys_to_remove = {"email", "pc_conflicts", "metadata", "eligible_student_paper_prize", "talk_poster", "submitted_at",
+                  "decision", "status", "submitted", "submission"}
+
 
 def sanitize_data(data):
     """Recursively sanitize a dictionary by removing specific keys."""

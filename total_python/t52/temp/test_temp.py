@@ -1,98 +1,89 @@
 import unittest
 import os
-import tempfile
+import shutil
 
 
-class TestRenameFilesInFolder(unittest.TestCase):
+class TestRenameFilesInDirectory(unittest.TestCase):
 
     def setUp(self):
-        # Create a temporary directory for the test
-        self.test_dir = tempfile.TemporaryDirectory()
+        """Setup a temporary directory with sample files."""
+        self.test_dir = 'test_directory'
+        os.makedirs(self.test_dir, exist_ok=True)
+        # Create files with colons in their names
+        open(os.path.join(self.test_dir, 'file:1.txt'), 'a').close()
+        open(os.path.join(self.test_dir, 'document:2.txt'), 'a').close()
+        open(os.path.join(self.test_dir, 'image:3.jpg'), 'a').close()
 
     def tearDown(self):
-        # Clean up the temporary directory after each test
-        self.test_dir.cleanup()
+        """Clean up by removing the directory created for the test."""
+        shutil.rmtree(self.test_dir)
 
-    def test_files_with_colons(self):
-        # Create files with colons in their names
-        filenames = ['file:one.txt', 'file:two.txt', 'file:three.txt']
-        for name in filenames:
-            open(os.path.join(self.test_dir.name, name), 'a').close()
+    def test_rename_files(self):
+        """Test renaming files from colons to hyphens."""
+        rename_files_in_directory(self.test_dir)
+        self.assertTrue(os.path.exists(os.path.join(self.test_dir, 'file-1.txt')))
+        self.assertTrue(os.path.exists(os.path.join(self.test_dir, 'document-2.txt')))
+        self.assertTrue(os.path.exists(os.path.join(self.test_dir, 'image-3.jpg')))
 
-        rename_files_in_folder(self.test_dir.name)
-
-        # Check if files were renamed correctly
-        expected_files = ['file-one.txt', 'file-two.txt', 'file-three.txt']
-        result_files = os.listdir(self.test_dir.name)
-        self.assertCountEqual(result_files, expected_files)
-
-    def test_files_without_colons(self):
-        # Create files without colons in their names
-        filenames = ['file1.txt', 'file2.txt', 'file3.txt']
-        for name in filenames:
-            open(os.path.join(self.test_dir.name, name), 'a').close()
-
-        rename_files_in_folder(self.test_dir.name)
-
-        # Check that file names remain unchanged
-        result_files = os.listdir(self.test_dir.name)
-        self.assertCountEqual(result_files, filenames)
-
-    def test_mixed_files(self):
-        # Create a mix of files with and without colons
-        filenames = ['file:one.txt', 'file2.txt', 'file:three.txt']
-        for name in filenames:
-            open(os.path.join(self.test_dir.name, name), 'a').close()
-
-        rename_files_in_folder(self.test_dir.name)
-
-        # Check if only the files with colons were renamed
-        expected_files = ['file-one.txt', 'file2.txt', 'file-three.txt']
-        result_files = os.listdir(self.test_dir.name)
-        self.assertCountEqual(result_files, expected_files)
+    def test_no_colon_files(self):
+        """Test directory with files that don't need renaming."""
+        # First clean existing files
+        shutil.rmtree(self.test_dir)
+        os.makedirs(self.test_dir)
+        open(os.path.join(self.test_dir, 'file1.txt'), 'a').close()
+        rename_files_in_directory(self.test_dir)
+        self.assertTrue(os.path.exists(os.path.join(self.test_dir, 'file1.txt')))
 
     def test_empty_directory(self):
-        # The directory is empty
-        rename_files_in_folder(self.test_dir.name)
+        """Test an empty directory."""
+        # Clear the directory first
+        shutil.rmtree(self.test_dir)
+        os.makedirs(self.test_dir)
+        rename_files_in_directory(self.test_dir)  # Should not raise any errors
+        self.assertEqual(len(os.listdir(self.test_dir)), 0)
 
-        # Check that the directory is still empty
-        result_files = os.listdir(self.test_dir.name)
-        self.assertEqual(len(result_files), 0)
+    def test_invalid_directory(self):
+        """Test with an invalid directory path."""
+        with self.assertRaises(ValueError):
+            rename_files_in_directory('non_existent_directory')
 
-    def test_subdirectories(self):
-        # Create a subdirectory and files within the test directory
-        os.mkdir(os.path.join(self.test_dir.name, 'subdir'))
-        filenames = ['file:one.txt', 'subdir/file:two.txt']
-        open(os.path.join(self.test_dir.name, filenames[0]), 'a').close()
-        open(os.path.join(self.test_dir.name, filenames[1]), 'a').close()
-
-        rename_files_in_folder(self.test_dir.name)
-
-        # Check if only the file in the main directory was renamed
-        expected_files_main = ['file-one.txt', 'subdir']
-        result_files_main = os.listdir(self.test_dir.name)
-        result_files_subdir = os.listdir(os.path.join(self.test_dir.name, 'subdir'))
-
-        self.assertCountEqual(result_files_main, expected_files_main)
-        self.assertCountEqual(result_files_subdir, ['file:two.txt'])  # Should remain unchanged
+    def test_permission_error(self):
+        """Test the behavior when there's a permission issue."""
+        # Create a file and make it read-only
+        file_path = os.path.join(self.test_dir, 'readonly:file.txt')
+        open(file_path, 'a').close()
+        os.chmod(file_path, 0o400)  # Make it read-only
+        with self.assertRaises(PermissionError):
+            rename_files_in_directory(self.test_dir)
+        os.chmod(file_path, 0o666)  # Reset permissions for cleanup
 
 import os
 
 
-def rename_files_in_folder(folder_path: str) -> None:
+def rename_files_in_directory(directory):
     """
-    Rename all files in the specified folder, replacing colons in the file names with hyphens.
+    Rename all files in the specified directory by replacing colons in the filenames with hyphens.
 
-    :param folder_path: The path to the folder containing the files to rename.
+    Args:
+    directory (str): The path to the directory containing the files to be renamed.
     """
-    # Iterate through all files in the specified folder
-    for filename in os.listdir(folder_path):
-        # Check if the file name contains a colon
-        if ':' in filename:
-            # Construct the new file name by replacing colons with hyphens
+    # Check if the directory exists
+    if not os.path.isdir(directory):
+        raise ValueError(f"The specified directory does not exist: {directory}")
+
+    # Iterate through all files in the directory
+    for filename in os.listdir(directory):
+        # Construct the full file path
+        file_path = os.path.join(directory, filename)
+
+        # Check if it's a file (not a directory or link etc.)
+        if os.path.isfile(file_path):
+            # Replace colons in the filename with hyphens
             new_filename = filename.replace(':', '-')
-            # Construct full file paths
-            old_file_path = os.path.join(folder_path, filename)
-            new_file_path = os.path.join(folder_path, new_filename)
+
+            # Construct the new file path
+            new_file_path = os.path.join(directory, new_filename)
+
             # Rename the file
-            os.rename(old_file_path, new_file_path)
+            os.rename(file_path, new_file_path)
+            print(f"Renamed '{filename}' to '{new_filename}'")

@@ -1,3 +1,7 @@
+from enum import Enum
+from numbers import Number
+
+
 def preprocess_data(data):
     """Generated with ChatGPT.
 

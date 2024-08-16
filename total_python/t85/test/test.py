@@ -1,45 +1,39 @@
 import unittest
+import pandas as pd
 
 
-class TestFillNaWithLastValid(unittest.TestCase):
-    def setUp(self):
-        # Common DataFrame used for testing
-        self.data = {
-            'A': [None, 2, None, 4, None, None, 7],
-            'B': ['a', None, None, 'd', 'e', None, 'g']
-        }
-        self.df = pd.DataFrame(self.data)
+class TestPopulateNAWithFirstValid(unittest.TestCase):
 
-    def test_fill_na_in_int_column(self):
-        # Test filling NA in integer column
-        df = self.df.copy()
-        result_df = fill_na_with_last_valid(df, 'A')
-        expected_data = [None, 2, 2, 4, 4, 4, 7]
-        pd.testing.assert_series_equal(result_df['A'], pd.Series(expected_data, name='A'))
+    def test_normal_case(self):
+        """ Test with normal input where replacement is possible. """
+        df = pd.DataFrame({'A': [None, 2, None, 4]})
+        expected = pd.DataFrame({'A': [2, 2, 2, 4]})
+        result = populate_na_with_first_valid(df, 'A')
+        pd.testing.assert_frame_equal(result, expected)
 
-    def test_fill_na_in_string_column(self):
-        # Test filling NA in string column
-        df = self.df.copy()
-        result_df = fill_na_with_last_valid(df, 'B')
-        expected_data = ['a', 'a', 'a', 'd', 'e', 'e', 'g']
-        pd.testing.assert_series_equal(result_df['B'], pd.Series(expected_data, name='B'))
+    def test_all_na(self):
+        """ Test a column that is entirely NA to see if it remains unchanged. """
+        df = pd.DataFrame({'A': [None, None, None, None]})
+        expected = pd.DataFrame({'A': [None, None, None, None]})
+        result = populate_na_with_first_valid(df, 'A')
+        pd.testing.assert_frame_equal(result, expected)
 
-    def test_nonexistent_column(self):
-        # Test with a column that does not exist
-        df = self.df.copy()
+    def test_no_na(self):
+        """ Test a column with no NA values to see if it remains unchanged. """
+        df = pd.DataFrame({'A': [1, 2, 3, 4]})
+        expected = pd.DataFrame({'A': [1, 2, 3, 4]})
+        result = populate_na_with_first_valid(df, 'A')
+        pd.testing.assert_frame_equal(result, expected)
+
+    def test_invalid_column(self):
+        """ Test with a column name that does not exist in the DataFrame. """
+        df = pd.DataFrame({'A': [1, 2, 3, 4]})
         with self.assertRaises(ValueError):
-            fill_na_with_last_valid(df, 'C')
+            populate_na_with_first_valid(df, 'B')
 
-    def test_empty_dataframe(self):
-        # Test with an empty DataFrame
-        df = pd.DataFrame()
-        with self.assertRaises(ValueError):
-            fill_na_with_last_valid(df, 'A')
-
-    def test_no_na_to_fill(self):
-        # Test DataFrame where no NA exists in the specified column
-        data = {'A': [1, 2, 3, 4, 5, 6, 7]}
-        df = pd.DataFrame(data)
-        result_df = fill_na_with_last_valid(df, 'A')
-        expected_df = pd.DataFrame(data)
-        pd.testing.assert_frame_equal(result_df, expected_df)
+    def test_first_entry_na(self):
+        """ Test when the first entry is NA but there is a valid entry later. """
+        df = pd.DataFrame({'A': [None, None, 2, None]})
+        expected = pd.DataFrame({'A': [2, 2, 2, 2]})
+        result = populate_na_with_first_valid(df, 'A')
+        pd.testing.assert_frame_equal(result, expected)

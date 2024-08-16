@@ -1,25 +1,15 @@
-import re
+import os
 
 
-def simplify_path(path: str) -> str:
-    """
-    Simplify filesystem paths to name strings on different systems.For example in windows , D:\downlaod\text.py to D_download_text.py on windows,in linux /home/user/test.py to home_user_test.py
-    Args:
-        path (str):
+def simplify_windows_path(path):
+    # Replace the drive letter and colon, e.g., 'D:' with 'D_'
+    drive, path_without_drive = os.path.splitdrive(path)
+    simplified_drive = drive.rstrip(':') + '_'
 
-    Returns: simple path str
+    # Replace backslashes with underscores and strip any trailing backslash
+    simplified_path = path_without_drive.replace('\\', '_').strip('_')
 
-    """
-    simplified = path.replace('\\', '_').replace('/', '_').replace(':', '_')
+    # Concatenate the simplified drive and the remaining path
+    final_path = simplified_drive + simplified_path
 
-    # Removing illegal characters that cannot be used in file names across various systems
-    illegal_chars = ['<', '>', '|', '?', '*', '"']
-    for char in illegal_chars:
-        simplified = simplified.replace(char, '_')
-
-    # Special handling to remove a leading underscore if the path starts with a slash
-    # This is typically relevant for Unix/Linux paths
-    if path.startswith('/') or path.startswith('\\'):
-        simplified = simplified.lstrip('_')
-
-    return simplified
+    return final_path

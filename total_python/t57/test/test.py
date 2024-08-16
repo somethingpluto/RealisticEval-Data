@@ -1,33 +1,52 @@
-import os
 import unittest
+from PIL import Image
+import os
+from io import BytesIO
 
 
-class TestConvertPngToIco(unittest.TestCase):
-    def test_valid_input(self):
-        """Test converting a valid PNG file to ICO format with a standard icon size."""
-        convert_png_to_ico('path/to/input.png', 'path/to/output.ico')
-        self.assertTrue(os.path.exists('path/to/output.ico'))
+class TestConvertPNGToICO(unittest.TestCase):
 
-    def test_multiple_sizes(self):
-        """Test converting a PNG to ICO with multiple icon sizes."""
-        sizes = [(16, 16), (32, 32), (64, 64), (128, 128), (256, 256)]
-        convert_png_to_ico('path/to/input.png', 'path/to/output.ico', icon_sizes=sizes)
-        with Image.open('path/to/output.ico') as img:
-            self.assertEqual(len(img.info['sizes']), len(sizes))
+    def setUp(self):
+        """Create a sample PNG image for testing."""
+        self.png_file_path = 'test_image.png'
+        self.ico_file_path = 'test_image.ico'
+        # Create a small red PNG image for testing
+        image = Image.new("RGBA", (100, 100), "red")
+        image.save(self.png_file_path)
 
-    def test_nonexistent_input_file(self):
-        """Test the function's response to a nonexistent input file."""
+    def tearDown(self):
+        """Remove files created during the test."""
+        os.remove(self.png_file_path)
+        if os.path.exists(self.ico_file_path):
+            os.remove(self.ico_file_path)
+
+    def test_valid_conversion(self):
+        """Test converting a valid PNG file to an ICO file."""
+        convert_png_to_ico(self.png_file_path, self.ico_file_path)
+        # Check if ICO file was created
+        self.assertTrue(os.path.exists(self.ico_file_path))
+
+    def test_invalid_png_path(self):
+        """Test behavior with a non-existing PNG file."""
         with self.assertRaises(FileNotFoundError):
-            convert_png_to_ico('nonexistent.png', 'path/to/output.ico')
+            convert_png_to_ico('nonexistent.png', self.ico_file_path)
 
-    def test_invalid_icon_size(self):
-        """Test passing an invalid icon size."""
+    def test_invalid_icon_sizes(self):
+        """Test with invalid icon sizes."""
         with self.assertRaises(ValueError):
-            convert_png_to_ico('path/to/input.png', 'path/to/output.ico', icon_sizes=[(300, 300)])  # Assuming 300x300 is not supported
+            convert_png_to_ico(self.png_file_path, self.ico_file_path,
+                               icon_sizes=[(3000, 3000)])  # Unusually large size
 
-    def test_output_overwrite(self):
-        """Test that the function overwrites an existing ICO file without error."""
-        # Create an initial ICO file
-        open('path/to/output.ico', 'a').close()
-        convert_png_to_ico('path/to/input.png', 'path/to/output.ico')
-        self.assertTrue(os.path.exists('path/to/output.ico'))
+    def test_zero_size_icon(self):
+        """Test with zero size icon dimensions."""
+        with self.assertRaises(ValueError):
+            convert_png_to_ico(self.png_file_path, self.ico_file_path, icon_sizes=[(0, 0)])
+
+    def test_multiple_icon_sizes(self):
+        """Test conversion with multiple icon sizes."""
+        icon_sizes = [(16, 16), (32, 32), (64, 64)]
+        convert_png_to_ico(self.png_file_path, self.ico_file_path, icon_sizes=icon_sizes)
+        # Check the file and possibly the size
+        with open(self.ico_file_path, 'rb') as f:
+            ico_image = Image.open(BytesIO(f.read()))
+            self.assertEqual(len(ico_image.info['sizes']), len(icon_sizes))
