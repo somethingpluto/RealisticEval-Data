@@ -2,55 +2,49 @@ import unittest
 
 
 class TestStringSideBySide(unittest.TestCase):
-
     def test_equal_length_strings(self):
-        # Test with strings that have equal number of lines
-        str1 = "Hello\nWorld"
-        str2 = "Python\nCoding"
-        expected_result = "Hello               | Python             \nWorld               | Coding             "
-        result = string_side_by_side(str1, str2)
-        self.assertEqual(result, expected_result)
+        s1 = "Hello\nWorld"
+        s2 = "Test\nCase"
+        expected = "Hello               | Test               \nWorld               | Case               "
+        self.assertEqual(string_side_by_side(s1, s2), expected)
 
     def test_unequal_length_strings(self):
-        # Test with strings that have unequal number of lines
-        str1 = "Hello\nWorld"
-        str2 = "Python"
-        expected_result = "Hello               | Python             \nWorld               |                    "
-        result = string_side_by_side(str1, str2)
-        self.assertEqual(result, expected_result)
+        s1 = "Short"
+        s2 = "A much longer string\nacross multiple lines"
+        expected = "Short               | A much longer string\n                    | across multiple lines"
+        self.assertEqual(string_side_by_side(s1, s2), expected)
 
-    def test_empty_string(self):
-        # Test with one empty string
-        str1 = ""
-        str2 = "Python\nIs\nGreat"
-        expected_result = "                    | Python             \n                    | Is                 \n                    | Great              "
-        result = string_side_by_side(str1, str2)
-        self.assertEqual(result, expected_result)
+    def test_empty_first_string(self):
+        s1 = ""
+        s2 = "Non-empty"
+        expected = "                    | Non-empty          "
+        self.assertEqual(string_side_by_side(s1, s2), expected)
 
-    def test_variable_column_width(self):
-        # Test with a specific column width
-        str1 = "Short"
-        str2 = "This is a much longer line"
-        expected_result = "Short               | This is a much longe"
-        result = string_side_by_side(str1, str2, 20)
-        self.assertEqual(result, expected_result)
+    def test_empty_second_string(self):
+        s1 = "Non-empty"
+        s2 = ""
+        expected = "Non-empty          |                    "
+        self.assertEqual(string_side_by_side(s1, s2), expected)
 
-    def test_all_empty_strings(self):
-        # Test with all empty strings
-        str1 = ""
-        str2 = ""
-        expected_result = ""
-        result = string_side_by_side(str1, str2)
-        self.assertEqual(result, expected_result)
+    def test_special_characters(self):
+        s1 = "Special: #@!"
+        s2 = "Characters: %^&*"
+        expected = "Special: #@!        | Characters: %^&*   "
+        self.assertEqual(string_side_by_side(s1, s2), expected)
 def string_side_by_side(string1, string2, column_width=20):
+    # Split the strings into lists of lines
     lines1 = string1.splitlines()
     lines2 = string2.splitlines()
 
+    # Find the maximum length of the two lists
     max_length = max(len(lines1), len(lines2))
-    lines1 += [''] * (max_length - len(lines1))
-    lines2 += [''] * (max_length - len(lines2))
 
-    formatted_lines = (f"{line1:<{column_width}} | {line2:<{column_width}}"
-                       for line1, line2 in zip(lines1, lines2))
+    # Pad both lists to have the same number of lines
+    padded_lines1 = [line.ljust(column_width) for line in lines1] + [' ' * column_width] * (max_length - len(lines1))
+    padded_lines2 = [line.ljust(column_width) for line in lines2] + [' ' * column_width] * (max_length - len(lines2))
 
+    # Use a list comprehension to format and concatenate lines
+    formatted_lines = [f"{line1} | {line2}" for line1, line2 in zip(padded_lines1, padded_lines2)]
+
+    # Join all formatted lines into a single string
     return '\n'.join(formatted_lines)

@@ -1,3 +1,7 @@
+import hashlib
+import os
+
+
 def hash_directory(directory): # Written by Chatgpt...
     file_hashes = []
 

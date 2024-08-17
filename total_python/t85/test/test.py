@@ -1,39 +1,42 @@
 import unittest
+
 import pandas as pd
 
 
-class TestPopulateNAWithFirstValid(unittest.TestCase):
+class TestNaiveFfill(unittest.TestCase):
+    def setUp(self):
+        # Setup a DataFrame with mixed types and missing values
+        self.df = pd.DataFrame({
+            'A': [1, None, 3, None, 5],
+            'B': ['x', 'y', None, 'z', 'a']
+        })
 
-    def test_normal_case(self):
-        """ Test with normal input where replacement is possible. """
-        df = pd.DataFrame({'A': [None, 2, None, 4]})
-        expected = pd.DataFrame({'A': [2, 2, 2, 4]})
-        result = populate_na_with_first_valid(df, 'A')
-        pd.testing.assert_frame_equal(result, expected)
+    def test_forward_fill_numeric(self):
+        # Test forward-filling on a numeric column
+        naive_ffill(self.df, 'A')
+        expected = pd.Series([1, 1, 3, 3, 5], name='A')
+        pd.testing.assert_series_equal(self.df['A'], expected)
 
-    def test_all_na(self):
-        """ Test a column that is entirely NA to see if it remains unchanged. """
-        df = pd.DataFrame({'A': [None, None, None, None]})
-        expected = pd.DataFrame({'A': [None, None, None, None]})
-        result = populate_na_with_first_valid(df, 'A')
-        pd.testing.assert_frame_equal(result, expected)
+    def test_forward_fill_string(self):
+        # Test forward-filling on a string column
+        naive_ffill(self.df, 'B')
+        expected = pd.Series(['x', 'y', 'y', 'z', 'a'], name='B')
+        pd.testing.assert_series_equal(self.df['B'], expected)
 
-    def test_no_na(self):
-        """ Test a column with no NA values to see if it remains unchanged. """
-        df = pd.DataFrame({'A': [1, 2, 3, 4]})
-        expected = pd.DataFrame({'A': [1, 2, 3, 4]})
-        result = populate_na_with_first_valid(df, 'A')
-        pd.testing.assert_frame_equal(result, expected)
+    def test_no_missing_values(self):
+        # Test on a column without missing values
+        self.df['C'] = [1, 2, 3, 4, 5]  # Add a column with no NaNs
+        naive_ffill(self.df, 'C')
+        expected = pd.Series([1, 2, 3, 4, 5], name='C')
+        pd.testing.assert_series_equal(self.df['C'], expected)
 
-    def test_invalid_column(self):
-        """ Test with a column name that does not exist in the DataFrame. """
-        df = pd.DataFrame({'A': [1, 2, 3, 4]})
-        with self.assertRaises(ValueError):
-            populate_na_with_first_valid(df, 'B')
+    def test_invalid_column_name(self):
+        # Test with an invalid column name
+        with self.assertRaises(KeyError):
+            naive_ffill(self.df, 'Z')  # Nonexistent column
 
-    def test_first_entry_na(self):
-        """ Test when the first entry is NA but there is a valid entry later. """
-        df = pd.DataFrame({'A': [None, None, 2, None]})
-        expected = pd.DataFrame({'A': [2, 2, 2, 2]})
-        result = populate_na_with_first_valid(df, 'A')
-        pd.testing.assert_frame_equal(result, expected)
+    def test_empty_dataframe(self):
+        # Test forward-filling on an empty DataFrame
+        empty_df = pd.DataFrame()
+        with self.assertRaises(KeyError):
+            naive_ffill(empty_df, 'A')

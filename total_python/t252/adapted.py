@@ -1,28 +1,37 @@
 import json
 
 
-class CustomJSONEncoder(json.JSONEncoder):
+class BitSequenceEncoder(json.JSONEncoder):
+    """
+    Custom JSON encoder class that converts dictionary entries with the key 'bits'
+    into a binary string format.
+
+    This encoder transforms only those entries in a dictionary where the key is 'bits',
+    formatting their values as 8-bit binary strings. Other entries are left unchanged.
+    """
+
     def default(self, obj):
         """
-        Override the default() method to encode specific data types.
+        Overridden method from json.JSONEncoder to provide custom encoding logic.
 
         Args:
-        obj (any): The object to encode.
+            obj (any): The object to encode.
 
         Returns:
-        any: A JSON-serializable form of the object or calls the base class's default method.
+            any: The encoded object or super().default(obj) for types unsupported by this encoder.
         """
-        # Handle dictionary specially to convert certain keys
-        if isinstance(obj, dict):
-            new_obj = {}
-            for key, value in obj.items():
-                # Check if the key indicates a value that should be converted to binary
-                if key == 'bits' and isinstance(value, int):
-                    # Convert integer to a binary string
-                    new_obj[key] = bin(value)[2:]  # bin() returns a string starting with '0b'
-                else:
-                    # Recursively handle all other values normally
-                    new_obj[key] = value
-            return new_obj
-        # Use the default method for any other type not explicitly handled
-        return super().default(obj)
+
+        # Helper function to recursively convert dictionary entries
+        def convert_bits(item):
+            if isinstance(item, dict):
+                # Transform the dictionary, applying binary formatting if the key is 'bits'
+                return {k: (f'{v:08b}' if k == 'bits' else convert_bits(v)) for k, v in item.items()}
+            elif isinstance(item, list):
+                # Apply conversion to each element in the list
+                return [convert_bits(v) for v in item]
+            else:
+                # Return the item unchanged if it's not a dictionary or list
+                return item
+
+        # Use the helper function to process the top-level object
+        return convert_bits(obj)

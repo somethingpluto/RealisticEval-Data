@@ -1,3 +1,6 @@
+import os
+import re
+
 def find_duplicate_ips(files, ignored_ips):
     ip_regex = r"\b(?:\d{1,3}\.){3}\d{1,3}\b"
     duplicates = {}

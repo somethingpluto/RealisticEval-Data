@@ -2,6 +2,7 @@
 
 import json
 
+
 def filter_json(input_file, output_file1, output_file2, pid_list):
     # Read the input JSON file
     with open(input_file, 'r') as f:
@@ -29,6 +30,7 @@ def filter_json(input_file, output_file1, output_file2, pid_list):
 
     print("Filtered data saved successfully!")
 
+
 # Example usage
 input_file = 'data.json'  # Path to the input JSON file
 output_file1 = 'matching_entries.json'  # Path to save the matching entries JSON file
@@ -36,4 +38,7 @@ output_file2 = 'non_matching_entries.json'  # Path to save the non-matching entr
 pid_list = [1, 3, 5]  # List of pids to match
 
 # filter_json(input_file, output_file1, output_file2, pid_list)
-filter_json('posters.json', 'posters_monday.json', 'posters_tuesday.json', [5, 9, 16, 27, 37, 39, 45, 48, 60, 65, 68, 71, 74, 82, 85, 89, 91, 93, 95, 98, 108, 112, 114, 116, 119, 121, 123, 125, 127, 131, 134, 136, 138, 140, 142, 145, 148, 151, 153, 155, 157, 159, 161, 163, 165, 167, 169, 171, 173, 175, 177])
+filter_json('posters.json', 'posters_monday.json', 'posters_tuesday.json',
+            [5, 9, 16, 27, 37, 39, 45, 48, 60, 65, 68, 71, 74, 82, 85, 89, 91, 93, 95, 98, 108, 112, 114, 116, 119, 121,
+             123, 125, 127, 131, 134, 136, 138, 140, 142, 145, 148, 151, 153, 155, 157, 159, 161, 163, 165, 167, 169,
+             171, 173, 175, 177])

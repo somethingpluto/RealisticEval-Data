@@ -12,6 +12,8 @@ def csv_to_line_protocol(csv_file, line_protocol_file):
     """
     # Read the CSV file using Pandas for simplicity in handling data
     df = pd.read_csv(csv_file)
+    if df == pd.DataFrame():
+        raise ValueError("empty csv file")
 
     # Open the output file for writing line protocol data
     with open(line_protocol_file, 'w') as lp_file:

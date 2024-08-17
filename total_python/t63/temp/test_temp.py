@@ -1,83 +1,65 @@
 import unittest
+from unittest.mock import patch, mock_open
 import pandas as pd
 
 
-class TestDataFrameToMarkdown(unittest.TestCase):
+class TestDataframeToMarkdown(unittest.TestCase):
+    def setUp(self):
+        # Create a sample DataFrame
+        self.data = {'Name': ['Alice', 'Bob'], 'Age': [25, 30]}
+        self.df = pd.DataFrame(self.data)
 
-    def test_simple_dataframe(self):
-        """Test converting a simple DataFrame to Markdown format."""
-        df = pd.DataFrame({
-            'Name': ['Alice', 'Bob'],
-            'Age': [25, 30]
-        })
-        expected_output = "| Name | Age |\n|------|-----|\n| Alice | 25 |\n| Bob | 30 |"
-        result = dataframe_to_markdown(df)
-        self.assertEqual(result.strip(), expected_output.strip())
+    @patch('builtins.open', new_callable=mock_open)
+    def test_write_to_file(self, mock_file):
+        # Test that the function writes the correct markdown to a file
+        expected_markdown = "| Name | Age |\n| --- | --- |\n| Alice | 25 |\n| Bob | 30 |\n"
+        result = dataframe_to_markdown(self.df, 'dummy_path.md')
+        mock_file().write.assert_called_once_with(expected_markdown)
+        self.assertEqual(result, expected_markdown)
 
     def test_empty_dataframe(self):
-        """Test converting an empty DataFrame to Markdown format."""
-        df = pd.DataFrame()
-        expected_output = ""
-        result = dataframe_to_markdown(df)
-        self.assertEqual(result.strip(), expected_output.strip())
+        # Test how the function handles an empty DataFrame
+        df_empty = pd.DataFrame()
+        expected_markdown = "|  |\n|  |\n"
+        result = dataframe_to_markdown(df_empty, 'dummy_path.md')
+        self.assertEqual(result, expected_markdown)
 
-    def test_dataframe_with_special_characters(self):
-        """Test a DataFrame with special characters in data."""
-        df = pd.DataFrame({
-            'Name': ['Alice & Bob', 'Charlie > Dave'],
-            'Age': [25, 30]
-        })
-        expected_output = "| Name | Age |\n|----------|-----|\n| Alice & Bob | 25 |\n| Charlie > Dave | 30 |"
-        result = dataframe_to_markdown(df)
-        self.assertEqual(result.strip(), expected_output.strip())
+    def test_single_row_dataframe(self):
+        # Test with a DataFrame that contains only one row
+        df_single_row = pd.DataFrame({'Name': ['Alice'], 'Age': [30]})
+        expected_markdown = "| Name | Age |\n| --- | --- |\n| Alice | 30 |\n"
+        result = dataframe_to_markdown(df_single_row, 'dummy_path.md')
+        self.assertEqual(result, expected_markdown)
 
-    def test_large_dataframe(self):
-        """Test converting a larger DataFrame to Markdown format."""
-        df = pd.DataFrame({
-            'Name': ['Alice'] * 100,
-            'Age': list(range(100))
-        })
-        result = dataframe_to_markdown(df)
-        self.assertIn('| Alice | 0 |', result)
-        self.assertIn('| Alice | 99 |', result)
+    def test_non_string_columns(self):
+        # Test with non-string data types in the DataFrame
+        df_non_string = pd.DataFrame({'Name': ['Alice', 'Bob'], 'Age': [25, 30], 'Height': [5.5, 6.0]})
+        expected_markdown = "| Name | Age | Height |\n| --- | --- | --- |\n| Alice | 25 | 5.5 |\n| Bob | 30 | 6.0 |\n"
+        result = dataframe_to_markdown(df_non_string, 'dummy_path.md')
+        self.assertEqual(result, expected_markdown)
 
-    def test_dataframe_with_different_data_types(self):
-        """Test a DataFrame with different data types (strings, numbers, floats)."""
-        df = pd.DataFrame({
-            'Name': ['Alice', 'Bob'],
-            'Age': [25, 30],
-            'Weight': [55.5, 60.0]
-        })
-        expected_output = "| Name | Age | Weight |\n|------|-----|--------|\n| Alice | 25 | 55.5 |\n| Bob | 30 | 60.0 |"
-        result = dataframe_to_markdown(df)
-        self.assertEqual(result.strip(), expected_output.strip())
+    def test_special_characters(self):
+        # Test handling of special characters in DataFrame
+        df_special_chars = pd.DataFrame(
+            {'Name': ['Alice', 'Bob'], 'Comments': ['Good@Work!', 'Excellent & Commendable']})
+        expected_markdown = "| Name | Comments |\n| --- | --- |\n| Alice | Good@Work! |\n| Bob | Excellent & Commendable |\n"
+        result = dataframe_to_markdown(df_special_chars, 'dummy_path.md')
+        self.assertEqual(result, expected_markdown)
 
-import pandas as pd
+def dataframe_to_markdown(df, md_path):
+    # Construct the header row
+    headers = "| " + " | ".join(df.columns) + " |\n"
+    # Construct the separator row
+    separators = "| " + " | ".join(["---"] * len(df.columns)) + " |\n"
+    # Combine headers and separators
+    markdown = headers + separators
 
+    # Build markdown table body
+    for _, row in df.iterrows():
+        markdown += "| " + " | ".join(str(value) for value in row) + " |\n"
 
-def dataframe_to_markdown(df):
-    """
-    Convert a pandas DataFrame to a Markdown table format.
+    # Write markdown to file
+    with open(md_path, "w") as handle:
+        handle.write(markdown)
 
-    Args:
-    df (pd.DataFrame): The DataFrame to convert.
-
-    Returns:
-    str: A string representation of the DataFrame in Markdown table format.
-    """
-    # Start with an empty list to collect rows
-    markdown_lines = []
-
-    # Add the header with alignment (assuming left alignment for simplicity)
-    header = "| " + " | ".join(df.columns) + " |"
-    markdown_lines.append(header)
-    markdown_lines.append("|" + "|".join(['---' * (len(col) // 3 + 1) for col in df.columns]) + "|")
-
-    # Add the data rows
-    for index, row in df.iterrows():
-        row_str = "| " + " | ".join(str(value) for value in row.values) + " |"
-        markdown_lines.append(row_str)
-
-    # Join all lines into a single string
-    markdown_str = "\n".join(markdown_lines)
-    return markdown_str
+    return markdown

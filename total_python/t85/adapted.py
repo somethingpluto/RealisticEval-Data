@@ -1,30 +1,25 @@
 import pandas as pd
 
-
-def populate_na_with_first_valid(df, column_name):
+def naive_ffill(df, column):
     """
-    Populate all NA values in the specified column of the DataFrame with the
-    first non-NA value from that column.
+    Forward fills the missing values in a specified column of a DataFrame using the last valid value.
 
     Args:
-    df (pd.DataFrame): The DataFrame containing the target column.
-    column_name (str): The name of the column to populate.
+    df (pd.DataFrame): The DataFrame to process.
+    column (str): The name of the column in which to fill missing values.
 
     Returns:
-    pd.DataFrame: A DataFrame with NA values in the specified column filled.
+    None: Modifies the DataFrame in place.
+
+    Raises:
+    KeyError: If the specified column does not exist in the DataFrame.
     """
-    # Check if the column exists in the DataFrame
-    if column_name not in df.columns:
-        raise ValueError(f"Column {column_name} does not exist in the DataFrame.")
+    if column not in df.columns:
+        raise KeyError(f"Column '{column}' not found in DataFrame.")
 
-    # Get the first non-NA value from the specified column
-    first_valid_value = df[column_name].dropna().iloc[0] if not df[column_name].dropna().empty else None
-
-    # If there's no valid value in the column, no changes are made
-    if first_valid_value is None:
-        print("No valid entries in the column to use for filling NA values.")
-        return df
-
-    # Fill NA values with the first non-NA value
-    df[column_name] = df[column_name].fillna(first_valid_value)
-    return df
+    last_valid = None
+    for idx, value in df[column].iteritems():  # use iteritems() for compatibility
+        if pd.isna(value):
+            df.at[idx, column] = last_valid
+        else:
+            last_valid = value

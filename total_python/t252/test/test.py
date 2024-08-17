@@ -2,38 +2,38 @@ import unittest
 import json
 
 
-class TestCustomJSONEncoder(unittest.TestCase):
+class TestBitSequenceEncoder(unittest.TestCase):
+    def test_single_bit_conversion(self):
+        # Test a single dictionary entry with 'bits' key
+        data = {'bits': 2}
+        expected_output = '{"bits": "00000010"}'
+        result = json.dumps(data, cls=BitSequenceEncoder)
+        self.assertEqual(result, expected_output)
 
-    def test_encode_simple_bits(self):
-        """Test encoding simple dictionary with 'bits' key."""
-        data = {'bits': 10}
-        expected = json.dumps({'bits': '1010'})
-        result = json.dumps(data, cls=CustomJSONEncoder)
-        self.assertEqual(result, expected)
+    def test_nested_bit_conversion(self):
+        # Test nested dictionaries with 'bits' key
+        data = {'level1': {'level2': {'bits': 255}}}
+        expected_output = '{"level1": {"level2": {"bits": "11111111"}}}'
+        result = json.dumps(data, cls=BitSequenceEncoder)
+        self.assertEqual(result, expected_output)
 
-    def test_encode_nested_bits(self):
-        """Test encoding nested dictionary containing 'bits' key."""
-        data = {'nested': {'bits': 255}}
-        expected = json.dumps({'nested': {'bits': '11111111'}})
-        result = json.dumps(data, cls=CustomJSONEncoder)
-        self.assertEqual(result, expected)
+    def test_no_bit_key(self):
+        # Test dictionaries without 'bits' key
+        data = {'name': 'test', 'value': 123}
+        expected_output = '{"name": "test", "value": 123}'
+        result = json.dumps(data, cls=BitSequenceEncoder)
+        self.assertEqual(result, expected_output)
 
-    def test_encode_without_bits(self):
-        """Test encoding data without 'bits' key, ensuring normal behavior."""
-        data = {'name': 'Alice', 'age': 30}
-        expected = json.dumps(data)  # Use standard encoder
-        result = json.dumps(data, cls=CustomJSONEncoder)
-        self.assertEqual(result, expected)
+    def test_mixed_contents(self):
+        # Test dictionaries with mixed contents
+        data = {'name': 'test', 'bits': 5, 'details': {'bits': 0}}
+        expected_output = '{"name": "test", "bits": "00000101", "details": {"bits": "00000000"}}'
+        result = json.dumps(data, cls=BitSequenceEncoder)
+        self.assertEqual(result, expected_output)
 
-    def test_incorrect_type_for_bits(self):
-        """Test handling non-integer types under 'bits' key."""
-        data = {'bits': 'not_an_integer'}
-        with self.assertRaises(TypeError):
-            json.dumps(data, cls=CustomJSONEncoder)
-
-    def test_encode_with_non_dict_type(self):
-        """Test encoding a non-dict type to ensure standard behavior is intact."""
-        data = [1, 2, 3]  # List, not a dict
-        expected = json.dumps(data)  # Use standard encoder
-        result = json.dumps(data, cls=CustomJSONEncoder)
-        self.assertEqual(result, expected)
+    def test_list_handling(self):
+        # Test lists containing dictionaries with 'bits' key
+        data = [{'bits': 1}, {'bits': 16}]
+        expected_output = '[{"bits": "00000001"}, {"bits": "00010000"}]'
+        result = json.dumps(data, cls=BitSequenceEncoder)
+        self.assertEqual(result, expected_output)
