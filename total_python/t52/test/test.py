@@ -1,58 +1,73 @@
 import unittest
+from unittest.mock import patch, MagicMock
 import os
-import shutil
 
 
-class TestRenameFilesInDirectory(unittest.TestCase):
+class TestRenameFiles(unittest.TestCase):
 
-    def setUp(self):
-        """Setup a temporary directory with sample files."""
-        self.test_dir = 'test_directory'
-        os.makedirs(self.test_dir, exist_ok=True)
-        # Create files with colons in their names
-        open(os.path.join(self.test_dir, 'file:1.txt'), 'a').close()
-        open(os.path.join(self.test_dir, 'document:2.txt'), 'a').close()
-        open(os.path.join(self.test_dir, 'image:3.jpg'), 'a').close()
+    @patch('os.walk')
+    @patch('os.rename')
+    def test_simple_rename(self, mock_rename, mock_walk):
+        # Simulate os.walk
+        mock_walk.return_value = [
+            ('/path', ('subdir',), ('file:1.txt',)),
+        ]
+        # Invoke the rename_files function
+        rename_files('/path')
+        # Check if os.rename was called correctly
+        mock_rename.assert_called_once_with('/path/file:1.txt', '/path/file-1.txt')
 
-    def tearDown(self):
-        """Clean up by removing the directory created for the test."""
-        shutil.rmtree(self.test_dir)
+    @patch('os.walk')
+    @patch('os.rename')
+    def test_no_rename_needed(self, mock_rename, mock_walk):
+        # No colon in filenames
+        mock_walk.return_value = [
+            ('/path', ('subdir',), ('file1.txt',)),
+        ]
+        rename_files('/path')
+        # os.rename should not be called
+        mock_rename.assert_not_called()
 
-    def test_rename_files(self):
-        """Test renaming files from colons to hyphens."""
-        rename_files_in_directory(self.test_dir)
-        self.assertTrue(os.path.exists(os.path.join(self.test_dir, 'file-1.txt')))
-        self.assertTrue(os.path.exists(os.path.join(self.test_dir, 'document-2.txt')))
-        self.assertTrue(os.path.exists(os.path.join(self.test_dir, 'image-3.jpg')))
+    @patch('os.walk')
+    @patch('os.rename')
+    def test_multiple_files(self, mock_rename, mock_walk):
+        # Multiple files, some need renaming
+        mock_walk.return_value = [
+            ('/path', ('subdir',), ('file:1.txt', 'file2.txt', 'file:3.txt')),
+        ]
+        rename_files('/path')
+        # Check correct calls to os.rename
+        calls = [
+            unittest.mock.call('/path/file:1.txt', '/path/file-1.txt'),
+            unittest.mock.call('/path/file:3.txt', '/path/file-3.txt')
+        ]
+        mock_rename.assert_has_calls(calls, any_order=True)
 
-    def test_no_colon_files(self):
-        """Test directory with files that don't need renaming."""
-        # First clean existing files
-        shutil.rmtree(self.test_dir)
-        os.makedirs(self.test_dir)
-        open(os.path.join(self.test_dir, 'file1.txt'), 'a').close()
-        rename_files_in_directory(self.test_dir)
-        self.assertTrue(os.path.exists(os.path.join(self.test_dir, 'file1.txt')))
+    @patch('os.walk')
+    @patch('os.rename')
+    def test_rename_error(self, mock_rename, mock_walk):
+        # Simulate an error during renaming
+        mock_walk.return_value = [
+            ('/path', ('subdir',), ('file:1.txt',)),
+        ]
+        mock_rename.side_effect = OSError("Permission denied")
+        with self.assertLogs(level='ERROR') as log:
+            rename_files('/path')
+            # Check if error was logged
+            self.assertIn('Permission denied', log.output[0])
 
-    def test_empty_directory(self):
-        """Test an empty directory."""
-        # Clear the directory first
-        shutil.rmtree(self.test_dir)
-        os.makedirs(self.test_dir)
-        rename_files_in_directory(self.test_dir)  # Should not raise any errors
-        self.assertEqual(len(os.listdir(self.test_dir)), 0)
-
-    def test_invalid_directory(self):
-        """Test with an invalid directory path."""
-        with self.assertRaises(ValueError):
-            rename_files_in_directory('non_existent_directory')
-
-    def test_permission_error(self):
-        """Test the behavior when there's a permission issue."""
-        # Create a file and make it read-only
-        file_path = os.path.join(self.test_dir, 'readonly:file.txt')
-        open(file_path, 'a').close()
-        os.chmod(file_path, 0o400)  # Make it read-only
-        with self.assertRaises(PermissionError):
-            rename_files_in_directory(self.test_dir)
-        os.chmod(file_path, 0o666)  # Reset permissions for cleanup
+    @patch('os.walk')
+    @patch('os.rename')
+    def test_nested_directories(self, mock_rename, mock_walk):
+        # Files in nested directories
+        mock_walk.return_value = [
+            ('/path', ('subdir',), ('file:1.txt',)),
+            ('/path/subdir', (), ('file:2.txt',))
+        ]
+        rename_files('/path')
+        # Check correct calls to os.rename for nested directories
+        calls = [
+            unittest.mock.call('/path/file:1.txt', '/path/file-1.txt'),
+            unittest.mock.call('/path/subdir/file:2.txt', '/path/subdir/file-2.txt')
+        ]
+        mock_rename.assert_has_calls(calls, any_order=True)

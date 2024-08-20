@@ -2,28 +2,34 @@ from music21 import pitch
 
 
 def adjust_to_c_major(note_name):
+    """
+    Adjusts a given musical note to the nearest note in the C major scale.
+
+    Args:
+        note_name (str): The name of the note to adjust.
+
+    Returns:
+        str: The adjusted note name with octave if applicable, or the input note if already in C major.
+    """
     c_major_scale = ["C", "D", "E", "F", "G", "A", "B"]
 
-    # 检查 note_name 是否有效
+    # Attempt to create a Pitch object from the note_name
     try:
         given_pitch = pitch.Pitch(note_name)
-    except pitch.PitchException:
-        # 如果无效，则返回默认音符
+    except Exception as e:
+        print(f"Error: {e}. Invalid note name provided. Returning 'C4' as a default.")
         return "C4"
 
+    # If the note is already in the C major scale, return it as is
     if given_pitch.name in c_major_scale:
-        return note_name
+        return given_pitch.nameWithOctave
 
-    # 检查最近有效音符
-    for direction in (1, -1):
-        adjusted_pitch = given_pitch.transpose(direction)
-        if adjusted_pitch.name in c_major_scale:
-            return adjusted_pitch.nameWithOctave
+    # Attempt to find the closest note in the C major scale, either up or down
+    search_directions = [1, -1]  # Represents semitone adjustments: up 1 and down 1
+    for direction in search_directions:
+        neighbor_pitch = given_pitch.transpose(direction)
+        if neighbor_pitch.name in c_major_scale:
+            return neighbor_pitch.nameWithOctave
 
-    return note_name  # 可选，处理错误或提供默认音符 "C4"
-
-
-# 示例调整一个音符
-note = "F#4"
-adjusted_note = adjust_to_c_major(note)
-print(f"调整后的音符 {note} 是 {adjusted_note}")
+    # If no close C major note is found, return the original note (this is a fallback, should not generally happen)
+    return note_name

@@ -1,3 +1,6 @@
+import numpy as np
+
+
 def read_columns(file_name):
     "Entirely written by ChatGPT."
     # Open the file for reading

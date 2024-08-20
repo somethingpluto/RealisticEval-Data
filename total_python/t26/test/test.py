@@ -1,40 +1,24 @@
 import unittest
 
 
-
-class TestParseAndFormat(unittest.TestCase):
-
-    def test_none_input(self):
-        self.assertIsNone(parse_and_format(None))
-
-    def test_list_input(self):
-        self.assertEqual(parse_and_format(["apple", "banana", "cherry"]), "'apple', 'banana', 'cherry'")
-
-    def test_string_input_with_asterisks(self):
-        input_str = "* apple * banana * cherry"
-        expected_output = "'apple', 'banana', 'cherry'"
-        self.assertEqual(parse_and_format(input_str), expected_output)
-
-    def test_string_input_with_commas(self):
-        input_str = "apple, banana, cherry"
-        expected_output = "'apple', 'banana', 'cherry'"
-        self.assertEqual(parse_and_format(input_str), expected_output)
-
-    def test_string_input_with_semicolons(self):
-        input_str = "apple; banana; cherry"
-        expected_output = "'apple', 'banana', 'cherry'"
-        self.assertEqual(parse_and_format(input_str), expected_output)
+class TestConvertToCommaSeparated(unittest.TestCase):
+    def test_basic_separators(self):
+        self.assertEqual(convert_to_comma_separated("apple;banana*orange/mango"), "apple,banana,orange,mango",
+                         "Failed to convert basic separators.")
 
     def test_mixed_separators(self):
-        input_str = "* apple, banana; cherry"
-        expected_output = "'apple', 'banana', 'cherry'"
-        self.assertEqual(parse_and_format(input_str), expected_output)
+        self.assertEqual(convert_to_comma_separated("grapes;lemon/melon*kiwi;litchi"), "grapes,lemon,melon,kiwi,litchi",
+                         "Failed to convert mixed separators in a string.")
 
-    def test_multiline_input(self):
-        input_str = """
-        apple
-        * banana
-        cherry, date
-        """
-        expected_output = "'apple', 'banana', 'cherry', 'date'"
-        self.assertEqual(parse_and_format(input_str), expected_output)
+    def test_no_separators(self):
+        self.assertEqual(convert_to_comma_separated("watermelon"), "watermelon",
+                         "Failed when no separators are present.")
+
+    def test_repeated_separators(self):
+        self.assertEqual(convert_to_comma_separated("pear;;apple**banana//orange"), "pear,,apple,,banana,,orange",
+                         "Failed to handle repeated separators correctly.")
+
+    def test_multiple_types(self):
+        self.assertEqual(convert_to_comma_separated("papaya;guava*fig/tomato:carrot-lettuce"),
+                         "papaya,guava,fig,tomato,carrot,lettuce",
+                         "Failed to handle multiple types of separators.")

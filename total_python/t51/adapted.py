@@ -1,34 +1,39 @@
 import numpy as np
 
 
-def define_transformation_matrix(p1, p2, p3):
+def change_reference_frame(point_cloud, ref_frame_points):
     """
-    Create a transformation matrix from three points.
-    p1 is the new origin.
-    p2 - p1 is the new x-axis.
-    p3 - p1 is the new plane defined with x-axis.
+    Transforms a point cloud to a new reference frame defined by three points.
+
+    Parameters:
+    - point_cloud (np.ndarray): The Nx3 array of points representing the point cloud.
+    - ref_frame_points (list of np.ndarray): A list containing three 3D points (A, B, C) that define the new reference frame.
+
+    Returns:
+    - np.ndarray: The transformed point cloud as an Nx3 array.
     """
-    origin = np.array(p1)
-    x_axis = np.array(p2) - origin
-    x_axis = x_axis / np.linalg.norm(x_axis)  # Normalize to make it unit vector
+    # Unpack the reference frame points
+    A, B, C = ref_frame_points
 
-    temp_y_axis = np.array(p3) - origin
-    z_axis = np.cross(x_axis, temp_y_axis)
-    z_axis = z_axis / np.linalg.norm(z_axis)  # Normalize to make it unit vector
+    # Define the new basis vectors
+    u = B - A  # Vector from A to B
+    w = np.cross(u, C - A)  # Normal to the plane formed by vectors AB and AC
+    v = np.cross(w, u)  # Orthogonal to both u and w
 
-    y_axis = np.cross(z_axis, x_axis)
+    # Normalize the basis vectors to create an orthonormal basis
+    u /= np.linalg.norm(u)
+    v /= np.linalg.norm(v)
+    w /= np.linalg.norm(w)
 
-    # Create transformation matrix
-    transformation_matrix = np.stack([x_axis, y_axis, z_axis, origin]).T
-    transformation_matrix = np.vstack([transformation_matrix, [0, 0, 0, 1]])  # For homogeneous coordinates
-    return transformation_matrix
+    # Construct the rotation matrix using the orthonormal basis vectors
+    rotation_matrix = np.column_stack((u, v, w))
 
+    # Compute the translation vector to shift the origin to point A
+    translation_vector = -np.dot(rotation_matrix, A)
 
-def transform_point_cloud(points, transformation_matrix):
-    """
-    Transform a list of points using the transformation matrix.
-    Points are expected as a list of tuples or lists.
-    """
-    points_homogeneous = np.hstack([points, np.ones((len(points), 1))])  # Convert to homogeneous coordinates
-    transformed_points = points_homogeneous.dot(transformation_matrix.T)[:, :3]  # Apply transformation
-    return transformed_points
+    # Apply the rotation and translation to the point cloud
+    # Matrix multiplication is done with the transpose of the rotation matrix
+    # because we are transforming the coordinates to the new basis
+    transformed_point_cloud = np.dot(point_cloud - A, rotation_matrix)
+
+    return transformed_point_cloud

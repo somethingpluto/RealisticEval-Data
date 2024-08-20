@@ -1,27 +1,35 @@
 import unittest
-import datetime
+from datetime import datetime
 
-class TestFindNthWeekday(unittest.TestCase):
-    def test_fifth_monday_of_march_2023(self):
-        result = find_nth_weekday(2023, 3, 0, 5)
-        self.assertEqual(result, datetime.date(2023, 3, 27))
 
-    def test_fifth_friday_of_february_2024(self):
-        # February 2024 has 5 Fridays
-        result = find_nth_weekday(2024, 2, 4, 5)
-        self.assertEqual(result, datetime.date(2024, 2, 29))
+class TestFindNthWeekdayOfSpecificYear(unittest.TestCase):
 
-    def test_fourth_sunday_of_february_2023(self):
-        # February 2023 has only 4 Sundays
-        result = find_nth_weekday(2023, 2, 6, 4)
-        self.assertEqual(result, datetime.date(2023, 2, 26))
+    def test_regular_occurrence(self):
+        # Test for the 2nd Monday of May 2023
+        result = find_nth_weekday_of_specific_year(2023, 5, 2, 0)
+        expected = datetime(2023, 5, 8)
+        self.assertEqual(result, expected)
 
-    def test_sixth_tuesday_of_june_2023(self):
-        # June 2023 does not have a sixth Tuesday, should return the last one
-        result = find_nth_weekday(2023, 6, 1, 6)
-        self.assertEqual(result, datetime.date(2023, 6, 27))
+    def test_last_occurrence(self):
+        # Test for the 5th Monday of May 2023, which doesn't exist, should return the last Monday
+        result = find_nth_weekday_of_specific_year(2023, 5, 5, 0)
+        expected = datetime(2023, 5, 29)
+        self.assertEqual(result, expected)
 
-    def test_first_wednesday_of_april_2022(self):
-        # Testing for the first Wednesday
-        result = find_nth_weekday(2022, 4, 2, 1)
-        self.assertEqual(result, datetime.date(2022, 4, 6))
+    def test_out_of_range(self):
+        # Test for the 10th Monday of May 2023, which definitely doesn't exist, should return the last Monday
+        result = find_nth_weekday_of_specific_year(2023, 5, 10, 0)
+        expected = datetime(2023, 5, 29)
+        self.assertEqual(result, expected)
+
+    def test_first_day_is_weekday(self):
+        # Test for when the first day of the month is the weekday in question, 1st Tuesday of August 2023
+        result = find_nth_weekday_of_specific_year(2023, 8, 1, 1)
+        expected = datetime(2023, 8, 1)
+        self.assertEqual(result, expected)
+
+    def test_edge_year_transition(self):
+        # Test for the 1st Friday of December 2023, checking the transition to a new year boundary condition
+        result = find_nth_weekday_of_specific_year(2023, 12, 1, 4)
+        expected = datetime(2023, 12, 1)
+        self.assertEqual(result, expected)

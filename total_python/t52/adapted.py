@@ -1,30 +1,30 @@
 import os
 
-
-def rename_files_in_directory(directory):
+def rename_files(directory_path):
     """
-    Rename all files in the specified directory by replacing colons in the filenames with hyphens.
+    Recursively renames files within a given directory by replacing colons in filenames with dashes.
 
-    Args:
-    directory (str): The path to the directory containing the files to be renamed.
+    Parameters:
+    - directory_path (str): The path to the directory where files will be renamed.
+
+    Returns:
+    - None
     """
-    # Check if the directory exists
-    if not os.path.isdir(directory):
-        raise ValueError(f"The specified directory does not exist: {directory}")
+    # Walk through all subdirectories of the provided directory
+    for root, dirs, files in os.walk(directory_path):
+        for file in files:
+            # Construct the full path of the current file
+            old_file_path = os.path.join(root, file)
+            # Replace colons with dashes in the filename
+            new_file_name = file.replace(':', '-')
+            new_file_path = os.path.join(root, new_file_name)
 
-    # Iterate through all files in the directory
-    for filename in os.listdir(directory):
-        # Construct the full file path
-        file_path = os.path.join(directory, filename)
-
-        # Check if it's a file (not a directory or link etc.)
-        if os.path.isfile(file_path):
-            # Replace colons in the filename with hyphens
-            new_filename = filename.replace(':', '-')
-
-            # Construct the new file path
-            new_file_path = os.path.join(directory, new_filename)
-
-            # Rename the file
-            os.rename(file_path, new_file_path)
-            print(f"Renamed '{filename}' to '{new_filename}'")
+            # Only attempt to rename if the new name is different from the old name
+            if old_file_path != new_file_path:
+                try:
+                    # Perform the file rename
+                    os.rename(old_file_path, new_file_path)
+                    print(f"Renamed '{old_file_path}' to '{new_file_path}'")
+                except OSError as error:
+                    # Handle potential errors during the rename operation, e.g., file being used by another process
+                    print(f"Error renaming '{old_file_path}' to '{new_file_path}': {error}")

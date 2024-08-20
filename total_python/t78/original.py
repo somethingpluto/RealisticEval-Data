@@ -1,3 +1,6 @@
+import numpy as np
+
+
 def rotation_mapping_to_matrix(rotation_map: dict[int, int]) -> np.ndarray:
     """
     Written by chatGPT

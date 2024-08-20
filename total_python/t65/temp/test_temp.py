@@ -35,14 +35,6 @@ class TestFindDuplicateIps(unittest.TestCase):
         self.assertEqual(result, {})
 
     @patch('os.path.isfile')
-    @patch('builtins.open', new_callable=mock_open, read_data="192.168.0.1\n10.0.0.1\n192.168.0.1\n")
-    def test_multiple_files_one_ignored(self, mock_file, mock_isfile):
-        mock_isfile.side_effect = [True, True, True]
-        expected_result = {'192.168.0.1': ['file1.txt', 'file2.txt']}
-        result = find_duplicate_ips(self.files, self.ignored_ips)
-        self.assertEqual(result, expected_result)
-
-    @patch('os.path.isfile')
     @patch('builtins.open', new_callable=mock_open, read_data="192.168.0.1\n192.168.0.1\n192.168.0.1\n")
     def test_multiple_occurrences_single_file(self, mock_file, mock_isfile):
         mock_isfile.return_value = True

@@ -1,39 +1,37 @@
 import unittest
 import json
 
-
 class TestBitSequenceEncoder(unittest.TestCase):
-    def test_single_bit_conversion(self):
-        # Test a single dictionary entry with 'bits' key
-        data = {'bits': 2}
-        expected_output = '{"bits": "00000010"}'
+    def test_basic_encoding(self):
+        """ Test encoding with simple dictionary containing 'bits'. """
+        data = {'name': 'Processor', 'bits': 255}
         result = json.dumps(data, cls=BitSequenceEncoder)
-        self.assertEqual(result, expected_output)
+        self.assertEqual(result, '{"name": "Processor", "bits": "11111111"}')
 
-    def test_nested_bit_conversion(self):
-        # Test nested dictionaries with 'bits' key
-        data = {'level1': {'level2': {'bits': 255}}}
-        expected_output = '{"level1": {"level2": {"bits": "11111111"}}}'
+    def test_nested_encoding(self):
+        """ Test encoding with nested dictionary containing 'bits'. """
+        data = {'component': {'name': 'ALU', 'bits': 128}, 'bits': 1}
         result = json.dumps(data, cls=BitSequenceEncoder)
-        self.assertEqual(result, expected_output)
+        self.assertEqual(result, '{"component": {"name": "ALU", "bits": "10000000"}, "bits": "00000001"}')
 
-    def test_no_bit_key(self):
-        # Test dictionaries without 'bits' key
-        data = {'name': 'test', 'value': 123}
-        expected_output = '{"name": "test", "value": 123}'
+    def test_non_bits_key(self):
+        """ Test encoding with dictionary not containing 'bits' key. """
+        data = {'name': 'Processor', 'value': 123}
         result = json.dumps(data, cls=BitSequenceEncoder)
-        self.assertEqual(result, expected_output)
+        self.assertEqual(result, '{"name": "Processor", "value": 123}')
 
-    def test_mixed_contents(self):
-        # Test dictionaries with mixed contents
-        data = {'name': 'test', 'bits': 5, 'details': {'bits': 0}}
-        expected_output = '{"name": "test", "bits": "00000101", "details": {"bits": "00000000"}}'
+    def test_no_bits_conversion_needed(self):
+        """ Test encoding with dictionary where 'bits' key needs no conversion. """
+        data = {'name': 'Unit', 'bits': 'Already binary'}
         result = json.dumps(data, cls=BitSequenceEncoder)
-        self.assertEqual(result, expected_output)
+        self.assertEqual(result, '{"name": "Unit", "bits": "Already binary"}')
 
-    def test_list_handling(self):
-        # Test lists containing dictionaries with 'bits' key
-        data = [{'bits': 1}, {'bits': 16}]
-        expected_output = '[{"bits": "00000001"}, {"bits": "00010000"}]'
+    def test_complex_structure_with_bits(self):
+        """ Test encoding a complex dictionary structure containing multiple 'bits' keys. """
+        data = {
+            'processor': {'bits': 3, 'type': 'A'},
+            'memory': {'bits': 255, 'size': 16},
+            'ports': {'count': 2, 'bits': 128}
+        }
         result = json.dumps(data, cls=BitSequenceEncoder)
-        self.assertEqual(result, expected_output)
+        self.assertEqual(result, '{"processor": {"bits": "00000011", "type": "A"}, "memory": {"bits": "11111111", "size": 16}, "ports": {"count": 2, "bits": "10000000"}}')

@@ -33,4 +33,4 @@ def lanczos(n, quadrature_rule):
             beta[i] = np.dot(w * pi * pi, pi) / gamma[i]
             p1, p0 = p0, pi  # Update polynomials for next iteration
 
-    return OrthogonalPolynomial(alpha, beta, gamma, quadrature_rule)
+    return alpha, beta, gamma, quadrature_rule

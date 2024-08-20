@@ -1,74 +1,100 @@
-import datetime
 import unittest
 from unittest.mock import patch
-
-
-class TestGetCurrentTimeDetails(unittest.TestCase):
-    @patch('datetime.datetime')
-    def test_start_of_month(self, mock_datetime):
-        mock_datetime.now.return_value = datetime.datetime(2023, 9, 1)
-        expected = (2023, 9, 1, 4)  # September 1, 2023 is a Friday
-        result = get_current_time_details()
-        self.assertEqual(result, expected)
-
-    @patch('datetime.datetime')
-    def test_middle_of_month(self, mock_datetime):
-        mock_datetime.now.return_value = datetime.datetime(2023, 9, 15)
-        expected = (2023, 9, 3, 4)  # September 15, 2023 is a Friday
-        result = get_current_time_details()
-        self.assertEqual(result, expected)
-
-    @patch('datetime.datetime')
-    def test_end_of_month(self, mock_datetime):
-        mock_datetime.now.return_value = datetime.datetime(2023, 9, 30)
-        expected = (2023, 9, 5, 5)  # September 30, 2023 is a Saturday
-        result = get_current_time_details()
-        self.assertEqual(result, expected)
-
-    @patch('datetime.datetime')
-    def test_leap_year_february(self, mock_datetime):
-        mock_datetime.now.return_value = datetime.datetime(2024, 2, 29)
-        expected = (2024, 2, 5, 3)  # February 29, 2024 is a Thursday
-        result = get_current_time_details()
-        self.assertEqual(result, expected)
-
-    @patch('datetime.datetime')
-    def test_regular_year_february(self, mock_datetime):
-        mock_datetime.now.return_value = datetime.datetime(2023, 2, 28)
-        expected = (2023, 2, 4, 1)  # February 28, 2023 is a Tuesday
-        result = get_current_time_details()
-        self.assertEqual(result, expected)
 import datetime
 import calendar
-from typing import Tuple
 
 
-def get_current_time_details() -> Tuple[int, int, int, int]:
+class TestGetCurrentDateInfo(unittest.TestCase):
+
+    @patch('get_current_date_info.datetime.date')
+    def test_beginning_of_month(self, mock_date):
+        # Mocking the date to be the first of the month
+        mock_date.today.return_value = datetime.date(2023, 8, 1)
+        expected = {
+            'year': 2023,
+            'month': 'August',
+            'week_of_the_month': 1,
+            'day_of_the_week': 'Tuesday'
+        }
+        result = get_current_date_info()
+        self.assertEqual(result, expected)
+
+    @patch('datetime.date')
+    def test_end_of_month(self, mock_date):
+        # Mocking the date to be the end of the month
+        mock_date.today.return_value = datetime.date(2023, 8, 31)
+        expected = {
+            'year': 2023,
+            'month': 'August',
+            'week_of_the_month': 5,
+            'day_of_the_week': 'Thursday'
+        }
+        result = get_current_date_info()
+        self.assertEqual(result, expected)
+
+    @patch('datetime.date')
+    def test_middle_of_month(self, mock_date):
+        # Mocking the date to be mid-month
+        mock_date.today.return_value = datetime.date(2023, 8, 15)
+        expected = {
+            'year': 2023,
+            'month': 'August',
+            'week_of_the_month': 3,
+            'day_of_the_week': 'Tuesday'
+        }
+        result = get_current_date_info()
+        self.assertEqual(result, expected)
+
+    @patch('datetime.date')
+    def test_leap_year_february(self, mock_date):
+        # Testing for leap year February scenario
+        mock_date.today.return_value = datetime.date(2024, 2, 29)
+        expected = {
+            'year': 2024,
+            'month': 'February',
+            'week_of_the_month': 5,
+            'day_of_the_week': 'Thursday'
+        }
+        result = get_current_date_info()
+        self.assertEqual(result, expected)
+
+    @patch('datetime.date')
+    def test_new_year(self, mock_date):
+        # Testing the transition to a new year
+        mock_date.today.return_value = datetime.date(2024, 1, 1)
+        expected = {
+            'year': 2024,
+            'month': 'January',
+            'week_of_the_month': 1,
+            'day_of_the_week': 'Monday'
+        }
+        result = get_current_date_info()
+        self.assertEqual(result, expected)
+
+import datetime
+import calendar
+
+
+def get_current_date_info():
     """
-    Get the current year, month, week of the month, and day of the week.
+    Returns the current time information including year, month, week of the month, and day of the week.
 
-    :return: A dictionary containing the current year, month, week of the month, and day of the week.
+    Returns:
+        dict: A dictionary containing the year, month, week of the month, and day of the week.
     """
-    now = datetime.datetime.now()
-
-    # Get the current year and month
-    year = now.year
-    month = now.month
-
-    # Calculate the day of the week (0=Monday, 6=Sunday)
-    day_of_week = now.weekday()
-
-    # Calculate the first day of the month and today's day
-    first_day_of_month = now.replace(day=1)
-    day_of_month = now.day
+    today = datetime.date.today()
+    year = today.year
+    month = today.month
+    day_of_week = calendar.day_name[today.weekday()]
 
     # Calculate the week of the month
-    _, days_in_month = calendar.monthrange(year, month)
-    weeks_in_month = [calendar.monthcalendar(year, month)[i] for i in range(5)]
-    week_of_month = 0
-    for week in weeks_in_month:
-        if day_of_month in week:
-            week_of_month = weeks_in_month.index(week) + 1
-            break
+    first_day_of_month = today.replace(day=1)
+    first_day_weekday = first_day_of_month.weekday()
+    week_of_month = (today.day + first_day_weekday - 1) // 7 + 1
 
-    return year, month, week_of_month, day_of_week
+    return {
+        'year': year,
+        'month': calendar.month_name[month],
+        'week_of_the_month': week_of_month,
+        'day_of_the_week': day_of_week
+    }

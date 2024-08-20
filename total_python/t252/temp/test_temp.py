@@ -1,77 +1,49 @@
 import unittest
 import json
 
-
 class TestBitSequenceEncoder(unittest.TestCase):
-    def test_single_bit_conversion(self):
-        # Test a single dictionary entry with 'bits' key
-        data = {'bits': 2}
-        expected_output = '{"bits": "00000010"}'
+    def test_basic_encoding(self):
+        """ Test encoding with simple dictionary containing 'bits'. """
+        data = {'name': 'Processor', 'bits': 255}
         result = json.dumps(data, cls=BitSequenceEncoder)
-        self.assertEqual(result, expected_output)
+        self.assertEqual(result, '{"name": "Processor", "bits": "11111111"}')
 
-    def test_nested_bit_conversion(self):
-        # Test nested dictionaries with 'bits' key
-        data = {'level1': {'level2': {'bits': 255}}}
-        expected_output = '{"level1": {"level2": {"bits": "11111111"}}}'
+    def test_nested_encoding(self):
+        """ Test encoding with nested dictionary containing 'bits'. """
+        data = {'component': {'name': 'ALU', 'bits': 128}, 'bits': 1}
         result = json.dumps(data, cls=BitSequenceEncoder)
-        self.assertEqual(result, expected_output)
+        self.assertEqual(result, '{"component": {"name": "ALU", "bits": "10000000"}, "bits": "00000001"}')
 
-    def test_no_bit_key(self):
-        # Test dictionaries without 'bits' key
-        data = {'name': 'test', 'value': 123}
-        expected_output = '{"name": "test", "value": 123}'
+    def test_non_bits_key(self):
+        """ Test encoding with dictionary not containing 'bits' key. """
+        data = {'name': 'Processor', 'value': 123}
         result = json.dumps(data, cls=BitSequenceEncoder)
-        self.assertEqual(result, expected_output)
+        self.assertEqual(result, '{"name": "Processor", "value": 123}')
 
-    def test_mixed_contents(self):
-        # Test dictionaries with mixed contents
-        data = {'name': 'test', 'bits': 5, 'details': {'bits': 0}}
-        expected_output = '{"name": "test", "bits": "00000101", "details": {"bits": "00000000"}}'
-        result = json.dumps(data, cls=BitSequenceEncoder)
-        self.assertEqual(result, expected_output)
 
-    def test_list_handling(self):
-        # Test lists containing dictionaries with 'bits' key
-        data = [{'bits': 1}, {'bits': 16}]
-        expected_output = '[{"bits": "00000001"}, {"bits": "00010000"}]'
+    def test_complex_structure_with_bits(self):
+        """ Test encoding a complex dictionary structure containing multiple 'bits' keys. """
+        data = {
+            'processor': {'bits': 3, 'type': 'A'},
+            'memory': {'bits': 255, 'size': 16},
+            'ports': {'count': 2, 'bits': 128}
+        }
         result = json.dumps(data, cls=BitSequenceEncoder)
-        self.assertEqual(result, expected_output)
+        self.assertEqual(result, '{"processor": {"bits": "00000011", "type": "A"}, "memory": {"bits": "11111111", "size": 16}, "ports": {"count": 2, "bits": "10000000"}}')
 
 import json
 
 
 class BitSequenceEncoder(json.JSONEncoder):
     """
-    Custom JSON encoder class that converts dictionary entries with the key 'bits'
-    into a binary string format.
-
-    This encoder transforms only those entries in a dictionary where the key is 'bits',
-    formatting their values as 8-bit binary strings. Other entries are left unchanged.
+    Function to override the default json encoder to show register data in binary.
+    Note: This function was generated using ChatGPT-4o on July 15, 24. Might behave unexpectedly.
     """
-
-    def default(self, obj):
-        """
-        Overridden method from json.JSONEncoder to provide custom encoding logic.
-
-        Args:
-            obj (any): The object to encode.
-
-        Returns:
-            any: The encoded object or super().default(obj) for types unsupported by this encoder.
-        """
-
-        # Helper function to recursively convert dictionary entries
+    def encode(self, obj):
         def convert_bits(item):
             if isinstance(item, dict):
-                # Transform the dictionary, applying binary formatting if the key is 'bits'
-                return {k: (f'{v:08b}' if k == 'bits' else convert_bits(v)) for k, v in item.items()}
-            elif isinstance(item, list):
-                # Apply conversion to each element in the list
-                return [convert_bits(v) for v in item]
-            else:
-                # Return the item unchanged if it's not a dictionary or list
-                return item
+                return {k: convert_bits(v) if k != 'bits' else f'{v:08b}' for k, v in item.items()}
+            return item
 
-        # Use the helper function to process the top-level object
-        return convert_bits(obj)
+        converted_obj = convert_bits(obj)
+        return super(BitSequenceEncoder, self).encode(converted_obj)

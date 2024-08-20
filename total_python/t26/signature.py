@@ -1,13 +1,10 @@
-from typing import Any, Optional
-
-
-def parse_and_format(input_data: Optional[Any]) -> Optional[str]:
+def convert_to_comma_separated(input_string: str) -> str:
     """
-    Parse the input data and format it as a comma-separated string.
+    Convert input strings that contain multiple separators (for example, * ; /) to comma-separated formatted strings
 
     Args:
-        input_data (Optional[Any]): The input data which could be a string or a list.
+        input_string (str): The input string containing various separators like *, ;, /, -, :
 
     Returns:
-        Optional[str]: A comma-separated string or None if input_data is None.
+        str: A comma-separated string where all specified separators have been replaced with commas.
     """

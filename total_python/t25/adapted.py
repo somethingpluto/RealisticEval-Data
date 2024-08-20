@@ -13,10 +13,10 @@ def classify_json_objects_by_pid(source_file, pid_list, match_file, mismatch_fil
     mismatch_file (str): Path to save mismatching objects JSON.
     """
     try:
+
         # Load data from the source JSON file
         with open(source_file, 'r') as file:
             data = json.load(file)
-
         # Initialize lists for matches and mismatches
         matches = []
         mismatches = []
