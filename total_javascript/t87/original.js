@@ -1,5 +1,5 @@
 //written by GPT-3.5
-const timestampToReadableDate = function(unixTimestamp) {
+const timestampToReadableDate = function (unixTimestamp) {
     const date = new Date(unixTimestamp * 1000);
     const monthNames = [
         'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
