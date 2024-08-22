@@ -1,43 +1,56 @@
-describe('getCSSFromSheet', () => {
-    let mockSheet;
+// Import the necessary libraries
+const { JSDOM } = require('jsdom');
 
+describe('getCSSFromSheet function tests', () => {
+    // Set up a DOM environment before each test
+    let dom, window, document, sheet;
     beforeEach(() => {
-        // Create a mock CSSStyleSheet object with cssRules
-        mockSheet = {
+        dom = new JSDOM(`<!DOCTYPE html><p>Hello world</p>`);
+        window = dom.window;
+        document = window.document;
+
+        // Create a CSSStyleSheet-like object with cssRules property
+        sheet = {
             cssRules: [
-                { cssText: 'body { background-color: red; }' },
-                { cssText: 'p { color: blue; }' }
+                { cssText: 'body { background: #fff; }' },
+                { cssText: 'p { color: #333; }' }
             ]
         };
     });
 
-    test('correctly concatenates cssText from all rules', () => {
-        const expected = 'body { background-color: red; }p { color: blue; }';
-        expect(getCSSFromSheet(mockSheet)).toBe(expected);
+    test('returns concatenated CSS rules from a valid stylesheet', () => {
+        expect(getCSSFromSheet(sheet)).toBe('body { background: #fff; }p { color: #333; }');
     });
 
-    test('returns empty string for sheets with no cssRules', () => {
+    test('throws TypeError when input is not a CSSStyleSheet', () => {
+        const invalidSheet = {};
+        expect(() => getCSSFromSheet(invalidSheet)).toThrow(TypeError);
+        expect(() => getCSSFromSheet(invalidSheet)).toThrow("The provided input is not a valid CSSStyleSheet object.");
+    });
+
+    test('handles empty stylesheet gracefully', () => {
         const emptySheet = { cssRules: [] };
         expect(getCSSFromSheet(emptySheet)).toBe('');
     });
 
-    test('handles sheets where cssRules is undefined', () => {
-        const undefinedRulesSheet = {};
-        expect(getCSSFromSheet(undefinedRulesSheet)).toBe('');
-    });
-
-    test('throws TypeError if input is not a CSSStyleSheet', () => {
-        const invalidInput = 'Not a StyleSheet';
-        expect(() => getCSSFromSheet(invalidInput)).toThrow(TypeError);
-    });
-
-    test('handles exceptions from accessing cssRules (e.g., CORS issues)', () => {
-        // Simulate a CORS issue where accessing cssRules throws an error
-        const inaccessibleSheet = {
-            get cssRules() {
-                throw new Error('Security error: Access is denied.');
+    test('returns an empty string if cssRules are not accessible', () => {
+        const inaccessibleSheet = {};
+        Object.defineProperty(inaccessibleSheet, 'cssRules', {
+            get: () => {
+                throw new Error("Access is denied");
             }
-        };
+        });
+
         expect(getCSSFromSheet(inaccessibleSheet)).toBe('');
+    });
+
+    test('concatenates rules correctly even with complex CSS', () => {
+        const complexCSSRules = [
+            { cssText: '@media screen and (max-width: 600px) { body { background: #000; } }' },
+            { cssText: 'div::after { content: "hello"; color: red; }' }
+        ];
+        const complexSheet = { cssRules: complexCSSRules };
+
+        expect(getCSSFromSheet(complexSheet)).toBe('@media screen and (max-width: 600px) { body { background: #000; } }div::after { content: "hello"; color: red; }');
     });
 });
