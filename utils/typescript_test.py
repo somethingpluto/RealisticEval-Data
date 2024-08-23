@@ -32,9 +32,9 @@ def create_test_temp_env():
 
 
 if __name__ == '__main__':
-    TASK_LANGUAGE = "javascript"
-    TASK_ID = "315"
-    TASK_SUFFIX = "js"
+    TASK_LANGUAGE = "typescript"
+    TASK_ID = "143"
+    TASK_SUFFIX = "ts"
     TASK_SCOPE = "adapted"
     task_dir_path = os.path.abspath(f"../total_{TASK_LANGUAGE}/t{TASK_ID}")
     create_test_temp_env()
