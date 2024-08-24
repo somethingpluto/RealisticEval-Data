@@ -1,10 +1,15 @@
 # CREATED BY CHATGPT
-def distance_between_points(x1, y1, x2, y2):
-    # Calculate the horizontal and vertical differences
+from typing import Tuple
+
+
+def distance_between_points(point1: Tuple[float, float], point2: Tuple[float, float]) -> float:
+
+    # Extract coordinates from the input tuples
+    x1, y1 = point1
+    x2, y2 = point2
+
+    # Compute differences and Euclidean distance using the Pythagorean theorem
     dx = x2 - x1
     dy = y2 - y1
 
-    # Use the Pythagorean theorem to calculate the distance
-    distance = (dx ** 2 + dy ** 2) ** 0.5
-
-    return distance
+    return (dx ** 2 + dy ** 2) ** 0.5
