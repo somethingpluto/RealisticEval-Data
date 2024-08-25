@@ -1,4 +1,8 @@
 # Deletes files and folder before we store "new" ones. Created using ChatGPT
+import os
+import shutil
+
+
 def clear_directory(folder_path):
     for filename in os.listdir(folder_path):
         file_path = os.path.join(folder_path, filename)

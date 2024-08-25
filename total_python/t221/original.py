@@ -1,3 +1,7 @@
+import json
+import re
+
+
 def prepare_dict(filename):
     def parse_dict(s):
         s = s.replace("\n", "")

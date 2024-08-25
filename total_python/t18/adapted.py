@@ -1,24 +1,18 @@
-import colorsys
-
-def float2color(f, start_hue=0, end_hue=120, saturation=1.0, value=1.0):
+def float_to_rgb(value: float) -> tuple:
     """
-    Interpolate float to a color range using HSV.
-    :param f: Input float in the range [0, 1]
-    :param start_hue: Starting hue value (default 0 for red)
-    :param end_hue: Ending hue value (default 120 for green)
-    :param saturation: Saturation value of the color (default 1.0)
-    :param value: Value of the color (default 1.0)
+    Convert a floating-point number between 0 and 1 to a color from red to green in RGB format.
+
+    :param value: A float between 0 and 1.
+    :return: A tuple representing the RGB color.
     """
-    # Ensure the input is within the valid range [0, 1]
-    f = max(0, min(1, f))
+    if not (0.0 <= value <= 1.0):
+        raise ValueError("Value must be between 0 and 1 inclusive.")
 
-    # Calculate the hue within the specified range
-    hue = (end_hue - start_hue) * f + start_hue
+    # Calculate the red and green components
+    red = int((1.0 - value) * 255)
+    green = int(value * 255)
 
-    # Convert the HSV color to RGB
-    r, g, b = colorsys.hsv_to_rgb(hue/360, saturation, value)
+    # Blue component is always 0 for the red-to-green gradient
+    blue = 0
 
-    # Convert RGB to 8-bit integers and then to a hex string
-    hex_color = "#{:02x}{:02x}{:02x}".format(int(r * 255), int(g * 255), int(b * 255))
-
-    return hex_color
+    return (red, green, blue)

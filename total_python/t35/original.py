@@ -1,4 +1,3 @@
-from line_seg_int import intersect_coords
 
 def is_in_shape(shape: list, point: tuple) -> bool:
     # Takes an input of form:

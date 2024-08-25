@@ -1,3 +1,6 @@
+from collections import defaultdict
+
+
 def cycles_by_size(self, filter_repeat_nodes=True) -> dict[int: list[int]]:
     """
     Code partially written by ChatGPT

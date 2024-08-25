@@ -1,9 +1,9 @@
-def simplify_path(path: str) -> str:
+def simplify_windows_path(path: str) -> str:
     """
-    Simplify filesystem paths to name strings on different systems.For example, D:\downlaod\text.py to D_download_text.py on windows
+    simplify file paths in windows systems into name strings, for example, D:\downlaod\text.py is simplified to D_download_text.py
     Args:
-        path (str):
+        path (str): windows file path str
 
-    Returns: simple path str
-
+    Returns:
+        simplify path str
     """

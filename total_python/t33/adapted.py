@@ -1,34 +1,35 @@
 import pandas as pd
-from lxml import etree
+import xml.etree.ElementTree as ET
 
-def xml_to_dataframe(xml_path):
+
+def xml_to_dataframe(xml_file):
     """
-    Converts an XML file to a pandas DataFrame, where each <sequence> in the XML becomes a row in the DataFrame.
+    Convert an XML file into a pandas DataFrame. Each <sequence> tag is treated as a row,
+    and each sub-element within <sequence> is treated as a column.
 
     Args:
-    - xml_path (str): The file path of the XML file to be parsed.
+    xml_file (str): Path to the XML file.
 
     Returns:
-    - pd.DataFrame: DataFrame containing the data extracted from the XML file.
+    pd.DataFrame: DataFrame containing the data from the XML file.
     """
-    # Load and parse the XML file
-    tree = etree.parse(xml_path)
+    # Parse the XML file
+    tree = ET.parse(xml_file)
     root = tree.getroot()
 
-    # Collect data from each <sequence> into a list of dictionaries
-    rows = [extract_data_from_sequence(seq) for seq in root.findall('sequence')]
+    # Prepare a list to hold all rows
+    rows = []
 
-    # Convert the list of dictionaries to a DataFrame and return
-    return pd.DataFrame(rows)
+    # Iterate over each <sequence> element in the XML file
+    for sequence in root.findall('sequence'):
+        row_data = {}
+        # Iterate over each child of the <sequence> element
+        for child in sequence:
+            # Use the tag as the column name and the text content as the data
+            row_data[child.tag] = child.text
+        rows.append(row_data)
 
-def extract_data_from_sequence(sequence):
-    """
-    Extracts data from a <sequence> element to form a single row in the DataFrame.
+    # Convert the list of dictionaries to a DataFrame
+    df = pd.DataFrame(rows)
 
-    Args:
-    - sequence (xml.etree.ElementTree.Element): A single <sequence> element from the XML.
-
-    Returns:
-    - dict: A dictionary with tags as keys and text as values.
-    """
-    return {element.tag: element.text for element in sequence}
+    return df

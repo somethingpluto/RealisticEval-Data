@@ -1,3 +1,6 @@
+import pandas as pd
+
+
 def naieve_ffill(df, column):
     """Written by copilot"""
     last_valid = None
@@ -6,4 +9,3 @@ def naieve_ffill(df, column):
             df.loc[idx, column] = last_valid
         else:
             last_valid = value
-    

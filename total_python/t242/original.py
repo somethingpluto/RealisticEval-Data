@@ -9,11 +9,12 @@ categories = {
     'Archives': ['.zip', '.rar', '.tar', '.gz', '.7z']
 }
 
+
 # Function to organize files into subfolders based on extensions
 def organize_files(desktop_path):
     for category, extensions in categories.items():
         category_path = os.path.join(desktop_path, category)
-        
+
         # Create the category folder if it doesn't exist
         if not os.path.exists(category_path):
             os.makedirs(category_path)
@@ -21,12 +22,13 @@ def organize_files(desktop_path):
         # Move files to the appropriate category folder
         for item in os.listdir(desktop_path):
             item_path = os.path.join(desktop_path, item)
-            
+
             if os.path.isfile(item_path):
                 file_extension = os.path.splitext(item)[1].lower()
                 if file_extension in extensions:
                     shutil.move(item_path, os.path.join(category_path, item))
                     print(f'Moved: {item} to {category}')
+
 
 # Main function to run the script
 def main():
@@ -34,6 +36,7 @@ def main():
     print(desktop_path)
     organize_files(desktop_path)
     print('Files have been organized.')
+
 
 if __name__ == '__main__':
     main()

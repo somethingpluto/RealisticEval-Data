@@ -5,6 +5,9 @@
 # a regular expression. Leading and trailing spaces are preserved within the 
 # single-quoted strings and regular expressions.
 #
+import re
+
+
 def read_mapping_file(mapping_file_path):
     """Read the mapping file and return a list of tuples with compiled regex and replacement strings."""
     mappings = []

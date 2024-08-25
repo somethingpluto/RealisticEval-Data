@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import patch
 
 
 class TestLogger(unittest.TestCase):
@@ -34,7 +35,8 @@ class TestLogger(unittest.TestCase):
     def test_critical_logging(self, mock_critical):
         message = "This is a critical message"
         self.logger.log(logging.CRITICAL, message)
-        mock_critical.assert_called_once_with(message)import logging
+        mock_critical.assert_called_once_with(message)
+import logging
 
 
 class Logger:

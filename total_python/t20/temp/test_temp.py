@@ -1,43 +1,36 @@
 import unittest
 
 
-class TestMarkdownProcessing(unittest.TestCase):
+class TestProcessMarkdown(unittest.TestCase):
+
+
     def test_single_asterisk_pair(self):
-        content = "* some text*"
-        expected = "*some text*"
-        self.assertEqual(process_markdown_content(content), expected, "Should remove spaces around single asterisk pair")
+        content = "This is a *test* string."
+        expected = "This is a *test* string."
+        self.assertEqual(process_markdown(content), expected)
+
+    def test_nested_asterisks(self):
+        content = "Example of **nested *asterisks***."
+        expected = "Example of *nested asterisks*."
+        self.assertEqual(process_markdown(content), expected)
 
     def test_multiple_asterisk_pairs(self):
-        content = "Here is * some * text * with * extra * spaces*."
-        expected = "Here is *some* text *with* extra *spaces*."
-        self.assertEqual(process_markdown_content(content), expected, "Should remove spaces in multiple asterisk pairs")
+        content = "*Multiple* pairs of *asterisks* in *one* sentence."
+        expected = "*Multiple pairs of asterisks in one* sentence."
+        self.assertEqual(process_markdown(content), expected)
 
-    def test_no_asterisks(self):
-        content = "This is a test with no asterisks."
-        expected = "This is a test with no asterisks."
-        self.assertEqual(process_markdown_content(content), expected, "Should remain unchanged without asterisks")
+    def test_asterisks_with_no_text(self):
+        content = "Asterisks with ** no text."
+        expected = "Asterisks with ** no text."
+        self.assertEqual(process_markdown(content), expected)
 
-    def test_asterisks_with_no_spaces(self):
-        content = "Markdown with *correct*formatting."
-        expected = "Markdown with *correct*formatting."
-        self.assertEqual(process_markdown_content(content), expected, "Should remain unchanged with correct formatting")
-
-    def test_edge_cases_with_spaces(self):
-        content = "*  leading and trailing spaces  * are tricky!"
-        expected = "*leading and trailing spaces* are tricky!"
-        self.assertEqual(process_markdown_content(content), expected, "Should handle leading and trailing spaces inside asterisks")
-import re
-
-
-def process_markdown_content(content):
-    # Regular expression to find asterisks with spaces and characters in between
-    pattern = r"\*[^*]*\*"
-
-    # Function to remove spaces near asterisks within the found patterns
-    def remove_extra_stars(match):
-        # Remove spaces right after an opening asterisk and right before a closing asterisk
-        return match.group().replace(" *", "*").replace("* ", "*")
-
-    # Apply the function to all occurrences in the content
-    processed_content = re.sub(pattern, remove_extra_stars, content)
-    return processed_content
+    def test_asterisks_around_spaces(self):
+        content = "Asterisks around * *spaces* * are tricky."
+        expected = "Asterisks around * spaces * are tricky."
+        self.assertEqual(process_markdown(content), expected)
+def process_markdown(s: str) -> str:
+    if s.count('*') <= 2:
+        return s
+    first_star_index = s.find('*')
+    last_star_index = s.rfind('*')
+    return s[:first_star_index + 1] + s[first_star_index + 1:last_star_index].replace('*', '') + s[last_star_index:]

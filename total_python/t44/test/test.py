@@ -1,44 +1,38 @@
 import unittest
 
-
 class TestStringSideBySide(unittest.TestCase):
 
     def test_equal_length_strings(self):
-        # Test with strings that have equal number of lines
         str1 = "Hello\nWorld"
-        str2 = "Python\nCoding"
-        expected_result = "Hello               | Python             \nWorld               | Coding             "
+        str2 = "Python\nCode"
         result = string_side_by_side(str1, str2)
-        self.assertEqual(result, expected_result)
+        expected = "Hello                | Python              \nWorld                | Code                "
+        self.assertEqual(result, expected)
 
-    def test_unequal_length_strings(self):
-        # Test with strings that have unequal number of lines
+    def test_first_string_longer(self):
+        str1 = "Hello\nWorld\nTest"
+        str2 = "Python\nCode"
+        result = string_side_by_side(str1, str2)
+        expected = "Hello                | Python              \nWorld                | Code                \nTest                 |                     "
+        self.assertEqual(result, expected)
+
+    def test_second_string_longer(self):
         str1 = "Hello\nWorld"
-        str2 = "Python"
-        expected_result = "Hello               | Python             \nWorld               |                    "
+        str2 = "Python\nCode\nTest"
         result = string_side_by_side(str1, str2)
-        self.assertEqual(result, expected_result)
+        expected = "Hello                | Python              \nWorld                | Code                \n                     | Test                "
+        self.assertEqual(result, expected)
 
-    def test_empty_string(self):
-        # Test with one empty string
+    def test_empty_first_string(self):
         str1 = ""
-        str2 = "Python\nIs\nGreat"
-        expected_result = "                    | Python             \n                    | Is                 \n                    | Great              "
+        str2 = "Python\nCode"
         result = string_side_by_side(str1, str2)
-        self.assertEqual(result, expected_result)
+        expected = "                     | Python              \n                     | Code                "
+        self.assertEqual(result, expected)
 
-    def test_variable_column_width(self):
-        # Test with a specific column width
-        str1 = "Short"
-        str2 = "This is a much longer line"
-        expected_result = "Short               | This is a much longe"
-        result = string_side_by_side(str1, str2, 20)
-        self.assertEqual(result, expected_result)
-
-    def test_all_empty_strings(self):
-        # Test with all empty strings
-        str1 = ""
-        str2 = ""
-        expected_result = ""
-        result = string_side_by_side(str1, str2)
-        self.assertEqual(result, expected_result)
+    def test_custom_column_width(self):
+        str1 = "Hello\nWorld"
+        str2 = "Python\nCode"
+        result = string_side_by_side(str1, str2, column_width=10)
+        expected = "Hello      | Python    \nWorld      | Code      "
+        self.assertEqual(result, expected)

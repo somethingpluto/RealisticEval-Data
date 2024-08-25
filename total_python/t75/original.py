@@ -1,3 +1,7 @@
+import os
+import re
+
+
 def rename_files(directory):
     # Get list of PNG files in the directory
     png_files = [f for f in os.listdir(directory) if f.lower().endswith('.png')]

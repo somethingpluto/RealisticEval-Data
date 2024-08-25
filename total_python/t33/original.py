@@ -1,3 +1,8 @@
+from xml import etree
+
+import pandas as pd
+
+
 def xml_to_dataframe(xml_path):
     # Parse the XML file
     tree = etree.parse(xml_path)

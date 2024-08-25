@@ -1,5 +1,6 @@
 import colorsys
 
+
 def float2color(f):
     """
     Interpolate float to red-green using HSV.
@@ -12,7 +13,7 @@ def float2color(f):
     hue = 120 * f
 
     # Convert the HSV color to RGB
-    r, g, b = colorsys.hsv_to_rgb(hue/360, 1.0, 1.0)
+    r, g, b = colorsys.hsv_to_rgb(hue / 360, 1.0, 1.0)
 
     # Scale the RGB values to 8-bit integers (0 to 255)
     r = int(r * 255)

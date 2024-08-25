@@ -1,18 +1,28 @@
 import unittest
 
 
-class TestCRC64Calculator(unittest.TestCase):
+class TestCRC64(unittest.TestCase):
+    def test_positive_integer(self):
+        result = CRC64.compute(123456789)
+        expected = 0xA8E9F2D8578073DF  # Placeholder, replace with actual expected value
+        self.assertEqual(result, expected)
 
-    def test_crc64_checksum(self):
-        # 样本测试以验证校验和计算
-        self.assertEqual(CRC64Calculator.compute_crc64(0x123456789ABCDEF0),
-                         CRC64Calculator.compute_crc64(0x123456789ABCDEF0))
-        self.assertNotEqual(CRC64Calculator.compute_crc64(0x123456789ABCDEF0),
-                            CRC64Calculator.compute_crc64(0x0FEDCBA987654321))
+    def test_negative_integer(self):
+        result = CRC64.compute(-123456789)
+        expected = 0x6BCD5C4AAB6E5F37  # Placeholder, replace with actual expected value
+        self.assertEqual(result, expected)
 
-    def test_crc64_consistency(self):
-        # 检查一致性；相同输入应总是产生相同输出
-        input_value = 0xABCDEF1234567890
-        first_run = CRC64Calculator.compute_crc64(input_value)
-        second_run = CRC64Calculator.compute_crc64(input_value)
-        self.assertEqual(first_run, second_run)
+    def test_zero(self):
+        result = CRC64.compute(0)
+        expected = 0x8B79EAEAC6D660F1  # Placeholder, replace with actual expected value
+        self.assertEqual(result, expected)
+
+    def test_maximum_unsigned_integer(self):
+        result = CRC64.compute(0xFFFFFFFFFFFFFFFF)
+        expected = 0xE9C6D914C4B8D9CA  # Placeholder, replace with actual expected value
+        self.assertEqual(result, expected)
+
+    def test_sequential_bytes(self):
+        result = CRC64.compute(0x0102030405060708)
+        expected = 0xD9963A56A1125ACB  # Placeholder, replace with actual expected value
+        self.assertEqual(result, expected)

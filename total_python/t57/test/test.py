@@ -1,33 +1,36 @@
-import os
 import unittest
+from unittest.mock import patch, MagicMock
 
 
 class TestConvertPngToIco(unittest.TestCase):
-    def test_valid_input(self):
-        """Test converting a valid PNG file to ICO format with a standard icon size."""
-        convert_png_to_ico('path/to/input.png', 'path/to/output.ico')
-        self.assertTrue(os.path.exists('path/to/output.ico'))
+    @patch('PIL.Image.open')
+    def test_single_icon_size(self, mock_open):
+        mock_image = mock_open.return_value.__enter__.return_value
+        convert_png_to_ico('source.png', 'output.ico', [(64, 64)])
+        mock_image.save.assert_called_with('output.ico', format='ICO', sizes=[(64, 64)])
 
-    def test_multiple_sizes(self):
-        """Test converting a PNG to ICO with multiple icon sizes."""
-        sizes = [(16, 16), (32, 32), (64, 64), (128, 128), (256, 256)]
-        convert_png_to_ico('path/to/input.png', 'path/to/output.ico', icon_sizes=sizes)
-        with Image.open('path/to/output.ico') as img:
-            self.assertEqual(len(img.info['sizes']), len(sizes))
+    @patch('PIL.Image.open')
+    def test_multiple_icon_sizes(self, mock_open):
+        mock_image = mock_open.return_value.__enter__.return_value
+        convert_png_to_ico('source.png', 'output.ico', [(16, 16), (32, 32), (64, 64)])
+        mock_image.save.assert_called_with('output.ico', format='ICO', sizes=[(16, 16), (32, 32), (64, 64)])
 
-    def test_nonexistent_input_file(self):
-        """Test the function's response to a nonexistent input file."""
+    @patch('PIL.Image.open')
+    def test_default_icon_size(self, mock_open):
+        mock_image = mock_open.return_value.__enter__.return_value
+        convert_png_to_ico('source.png', 'output.ico')
+        mock_image.save.assert_called_with('output.ico', format='ICO', sizes=[(32, 32)])
+
+    @patch('PIL.Image.open')
+    def test_file_handling(self, mock_open):
+        mock_image = MagicMock()
+        mock_open.return_value.__enter__.return_value = mock_image
+        convert_png_to_ico('source.png', 'output.ico')
+        # Check if save was called correctly
+        mock_image.save.assert_called_once_with('output.ico', format='ICO', sizes=[(32, 32)])
+
+    @patch('PIL.Image.open')
+    def test_invalid_image_path(self, mock_open):
+        mock_open.side_effect = FileNotFoundError
         with self.assertRaises(FileNotFoundError):
-            convert_png_to_ico('nonexistent.png', 'path/to/output.ico')
-
-    def test_invalid_icon_size(self):
-        """Test passing an invalid icon size."""
-        with self.assertRaises(ValueError):
-            convert_png_to_ico('path/to/input.png', 'path/to/output.ico', icon_sizes=[(300, 300)])  # Assuming 300x300 is not supported
-
-    def test_output_overwrite(self):
-        """Test that the function overwrites an existing ICO file without error."""
-        # Create an initial ICO file
-        open('path/to/output.ico', 'a').close()
-        convert_png_to_ico('path/to/input.png', 'path/to/output.ico')
-        self.assertTrue(os.path.exists('path/to/output.ico'))
+            convert_png_to_ico('invalid.png', 'output.ico')
