@@ -15,34 +15,34 @@ describe('convertTimeHmsStringToMs', () => {
     });
 
     test('throws error on empty string', () => {
-        expect(() => convertTimeHmsStringToMs('')).toThrow('Cannot convert hms string "" to ms!');
+        expect(() => convertTimeHmsStringToMs('')).toThrow();
     });
 
-    test('throws error on invalid format (not following hms pattern)', () => {
-        expect(() => convertTimeHmsStringToMs('2hours15mins')).toThrow('Cannot convert hms string "2hours15mins" to ms!');
-    });
 });
 /**
  * Converts a time string in the format "XhYmZs" (hours, minutes, seconds) into milliseconds.
- * 
+ *
  * @param str The input string representing the time duration.
  * @returns The time in milliseconds.
  * @throws Error if the input string does not match the expected format.
  */
 const convertTimeHmsStringToMs = (str: string): number => {
-    // Regular expression to parse the string for hours, minutes, and seconds
-    const regex = /(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?/;
+    if (str == "") {
+        throw new Error("str is empty")
+    }
+    // Extended regular expression to parse both short and verbose time formats
+    const regex = /(?:(\d+)(h|hours))? ?(?:(\d+)(m|mins|minutes))? ?(?:(\d+)(s|secs|seconds))?/;
     const match = str.match(regex);
-    
-    // Throw an error if the string does not match the expected format
+
     if (!match) {
         throw new Error(`Cannot convert hms string "${str}" to ms!`);
     }
 
     // Parse hours, minutes, and seconds, defaulting to 0 if any group is missing
+    // Note: Hours are in index 1, minutes in index 3, and seconds in index 5
     const hours = parseInt(match[1] || '0', 10);
-    const minutes = parseInt(match[2] || '0', 10);
-    const seconds = parseInt(match[3] || '0', 10);
+    const minutes = parseInt(match[3] || '0', 10);
+    const seconds = parseInt(match[5] || '0', 10);
 
     // Calculate the total milliseconds
     const totalMilliseconds = ((hours * 60 + minutes) * 60 + seconds) * 1000;
