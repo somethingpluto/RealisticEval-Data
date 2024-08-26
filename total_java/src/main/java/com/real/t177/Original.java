@@ -4,7 +4,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.Random;
-
 public class Original {
     // Generate a random salt
     public static String generateSalt() {
