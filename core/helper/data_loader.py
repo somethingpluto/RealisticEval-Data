@@ -2,7 +2,7 @@ from typing import List
 
 language_path_map = {
     "python": "../../total_python",
-    "java": "../../total_java",
+    "java": "../../total_java2",
     "javascript": "../../total_javascript",
     "typescript": "../../total_typescript",
     "c&cpp": "../../total_c&cpp",
