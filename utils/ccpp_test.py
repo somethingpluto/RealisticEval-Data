@@ -54,9 +54,9 @@ def execute_command():
 
 if __name__ == '__main__':
     TASK_LANGUAGE = "c&cpp"
-    TASK_ID = "187"
+    TASK_ID = "202"
     TASK_SUFFIX = "cpp"
     TASK_SCOPE = "adapted"
-    task_dir_path = os.path.abspath(f"../total_{TASK_LANGUAGE}/t{TASK_ID}")
+    task_dir_path = os.path.abspath(f"E:/Desktop/Github desktop backup/RealisticEval-Data/total_{TASK_LANGUAGE}/t{TASK_ID}")
     create_test_temp_env()
     execute_command()
