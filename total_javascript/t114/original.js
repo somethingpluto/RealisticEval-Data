@@ -1,5 +1,5 @@
     // Sorts an array of objects with timestamps
-function sortByTimestamp(arr, getField, ascending = true) {
+    sortByTimestamp(arr, getField, ascending = true) {
         const sortedArr = arr.slice().sort((a, b) => {
             a = getField(a);
             b = getField(b);
