@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Visualizer</title>
+</head>
+<body>
+    <h1>Memory Visualizer Test Cases</h1>
+
+    <script>
+        /**
+         * create_memory_visualizer:
+         * Returns a canvas element that visualizes a section of memory as 16x16 pixel blocks
+         *
+         * @param {DataView} memory - The DataView representing the memory to visualize.
+         * @param {number} start_word_count_inclusive - The starting word index (inclusive).
+         * @param {number} end_word_count_inclusive - The ending word index (inclusive).
+         * @param {number} words_per_row - The number of words per visual row.
+         * @param {number} total_rows - The total number of visual rows.
+         * @param {number} pixel_size - The size of each visualized word in pixels (e.g., 2 for 2x2 blocks).
+         * @returns {HTMLCanvasElement} - The canvas element with the memory visualization.
+         **/
+        function create_memory_visualizer(memory, start_word_count_inclusive, end_word_count_inclusive, words_per_row, total_rows, pixel_size) {
+            const WORDS_PER_VISUAL_ROW = words_per_row;
+            const TOTAL_VISUAL_ROWS = total_rows;
+            const BLOCK_SIZE = pixel_size;
+
+            const canvas = document.createElement('canvas');
+            canvas.width = WORDS_PER_VISUAL_ROW * BLOCK_SIZE;
+            canvas.height = TOTAL_VISUAL_ROWS * BLOCK_SIZE;
+
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+                throw new Error('Unable to get 2D context for canvas.');
+            }
+            const image_data = ctx.createImageData(canvas.width, canvas.height);
+
+            for (let i = start_word_count_inclusive; i < end_word_count_inclusive; i++) {
+                const word = memory.getUint16(i * 2);
+                const red = (word >> 11) << 3;
+                const green = ((word >> 5) & 0x3f) << 2;
+                const blue = (word & 0x1f) << 3;
+
+                const row = Math.floor(i / WORDS_PER_VISUAL_ROW);
+                const col = i % WORDS_PER_VISUAL_ROW;
+                const blockX = col * BLOCK_SIZE;
+                const blockY = row * BLOCK_SIZE;
+
+                for (let j = 0; j < BLOCK_SIZE; j++) {
+                    for (let k = 0; k < BLOCK_SIZE; k++) {
+                        const pixelX = blockX + k;
+                        const pixelY = blockY + j;
+                        const pixel_offset = (pixelY * canvas.width + pixelX) * 4;
+                        image_data.data[pixel_offset] = red;
+                        image_data.data[pixel_offset + 1] = green;
+                        image_data.data[pixel_offset + 2] = blue;
+                        image_data.data[pixel_offset + 3] = 255; // Fully opaque
+                    }
+                }
+            }
+
+            ctx.putImageData(image_data, 0, 0);
+            return canvas;
+        }
+
+        window.onload = function() {
+            // Test Case 1: Basic functionality with a small memory section
+            const buffer1 = new ArrayBuffer(128); // 64 words
+            const view1 = new DataView(buffer1);
+            view1.setUint16(0, 0b1111100000000000); // Red
+            view1.setUint16(2, 0b0000011111100000); // Green
+            view1.setUint16(4, 0b0000000000011111); // Blue
+            const canvas1 = create_memory_visualizer(view1, 0, 3, 2, 2, 2);
+            document.body.appendChild(canvas1); // Expected: 2x2 blocks, Red, Green, Blue, Black
+
+            // Test Case 2: Larger memory section with varied colors
+            const buffer2 = new ArrayBuffer(512); // 256 words
+            const view2 = new DataView(buffer2);
+            for (let i = 0; i < 256; i++) {
+                view2.setUint16(i * 2, i); // Varying colors
+            }
+            const canvas2 = create_memory_visualizer(view2, 0, 255, 16, 16, 2);
+            document.body.appendChild(canvas2); // Expected: A gradient of colors
+
+            // Test Case 3: Full memory visualization (simple)
+            const buffer3 = new ArrayBuffer(65536); // 32768 words
+            const view3 = new DataView(buffer3);
+            for (let i = 0; i < 32768; i++) {
+                view3.setUint16(i * 2, i); // Varying colors
+            }
+            const canvas3 = create_memory_visualizer(view3, 0, 32767, 64, 512, 2);
+            document.body.appendChild(canvas3); // Expected: Large gradient visualization
+
+            // Test Case 4: Non-sequential memory section
+            const buffer4 = new ArrayBuffer(128); // 64 words
+            const view4 = new DataView(buffer4);
+            view4.setUint16(0, 0b0000011111100000); // Green
+            view4.setUint16(10, 0b1111100000000000); // Red
+            view4.setUint16(20, 0b0000000000011111); // Blue
+            const canvas4 = create_memory_visualizer(view4, 0, 20, 8, 8, 2);
+            document.body.appendChild(canvas4); // Expected: Mostly black with some colors
+
+            // Test Case 5: Minimal input (single word)
+            const buffer5 = new ArrayBuffer(2); // 1 word
+            const view5 = new DataView(buffer5);
+            view5.setUint16(0, 0b1111100000000000); // Red
+            const canvas5 = create_memory_visualizer(view5, 0, 0, 1, 1, 2);
+            document.body.appendChild(canvas5); // Expected: 2x2 red block
+        };
+    </script>
+</body>
+</html>
