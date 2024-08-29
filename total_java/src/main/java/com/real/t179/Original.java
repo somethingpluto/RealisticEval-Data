@@ -7,7 +7,6 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
-
 public class Original {
     /**
      * Copy all contents of a directory into another directory
