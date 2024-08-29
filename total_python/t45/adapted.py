@@ -2,14 +2,22 @@ import datetime
 import calendar
 
 
-def get_current_date_info():
+def get_current_date_info(test_date=None):
     """
     Returns the current time information including year, month, week of the month, and day of the week.
+    Optionally takes a date object for testing purposes.
+
+    Args:
+        test_date (datetime.date): The date to compute information for, defaults to today's date if not provided.
 
     Returns:
         dict: A dictionary containing the year, month, week of the month, and day of the week.
     """
-    today = datetime.date.today()
+    if test_date is None:
+        today = datetime.date.today()
+    else:
+        today = test_date
+
     year = today.year
     month = today.month
     day_of_week = calendar.day_name[today.weekday()]

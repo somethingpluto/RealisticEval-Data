@@ -1,57 +1,49 @@
 import unittest
-
 import pandas as pd
-
 
 class TestNaiveFfill(unittest.TestCase):
-    def setUp(self):
-        # Setup a DataFrame with mixed types and missing values
-        self.df = pd.DataFrame({
-            'A': [1, None, 3, None, 5],
-            'B': ['x', 'y', None, 'z', 'a']
-        })
 
-    def test_forward_fill_numeric(self):
-        # Test forward-filling on a numeric column
-        naive_ffill(self.df, 'A')
-        expected = pd.Series([1, 1, 3, 3, 5], name='A')
-        pd.testing.assert_series_equal(self.df['A'], expected)
-
-    def test_forward_fill_string(self):
-        # Test forward-filling on a string column
-        naive_ffill(self.df, 'B')
-        expected = pd.Series(['x', 'y', 'y', 'z', 'a'], name='B')
-        pd.testing.assert_series_equal(self.df['B'], expected)
+    def test_basic_forward_fill(self):
+        df = pd.DataFrame({'A': [1, None, 3, None, 5]})
+        naive_ffill(df, 'A')
+        expected = pd.DataFrame({'A': [1.0, 1.0, 3.0, 3.0, 5.0]})
+        pd.testing.assert_frame_equal(df, expected)
 
     def test_no_missing_values(self):
-        # Test on a column without missing values
-        self.df['C'] = [1, 2, 3, 4, 5]  # Add a column with no NaNs
-        naive_ffill(self.df, 'C')
-        expected = pd.Series([1, 2, 3, 4, 5], name='C')
-        pd.testing.assert_series_equal(self.df['C'], expected)
+        df = pd.DataFrame({'A': [1, 2, 3, 4, 5]})
+        naive_ffill(df, 'A')
+        expected = pd.DataFrame({'A': [1, 2, 3, 4, 5]})
+        pd.testing.assert_frame_equal(df, expected)
 
-    def test_invalid_column_name(self):
-        # Test with an invalid column name
-        with self.assertRaises(KeyError):
-            naive_ffill(self.df, 'Z')  # Nonexistent column
+    def test_all_missing_values(self):
+        df = pd.DataFrame({'A': [None, None, None, None, None]})
+        naive_ffill(df, 'A')
+        expected = pd.DataFrame({'A': [None, None, None, None, None]})
+        pd.testing.assert_frame_equal(df, expected)
 
-    def test_empty_dataframe(self):
-        # Test forward-filling on an empty DataFrame
-        empty_df = pd.DataFrame()
+    def test_non_existent_column(self):
+        df = pd.DataFrame({'A': [1, 2, 3]})
         with self.assertRaises(KeyError):
-            naive_ffill(empty_df, 'A')
+            naive_ffill(df, 'B')
+
+    def test_multiple_columns(self):
+        df = pd.DataFrame({'A': [1, None, 3], 'B': [None, 2, None]})
+        naive_ffill(df, 'A')
+        expected = pd.DataFrame({'A': [1.0, 1.0, 3.0], 'B': [None, 2, None]})
+        pd.testing.assert_frame_equal(df, expected)
 import pandas as pd
 
-def naive_ffill(df, column):
+
+def naive_ffill(df: pd.DataFrame, column: str) -> None:
     """
-    Forward fills the missing values in a specified column of a DataFrame using the last valid value.
+    Forward fills missing values in a specified column of a pandas DataFrame using a naive method.
 
     Args:
-    df (pd.DataFrame): The DataFrame to process.
-    column (str): The name of the column in which to fill missing values.
+    df (pd.DataFrame): The DataFrame containing the data.
+    column (str): The name of the column in which to forward fill missing values.
 
     Returns:
-    None: Modifies the DataFrame in place.
+    None: The function modifies the DataFrame in place.
 
     Raises:
     KeyError: If the specified column does not exist in the DataFrame.
@@ -60,8 +52,8 @@ def naive_ffill(df, column):
         raise KeyError(f"Column '{column}' not found in DataFrame.")
 
     last_valid = None
-    for idx, value in df[column].iteritems():  # use iteritems() for compatibility
+    for idx, value in df[column].items():
         if pd.isna(value):
-            df.at[idx, column] = last_valid
+            df.loc[idx, column] = last_valid
         else:
             last_valid = value

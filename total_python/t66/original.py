@@ -1,3 +1,6 @@
+from typing import Iterable
+
+
 def topological_sort(courses: Iterable[Course]) -> Iterable[Course]:
     '''
     This function was written by ChatGPT.
