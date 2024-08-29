@@ -1,0 +1,44 @@
+/**
+ * Convert an RGB color object to a HEX color string.
+ * @param rgb - An object containing the red, green, and blue components of the color.
+ * @returns A string representing the HEX color code.
+ */
+export function rgbToHex(rgb: { r: number; g: number; b: number }): string {
+  const { r, g, b } = rgb;
+
+  const componentToHex = (c: number): string => {
+    if (typeof c !== "number" || isNaN(c)) {
+      console.error("Invalid RGB component:", c);
+      return "00";
+    }
+    const hex = c.toString(16).padStart(2, "0");
+    return hex;
+  };
+
+  return `#${componentToHex(r)}${componentToHex(g)}${componentToHex(b)}`;
+}
+
+/**
+ * Convert a HEX color string to an RGB color object.
+ * @param hex - A string representing the HEX color code.
+ * @returns An object containing the red, green, and blue components of the color, or null if the HEX code is invalid.
+ */
+export function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
+  const isValidHex = (hex: string): boolean => {
+    const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+    hex = hex.replace(shorthandRegex, (m, r, g, b) => r + r + g + g + b + b);
+    return /^#?([a-f\d]{6})$/i.test(hex);
+  };
+
+  if (!isValidHex(hex)) {
+    console.error("Invalid HEX color:", hex);
+    return null;
+  }
+
+  const fullHex = hex.replace(/^#/, "");
+  const r = parseInt(fullHex.slice(0, 2), 16);
+  const g = parseInt(fullHex.slice(2, 4), 16);
+  const b = parseInt(fullHex.slice(4, 6), 16);
+
+  return { r, g, b };
+}

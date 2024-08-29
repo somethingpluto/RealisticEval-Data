@@ -1,12 +1,40 @@
 import unittest
+from typing import Tuple
 
+class TestCalculateEuclideanDistance(unittest.TestCase):
 
-class TestEuclideanDistance(unittest.TestCase):
-    def test_regular_distance(self):
-        self.assertAlmostEqual(calculate_euclidean_distance((1, 2), (4, 6)), 5.0)
-
-    def test_zero_distance(self):
-        self.assertEqual(calculate_euclidean_distance((3, 3), (3, 3)), 0)
+    def test_basic_functionality(self):
+        # Basic logic functionality test
+        point1 = (0, 0)
+        point2 = (3, 4)
+        expected_distance = 5.0
+        self.assertEqual(calculate_euclidean_distance(point1, point2), expected_distance, "Should calculate the distance correctly")
 
     def test_negative_coordinates(self):
-        self.assertAlmostEqual(calculate_euclidean_distance((-1, -1), (1, 1)), 2.8284271247461903)
+        # Test with negative coordinates
+        point1 = (-1, -1)
+        point2 = (-4, -5)
+        expected_distance = 5.0
+        self.assertEqual(calculate_euclidean_distance(point1, point2), expected_distance, "Should handle negative coordinates correctly")
+
+    def test_zero_distance(self):
+        # Boundary test: points are the same
+        point1 = (2, 3)
+        point2 = (2, 3)
+        expected_distance = 0.0
+        self.assertEqual(calculate_euclidean_distance(point1, point2), expected_distance, "Should return 0 when both points are the same")
+
+    def test_large_coordinates(self):
+        # Boundary test: large coordinates
+        point1 = (1e6, 1e6)
+        point2 = (1e6 + 3, 1e6 + 4)
+        expected_distance = 5.0
+        self.assertEqual(calculate_euclidean_distance(point1, point2), expected_distance, "Should handle large coordinates correctly")
+
+    def test_invalid_input(self):
+        # Exception handling test: invalid input (non-tuple)
+        with self.assertRaises(TypeError):
+            calculate_euclidean_distance("invalid", (0, 0))
+
+if __name__ == "__main__":
+    unittest.main()

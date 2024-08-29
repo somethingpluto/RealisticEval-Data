@@ -1,26 +1,43 @@
 import unittest
 
+class TestRotateListElements(unittest.TestCase):
 
-class TestRotateList(unittest.TestCase):
-    def test_standard_list(self):
-        # Test a standard list with multiple elements
-        self.assertEqual(rotate_list([1, 2, 3, 4]), [2, 3, 4, 1])
+    def test_basic_rotation(self):
+        self.assertEqual(rotate_list_elements([1, 2, 3, 4]), [2, 3, 4, 1], "Should rotate the list elements correctly")
 
     def test_single_element_list(self):
-        # Test a list with only one element
-        self.assertEqual(rotate_list([1]), [1])
+        self.assertEqual(rotate_list_elements([10]), [10], "Single element list should remain unchanged")
 
     def test_empty_list(self):
-        # Test an empty list
-        self.assertEqual(rotate_list([]), [])
+        self.assertEqual(rotate_list_elements([]), [], "Empty list should remain unchanged")
 
-    def test_list_with_duplicates(self):
-        # Test a list that contains duplicate values
-        self.assertEqual(rotate_list([1, 2, 2, 3]), [2, 2, 3, 1])
+    def test_two_element_list(self):
+        self.assertEqual(rotate_list_elements([5, 9]), [9, 5], "Should correctly rotate a two-element list")
 
-    def test_list_with_varied_types(self):
-        # Test a list containing elements of different types
-        self.assertEqual(rotate_list(['a', 123, None, True]), [123, None, True, 'a'])
+    def test_large_list(self):
+        large_list = list(range(1, 1001))
+        rotated_list = rotate_list_elements(large_list)
+        self.assertEqual(rotated_list, list(range(2, 1001)) + [1], "Should correctly rotate a large list")
+
+
+
+
+from typing import List
+
+def rotate_list_elements(elements: List[int]) -> List[int]:
+    """
+    Rotate the elements of the list to the left by one position. The first element
+    is moved to the end of the list, and all other elements are shifted one position to the left.
+
+    Args:
+        elements (List[int]): A list of integers to be rotated.
+
+    Returns:
+        List[int]: The rotated list with elements shifted to the left by one position.
+    """
+    if len(elements) > 1:
+        elements = elements[1:] + [elements[0]]
+    return elements
 
 def rotate_list(elements):
     """
@@ -39,3 +56,4 @@ def rotate_list(elements):
     rotated_list = elements[1:] + elements[:1]
 
     return rotated_list
+
