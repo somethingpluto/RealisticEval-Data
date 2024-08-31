@@ -12,7 +12,7 @@ describe('isBackgroundTooDarkOrBright', () => {
     });
 
     afterEach(() => {
-        // Clean up by removing the 'main' element after each test
+        // Clean up by removing the 'main' element after each test.js
         document.body.removeChild(mainElement);
     });
 

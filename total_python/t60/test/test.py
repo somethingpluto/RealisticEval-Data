@@ -10,7 +10,7 @@ class TestCommonColumns(unittest.TestCase):
         os.makedirs(self.test_dir, exist_ok=True)
 
     def tearDown(self):
-        # Remove created files and directory after each test
+        # Remove created files and directory after each test.js
         for filename in os.listdir(self.test_dir):
             os.remove(os.path.join(self.test_dir, filename))
         os.rmdir(self.test_dir)

@@ -12,7 +12,7 @@ function scaleToRange(inputArray, inputMin, inputMax, outputMin, outputMax) {
     return inputArray.map(value => ((value - inputMin) * scale) + outputMin);
 }
 
-// New test cases for the scaleToRange function
+// New test.js cases for the scaleToRange function
 
 function runNewTestCases() {
     // Test Case 1: Scaling an array with a single value within the range
@@ -50,8 +50,8 @@ function runNewTestCases() {
         "Test Case 5 Failed"
     );
 
-    console.log("All new test cases passed!");
+    console.log("All new test.js cases passed!");
 }
 
-// Run all new test cases
+// Run all new test.js cases
 runNewTestCases();

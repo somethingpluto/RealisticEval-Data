@@ -24,7 +24,7 @@ function reorderData(imageScores, imageNames, imageIDs) {
     return { resultScores, resultNames, resultIDs };
 }
 
-// Function to run the test samples and verify the results
+// Function to run the test.js samples and verify the results
 function runTests() {
     // Test Samples
     const testSamples = [

@@ -21,7 +21,7 @@ describe('isValidNumber', () => {
     });
 
     test('should return "Invalid Input" when an unexpected error occurs', () => {
-        // This test simulates an error scenario,
+        // This test.js simulates an error scenario,
         // which is tricky since the function does not throw errors naturally.
         // Here, we use a mock to simulate this behavior.
         const originalTrim = String.prototype.trim;

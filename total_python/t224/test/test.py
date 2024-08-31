@@ -16,7 +16,7 @@ class TestEmptyDirectory(unittest.TestCase):
             f.write("World")
 
     def tearDown(self):
-        # Remove the temporary directory after each test
+        # Remove the temporary directory after each test.js
         shutil.rmtree(self.test_dir)
 
     def test_empty_directory_success(self):

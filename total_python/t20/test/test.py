@@ -5,8 +5,8 @@ class TestProcessMarkdown(unittest.TestCase):
 
 
     def test_single_asterisk_pair(self):
-        content = "This is a *test* string."
-        expected = "This is a *test* string."
+        content = "This is a *test.js* string."
+        expected = "This is a *test.js* string."
         self.assertEqual(process_markdown(content), expected)
 
     def test_nested_asterisks(self):

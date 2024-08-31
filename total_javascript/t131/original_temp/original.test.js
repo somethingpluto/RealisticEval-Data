@@ -5,7 +5,7 @@
 let cssRuleExistsForHighlight = false;
 describe('checkCSSHighlightAndAdd', () => {
     beforeEach(() => {
-        // Reset the global variable and clean up the document head before each test
+        // Reset the global variable and clean up the document head before each test.js
         cssRuleExistsForHighlight = false;
         document.head.innerHTML = '';
     });

@@ -21,7 +21,7 @@ class TestCleanCSV(unittest.TestCase):
             writer.writerows(self.sample_data)
 
     def tearDown(self):
-        """Clean up files created during the test."""
+        """Clean up files created during the test.js."""
         os.remove(self.input_file_path)
         os.remove(self.output_file_path)
 

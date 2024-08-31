@@ -14,7 +14,7 @@ function setEurValue(value) {
     }
 }
 
-// Function to run test samples and check results
+// Function to run test.js samples and check results
 function runTests() {
     const testSamples = [
         { input: '1500000', expected: '1.5m' },

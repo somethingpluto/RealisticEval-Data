@@ -18,7 +18,7 @@ class TestExtractLogEntries(unittest.TestCase):
             log_file.writelines(self.log_contents)
 
     def tearDown(self):
-        """Clean up by removing files created during the test."""
+        """Clean up by removing files created during the test.js."""
         os.remove(self.log_file_path)
         for level in ['WARNING', 'ERROR', 'CRITICAL', 'ALERT']:
             os.remove(f"{level.lower()}_logs.txt")

@@ -2,7 +2,7 @@ import unittest
 
 class TestFloydWarshallShortestPaths(unittest.TestCase):
     def test_basic_functionality(self):
-        # Basic test case with a simple graph
+        # Basic test.js case with a simple graph
         matrix = [
             [0, 3, float('inf'), 7],
             [8, 0, 2, float('inf')],
@@ -16,7 +16,7 @@ class TestFloydWarshallShortestPaths(unittest.TestCase):
             [2, 5, 7, 0]
         ]
         result = floyd_warshall_shortest_paths(matrix)
-        self.assertEqual(result, expected, "Basic functionality test failed")
+        self.assertEqual(result, expected, "Basic functionality test.js failed")
 
     def test_single_vertex_graph(self):
         # Test case with a single vertex graph (1x1 matrix)
@@ -27,7 +27,7 @@ class TestFloydWarshallShortestPaths(unittest.TestCase):
             [0]
         ]
         result = floyd_warshall_shortest_paths(matrix)
-        self.assertEqual(result, expected, "Single vertex graph test failed")
+        self.assertEqual(result, expected, "Single vertex graph test.js failed")
 
     def test_two_vertices_graph(self):
         # Test case with two vertices
@@ -40,7 +40,7 @@ class TestFloydWarshallShortestPaths(unittest.TestCase):
             [1, 0]
         ]
         result = floyd_warshall_shortest_paths(matrix)
-        self.assertEqual(result, expected, "Two vertices graph test failed")
+        self.assertEqual(result, expected, "Two vertices graph test.js failed")
 
     def test_large_infinite_weights(self):
         # Test case with infinite weights
@@ -53,7 +53,7 @@ class TestFloydWarshallShortestPaths(unittest.TestCase):
             [float('inf'), 0]
         ]
         result = floyd_warshall_shortest_paths(matrix)
-        self.assertEqual(result, expected, "Large infinite weights test failed")
+        self.assertEqual(result, expected, "Large infinite weights test.js failed")
 
     def test_negative_cycle(self):
         # Test case with a negative cycle
@@ -68,6 +68,6 @@ class TestFloydWarshallShortestPaths(unittest.TestCase):
             [-2, -1, -2]
         ]
         result = floyd_warshall_shortest_paths(matrix)
-        self.assertEqual(result, expected, "Negative cycle test failed")
+        self.assertEqual(result, expected, "Negative cycle test.js failed")
 
 

@@ -6,10 +6,10 @@ import unittest
 class TestConcatenateJsonArrays(unittest.TestCase):
 
     def setUp(self):
-        # Set up a test directory and test files
+        # Set up a test.js directory and test.js files
         self.test_dir = 'test_json'
         os.makedirs(self.test_dir, exist_ok=True)
-        # Create test JSON files
+        # Create test.js JSON files
         self.create_test_file('array1.json', [1, 2, 3])
         self.create_test_file('array2.json', ['a', 'b', 'c'])
         self.create_test_file('not_array.json', {'key': 'value'})

@@ -15,7 +15,7 @@ function calculateAge(birthDateString) {
 }
 
 
-// Function to run test samples and check results
+// Function to run test.js samples and check results
 function runTests() {
     const testSamples = [
         { input: '2000-08-23', expected: '2000-08-23 (24)' }, // Sample 1: Birthday today, should be 24 years old

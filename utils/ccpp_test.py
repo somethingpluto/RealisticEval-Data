@@ -4,7 +4,7 @@ import subprocess
 
 def create_test_temp_env():
     # 读取test文件夹下的内容
-    with open(f"{task_dir_path}/test/test.{TASK_SUFFIX}", "r", encoding="utf8") as test_file:
+    with open(f"{task_dir_path}/test.js/test.js.{TASK_SUFFIX}", "r", encoding="utf8") as test_file:
         test_content = test_file.read()
 
     temp_dir_path = ""
@@ -20,7 +20,7 @@ def create_test_temp_env():
         except OSError as e:
             print(f"Failed to create directory {temp_dir_path}: {e}")
 
-    with open(f"{temp_dir_path}/{TASK_SCOPE}.test.{TASK_SUFFIX}", "w", encoding="utf8") as temp_file:
+    with open(f"{temp_dir_path}/{TASK_SCOPE}.test.js.{TASK_SUFFIX}", "w", encoding="utf8") as temp_file:
         temp_file.write("#define CATCH_CONFIG_MAIN\n")
         temp_file.write("#include \"../../lib/catch.hpp\"\n")
         temp_file.write(f"#include \"../{TASK_SCOPE}.cpp\"")
@@ -33,7 +33,7 @@ def execute_command():
     work_path = f"{task_dir_path}/{TASK_SCOPE}_temp"
     os.chdir(work_path)
     # 构建完整命令
-    args = ["g++", "adapted.test.cpp", "-o", "adapted.test"]
+    args = ["g++", "adapted.test.js.cpp", "-o", "adapted.test.js"]
     # 执行命令
     result = subprocess.run(args, capture_output=True, text=True)
 
@@ -43,7 +43,7 @@ def execute_command():
     if result.stderr:  # 如果有错误输出，打印它
         print("Standard Error:\n", result.stderr)
 
-    result = subprocess.run(["adapted.test"], capture_output=True, text=True)
+    result = subprocess.run(["adapted.test.js"], capture_output=True, text=True)
     # 检查是否成功
     # 打印标准输出和标准错误
     if result.stdout:  # 如果有标准输出，打印它

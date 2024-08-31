@@ -59,8 +59,8 @@ tests = [
 ]
 results = [3, 0, 5, 3, 0]
 
-# for i, test in enumerate(tests):
-#     res = solution(test)
+# for i, test.js in enumerate(tests):
+#     res = solution(test.js)
 #     print("[Pass]" if res == results[i] else "[Fail]", res)
 
 profile_functions({"solution1": solution1, "solution2": solution}, tests)

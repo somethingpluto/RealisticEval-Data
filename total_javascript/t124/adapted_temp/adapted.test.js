@@ -1,4 +1,38 @@
-// Function to be tested
+describe('shuffle function tests', () => {
+    test('shuffles an array of numbers', () => {
+        const array = [1, 2, 3, 4, 5];
+        const shuffledArray = shuffle([...array]);
+        expect(shuffledArray.length).toEqual(array.length);
+        expect(shuffledArray.every(item => array.includes(item))).toBeTruthy();
+        expect(new Set(shuffledArray).size).toEqual(new Set(array).size); // Ensure no duplicates
+    });
+
+    test('shuffles an array of strings', () => {
+        const array = ["apple", "banana", "cherry", "date", "elderberry"];
+        const shuffledArray = shuffle([...array]);
+        expect(shuffledArray.length).toEqual(array.length);
+        expect(shuffledArray.every(item => array.includes(item))).toBeTruthy();
+    });
+
+    test('shuffles an array with duplicate elements', () => {
+        const array = [1, 1, 2, 2, 3, 3];
+        const shuffledArray = shuffle([...array]);
+        expect(shuffledArray.length).toEqual(array.length);
+        expect(shuffledArray.every(item => array.includes(item))).toBeTruthy();
+    });
+
+    test('shuffles an array with a single element', () => {
+        const array = [42];
+        const shuffledArray = shuffle([...array]);
+        expect(shuffledArray).toEqual(array);
+    });
+
+    test('shuffles an empty array', () => {
+        const array = [];
+        const shuffledArray = shuffle([...array]);
+        expect(shuffledArray.length).toEqual(0);
+    });
+});
 function shuffle(array) {
     let currentIndex = array.length;
 
@@ -14,52 +48,3 @@ function shuffle(array) {
 
     return array;
 }
-
-// Test cases for the shuffle function
-
-function runShuffleTestCases() {
-    // Test Case 1: Shuffle an array of numbers
-    const array1 = [1, 2, 3, 4, 5];
-    const shuffledArray1 = shuffle([...array1]); // Copy to avoid mutating the original array
-    console.assert(
-        shuffledArray1.length === array1.length && shuffledArray1.every(item => array1.includes(item)),
-        "Test Case 1 Failed"
-    );
-
-    // Test Case 2: Shuffle an array of strings
-    const array2 = ["a", "b", "c", "d", "e"];
-    const shuffledArray2 = shuffle([...array2]);
-    console.assert(
-        shuffledArray2.length === array2.length && shuffledArray2.every(item => array2.includes(item)),
-        "Test Case 2 Failed"
-    );
-
-    // Test Case 3: Shuffle an array with duplicate elements
-    const array3 = [1, 2, 2, 3, 4];
-    const shuffledArray3 = shuffle([...array3]);
-    console.assert(
-        shuffledArray3.length === array3.length && shuffledArray3.every(item => array3.includes(item)),
-        "Test Case 3 Failed"
-    );
-
-    // Test Case 4: Shuffle an empty array
-    const array4 = [];
-    const shuffledArray4 = shuffle([...array4]);
-    console.assert(
-        shuffledArray4.length === 0,
-        "Test Case 4 Failed"
-    );
-
-    // Test Case 5: Shuffle an array with one element
-    const array5 = [42];
-    const shuffledArray5 = shuffle([...array5]);
-    console.assert(
-        JSON.stringify(shuffledArray5) === JSON.stringify(array5),
-        "Test Case 5 Failed"
-    );
-
-    console.log("All shuffle test cases passed!");
-}
-
-// Run all test cases
-runShuffleTestCases();

@@ -41,7 +41,7 @@ describe('convertChatToMarkdown', () => {
     });
 
     test('should return a Blob of type text/markdown', () => {
-        const chat = ["This is a test.", "Yes, it is."];
+        const chat = ["This is a test.js.", "Yes, it is."];
         const blob = convertChatToMarkdown(chat);
         expect(blob.type).toBe('text/markdown');
     });

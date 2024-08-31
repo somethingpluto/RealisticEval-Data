@@ -22,8 +22,8 @@ class TestVisitor(ast.NodeVisitor):
         self.tests = []
 
     def visit_FunctionDef(self, node):
-        # 只收集以 'test' 开头的函数
-        if node.name.startswith('test'):
+        # 只收集以 'test.js' 开头的函数
+        if node.name.startswith('test.js'):
             self.tests.append((node.name, ast.get_source_segment(code, node)))
 
 

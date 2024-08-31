@@ -40,7 +40,7 @@ describe('SeededRandom', () => {
 
         const sequence1 = [seededRand.rand(), seededRand.rand(), seededRand.rand()];
 
-        // Re-initialize with the same seed to test consistency
+        // Re-initialize with the same seed to test.js consistency
         const seededRand2 = new SeededRandom(987654321);
         const sequence2 = [seededRand2.rand(), seededRand2.rand(), seededRand2.rand()];
 

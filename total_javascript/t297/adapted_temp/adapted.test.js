@@ -25,7 +25,7 @@ const testSamples = [
     { url: 'https://example.com/5', size: 600 },
 ];
 
-// Function to run the test samples and verify the results
+// Function to run the test.js samples and verify the results
 function runTests() {
     testSamples.forEach((sample, index) => {
         createIframe(sample.url, sample.size);

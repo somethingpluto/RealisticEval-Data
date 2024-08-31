@@ -8,9 +8,9 @@ class TestFindJsonFilesWithKeyword(unittest.TestCase):
     @patch('json.load', return_value={"key": "value with keyword"})
     def test_keyword_in_single_file(self, mock_json_load, mock_file, mock_os_walk):
         mock_os_walk.return_value = [
-            ('/some/folder', (), ('test.json',)),
+            ('/some/folder', (), ('test.js.json',)),
         ]
-        expected = ['test.json']
+        expected = ['test.js.json']
         result = find_json_files_with_keyword('/some/folder', 'keyword')
         self.assertEqual(result, expected)
 
@@ -19,7 +19,7 @@ class TestFindJsonFilesWithKeyword(unittest.TestCase):
     @patch('json.load', return_value={"key": "no keyword here"})
     def test_keyword_not_in_file(self, mock_json_load, mock_file, mock_os_walk):
         mock_os_walk.return_value = [
-            ('/some/folder', (), ('test.json',)),
+            ('/some/folder', (), ('test.js.json',)),
         ]
         expected = []
         result = find_json_files_with_keyword('/some/folder', 'wc')
@@ -28,7 +28,7 @@ class TestFindJsonFilesWithKeyword(unittest.TestCase):
     @patch('os.walk')
     def test_no_json_files_in_directory(self, mock_os_walk):
         mock_os_walk.return_value = [
-            ('/some/folder', (), ('test.txt', 'image.png')),
+            ('/some/folder', (), ('test.js.txt', 'image.png')),
         ]
         expected = []
         result = find_json_files_with_keyword('/some/folder', 'keyword')

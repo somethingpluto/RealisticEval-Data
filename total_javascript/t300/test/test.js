@@ -4,7 +4,7 @@
 
 describe('removeAds', () => {
     beforeEach(() => {
-        // Reset the DOM before each test
+        // Reset the DOM before each test.js
         document.body.innerHTML = '';
     });
 

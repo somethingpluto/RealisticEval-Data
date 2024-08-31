@@ -49,8 +49,8 @@ function runTestCases() {
       "Test Case 5 Failed"
   );
 
-  console.log("All test cases passed!");
+  console.log("All test.js cases passed!");
 }
 
-// Run all test cases
+// Run all test.js cases
 runTestCases();

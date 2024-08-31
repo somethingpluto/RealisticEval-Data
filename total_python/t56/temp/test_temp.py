@@ -25,7 +25,7 @@ class TestFindShiftJISNotGBK(unittest.TestCase):
     def test_bounds_of_bmp(self):
         # Characters at the edge of the BMP should be checked
         edge_of_bmp = '\uffff'  # Last character in BMP
-        # Since this test is situational, we check based on the known state; may not be necessary
+        # Since this test.js is situational, we check based on the known state; may not be necessary
         if edge_of_bmp in self.shiftjis_not_gbk:
             self.assertIn(edge_of_bmp, self.shiftjis_not_gbk)
         else:

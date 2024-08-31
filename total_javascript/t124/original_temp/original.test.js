@@ -56,8 +56,8 @@ function runShuffleTestCases() {
       "Test Case 5 Failed"
   );
 
-  console.log("All shuffle test cases passed!");
+  console.log("All shuffle test.js cases passed!");
 }
 
-// Run all test cases
+// Run all test.js cases
 runShuffleTestCases();
