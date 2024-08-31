@@ -1,6 +1,11 @@
 package com.real.t353;
 
 public class Adapted {
+    /**
+     *
+     * @param bytes
+     * @return
+     */
     public static String bytesToHex(byte[] bytes) {
         StringBuilder hexString = new StringBuilder();
         for (byte b : bytes) {

@@ -1,7 +1,7 @@
 import math
 
 
-def quaternion_to_yaw(w:float, x:float, y:float, z:float) -> float:
+def quaternion_to_yaw(w: float, x: float, y: float, z: float) -> float:
     """
     The quaternion is converted to a selected yaw Angle around the z-axis
     Args:
@@ -11,5 +11,4 @@ def quaternion_to_yaw(w:float, x:float, y:float, z:float) -> float:
         z (float): The z-component of the quaternion vector part.
 
     Returns: The yaw angle in radians.
-
     """

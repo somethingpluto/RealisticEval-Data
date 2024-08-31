@@ -1,19 +1,21 @@
-// Test case 1: Full ISO 8601 duration with hours, minutes, and seconds including milliseconds
-console.log(convertTime('PT1H23M45.678S')); 
-// Expected output: "1h23m45s678ms"
+describe('ConvertTime Function Tests', () => {
+    test('should correctly convert full ISO 8601 duration with hours, minutes, seconds, and milliseconds', () => {
+        expect(convertTime('PT1H23M45.678S')).toBe('1h23m45s678ms');
+    });
 
-// Test case 2: Duration with only minutes and seconds including milliseconds
-console.log(convertTime('PT0M30.123S'));    
-// Expected output: "30s123ms"
+    test('should correctly convert duration with only minutes and seconds including milliseconds', () => {
+        expect(convertTime('PT0M30.123S')).toBe('30s123ms');
+    });
 
-// Test case 3: Duration with only seconds and milliseconds
-console.log(convertTime('PT45.5S'));        
-// Expected output: "45s500ms"
+    test('should correctly convert duration with only seconds and milliseconds', () => {
+        expect(convertTime('PT45.5S')).toBe('45s500ms');
+    });
 
-// Test case 4: Duration with hours and minutes, but no seconds
-console.log(convertTime('PT2H5M'));         
-// Expected output: "2h5m"
+    test('should correctly convert duration with hours and minutes, but no seconds', () => {
+        expect(convertTime('PT2H5M')).toBe('2h5m');
+    });
 
-// Test case 5: Duration with only seconds, no milliseconds
-console.log(convertTime('PT20S'));          
-// Expected output: "20s"
+    test('should correctly convert duration with only seconds, no milliseconds', () => {
+        expect(convertTime('PT20S')).toBe('20s');
+    });
+});

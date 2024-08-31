@@ -1,29 +1,32 @@
 import unittest
 
+class TestHypergeometricProbability(unittest.TestCase):
+    def test_typical_case(self):
+        # Test with typical values
+        x, y, n = 10, 20, 5
+        result = hypergeometric_probability(x, y, n)
+        self.assertAlmostEqual(result, 0.202381, places=6)
 
-class TestProbabilityAtLeastNRedBalls(unittest.TestCase):
+    def test_impossible_case_more_red_than_exist(self):
+        # Test case where more red balls are requested than exist
+        x, y, n = 10, 20, 11
+        result = hypergeometric_probability(x, y, n)
+        self.assertEqual(result, 0.0)
 
-    def test_basic_functionality(self):
-        result = probability_at_least_n_red_balls(5, 10, 20)
-        expected = 0.2025  # This is a precomputed value assuming the function is correct
-        self.assertAlmostEqual(result, expected, places=4)
+    def test_impossible_case_too_many_balls_requested(self):
+        # Test case where number of requested red balls is more than 15
+        x, y, n = 30, 30, 16
+        result = hypergeometric_probability(x, y, n)
+        self.assertEqual(result, 0.0)
 
-    def test_all_red_balls(self):
-        result = probability_at_least_n_red_balls(10, 15, 0)
-        expected = 1.0  # Since all balls are red, it's certain to draw 10 red balls
-        self.assertEqual(result, expected)
+    def test_edge_case_minimum_red_balls(self):
+        # Test case at the edge where n red balls are exactly available
+        x, y, n = 15, 30, 15
+        result = hypergeometric_probability(x, y, n)
+        self.assertAlmostEqual(result, 0.002165, places=6)
 
-    def test_no_red_balls(self):
-        result = probability_at_least_n_red_balls(1, 0, 30)
-        expected = 0.0  # No red balls, so it's impossible to draw any
-        self.assertEqual(result, expected)
-
-    def test_edge_case_for_minimum_n(self):
-        result = probability_at_least_n_red_balls(15, 15, 20)
-        expected = 0.0187  # Precomputed value for this scenario
-        self.assertAlmostEqual(result, expected, places=4)
-
-    def test_impossible_case(self):
-        result = probability_at_least_n_red_balls(16, 10, 5)
-        expected = 0.0  # It's impossible to draw 16 balls when only 15 draws are allowed
-        self.assertEqual(result, expected)
+    def test_zero_red_balls(self):
+        # Test case where there are zero red balls
+        x, y, n = 0, 30, 1
+        result = hypergeometric_probability(x, y, n)
+        self.assertEqual(result, 0.0)

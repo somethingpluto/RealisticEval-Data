@@ -15,5 +15,3 @@ function getFontSizeFromID(id) {
 function getScrollbarWidth() {
     
 }
-
-export { getFontSizeFromID, getScrollbarWidth };

@@ -1,7 +1,7 @@
-from typing import Dict, List
+from typing import List
 
 
-def find_duplicate_ips(files: List[str], ignored_ips: set) -> Dict:
+def find_duplicate_ips(files: List[str], ignored_ips: set) -> dict:
     """
     find duplicate IP addresses across multiple files, excluding any IPs in the ignored list.
     Args:

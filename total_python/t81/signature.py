@@ -1,5 +1,6 @@
 from typing import List, Union
 
+
 def find_closest_element(target: Union[int, float], elements: List[Union[int, float]]) -> Union[int, float]:
     """
     Finds and returns the element from the given list that is closest to the specified target value.

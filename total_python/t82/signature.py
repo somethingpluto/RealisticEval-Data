@@ -1,4 +1,3 @@
-from collections import defaultdict
 from typing import List, Dict, Any
 
 import networkx as nx
@@ -10,11 +9,12 @@ class Graph:
 
     def cycles_by_size(self, filter_repeat_nodes=True) -> Dict[Any, List]:
         """
-        find the unique cycles from the graph, classify them according to cycle size, and return a dictionary, the key of which is the cycle size, and the value is a list of cycles of corresponding size. The function also provides an option to filter out loops that visit the same node multiple times and ensure that each loop contains at least three nodes
+        Finds all unique cycles in the graph that are larger than size 2, optionally filtering out cycles with repeated nodes.
 
         Args:
-            filter_repeat_nodes (bool): Whether to filter out cycles in which the same node is accessed repeatedly in the same cycle
+            filter_repeat_nodes (bool): If True, filters out cycles where any node appears more than once.
 
         Returns:
-
+            Dict[int, List[nx.Graph]]: A dictionary mapping each cycle size to a list of subgraph objects representing
+                each unique cycle of that size.
         """

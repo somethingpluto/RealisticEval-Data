@@ -1,30 +1,23 @@
 import os
 
-def rename_files(directory_path):
+
+def rename_file_path(path):
     """
-    Recursively renames files within a given directory by replacing colons in filenames with dashes.
+    Renames a Windows file path by replacing colons in the filename with underscores.
 
     Parameters:
-    - directory_path (str): The path to the directory where files will be renamed.
+        path (str): The original file path.
 
     Returns:
-    - None
+        str: The modified file path with colons in the filename replaced by underscores.
     """
-    # Walk through all subdirectories of the provided directory
-    for root, dirs, files in os.walk(directory_path):
-        for file in files:
-            # Construct the full path of the current file
-            old_file_path = os.path.join(root, file)
-            # Replace colons with dashes in the filename
-            new_file_name = file.replace(':', '-')
-            new_file_path = os.path.join(root, new_file_name)
+    # Split the path into directory and filename
+    directory, filename = os.path.split(path)
 
-            # Only attempt to rename if the new name is different from the old name
-            if old_file_path != new_file_path:
-                try:
-                    # Perform the file rename
-                    os.rename(old_file_path, new_file_path)
-                    print(f"Renamed '{old_file_path}' to '{new_file_path}'")
-                except OSError as error:
-                    # Handle potential errors during the rename operation, e.g., file being used by another process
-                    print(f"Error renaming '{old_file_path}' to '{new_file_path}': {error}")
+    # Replace colons in the filename with underscores
+    sanitized_filename = filename.replace(':', '_')
+
+    # Reconstruct the full path with the sanitized filename
+    new_path = os.path.join(directory, sanitized_filename)
+
+    return new_path

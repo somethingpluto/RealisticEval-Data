@@ -1,79 +1,57 @@
 import unittest
-from unittest.mock import patch
 
 
-class TestRenameFiles(unittest.TestCase):
+class TestRenameFilePath(unittest.TestCase):
+    def test_rename_with_colon_in_filename(self):
+        # Test path with colon in the filename
+        path = 'C:\\Users\\example\\Documents\\report:2023.txt'
+        expected = 'C:\\Users\\example\\Documents\\report_2023.txt'
+        self.assertEqual(rename_file_path(path), expected)
 
-    @patch('os.walk')
-    @patch('os.rename')
-    def test_no_files_present(self, mock_rename, mock_walk):
-        mock_walk.return_value = [('/some/path', (), ())]
-        rename_files('/some/path')
-        mock_rename.assert_not_called()
+    def test_rename_without_colon_in_filename(self):
+        # Test path without colon in the filename
+        path = 'C:\\Users\\example\\Documents\\report2023.txt'
+        expected = 'C:\\Users\\example\\Documents\\report2023.txt'
+        self.assertEqual(rename_file_path(path), expected)
 
-    @patch('os.walk')
-    @patch('os.rename')
-    def test_basic_renaming(self, mock_rename, mock_walk):
-        mock_walk.return_value = [('/some/path', (), ('file:1.txt',))]
-        rename_files('/some/path')
-        mock_rename.assert_called_once_with('/some/path/file:1.txt', '/some/path\\file-1.txt')
+    def test_rename_with_multiple_colons_in_filename(self):
+        # Test path with multiple colons in the filename
+        path = 'C:\\Users\\example\\Documents\\project:report:2023.txt'
+        expected = 'C:\\Users\\example\\Documents\\project_report_2023.txt'
+        self.assertEqual(rename_file_path(path), expected)
 
-    @patch('os.walk')
-    @patch('os.rename')
-    def test_no_colon_in_filenames(self, mock_rename, mock_walk):
-        mock_walk.return_value = [('/some/path', (), ('file1.txt',))]
-        rename_files('/some/path')
-        mock_rename.assert_not_called()
+    def test_rename_with_colon_at_end_of_filename(self):
+        # Test path with a colon at the end of the filename
+        path = 'C:\\Users\\example\\Documents\\backup:'
+        expected = 'C:\\Users\\example\\Documents\\backup_'
+        self.assertEqual(rename_file_path(path), expected)
 
-    @patch('os.walk')
-    @patch('os.rename')
-    def test_nested_directories(self, mock_rename, mock_walk):
-        mock_walk.return_value = [
-            ('/some/path', ('subdir',), ('file:1.txt',)),
-            ('/some/path/subdir', (), ('file:2.txt',))
-        ]
-        rename_files('/some/path')
-        expected_calls = [
-            unittest.mock.call('/some/path/file:1.txt', '/some/path/file-1.txt'),
-            unittest.mock.call('/some/path/subdir/file:2.txt', '/some/path/subdir/file-2.txt')
-        ]
-        mock_rename.assert_has_calls(expected_calls, any_order=True)
+    def test_rename_with_colon_at_start_of_filename(self):
+        # Test path with a colon at the start of the filename
+        path = 'C:\\Users\\example\\Documents\\:initial_setup.txt'
+        expected = 'C:\\Users\\example\\Documents\\_initial_setup.txt'
+        self.assertEqual(rename_file_path(path), expected)
 
-    @patch('os.walk')
-    @patch('os.rename')
-    def test_rename_failure(self, mock_rename, mock_walk):
-        mock_walk.return_value = [('/some/path', (), ('file:1.txt',))]
-        mock_rename.side_effect = OSError('Permission denied')
-        with self.assertLogs(level='ERROR') as log:
-            rename_files('/some/path')
-            self.assertIn('Error renaming', log.output[0])
 import os
 
-def rename_files(directory_path):
+
+def rename_file_path(path):
     """
-    Recursively renames files within a given directory by replacing colons in filenames with dashes.
+    Renames a Windows file path by replacing colons in the filename with underscores.
 
     Parameters:
-    - directory_path (str): The path to the directory where files will be renamed.
+        path (str): The original file path.
 
     Returns:
-    - None
+        str: The modified file path with colons in the filename replaced by underscores.
     """
-    # Walk through all subdirectories of the provided directory
-    for root, dirs, files in os.walk(directory_path):
-        for file in files:
-            # Construct the full path of the current file
-            old_file_path = os.path.join(root, file)
-            # Replace colons with dashes in the filename
-            new_file_name = file.replace(':', '-')
-            new_file_path = os.path.join(root, new_file_name)
+    # Split the path into directory and filename
+    directory, filename = os.path.split(path)
 
-            # Only attempt to rename if the new name is different from the old name
-            if old_file_path != new_file_path:
-                try:
-                    # Perform the file rename
-                    os.rename(old_file_path, new_file_path)
-                    print(f"Renamed '{old_file_path}' to '{new_file_path}'")
-                except OSError as error:
-                    # Handle potential errors during the rename operation, e.g., file being used by another process
-                    print(f"Error renaming '{old_file_path}' to '{new_file_path}': {error}")
+    # Replace colons in the filename with underscores
+    sanitized_filename = filename.replace(':', '_')
+
+    # Reconstruct the full path with the sanitized filename
+    new_path = os.path.join(directory, sanitized_filename)
+
+    return new_path

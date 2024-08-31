@@ -3,8 +3,7 @@ from typing import List
 
 def find_json_files_with_keyword(directory:str, keyword:str) ->List[str]:
     """
-    Search all JSON files in the specified directory for a given keyword
-    and return a list of filenames that contain the keyword.
+    Select all json files containing the keyword from the specified directory, and return all matching json file names in the form of a list
 
     Args:
         directory (str): Path to the directory where JSON files are stored.

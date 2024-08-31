@@ -1,7 +1,8 @@
 import difflib
+from typing import List
 
 
-def compare_files(file1_path, file2_path):
+def compare_files(file1_path:str, file2_path:str) -> List[str]:
     """
     Compare the contents of two files and print the differences in unified diff format.
 
@@ -10,7 +11,7 @@ def compare_files(file1_path, file2_path):
     file2_path (str): Path to the second file.
 
     Returns:
-    list: A list containing the lines of differences, if any.
+    List[str]: A list containing the lines of differences, if any.
 
     Raises:
     FileNotFoundError: If either file does not exist.

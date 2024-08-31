@@ -1,7 +1,7 @@
 from typing import List
 
 
-def classify_json_objects_by_pid(source_file: str, pid_list: List[int], match_file: str, mismatch_file: str):
+def classify_json_objects_by_pid(source_file: str, pid_list: List[int], match_file: str, mismatch_file: str) -> None:
     """
     read the JSON file data based on whether the pid field in the object is included in a specified pid_list. These objects are then classified into two categories based on matches and mismatches and saved in different files
     Args:

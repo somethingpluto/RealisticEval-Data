@@ -1,19 +1,21 @@
-// Test Case 1: String longer than the specified limit, containing <p> tags
-console.log(sliceString("<p>Hello, World!</p>", 5)); 
-// Expected output: "He..."
+describe('sliceString Function Tests', () => {
+    test('should return a truncated string with "..." if it is longer than the specified limit, containing <p> tags', () => {
+        expect(sliceString("<p>Hello, World!</p>", 5)).toBe("He...");
+    });
 
-// Test Case 2: String exactly at the specified limit
-console.log(sliceString("Hello", 5)); 
-// Expected output: "Hello"
+    test('should return the original string if it is exactly at the specified limit', () => {
+        expect(sliceString("Hello", 5)).toBe("Hello");
+    });
 
-// Test Case 3: String shorter than the specified limit
-console.log(sliceString("Hi", 5)); 
-// Expected output: "Hi"
+    test('should return the original string if it is shorter than the specified limit', () => {
+        expect(sliceString("Hi", 5)).toBe("Hi");
+    });
 
-// Test Case 4: String longer than the specified limit, without <p> tags
-console.log(sliceString("Hello, World!", 8)); 
-// Expected output: "Hello, W..."
+    test('should return a truncated string with "..." if it is longer than the specified limit, without <p> tags', () => {
+        expect(sliceString("Hello, World!", 8)).toBe("Hello, W...");
+    });
 
-// Test Case 5: String with multiple <p> tags and longer than the specified limit
-console.log(sliceString("<p>Hello, <p>World!</p></p>", 7)); 
-// Expected output: "Hello, ..."
+    test('should return a truncated string with "..." if it has multiple <p> tags and is longer than the specified limit', () => {
+        expect(sliceString("<p>Hello, <p>World!</p></p>", 7)).toBe("Hello, ...");
+    });
+});

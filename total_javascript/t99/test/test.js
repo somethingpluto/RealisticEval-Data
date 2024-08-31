@@ -1,19 +1,21 @@
-// Test case 1: Normal array of positive numbers
-console.log(sum([1, 2, 3, 4, 5])); 
-// Expected output: 15
+describe('Sum Function Tests', () => {
+    test('should return the sum of a normal array of positive numbers', () => {
+        expect(sum([1, 2, 3, 4, 5])).toBe(15);
+    });
 
-// Test case 2: Array containing negative numbers
-console.log(sum([-1, -2, -3, -4, -5])); 
-// Expected output: -15
+    test('should return the sum of an array containing negative numbers', () => {
+        expect(sum([-1, -2, -3, -4, -5])).toBe(-15);
+    });
 
-// Test case 3: Empty array
-console.log(sum([])); 
-// Expected output: 0
+    test('should return 0 for an empty array', () => {
+        expect(sum([])).toBe(0);
+    });
 
-// Test case 4: Array containing both positive and negative numbers
-console.log(sum([10, -10, 5, -5, 15])); 
-// Expected output: 15
+    test('should return the sum of an array containing both positive and negative numbers', () => {
+        expect(sum([10, -10, 5, -5, 15])).toBe(15);
+    });
 
-// Test case 5: Array with floating point numbers
-console.log(sum([1.5, 2.5, 3.5])); 
-// Expected output: 7.5
+    test('should return the sum of an array with floating point numbers', () => {
+        expect(sum([1.5, 2.5, 3.5])).toBe(7.5);
+    });
+});

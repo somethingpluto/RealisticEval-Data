@@ -1,19 +1,29 @@
 from datetime import datetime
-from typing import Optional
+import zoneinfo
 
-def format_timestamp_to_string(timestamp: float, date_format: Optional[str] = '%a %b %d %I:%M:%S %p %z %Y') -> str:
+def format_datetime_str(mtime: float, format: str = '%a %b %d %I:%M:%S %p %z %Y') -> str:
     """
-    Formats the given timestamp as a string according to the specified format, using the system's local time zone.
+    Convert a UNIX timestamp to a formatted datetime string using the system's local timezone.
 
     Args:
-        timestamp (float): The time value representing the seconds since the epoch.
-        date_format (Optional[str]): The format string to use for formatting the timestamp.
-                                     Defaults to '%a %b %d %I:%M:%S %p %z %Y'.
+        mtime (float): UNIX timestamp.
+        format (str): Format string for `strftime`.
 
     Returns:
-        str: The formatted date and time string.
+        str: Formatted datetime string.
     """
-    # Using the system's local timezone
-    local_tz = datetime.now().astimezone().tzinfo
-    dt = datetime.fromtimestamp(timestamp, local_tz)
-    return dt.strftime(date_format)
+    try:
+        # Get the local system timezone
+        local_tz = zoneinfo.ZoneInfo('localtime')
+    except zoneinfo.ZoneInfoNotFoundError:
+        # Fallback to UTC if the local timezone is not found
+        local_tz = zoneinfo.ZoneInfo('UTC')
+
+    try:
+        # Convert the UNIX timestamp to a datetime object with timezone
+        dt = datetime.fromtimestamp(mtime, tz=local_tz)
+        # Return the formatted datetime string
+        return dt.strftime(format)
+    except Exception as e:
+        # Handle any other unexpected errors
+        raise ValueError(f"Error formatting the datetime: {e}")

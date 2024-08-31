@@ -1,73 +1,70 @@
 import unittest
 from unittest.mock import patch, mock_open
 
-import pandas as pd
 
+class TestCsvToLineProtocol(unittest.TestCase):
+    # Mock CSV content
+    mock_csv_data = """Timestamp,distance,speed
+41895.0,0,10
+41895.1,5,15
+41895.2,10,20
+"""
+    # Expected line protocol output
+    expected_lines = [
+        "# DDL",
+        "CREATE DATABASE BikeComputer\n",
+        "# DML",
+        "# CONTEXT-DATABASE: BikeComputer",
+        "# CONTEXT-RETENTION-POLICY: autogen\n",
+        "BikeMetrics  distance=0.0,speed=10 1420070400",
+        "BikeMetrics  distance=5.0,speed=15 1420070460",
+        "BikeMetrics  distance=10.0,speed=20 1420070520"
+    ]
 
-class TestCSVToLineProtocol(unittest.TestCase):
+    @patch('builtins.open', new_callable=mock_open, read_data=mock_csv_data)
+    @patch('your_module.csv.DictReader')
+    def test_normal_case(self, mock_csv_reader, mock_file):
+        # Configure the mock to return a custom iterator
+        mock_csv_reader.return_value.__iter__.return_value = iter([
+            {"Timestamp": "41895.0", "distance": "0", "speed": "10"},
+            {"Timestamp": "41895.1", "distance": "5", "speed": "15"},
+            {"Timestamp": "41895.2", "distance": "10", "speed": "20"}
+        ])
+        result = csv_to_line_protocol('dummy_path.csv', 'BikeMetrics')
+        self.assertEqual(result, self.expected_lines)
 
-    def setUp(self):
-        # Example data to be used across tests
-        self.example_data = """measurement,tag_key,field_key,value,timestamp
-                                weather,location=us-midwest temperature,82,1597689110
-                                energy,source=solar voltage,12.1,1597689110"""
+    @patch('builtins.open', new_callable=mock_open, read_data=mock_csv_data)
+    def test_file_not_found_error(self, mock_file):
+        # Test handling of file not found error
+        mock_file.side_effect = FileNotFoundError
+        with self.assertRaises(FileNotFoundError):
+            csv_to_line_protocol('nonexistent_path.csv', 'BikeMetrics')
 
-    @patch('builtins.open', new_callable=mock_open)
-    @patch('pandas.read_csv')
-    def test_basic_conversion(self, mock_read_csv, mock_file):
-        # Setup mock
-        df = pd.read_csv(pd.compat.StringIO(self.example_data))
-        mock_read_csv.return_value = df
+    @patch('builtins.open', new_callable=mock_open, read_data="")
+    @patch('your_module.csv.DictReader')
+    def test_empty_csv(self, mock_csv_reader, mock_file):
+        # Test empty CSV handling
+        mock_csv_reader.return_value.__iter__.return_value = iter([])
+        result = csv_to_line_protocol('dummy_path.csv', 'BikeMetrics')
+        self.assertEqual(result, self.expected_lines[:5])  # Only headers should be returned
 
-        # Run the function
-        csv_to_line_protocol('dummy.csv', 'output.lp')
+    @patch('builtins.open', new_callable=mock_open, read_data=mock_csv_data)
+    @patch('your_module.csv.DictReader')
+    def test_invalid_data_types(self, mock_csv_reader, mock_file):
+        # Test handling of invalid data types
+        mock_csv_reader.return_value.__iter__.return_value = iter([
+            {"Timestamp": "invalid", "distance": "not_a_number", "speed": "ten"}
+        ])
+        result = csv_to_line_protocol('dummy_path.csv', 'BikeMetrics')
+        self.assertEqual(result, self.expected_lines[:5])  # Expect headers only due to conversion failure
 
-        # Check if the output is written correctly
-        mock_file().write.assert_called_with("weather,location=us-midwest temperature=82 1597689110\n")
-
-    @patch('pandas.read_csv')
-    def test_empty_csv_file(self, mock_read_csv):
-        # Setup empty DataFrame
-        mock_read_csv.return_value = pd.DataFrame()
-
-        # Check if ValueError is raised
-        with self.assertRaises(ValueError):
-            csv_to_line_protocol('empty.csv', 'output.lp')
-
-    @patch('pandas.read_csv')
-    def test_invalid_csv_format(self, mock_read_csv):
-        # DataFrame missing 'measurement' column
-        data = """tag_key,field_key,value,timestamp
-                  location=us-midwest,temperature,82,1597689110"""
-        df = pd.read_csv(pd.compat.StringIO(data))
-        mock_read_csv.return_value = df
-
-        with self.assertRaises(KeyError):
-            csv_to_line_protocol('invalid.csv', 'output.lp')
-
-    @patch('builtins.open', new_callable=mock_open)
-    @patch('pandas.read_csv')
-    def test_special_characters(self, mock_read_csv, mock_file):
-        # Data with special characters
-        data = """measurement,tag_key,field_key,value,timestamp
-                  weather,location=us, midwest temperature,82.5,1597689110"""
-        df = pd.read_csv(pd.compat.StringIO(data))
-        mock_read_csv.return_value = df
-
-        csv_to_line_protocol('special.csv', 'output.lp')
-
-        # Check if special characters are handled
-        mock_file().write.assert_called_with("weather,location=us, midwest temperature=82.5 1597689110\n")
-
-    @patch('builtins.open', new_callable=mock_open)
-    @patch('pandas.read_csv')
-    def test_large_csv_file(self, mock_read_csv, mock_file):
-        # Simulating a large CSV by repeating example data
-        large_data = self.example_data * 100  # Repeat data 100 times
-        df = pd.read_csv(pd.compat.StringIO(large_data))
-        mock_read_csv.return_value = df
-
-        csv_to_line_protocol('large.csv', 'output.lp')
-
-        # Assert that the file write function was called 100 times
-        self.assertEqual(mock_file().write.call_count, 100)
+    @patch('builtins.open', new_callable=mock_open, read_data=mock_csv_data)
+    @patch('your_module.csv.DictReader')
+    def test_all_records_invalid(self, mock_csv_reader, mock_file):
+        # Test with all records being invalid
+        mock_csv_reader.return_value.__iter__.return_value = iter([
+            {"Timestamp": "0", "distance": "-1", "speed": "20"},  # Invalid timestamp and distance
+            {"Timestamp": "41895.1", "distance": "5", "speed": "none"}  # Invalid speed
+        ])
+        result = csv_to_line_protocol('dummy_path.csv', 'BikeMetrics')
+        self.assertEqual(result, self.expected_lines[:5])  # Only headers due to all invalid data

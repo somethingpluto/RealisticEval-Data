@@ -1,4 +1,7 @@
-def get_3d_coordinates(K, d, x, y):
+import numpy as np
+
+
+def get_3d_coordinates(K: np.array, d: float, x: float, y: float) -> np.array:
     """
     converts 2D pixel coordinates into 3D world coordinates using camera intrinsic parameters and depth.
     Args:
@@ -8,5 +11,5 @@ def get_3d_coordinates(K, d, x, y):
         y (float): pixel y coordinate
 
     Returns:
-        (3,) np.array: x, y, z 3D point coordinates in camera RDF coordinates
+        np.array: x, y, z 3D point coordinates in camera RDF coordinates
     """

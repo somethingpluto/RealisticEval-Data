@@ -5,3 +5,7 @@ class BloomFilter:
 
     def __init__(self, size, hash_count):
         pass
+
+    def add(self, item):
+        # Add an item to the bloom filter
+        pass

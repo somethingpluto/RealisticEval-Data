@@ -1,5 +1,6 @@
 from typing import List
 
+
 def rotate_list_elements(elements: List[int]) -> List[int]:
     """
     Rotate the elements of the list to the left by one position. The first element
