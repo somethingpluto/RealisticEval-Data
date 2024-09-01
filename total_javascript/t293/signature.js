@@ -6,6 +6,4 @@
  * @param {string[]|number[]} imageIDs - An array of image IDs corresponding to the scores.
  * @returns {{resultScores: number[], resultNames: string[], resultIDs: (string[]|number[])}} - An object containing the sorted scores, names, and IDs.
  */
-function reorderData(imageScores, imageNames, imageIDs) {
-    // function implementation
-}
+function reorderData(imageScores, imageNames, imageIDs) {}

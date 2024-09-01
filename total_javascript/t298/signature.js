@@ -1,9 +1,10 @@
 /**
- * Converts a numeric value into a formatted string with 'k' or 'm' suffix if applicable.
+ * Converts a numerical value into a string representation with appropriate
+ * suffixes ('k' for thousands, 'm' for millions) or returns the number as a string
+ * if the value is below 1000. Returns an empty string for non-numeric or invalid inputs.
  *
- * @param {string | number} value - The input value to be converted.
- * @returns {string} - The formatted string representing the value in thousands ('k') or millions ('m'), or the original number as a string.
+ * @param {string|number} value - The value to convert.
+ * @returns {string} - The formatted string or an empty string if the input is invalid.
  */
 function setEurValue(value) {
-    // function implementation
 }

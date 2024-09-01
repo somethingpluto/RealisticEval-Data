@@ -19,6 +19,3 @@ function removeAds() {
         }
     });
 }
-
-// Run the 'removeSponsoredAds' function every second
-setInterval(removeAds, 1000);
