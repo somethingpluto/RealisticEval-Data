@@ -3,7 +3,7 @@ from typing import List
 
 def read_mapping_file(mapping_file_path: str) -> List:
     """
-    reads data from the given mapping file and returns a list where each element is a tuple containing the compiled regular expression and replacement strings
+    Reads data from the given mapping file and returns a list where each element is a tuple containing the compiled regular expression and replacement strings
     Args:
         mapping_file_path (str): Path to the file containing regex mappings.
 

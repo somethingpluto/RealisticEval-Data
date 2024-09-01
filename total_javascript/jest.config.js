@@ -4,5 +4,8 @@ module.exports = {
     // 指定需要忽略的文件或目录
     testPathIgnorePatterns: ["/node_modules/"],
     silent: true,
-    collectCoverage: true,  // 收集测试覆盖率
+    collectCoverage: false,  // 收集测试覆盖率
+    transform: {
+        "^.+\\.jsx?$": "babel-jest"
+    }
 };
