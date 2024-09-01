@@ -1,4 +1,7 @@
-def gen_timeout_timedelta(time_string:str):
+from datetime import timedelta
+
+
+def gen_timeout_timedelta(time_string: str) -> timedelta:
     """
     Converts a time duration string into a timedelta object.
     The input string can include days (d), hours (h), minutes (m), seconds (s), and milliseconds (ms).

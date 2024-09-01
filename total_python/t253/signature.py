@@ -1,4 +1,4 @@
-def log(item):
+def log(item: any) -> any:
     """
     Logs an item by printing it. Handles strings, numbers, lists, and dictionaries by printing
     them directly or as a JSON-formatted string. Other types are reported as errors.

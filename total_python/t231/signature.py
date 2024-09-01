@@ -1,4 +1,4 @@
-def read_log(log_file_path:str):
+def read_log(log_file_path: str) -> tuple:
     """
 
     Args:

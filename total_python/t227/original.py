@@ -1,3 +1,6 @@
+from PIL.Image import Image
+
+
 def count_colors(image_paths):
     color_counter = Counter()
 

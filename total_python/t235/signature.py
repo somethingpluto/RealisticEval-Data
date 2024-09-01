@@ -1,4 +1,4 @@
-def calculate_bearing(lat1: float, lon1: float, lat2: float, lon2: float) -> int:
+def calculate_bearing(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     """
     calculate the azimuth between two points on the earth. This function accepts the latitude and longitude of the two points as a parameter and returns the azimuth from the first point to the second point in degrees
     Args:

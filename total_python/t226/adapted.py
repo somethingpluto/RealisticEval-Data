@@ -1,27 +1,27 @@
+import csv
 import json
 
 
-def convert_tsv_to_jsonl(tsv_file_path, jsonl_file_path, columns):
+def tsv_to_jsonl(tsv_file_path: str, jsonl_file_path: str) -> None:
     """
-    Converts data from a TSV file to a JSONL file based on specified columns.
+    Convert a TSV file to a JSONL file.
 
-    Args:
-    tsv_file_path (str): The file path to the source TSV file.
-    jsonl_file_path (str): The file path to the target JSONL file.
-    columns (list of str): A list of column names to extract from the TSV and include in the JSONL.
-
-    Raises:
-    KeyError: If any specified column does not exist in the TSV header.
+    Parameters:
+    - tsv_file_path (str): Path to the input TSV file.
+    - jsonl_file_path (str): Path to the output JSONL file.
     """
-    with open(tsv_file_path, 'r') as tsvfile, open(jsonl_file_path, 'w') as jsonlfile:
-        # Read the header to determine column indexes
-        header = tsvfile.readline().strip().split('\t')
-        indexes = {column: header.index(column) for column in columns}  # Raises KeyError if column not found
+    try:
+        with open(tsv_file_path, 'r', newline='', encoding='utf-8') as tsv_file, \
+                open(jsonl_file_path, 'w', encoding='utf-8') as jsonl_file:
 
-        # Process each line in the TSV file
-        for line in tsvfile:
-            fields = line.strip().split('\t')
-            # Extract the fields based on the column indexes and create a dictionary
-            instance = {column: fields[indexes[column]] for column in columns}
-            # Write the dictionary as a JSON string to the JSONL file
-            jsonlfile.write(json.dumps(instance) + '\n')
+            # Create a CSV reader object using the tab delimiter
+            tsv_reader = csv.DictReader(tsv_file, delimiter='\t')
+
+            # Write each row as a JSON object to the JSONL file
+            for row in tsv_reader:
+                jsonl_file.write(json.dumps(row) + '\n')
+
+        print(f"Successfully converted {tsv_file_path} to {jsonl_file_path}")
+
+    except Exception as e:
+        print(f"An error occurred: {e}")

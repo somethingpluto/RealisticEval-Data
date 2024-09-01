@@ -1,73 +1,92 @@
+import json
 import unittest
-from unittest.mock import mock_open, patch, MagicMock
+from unittest.mock import patch, mock_open
+
+
+class TestTSVToJSONL(unittest.TestCase):
+
+    @patch('builtins.open', new_callable=mock_open, read_data="name\tage\nAlice\t30\nBob\t25")
+    def test_normal_case(self, mock_open_func):
+        tsv_file_path = "dummy.tsv"
+        jsonl_file_path = "dummy.jsonl"
+        expected_output = [
+            json.dumps({"name": "Alice", "age": "30"}) + "\n",
+            json.dumps({"name": "Bob", "age": "25"}) + "\n"
+        ]
+
+        with patch('builtins.open', mock_open()) as mocked_file:
+            tsv_to_jsonl(tsv_file_path, jsonl_file_path)
+            mocked_file().write.assert_called_with(expected_output[-1])  # Last call is checked
+
+    @patch('builtins.open', new_callable=mock_open, read_data="")
+    def test_empty_tsv_file(self, mock_open_func):
+        tsv_file_path = "dummy.tsv"
+        jsonl_file_path = "dummy.jsonl"
+
+        with patch('builtins.open', mock_open()) as mocked_file:
+            tsv_to_jsonl(tsv_file_path, jsonl_file_path)
+            mocked_file().write.assert_not_called()  # No write call should be made
+
+    @patch('builtins.open', new_callable=mock_open,
+           read_data="name\tquote\nJohn\t\"Life is\nbeautiful\"\nJane\t\"Enjoy, life!\"")
+    def test_special_characters(self, mock_open_func):
+        tsv_file_path = "dummy.tsv"
+        jsonl_file_path = "dummy.jsonl"
+        expected_output = [
+            json.dumps({"name": "John", "quote": "Life is\nbeautiful"}) + "\n",
+            json.dumps({"name": "Jane", "quote": "Enjoy, life!"}) + "\n"
+        ]
+
+        with patch('builtins.open', mock_open()) as mocked_file:
+            tsv_to_jsonl(tsv_file_path, jsonl_file_path)
+            mocked_file().write.assert_called_with(expected_output[-1])  # Last call is checked
+
+    @patch('builtins.open', new_callable=mock_open, read_data="name\tage\nAlice\t30")
+    def test_single_row_tsv_file(self, mock_open_func):
+        tsv_file_path = "dummy.tsv"
+        jsonl_file_path = "dummy.jsonl"
+        expected_output = json.dumps({"name": "Alice", "age": "30"}) + "\n"
+
+        with patch('builtins.open', mock_open()) as mocked_file:
+            tsv_to_jsonl(tsv_file_path, jsonl_file_path)
+            mocked_file().write.assert_called_with(expected_output)
+
+    @patch('builtins.open', new_callable=mock_open, read_data="name\tage\nAlice\t30\nBob\t")
+    def test_missing_columns(self, mock_open_func):
+        tsv_file_path = "dummy.tsv"
+        jsonl_file_path = "dummy.jsonl"
+        expected_output = [
+            json.dumps({"name": "Alice", "age": "30"}) + "\n",
+            json.dumps({"name": "Bob", "age": ""}) + "\n"
+        ]
+
+        with patch('builtins.open', mock_open()) as mocked_file:
+            tsv_to_jsonl(tsv_file_path, jsonl_file_path)
+            mocked_file().write.assert_called_with(expected_output[-1])  # Last call is checked
+import csv
 import json
 
 
-class TestConvertTsvToJsonl(unittest.TestCase):
-    def setUp(self):
-        # Example TSV content
-        self.tsv_content = "Name\tAge\tCity\nJohn Doe\t28\tNew York\nJane Smith\t32\tLos Angeles"
-        # Expected JSONL output for selective columns
-        self.jsonl_content = json.dumps({"Name": "John Doe", "City": "New York"}) + "\n" + \
-                             json.dumps({"Name": "Jane Smith", "City": "Los Angeles"}) + "\n"
-
-    @patch("builtins.open", new_callable=mock_open, read_data="Name\tAge\tCity\nJohn Doe\t28\tNew York")
-    def test_correct_conversion(self, mock_file):
-        # Test correct conversion from TSV to JSONL with selected columns
-        convert_tsv_to_jsonl('fake_tsv.tsv', 'fake_jsonl.jsonl', ['Name', 'City'])
-        mock_file().write.assert_called_with(self.jsonl_content)
-
-    @patch("builtins.open", new_callable=mock_open, read_data="Name\tAge\tCity\n")
-    def test_empty_data(self, mock_file):
-        # Test conversion when there's no data, only headers
-        convert_tsv_to_jsonl('fake_tsv.tsv', 'fake_jsonl.jsonl', ['Name', 'City'])
-        mock_file().write.assert_called_once_with('')
-
-    @patch("builtins.open", mock_open(read_data="Name\tAge\tCity\nJohn Doe\t28\tNew York"))
-    def test_key_error_for_missing_column(self, mock_file):
-        # Test raising KeyError if a column in the list doesn't exist in the TSV file
-        with self.assertRaises(KeyError):
-            convert_tsv_to_jsonl('fake_tsv.tsv', 'fake_jsonl.jsonl', ['Name', 'City', 'Occupation'])
-
-    @patch("builtins.open", new_callable=mock_open, read_data="Name\tAge\tCity\nJohn Doe\t28\tNew York")
-    def test_jsonl_output_format(self, mock_file):
-        # Test the format of the JSONL output
-        with patch("builtins.open", mock_open()) as mocked_file:
-            convert_tsv_to_jsonl('fake_tsv.tsv', 'fake_jsonl.jsonl', ['Name', 'City'])
-            handle = mocked_file()
-            handle.write.assert_called_with(self.jsonl_content)
-
-    @patch("builtins.open", new_callable=mock_open, read_data="Name\tAge\tCity\nJohn Doe\t28\tNew York")
-    def test_conversion_with_all_columns(self, mock_file):
-        # Test conversion using all available columns
-        jsonl_all_cols_content = json.dumps({"Name": "John Doe", "Age": "28", "City": "New York"}) + "\n"
-        convert_tsv_to_jsonl('fake_tsv.tsv', 'fake_jsonl.jsonl', ['Name', 'Age', 'City'])
-        mock_file().write.assert_called_with(jsonl_all_cols_content)
-
-import json
-
-
-def convert_tsv_to_jsonl(tsv_file_path, jsonl_file_path, columns):
+def tsv_to_jsonl(tsv_file_path: str, jsonl_file_path: str) -> None:
     """
-    Converts data from a TSV file to a JSONL file based on specified columns.
+    Convert a TSV file to a JSONL file.
 
-    Args:
-    tsv_file_path (str): The file path to the source TSV file.
-    jsonl_file_path (str): The file path to the target JSONL file.
-    columns (list of str): A list of column names to extract from the TSV and include in the JSONL.
-
-    Raises:
-    KeyError: If any specified column does not exist in the TSV header.
+    Parameters:
+    - tsv_file_path (str): Path to the input TSV file.
+    - jsonl_file_path (str): Path to the output JSONL file.
     """
-    with open(tsv_file_path, 'r') as tsvfile, open(jsonl_file_path, 'w') as jsonlfile:
-        # Read the header to determine column indexes
-        header = tsvfile.readline().strip().split('\t')
-        indexes = {column: header.index(column) for column in columns}  # Raises KeyError if column not found
+    try:
+        with open(tsv_file_path, 'r', newline='', encoding='utf-8') as tsv_file, \
+                open(jsonl_file_path, 'w', encoding='utf-8') as jsonl_file:
 
-        # Process each line in the TSV file
-        for line in tsvfile:
-            fields = line.strip().split('\t')
-            # Extract the fields based on the column indexes and create a dictionary
-            instance = {column: fields[indexes[column]] for column in columns}
-            # Write the dictionary as a JSON string to the JSONL file
-            jsonlfile.write(json.dumps(instance) + '\n')
+            # Create a CSV reader object using the tab delimiter
+            tsv_reader = csv.DictReader(tsv_file, delimiter='\t')
+
+            # Write each row as a JSON object to the JSONL file
+            for row in tsv_reader:
+                jsonl_file.write(json.dumps(row) + '\n')
+
+        print(f"Successfully converted {tsv_file_path} to {jsonl_file_path}")
+
+    except Exception as e:
+        print(f"An error occurred: {e}")

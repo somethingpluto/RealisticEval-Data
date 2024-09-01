@@ -1,4 +1,4 @@
-def is_compliant_four_digit(number:int):
+def is_compliant_four_digit(number: int) -> bool:
     """
     determine whether a number is a compliant four-digit number
     Args:

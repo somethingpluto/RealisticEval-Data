@@ -3,7 +3,7 @@ import emoji
 
 def move_emojis_to_end(text: str):
     """
-    move the emoj expression in the string to the end of the text
+    Move the emoj expression in the string to the end of the text
 
     Args:
         text (str): The input string containing text and possibly emojis.
