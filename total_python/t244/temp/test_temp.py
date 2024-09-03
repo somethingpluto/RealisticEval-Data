@@ -40,7 +40,7 @@ import inspect
 def method_arg_type_check(method_obj, *args, **kwargs):
     """
     Checks that the arguments passed to a given method object (e.g., method of a class) comply with their
-    expected data types, based on the method's signature.py.js.js.js. If there's a discrepancy, it raises a ValueError.
+    expected data types, based on the method's signature.py.py.py.js.js.js. If there's a discrepancy, it raises a ValueError.
 
     Parameters:
         method_obj (Callable): The method for which arguments are checked.
@@ -54,7 +54,7 @@ def method_arg_type_check(method_obj, *args, **kwargs):
     exclude = kwargs.pop('exclude', [])
     exclude.append('self')  # Exclude 'self' by default since it refers to the method's instance
 
-    # Get the signature.py.js.js.js of the method and prepare the expected types dictionary
+    # Get the signature.py.py.py.js.js.js of the method and prepare the expected types dictionary
     args_signature = inspect.signature(method_obj)
     bound_args = args_signature.bind(*args, **kwargs)
     bound_args.apply_defaults()

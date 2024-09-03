@@ -1,27 +1,45 @@
-describe('safeSplice function tests', () => {
-    test('should remove one element and replace it with another', () => {
-        const result = safeSplice([1, 2, 3, 4, 5], 1, 2, 99);
+describe('safeSplice', () => {
+    test('should remove specified elements without replacement', () => {
+        const inputArray = [1, 2, 3, 4, 5];
+        const amountToRemove = 2;
+        const indexToRemove = 1;
+        const result = safeSplice(inputArray, amountToRemove, indexToRemove);
+        expect(result).toEqual([1, 4, 5]);
+    });
+
+    test('should remove specified elements and replace with new element', () => {
+        const inputArray = [1, 2, 3, 4, 5];
+        const amountToRemove = 2;
+        const indexToRemove = 1;
+        const replaceWith = 99;
+        const result = safeSplice(inputArray, amountToRemove, indexToRemove, replaceWith);
         expect(result).toEqual([1, 99, 4, 5]);
     });
 
-    test('should remove multiple elements and replace them with one element', () => {
-        const result = safeSplice([10, 20, 30, 40, 50], 2, 1, 99);
-        expect(result).toEqual([10, 20, 99, 40, 50]);
+    test('should handle removing elements from the end of the array', () => {
+        const inputArray = [1, 2, 3, 4, 5];
+        const amountToRemove = 2;
+        const indexToRemove = 3;
+        const result = safeSplice(inputArray, amountToRemove, indexToRemove);
+        expect(result).toEqual([1, 2, 3]);
     });
 
-    test('should remove elements without replacing', () => {
-        const result = safeSplice([1, 2, 3, 4, 5], 2, 1);
-        expect(result).toEqual([1, 2, 4, 5]);
+    test('should handle the case where no elements are removed', () => {
+        const inputArray = [1, 2, 3, 4, 5];
+        const amountToRemove = 0;
+        const indexToRemove = 2;
+        const replaceWith = 99;
+        const result = safeSplice(inputArray, amountToRemove, indexToRemove, replaceWith);
+        expect(result).toEqual([1, 2, 99, 3, 4, 5]);
     });
 
-    test('should replace an element at the start of the array', () => {
-        const result = safeSplice([1, 2, 3, 4, 5], 0, 0, 99);
-        expect(result).toEqual([99, 1, 2, 3, 4, 5]);
-    });
-
-    test('should replace an element at the end of the array', () => {
-        const result = safeSplice([1, 2, 3, 4, 5], 4, 1, 99);
-        expect(result).toEqual([1, 2, 3, 4, 99]);
+    test('should handle edge case with an empty input array', () => {
+        const inputArray = [];
+        const amountToRemove = 1;
+        const indexToRemove = 0;
+        const replaceWith = 99;
+        const result = safeSplice(inputArray, amountToRemove, indexToRemove, replaceWith);
+        expect(result).toEqual([99]);
     });
 });
 function safeSplice(inputArray, amountToRemove, indexToRemove, replaceWith) {

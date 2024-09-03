@@ -1,58 +1,74 @@
+import re
 import unittest
-from unittest.mock import patch
+import os
+import shutil
+import tempfile
+from pathlib import Path
+
 
 
 class TestRenameFiles(unittest.TestCase):
 
-    @patch('os.listdir')
-    @patch('os.rename')
-    def test_empty_directory(self, mock_rename, mock_listdir):
-        mock_listdir.return_value = []
-        rename_files('dummy_directory')
-        mock_rename.assert_not_called()
+    def setUp(self):
+        # Create a temporary directory for each test
+        self.test_dir = tempfile.mkdtemp()
 
-    @patch('os.listdir')
-    @patch('os.rename')
-    def test_single_file(self, mock_rename, mock_listdir):
-        mock_listdir.return_value = ['image001.png']
-        with patch('builtins.print') as mock_print:
-            rename_files('dummy_directory')
-            mock_rename.assert_called_once_with('dummy_directory/image001.png', 'dummy_directory/image001.png')
-            mock_print.assert_called_with("Renaming image001.png to image001.png")
+    def tearDown(self):
+        # Remove the temporary directory after each test
+        shutil.rmtree(self.test_dir)
 
-    @patch('os.listdir')
-    @patch('os.rename')
-    def test_multiple_files_same_base(self, mock_rename, mock_listdir):
-        mock_listdir.return_value = ['test001.png', 'test002.png']
-        with patch('builtins.print') as mock_print:
-            rename_files('dummy_directory')
-            expected_calls = [
-                unittest.mock.call('dummy_directory/test001.png', 'dummy_directory/test001.png'),
-                unittest.mock.call('dummy_directory/test002.png', 'dummy_directory/test002.png')
-            ]
-            mock_rename.assert_has_calls(expected_calls, any_order=True)
+    def create_png_files(self, filenames):
+        for filename in filenames:
+            file_path = Path(self.test_dir) / filename
+            file_path.touch()  # Create an empty file
 
-    @patch('os.listdir')
-    @patch('os.rename')
-    def test_multiple_files_different_bases(self, mock_rename, mock_listdir):
-        mock_listdir.return_value = ['apple001.png', 'banana001.png']
-        with patch('builtins.print') as mock_print:
-            rename_files('dummy_directory')
-            expected_calls = [
-                unittest.mock.call('dummy_directory/apple001.png', 'dummy_directory/apple001.png'),
-                unittest.mock.call('dummy_directory/banana001.png', 'dummy_directory/banana001.png')
-            ]
-            mock_rename.assert_has_calls(expected_calls, any_order=True)
+    def test_basic_renaming(self):
+        # Test renaming in a basic scenario with simple filenames
+        filenames = ["image1.png", "image2.png", "image3.png"]
+        self.create_png_files(filenames)
 
-    @patch('os.listdir')
-    @patch('os.rename')
-    def test_complex_naming(self, mock_rename, mock_listdir):
-        mock_listdir.return_value = ['image999-1.png', 'image999.png', 'image999-2.png']
-        with patch('builtins.print') as mock_print:
-            rename_files('dummy_directory')
-            expected_calls = [
-                unittest.mock.call('dummy_directory/image999-1.png', 'dummy_directory/image9991.png'),
-                unittest.mock.call('dummy_directory/image999.png', 'dummy_directory/image9992.png'),
-                unittest.mock.call('dummy_directory/image999-2.png', 'dummy_directory/image9993.png')
-            ]
-            mock_rename.assert_has_calls(expected_calls, any_order=True)
+        rename_files(self.test_dir)
+
+        expected_files = ['image1001.png', 'image2001.png', 'image3001.png']
+        result_files = sorted(os.listdir(self.test_dir))
+        self.assertEqual(result_files, expected_files)
+
+    def test_reset_counter_for_different_base_names(self):
+        # Test that the counter resets for different base names
+        filenames = ["image1.png", "picture1.png", "image2.png", "picture2.png"]
+        self.create_png_files(filenames)
+
+        rename_files(self.test_dir)
+
+        expected_files = ['image1001.png', 'image2001.png', 'picture1001.png', 'picture2001.png']
+        result_files = sorted(os.listdir(self.test_dir))
+        self.assertEqual(result_files, expected_files)
+
+    def test_no_png_files(self):
+        # Test handling of directories with no PNG files
+        filenames = ["file1.txt", "file2.jpg"]
+        self.create_png_files(filenames)
+
+        rename_files(self.test_dir)
+
+        expected_files = filenames  # No changes expected
+        result_files = sorted(os.listdir(self.test_dir))
+        self.assertEqual(result_files, expected_files)
+
+    def test_empty_directory(self):
+        # Test handling of an empty directory
+        rename_files(self.test_dir)
+        expected_files = []  # No files to rename
+        result_files = os.listdir(self.test_dir)
+        self.assertEqual(result_files, expected_files)
+
+    def test_files_with_existing_numbers(self):
+        # Test renaming files that already have numbers in their names
+        filenames = ["file001.png", "file002.png", "file003.png"]
+        self.create_png_files(filenames)
+
+        rename_files(self.test_dir)
+
+        expected_files = ['file001001.png', 'file002001.png', 'file003001.png']
+        result_files = sorted(os.listdir(self.test_dir))
+        self.assertEqual(result_files, expected_files)

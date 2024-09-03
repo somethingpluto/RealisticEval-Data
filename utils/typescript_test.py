@@ -33,15 +33,8 @@ def create_test_temp_env():
 
 if __name__ == '__main__':
     TASK_LANGUAGE = "typescript"
-<<<<<<< HEAD
-<<<<<<< HEAD
-    TASK_ID = "150"
-=======
-    TASK_ID = "341"
->>>>>>> main
-=======
-    TASK_ID = "333"
->>>>>>> main
+
+    TASK_ID = "145"
     TASK_SUFFIX = "ts"
     TASK_SCOPE = "adapted"
     task_dir_path = os.path.abspath(f"../total_{TASK_LANGUAGE}/t{TASK_ID}")

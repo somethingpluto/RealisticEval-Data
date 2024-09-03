@@ -1,70 +1,63 @@
 import unittest
-from unittest.mock import patch, mock_open
+import os
 
 
-class TestCsvToLineProtocol(unittest.TestCase):
-    # Mock CSV content
-    mock_csv_data = """Timestamp,distance,speed
-41895.0,0,10
-41895.1,5,15
-41895.2,10,20
-"""
-    # Expected line protocol output
-    expected_lines = [
-        "# DDL",
-        "CREATE DATABASE BikeComputer\n",
-        "# DML",
-        "# CONTEXT-DATABASE: BikeComputer",
-        "# CONTEXT-RETENTION-POLICY: autogen\n",
-        "BikeMetrics  distance=0.0,speed=10 1420070400",
-        "BikeMetrics  distance=5.0,speed=15 1420070460",
-        "BikeMetrics  distance=10.0,speed=20 1420070520"
-    ]
+class TestCsvToSqlInsert(unittest.TestCase):
 
-    @patch('builtins.open', new_callable=mock_open, read_data=mock_csv_data)
-    @patch('your_module.csv.DictReader')
-    def test_normal_case(self, mock_csv_reader, mock_file):
-        # Configure the mock to return a custom iterator
-        mock_csv_reader.return_value.__iter__.return_value = iter([
-            {"Timestamp": "41895.0", "distance": "0", "speed": "10"},
-            {"Timestamp": "41895.1", "distance": "5", "speed": "15"},
-            {"Timestamp": "41895.2", "distance": "10", "speed": "20"}
-        ])
-        result = csv_to_line_protocol('dummy_path.csv', 'BikeMetrics')
-        self.assertEqual(result, self.expected_lines)
+    def setUp(self):
+        # Create sample CSV files for testing
+        self.test_files = {
+            'test1.csv': 'id,name,age\n1,Alice,30\n2,Bob,25',
+            'test2.csv': 'product_id,product_name,price\n101,Widget,9.99\n102,Gadget,12.49',
+            'test3.csv': 'user_id,email\n3,test@example.com\n4,user@domain.com',
+            'test4.csv': 'order_id,order_date,total\n1001,2024-09-01,59.99',
+            'test5.csv': 'quote_id,quote\n1,"It\'s a beautiful day."\n2,"She said, ""Hello!"""'
+        }
+        # Create the files on disk
+        for filename, content in self.test_files.items():
+            with open(filename, 'w') as f:
+                f.write(content)
 
-    @patch('builtins.open', new_callable=mock_open, read_data=mock_csv_data)
-    def test_file_not_found_error(self, mock_file):
-        # Test handling of file not found error
-        mock_file.side_effect = FileNotFoundError
-        with self.assertRaises(FileNotFoundError):
-            csv_to_line_protocol('nonexistent_path.csv', 'BikeMetrics')
+    def tearDown(self):
+        # Remove the test files after tests
+        for filename in self.test_files:
+            os.remove(filename)
 
-    @patch('builtins.open', new_callable=mock_open, read_data="")
-    @patch('your_module.csv.DictReader')
-    def test_empty_csv(self, mock_csv_reader, mock_file):
-        # Test empty CSV handling
-        mock_csv_reader.return_value.__iter__.return_value = iter([])
-        result = csv_to_line_protocol('dummy_path.csv', 'BikeMetrics')
-        self.assertEqual(result, self.expected_lines[:5])  # Only headers should be returned
+    def test_simple_csv(self):
+        expected_sql = (
+            "INSERT INTO test1 (id, name, age) VALUES (1, 'Alice', 30);\n"
+            "INSERT INTO test1 (id, name, age) VALUES (2, 'Bob', 25);"
+        )
+        result = csv_to_sql_insert('test1.csv')
+        self.assertEqual(result, expected_sql)
 
-    @patch('builtins.open', new_callable=mock_open, read_data=mock_csv_data)
-    @patch('your_module.csv.DictReader')
-    def test_invalid_data_types(self, mock_csv_reader, mock_file):
-        # Test handling of invalid data types
-        mock_csv_reader.return_value.__iter__.return_value = iter([
-            {"Timestamp": "invalid", "distance": "not_a_number", "speed": "ten"}
-        ])
-        result = csv_to_line_protocol('dummy_path.csv', 'BikeMetrics')
-        self.assertEqual(result, self.expected_lines[:5])  # Expect headers only due to conversion failure
+    def test_product_csv(self):
+        expected_sql = (
+            "INSERT INTO test2 (product_id, product_name, price) VALUES (101, 'Widget', '9.99');\n"
+            "INSERT INTO test2 (product_id, product_name, price) VALUES (102, 'Gadget', '12.49');"
+        )
+        result = csv_to_sql_insert('test2.csv')
+        self.assertEqual(result, expected_sql)
 
-    @patch('builtins.open', new_callable=mock_open, read_data=mock_csv_data)
-    @patch('your_module.csv.DictReader')
-    def test_all_records_invalid(self, mock_csv_reader, mock_file):
-        # Test with all records being invalid
-        mock_csv_reader.return_value.__iter__.return_value = iter([
-            {"Timestamp": "0", "distance": "-1", "speed": "20"},  # Invalid timestamp and distance
-            {"Timestamp": "41895.1", "distance": "5", "speed": "none"}  # Invalid speed
-        ])
-        result = csv_to_line_protocol('dummy_path.csv', 'BikeMetrics')
-        self.assertEqual(result, self.expected_lines[:5])  # Only headers due to all invalid data
+    def test_email_csv(self):
+        expected_sql = (
+            "INSERT INTO test3 (user_id, email) VALUES (3, 'test@example.com');\n"
+            "INSERT INTO test3 (user_id, email) VALUES (4, 'user@domain.com');"
+        )
+        result = csv_to_sql_insert('test3.csv')
+        self.assertEqual(result, expected_sql)
+
+    def test_date_and_decimal_csv(self):
+        expected_sql = (
+            "INSERT INTO test4 (order_id, order_date, total) VALUES (1001, '2024-09-01', '59.99');"
+        )
+        result = csv_to_sql_insert('test4.csv')
+        self.assertEqual(result, expected_sql)
+
+    def test_quotes_in_csv(self):
+        expected_sql = (
+            "INSERT INTO test5 (quote_id, quote) VALUES (1, 'It''s a beautiful day.');\n"
+            "INSERT INTO test5 (quote_id, quote) VALUES (2, 'She said, \"Hello!\"');"
+        )
+        result = csv_to_sql_insert('test5.csv')
+        self.assertEqual(result, expected_sql)

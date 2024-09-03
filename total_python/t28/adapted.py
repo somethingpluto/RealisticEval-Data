@@ -1,17 +1,13 @@
-def print_binary_from_file(file_path: str, line_width: int) -> None:
+def print_memory_bits(memory_section: bytes):
     """
-    Read a binary file bit by bit and output the read bits line by line at a specified width (the number of bits per line)
-    :param file_path: binary file path
-    :param width: read bit width
-    :return:
+    Prints the status of each bit (0 or 1) in the given section of memory.print format eg: Byte 0: 1 1 0 0 1 1 0 0 \nByte 1: 1 1 1 1 0 0 0 0
+
+    :param memory_section: A bytes object representing the section of memory to be read.
     """
-    try:
-        with open(file_path, "rb") as file:
-            binary_string = ''.join(f'{byte:08b}' for byte in file.read())
-
-        # Print formatted binary string
-        for i in range(0, len(binary_string), line_width):
-            print(binary_string[i:i + line_width])
-
-    except IOError:
-        print("Error: File not found or cannot be read.")
+    for byte_index, byte in enumerate(memory_section):
+        print(f"Byte {byte_index}: ", end="")
+        for bit_index in range(8):
+            # Shift the bit to the right and check the least significant bit
+            bit_status = (byte >> (7 - bit_index)) & 1
+            print(bit_status, end=" ")
+        print()  # Newline after each byte

@@ -30,4 +30,4 @@ def at_least_N_red(num_red):
         f"The probability of drawing at least {num_red} red balls out of {total_draws} draws is: {probability_at_least_N_red:.6f}")
 
 
-at_least_N_red(4)
+at_least_N_red(2)

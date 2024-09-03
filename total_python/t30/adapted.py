@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta
 from typing import Optional
 
-
 def create_icalendar_file(name: str, email: str, appointment_date: str, appointment_time: str,
                           file_path: Optional[str] = 'appointment.ics') -> None:
     """
@@ -19,28 +18,30 @@ def create_icalendar_file(name: str, email: str, appointment_date: str, appointm
         IOError: If there is an error writing to the file.
     """
     try:
-        # Format appointment date and time
+        # Parse appointment date and time
         appointment_datetime = datetime.strptime(f"{appointment_date} {appointment_time}", "%Y-%m-%d %I:%M %p")
+        appointment_end_datetime = appointment_datetime + timedelta(minutes=30)
 
-        # Create iCalendar content
-        icalendar_content = f"""BEGIN:VCALENDAR
-VERSION:2.0
-BEGIN:VEVENT
-SUMMARY:Dentist Appointment - {name}
-DESCRIPTION:Booking for {name} ({email})
-DTSTART:{appointment_datetime.strftime('%Y%m%dT%H%M%S')}
-DTEND:{(appointment_datetime + timedelta(minutes=30)).strftime('%Y%m%dT%H%M%S')}
-LOCATION:Dentist Office
-ORGANIZER:MAILTO:toothcheck.app@gmail.com
-SEQUENCE:0
-BEGIN:VALARM
-TRIGGER:-PT15M
-DESCRIPTION:Reminder
-ACTION:DISPLAY
-END:VALARM
-END:VEVENT
-END:VCALENDAR
-"""
+        # Prepare iCalendar content
+        icalendar_content = (
+            "BEGIN:VCALENDAR\n"
+            "VERSION:2.0\n"
+            "BEGIN:VEVENT\n"
+            f"SUMMARY:Dentist Appointment - {name}\n"
+            f"DESCRIPTION:Booking for {name} ({email})\n"
+            f"DTSTART:{appointment_datetime.strftime('%Y%m%dT%H%M%S')}\n"
+            f"DTEND:{appointment_end_datetime.strftime('%Y%m%dT%H%M%S')}\n"
+            "LOCATION:Dentist Office\n"
+            "ORGANIZER:MAILTO:toothcheck.app@gmail.com\n"
+            "SEQUENCE:0\n"
+            "BEGIN:VALARM\n"
+            "TRIGGER:-PT15M\n"
+            "DESCRIPTION:Reminder\n"
+            "ACTION:DISPLAY\n"
+            "END:VALARM\n"
+            "END:VEVENT\n"
+            "END:VCALENDAR\n"
+        )
 
         # Write the iCalendar content to a file
         with open(file_path, 'w') as file:

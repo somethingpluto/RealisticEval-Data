@@ -1,30 +1,29 @@
-def calculate_anger_level(color_values):
-    total_anger = 0
-    num_pixels = len(color_values)
-    for color in color_values:
-        r, g, b = color
-        if r > (g + b) / 2:
-            total_anger += r
-        else:
-            total_anger -= (g + b) / 2
+from typing import List, Tuple
 
-    if total_anger == 0:
-        return 120
-    elif total_anger < 0:
-        return map_negative_anger(total_anger, num_pixels)
-    else:
-        return map_positive_anger(total_anger, num_pixels)
 
-def map_negative_anger(anger, num_pixels):
-    min_anger = -255 * num_pixels
-    normalized_anger = (anger - min_anger) / (-min_anger) * 40 + 60
-    return find_nearest([60, 70, 80, 90, 100], normalized_anger)
+def calculate_red_proportion(pixels: List[Tuple[int, int, int]]) -> float:
+    """
+    Calculate the proportion of red in a list of pixels.
 
-def map_positive_anger(anger, num_pixels):
-    max_anger = 255 * num_pixels
-    normalized_anger = (anger / max_anger) * 60 + 120
-    return find_nearest([120, 130, 140, 150, 160, 170, 180], normalized_anger)
+    Args:
+        pixels (List[Tuple[int, int, int]]): A list of pixels, where each pixel is represented as a tuple of (R, G, B).
 
-def find_nearest(options, value):
-    return min(options, key=lambda x: abs(x - value))
+    Returns:
+        float: The proportion of red in the list of pixels, as a value between 0 and 1.
+    """
+    if not pixels:
+        return 0.0
 
+    total_red = 0
+    total_intensity = 0
+
+    for (r, g, b) in pixels:
+        total_red += r
+        total_intensity += (r + g + b)
+
+    # Avoid division by zero
+    if total_intensity == 0:
+        return 0.0
+
+    red_proportion = total_red / total_intensity
+    return red_proportion

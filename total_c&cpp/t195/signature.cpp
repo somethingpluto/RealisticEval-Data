@@ -1,5 +1,5 @@
 /**
- * @brief Implement a floating-point stack structure based on arrays
+ * Implement a floating-point stack structure based on arrays
  *
  * This class provides basic stack operations including push, pop, peek, and checking if the stack is empty.
  * The stack is implemented using a fixed-size array. If the stack reaches its maximum capacity, no more elements

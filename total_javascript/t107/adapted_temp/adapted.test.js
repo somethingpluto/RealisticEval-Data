@@ -1,3 +1,48 @@
+describe('findMedian', () => {
+    // Example usage with a large array
+    test('should find the median of a large array with 10001 random elements', () => {
+        const largeArray = Array.from({ length: 10001 }, () => Math.floor(Math.random() * 10000));
+        const medianLargeArray = findMedian(largeArray);
+        // It's difficult to assert the exact median here due to randomness,
+        // but this test can check if the function completes without error
+        expect(typeof medianLargeArray).toBe('number');
+    });
+
+    // Test Case 1: Odd number of elements
+    test('should return 3 for an array with odd number of elements', () => {
+        const arr1 = [3, 1, 4, 1, 5, 9, 2];
+        const median1 = findMedian(arr1);
+        expect(median1).toBe(3);
+    });
+
+    // Test Case 2: Even number of elements
+    test('should return 6 for an array with even number of elements', () => {
+        const arr2 = [10, 2, 3, 5, 7, 8];
+        const median2 = findMedian(arr2);
+        expect(median2).toBe(6);
+    });
+
+    // Test Case 3: Array with duplicate elements
+    test('should return 2 for an array with duplicate elements', () => {
+        const arr3 = [1, 2, 2, 2, 3];
+        const median3 = findMedian(arr3);
+        expect(median3).toBe(2);
+    });
+
+    // Test Case 4: Array with negative numbers
+    test('should return 0 for an array with negative and positive numbers', () => {
+        const arr4 = [-5, -10, 0, 5, 10];
+        const median4 = findMedian(arr4);
+        expect(median4).toBe(0);
+    });
+
+    // Test Case 5: Array with a single element
+    test('should return the only element for an array with a single element', () => {
+        const arr5 = [42];
+        const median5 = findMedian(arr5);
+        expect(median5).toBe(42);
+    });
+});
 /**
  * Finds the median of a given array of numbers.
  * 
@@ -21,37 +66,7 @@ function findMedian(arr) {
     }
 }
 
-// Test Case 1: Odd number of elements
-const arr1 = [3, 1, 4, 1, 5, 9, 2];
-const median1 = findMedian(arr1);
-console.log(median1); 
-// Expected output: 3
-// Explanation: Sorted array is [1, 1, 2, 3, 4, 5, 9]. The median is 3 (the middle element).
-
-// Test Case 2: Even number of elements
-const arr2 = [10, 2, 3, 5, 7, 8];
-const median2 = findMedian(arr2);
-console.log(median2); 
-// Expected output: 6
-// Explanation: Sorted array is [2, 3, 5, 7, 8, 10]. The median is (5 + 7) / 2 = 6.
-
-// Test Case 3: Array with duplicate elements
-const arr3 = [1, 2, 2, 2, 3];
-const median3 = findMedian(arr3);
-console.log(median3); 
-// Expected output: 2
-// Explanation: Sorted array is [1, 2, 2, 2, 3]. The median is 2 (the middle element).
-
-// Test Case 4: Array with negative numbers
-const arr4 = [-5, -10, 0, 5, 10];
-const median4 = findMedian(arr4);
-console.log(median4); 
-// Expected output: 0
-// Explanation: Sorted array is [-10, -5, 0, 5, 10]. The median is 0 (the middle element).
-
-// Test Case 5: Array with a single element
-const arr5 = [42];
-const median5 = findMedian(arr5);
-console.log(median5); 
-// Expected output: 42
-// Explanation: The array has only one element, so the median is 42.
+// Example usage with a large array
+const largeArray = Array.from({ length: 10001 }, () => Math.floor(Math.random() * 10000));
+const median = findMedian(largeArray);
+console.log("Median:", median);

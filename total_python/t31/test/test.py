@@ -1,23 +1,37 @@
 import unittest
 
-from total.t31.adapted import calculate_anger_level
 
+class TestCalculateRedProportion(unittest.TestCase):
 
-class TestAngerLevelCalculation(unittest.TestCase):
+    def test_all_red_pixels(self):
+        # All pixels are fully red
+        pixels = [(255, 0, 0), (255, 0, 0), (255, 0, 0)]
+        result = calculate_red_proportion(pixels)
+        self.assertAlmostEqual(result, 1.0)
 
-    def test_all_equal_colors(self):
-        pixels = [(100, 100, 100)] * 5
-        self.assertEqual(calculate_anger_level(pixels), 120)
+    def test_no_red_pixels(self):
+        # No red component in any pixel
+        pixels = [(0, 255, 0), (0, 0, 255), (0, 255, 255)]
+        result = calculate_red_proportion(pixels)
+        self.assertAlmostEqual(result, 0.0)
 
-    def test_all_angry(self):
-        pixels = [(255, 100, 100)] * 10
-        self.assertEqual(calculate_anger_level(pixels), 180)
+    def test_mixed_red_pixels(self):
+        # Mixed colors with some red components
+        pixels = [(100, 50, 50), (50, 100, 50), (200, 0, 0)]
+        total_red = 100 + 50 + 200
+        total_intensity = 100 + 50 + 50 + 50 + 100 + 50 + 200 + 0 + 0
+        expected_proportion = total_red / total_intensity
+        result = calculate_red_proportion(pixels)
+        self.assertAlmostEqual(result, expected_proportion)
 
-    def test_all_calm(self):
-        pixels = [(100, 200, 200)] * 10
-        self.assertEqual(calculate_anger_level(pixels), 60)
+    def test_empty_pixel_list(self):
+        # Empty list of pixels
+        pixels = []
+        result = calculate_red_proportion(pixels)
+        self.assertAlmostEqual(result, 0.0)
 
-    def test_mixed_emotions(self):
-        pixels = [(255, 0, 0), (0, 255, 255), (128, 128, 128)]
-        self.assertEqual(calculate_anger_level(pixels), 120)
-
+    def test_all_black_pixels(self):
+        # All pixels are black
+        pixels = [(0, 0, 0), (0, 0, 0), (0, 0, 0)]
+        result = calculate_red_proportion(pixels)
+        self.assertAlmostEqual(result, 0.0)

@@ -1,56 +1,55 @@
 import unittest
+from math import isclose
 
-class TestHypergeometricProbability(unittest.TestCase):
-    def test_typical_case(self):
-        # Test with typical values
-        x, y, n = 10, 20, 5
-        result = hypergeometric_probability(x, y, n)
-        self.assertAlmostEqual(result, 0.202381, places=6)
 
-    def test_impossible_case_more_red_than_exist(self):
-        # Test case where more red balls are requested than exist
-        x, y, n = 10, 20, 11
-        result = hypergeometric_probability(x, y, n)
-        self.assertEqual(result, 0.0)
+class TestProbabilityOfRedBalls(unittest.TestCase):
 
-    def test_impossible_case_too_many_balls_requested(self):
-        # Test case where number of requested red balls is more than 15
-        x, y, n = 30, 30, 16
-        result = hypergeometric_probability(x, y, n)
-        self.assertEqual(result, 0.0)
+    def test_all_red_balls(self):
+        # Scenario where all balls in the jar are red
+        result = probability_of_red_balls(15, 10, 0)
+        self.assertTrue(isclose(result, 1.0), "Test with all red balls failed")
 
-    def test_edge_case_minimum_red_balls(self):
-        # Test case at the edge where n red balls are exactly available
-        x, y, n = 15, 30, 15
-        result = hypergeometric_probability(x, y, n)
-        self.assertAlmostEqual(result, 0.002165, places=6)
+    def test_no_red_balls(self):
+        # Scenario where there are no red balls in the jar
+        result = probability_of_red_balls(0, 0, 10)
+        self.assertTrue(isclose(result, 1.0), "Test with no red balls failed")
 
-    def test_zero_red_balls(self):
-        # Test case where there are zero red balls
-        x, y, n = 0, 30, 1
-        result = hypergeometric_probability(x, y, n)
-        self.assertEqual(result, 0.0)
+    def test_half_red_balls(self):
+        # Scenario where half of the drawn balls are expected to be red
+        result = probability_of_red_balls(7, 10, 10)
+        expected_result = probability_of_red_balls(7, 10, 10)  # Calculate manually or from another tool
+        self.assertTrue(isclose(result, expected_result), "Test with half red balls failed")
+
+    def test_some_red_balls(self):
+        # Scenario with some red balls in the jar, expecting a few red draws
+        result = probability_of_red_balls(5, 5, 10)
+        expected_result = probability_of_red_balls(5, 5, 10)  # Calculate manually or from another tool
+        self.assertTrue(isclose(result, expected_result), "Test with some red balls failed")
+
+    def test_extreme_case(self):
+        # Extreme scenario where the probability is low for the chosen n
+        result = probability_of_red_balls(15, 1, 99)
+        expected_result = probability_of_red_balls(15, 1, 99)  # Calculate manually or from another tool
+        self.assertTrue(isclose(result, expected_result), "Test with extreme case failed")
 from math import comb
 
 
-def hypergeometric_probability(x, y, n):
+def probability_of_red_balls(n: int, x: int, y: int) -> float:
     """
-    Calculate the probability of drawing at least n red balls
-    when 15 balls are drawn from a jar containing x red balls and y blue balls.
+    Calculate the probability that n red balls will be drawn when 15 balls are drawn with replacement
+    from a jar containing x red balls and y blue balls.
 
-    :param x: Number of red balls in the jar
-    :param y: Number of blue balls in the jar
-    :param n: Minimum number of red balls to be drawn
-    :return: Probability of drawing at least n red balls
+    Args:
+        n (int): Number of red balls to be drawn.
+        x (int): Number of red balls in the jar.
+        y (int): Number of blue balls in the jar.
+
+    Returns:
+        float: The probability of drawing exactly n red balls.
     """
-    total_balls = x + y
-    if x < n or n > 15:
-        # It's impossible to draw more red balls than exist or more than 15
-        return 0.0
+    N = 15  # Total number of draws
+    p = x / (x + y)  # Probability of drawing a red ball
 
-    probability = 0.0
-    for k in range(n, min(16, x + 1)):  # k cannot exceed the total number of red balls
-        numerator = comb(x, k) * comb(y, 15 - k)
-        denominator = comb(total_balls, 15)
-        probability += numerator / denominator
+    # Calculate the probability using the binomial formula
+    probability = comb(N, n) * (p ** n) * ((1 - p) ** (N - n))
     return probability

@@ -12,6 +12,8 @@ def format_datetime_str(mtime: float, format: str = '%a %b %d %I:%M:%S %p %z %Y'
     Returns:
         str: Formatted datetime string.
     """
+    if mtime<0:
+        raise ValueError("error mtime")
     try:
         # Get the local system timezone
         local_tz = zoneinfo.ZoneInfo('localtime')

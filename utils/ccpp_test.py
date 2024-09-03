@@ -4,7 +4,7 @@ import subprocess
 
 def create_test_temp_env():
     # 读取test文件夹下的内容
-    with open(f"{task_dir_path}/test.js/test.js.{TASK_SUFFIX}", "r", encoding="utf8") as test_file:
+    with open(f"{task_dir_path}/test/test.cpp", "r", encoding="utf8") as test_file:
         test_content = test_file.read()
 
     temp_dir_path = ""
@@ -54,7 +54,7 @@ def execute_command():
 
 if __name__ == '__main__':
     TASK_LANGUAGE = "c&cpp"
-    TASK_ID = "207"
+    TASK_ID = "208"
     TASK_SUFFIX = "cpp"
     TASK_SCOPE = "adapted"
     task_dir_path = os.path.abspath(f"../total_{TASK_LANGUAGE}/t{TASK_ID}")

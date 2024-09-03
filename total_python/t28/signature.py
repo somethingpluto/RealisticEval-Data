@@ -1,7 +1,10 @@
-def print_binary_from_file(file_path: str, line_width: int) -> None:
+def print_memory_bits(memory_section: bytes):
     """
-    Read a binary file bit by bit and output the read bits line by line at a specified width (the number of bits per line)
-    :param file_path: binary file path
-    :param width: read bit width
-    :return:
+    Prints the status of each bit (0 or 1) in the given section of memory.print format eg: Byte 0: 1 1 0 0 1 1 0 0 \nByte 1: 1 1 1 1 0 0 0 0
+
+    Args:
+        memory_section (bytes): A bytes object representing the section of memory to be read.
+
+    Returns:
+
     """

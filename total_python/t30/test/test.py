@@ -1,47 +1,51 @@
 import unittest
-from unittest.mock import mock_open, patch
-from datetime import datetime
-
-from task_code.t9.adapted import create_icalendar_file
+import os
+from tempfile import NamedTemporaryFile
 
 
 class TestCreateICalendarFile(unittest.TestCase):
 
-    def test_create_icalendar_file_success(self):
-        name = "John Doe"
-        email = "john.doe@example.com"
-        appointment_date = "2023-07-19"
-        appointment_time = "10:30 AM"
-        file_path = "test_appointment.ics"
-
-        expected_output = f"""BEGIN:VCALENDAR
-VERSION:2.0
-BEGIN:VEVENT
-SUMMARY:Dentist Appointment - {name}
-DESCRIPTION:Booking for {name} ({email})
-DTSTART:{datetime.strptime(f"{appointment_date} {appointment_time}", "%Y-%m-%d %I:%M %p").strftime('%Y%m%dT%H%M%S')}
-DTEND:{(datetime.strptime(f"{appointment_date} {appointment_time}", "%Y-%m-%d %I:%M %p") + timedelta(minutes=30)).strftime('%Y%m%dT%H%M%S')}
-LOCATION:Dentist Office
-ORGANIZER:MAILTO:toothcheck.app@gmail.com
-SEQUENCE:0
-BEGIN:VALARM
-TRIGGER:-PT15M
-DESCRIPTION:Reminder
-ACTION:DISPLAY
-END:VALARM
-END:VEVENT
-END:VCALENDAR
-"""
-
-        with patch("builtins.open", mock_open()) as mocked_file:
-            create_icalendar_file(name, email, appointment_date, appointment_time, file_path)
-            mocked_file.assert_called_once_with(file_path, 'w')
-            mocked_file().write.assert_called_once_with(expected_output)
+    def test_valid_appointment(self):
+        with NamedTemporaryFile(delete=False, suffix='.ics') as temp_file:
+            file_path = temp_file.name
+        try:
+            create_icalendar_file("Alice", "alice@example.com", "2024-09-15", "10:00 AM", file_path)
+            with open(file_path, 'r') as file:
+                content = file.read()
+                self.assertIn("SUMMARY:Dentist Appointment - Alice", content)
+                self.assertIn("DESCRIPTION:Booking for Alice (alice@example.com)", content)
+        finally:
+            os.remove(file_path)
 
     def test_invalid_date_format(self):
         with self.assertRaises(ValueError):
-            create_icalendar_file("John Doe", "john.doe@example.com", "2023-07-19", "25:00 AM")
+            create_icalendar_file("Bob", "bob@example.com", "15-09-2024", "10:00 AM")
 
     def test_invalid_time_format(self):
         with self.assertRaises(ValueError):
-            create_icalendar_file("John Doe", "john.doe@example.com", "2023-07-32", "10:30 AM")
+            create_icalendar_file("Charlie", "charlie@example.com", "2024-09-15", "10:00")
+
+    def test_default_file_path(self):
+        default_file_path = 'appointment.ics'
+        try:
+            create_icalendar_file("David", "david@example.com", "2024-09-15", "11:00 AM")
+            self.assertTrue(os.path.exists(default_file_path))
+            with open(default_file_path, 'r') as file:
+                content = file.read()
+                self.assertIn("SUMMARY:Dentist Appointment - David", content)
+                self.assertIn("DESCRIPTION:Booking for David (david@example.com)", content)
+        finally:
+            if os.path.exists(default_file_path):
+                os.remove(default_file_path)
+
+    def test_end_time_calculation(self):
+        with NamedTemporaryFile(delete=False, suffix='.ics') as temp_file:
+            file_path = temp_file.name
+        try:
+            create_icalendar_file("Eve", "eve@example.com", "2024-09-15", "09:00 AM", file_path)
+            with open(file_path, 'r') as file:
+                content = file.read()
+                self.assertIn("DTSTART:20240915T090000", content)
+                self.assertIn("DTEND:20240915T093000", content)
+        finally:
+            os.remove(file_path)

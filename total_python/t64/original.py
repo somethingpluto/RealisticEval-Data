@@ -1,3 +1,6 @@
+import csv
+
+
 def csv_to_line_protocol(csv_file_path, measurement):
     lines = []
 

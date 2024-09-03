@@ -1,75 +1,34 @@
 import csv
-from datetime import datetime
+import os
 
 
-def excel_timestamp_to_datetime(excel_timestamp):
-    """
-    Convert Excel timestamp to datetime object.
-    """
-    return datetime.fromtimestamp((excel_timestamp - 25569) * 86400.0)
+def csv_to_sql_insert(csv_file_path):
+    # Extract the table name from the CSV file name, removing the suffix
+    table_name = os.path.splitext(os.path.basename(csv_file_path))[0]
 
+    # Open the CSV file and read its contents
+    with open(csv_file_path, mode='r', newline='') as file:
+        reader = csv.reader(file)
 
-def convert_csv_values(row):
-    """
-    Convert CSV row values from strings to appropriate data types.
-    """
-    for key, value in row.items():
-        try:
-            if key == 'distance':
-                row[key] = float(value)
-            elif key == 'Timestamp':
-                row[key] = float(value)  # Assuming timestamp is in Excel format
-        except ValueError:
-            pass  # Handle or log the error as needed
-    return row
+        # Get the header (first row) for column names
+        headers = next(reader)
 
+        # Prepare the SQL insert statement
+        insert_statements = []
 
-def csv_to_line_protocol(csv_file_path, measurement):
-    """
-    Convert CSV data to line protocol format.
+        for row in reader:
+            values = []
+            for value in row:
+                # Handle different types of values (e.g., strings, numbers)
+                if value.isdigit():  # If value is a digit, no quotes needed
+                    values.append(value)
+                else:  # Assume it's a string otherwise
+                    escaped_value = value.replace("'", "''")  # Escape single quotes
+                    values.append(f"'{escaped_value}'")  # Use double quotes outside
 
-    Args:
-        csv_file_path (str): Path to the CSV file.
-        measurement (str): Measurement name for the line protocol.
+            # Join column names and values to form an INSERT statement
+            insert_statement = f"INSERT INTO {table_name} ({', '.join(headers)}) VALUES ({', '.join(values)});"
+            insert_statements.append(insert_statement)
 
-    Returns:
-        list: A list of strings, each representing a line in line protocol format.
-    """
-    lines = [
-        "# DDL",
-        "CREATE DATABASE BikeComputer\n",
-        "# DML",
-        "# CONTEXT-DATABASE: BikeComputer",
-        "# CONTEXT-RETENTION-POLICY: autogen\n"
-    ]
-
-    start_distance = None
-
-    try:
-        with open(csv_file_path, 'r') as csv_file:
-            csv_reader = csv.DictReader(csv_file)
-
-            for row in csv_reader:
-                converted_row = convert_csv_values(row)
-
-                # Set start distance based on the first valid entry
-                if start_distance is None:
-                    start_distance = converted_row['distance']
-
-                # Adjust the distance
-                converted_row['distance'] -= start_distance
-
-                # Convert timestamp and create line protocol format
-                timestamp = excel_timestamp_to_datetime(converted_row['Timestamp'])
-                tags = ''  # Placeholder for tags
-                fields = ','.join(
-                    f"{key}={value}" for key, value in converted_row.items()
-                    if key != 'Timestamp' and value is not None
-                )
-
-                line = f"{measurement}{tags} {fields} {int(timestamp.timestamp())}"
-                lines.append(line)
-    except Exception as e:
-        print(f"Error processing file: {e}")
-
-    return lines
+    # Combine all insert statements into a single output
+    return '\n'.join(insert_statements)
