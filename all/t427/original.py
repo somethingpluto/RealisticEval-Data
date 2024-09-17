@@ -29,7 +29,7 @@ for i, seq in enumerate(sequences):
                 is_munodi = False
                 break
 
-    # Print the model_result
+    # Print the model_answer_result
     if is_munodi:
         print('Sequence {} is a Munodi sequence (length {})'.format(i + 1, length))
     else:

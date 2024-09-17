@@ -36,5 +36,5 @@ class TestCRC64(unittest.TestCase):
     def test_crc64_compute_zero(self):
         # Test compute method with zero
         result = CRC64.compute(0)
-        expected_result = 0xB90956C775A41001  # Example model_result for CRC64 of zero
+        expected_result = 0xB90956C775A41001  # Example model_answer_result for CRC64 of zero
         self.assertEqual(result, expected_result)

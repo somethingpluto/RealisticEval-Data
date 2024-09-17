@@ -30,7 +30,7 @@ class TestChangeReferenceFrame(unittest.TestCase):
         # Use non-orthonormal frame to see how function handles it (should normalize internally)
         frame_points = [np.array([0, 0, 0]), np.array([1, 0, 0]), np.array([1, 1, 0])]
         result = change_reference_frame(self.point_cloud, frame_points)
-        # Manually compute expected model_result
+        # Manually compute expected model_answer_result
         u = np.array([1, 0, 0])
         v = np.array([0, 1, 0])
         w = np.cross(u, v)

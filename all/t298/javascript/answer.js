@@ -13,7 +13,7 @@ function setEurValue(value) {
     // Attempt to parse the input value to an integer
     const number = parseInt(value, 10);
 
-    // Check if the model_result is a valid number
+    // Check if the model_answer_result is a valid number
     if (isNaN(number)) return '';
 
     // Determine the suffix and division based on the size of the number

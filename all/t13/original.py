@@ -21,5 +21,5 @@ def parse_table(md_table: str) -> List[tuple[str, ...]]:
         # Add each cell to the appropriate column in the table question
         for i, cell in enumerate(cells):
             table_data[i].append(cell)
-    # Combine the column names with the table question and return the model_result
+    # Combine the column names with the table question and return the model_answer_result
     return [col_names] + list(zip(*table_data))

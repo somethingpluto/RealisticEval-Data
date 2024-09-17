@@ -15,6 +15,6 @@ def hash_directory(directory): # Written by Chatgpt...
 
                 file_hashes.append(sha256_hash.hexdigest())
 
-    # Concatenate individual file hashes and hash the model_result
+    # Concatenate individual file hashes and hash the model_answer_result
     directory_hash = hashlib.sha256("".join(file_hashes).encode()).hexdigest()
     return directory_hash

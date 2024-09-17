@@ -8,7 +8,7 @@ def matrix_multiply(matrixA: List[List[int]], matrixB: List[List[int]]) -> List[
         matrixA (): matrix A
         matrixB (): matrix B
 
-    Returns: matrixA matrixB multiplication model_result
+    Returns: matrixA matrixB multiplication model_answer_result
 
     """
     if not matrixA or not matrixB or not matrixA[0] or not matrixB[0]:
@@ -18,7 +18,7 @@ def matrix_multiply(matrixA: List[List[int]], matrixB: List[List[int]]) -> List[
         raise ValueError(
             "The number of columns in the first matrix must be equal to the number of rows in the second matrix.")
 
-    # Initialize the model_result matrix with zeros
+    # Initialize the model_answer_result matrix with zeros
     result = [[0 for _ in range(len(matrixB[0]))] for _ in range(len(matrixA))]
 
     # Perform matrix multiplication

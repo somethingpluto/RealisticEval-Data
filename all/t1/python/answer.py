@@ -7,7 +7,7 @@ def numerical_str_convert(value: str) -> Union[int, float, str]:
     Args:
         value (): input value str
 
-    Returns: convert model_result
+    Returns: convert model_answer_result
 
     """
     try:

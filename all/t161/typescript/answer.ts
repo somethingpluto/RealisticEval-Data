@@ -17,7 +17,7 @@ function generateCombinations(map: Map<string, number[]>): number[][] {
      * @param {number} currentIndex - The current index in the keys/values arrays.
      */
     function generate(currentCombination: number[], currentIndex: number): void {
-        // Base case: If we've reached the end of the keys, push the combination to the model_result.
+        // Base case: If we've reached the end of the keys, push the combination to the model_answer_result.
         if (currentIndex === keys.length) {
             combinations.push(currentCombination.slice());
             return;

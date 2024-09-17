@@ -5,7 +5,7 @@
  * This function was created by ChatGPT.  The above text was how it answered
  * when I asked it how to give credit.  I used ChatGPT because I keep forgetting
  * how <canvas> works and I was lazy (a good trait, says Larry Wall).  The
- * code is the model_result of the following prompt, with later edits to generalize
+ * code is the model_answer_result of the following prompt, with later edits to generalize
  * the results slightly. Excluding variable naming changes, this is almost
  * exactly as-provided.
  *

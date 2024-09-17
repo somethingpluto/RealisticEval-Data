@@ -8,6 +8,6 @@ def matrix_multiply(matrixA: List[List[int]], matrixB: List[List[int]]) -> List[
         matrixA (): matrix A
         matrixB (): matrix B
 
-    Returns: matrixA matrixB multiplication model_result
+    Returns: matrixA matrixB multiplication model_answer_result
 
     """

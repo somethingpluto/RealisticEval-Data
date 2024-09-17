@@ -18,7 +18,7 @@ describe('checkCSSHighlightAndAdd', () => {
         expect(styleElement).not.toBeNull();
 
         // Check that the style element contains the correct CSS rule
-        expect(styleElement.textContent).toContain('::highlight(search-model_result-highlight)');
+        expect(styleElement.textContent).toContain('::highlight(search-model_answer_result-highlight)');
         expect(styleElement.textContent).toContain('background-color: yellow;');
         expect(styleElement.textContent).toContain('color: black;');
     });

@@ -37,5 +37,5 @@ if __name__ == "__main__":
     # Calculate the sum of all calibration values
     result = sum_calibration_values(calibration_document)
 
-    # Print the model_result
+    # Print the model_answer_result
     print(result)

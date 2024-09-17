@@ -13,7 +13,7 @@ function getPrice(recipeId, minVal = 10, maxVal = 30) {
     for (let i = 0; i < recipeId.length; i++) {
         const char = recipeId.charCodeAt(i);
         hash = (hash << 5) - hash + char; // Equivalent to hash * 31 + char
-        hash |= 0; // Ensure the model_result is a 32-bit integer
+        hash |= 0; // Ensure the model_answer_result is a 32-bit integer
     }
 
     // Convert the hash to a positive value

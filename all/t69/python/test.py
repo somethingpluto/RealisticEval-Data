@@ -72,7 +72,7 @@ class TestHashDirectory(unittest.TestCase):
 
     @patch('hashlib.sha256')
     def test_consistent_hash_order(self, mock_hash):
-        # Ensure that hashing order does not affect the model_result
+        # Ensure that hashing order does not affect the model_answer_result
         mock_hash.return_value.hexdigest.return_value = 'consistenthash'
         hash1 = hash_directory('/fake/dir')
         self.fake_walk.reverse()  # Reverse the walk order

@@ -16,7 +16,7 @@ describe('getArrayAverage', () => {
 
     test('should handle an empty array (edge case)', () => {
         const result = getArrayAverage([]);
-        expect(result).toBeNaN(); // Division by zero, expected model_result is NaN
+        expect(result).toBeNaN(); // Division by zero, expected model_answer_result is NaN
     });
 
     test('should return the single element when the array contains one item', () => {

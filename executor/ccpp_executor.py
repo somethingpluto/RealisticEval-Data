@@ -1,6 +1,6 @@
 import subprocess
 
-from test.executor import config
+from executor import config
 
 
 class CCPPExecutor:

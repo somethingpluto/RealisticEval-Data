@@ -39,11 +39,11 @@ class BinaryTree:
     #     if node is None:
     #         return ''
     #     else:
-    #         model_result = ''
-    #         model_result += self._middle_first_traversal(node.left)
-    #         model_result += str(node.value) + ' '
-    #         model_result += self._middle_first_traversal(node.right)
-    #         return model_result
+    #         model_answer_result = ''
+    #         model_answer_result += self._middle_first_traversal(node.left)
+    #         model_answer_result += str(node.value) + ' '
+    #         model_answer_result += self._middle_first_traversal(node.right)
+    #         return model_answer_result
 
     def _post_order_traversal(self, node):
         if node is None:

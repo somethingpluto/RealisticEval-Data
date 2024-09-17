@@ -53,10 +53,10 @@ class graph_am:
 
     '''
         def __str__(self):
-            model_result = ""
+            model_answer_result = ""
             for vertex, neighbors in self.adjacency_map.items():
-                model_result += f"({vertex}): {[str(neighbors[x]) for x in neighbors]}\n"
-            return model_result
+                model_answer_result += f"({vertex}): {[str(neighbors[x]) for x in neighbors]}\n"
+            return model_answer_result
     '''
 
     def __str__(self):

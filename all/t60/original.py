@@ -3,7 +3,7 @@
 '''
 This script uses the os module to list all files in the given directory that end with '.csv',
 reads each of these files into a pandas dataframe, and then uses a set intersection to find
-the common columns among all dataframes. The final model_result is a list of the common columns.
+the common columns among all dataframes. The final model_answer_result is a list of the common columns.
 '''
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)

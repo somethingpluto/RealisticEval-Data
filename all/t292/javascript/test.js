@@ -16,6 +16,6 @@ describe('calculateRemainingPayment', () => {
     });
 
     test('handles negative inputs', () => {
-        expect(calculateRemainingPayment(2500,  0.025, 48)).toBeCloseTo(90.01,2); // This expected model_result depends on how you handle such cases
+        expect(calculateRemainingPayment(2500,  0.025, 48)).toBeCloseTo(90.01,2); // This expected model_answer_result depends on how you handle such cases
     });
 });

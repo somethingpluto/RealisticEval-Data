@@ -1,4 +1,4 @@
-from test.executor import config
+from executor import config
 
 
 class JavaExecutor:

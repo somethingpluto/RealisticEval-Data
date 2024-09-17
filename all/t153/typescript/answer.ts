@@ -12,7 +12,7 @@ function compressHash(hash: Buffer): string {
     const base = 62;
     const alphabet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-    // Initialize the model_result string
+    // Initialize the model_answer_result string
     let result = "";
 
     // Convert the number to the desired base (base 62) and construct the compressed string

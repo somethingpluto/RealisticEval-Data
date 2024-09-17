@@ -8,6 +8,6 @@ function camelCaseToCapitalizedWithSpaces(input: string): string {
         .map(word => word.charAt(0).toUpperCase() + word.slice(1))
         .join(' ');
 
-    // Trim any leading spaces and return the model_result
+    // Trim any leading spaces and return the model_answer_result
     return capitalizedString.trim();
 }

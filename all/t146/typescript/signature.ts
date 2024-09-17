@@ -4,7 +4,7 @@
  *
  * @param {number} bytes - The number of bytes to format.
  * @param {Object} options - Optional settings to customize the output.
- * @param {number} [options.decimals=0] - Number of decimal places to include in the model_result.
+ * @param {number} [options.decimals=0] - Number of decimal places to include in the model_answer_result.
  * @param {"accurate" | "normal"} [options.sizeType="normal"] -
  *        Specifies whether to use binary ("accurate") or decimal ("normal") units.
  *        "accurate" uses units like KiB, MiB (base 1024).

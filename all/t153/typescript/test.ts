@@ -23,7 +23,7 @@ describe('compressHash', () => {
         expect(result1).not.toBe(result2);
     });
 
-    test('should return a consistent model_result for the same input', () => {
+    test('should return a consistent model_answer_result for the same input', () => {
         // @ts-ignore
         const hash = crypto.createHash('sha256').update('test').digest();
         // @ts-ignore

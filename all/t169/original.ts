@@ -7,7 +7,7 @@ export function convertToRoman(num: number) {
 
     let result = "";
 
-    // loop through the Roman numeral values, subtracting from the input number and adding to the model_result string
+    // loop through the Roman numeral values, subtracting from the input number and adding to the model_answer_result string
     for (let i = 0; i < romanNumerals.length; i++) {
         while (num >= romanValues[i]) {
             result += romanNumerals[i];

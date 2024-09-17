@@ -23,7 +23,7 @@ def divide_list(lst, n):
     for i in range(n):
         # Determine the size of the current part
         part_size = base_size + (1 if i < remainder else 0)
-        # Append the sublist to the model_result list
+        # Append the sublist to the model_answer_result list
         result.append(lst[start_index:start_index + part_size])
         # Update the start index for the next part
         start_index += part_size
