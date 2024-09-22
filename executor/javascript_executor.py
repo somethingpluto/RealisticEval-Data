@@ -1,5 +1,8 @@
 import json
+import os
+import re
 import subprocess
+import time
 
 import pandas as pd
 from tqdm import tqdm
@@ -8,7 +11,7 @@ import executor.config as config
 
 
 class JavaScriptExecutor:
-    def __init__(self, model_name):
+    def __init__(self, model_name=""):
         self._env_path = config.JAVASCRIPT_RUN_ENV
         self.model_name = model_name
         self.file_path = f"{self._env_path}/test.test.js"
@@ -52,10 +55,11 @@ class JavaScriptExecutor:
                     stdout, stderr, returncode = self._execute()
 
                     item["result_return_code"] = returncode
-                    item["stderr"] = stderr
-                    item["stdout"] = stdout
+                    item["stderr"] = self._remove_color_codes(stderr)
+                    item["stdout"] = self._remove_color_codes(stdout)
 
                     data_list.append(item)
+                    time.sleep(1)
             except Exception as e:
                 print(e)
                 continue
@@ -63,7 +67,7 @@ class JavaScriptExecutor:
         data.to_excel(f"../analysis/model_answer_result/{self.model_name}/{self.model_name}_javascript.xlsx")
 
     def _execute(self):
-        command = "E: && cd E:\code\code_back\python_project\RealisticEval\RealisticEval-Data\envs\javascript && npm run test-silent"
+        command = self._generate_command()
         process = subprocess.Popen(
             command,
             stdout=subprocess.PIPE,
@@ -86,6 +90,32 @@ class JavaScriptExecutor:
             # 读取任何进程可能产生的输出
             stdout, stderr = process.communicate()
             return stdout, stderr, process.returncode
+
+    def _remove_color_codes(self, text):
+        """
+        Removes ANSI color codes from the given text.
+
+        Args:
+        text (str): The text containing ANSI color codes.
+
+        Returns:
+        str: The cleaned text without color codes.
+        """
+        # ANSI color code regex pattern
+        ansi_escape = re.compile(r'\x1B[@-_][0-?]*[ -/]*[@-~]')
+        return ansi_escape.sub('', text)
+
+    def _get_file_disk_flag(self):
+        # 获取当前文件的绝对路径
+        current_file_path = os.path.abspath(__file__)
+        # 分离盘符和路径
+        drive_letter = os.path.splitdrive(current_file_path)[0]
+        return drive_letter
+
+    def _generate_command(self):
+        driver_flag = self._get_file_disk_flag()
+        command = f"{driver_flag} && cd {driver_flag}\code\python_project\RealisticEval\RealisticEval-Data\envs\javascript && npm run test-silent"
+        return command
 
 
 if __name__ == '__main__':

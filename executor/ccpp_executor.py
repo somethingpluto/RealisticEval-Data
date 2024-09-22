@@ -9,7 +9,7 @@ from executor import config
 
 
 class CCPPExecutor:
-    def __init__(self, model_name):
+    def __init__(self, model_name=""):
         self._env_path = config.CCPP_RUN_ENV
         self.model_name = model_name
 
@@ -62,7 +62,7 @@ class CCPPExecutor:
         data.to_excel(f"../analysis/model_answer_result/{self.model_name}/{self.model_name}_c&cpp.xlsx")
 
     def _execute(self):
-        command = 'E: && cd /code/code_back/python_project/RealisticEval/RealisticEval-Data/envs && cd "c&cpp" && g++ answer_check.cpp -o answer_check && answer_check.exe'
+        command = self._generate_command()
         process = subprocess.Popen(
             command,
             stdout=subprocess.PIPE,
@@ -85,6 +85,18 @@ class CCPPExecutor:
             # 读取任何进程可能产生的输出
             stdout, stderr = process.communicate()
             return stdout, stderr, process.returncode
+
+    def _get_file_disk_flag(self):
+        # 获取当前文件的绝对路径
+        current_file_path = os.path.abspath(__file__)
+        # 分离盘符和路径
+        drive_letter = os.path.splitdrive(current_file_path)[0]
+        return drive_letter
+
+    def _generate_command(self):
+        driver_flag = self._get_file_disk_flag()
+        command = rf'{driver_flag} && cd /code/python_project/RealisticEval/RealisticEval-Data/envs && cd "c&cpp" && g++ answer_check.cpp -o answer_check && answer_check.exe'
+        return command
 
 
 if __name__ == '__main__':

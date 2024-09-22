@@ -1,20 +1,13 @@
-/**
- * calculate the time difference between the given date and the current date, and convert this time difference to days, hours, and minutes, returning the string Day: Hour: Minutes.for example return Day: 3 Hour: 3 Minutes: 15 means 3 days, 3 hours, 15 minutes before.Day: -2 Hour: -19 Minutes: -15 means 2 days, 5 hours, 45 minutes in the future
- *
- * @param {string|Date} date - The past date from which to calculate the time difference. Can be a Date object or a string that is parseable by the Date constructor.
- * @returns {string} - A formatted string representing the time difference in days, hours, and minutes.
- */
 function getTimeDifference(date) {
- // Calculate the time difference between the given date and the current date
- const timeDifference = new Date(date) - new Date();
+    const now = new Date();
+    const targetDate = new Date(date);
+    const diffMs = targetDate - now;
 
- // Calculate the number of days, hours, and minutes
- const days = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
- const hours = Math.floor((timeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
- const minutes = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60));
+    const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
 
- // Return the formatted time difference
- return `Day: ${days} Hour: ${hours} Minutes: ${minutes}`;
+    return `Day: ${days} Hour: ${hours} Minutes: ${minutes}`;
 }
 // Mock current date for consistent test results
 const mockCurrentDate = new Date('2024-08-23T15:45:00');
