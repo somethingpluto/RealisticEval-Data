@@ -4,7 +4,7 @@ import subprocess
 import pandas as pd
 from tqdm import tqdm
 
-from executor import config
+import executor.config as config
 
 
 class JavaScriptExecutor:
@@ -20,14 +20,14 @@ class JavaScriptExecutor:
             file.write(test_code)
             file.write("\n")
             file.flush()
-        result = self._execute(self.file_path)
-        print(result.stdout)
-        if result.stderr:
-            print("error：", result.stderr)
-        if result.returncode == 0:
-            print("success")
-        else:
-            print("error return code：", result.returncode)
+            self._execute()
+        # print(result.stdout)
+        # if result.stderr:
+        #     print("error：", result.stderr)
+        # if result.returncode == 0:
+        #     print("success")
+        # else:
+        #     print("error return code：", result.returncode)
 
     def batch_run(self, file_path):
         data_list = []
@@ -36,6 +36,7 @@ class JavaScriptExecutor:
 
         for item in tqdm(result_list):
             try:
+                print(item["task_id"])
                 test_code = item['test_code']
                 answer_list = item["answer_list"]
                 for index, answer in enumerate(answer_list):
@@ -48,29 +49,49 @@ class JavaScriptExecutor:
                         file.write(test_code)
                         file.write("\n")
                         file.flush()
-                    result = self._execute(self.file_path)
+                    stdout, stderr, returncode = self._execute()
 
-                    item["result_return_code"] = result.returncode
-                    item["stderr"] = result.stderr + ""
-                    item["stdout"] = result.stdout + ""
+                    item["result_return_code"] = returncode
+                    item["stderr"] = stderr
+                    item["stdout"] = stdout
 
                     data_list.append(item)
             except Exception as e:
                 print(e)
                 continue
         data = pd.DataFrame(data_list)
-        data.to_csv(f"../result/{self.model_name}_javascript.csv")
+        data.to_excel(f"../analysis/model_answer_result/{self.model_name}/{self.model_name}_javascript.xlsx")
 
-    def _execute(self, file_path):
+    def _execute(self):
         command = "E: && cd E:\code\code_back\python_project\RealisticEval\RealisticEval-Data\envs\javascript && npm run test-silent"
-        result = subprocess.run(command, capture_output=True, text=True, timeout=10, shell=True, encoding="utf8")
-        return result
+        process = subprocess.Popen(
+            command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            shell=True,
+            encoding='utf-8',
+            errors='ignore'  # 忽略编码错误
+        )
+        try:
+            # 等待进程结束或超时
+            stdout, stderr = process.communicate(timeout=10)
+            print(stdout)
+            print(stderr)
+            print("Process completed with return code:", process.returncode)
+            return stdout, stderr, process.returncode
+        except subprocess.TimeoutExpired:
+            print("Process is being killed after timeout")
+            process.kill()
+            # 读取任何进程可能产生的输出
+            stdout, stderr = process.communicate()
+            return stdout, stderr, process.returncode
 
 
 if __name__ == '__main__':
-    code = "function timestampToReadableDate(unixTimestamp) {\n    const date = new Date(unixTimestamp * 1000);\n    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];\n    const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];\n    const readableDate = `${days[date.getDay()]} ${date.getDate()} ${months[date.getMonth()]}, ${date.getHours()}:${date.getMinutes() < 10 ? '0' : ''}${date.getMinutes()}`;\n    return readableDate;\n}"
-    test_code = "describe('timestampToReadableDate', () => {\n    test('converts Unix timestamp for New Year\\'s Day', () => {\n        // January 1, 2023 00:00 GMT\n        expect(timestampToReadableDate(1672531200)).toBe('Jan 1, 8:00');\n    });\n\n    test('converts Unix timestamp for a leap day', () => {\n        // February 29, 2024 12:00 GMT (leap year)\n        expect(timestampToReadableDate(1709227200)).toBe('Mar 1, 1:20');\n    });\n\n    test('converts Unix timestamp for a summer day', () => {\n        // June 21, 2023 15:45 GMT\n        expect(timestampToReadableDate(1687362300)).toBe('Jun 21, 23:45');\n    });\n\n    test('handles minutes with leading zero', () => {\n        // October 3, 2023 02:05 GMT\n        expect(timestampToReadableDate(1696377900)).toBe('Oct 4, 8:05');\n    });\n\n    test('handles end of the year', () => {\n        // December 31, 2023 23:59 GMT\n        expect(timestampToReadableDate(1704067140)).toBe('Jan 1, 7:59');\n    });\n});"
+    code = "\nfunction getPrice(recipeId, minVal = 10, maxVal = 30) {\n  let price = 0;\n  let hash = recipeId.toString(36).padStart(32, '0');\n  for (let i = 0; i < minVal; i++) {\n    hash = hash.substring(0, 8) + Math.floor(hash / 10) * (maxVal - i) + hash.substring(8);\n  }\n  return Math.round(price * 100 / 10) / 10;\n}\n"
+    test_code = "describe('getPrice', () => {\n    test('should return a number within the default range for a given recipe ID', () => {\n        const price = getPrice('recipe123');\n        expect(price).toBeGreaterThanOrEqual(10);\n        expect(price).toBeLessThanOrEqual(30);\n    });\n\n    test('should return the same price for the same recipe ID', () => {\n        const price1 = getPrice('recipe123');\n        const price2 = getPrice('recipe123');\n        expect(price1).toBe(price2);\n    });\n\n    test('should return different prices for different recipe IDs', () => {\n        const price1 = getPrice('recipe123');\n        const price2 = getPrice('recipe456');\n        expect(price1).not.toBe(price2);\n    });\n\n    test('should return a price within a custom range', () => {\n        const minVal = 20;\n        const maxVal = 50;\n        const price = getPrice('recipe789', minVal, maxVal);\n        expect(price).toBeGreaterThanOrEqual(minVal);\n        expect(price).toBeLessThanOrEqual(maxVal);\n    });\n\n    test('should handle very long recipe IDs without error', () => {\n        const longRecipeId = 'recipe' + 'A'.repeat(1000);\n        const price = getPrice(longRecipeId);\n        expect(price).toBeGreaterThanOrEqual(10);\n        expect(price).toBeLessThanOrEqual(30);\n    });\n});"
     javascript_executor = JavaScriptExecutor(model_name="chatglm-6b")
-    # javascript_executor.single_run(code, test_code)
-    javascript_executor.batch_run(
-        "E:\code\code_back\python_project\llm\qa\chatglm-6b_answer\javascript_answer.json")
+    javascript_executor.single_run(code, test_code)
+    # javascript_executor.batch_run(
+    #     "E:\code\code_back\python_project\llm\qa\chatglm-6b_answer\javascript_answer.json")

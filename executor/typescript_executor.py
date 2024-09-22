@@ -4,7 +4,7 @@ import subprocess
 import pandas as pd
 from tqdm import tqdm
 
-from executor import config
+import executor.config as config
 
 
 class TypeScriptExecutor:
@@ -20,14 +20,7 @@ class TypeScriptExecutor:
             file.write(test_code)
             file.write("\n")
             file.flush()
-        result = self._execute(self.file_path)
-        print(result.stdout)
-        if result.stderr:
-            print("error：", result.stderr)
-        if result.returncode == 0:
-            print("success")
-        else:
-            print("error return code：", result.returncode)
+            self._execute()
 
     def batch_run(self, file_path):
         data_list = []
@@ -36,6 +29,7 @@ class TypeScriptExecutor:
 
         for item in tqdm(result_list):
             try:
+                print(item["task_id"])
                 test_code = item['test_code']
                 answer_list = item["answer_list"]
                 for index, answer in enumerate(answer_list):
@@ -48,23 +42,43 @@ class TypeScriptExecutor:
                         file.write(test_code)
                         file.write("\n")
                         file.flush()
-                    result = self._execute(self.file_path)
+                    stdout, stderr, returncode = self._execute()
 
-                    item["result_return_code"] = result.returncode
-                    item["stderr"] = result.stderr + ""
-                    item["stdout"] = result.stdout + ""
+                    item["result_return_code"] = returncode
+                    item["stderr"] = stderr
+                    item["stdout"] = stdout
 
                     data_list.append(item)
             except Exception as e:
                 print(e)
                 continue
         data = pd.DataFrame(data_list)
-        data.to_csv(f"../result/{self.model_name}_typescript.csv")
+        data.to_excel(f"../analysis/model_answer_result/{self.model_name}/{self.model_name}_typescript.xlsx")
 
-    def _execute(self, file_path):
+    def _execute(self):
         command = r"E: && cd E:\code\code_back\python_project\RealisticEval\RealisticEval-Data\envs\typescript && npm run test-silent"
-        result = subprocess.run(command, capture_output=True, text=True, timeout=10, shell=True, encoding="utf8")
-        return result
+        process = subprocess.Popen(
+            command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            shell=True,
+            encoding='utf-8',
+            errors='ignore'  # 忽略编码错误
+        )
+        try:
+            # 等待进程结束或超时
+            stdout, stderr = process.communicate(timeout=10)
+            print(stdout)
+            print(stderr)
+            print("Process completed with return code:", process.returncode)
+            return stdout, stderr, process.returncode
+        except subprocess.TimeoutExpired:
+            print("Process is being killed after timeout")
+            process.kill()
+            # 读取任何进程可能产生的输出
+            stdout, stderr = process.communicate()
+            return stdout, stderr, process.returncode
 
 
 if __name__ == '__main__':

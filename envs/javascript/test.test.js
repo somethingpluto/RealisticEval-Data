@@ -1,101 +1,48 @@
 /**
- * Extract table question from a document object containing HTML tables and return the question organized as a two-dimensional array.
- * @param {document} document
+ * calculate the time difference between the given date and the current date, and convert this time difference to days, hours, and minutes, returning the string Day: Hour: Minutes.for example return Day: 3 Hour: 3 Minutes: 15 means 3 days, 3 hours, 15 minutes before.Day: -2 Hour: -19 Minutes: -15 means 2 days, 5 hours, 45 minutes in the future
+ *
+ * @param {string|Date} date - The past date from which to calculate the time difference. Can be a Date object or a string that is parseable by the Date constructor.
+ * @returns {string} - A formatted string representing the time difference in days, hours, and minutes.
  */
-function extractCSVDataFromHTML(document) {
-  const tables = document.querySelectorAll('table');
-  const data = [];
-  
-  for (let i = 0; i < tables.length; i++) {
-    const table = tables[i];
-    const rows = table.querySelectorAll('tr');
-    
-    for (let j = 0; j < rows.length; j++) {
-      const row = rows[j];
-      const cells = row.querySelectorAll('td');
-      
-      for (let k = 0; k < cells.length; k++) {
-        const cell = cells[k];
-        const value = cell.textContent.trim();
-        
-        if (value.length > 0) {
-          data.push([value]);
-        }
-      }
-    }
-  }
-  
-  return data;
+function getTimeDifference(date) {
+ // Calculate the time difference between the given date and the current date
+ const timeDifference = new Date(date) - new Date();
+
+ // Calculate the number of days, hours, and minutes
+ const days = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+ const hours = Math.floor((timeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+ const minutes = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60));
+
+ // Return the formatted time difference
+ return `Day: ${days} Hour: ${hours} Minutes: ${minutes}`;
 }
+// Mock current date for consistent test results
+const mockCurrentDate = new Date('2024-08-23T15:45:00');
+jest.useFakeTimers().setSystemTime(mockCurrentDate);
 
-const { JSDOM } = require('jsdom');
+describe('getTimeDifference', () => {
+    test('should return correct difference for a past date', () => {
+        const result = getTimeDifference('2024-08-20T12:30:00');
+        expect(result).toBe('Day: 3 Hour: 3 Minutes: 15'); // 3 days, 3 hours, 15 minutes difference
+    });
 
-describe('HTML to CSV Extraction Tests', () => {
-  const createMockDocument = (html) => {
-    const dom = new JSDOM(html);
-    return dom.window.document;
-  };
+    test('should return correct difference for a future date', () => {
+        const result = getTimeDifference('2024-08-25T10:00:00');
+        expect(result).toBe('Day: -2 Hour: -19 Minutes: -15'); // 2 days, 5 hours, 45 minutes in the future
+    });
 
-  const extractCSVDataFromHTML = (document) => {
-    const rows = document.querySelectorAll('table.waffle tbody tr');
-    return Array.from(rows).map(row =>
-      Array.from(row.cells).map(cell => cell.textContent || "")
-    );
-  };
+    test('should return correct difference for same day with different time', () => {
+        const result = getTimeDifference('2024-08-23T10:00:00');
+        expect(result).toBe('Day: 0 Hour: 5 Minutes: 45'); // 5 hours, 45 minutes difference on the same day
+    });
 
-  test('Table with multiple rows and columns', () => {
-    const testCaseHTML = `
-      <table class="waffle">
-        <tbody>
-          <tr><td>Cell 1</td><td>Cell 2</td></tr>
-          <tr><td>Cell 3</td><td>Cell 4</td></tr>
-        </tbody>
-      </table>`;
-    const document = createMockDocument(testCaseHTML);
-    expect(extractCSVDataFromHTML(document)).toEqual([["Cell 1", "Cell 2"], ["Cell 3", "Cell 4"]]);
-  });
+    test('should return correct difference for date exactly one day ago', () => {
+        const result = getTimeDifference('2024-08-22T15:45:00');
+        expect(result).toBe('Day: 1 Hour: 0 Minutes: 0'); // 1 day difference exactly
+    });
 
-  test('Table with empty cells', () => {
-    const testCaseHTML = `
-      <table class="waffle">
-        <tbody>
-          <tr><td>Cell 1</td><td></td></tr>
-          <tr><td></td><td>Cell 4</td></tr>
-        </tbody>
-      </table>`;
-    const document = createMockDocument(testCaseHTML);
-    expect(extractCSVDataFromHTML(document)).toEqual([["Cell 1", ""], ["", "Cell 4"]]);
-  });
-
-  test('Table with only one row', () => {
-    const testCaseHTML = `
-      <table class="waffle">
-        <tbody>
-          <tr><td>Single Cell 1</td><td>Single Cell 2</td></tr>
-        </tbody>
-      </table>`;
-    const document = createMockDocument(testCaseHTML);
-    expect(extractCSVDataFromHTML(document)).toEqual([["Single Cell 1", "Single Cell 2"]]);
-  });
-
-  test('Table with only one column', () => {
-    const testCaseHTML = `
-      <table class="waffle">
-        <tbody>
-          <tr><td>Column Cell 1</td></tr>
-          <tr><td>Column Cell 2</td></tr>
-        </tbody>
-      </table>`;
-    const document = createMockDocument(testCaseHTML);
-    expect(extractCSVDataFromHTML(document)).toEqual([["Column Cell 1"], ["Column Cell 2"]]);
-  });
-
-  test('No table with the class "waffle" present', () => {
-    const testCaseHTML = `
-      <div>
-        <p>No table here!</p>
-      </div>`;
-    const document = createMockDocument(testCaseHTML);
-    expect(extractCSVDataFromHTML(document)).toEqual([]);
-  });
+    test('should return correct difference for a few minutes ago', () => {
+        const result = getTimeDifference('2024-08-23T15:40:00');
+        expect(result).toBe('Day: 0 Hour: 0 Minutes: 5'); // 5 minutes ago
+    });
 });

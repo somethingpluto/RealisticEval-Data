@@ -60,9 +60,9 @@ var addSorting = (function() {
         for (i = 0; i < colNodes.length; i += 1) {
             colNode = colNodes[i];
             col = {
-                key: colNode.getAttribute('question-col'),
-                sortable: !colNode.getAttribute('question-nosort'),
-                type: colNode.getAttribute('question-type') || 'string'
+                key: colNode.getAttribute('data-col'),
+                sortable: !colNode.getAttribute('data-nosort'),
+                type: colNode.getAttribute('data-type') || 'string'
             };
             cols.push(col);
             if (col.sortable) {
@@ -73,8 +73,8 @@ var addSorting = (function() {
         }
         return cols;
     }
-    // attaches a question attribute to every tr element with an object
-    // of question values keyed by column name
+    // attaches a data attribute to every tr element with an object
+    // of data values keyed by column name
     function loadRowData(tableRow) {
         var tableCols = tableRow.querySelectorAll('td'),
             colNode,
@@ -85,7 +85,7 @@ var addSorting = (function() {
         for (i = 0; i < tableCols.length; i += 1) {
             colNode = tableCols[i];
             col = cols[i];
-            val = colNode.getAttribute('question-value');
+            val = colNode.getAttribute('data-value');
             if (col.type === 'number') {
                 val = Number(val);
             }
@@ -93,7 +93,7 @@ var addSorting = (function() {
         }
         return data;
     }
-    // loads all row question
+    // loads all row data
     function loadData() {
         var rows = getTableBody().querySelectorAll('tr'),
             i;
@@ -102,7 +102,7 @@ var addSorting = (function() {
             rows[i].data = loadRowData(rows[i]);
         }
     }
-    // sorts the table using the question for the ith column
+    // sorts the table using the data for the ith column
     function sortByIndex(index, desc) {
         var key = cols[index].key,
             sorter = function(a, b) {

@@ -1,20 +1,36 @@
-
+/**
+ * Converts a time string in the format "XhYmZs" (hours, minutes, seconds) into milliseconds.
+ *
+ * @param str The input string representing the time duration.
+ * @returns The time in milliseconds.
+ * @throws Error if the input string does not match the expected format.
+ */
 const convertTimeHmsStringToMs = (str: string): number => {
-  const expectedFormat = 'XhYmZs';
-  let result = 0;
-  
-  if (!str.match(/^XhYmZs$/)) {
-    throw new Error(`Invalid input format: "${str}" does not match the expected format.`);
+  const regex = /^((?:\d+)h)?((?:\d+)m)?((?:\d+)s)?$/;
+  const match = str.match(regex) as RegExpMatch;
+
+  if (!match) {
+    throw new Error(`Could not parse time duration string: ${str}`);
   }
-  
-  const hours = str.match(/^Xh/)[0];
-  const minutes = str.match(/^Ym/)[0];
-  const seconds = str.match(/^Zs/)[1];
-  
-  result = ((hours * 3600) + (minutes * 60) + seconds) * 1000;
-  
-  return result;
-}
+
+  const [hours, minutes, seconds] = match.slice(1, 4);
+
+  const totalMs: number = 0;
+
+  if (hours) {
+    totalMs += Number(hours.slice(1)) * 3600000;
+  }
+
+  if (minutes) {
+    totalMs += Number(minutes.slice(1)) * 60000;
+  }
+
+  if (seconds) {
+    totalMs += Number(seconds.slice(1)) * 1000;
+  }
+
+  return totalMs;
+};
 
 describe('convertTimeHmsStringToMs', () => {
     test('converts typical time string correctly (1h30m15s)', () => {

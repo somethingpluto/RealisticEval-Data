@@ -1,19 +1,19 @@
-#include <iostream>
-#include <sstream>
-#include <iomanip>
-#include <string>
-
-float hexStringToFloat(const std::string& hexStr) {
-    unsigned int intValue;
-    std::stringstream ss;
-
-    // 将十六进制字符串转换为整数
-    ss << std::hex << hexStr;
-    ss >> intValue;
-
-    // 将整数转换为浮点数
-    float floatValue;
-    std::memcpy(&floatValue, &intValue, sizeof(floatValue));
-
-    return floatValue;
+/**
+ * @brief Extracts the last part of a complete file path with the help of a separator and returns it, or the original string if no separator is found
+ *
+ * @param filePath The complete file path as a string.
+ * @return The last part of the file path after the last separator, or the original string if no separator is found.
+ */
+std::string getLastPartOfFilepath(const std::string& filePath) {
+    std::string lastPart;
+    std::vector<std::string> parts = split(filePath, '/');
+    if (parts.empty()) {
+        parts = split(filePath, '\\');
+    }
+    if (parts.empty()) {
+        lastPart = filePath;
+    } else {
+        lastPart = parts.back();
+    }
+    return lastPart;
 }

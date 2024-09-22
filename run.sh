@@ -2,14 +2,14 @@
 
 source ~/anaconda3/etc/profile.d/conda.sh
 
-# chatglm3
-echo "chatglm3 start"
-conda activate chatglm3
-
-python /home/whut/chx/chatglm3/main.py --languages python javascript typescript c\&cpp --rounds 1 | tee chatglm3.txt
-
-conda deactivate
-echo "chatglm3 finish"
+## chatglm3
+#echo "chatglm3 start"
+#conda activate chatglm3
+#
+#python /home/whut/chx/chatglm3/main.py --languages python javascript typescript c\&cpp --rounds 1 | tee chatglm3.txt
+#
+#conda deactivate
+#echo "chatglm3 finish"
 
 # codegeex4
 echo "codegeex4 start"
@@ -18,12 +18,12 @@ python /home/whut/chx/codegeex4/main.py --languages python javascript typescript
 conda deactivate
 echo "codegeex4 finish"
 
-# codellama
-echo "codellama start"
-conda activate pytorch
-python /home/whut/chx/codellama/main.py --languages python javascript typescript c\&cpp --rounds 1 | tee codellama.txt
-conda deactivate
-echo "codellama finish"
+## codellama
+#echo "codellama start"
+#conda activate pytorch
+#python /home/whut/chx/codellama/main.py --languages python javascript typescript c\&cpp --rounds 1 | tee codellama.txt
+#conda deactivate
+#echo "codellama finish"
 
 # codegen2.5
 echo "codegen2.5 start"
