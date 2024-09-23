@@ -8,11 +8,12 @@ import pandas as pd
 from tqdm import tqdm
 
 import executor.executor_config as config
+JAVASCRIPT_RUN_ENV = "../envs/javascript"
 
 
 class JavaScriptExecutor:
     def __init__(self, model_name=""):
-        self._env_path = config.JAVASCRIPT_RUN_ENV
+        self._env_path = JAVASCRIPT_RUN_ENV
         self.model_name = model_name
         self.file_path = f"{self._env_path}/test.test.js"
 

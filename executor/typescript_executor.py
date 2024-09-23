@@ -6,12 +6,12 @@ import subprocess
 import pandas as pd
 from tqdm import tqdm
 
-import executor.executor_config as config
 
+TYPESCRIPT_RUN_ENV = "../envs/typescript"
 
 class TypeScriptExecutor:
     def __init__(self, model_name=""):
-        self._env_path = config.TYPESCRIPT_RUN_ENV
+        self._env_path = TYPESCRIPT_RUN_ENV
         self.model_name = model_name
         self.file_path = f"{self._env_path}/test.test.ts"
 
