@@ -20,6 +20,7 @@ class PythonExecutor:
             file.write(test_code)
             file.write("\n")
             file.write("if __name__ == '__main__':")
+            file.write("\n")
             file.write("    unittest.main()")
             file.flush()
             self._execute(f"{self._env_path}/temp.py")
