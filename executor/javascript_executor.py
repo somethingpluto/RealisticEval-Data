@@ -7,7 +7,7 @@ import time
 import pandas as pd
 from tqdm import tqdm
 
-import executor.config as config
+import executor.executor_config as config
 
 
 class JavaScriptExecutor:

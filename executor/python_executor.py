@@ -3,7 +3,7 @@ import os.path
 
 import pandas as pd
 
-import executor.config as config
+import executor.executor_config as config
 import subprocess
 from tqdm import tqdm
 

@@ -1,4 +1,4 @@
-from executor import config
+from executor import executor_config
 
 
 class JavaExecutor:

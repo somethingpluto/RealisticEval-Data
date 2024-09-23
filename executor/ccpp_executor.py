@@ -5,7 +5,7 @@ import subprocess
 import pandas as pd
 from tqdm import tqdm
 
-from executor import config
+from executor import executor_config
 
 
 class CCPPExecutor:
