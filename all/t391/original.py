@@ -15,12 +15,6 @@ from functools import partial
 
 import numpy as np
 import jax.numpy as jnp
-import jax
-from flax import linen as nn
-from flax.struct import dataclass
-
-import calcil as cc
-
 
 BOX_OFFSETS_4D = jnp.asarray([[[i,j,k, l] for i in [0, 1] for j in [0, 1] for k in [0, 1] for l in [0, 1]]])
 BOX_OFFSETS_3D = jnp.asarray([[[i,j,k] for i in [0, 1] for j in [0, 1] for k in [0, 1]]])
