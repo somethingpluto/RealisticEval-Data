@@ -6,7 +6,7 @@ from PIL import Image
 
 def rotatedCrop(img, corners):
     image = Image.fromarray(img)
-    #code written by chatgpt4
+    # code written by chatgpt4
     upper_left, upper_right, lower_right, lower_left = corners
 
     # Calculate the width and height of the unrotated box

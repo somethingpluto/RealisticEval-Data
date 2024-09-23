@@ -7,7 +7,6 @@ import time
 import pandas as pd
 from tqdm import tqdm
 
-import executor.executor_config as config
 JAVASCRIPT_RUN_ENV = "../envs/javascript"
 
 

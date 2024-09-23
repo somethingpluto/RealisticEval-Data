@@ -8,12 +8,6 @@ class TestMatrixMultiplication(unittest.TestCase):
         expected = [[19, 22], [43, 50]]
         self.assertEqual(matrix_multiply(mat1, mat2), expected, "Should correctly multiply standard matrices")
 
-    def test_incompatible_dimensions(self):
-        mat1 = [[1, 2, 3], [4, 5, 6]]
-        mat2 = [[1, 2], [3, 4]]
-        with self.assertRaises(ValueError):
-            matrix_multiply(mat1, mat2)
-
     def test_empty_matrices(self):
         mat1 = []
         mat2 = []

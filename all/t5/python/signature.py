@@ -4,10 +4,11 @@ from typing import List
 def matrix_multiply(matrixA: List[List[int]], matrixB: List[List[int]]) -> List[List[int]]:
     """
     Implementing matrix multiplication
+
     Args:
-        matrixA (): matrix A
-        matrixB (): matrix B
+        matrixA (List[List[int]]): matrix A
+        matrixB (List[List[int]]): matrix B
 
-    Returns: matrixA matrixB multiplication model_answer_result
-
+    Returns:
+        List[List[int]]: matrixA matrixB multiplication model_answer_result
     """

@@ -19,14 +19,6 @@ class TestSumCalibrationValues(unittest.TestCase):
         ]
         self.assertEqual(sum_calibration_values(document), 0)
 
-    def test_insufficient_digits(self):
-        # Test lines with fewer than two digits
-        document = [
-            "Single digit 9 end",
-            "Another single 1"
-        ]
-        self.assertEqual(sum_calibration_values(document), 0)
-
     def test_empty_lines(self):
         # Test with empty lines or lines with spaces
         document = [

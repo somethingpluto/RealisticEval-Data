@@ -1,107 +1,85 @@
-import os
+import difflib
+from typing import List
 
 
-def display_tree(dir_path, indent=''):
+def compare_files(file1_path:str, file2_path:str) -> List[str]:
     """
-    Recursively displays the file and directory structure under the specified directory path.
+    Compare the contents of two files and print the differences in unified diff format.
 
     Args:
-    - dir_path (str): The path to the directory whose contents are to be displayed.
-    - indent (str): The indentation string used to display the tree structure levels.
+    file1_path (str): Path to the first file.
+    file2_path (str): Path to the second file.
+
+    Returns:
+    List[str]: A list containing the lines of differences, if any.
+
+    Raises:
+    FileNotFoundError: If either file does not exist.
+    IOError: If there is an error reading the files.
     """
-    # Get all entries in the directory sorted by name
     try:
-        items = sorted(os.listdir(dir_path))
-    except PermissionError:
-        print(indent + "Permission denied.")
-        return
+        with open(file1_path, 'r') as file1, open(file2_path, 'r') as file2:
+            lines1 = file1.readlines()
+            lines2 = file2.readlines()
     except FileNotFoundError:
-        print(indent + "Directory not found.")
-        return
+        raise FileNotFoundError("One of the files was not found.")
+    except IOError as e:
+        raise IOError(f"Error reading files: {e}")
 
-    # Iterate over each item in the sorted list of directory contents
-    for index, item in enumerate(items):
-        # Determine the full path of the item
-        full_path = os.path.join(dir_path, item)
+    diff = difflib.unified_diff(lines1, lines2, fromfile=file1_path, tofile=file2_path)
+    diff_lines = list(diff)
 
-        # Check if the item is the last in the list to adjust the tree branch
-        if index == len(items) - 1:
-            print(indent + '└── ' + item)
-            next_indent = indent + '    '
-        else:
-            print(indent + '├── ' + item)
-            next_indent = indent + '│   '
+    for line in diff_lines:
+        print(line, end="")
 
-        # If the item is a directory, recurse into it
-        if os.path.isdir(full_path):
-            display_tree(full_path, next_indent)
+    return diff_lines
+
 import unittest
-from unittest.mock import patch
+from unittest.mock import mock_open, patch
 
 
-class TestDisplayTree(unittest.TestCase):
-    @patch('os.listdir')
-    @patch('os.path.isdir')
-    @patch('os.path.join')
-    def test_empty_directory(self, mock_join, mock_isdir, mock_listdir):
-        # Test displaying an empty directory
-        mock_listdir.return_value = []
-        mock_isdir.return_value = False
+class TestCompareFiles(unittest.TestCase):
+    def test_identical_files(self):
+        # Mock question for two identical files
+        file1_content = "Line1\nLine2\nLine3\n"
+        file2_content = "Line1\nLine2\nLine3\n"
+        mocker = mock_open(read_data=file1_content)
+        mocker.side_effect = [mocker.return_value, mock_open(read_data=file2_content).return_value]
+        with patch('builtins.open', mocker):
+            result = compare_files('file1.txt', 'file2.txt')
+            self.assertEqual(len(result), 0, "There should be differences detected")
 
-        with patch('builtins.print') as mock_print:
-            display_tree('empty_dir')
-            mock_print.assert_called_once_with("Displaying tree for: empty_dir with indent ''")
+    def test_files_with_differences(self):
+        # Mock question for two different files
+        file1_content = "Line1\nLine2\nLine3\n"
+        file2_content = "Line1\nLineChanged\nLine3\n"
+        mocker = mock_open(read_data=file1_content)
+        mocker.side_effect = [mocker.return_value, mock_open(read_data=file2_content).return_value]
+        with patch('builtins.open', mocker):
+            result = compare_files('file1.txt', 'file2.txt')
+            self.assertNotEqual(len(result), 0, "There should be differences detected")
 
-    @patch('os.listdir')
-    @patch('os.path.isdir')
-    @patch('os.path.join')
-    def test_directory_with_files(self, mock_join, mock_isdir, mock_listdir):
-        # Test a directory with only files
-        mock_listdir.return_value = ['file1.txt', 'file2.txt']
-        mock_isdir.side_effect = [False, False]
+    def test_nonexistent_file(self):
+        # Test when one of the files does not exist
+        with patch('builtins.open', side_effect=FileNotFoundError("File not found")):
+            with self.assertRaises(FileNotFoundError):
+                compare_files('nonexistent.txt', 'file2.txt')
 
-        with patch('builtins.print') as mock_print:
-            display_tree('dir_with_files')
-            mock_print.assert_any_call("Displaying tree for: dir_with_files with indent ''")
-            mock_print.assert_any_call("├── file1.txt")
-            mock_print.assert_any_call("└── file2.txt")
+    def test_file_reading_error(self):
+        # Test when there's an error reading the file
+        with patch('builtins.open', side_effect=IOError("Error reading file")):
+            with self.assertRaises(IOError):
+                compare_files('file1.txt', 'file2.txt')
 
-    @patch('os.listdir')
-    @patch('os.path.isdir')
-    @patch('os.path.join')
-    def test_nested_directories(self, mock_join, mock_isdir, mock_listdir):
-        # Test a directory with nested directories
-        mock_listdir.side_effect = [['dir1', 'dir2'], ['file1'], []]
-        mock_isdir.side_effect = [True, True, False, False]
-
-        with patch('builtins.print') as mock_print:
-            display_tree('nested_dir')
-            mock_print.assert_any_call("Displaying tree for: nested_dir with indent ''")
-            mock_print.assert_any_call("├── dir1")
-            mock_print.assert_any_call("│   └── file1")
-            mock_print.assert_any_call("└── dir2")
-
-    @patch('os.listdir')
-    @patch('os.path.isdir')
-    @patch('os.path.join')
-    def test_directory_with_permission_error(self, mock_join, mock_isdir, mock_listdir):
-        # Test directory access with a permission error
-        mock_listdir.side_effect = PermissionError("Permission denied")
-
-        with patch('builtins.print') as mock_print:
-            display_tree('restricted_dir')
-            mock_print.assert_called_once_with("Permission denied.")
-
-    @patch('os.listdir')
-    @patch('os.path.isdir')
-    @patch('os.path.join')
-    def test_non_existent_directory(self, mock_join, mock_isdir, mock_listdir):
-        # Test non-existent directory handling
-        mock_listdir.side_effect = FileNotFoundError("Directory not found")
-
-        with patch('builtins.print') as mock_print:
-            display_tree('nonexistent_dir')
-            mock_print.assert_called_once_with("Directory not found.")
+    def test_multiple_lines_of_differences(self):
+        # Test files with multiple differences
+        file1_content = "Line1\nLine2\nLine3\nLine4\n"
+        file2_content = "Line1\nLine2 changed\nLine3\nLine4 modified\n"
+        mocker = mock_open(read_data=file1_content)
+        mocker.side_effect = [mocker.return_value, mock_open(read_data=file2_content).return_value]
+        with patch('builtins.open', mocker):
+            result = compare_files('file1.txt', 'file2.txt')
+            self.assertTrue(len(result) > 1, "Multiple differences should be reported")
 
 if __name__ == '__main__':
     unittest.main()

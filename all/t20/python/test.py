@@ -2,8 +2,6 @@ import unittest
 
 
 class TestProcessMarkdown(unittest.TestCase):
-
-
     def test_single_asterisk_pair(self):
         content = "This is a *test.js* string."
         expected = "This is a *test.js* string."

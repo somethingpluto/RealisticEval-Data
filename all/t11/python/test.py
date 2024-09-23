@@ -1,7 +1,5 @@
 import unittest
 
-from total_python.t11.adapted import Trie
-
 
 class TestTrie(unittest.TestCase):
     def setUp(self):

@@ -61,7 +61,7 @@ class PythonExecutor:
 
     def _execute(self, file_path):
         abs_path = os.path.abspath(file_path)
-        command = rf"D:\sdk\python\venvs\realisticeval\Scripts\python.exe {abs_path}"
+        command = rf"X:\code\python_project\RealisticEval\RealisticEval-Data\venv\Scripts\python.exe {abs_path}"
         process = subprocess.Popen(
             command,
             stdout=subprocess.PIPE,
