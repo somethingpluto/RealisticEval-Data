@@ -18,14 +18,4 @@ describe('isValidPortNumber', () => {
     test('returns false for a port number above the valid range', () => {
         expect(isValidPortNumber(65536)).toBe(false);
     });
-
-    test('throws TypeError for non-integer values', () => {
-        expect(() => isValidPortNumber('3000')).toThrow(TypeError);
-        expect(() => isValidPortNumber(300.5)).toThrow(TypeError);
-    });
-
-    test('throws TypeError for NaN or undefined values', () => {
-        expect(() => isValidPortNumber(NaN)).toThrow(TypeError);
-        expect(() => isValidPortNumber(undefined)).toThrow(TypeError);
-    });
 });

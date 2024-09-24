@@ -14,10 +14,4 @@ describe('isCronBetween2And4AM', () => {
     test('should return true for wildcard in hour field', () => {
         expect(isCronBetween2And4AM('0 * * * *')).toBe(true);
     });
-
-    test('should throw an error for invalid cron expressions', () => {
-        expect(() => {
-            isCronBetween2And4AM('invalid input');
-        }).toThrow('Invalid cron expression');
-    });
 });

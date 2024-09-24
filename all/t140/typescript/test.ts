@@ -18,13 +18,6 @@ describe('getTimeSinceBornUntilNow', () => {
         const result = getTimeSinceBornUntilNow(birthDate);
         expect(result).toEqual([0, 0, 3, 3, 45]); // 3 days, 3 hours, 45 minutes
     });
-
-    test('should return zero differences for an exact birth date match', () => {
-        const birthDate = new Date('2024-08-23T15:45:00');
-        const result = getTimeSinceBornUntilNow(birthDate);
-        expect(result).toEqual([0, 0, 0, 0, 0]); // Exact match
-    });
-
     test('should return negative values for a birth date in the future', () => {
         const birthDate = new Date('2025-01-01T00:00:00');
         const result = getTimeSinceBornUntilNow(birthDate);

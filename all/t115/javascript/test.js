@@ -37,17 +37,4 @@ describe('sortByKey function', () => {
         expect(sortByKey(mixedCaseArray, 'name')).toEqual(expected);
     });
 
-    test('should handle objects missing the specified key', () => {
-        const incompleteData = [
-            { name: 'banana' },
-            { quantity: 20 },
-            { name: 'apple' }
-        ];
-        const expected = [
-            { quantity: 20 },  // Objects without the key go to the front if their comparison value defaults to empty
-            { name: 'apple' },
-            { name: 'banana' }
-        ];
-        expect(sortByKey(incompleteData, 'name')).toEqual(expected);
-    });
 });

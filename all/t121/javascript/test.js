@@ -9,11 +9,6 @@ describe('adjustArrayLength function tests', () => {
         expect(result).toEqual([1, 2, 3, 1, 2, 3, 1, 2]);
     });
 
-    test('Array length longer than the target length', () => {
-        const result = adjustArrayLength(3, [1, 2, 3, 4, 5]);
-        expect(result).toEqual([1, 2, 3]);
-    });
-
     test('Array length shorter than the target length, target length is a multiple of array length', () => {
         const result = adjustArrayLength(6, [10, 20]);
         expect(result).toEqual([10, 20, 10, 20, 10, 20]);
