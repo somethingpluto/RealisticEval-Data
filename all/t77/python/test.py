@@ -1,3 +1,6 @@
+import unittest
+from typing import Optional
+
 class TestFormatTimestampToString(unittest.TestCase):
     def test_basic_functionality(self):
         """Test basic functionality with a known timestamp."""

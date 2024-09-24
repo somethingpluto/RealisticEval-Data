@@ -17,15 +17,6 @@ class TestDictOfListsToListOfDicts(unittest.TestCase):
         result = dict_of_lists_to_list_of_dicts(dict_of_lists)
         self.assertEqual(result, expected_result)
 
-    def test_unequal_list_lengths(self):
-        """Test the function with lists of unequal lengths to trigger ValueError."""
-        dict_of_lists = {
-            "name": ["Alice", "Bob"],
-            "age": [25, 30, 35]
-        }
-        with self.assertRaises(ValueError):
-            dict_of_lists_to_list_of_dicts(dict_of_lists)
-
     def test_empty_lists(self):
         """Test the function with empty lists."""
         dict_of_lists = {

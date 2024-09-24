@@ -19,10 +19,11 @@ public static int getMaxCount (List //){
  Write your code here}
 """
 
-def getMaxCount(people,status):
+
+def getMaxCount(people, status):
     people_at_party_at_t = set()
 
-    for i,person in enumerate(people):
+    for i, person in enumerate(people):
         if status[i] == '+':
             if person in people_at_party_at_t:
                 return -1
@@ -39,9 +40,6 @@ def getMaxCount(people,status):
     return len(people_at_party_at_t)
 
 
-
-
-
 # people = [1,2,1]
 # status = ['+','+','-']
 # ans = getMaxCount(people,status)
@@ -55,29 +53,31 @@ def test_getMaxCount():
         # Basic test cases
         ([1, 2, 1], ['+', '+', '-'], 1),
         ([1, 2, 3], ['+', '+', '-'], -1),  # Person 3 not present at the start
-        ([1, 2, 1], ['+', '-', '+'], -1),  # Person 1 leaves before the end : p1 enters twice and p2 leaves without entering
+        ([1, 2, 1], ['+', '-', '+'], -1),
+        # Person 1 leaves before the end : p1 enters twice and p2 leaves without entering
         ([1, 2, 1], ['+', '+', '+'], -1),  # Person 1 can't enter the party twice
         ([1, 2, 1], ['-', '-', '-'], -1),  # All people leave without entering
-        
+
         # Edge cases
-        ([], [], 0),                       # Empty input
-        ([1], ['+'], 1),                   # Single person enters
-        ([1], ['-'], -1),                  # Single person leaves without entering
+        ([], [], 0),  # Empty input
+        ([1], ['+'], 1),  # Single person enters
+        ([1], ['-'], -1),  # Single person leaves without entering
         ([1, 1, 1], ['+', '+', '-'], -1),  # All enter and then one leaves
-        ([1, 2, 3], ['+', '+', '+'], 3),   # All try to enter at the same time
+        ([1, 2, 3], ['+', '+', '+'], 3),  # All try to enter at the same time
         ([1, 2, 3], ['-', '-', '-'], -1),  # All leave without entering
     ]
-    
+
     passed = True
     for i, (people, status, expected) in enumerate(test_cases):
         result = getMaxCount(people, status)
         if result != expected:
             passed = False
             print(f"Test case {i + 1} failed: Got {result}, Expected {expected}")
-    
+
     if passed:
         print("All test cases passed.")
     else:
         print("Some test cases failed.")
+
 
 test_getMaxCount()

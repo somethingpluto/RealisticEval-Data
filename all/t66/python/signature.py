@@ -13,7 +13,6 @@ class LeveledCourse:
         self.course = course
         self.level = level
 
-
 def topological_sort(courses: Iterable[Course]) -> List[LeveledCourse]:
     """
     Performs a topological sort on a collection of courses using Kahn's algorithm.

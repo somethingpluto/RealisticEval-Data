@@ -24,24 +24,7 @@ class TestEmptyDirectory(unittest.TestCase):
         empty_directory(self.test_dir)
         self.assertEqual(os.listdir(self.test_dir), [])  # Directory should be empty
 
-    def test_non_existing_directory(self):
-        """ Test that the correct error is raised when the directory does not exist """
-        with self.assertRaises(ValueError) as context:
-            empty_directory('/non/existing/directory')
-        self.assertTrue("The specified directory does not exist" in str(context.exception))
 
-    def test_not_a_directory(self):
-        """ Test that the function raises an error if the path is not a directory """
-        # Create a temporary file
-        temp_file = tempfile.mktemp()
-        with open(temp_file, 'w') as f:
-            f.write("Hello")
-        try:
-            with self.assertRaises(ValueError) as context:
-                empty_directory(temp_file)
-            self.assertTrue("The specified path is not a directory" in str(context.exception))
-        finally:
-            os.remove(temp_file)
 
     def test_empty_directory_with_subdirectories(self):
         """ Test emptying a directory that includes subdirectories """

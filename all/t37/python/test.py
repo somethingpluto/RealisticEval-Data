@@ -1,5 +1,8 @@
 import unittest
 
+import numpy as np
+
+
 class QuadratureRule:
     def __init__(self, x, w):
         self.x = np.array(x)

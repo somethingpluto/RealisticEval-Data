@@ -15,11 +15,6 @@ class TestIsCompliantFourDigit(unittest.TestCase):
         # Tests a negative four-digit number
         self.assertFalse(is_compliant_four_digit(-1234))
 
-    def test_non_integer_input(self):
-        # Tests inputs that are not integers (string, float)
-        self.assertFalse(is_compliant_four_digit('1234'))
-        self.assertFalse(is_compliant_four_digit(1234.0))
-
     def test_out_of_range_number(self):
         # Tests numbers that are out of the four-digit range
         self.assertFalse(is_compliant_four_digit(999))

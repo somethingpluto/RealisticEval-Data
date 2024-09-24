@@ -1,4 +1,5 @@
 import unittest
+from collections import defaultdict
 
 
 class TestGraphCycles(unittest.TestCase):

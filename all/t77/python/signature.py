@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import Optional
 
 def format_timestamp_to_string(timestamp: float, date_format: Optional[str] = '%a %b %d %I:%M:%S %p %z %Y') -> str:

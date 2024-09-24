@@ -1,5 +1,16 @@
 import unittest
 
+class Course:
+    def __init__(self, course_id, must_courses=None, recommend_courses=None):
+        self.id = course_id
+        self.must_courses = must_courses if must_courses is not None else []
+        self.recommend_courses = recommend_courses if recommend_courses is not None else []
+
+
+class LeveledCourse:
+    def __init__(self, course: Course, level: int):
+        self.course = course
+        self.level = level
 
 class TestTopologicalSort(unittest.TestCase):
 

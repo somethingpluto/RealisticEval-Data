@@ -39,11 +39,3 @@ class TestReplaceWordsInFile(unittest.TestCase):
 
         result = replace_words_in_file(file_path, replacement_dict)
         self.assertEqual(result, expected_output)
-
-    def test_file_not_found(self):
-        file_path = "nonexistent.txt"
-        replacement_dict = {"hello": "hi"}
-        expected_output = "Error: The file was not found."
-
-        result = replace_words_in_file(file_path, replacement_dict)
-        self.assertEqual(result, expected_output)

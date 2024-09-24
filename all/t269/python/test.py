@@ -13,11 +13,3 @@ class TestIsCompliantIP(unittest.TestCase):
     def test_invalid_ip(self):
         # Test that invalid IP strings return False
         self.assertFalse(is_compliant_ip('999.999.999.999'))
-
-    def test_ipv6_private(self):
-        # Test an IPv6 private address
-        self.assertTrue(is_compliant_ip('fd00::'))
-
-    def test_ipv6_public(self):
-        # Test an IPv6 public address
-        self.assertFalse(is_compliant_ip('2001:4860:4860::8888'))

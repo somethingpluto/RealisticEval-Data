@@ -1,7 +1,7 @@
-import datetime
+from datetime import datetime
 
 
-def find_nth_weekday_of_specific_year(y: int, m: int, n: int, k: int) -> datetime.datetime:
+def find_nth_weekday_of_specific_year(y: int, m: int, n: int, k: int) -> datetime:
     """
     Calculates the date of the nth occurrence of a specific weekday (k) in a given month (m) and year (y).
     If the nth occurrence does not exist within the month, it returns the last occurrence of that weekday in the month.
@@ -14,6 +14,6 @@ def find_nth_weekday_of_specific_year(y: int, m: int, n: int, k: int) -> datetim
         k (int): The weekday, where Monday is 0 and Sunday is 6.
 
     Returns:
-        datetime.datetime: The calculated date of the nth occurrence of the weekday in the given month and year.
+        datetime: The calculated date of the nth occurrence of the weekday in the given month and year.
       If the nth occurrence does not exist, returns the date of the last occurrence of that weekday in the month.
     """

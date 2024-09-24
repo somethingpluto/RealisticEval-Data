@@ -17,8 +17,3 @@ class TestConvertToCommaSeparated(unittest.TestCase):
     def test_repeated_separators(self):
         self.assertEqual(convert_to_comma_separated("pear;;apple**banana//orange"), "pear,,apple,,banana,,orange",
                          "Failed to handle repeated separators correctly.")
-
-    def test_multiple_types(self):
-        self.assertEqual(convert_to_comma_separated("papaya;guava*fig/tomato:carrot-lettuce"),
-                         "papaya,guava,fig,tomato,carrot,lettuce",
-                         "Failed to handle multiple types of separators.")

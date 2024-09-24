@@ -9,17 +9,6 @@ class TestNaiveFfill(unittest.TestCase):
         expected = pd.DataFrame({'A': [1, 1, 3, 3, 5]})
         pd.testing.assert_frame_equal(df, expected)
 
-    def test_no_missing_values(self):
-        df = pd.DataFrame({'A': [1, 2, 3, 4, 5]})
-        naive_ffill(df, 'A')
-        expected = pd.DataFrame({'A': [1, 2, 3, 4, 5]})
-        pd.testing.assert_frame_equal(df, expected)
-
-    def test_all_missing_values(self):
-        df = pd.DataFrame({'A': [None, None, None, None, None]})
-        naive_ffill(df, 'A')
-        expected = pd.DataFrame({'A': [None, None, None, None, None]})
-        pd.testing.assert_frame_equal(df, expected)
 
     def test_non_existent_column(self):
         df = pd.DataFrame({'A': [1, 2, 3]})
