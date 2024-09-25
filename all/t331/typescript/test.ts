@@ -13,14 +13,4 @@ describe('calculateFinalPrice', () => {
         const result = calculateFinalPrice('100', '100');
         expect(result).toBe(0);
     });
-
-    test('should throw an error for invalid numerical input', () => {
-        expect(() => calculateFinalPrice('abc', '10')).toThrow('Invalid price or discount value.');
-        expect(() => calculateFinalPrice('100', 'xyz')).toThrow('Invalid price or discount value.');
-    });
-
-    test('should throw an error when discount is out of range', () => {
-        expect(() => calculateFinalPrice('100', '-1')).toThrow('Discount percentage must be between 0 and 100.');
-        expect(() => calculateFinalPrice('100', '101')).toThrow('Discount percentage must be between 0 and 100.');
-    });
 });

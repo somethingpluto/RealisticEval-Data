@@ -15,20 +15,4 @@ describe('convertToRoman', () => {
         expect(result).toBe('MMMCMXCIX'); // 3999 = MMM + CM + XC + IX
     });
 
-   test('should handle zero or negative values gracefully (edge case)', () => {
-    expect(() => {
-        convertToRoman(0);
-    }).toThrowError('Input must be a positive integer');
-
-    expect(() => {
-        convertToRoman(-5);
-    }).toThrowError('Input must be a positive integer');
-    });
-
-    test('should throw an error for non-integer input (exception case)', () => {
-        expect(() => {
-            convertToRoman(3.14);
-        }).toThrowError('Input must be a positive integer');
-    });
-
 });

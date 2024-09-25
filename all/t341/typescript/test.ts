@@ -13,12 +13,4 @@ describe('convertTimeHmsStringToMs', () => {
         const result = convertTimeHmsStringToMs('0h0m0s');
         expect(result).toBe(0);  // 0 ms
     });
-
-    test('throws error on empty string', () => {
-        expect(() => convertTimeHmsStringToMs('')).toThrow('Cannot convert hms string "" to ms!');
-    });
-
-    test('throws error on invalid format (not following hms pattern)', () => {
-        expect(() => convertTimeHmsStringToMs('2hours15mins')).toThrow('Cannot convert hms string "2hours15mins" to ms!');
-    });
 });

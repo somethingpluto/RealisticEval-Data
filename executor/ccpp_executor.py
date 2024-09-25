@@ -95,7 +95,7 @@ class CCPPExecutor:
 
     def _generate_command(self):
         driver_flag = self._get_file_disk_flag()
-        command = rf'{driver_flag} && cd /code/python_project/RealisticEval/RealisticEval-Data/envs && cd "c&cpp" && g++ answer_check.cpp -o answer_check && answer_check.exe'
+        command = rf'{driver_flag} && cd /code/python_project/RealisticEval-Data/envs && cd "c&cpp" && g++ answer_check.cpp -o answer_check && answer_check.exe'
         return command
 
 

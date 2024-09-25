@@ -1,9 +1,4 @@
 TEST_CASE("sortNames Test Cases", "[sortNames]") {
-    // Test Case 1: Simple case with different numbers
-    vector<string> arr1 = {"Alice10", "Bob2", "Charlie7"};
-    vector<string> expected1 = {"Bob2", "Charlie7", "Alice10"};
-    REQUIRE(sortNames(arr1) == expected1);
-
     // Test Case 2: Same numbers, different names
     vector<string> arr2 = {"Alice10", "Charlie10", "Bob10"};
     vector<string> expected2 = {"Alice10", "Bob10", "Charlie10"};

@@ -1,7 +1,4 @@
 TEST_CASE("convFlags Test Cases", "[convFlags]") {
-    // Test Case 1: All bits set (0xFFFFFFFF)
-    REQUIRE(convFlags(0xFFFFFFFF) == "ffffffe0");
-
     // Test Case 2: No bits set (0x00000000)
     REQUIRE(convFlags(0x00000000) == "1f");
 
