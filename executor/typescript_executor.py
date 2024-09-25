@@ -6,8 +6,8 @@ import subprocess
 import pandas as pd
 from tqdm import tqdm
 
-
 TYPESCRIPT_RUN_ENV = "../envs/typescript"
+
 
 class TypeScriptExecutor:
     def __init__(self, model_name=""):
@@ -105,6 +105,7 @@ class TypeScriptExecutor:
 
     def _generate_command(self):
         driver_flag = self._get_file_disk_flag()
+        # TODO: 替换为 本机中 RealisticEval-Data\envs\typescript 文件中的路径 不必填写盘符
         command = rf"{driver_flag} && cd {driver_flag}\code\python_project\RealisticEval\RealisticEval-Data\envs\typescript && npm run test-silent"
         return command
 

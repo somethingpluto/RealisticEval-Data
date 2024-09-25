@@ -95,6 +95,7 @@ class CCPPExecutor:
 
     def _generate_command(self):
         driver_flag = self._get_file_disk_flag()
+        # TODO：替换为 本机中 /code/python_project/RealisticEval-Data/envs 文件中的路径 不必填写盘符
         command = rf'{driver_flag} && cd /code/python_project/RealisticEval-Data/envs && cd "c&cpp" && g++ answer_check.cpp -o answer_check && answer_check.exe'
         return command
 

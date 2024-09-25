@@ -114,6 +114,7 @@ class JavaScriptExecutor:
 
     def _generate_command(self):
         driver_flag = self._get_file_disk_flag()
+        #TODO: 替换为 本机中 RealisticEval-Data\envs\javascript 文件中的路径 不必填写盘符
         command = f"{driver_flag} && cd {driver_flag}\code\python_project\RealisticEval\RealisticEval-Data\envs\javascript && npm run test-silent"
         return command
 
