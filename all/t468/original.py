@@ -1,4 +1,7 @@
-def get_translation(matrix: 'rai.typing.Affine') -> np.typing.NDArray[np.float64]:
+import numpy as np
+
+
+def get_translation(matrix: np.array) -> np.typing.NDArray[np.float64]:
     """
     Given an affine matrix, return the corresponding translation.
     Written by ChatGPT

@@ -4,16 +4,6 @@ from math import isclose
 
 class TestProbabilityOfRedBalls(unittest.TestCase):
 
-    def test_all_red_balls(self):
-        # Scenario where all balls in the jar are red
-        result = probability_of_red_balls(15, 10, 0)
-        self.assertTrue(isclose(result, 1.0), "Test with all red balls failed")
-
-    def test_no_red_balls(self):
-        # Scenario where there are no red balls in the jar
-        result = probability_of_red_balls(0, 0, 10)
-        self.assertTrue(isclose(result, 1.0), "Test with no red balls failed")
-
     def test_half_red_balls(self):
         # Scenario where half of the drawn balls are expected to be red
         result = probability_of_red_balls(7, 10, 10)

@@ -1,3 +1,6 @@
+import numpy as np
+
+
 def lancz(n, quadrature_rule):
     """Implements the Lanczos algorithm for computing the coefficients of the
     recurrent relations of the orthogonal polynomials.

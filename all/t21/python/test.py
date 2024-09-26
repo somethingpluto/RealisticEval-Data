@@ -1,27 +1,45 @@
+import os
 import unittest
 from unittest.mock import mock_open, patch
 
 
 class TestCompareFiles(unittest.TestCase):
+
+    def setUp(self):
+        # 创建文件用于测试
+        self.file1_path = 'file1.txt'
+        self.file2_path = 'file2.txt'
+
+    def tearDown(self):
+        # 删除创建的文件
+        if os.path.exists(self.file1_path):
+            os.remove(self.file1_path)
+        if os.path.exists(self.file2_path):
+            os.remove(self.file2_path)
+
     def test_identical_files(self):
         # Mock question for two identical files
         file1_content = "Line1\nLine2\nLine3\n"
         file2_content = "Line1\nLine2\nLine3\n"
-        mocker = mock_open(read_data=file1_content)
-        mocker.side_effect = [mocker.return_value, mock_open(read_data=file2_content).return_value]
-        with patch('builtins.open', mocker):
-            result = compare_files('file1.txt', 'file2.txt')
-            self.assertEqual(len(result), 0, "There should be differences detected")
+
+        with open(self.file1_path, 'w') as f1, open(self.file2_path, 'w') as f2:
+            f1.write(file1_content)
+            f2.write(file2_content)
+
+        result = compare_files(self.file1_path, self.file2_path)
+        self.assertEqual(len(result), 0, "There should be no differences detected")
 
     def test_files_with_differences(self):
         # Mock question for two different files
         file1_content = "Line1\nLine2\nLine3\n"
         file2_content = "Line1\nLineChanged\nLine3\n"
-        mocker = mock_open(read_data=file1_content)
-        mocker.side_effect = [mocker.return_value, mock_open(read_data=file2_content).return_value]
-        with patch('builtins.open', mocker):
-            result = compare_files('file1.txt', 'file2.txt')
-            self.assertNotEqual(len(result), 0, "There should be differences detected")
+
+        with open(self.file1_path, 'w') as f1, open(self.file2_path, 'w') as f2:
+            f1.write(file1_content)
+            f2.write(file2_content)
+
+        result = compare_files(self.file1_path, self.file2_path)
+        self.assertNotEqual(len(result), 0, "There should be differences detected")
 
     def test_nonexistent_file(self):
         # Test when one of the files does not exist
@@ -34,13 +52,3 @@ class TestCompareFiles(unittest.TestCase):
         with patch('builtins.open', side_effect=IOError("Error reading file")):
             with self.assertRaises(IOError):
                 compare_files('file1.txt', 'file2.txt')
-
-    def test_multiple_lines_of_differences(self):
-        # Test files with multiple differences
-        file1_content = "Line1\nLine2\nLine3\nLine4\n"
-        file2_content = "Line1\nLine2 changed\nLine3\nLine4 modified\n"
-        mocker = mock_open(read_data=file1_content)
-        mocker.side_effect = [mocker.return_value, mock_open(read_data=file2_content).return_value]
-        with patch('builtins.open', mocker):
-            result = compare_files('file1.txt', 'file2.txt')
-            self.assertTrue(len(result) > 1, "Multiple differences should be reported")

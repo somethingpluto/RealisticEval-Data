@@ -8,7 +8,7 @@ def gen_timeout_timedelta(time_string: str) -> timedelta:
     eg."1d 2h 3m 4s 500ms"
     Each unit should be specified by an integer followed by its corresponding unit letter.
     Args:
-        time_string ():A string representing the time duration.
+        time_string (str):A string representing the time duration.
 
     Returns:
         timedelta: A timedelta object representing the input duration.

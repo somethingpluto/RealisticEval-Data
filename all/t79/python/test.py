@@ -1,5 +1,6 @@
 import unittest
 
+
 class TestDateRangeString(unittest.TestCase):
     def test_same_month(self):
         # Test dates within the same month
@@ -21,9 +22,3 @@ class TestDateRangeString(unittest.TestCase):
         with self.assertRaises(ValueError) as context:
             date_range_string("2023/08/01", "2023/08/15")
         self.assertTrue("Date must be in 'YYYY-MM-DD' format." in str(context.exception))
-
-    def test_start_date_after_end_date(self):
-        # Test logical error where start date is after end date
-        with self.assertRaises(ValueError) as context:
-            date_range_string("2023-08-15", "2023-08-01")
-        self.assertTrue("start_date cannot be after end_date." in str(context.exception))

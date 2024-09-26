@@ -5,7 +5,7 @@ def print_memory_bits(memory_section: bytes):
     :param memory_section: A bytes object representing the section of memory to be read.
     """
     for byte_index, byte in enumerate(memory_section):
-        print(f"Byte {byte_index}: ", end="")
+        print(f"{byte_index}", end="")
         for bit_index in range(8):
             # Shift the bit to the right and check the least significant bit
             bit_status = (byte >> (7 - bit_index)) & 1

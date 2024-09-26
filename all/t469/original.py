@@ -1,5 +1,7 @@
+import numpy as np
 
-def get_scale(matrix: 'rai.typing.Affine') -> tuple[np.float64, np.float64]:
+
+def get_scale(matrix: np.array) -> tuple[np.float64, np.float64]:
     """
     Given an affine matrix, return the corresponding scale.
     Written by ChatGPT

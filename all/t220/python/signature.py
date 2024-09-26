@@ -38,3 +38,11 @@ class UniqueDeque:
         - bool: True if the item is present, False otherwise.
         """
         pass
+
+    def __len__(self):
+        """
+        Get the number of elements in the deque.
+
+        Returns:
+        - int: The number of unique elements in the deque.
+        """

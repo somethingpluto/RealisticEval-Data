@@ -3,23 +3,25 @@ import re
 
 def sanitize_filename(filename: str) -> str:
     """
-    Sanitize a string to make it comply with Windows filename rules.
+    Remove illegal characters from Windows file path string.
 
     Args:
-    filename (str): The original filename string to be sanitized.
+        filename (str): The original filename string to be sanitized.
 
     Returns:
-    str: A sanitized string that is safe to use as a Windows filename.
+        str: A sanitized string that is safe to use as a Windows filename.
     """
-    # Remove illegal characters
-    illegal_chars = r'[<>:"/\\|?*]'
-    filename = re.sub(illegal_chars, '', filename)
+    # Define the illegal characters for Windows filenames
+    illegal_chars_pattern = r'[<>:"/\\|?*\x00-\x1F]'
 
-    # Replace multiple spaces with a single space
-    filename = re.sub(r'\s+', ' ', filename).strip()
+    # Replace illegal characters with an underscore
+    sanitized = re.sub(illegal_chars_pattern, '_', filename)
 
-    # Remove trailing period if any (Windows filenames cannot end with a period)
-    if filename.endswith('.'):
-        filename = filename.rstrip('.')
+    # Optionally, you can also limit the length of the filename
+    # Windows has a maximum path length of 260 characters
+    max_length = 255
+    if len(sanitized) > max_length:
+        sanitized = sanitized[:max_length]
 
-    return filename
+    return sanitized
+

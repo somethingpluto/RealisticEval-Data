@@ -1,35 +1,44 @@
-const convertTimeHmsStringToMs = (str: string): number => {
-    const regex = /^(\d+)h(\d+)m(\d+)s$/;
-    const match = str.match(regex);
-    if (!match) {
-        throw new Error("Input string does not match the expected format.");
+/**
+ * Convert the input string. First check if it's an integer, if so, convert to an integer.
+ * If not, check if it's a floating-point number, if yes, convert to a floating-point number;
+ * if neither, return the original string.
+ * @param value - Input value as a string
+ * @returns number | string - Converted result
+ */
+function numericalStrConvert(value: string): number | string {
+    // Attempt to convert to integer
+    const intValue = parseInt(value, 10);
+    if (!isNaN(intValue) && intValue.toString() === value) {
+        return intValue;  // Return as integer if it matches original string
     }
-    const hours = parseInt(match[1]);
-    const minutes = parseInt(match[2]);
-    const seconds = parseInt(match[3]);
-    return (hours * 3600 + minutes * 60 + seconds) * 1000;
-};
-describe('convertTimeHmsStringToMs', () => {
-    test('converts typical time string correctly (1h30m15s)', () => {
-        const result = convertTimeHmsStringToMs('1h30m15s');
-        expect(result).toBe(5415000);  // 1 hour + 30 minutes + 15 seconds in ms
+
+    // If not an integer, attempt to convert to float
+    const floatValue = parseFloat(value);
+    if (!isNaN(floatValue) && floatValue.toString() === value) {
+        return floatValue;  // Return as float if it matches original string
+    }
+
+    // If neither, return the original string
+    return value;
+}
+describe('TestSmartConvert', () => {
+    test('should convert integer', () => {
+        expect(numericalStrConvert("123")).toBe(123);
     });
 
-    test('handles time string with missing units correctly (45m30s)', () => {
-        const result = convertTimeHmsStringToMs('45m30s');
-        expect(result).toBe(2730000);  // 45 minutes + 30 seconds in ms
+    test('should convert float', () => {
+        expect(numericalStrConvert("123.45")).toBe(123.45);
     });
 
-    test('correctly converts string with zero values (0h0m0s)', () => {
-        const result = convertTimeHmsStringToMs('0h0m0s');
-        expect(result).toBe(0);  // 0 ms
+    test('should remain a string for non-numeric input', () => {
+        expect(numericalStrConvert("abc")).toBe("abc");
     });
 
-    test('throws error on empty string', () => {
-        expect(() => convertTimeHmsStringToMs('')).toThrow('Cannot convert hms string "" to ms!');
+    test('should convert negative integer', () => {
+        expect(numericalStrConvert("-456")).toBe(-456);
     });
 
-    test('throws error on invalid format (not following hms pattern)', () => {
-        expect(() => convertTimeHmsStringToMs('2hours15mins')).toThrow('Cannot convert hms string "2hours15mins" to ms!');
+    test('should convert negative float', () => {
+        expect(numericalStrConvert("-456.78")).toBe(-456.78);
     });
 });

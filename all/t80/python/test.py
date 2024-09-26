@@ -2,27 +2,23 @@ import unittest
 
 
 class TestSanitizeFilename(unittest.TestCase):
-    def test_remove_illegal_chars(self):
-        # Test removing characters illegal in Windows filenames
-        result = sanitize_filename("test.js<filename>?*.txt")
-        self.assertEqual(result, "testfilename.txt")
 
-    def test_replace_multiple_spaces(self):
-        # Test replacing multiple spaces with a single space
-        result = sanitize_filename("new  document   file.txt")
-        self.assertEqual(result, "new document file.txt")
+    def test_valid_filename(self):
+        self.assertEqual(sanitize_filename("valid_filename.txt"), "valid_filename.txt")
 
-    def test_remove_trailing_periods(self):
-        # Test removing trailing periods
-        result = sanitize_filename("example.")
-        self.assertEqual(result, "example")
+    def test_illegal_characters(self):
+        self.assertEqual(sanitize_filename("invalid<filename>.txt"), "invalid_filename_.txt")
+        self.assertEqual(sanitize_filename("file/name:with*illegal|chars?.txt"), "file_name_with_illegal_chars_.txt")
 
-    def test_complex_filename(self):
-        # Test a complex filename with multiple issues
-        result = sanitize_filename("  test.js*file<>name  with  ?illegal|chars.txt  ")
-        self.assertEqual(result, "testfilename with illegalchars.txt")
+    def test_control_characters(self):
+        self.assertEqual(sanitize_filename("control\x00char.txt"), "control_char.txt")
+        self.assertEqual(sanitize_filename("file_with_control\x1Fchars.txt"), "file_with_control_chars.txt")
+
+    def test_long_filename(self):
+        long_filename = "a" * 300 + ".txt"
+        sanitized_filename = sanitize_filename(long_filename)
+        self.assertEqual(len(sanitized_filename), 255)
+        self.assertEqual(sanitized_filename, "a" * 255)
 
     def test_empty_filename(self):
-        # Test sanitizing an empty filename
-        result = sanitize_filename("")
-        self.assertEqual(result, "")
+        self.assertEqual(sanitize_filename(""), "")

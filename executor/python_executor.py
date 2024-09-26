@@ -62,12 +62,11 @@ class PythonExecutor:
     def _execute(self, file_path):
         abs_path = os.path.abspath(file_path)
         # TODO: 替换为本机python环境中的python.exe文件路径
-        command = rf"X:\code\python_project\RealisticEval\RealisticEval-Data\venv\Scripts\python.exe {abs_path}"
+        command = rf"X:\code\python_project\RealisticEval-Data\venv\Scripts\python.exe {abs_path}"
         process = subprocess.Popen(
             command,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            text=True,
             shell=True,
             encoding='utf-8',
             errors='ignore'  # 忽略编码错误

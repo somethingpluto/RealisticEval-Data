@@ -1,5 +1,7 @@
+import numpy as np
 
-def get_shear(matrix: 'rai.typing.Affine') -> float:
+
+def get_shear(matrix: np.array) -> float:
     """
     Given an affine matrix, return the corresponding shear.
     Written by ChatGPT

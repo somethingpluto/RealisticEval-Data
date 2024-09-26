@@ -1,41 +1,44 @@
-function getTimeDifference(date) {
-    const now = new Date();
-    const targetDate = new Date(date);
-    const diffMs = targetDate - now;
+/**
+ * Convert the input string. First check if it's an integer, if so, convert to an integer.
+ * If not, check if it's a floating-point number, if yes, convert to a floating-point number;
+ * if neither, return the original string.
+ * @param {string} value - Input value as a string
+ * @returns {number|string} - Converted result
+ */
+function numericalStrConvert(value) {
+    // Attempt to convert to integer
+    const intValue = parseInt(value, 10);
+    if (!isNaN(intValue) && intValue.toString() === value) {
+        return intValue;  // Return as integer if it matches original string
+    }
 
-    const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+    // If not an integer, attempt to convert to float
+    const floatValue = parseFloat(value);
+    if (!isNaN(floatValue) && floatValue.toString() === value) {
+        return floatValue;  // Return as float if it matches original string
+    }
 
-    return `Day: ${days} Hour: ${hours} Minutes: ${minutes}`;
+    // If neither, return the original string
+    return value;
 }
-// Mock current date for consistent test results
-const mockCurrentDate = new Date('2024-08-23T15:45:00');
-jest.useFakeTimers().setSystemTime(mockCurrentDate);
-
-describe('getTimeDifference', () => {
-    test('should return correct difference for a past date', () => {
-        const result = getTimeDifference('2024-08-20T12:30:00');
-        expect(result).toBe('Day: 3 Hour: 3 Minutes: 15'); // 3 days, 3 hours, 15 minutes difference
+describe('TestSmartConvert', () => {
+    test('should convert integer', () => {
+        expect(numericalStrConvert("123")).toBe(123);
     });
 
-    test('should return correct difference for a future date', () => {
-        const result = getTimeDifference('2024-08-25T10:00:00');
-        expect(result).toBe('Day: -2 Hour: -19 Minutes: -15'); // 2 days, 5 hours, 45 minutes in the future
+    test('should convert float', () => {
+        expect(numericalStrConvert("123.45")).toBe(123.45);
     });
 
-    test('should return correct difference for same day with different time', () => {
-        const result = getTimeDifference('2024-08-23T10:00:00');
-        expect(result).toBe('Day: 0 Hour: 5 Minutes: 45'); // 5 hours, 45 minutes difference on the same day
+    test('should remain a string for non-numeric input', () => {
+        expect(numericalStrConvert("abc")).toBe("abc");
     });
 
-    test('should return correct difference for date exactly one day ago', () => {
-        const result = getTimeDifference('2024-08-22T15:45:00');
-        expect(result).toBe('Day: 1 Hour: 0 Minutes: 0'); // 1 day difference exactly
+    test('should convert negative integer', () => {
+        expect(numericalStrConvert("-456")).toBe(-456);
     });
 
-    test('should return correct difference for a few minutes ago', () => {
-        const result = getTimeDifference('2024-08-23T15:40:00');
-        expect(result).toBe('Day: 0 Hour: 0 Minutes: 5'); // 5 minutes ago
+    test('should convert negative float', () => {
+        expect(numericalStrConvert("-456.78")).toBe(-456.78);
     });
 });

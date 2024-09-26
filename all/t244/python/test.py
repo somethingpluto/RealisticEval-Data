@@ -1,8 +1,11 @@
 import unittest
+from typing import Callable
+
 
 class MyClass:
     def my_method(self, arg1: int, arg2: str, optional_arg: float = 3.14):
         pass
+
 
 class TestMethodArgTypeCheck(unittest.TestCase):
     def test_correct_types(self):

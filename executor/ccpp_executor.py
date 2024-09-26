@@ -67,7 +67,6 @@ class CCPPExecutor:
             command,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            text=True,
             shell=True,
             encoding='utf-8',
             errors='ignore'  # 忽略编码错误
