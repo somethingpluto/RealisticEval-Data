@@ -1,6 +1,22 @@
-import sys
 import unittest
 from io import StringIO
+import sys
+from typing import Any
+
+
+def print_fixed_width_table(table: dict[str, list[Any]]) -> None:
+    keys = list(table.keys())
+    values = list(table.values())
+    values = list(zip(*values))
+
+    widths = []
+    for i in range(len(keys)):
+        widths.append(max(len(str(x[i])) for x in values + [keys]))
+
+    print(" ".join("{:{}}".format(x, w) for x, w in zip(keys, widths)))
+
+    for row in values:
+        print(" ".join("{:{}}".format(x, w) for x, w in zip(row, widths)))
 
 
 class TestPrintFixedWidthTable(unittest.TestCase):
@@ -15,47 +31,69 @@ class TestPrintFixedWidthTable(unittest.TestCase):
         sys.stdout = sys.__stdout__
 
     def test_basic_table(self):
-        data = {
+        table = {
             "Name": ["Alice", "Bob", "Charlie"],
-            "Age": [25, 30, 35],
+            "Age": [24, 30, 22],
             "City": ["New York", "Los Angeles", "Chicago"]
         }
-        print_fixed_width_table(data)
-        expected_output = "Name    Age City       \nAlice   25  New York   \nBob     30  Los Angeles \nCharlie 35  Chicago     \n"
-        self.assertEqual(self.held_output.getvalue(), expected_output)
+        print_fixed_width_table(table)
+        output = self.held_output.getvalue().strip()
+        expected_output = (
+            "Name     Age City       \n"
+            "Alice    24  New York   \n"
+            "Bob      30  Los Angeles \n"
+            "Charlie  22  Chicago    "
+        )
+        self.assertEqual(output, expected_output)
+
+    def test_varying_lengths(self):
+        table = {
+            "Product": ["Apples", "Oranges", "Bananas", "Strawberries"],
+            "Price": [1.5, 2.0, 0.75, 3.5]
+        }
+        print_fixed_width_table(table)
+        output = self.held_output.getvalue().strip()
+        expected_output = (
+            "Product      Price \n"
+            "Apples       1.5   \n"
+            "Oranges      2.0   \n"
+            "Bananas      0.75  \n"
+            "Strawberries 3.5   "
+        )
+        self.assertEqual(output, expected_output)
 
     def test_empty_table(self):
-        data = {}
-        print_fixed_width_table(data)
-        expected_output = "\n"  # Just a newline for an empty table
-        self.assertEqual(self.held_output.getvalue(), expected_output)
+        table = {}
+        print_fixed_width_table(table)
+        output = self.held_output.getvalue().strip()
+        expected_output = ""  # Should be empty since there's no data
+        self.assertEqual(output, expected_output)
 
     def test_single_row(self):
-        data = {
-            "Product": ["Widget"],
-            "Price": [19.99],
-            "Quantity": [5]
+        table = {
+            "Name": ["Eve"],
+            "Age": [28],
+            "City": ["Seattle"]
         }
-        print_fixed_width_table(data)
-        expected_output = "Product Price Quantity\nWidget  19.99 5       \n"
-        self.assertEqual(self.held_output.getvalue(), expected_output)
+        print_fixed_width_table(table)
+        output = self.held_output.getvalue().strip()
+        expected_output = (
+            "Name Age City  \n"
+            "Eve  28  Seattle"
+        )
+        self.assertEqual(output, expected_output)
 
-    def test_variable_length_columns(self):
-        data = {
-            "Country": ["USA", "Canada", "Mexico"],
-            "Capital": ["Washington, D.C.", "Ottawa", "Mexico City"],
-            "Population": [331002651, 37742154, 128932753]
+    def test_special_characters(self):
+        table = {
+            "Item": ["Café", "Müller", "Résumé"],
+            "Count": [5, 10, 3]
         }
-        print_fixed_width_table(data)
-        expected_output = "Country Capital            Population\nUSA     Washington, D.C.  331002651\nCanada  Ottawa            37742154\nMexico  Mexico City      128932753\n"
-        self.assertEqual(self.held_output.getvalue(), expected_output)
-
-    def test_numeric_values(self):
-        data = {
-            "Year": [2020, 2021, 2022],
-            "Revenue": [1000000, 1200000, 1300000],
-            "Expenses": [800000, 900000, 950000]
-        }
-        print_fixed_width_table(data)
-        expected_output = "Year Revenue  Expenses\n2020 1000000 800000 \n2021 1200000 900000 \n2022 1300000 950000 \n"
-        self.assertEqual(self.held_output.getvalue(), expected_output)
+        print_fixed_width_table(table)
+        output = self.held_output.getvalue().strip()
+        expected_output = (
+            "Item    Count\n"
+            "Café    5    \n"
+            "Müller  10   \n"
+            "Résumé  3    "
+        )
+        self.assertEqual(output, expected_output)

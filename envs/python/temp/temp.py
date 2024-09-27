@@ -1,122 +1,80 @@
-import re
+import pandas as pd
 
+def count_value_frequencies(df, column_name):
+    """
+    Count the frequency of different values in a specified column of a DataFrame.
 
-def extract_log_levels(log_file_path, output_file_path):
-    # Define the regex pattern to match log levels
-    log_pattern = re.compile(r'\[(WARNING|ERROR|CRITICAL|ALERT)\]')
+    Parameters:
+    df (pd.DataFrame): The input DataFrame.
+    column_name (str): The name of the column to count values.
 
-    with open(log_file_path, 'r') as file:
-        with open(output_file_path, 'w') as output:
-            # Iterate over each line in the log file
-            for line in file:
-                # Check if the line contains any of the log levels
-                if log_pattern.search(line):
-                    # If it does, write this line to the output file
-                    output.write(line)
-
+    Returns:
+    pd.Series: A Series with values and their corresponding frequencies.
+    """
+    return df[column_name].value_counts().to_list()
 import unittest
-import tempfile
-import os
+
+import pandas as pd
 
 
-# Assuming the extract_log_levels function is defined here or imported
+class TestCountValueFrequencies(unittest.TestCase):
 
-class TestLogExtraction(unittest.TestCase):
-    def create_temp_log_file(self, content):
-        # Create a temporary log file
-        temp_file = tempfile.NamedTemporaryFile(delete=False, mode='w+')
-        temp_file.write(content)
-        temp_file.close()
-        return temp_file.name
+    def setUp(self):
+        # Create sample DataFrames for testing
+        self.df1 = pd.DataFrame({
+            'A': ['apple', 'banana', 'apple', 'orange', 'banana', 'banana'],
+            'B': [1, 2, 3, 4, 5, 6]
+        })
 
-    def read_output_file(self, file_path):
-        # Read content from a file
-        with open(file_path, 'r') as file:
-            return file.read()
+        self.df2 = pd.DataFrame({
+            'A': ['red', 'blue', 'green', 'blue', 'red', 'red'],
+            'B': [10, 20, 30, 40, 50, 60]
+        })
 
-    def test_warning_level(self):
-        logs = """[INFO] Information message
-[WARNING] Warning message
-[DEBUG] Debug message"""
-        expected_output = "[WARNING] Warning message\n"
+        self.df3 = pd.DataFrame({
+            'A': [],
+            'B': []
+        })
 
-        log_file_path = self.create_temp_log_file(logs)
-        output_file_path = tempfile.NamedTemporaryFile(delete=False).name
+        self.df4 = pd.DataFrame({
+            'A': ['cat', 'dog', 'cat', 'cat', 'dog', 'mouse'],
+            'B': [100, 200, 300, 400, 500, 600]
+        })
 
-        extract_log_levels(log_file_path, output_file_path)
+        self.df5 = pd.DataFrame({
+            'A': [None, None, None, None],
+            'B': [7, 8, 9, 10]
+        })
 
-        result = self.read_output_file(output_file_path)
-        self.assertEqual(result, expected_output)
+    def test_basic_frequencies(self):
+        result = count_value_frequencies(self.df1, 'A')
+        expected = pd.Series({'banana': 3, 'apple': 2, 'orange': 1})
+        expected = expected.sort_index()  # Sort for comparison
+        result = result.sort_index()  # Sort for comparison
+        pd.testing.assert_series_equal(result, expected)
 
-        os.unlink(log_file_path)
-        os.unlink(output_file_path)
+    def test_different_values(self):
+        result = count_value_frequencies(self.df2, 'A')
+        expected = pd.Series({'red': 3, 'blue': 2, 'green': 1})
+        expected = expected.sort_index()  # Sort for comparison
+        result = result.sort_index()  # Sort for comparison
+        pd.testing.assert_series_equal(result, expected)
 
-    def test_error_level(self):
-        logs = """[ERROR] Error occurred
-[INFO] Just an info"""
-        expected_output = "[ERROR] Error occurred\n"
+    def test_empty_dataframe(self):
+        result = count_value_frequencies(self.df3, 'A')
+        expected = pd.Series(dtype='int64')  # Expect an empty Series
+        pd.testing.assert_series_equal(result, expected)
 
-        log_file_path = self.create_temp_log_file(logs)
-        output_file_path = tempfile.NamedTemporaryFile(delete=False).name
+    def test_multiple_same_values(self):
+        result = count_value_frequencies(self.df4, 'A')
+        expected = pd.Series({'cat': 3, 'dog': 2, 'mouse': 1})
+        expected = expected.sort_index()  # Sort for comparison
+        result = result.sort_index()  # Sort for comparison
+        pd.testing.assert_series_equal(result, expected)
 
-        extract_log_levels(log_file_path, output_file_path)
-
-        result = self.read_output_file(output_file_path)
-        self.assertEqual(result, expected_output)
-
-        os.unlink(log_file_path)
-        os.unlink(output_file_path)
-
-    def test_critical_and_alert_levels(self):
-        logs = """[ALERT] Security breach
-[CRITICAL] System failure
-[NOTICE] Something to notice"""
-        expected_output = "[ALERT] Security breach\n[CRITICAL] System failure\n"
-
-        log_file_path = self.create_temp_log_file(logs)
-        output_file_path = tempfile.NamedTemporaryFile(delete=False).name
-
-        extract_log_levels(log_file_path, output_file_path)
-
-        result = self.read_output_file(output_file_path)
-        self.assertEqual(result, expected_output)
-
-        os.unlink(log_file_path)
-        os.unlink(output_file_path)
-
-    def test_no_relevant_logs(self):
-        logs = "[INFO] No issues here\n[DEBUG] All systems go"
-        expected_output = ""
-
-        log_file_path = self.create_temp_log_file(logs)
-        output_file_path = tempfile.NamedTemporaryFile(delete=False).name
-
-        extract_log_levels(log_file_path, output_file_path)
-
-        result = self.read_output_file(output_file_path)
-        self.assertEqual(result, expected_output)
-
-        os.unlink(log_file_path)
-        os.unlink(output_file_path)
-
-    def test_mixed_logs(self):
-        logs = """[WARNING] Low disk space
-[INFO] Update completed
-[ERROR] Failed to load module
-[CRITICAL] Memory leak detected
-[DEBUG] This is a debug message"""
-        expected_output = "[WARNING] Low disk space\n[ERROR] Failed to load module\n[CRITICAL] Memory leak detected\n"
-
-        log_file_path = self.create_temp_log_file(logs)
-        output_file_path = tempfile.NamedTemporaryFile(delete=False).name
-
-        extract_log_levels(log_file_path, output_file_path)
-
-        result = self.read_output_file(output_file_path)
-        self.assertEqual(result, expected_output)
-
-        os.unlink(log_file_path)
-        os.unlink(output_file_path)
-
+    def test_null_values(self):
+        result = count_value_frequencies(self.df5, 'A')
+        expected = pd.Series({None: 4})  # Expect a Series with None counted
+        pd.testing.assert_series_equal(result, expected)
 if __name__ == '__main__':
     unittest.main()

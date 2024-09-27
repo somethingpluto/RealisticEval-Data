@@ -1,35 +1,55 @@
+import numpy as np
 import unittest
 
-import pandas as pd
+def process_jiang(raw_data, frequencies):
+    """
+    Processes the raw measurement data by repeating frequency values
+    and reshaping the data into a structured format.
+
+    Parameters:
+    raw_data (np.ndarray): A 2D array with shape (num_measurements, 2),
+                           where each row contains two data values.
+    frequencies (np.ndarray): A 1D array with frequency values,
+                              length must match the number of columns in raw_data.
+
+    Returns:
+    np.ndarray: A 2D array with shape (num_frequencies * num_measurements, 3),
+                where the first column contains the frequencies,
+                and the second and third columns contain reshaped raw data values.
+    """
+    num_frequencies = raw_data.shape[1]
+    num_measurements = raw_data.shape[0]
+    repeated_frequencies = np.repeat(frequencies, num_measurements)
+    processed_data = np.zeros((num_frequencies * num_measurements, 3))
+    processed_data[:, 0] = repeated_frequencies
+    reshaped_raw_data = raw_data.reshape(-1)
+    processed_data[:, 1:] = reshaped_raw_data.reshape(-1, 2)
+    return processed_data
+
+class TestProcessJiang(unittest.TestCase):
+
+    def test_case_1(self):
+        raw_data = np.array([[1, 2], [3, 4]])
+        frequencies = np.array([10])
+        expected_output = np.array([[10, 1, 2],
+                                     [10, 3, 4]])
+        result = process_jiang(raw_data, frequencies)
+        np.testing.assert_array_equal(result, expected_output)
+
+    def test_case_2(self):
+        raw_data = np.array([[5, 6], [7, 8], [9, 10]])
+        frequencies = np.array([20, 30])
+        expected_output = np.array([[20, 5, 6],
+                                     [20, 7, 8],
+                                     [20, 9, 10],
+                                     [30, 5, 6],
+                                     [30, 7, 8],
+                                     [30, 9, 10]])
+        result = process_jiang(raw_data, frequencies)
+        np.testing.assert_array_equal(result, expected_output)
 
 
-class TestCountValueFrequencies(unittest.TestCase):
 
-    def test_single_value_column(self):
-        df = pd.DataFrame({'A': [1, 1, 1, 1]})
-        expected = pd.Series([4], index=[1], name='A')
-        result = count_value_frequencies(df, 'A')
-        pd.testing.assert_series_equal(result, expected)
 
-    def test_multiple_values(self):
-        df = pd.DataFrame({'A': [1, 2, 2, 3, 1]})
-        expected = pd.Series([2, 2, 1], index=[1, 2, 3], name='A')
-        result = count_value_frequencies(df, 'A')
-        pd.testing.assert_series_equal(result, expected)
-
-    def test_empty_column(self):
-        df = pd.DataFrame({'A': []})
-        expected = pd.Series(dtype=int, name='A')
-        result = count_value_frequencies(df, 'A')
-        pd.testing.assert_series_equal(result, expected)
-
-    def test_nonexistent_column(self):
-        df = pd.DataFrame({'A': [1, 2, 3]})
-        with self.assertRaises(KeyError):
-            count_value_frequencies(df, 'B')
-
-    def test_string_values(self):
-        df = pd.DataFrame({'B': ['apple', 'banana', 'apple', 'orange', 'banana']})
-        expected = pd.Series([2, 2, 1], index=['apple', 'banana', 'orange'], name='B')
-        result = count_value_frequencies(df, 'B')
-        pd.testing.assert_series_equal(result, expected)
+if __name__ == '__main__':
+    unittest.main()
