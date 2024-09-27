@@ -20,15 +20,19 @@ import json
 import re
 import sys
 
+
 def load_json(file_path):
     with open(file_path, 'r', encoding='utf-8') as file:
         return json.load(file)
 
+
 def find_placeholders(text):
     return re.findall(r'{{\s*[\w]+\s*}}', text)
 
+
 def check_placeholders(en_placeholders, other_placeholders):
     return sorted(en_placeholders) == sorted(other_placeholders)
+
 
 def extract_placeholders(data, path=''):
     placeholders = {}
@@ -40,12 +44,13 @@ def extract_placeholders(data, path=''):
             placeholders[current_path] = find_placeholders(value)
     return placeholders
 
+
 def check_nested_keys(en_data, lang_data, path=''):
     issues = []
     for key in en_data:
         current_path = f"{path}.{key}" if path else key
         if key not in lang_data:
-            #issues.append(f"Missing key '{current_path}' in translation.")
+            # issues.append(f"Missing key '{current_path}' in translation.")
             pass
         elif isinstance(en_data[key], dict):
             if not isinstance(lang_data[key], dict):
@@ -56,5 +61,6 @@ def check_nested_keys(en_data, lang_data, path=''):
             en_placeholders = find_placeholders(en_data[key])
             lang_placeholders = find_placeholders(lang_data[key])
             if not check_placeholders(en_placeholders, lang_placeholders):
-                issues.append(f"Placeholder mismatch at '{current_path}': '{lang_data[key]}' - found {lang_placeholders}; expected {en_placeholders}")
+                issues.append(
+                    f"Placeholder mismatch at '{current_path}': '{lang_data[key]}' - found {lang_placeholders}; expected {en_placeholders}")
     return issues

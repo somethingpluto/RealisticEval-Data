@@ -1,66 +1,75 @@
 import unittest
-from unittest.mock import patch, MagicMock
+import os
+from docx import Document
 
 
 class TestExtractTextFromWord(unittest.TestCase):
 
-    @patch('docx.Document')
-    def test_normal_case(self, mock_document):
-        mock_doc = MagicMock()
-        mock_doc.paragraphs = [MagicMock(text="This is the first paragraph."),
-                               MagicMock(text="This is the second paragraph.")]
-        mock_document.return_value = mock_doc
+    def setUp(self):
+        """Set up the testing environment."""
+        # Create a temporary Word file for testing
+        self.test_docx_path = "test_document.docx"
+        self.create_sample_docx()
 
-        docx_path = "dummy.docx"
-        expected_output = "This is the first paragraph.\nThis is the second paragraph."
+    def tearDown(self):
+        """Clean up the test environment."""
+        # Remove created files after tests
+        if os.path.exists(self.test_docx_path):
+            os.remove(self.test_docx_path)
 
-        result = extract_text_from_word(docx_path)
-        self.assertEqual(result, expected_output)
+    def create_sample_docx(self):
+        """Helper method to create a sample Word document for testing."""
+        doc = Document()
+        doc.add_paragraph("Hello World!")
+        doc.add_paragraph("This is a test document.")
+        doc.save(self.test_docx_path)
 
-    @patch('docx.Document')
-    def test_empty_document(self, mock_document):
-        mock_doc = MagicMock()
-        mock_doc.paragraphs = []
-        mock_document.return_value = mock_doc
+    def test_extract_text_success(self):
+        """Test extracting text from a normal Word document."""
+        expected_text = "Hello World!\nThis is a test document."
+        extracted_text = extract_text_from_word(self.test_docx_path)
+        self.assertEqual(extracted_text.strip(), expected_text)
 
-        docx_path = "dummy.docx"
-        expected_output = ""
+    def test_extract_empty_document(self):
+        """Test extracting text from an empty Word document."""
+        empty_docx_path = "empty_document.docx"
+        Document().save(empty_docx_path)
 
-        result = extract_text_from_word(docx_path)
-        self.assertEqual(result, expected_output)
+        extracted_text = extract_text_from_word(empty_docx_path)
+        self.assertEqual(extracted_text, "")  # Expecting an empty string
 
-    @patch('docx.Document')
-    def test_special_characters(self, mock_document):
-        mock_doc = MagicMock()
-        mock_doc.paragraphs = [MagicMock(text="Special characters: \n\t© 2023.")]
-        mock_document.return_value = mock_doc
+        os.remove(empty_docx_path)  # Clean up
 
-        docx_path = "dummy.docx"
-        expected_output = "Special characters: \n\t© 2023."
+    def test_extract_nonexistent_document(self):
+        """Test extraction from a non-existent Word file."""
+        nonexistent_docx_path = "nonexistent_document.docx"
+        extracted_text = extract_text_from_word(nonexistent_docx_path)
+        self.assertIsNone(extracted_text)  # Expecting None on error
 
-        result = extract_text_from_word(docx_path)
-        self.assertEqual(result, expected_output)
+    def test_extract_text_with_special_characters(self):
+        """Test extracting text from a document containing special characters."""
+        special_docx_path = "special_characters.docx"
+        doc = Document()
+        doc.add_paragraph("Hello, 世界! @#$%^&*()")
+        doc.save(special_docx_path)
 
-    @patch('docx.Document')
-    def test_single_paragraph(self, mock_document):
-        mock_doc = MagicMock()
-        mock_doc.paragraphs = [MagicMock(text="This document has a single paragraph.")]
-        mock_document.return_value = mock_doc
+        extracted_text = extract_text_from_word(special_docx_path)
+        expected_text = "Hello, 世界! @#$%^&*()"
+        self.assertEqual(extracted_text.strip(), expected_text)
 
-        docx_path = "dummy.docx"
-        expected_output = "This document has a single paragraph."
+        os.remove(special_docx_path)  # Clean up
 
-        result = extract_text_from_word(docx_path)
-        self.assertEqual(result, expected_output)
+    def test_extract_text_with_multiple_paragraphs(self):
+        """Test extracting text from a document with multiple paragraphs."""
+        multi_para_docx_path = "multi_paragraphs.docx"
+        doc = Document()
+        doc.add_paragraph("First paragraph.")
+        doc.add_paragraph("Second paragraph.")
+        doc.add_paragraph("Third paragraph.")
+        doc.save(multi_para_docx_path)
 
-    @patch('docx.Document')
-    def test_document_with_only_whitespace(self, mock_document):
-        mock_doc = MagicMock()
-        mock_doc.paragraphs = [MagicMock(text="    "), MagicMock(text="\t\t")]
-        mock_document.return_value = mock_doc
+        extracted_text = extract_text_from_word(multi_para_docx_path)
+        expected_text = "First paragraph.\nSecond paragraph.\nThird paragraph."
+        self.assertEqual(extracted_text.strip(), expected_text)
 
-        docx_path = "dummy.docx"
-        expected_output = "    \n\t\t"
-
-        result = extract_text_from_word(docx_path)
-        self.assertEqual(result, expected_output)
+        os.remove(multi_para_docx_path)  # Clean up

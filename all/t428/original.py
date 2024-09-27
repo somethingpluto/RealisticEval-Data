@@ -1,3 +1,6 @@
+import ast
+
+
 def parse_type_hint(type_hint_string):
     """
     Parses a Python type hint string and returns the individual types as a list of strings.

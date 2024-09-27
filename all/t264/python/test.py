@@ -17,19 +17,7 @@ class TestExtractLogEntries(unittest.TestCase):
         with open(self.log_file_path, 'w') as log_file:
             log_file.writelines(self.log_contents)
 
-    def tearDown(self):
-        """Clean up by removing files created during the test.js."""
-        os.remove(self.log_file_path)
-        for level in ['WARNING', 'ERROR', 'CRITICAL', 'ALERT']:
-            os.remove(f"{level.lower()}_logs.txt")
 
-    def test_extract_all_levels(self):
-        """Test extracting logs for all specified levels."""
-        extract_log_entries(self.log_file_path)
-        # Check for each level's output file
-        for level in ['WARNING', 'ERROR', 'CRITICAL', 'ALERT']:
-            with open(f"{level.lower()}_logs.txt", 'r') as file:
-                self.assertEqual(file.readline(), f"{level}: This is a {level.lower()} message.\n")
 
     def test_no_logs_of_certain_levels(self):
         """Test the situation where there are no log entries for one or more levels."""

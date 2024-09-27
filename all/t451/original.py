@@ -1,3 +1,6 @@
+from PIL import Image
+
+
 def convert_image_to_bits(image_path):
     # partly generated with chatgpt :skull:
     image = Image.open(image_path)

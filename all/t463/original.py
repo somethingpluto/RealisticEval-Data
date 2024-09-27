@@ -2,7 +2,8 @@ import re
 import sys
 import os
 
-#generated with ChatGPT-3.5
+
+# generated with ChatGPT-3.5
 def filter_entries(input_path, output_folder):
     if not os.path.exists(input_path):
         print(f"Die Datei '{input_path}' existiert nicht.")
@@ -16,7 +17,7 @@ def filter_entries(input_path, output_folder):
     error_entries = re.findall(r'\[ERROR\].*? - (.+?)(?=\n)', log_content)
     critical_entries = re.findall(r'\[CRITICAL\].*? - (.+?)(?=\n)', log_content)
     alert_entries = re.findall(r'\[ALERT\].*? - (.+?)(?=\n)', log_content)
-   
+
     # Create individual output paths for each log level
     output_warning_path = os.path.join(output_folder, f"warnings_{os.path.basename(input_path)}")
     output_error_path = os.path.join(output_folder, f"errors_{os.path.basename(input_path)}")
@@ -52,7 +53,9 @@ def filter_entries(input_path, output_folder):
             output_file.write(f'{alert}\n')
 
     total_entries = len(warning_entries) + len(error_entries) + len(critical_entries) + len(alert_entries)
-    print(f"Die gefilterten Meldungen wurden in '{output_warning_path}', '{output_error_path}', '{output_critical_path}' und '{output_alert_path}' gespeichert. Gesamtanzahl an Zeilen: {total_entries}")
+    print(
+        f"Die gefilterten Meldungen wurden in '{output_warning_path}', '{output_error_path}', '{output_critical_path}' und '{output_alert_path}' gespeichert. Gesamtanzahl an Zeilen: {total_entries}")
+
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:

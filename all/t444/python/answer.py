@@ -10,6 +10,7 @@ def format_comment(string, max_length=60):
         str: A formatted string with each line prefixed by '# ' and not exceeding the specified max_length.
     """
     # Split the string into lines
+    # Split the string into lines
     lines = string.split('\n')
 
     # Initialize a list to store the formatted lines
@@ -25,17 +26,21 @@ def format_comment(string, max_length=60):
 
         # Iterate through the words
         for word in words:
-            # If adding the next word exceeds max length, append the current line to formatted lines
-            if len(current_line) + len(word) + 1 > max_length:
+            # If the current line plus the next word would be too long,
+            # append the current line to the list of formatted lines and start a new line
+            if len(current_line) + len(word) > max_length:
                 formatted_lines.append(current_line)
-                current_line = word  # Start a new line with the current word
+                current_line = ''
+
+            # If the current line is empty, add the word to the line
+            # Otherwise, add a space and the word to the line
+            if current_line == '':
+                current_line = word
             else:
-                # Append the word to the current line
-                current_line = current_line + ' ' + word if current_line else word
+                current_line += ' ' + word
 
-        # Append any remaining text in the current line to the formatted lines
-        if current_line:
-            formatted_lines.append(current_line)
+        # Add the remaining line to the list of formatted lines
+        formatted_lines.append(current_line)
 
-    # Prefix each line with '# ' and join them into a single string
+    # Return the formatted comment
     return '\n'.join(['# ' + line for line in formatted_lines])

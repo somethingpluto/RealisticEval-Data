@@ -1,65 +1,89 @@
-import json
+import os
+import tempfile
 import unittest
-from unittest.mock import patch, mock_open
 
 
-class TestTSVToJSONL(unittest.TestCase):
+class TestTSVtoJSONL(unittest.TestCase):
 
-    @patch('builtins.open', new_callable=mock_open, read_data="name\tage\nAlice\t30\nBob\t25")
-    def test_normal_case(self, mock_open_func):
-        tsv_file_path = "dummy.tsv"
-        jsonl_file_path = "dummy.jsonl"
-        expected_output = [
-            json.dumps({"name": "Alice", "age": "30"}) + "\n",
-            json.dumps({"name": "Bob", "age": "25"}) + "\n"
+    def setUp(self):
+        # Create a temporary directory for testing
+        self.test_dir = tempfile.TemporaryDirectory()
+
+    def tearDown(self):
+        # Clean up the temporary directory
+        self.test_dir.cleanup()
+
+    def test_standard_tsv(self):
+        tsv_content = "Name\tAge\tCountry\nAlice\t30\tUSA\nBob\t25\tCanada\n"
+        tsv_file = os.path.join(self.test_dir.name, 'test_standard.tsv')
+        jsonl_file = os.path.join(self.test_dir.name, 'test_standard.jsonl')
+
+        with open(tsv_file, 'w', encoding='utf-8') as f:
+            f.write(tsv_content)
+
+        tsv_to_jsonl(tsv_file, jsonl_file)
+
+        with open(jsonl_file, 'r', encoding='utf-8') as f:
+            lines = f.readlines()
+
+        expected_lines = [
+            '{"Name":"Alice","Age":30,"Country":"USA"}\n',
+            '{"Name":"Bob","Age":25,"Country":"Canada"}\n'
         ]
+        self.assertEqual(lines, expected_lines)
 
-        with patch('builtins.open', mock_open()) as mocked_file:
-            tsv_to_jsonl(tsv_file_path, jsonl_file_path)
-            mocked_file().write.assert_called_with(expected_output[-1])  # Last call is checked
+    def test_special_characters(self):
+        tsv_content = "Name\tAge\tCountry\nAlice\t30\tU$A\nBöb\t25\tCañada\n"
+        tsv_file = os.path.join(self.test_dir.name, 'test_special.tsv')
+        jsonl_file = os.path.join(self.test_dir.name, 'test_special.jsonl')
 
-    @patch('builtins.open', new_callable=mock_open, read_data="")
-    def test_empty_tsv_file(self, mock_open_func):
-        tsv_file_path = "dummy.tsv"
-        jsonl_file_path = "dummy.jsonl"
+        with open(tsv_file, 'w', encoding='utf-8') as f:
+            f.write(tsv_content)
 
-        with patch('builtins.open', mock_open()) as mocked_file:
-            tsv_to_jsonl(tsv_file_path, jsonl_file_path)
-            mocked_file().write.assert_not_called()  # No write call should be made
+        tsv_to_jsonl(tsv_file, jsonl_file)
 
-    @patch('builtins.open', new_callable=mock_open,
-           read_data="name\tquote\nJohn\t\"Life is\nbeautiful\"\nJane\t\"Enjoy, life!\"")
-    def test_special_characters(self, mock_open_func):
-        tsv_file_path = "dummy.tsv"
-        jsonl_file_path = "dummy.jsonl"
-        expected_output = [
-            json.dumps({"name": "John", "quote": "Life is\nbeautiful"}) + "\n",
-            json.dumps({"name": "Jane", "quote": "Enjoy, life!"}) + "\n"
+        with open(jsonl_file, 'r', encoding='utf-8') as f:
+            lines = f.readlines()
+
+        expected_lines = [
+            '{"Name":"Alice","Age":30,"Country":"U$A"}\n',
+            '{"Name":"Böb","Age":25,"Country":"Cañada"}\n'
         ]
+        self.assertEqual(lines, expected_lines)
 
-        with patch('builtins.open', mock_open()) as mocked_file:
-            tsv_to_jsonl(tsv_file_path, jsonl_file_path)
-            mocked_file().write.assert_called_with(expected_output[-1])  # Last call is checked
+    def test_single_row_tsv(self):
+        tsv_content = "Name\tAge\tCountry\nAlice\t30\tUSA\n"
+        tsv_file = os.path.join(self.test_dir.name, 'test_single_row.tsv')
+        jsonl_file = os.path.join(self.test_dir.name, 'test_single_row.jsonl')
 
-    @patch('builtins.open', new_callable=mock_open, read_data="name\tage\nAlice\t30")
-    def test_single_row_tsv_file(self, mock_open_func):
-        tsv_file_path = "dummy.tsv"
-        jsonl_file_path = "dummy.jsonl"
-        expected_output = json.dumps({"name": "Alice", "age": "30"}) + "\n"
+        with open(tsv_file, 'w', encoding='utf-8') as f:
+            f.write(tsv_content)
 
-        with patch('builtins.open', mock_open()) as mocked_file:
-            tsv_to_jsonl(tsv_file_path, jsonl_file_path)
-            mocked_file().write.assert_called_with(expected_output)
+        tsv_to_jsonl(tsv_file, jsonl_file)
 
-    @patch('builtins.open', new_callable=mock_open, read_data="name\tage\nAlice\t30\nBob\t")
-    def test_missing_columns(self, mock_open_func):
-        tsv_file_path = "dummy.tsv"
-        jsonl_file_path = "dummy.jsonl"
-        expected_output = [
-            json.dumps({"name": "Alice", "age": "30"}) + "\n",
-            json.dumps({"name": "Bob", "age": ""}) + "\n"
+        with open(jsonl_file, 'r', encoding='utf-8') as f:
+            lines = f.readlines()
+
+        expected_lines = [
+            '{"Name":"Alice","Age":30,"Country":"USA"}\n'
         ]
+        self.assertEqual(lines, expected_lines)
 
-        with patch('builtins.open', mock_open()) as mocked_file:
-            tsv_to_jsonl(tsv_file_path, jsonl_file_path)
-            mocked_file().write.assert_called_with(expected_output[-1])  # Last call is checked
+    def test_numeric_and_boolean_values(self):
+        tsv_content = "Name\tAge\tIs_Student\nAlice\t30\tTrue\nBob\t25\tFalse\n"
+        tsv_file = os.path.join(self.test_dir.name, 'test_numeric_boolean.tsv')
+        jsonl_file = os.path.join(self.test_dir.name, 'test_numeric_boolean.jsonl')
+
+        with open(tsv_file, 'w', encoding='utf-8') as f:
+            f.write(tsv_content)
+
+        tsv_to_jsonl(tsv_file, jsonl_file)
+
+        with open(jsonl_file, 'r', encoding='utf-8') as f:
+            lines = f.readlines()
+
+        expected_lines = [
+            '{"Name":"Alice","Age":30,"Is_Student":true}\n',
+            '{"Name":"Bob","Age":25,"Is_Student":false}\n'
+        ]
+        self.assertEqual(lines, expected_lines)

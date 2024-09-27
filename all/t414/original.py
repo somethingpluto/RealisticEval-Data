@@ -27,6 +27,7 @@ HTML_TEMPLATE = """
 </div>
 """
 
+
 def parse_bibtex(bibtex_file, author_name):
     with open(bibtex_file, 'r', encoding='utf-8') as file:
         parser = BibTexParser()
@@ -47,6 +48,7 @@ def parse_bibtex(bibtex_file, author_name):
         html_output += HTML_TEMPLATE.format(title=title, authors=authors, venue=venue, year=year)
 
     return html_output
+
 
 # Create command-line argument parser
 parser = argparse.ArgumentParser(description='Parse BibTeX and generate HTML output')
