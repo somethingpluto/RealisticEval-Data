@@ -1,29 +1,24 @@
+/**
+ * Convert the input string, first see if it is an integer,
+ * if it is converted to an integer, if it is not, see if it is a floating point number,
+ * if yes, convert to a floating point number, if neither, return the original string
+ *
+ * @param {string} value - The input value string
+ * @returns {number|string} - Converted result
+ */
 function numericalStrConvert(value) {
-    /**
-     * Convert the input string, first see if it is an integer, if it is converted to an integer,
-     * if not, see if it is a floating point number, if yes, convert to a floating point number,
-     * if neither, return the original string.
-     *
-     * @param {string} value - Input value as string.
-     * @returns {number|string} - The converted result.
-     */
-    try {
-        let intValue = parseInt(value);
-        if (!isNaN(intValue) && intValue.toString() === value) {
-            return intValue;
-        }
-    } catch (e) {
-        // Not an integer, proceed to check for float.
+    // Try to convert to integer
+    const intVal = parseInt(value, 10);
+    if (!isNaN(intVal) && intVal.toString() === value) {
+        return intVal;
     }
 
-    try {
-        let floatValue = parseFloat(value);
-        if (!isNaN(floatValue) && floatValue.toString() === value) {
-            return floatValue;
-        }
-    } catch (e) {
-        // Not a float, return the original string.
+    // Try to convert to float
+    const floatVal = parseFloat(value);
+    if (!isNaN(floatVal) && floatVal.toString() === value) {
+        return floatVal;
     }
 
+    // Return original string if not a number
     return value;
 }

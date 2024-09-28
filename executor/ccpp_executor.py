@@ -69,7 +69,8 @@ class CCPPExecutor:
             stderr=subprocess.PIPE,
             shell=True,
             encoding='utf-8',
-            errors='ignore'  # 忽略编码错误
+            errors='ignore',  # 忽略编码错误
+            text=True
         )
         try:
             # 等待进程结束或超时
@@ -95,7 +96,7 @@ class CCPPExecutor:
     def _generate_command(self):
         driver_flag = self._get_file_disk_flag()
         # TODO：替换为 本机中 /code/python_project/RealisticEval-Data/envs 文件中的路径 不必填写盘符
-        command = rf'{driver_flag} && cd /code/python_project/RealisticEval-Data/envs && cd "c&cpp" && g++ answer_check.cpp -o answer_check && answer_check.exe'
+        command = rf'{driver_flag} && cd /code/code_back/python_project/RealisticEval-Data/envs && cd "c&cpp" && g++ -std=c++17 answer_check.cpp -o answer_check && answer_check.exe'
         return command
 
 

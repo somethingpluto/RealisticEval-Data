@@ -1,21 +1,21 @@
 describe('TestSmartConvert', () => {
-    test('should convert integer', () => {
+    it('should convert to integer', () => {
         expect(numericalStrConvert("123")).toBe(123);
     });
 
-    test('should convert float', () => {
+    it('should convert to float', () => {
         expect(numericalStrConvert("123.45")).toBe(123.45);
     });
 
-    test('should remain a string for non-numeric input', () => {
+    it('should remain a string when converting non-numeric strings', () => {
         expect(numericalStrConvert("abc")).toBe("abc");
     });
 
-    test('should convert negative integer', () => {
+    it('should convert to negative integer', () => {
         expect(numericalStrConvert("-456")).toBe(-456);
     });
 
-    test('should convert negative float', () => {
+    it('should convert to negative float', () => {
         expect(numericalStrConvert("-456.78")).toBe(-456.78);
     });
 });

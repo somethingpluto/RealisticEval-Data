@@ -1,46 +1,37 @@
-#include <string>
+#include <iostream>
 #include <variant>
-#include <stdexcept>
+#include <string>
 #include <sstream>
 
-/**
- * @brief Convert a string representation of a number to an integer, float, or return the original string.
- *
- * This function attempts to parse the input string as an integer first. If the parsing fails, it then tries
- * to parse it as a floating-point number. If both conversions fail, the original string is returned.
- *
- * @param value The input string to be converted.
- * @return std::variant<int, double, std::string> The converted integer or float, or the original string.
- */
-std::variant<int, double, std::string> numericalStrConvert(const std::string& value) {
-    // Attempt to convert to integer
+std::variant<int, double, std::string> numerical_str_convert(const std::string &value) {
+    // Attempt to convert the string to an integer
     try {
-        size_t idx;
-        int intValue = std::stoi(value, &idx);
-        // Check if the whole string was consumed
-        if (idx == value.length()) {
-            return intValue;  // Return as integer if it matches original string
+        // Try to convert to integer
+        std::size_t pos;
+        int intValue = std::stoi(value, &pos);
+        if (pos == value.size()) {
+            return intValue;
         }
-    } catch (const std::invalid_argument&) {
-        // Not a valid integer
-    } catch (const std::out_of_range&) {
-        // Integer out of range
+    } catch (const std::invalid_argument& e) {
+        // Not an integer, continue to next conversion
+    } catch (const std::out_of_range& e) {
+        // Integer value out of range, continue to next conversion
     }
-
-    // If not an integer, attempt to convert to float
+    
+    // Attempt to convert the string to a floating point number
     try {
-        size_t idx;
-        double floatValue = std::stod(value, &idx);
-        // Check if the whole string was consumed
-        if (idx == value.length()) {
-            return floatValue;  // Return as float if it matches original string
+        // Try to convert to double
+        std::size_t pos;
+        double doubleValue = std::stod(value, &pos);
+        if (pos == value.size()) {
+            return doubleValue;
         }
-    } catch (const std::invalid_argument&) {
-        // Not a valid float
-    } catch (const std::out_of_range&) {
-        // Float out of range
+    } catch (const std::invalid_argument& e) {
+        // Not a floating point number, continue to next conversion
+    } catch (const std::out_of_range& e) {
+        // Double value out of range, continue to next conversion
     }
-
-    // If neither, return the original string
+    
+    // If neither integer nor floating point number, return original string
     return value;
 }

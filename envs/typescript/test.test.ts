@@ -1,44 +1,43 @@
 /**
- * Convert the input string. First check if it's an integer, if so, convert to an integer.
- * If not, check if it's a floating-point number, if yes, convert to a floating-point number;
- * if neither, return the original string.
- * @param value - Input value as a string
- * @returns number | string - Converted result
+ * Convert the input string. First, see if it is an integer. If it is, convert to an integer.
+ * If it is not, see if it is a floating point number. If yes, convert to a floating point number.
+ * If neither, return the original string.
+ *
+ * @param {string} value - The input value string
+ * @returns {number|string} - Converted result
  */
 function numericalStrConvert(value: string): number | string {
-    // Attempt to convert to integer
     const intValue = parseInt(value, 10);
     if (!isNaN(intValue) && intValue.toString() === value) {
-        return intValue;  // Return as integer if it matches original string
+        return intValue;
     }
 
-    // If not an integer, attempt to convert to float
     const floatValue = parseFloat(value);
     if (!isNaN(floatValue) && floatValue.toString() === value) {
-        return floatValue;  // Return as float if it matches original string
+        return floatValue;
     }
 
-    // If neither, return the original string
     return value;
 }
 describe('TestSmartConvert', () => {
-    test('should convert integer', () => {
+    it('should convert to integer', () => {
         expect(numericalStrConvert("123")).toBe(123);
     });
 
-    test('should convert float', () => {
+    it('should convert to float', () => {
         expect(numericalStrConvert("123.45")).toBe(123.45);
     });
 
-    test('should remain a string for non-numeric input', () => {
+    it('should remain a string when converting non-numeric strings', () => {
         expect(numericalStrConvert("abc")).toBe("abc");
     });
 
-    test('should convert negative integer', () => {
+    it('should convert to negative integer', () => {
         expect(numericalStrConvert("-456")).toBe(-456);
     });
 
-    test('should convert negative float', () => {
+    it('should convert to negative float', () => {
         expect(numericalStrConvert("-456.78")).toBe(-456.78);
     });
 });
+

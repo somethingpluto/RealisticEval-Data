@@ -18,7 +18,7 @@ def method_arg_type_check(method_obj, exclude=[]):
 
     args_signature = inspect.signature(method_obj)
     expected_types = {param.name: param.annotation for param in args_signature.parameters.values() if
-                      param.name not in exclude}  # Extract expected parameter types from the signature.py.py.py.py.js.js.js.py
+                      param.name not in exclude}  # Extract expected parameter types from the signature.js.py.py.py.py.js.js.js.py
 
     for arg_name, arg_type in expected_types.items():  # Iterate through each passed arguments' label and question type
         if arg_name in locals():  # Skip 'self' argument and check if argument is present

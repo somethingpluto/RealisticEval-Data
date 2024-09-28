@@ -8,9 +8,9 @@
 function changedClef(abc, clef = "bass") {
     let clef_index = abc.indexOf("\nK:");
 
-    // If the key signature.py.py.py is found
+    // If the key signature.js.py.py.py is found
     if (clef_index !== -1) {
-        // Find the next newline character after the key signature.py.py.py line, or if none exists, use the end of the string
+        // Find the next newline character after the key signature.js.py.py.py line, or if none exists, use the end of the string
         let next_newline = abc.indexOf("\n", clef_index + 1);
         if (next_newline === -1) {
             next_newline = abc.length;
@@ -23,6 +23,6 @@ function changedClef(abc, clef = "bass") {
         return `${abc.substring(0, next_newline)}${injection}${abc.substring(next_newline)}`;
     }
 
-    // If the key signature.py.py.py is not found, return the original string
+    // If the key signature.js.py.py.py is not found, return the original string
     return abc;
 }
