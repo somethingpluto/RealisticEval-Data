@@ -1,3 +1,6 @@
+import re
+
+
 def clean_pattern(x, pattern):
     x = str(x)
     match = re.search(pattern, x)

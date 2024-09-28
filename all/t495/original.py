@@ -1,3 +1,6 @@
+import re
+
+
 def filter_content_with_context(content, keywords, lines_before=1, lines_after=1):
     """
     Filters website content to include lines containing any of the specified keywords as whole words,

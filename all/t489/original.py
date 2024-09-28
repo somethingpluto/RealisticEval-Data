@@ -1,3 +1,6 @@
+from typing import io
+
+
 def list_of_dict_to_markdown(builder: io.IOBase, data: list[dict[str, ScalarTypes]], indent: int = 0):
     """
     Create a markdown table. Assumes dict are compatible (have similar keys) and shallow (no dicts of dict values)

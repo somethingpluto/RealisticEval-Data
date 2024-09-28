@@ -62,7 +62,7 @@ class PythonExecutor:
     def _execute(self, file_path):
         abs_path = os.path.abspath(file_path)
         # TODO: 替换为本机python环境中的python.exe文件路径
-        command = rf"X:\code\python_project\RealisticEval-Data\venv\Scripts\python.exe {abs_path}"
+        command = rf"D:\sdk\python\venvs\realisticeval\Scripts\python.exe {abs_path}"
         process = subprocess.Popen(
             command,
             stdout=subprocess.PIPE,

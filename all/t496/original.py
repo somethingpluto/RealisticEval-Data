@@ -1,3 +1,6 @@
+from math import comb
+
+
 def generate_ith_row_pascal(i: int) -> list:
     """
     Generates the ith row of Pascal's Triangle. Written by GPT4 after user prompt: 'generate the ith row of Pascal's

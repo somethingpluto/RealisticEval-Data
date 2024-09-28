@@ -1,80 +1,47 @@
-import pandas as pd
+def area(x1, y1, x2, y2, x3, y3):
+    """Calculate the area of a triangle given by its vertices."""
+    return abs((x1 * (y2 - y3) + x2 * (y3 - y1) + x3 * (y1 - y2)) / 2.0)
 
-def count_value_frequencies(df, column_name):
-    """
-    Count the frequency of different values in a specified column of a DataFrame.
 
-    Parameters:
-    df (pd.DataFrame): The input DataFrame.
-    column_name (str): The name of the column to count values.
+def is_point_inside_triangle(px, py, x1, y1, x2, y2, x3, y3):
+    """Check if a point (px, py) is inside the triangle formed by (x1, y1), (x2, y2), (x3, y3)."""
+    # Calculate the area of the triangle ABC
+    A = area(x1, y1, x2, y2, x3, y3)
 
-    Returns:
-    pd.Series: A Series with values and their corresponding frequencies.
-    """
-    return df[column_name].value_counts().to_list()
+    # Calculate the area of the triangle PAB, PBC, and PCA
+    A1 = area(px, py, x1, y1, x2, y2)
+    A2 = area(px, py, x2, y2, x3, y3)
+    A3 = area(px, py, x3, y3, x1, y1)
+
+    # Check if the sum of A1, A2, and A3 is equal to A
+    return A == A1 + A2 + A3
 import unittest
 
-import pandas as pd
 
+class TestPointInsideTriangle(unittest.TestCase):
 
-class TestCountValueFrequencies(unittest.TestCase):
+    def test_point_inside_triangle(self):
+        """Test case where point is inside the triangle."""
+        triangle_vertices = (0, 0, 5, 0, 2.5, 5)
+        point = (2.5, 2)  # Inside the triangle
+        self.assertTrue(is_point_inside_triangle(point[0], point[1], *triangle_vertices))
 
-    def setUp(self):
-        # Create sample DataFrames for testing
-        self.df1 = pd.DataFrame({
-            'A': ['apple', 'banana', 'apple', 'orange', 'banana', 'banana'],
-            'B': [1, 2, 3, 4, 5, 6]
-        })
+    def test_point_on_edge(self):
+        """Test case where point is on the edge of the triangle."""
+        triangle_vertices = (0, 0, 5, 0, 2.5, 5)
+        point = (2.5, 0)  # On the edge of the triangle
+        self.assertTrue(is_point_inside_triangle(point[0], point[1], *triangle_vertices))
 
-        self.df2 = pd.DataFrame({
-            'A': ['red', 'blue', 'green', 'blue', 'red', 'red'],
-            'B': [10, 20, 30, 40, 50, 60]
-        })
+    def test_point_outside_triangle(self):
+        """Test case where point is outside the triangle."""
+        triangle_vertices = (0, 0, 5, 0, 2.5, 5)
+        point = (6, 2)  # Outside the triangle
+        self.assertFalse(is_point_inside_triangle(point[0], point[1], *triangle_vertices))
 
-        self.df3 = pd.DataFrame({
-            'A': [],
-            'B': []
-        })
-
-        self.df4 = pd.DataFrame({
-            'A': ['cat', 'dog', 'cat', 'cat', 'dog', 'mouse'],
-            'B': [100, 200, 300, 400, 500, 600]
-        })
-
-        self.df5 = pd.DataFrame({
-            'A': [None, None, None, None],
-            'B': [7, 8, 9, 10]
-        })
-
-    def test_basic_frequencies(self):
-        result = count_value_frequencies(self.df1, 'A')
-        expected = pd.Series({'banana': 3, 'apple': 2, 'orange': 1})
-        expected = expected.sort_index()  # Sort for comparison
-        result = result.sort_index()  # Sort for comparison
-        pd.testing.assert_series_equal(result, expected)
-
-    def test_different_values(self):
-        result = count_value_frequencies(self.df2, 'A')
-        expected = pd.Series({'red': 3, 'blue': 2, 'green': 1})
-        expected = expected.sort_index()  # Sort for comparison
-        result = result.sort_index()  # Sort for comparison
-        pd.testing.assert_series_equal(result, expected)
-
-    def test_empty_dataframe(self):
-        result = count_value_frequencies(self.df3, 'A')
-        expected = pd.Series(dtype='int64')  # Expect an empty Series
-        pd.testing.assert_series_equal(result, expected)
-
-    def test_multiple_same_values(self):
-        result = count_value_frequencies(self.df4, 'A')
-        expected = pd.Series({'cat': 3, 'dog': 2, 'mouse': 1})
-        expected = expected.sort_index()  # Sort for comparison
-        result = result.sort_index()  # Sort for comparison
-        pd.testing.assert_series_equal(result, expected)
-
-    def test_null_values(self):
-        result = count_value_frequencies(self.df5, 'A')
-        expected = pd.Series({None: 4})  # Expect a Series with None counted
-        pd.testing.assert_series_equal(result, expected)
+    def test_point_at_vertex(self):
+        """Test case where point is at one of the triangle's vertices."""
+        triangle_vertices = (0, 0, 5, 0, 2.5, 5)
+        point = (0, 0)  # At the vertex of the triangle
+        self.assertTrue(is_point_inside_triangle(point[0], point[1], *triangle_vertices))
 if __name__ == '__main__':
     unittest.main()

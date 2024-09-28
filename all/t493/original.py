@@ -1,3 +1,6 @@
+import textwrap
+
+
 def wrap_content_generator(content, width=80):
     for line in content.splitlines(keepends=True):
         if line.strip() == '':

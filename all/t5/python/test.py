@@ -19,4 +19,4 @@ class TestMatrixMultiplication(unittest.TestCase):
         mat2 = [[5, 6], [7, 8]]
         expected = [[5, 6], [7, 8]]
         self.assertEqual(matrix_multiply(mat1, mat2), expected,
-                         "Multiplying by the identity matrix should yield the original.py matrix")
+                         "Multiplying by the identity matrix should yield the answer.py matrix")
