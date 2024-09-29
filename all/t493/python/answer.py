@@ -1,23 +1,23 @@
 import textwrap
+from typing import Generator
 
 
-def wrap_content_generator(content, width=80):
+def wrap_content_generator(content: str, width: int = 80) -> Generator[str, None, None]:
     """
-    Generator that yields lines of wrapped content.
+    A generator function that yields wrapped lines from the given content.
 
-    Parameters:
-    - content (str): The input text content to be wrapped.
-    - width (int): The maximum width for wrapping lines (default is 80).
+    Args:
+        content (str): The content to be wrapped.
+        width (int): The maximum width of each wrapped line. Default is 80 characters.
 
     Yields:
-    - str: Each wrapped line of text or a newline for empty lines.
+        str: Each wrapped line of text, preserving empty lines.
     """
     for line in content.splitlines(keepends=True):
-        # If the line is empty or contains only whitespace, yield a newline character.
+        # Check if the line is empty or contains only whitespace
         if line.strip() == '':
-            yield '\n'
+            yield '\n'  # Preserve empty lines as they are
         else:
-            # Wrap the non-empty line and yield each wrapped segment.
-            wrapped_lines = textwrap.wrap(line, width=width)
-            for wrapped_line in wrapped_lines:
-                yield wrapped_line + '\n'  # Maintain line endings for wrapped lines.
+            # Wrap the non-empty line according to the specified width
+            for wrapped_line in textwrap.wrap(line, width=width):
+                yield wrapped_line  # Yield each wrapped line

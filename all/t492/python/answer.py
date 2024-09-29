@@ -1,27 +1,23 @@
-def format_content(content):
+def save_content_to_file(content: str, path: str) -> None:
     """
-    Format the given content by removing extra blank lines and spaces.
+    Saves the provided content to a specified file after cleaning up
+    redundant whitespace.
 
-    :param content: A string containing the text to be formatted.
-    :return: A formatted string.
+    Args:
+        content (str): The text content to be saved to the file.
+        path (str): The file path where the content will be saved.
+
+    Returns:
+        None
     """
-    # Split the content into lines
-    lines = content.splitlines()
+    # Remove redundant whitespace from the content.
+    # Split the content into lines, strip leading/trailing whitespace,
+    # and filter out empty lines.
+    content = '\n'.join(line.strip() for line in content.splitlines() if line.strip())
 
-    # Remove extra spaces and blank lines
-    formatted_lines = []
-    for line in lines:
-        # Strip leading and trailing spaces
-        stripped_line = line.strip()
-        # Only add non-empty lines or a single blank line
-        if stripped_line:
-            formatted_lines.append(stripped_line)
-        elif formatted_lines and formatted_lines[-1]:  # Ensure we only add a single blank line
-            formatted_lines.append("")
+    # Replace multiple spaces with a single space.
+    content = ' '.join(content.split())
 
-    # Join lines back into a single string, ensuring single spaces between words
-    formatted_content = "\n".join(formatted_lines)
-    # Replace multiple spaces with a single space
-    formatted_content = ' '.join(formatted_content.split())
-
-    return formatted_content
+    # Write the cleaned content to the specified file.
+    with open(path, 'w', encoding='utf-8') as file:
+        file.write(content)

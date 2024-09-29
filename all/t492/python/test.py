@@ -1,34 +1,64 @@
+import os
 import unittest
 
 
-class TestFormatContent(unittest.TestCase):
+class TestSaveContentToFile(unittest.TestCase):
 
-    def test_extra_blank_lines(self):
-        """ Test input with multiple blank lines. """
-        input_text = "This is line 1.\n\n\nThis is line 2.\n\n\n\nThis is line 3."
-        expected_output = "This is line 1.\n\nThis is line 2.\n\nThis is line 3."
-        self.assertEqual(format_content(input_text), expected_output)
+    def setUp(self):
+        """Set up a temporary file path for testing."""
+        self.test_file_path = 'test_output.txt'
 
-    def test_leading_and_trailing_spaces(self):
-        """ Test input with leading and trailing spaces. """
-        input_text = "   This is line 1.   \n\n   This is line 2.   "
-        expected_output = "This is line 1.\n\nThis is line 2."
-        self.assertEqual(format_content(input_text), expected_output)
+    def tearDown(self):
+        """Clean up the test file after each test."""
+        if os.path.exists(self.test_file_path):
+            os.remove(self.test_file_path)
 
-    def test_multiple_spaces_between_words(self):
-        """ Test input with multiple spaces between words. """
-        input_text = "This  is   a    test. \n\nAnother    test    line."
-        expected_output = "This is a test.\n\nAnother test line."
-        self.assertEqual(format_content(input_text), expected_output)
+    def test_basic_content(self):
+        """Test with basic content and check if it saves correctly."""
+        content = "Hello,  World!  "
+        expected = "Hello, World!"
+        save_content_to_file(content, self.test_file_path)
+        with open(self.test_file_path, 'r', encoding='utf-8') as file:
+            result = file.read().strip()
+        self.assertEqual(result, expected)
 
-    def test_only_blank_lines(self):
-        """ Test input that contains only blank lines. """
-        input_text = "\n\n\n\n"
-        expected_output = ""
-        self.assertEqual(format_content(input_text), expected_output)
+    def test_multiple_spaces_and_empty_lines(self):
+        """Test handling of multiple spaces and empty lines."""
+        content = """
 
-    def test_empty_string(self):
-        """ Test input that is an empty string. """
-        input_text = ""
-        expected_output = ""
-        self.assertEqual(format_content(input_text), expected_output)
+        This is a    test.
+
+        Another line.      
+        """
+        expected = "This is a test. Another line."
+        save_content_to_file(content, self.test_file_path)
+        with open(self.test_file_path, 'r', encoding='utf-8') as file:
+            result = file.read().strip()
+        self.assertEqual(result, expected)
+
+    def test_only_whitespace(self):
+        """Test if only whitespace is handled correctly."""
+        content = "    \n  \n   "
+        expected = ""
+        save_content_to_file(content, self.test_file_path)
+        with open(self.test_file_path, 'r', encoding='utf-8') as file:
+            result = file.read().strip()
+        self.assertEqual(result, expected)
+
+    def test_empty_content(self):
+        """Test if empty content is saved correctly."""
+        content = ""
+        expected = ""
+        save_content_to_file(content, self.test_file_path)
+        with open(self.test_file_path, 'r', encoding='utf-8') as file:
+            result = file.read().strip()
+        self.assertEqual(result, expected)
+
+    def test_content_with_special_characters(self):
+        """Test if content with special characters is handled correctly."""
+        content = "This is a test!   😊  Let's see if it works."
+        expected = "This is a test! 😊 Let's see if it works."
+        save_content_to_file(content, self.test_file_path)
+        with open(self.test_file_path, 'r', encoding='utf-8') as file:
+            result = file.read().strip()
+        self.assertEqual(result, expected)
