@@ -1,19 +1,23 @@
-def read_paragraphs(filename):
+def extract_paragraphs_and_lines(text: str):
     """
-    Reads the contents of a specified text file and splits it into paragraphs and lines.
+    Extracts paragraphs and lines from the given text.
 
     Args:
-        filename (str): The path to the text file to be read.
+        text (str): The input text from which paragraphs and lines will be extracted.
 
     Returns:
-        list: A nested list where each sublist contains lines of a paragraph.
+        dict: A dictionary containing:
+            - 'paragraphs': A list of paragraphs extracted from the text.
+            - 'lines': A list of lines extracted from the text.
     """
-    with open(filename, 'r') as file:
-        # Read the entire content of the file
-        content = file.read()
+    # Split the text into paragraphs
+    paragraphs = text.split('\n\n')
 
-        # Split content into paragraphs based on two newlines
-        paragraphs = content.split('\n\n')
+    # Split each paragraph into lines
+    lines = [line for paragraph in paragraphs for line in paragraph.split('\n')]
 
-        # Split each paragraph into lines based on one newline
-        return [paragraph.split('\n') for paragraph in paragraphs]
+    # Return the extracted paragraphs and lines in a dictionary
+    return {
+        'paragraphs': [p.strip() for p in paragraphs if p.strip()],  # Remove empty paragraphs
+        'lines': [l.strip() for l in lines if l.strip()]  # Remove empty lines
+    }

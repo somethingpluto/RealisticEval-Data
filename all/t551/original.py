@@ -1,3 +1,6 @@
+import numpy as np
+
+
 def get_mids_from_edges(edges):
     mids_len = len(edges)-1
     mids = np.empty(mids_len)

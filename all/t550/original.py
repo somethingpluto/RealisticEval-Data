@@ -1,6 +1,9 @@
+import numpy as np
+
+k_B_over_keV = 8.617333262145e-5
 def get_keV_from_log10_Kelvin(T_log10_Kelvin):
   """
-  Converts temperature from log10(K) to keV for a given input (scalar or tuple).
+  Converts temperature from log10(K) to keV for a given input (scalar or tuple).k_B_over_keV = 8.617333262145e-5
 
   Args:
     T_log10_Kelvin: The temperature in log10(K), can be a scalar or a tuple.
