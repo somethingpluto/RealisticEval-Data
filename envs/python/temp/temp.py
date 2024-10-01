@@ -59,5 +59,6 @@ class TestCalculateColumnWidths(unittest.TestCase):
                 ["three"]]
         expected = [5]
         self.assertEqual(calculate_column_widths(data), expected)
+
 if __name__ == '__main__':
     unittest.main()

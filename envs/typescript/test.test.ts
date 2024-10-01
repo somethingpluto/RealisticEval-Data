@@ -1,43 +1,60 @@
 /**
- * Convert the input string. First, see if it is an integer. If it is, convert to an integer.
- * If it is not, see if it is a floating point number. If yes, convert to a floating point number.
- * If neither, return the original string.
+ * Removes the specified parameter from the URL query string.
  *
- * @param {string} value - The input value string
- * @returns {number|string} - Converted result
+ * @param {string} url - The URL from which to remove the parameter.
+ * @param {string} key - The key of the parameter to remove.
+ * @returns {string} - The modified URL with the specified parameter removed.
  */
-function numericalStrConvert(value: string): number | string {
-    const intValue = parseInt(value, 10);
-    if (!isNaN(intValue) && intValue.toString() === value) {
-        return intValue;
-    }
+function removeQueryParam(url: string, key: string): string {
+    // Create a URL object to easily manipulate the URL
+    const urlObj = new URL(url);
 
-    const floatValue = parseFloat(value);
-    if (!isNaN(floatValue) && floatValue.toString() === value) {
-        return floatValue;
-    }
+    // Get the current search parameters
+    const params = new URLSearchParams(urlObj.search);
 
-    return value;
+    // Delete the specified key
+    params.delete(key);
+
+    // Set the new search parameters back to the URL object
+    urlObj.search = params.toString();
+
+    // Return the modified URL
+    return urlObj.toString();
 }
-describe('TestSmartConvert', () => {
-    it('should convert to integer', () => {
-        expect(numericalStrConvert("123")).toBe(123);
+describe('removeQueryParam', () => {
+    test('should remove an existing parameter from the URL', () => {
+        const url = 'https://example.com?page=1&sort=asc&filter=red';
+        const result = removeQueryParam(url, 'sort');
+        expect(result).toBe('https://example.com/?page=1&filter=red');
     });
 
-    it('should convert to float', () => {
-        expect(numericalStrConvert("123.45")).toBe(123.45);
+    test('should not modify the URL if the parameter does not exist', () => {
+        const url = 'https://example.com?page=1&filter=red';
+        const result = removeQueryParam(url, 'sort');
+        expect(result).toBe('https://example.com/?page=1&filter=red');
     });
 
-    it('should remain a string when converting non-numeric strings', () => {
-        expect(numericalStrConvert("abc")).toBe("abc");
+    test('should return the original URL if there are no query parameters', () => {
+        const url = 'https://example.com';
+        const result = removeQueryParam(url, 'sort');
+        expect(result).toBe('https://example.com/');
     });
 
-    it('should convert to negative integer', () => {
-        expect(numericalStrConvert("-456")).toBe(-456);
+    test('should remove multiple occurrences of a parameter', () => {
+        const url = 'https://example.com?page=1&filter=red&filter=blue';
+        const result = removeQueryParam(url, 'filter');
+        expect(result).toBe('https://example.com/?page=1');
     });
 
-    it('should convert to negative float', () => {
-        expect(numericalStrConvert("-456.78")).toBe(-456.78);
+    test('should handle encoded characters in the parameter', () => {
+        const url = 'https://example.com?page=1&sort=asc&filter=hello%20world';
+        const result = removeQueryParam(url, 'filter');
+        expect(result).toBe('https://example.com/?page=1&sort=asc');
+    });
+
+    test('should handle the case when the parameter is the only one in the URL', () => {
+        const url = 'https://example.com?sort=asc';
+        const result = removeQueryParam(url, 'sort');
+        expect(result).toBe('https://example.com/');
     });
 });
-

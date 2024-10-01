@@ -1,6 +1,5 @@
-
 // Sorts an array of strings alphabetically
-sortAlphabetically(arr, getField, ascending = true) {
+function sortAlphabetically(arr, getField, ascending = true) {
     const sortedArr = arr.slice().sort((a, b) => {
         a = getField(a);
         b = getField(b);

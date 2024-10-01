@@ -1,45 +1,32 @@
 /**
- * Convert the input string, first see if it is an integer,
- * if it is converted to an integer, if it is not, see if it is a floating point number,
- * if yes, convert to a floating point number, if neither, return the original string
+ * Gets the line number in the content at the specified index.
  *
- * @param {string} value - The input value string
- * @returns {number|string} - Converted result
+ * @param {string} content - The string content to check.
+ * @param {number} index - The character index to find the line number for.
+ * @returns {number} - The line number corresponding to the given index.
  */
-function numericalStrConvert(value) {
-    // Try to convert to integer
-    const intVal = parseInt(value, 10);
-    if (!isNaN(intVal) && intVal.toString() === value) {
-        return intVal;
-    }
-
-    // Try to convert to float
-    const floatVal = parseFloat(value);
-    if (!isNaN(floatVal) && floatVal.toString() === value) {
-        return floatVal;
-    }
-
-    // Return original string if not a number
-    return value;
+function getLineNumber(content, index) {
+    // Use a regular expression to count the number of newline characters before the index
+    return (content.slice(0, index).match(/\n/g) || []).length + 1;
 }
-describe('numericalStrConvert', () => {
-    test('should convert to integer', () => {
-        expect(numericalStrConvert("123")).toBe(123);
+describe('getLineNumber', () => {
+    test('returns 1 for the first character', () => {
+        expect(getLineNumber("Line 1\nLine 2\nLine 3", 0)).toBe(1);
     });
 
-    test('should convert to float', () => {
-        expect(numericalStrConvert("123.45")).toBe(123.45);
+    test('returns 1 for the last character of the first line', () => {
+        expect(getLineNumber("Line 1\nLine 2\nLine 3", 5)).toBe(1);
     });
 
-    test('should remain a string for non-numeric input', () => {
-        expect(numericalStrConvert("abc")).toBe("abc");
+    test('returns 3 for the last character of the third line', () => {
+        expect(getLineNumber("Line 1\nLine 2\nLine 3", 18)).toBe(3);
     });
 
-    test('should convert to negative integer', () => {
-        expect(numericalStrConvert("-456")).toBe(-456);
+    test('returns 1 for a single line string', () => {
+        expect(getLineNumber("Single line string", 0)).toBe(1);
     });
 
-    test('should convert to negative float', () => {
-        expect(numericalStrConvert("-456.78")).toBe(-456.78);
+    test('returns 3 for an index within a multiline string with trailing newlines', () => {
+        expect(getLineNumber("Line 1\nLine 2\nLine 3\n\n", 15)).toBe(3);
     });
 });
