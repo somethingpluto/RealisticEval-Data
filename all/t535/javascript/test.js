@@ -1,49 +1,38 @@
-describe('htmlToPlainText', () => {
-    test('converts a simple HTML string to plain text', () => {
-        const htmlString = '<p>Hello, World!</p>';
-        const result = htmlToPlainText(htmlString);
-        expect(result).toBe('Hello, World!');
+describe('compressHtml', () => {
+    it('should remove newlines and tabs', () => {
+        const input = `
+            <div>
+                <p>Test paragraph.</p>
+            </div>
+        `;
+        const expectedOutput = '<div><p>Test paragraph.</p></div>';
+        expect(compressHtml(input)).toBe(expectedOutput);
     });
 
-    test('removes excess spaces between words', () => {
-        const htmlString = '<p>This     is     a     test.</p>';
-        const result = htmlToPlainText(htmlString);
-        expect(result).toBe('This is a test.');
+    it('should replace multiple spaces with a single space', () => {
+        const input = '<div>    <p>     Test with     multiple spaces.   </p></div>';
+        const expectedOutput = '<div><p> Test with multiple spaces. </p></div>';
+        expect(compressHtml(input)).toBe(expectedOutput);
     });
 
-    test('handles multiple paragraphs and removes excess line breaks', () => {
-        const htmlString = '<p>First paragraph.</p>\n\n<p>Second paragraph.</p>';
-        const result = htmlToPlainText(htmlString);
-        expect(result).toBe('First paragraph.\nSecond paragraph.');
+    it('should remove spaces between HTML tags', () => {
+        const input = '<div> <p>Test</p> </div>';
+        const expectedOutput = '<div><p>Test</p></div>';
+        expect(compressHtml(input)).toBe(expectedOutput);
     });
 
-    test('trims leading and trailing spaces', () => {
-        const htmlString = '   <p>  Trimmed text.  </p>   ';
-        const result = htmlToPlainText(htmlString);
-        expect(result).toBe('Trimmed text.');
+    it('should handle empty input', () => {
+        const input = '';
+        const expectedOutput = '';
+        expect(compressHtml(input)).toBe(expectedOutput);
     });
 
-    test('handles empty HTML string', () => {
-        const htmlString = '';
-        const result = htmlToPlainText(htmlString);
-        expect(result).toBe('');
-    });
-
-    test('handles HTML with no text content', () => {
-        const htmlString = '<div><span></span></div>';
-        const result = htmlToPlainText(htmlString);
-        expect(result).toBe('');
-    });
-
-    test('handles nested HTML elements', () => {
-        const htmlString = '<div><p>Nested <strong>text</strong> here.</p></div>';
-        const result = htmlToPlainText(htmlString);
-        expect(result).toBe('Nested text here.');
-    });
-
-    test('correctly converts HTML with special characters', () => {
-        const htmlString = '<p>Text with &amp; special characters.</p>';
-        const result = htmlToPlainText(htmlString);
-        expect(result).toBe('Text with & special characters.');
+    it('should handle HTML with only spaces and newlines', () => {
+        const input = `
+            <div>      
+            </div>
+        `;
+        const expectedOutput = '<div></div>';
+        expect(compressHtml(input)).toBe(expectedOutput);
     });
 });

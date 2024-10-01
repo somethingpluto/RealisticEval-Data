@@ -34,5 +34,3 @@ function deepEqual(obj1: any, obj2: any): boolean {
     // All key-value pairs are equal
     return true;
 }
-
-export default deepEqual;

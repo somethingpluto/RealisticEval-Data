@@ -1,60 +1,107 @@
-/**
- * Removes the specified parameter from the URL query string.
- *
- * @param {string} url - The URL from which to remove the parameter.
- * @param {string} key - The key of the parameter to remove.
- * @returns {string} - The modified URL with the specified parameter removed.
- */
-function removeQueryParam(url: string, key: string): string {
-    // Create a URL object to easily manipulate the URL
-    const urlObj = new URL(url);
+function parseMarkdownTitles(markdown) {
+    const result = {
+        level1: [],
+        level2: [],
+        level3: []
+    };
 
-    // Get the current search parameters
-    const params = new URLSearchParams(urlObj.search);
+    const lines = markdown.split('\n');
+    lines.forEach(line => {
+        line = line.trim();
+        if (line.startsWith('# ')) {
+            result.level1.push(line.slice(2));
+        } else if (line.startsWith('## ')) {
+            result.level2.push(line.slice(3));
+        } else if (line.startsWith('### ')) {
+            result.level3.push(line.slice(4));
+        }
+    });
 
-    // Delete the specified key
-    params.delete(key);
-
-    // Set the new search parameters back to the URL object
-    urlObj.search = params.toString();
-
-    // Return the modified URL
-    return urlObj.toString();
+    return result;
 }
-describe('removeQueryParam', () => {
-    test('should remove an existing parameter from the URL', () => {
-        const url = 'https://example.com?page=1&sort=asc&filter=red';
-        const result = removeQueryParam(url, 'sort');
-        expect(result).toBe('https://example.com/?page=1&filter=red');
+describe('parseMarkdownTitles', () => {
+    test('should extract first, second, and third level titles', () => {
+        const markdown = `
+        # Title 1
+        Content here.
+
+        ## Subtitle 1.1
+        More content.
+
+        ### Subsubtitle 1.1.1
+        Even more content.
+
+        # Title 2
+        Another content.
+        `;
+        const result = parseMarkdownTitles(markdown);
+        expect(result).toEqual({
+            level1: ["Title 1", "Title 2"],
+            level2: ["Subtitle 1.1"],
+            level3: ["Subsubtitle 1.1.1"],
+        });
     });
 
-    test('should not modify the URL if the parameter does not exist', () => {
-        const url = 'https://example.com?page=1&filter=red';
-        const result = removeQueryParam(url, 'sort');
-        expect(result).toBe('https://example.com/?page=1&filter=red');
+    test('should handle missing headers', () => {
+        const markdown = `
+        This is just some text without headers.
+        `;
+        const result = parseMarkdownTitles(markdown);
+        expect(result).toEqual({
+            level1: [],
+            level2: [],
+            level3: [],
+        });
     });
 
-    test('should return the original URL if there are no query parameters', () => {
-        const url = 'https://example.com';
-        const result = removeQueryParam(url, 'sort');
-        expect(result).toBe('https://example.com/');
+    test('should handle only first-level headers', () => {
+        const markdown = `
+        # Only Title 1
+        Content without subtitles.
+        
+        # Only Title 2
+        More content.
+        `;
+        const result = parseMarkdownTitles(markdown);
+        expect(result).toEqual({
+            level1: ["Only Title 1", "Only Title 2"],
+            level2: [],
+            level3: [],
+        });
     });
 
-    test('should remove multiple occurrences of a parameter', () => {
-        const url = 'https://example.com?page=1&filter=red&filter=blue';
-        const result = removeQueryParam(url, 'filter');
-        expect(result).toBe('https://example.com/?page=1');
-    });
+    test('should handle mixed headers with empty lines', () => {
+        const markdown = `
+        # Title 1
 
-    test('should handle encoded characters in the parameter', () => {
-        const url = 'https://example.com?page=1&sort=asc&filter=hello%20world';
-        const result = removeQueryParam(url, 'filter');
-        expect(result).toBe('https://example.com/?page=1&sort=asc');
-    });
+        ## Subtitle 1.1
 
-    test('should handle the case when the parameter is the only one in the URL', () => {
-        const url = 'https://example.com?sort=asc';
-        const result = removeQueryParam(url, 'sort');
-        expect(result).toBe('https://example.com/');
+        Some content here.
+
+        ### Subsubtitle 1.1.1
+        
+        # Title 2
+        `;
+        const result = parseMarkdownTitles(markdown);
+        expect(result).toEqual({
+            level1: ["Title 1", "Title 2"],
+            level2: ["Subtitle 1.1"],
+            level3: ["Subsubtitle 1.1.1"],
+        });
+    });
+    
+
+    test('should handle headers with special characters', () => {
+        const markdown = `
+        # Title 1 - Special Characters!
+        ## Subtitle 1.1: The Beginning
+        ### Subsubtitle 1.1.1 (Note)
+        `;
+        const result = parseMarkdownTitles(markdown);
+        expect(result).toEqual({
+            level1: ["Title 1 - Special Characters!"],
+            level2: ["Subtitle 1.1: The Beginning"],
+            level3: ["Subsubtitle 1.1.1 (Note)"],
+        });
     });
 });
