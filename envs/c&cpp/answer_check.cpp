@@ -1,34 +1,29 @@
 #define CATCH_CONFIG_MAIN
 #include "./lib/catch.hpp"
 #include "./solution.cpp"
-TEST_CASE("TestSmartConvert") {
-    SECTION("test_convert_integer") {
-        auto result = numerical_str_convert("123");
-        REQUIRE(std::holds_alternative<int>(result));
-        REQUIRE(std::get<int>(result) == 123);
+// Test cases
+TEST_CASE("Count words in various strings") {
+    SECTION("Empty string") {
+        REQUIRE(countWords("") == 0);
     }
 
-    SECTION("test_convert_float") {
-        auto result = numerical_str_convert("123.45");
-        REQUIRE(std::holds_alternative<double>(result));
-        REQUIRE(std::get<double>(result) == 123.45);
+    SECTION("String with only spaces") {
+        REQUIRE(countWords("     ") == 0);
     }
 
-    SECTION("test_convert_non_numeric_string") {
-        auto result = numerical_str_convert("abc");
-        REQUIRE(std::holds_alternative<std::string>(result));
-        REQUIRE(std::get<std::string>(result) == "abc");
+    SECTION("Single word") {
+        REQUIRE(countWords("Hello") == 1);
     }
 
-    SECTION("test_convert_negative_integer") {
-        auto result = numerical_str_convert("-456");
-        REQUIRE(std::holds_alternative<int>(result));
-        REQUIRE(std::get<int>(result) == -456);
+    SECTION("Multiple words with single spaces") {
+        REQUIRE(countWords("This is a test string") == 5);
     }
 
-    SECTION("test_convert_negative_float") {
-        auto result = numerical_str_convert("-456.78");
-        REQUIRE(std::holds_alternative<double>(result));
-        REQUIRE(std::get<double>(result) == -456.78);
+    SECTION("Multiple spaces between words") {
+        REQUIRE(countWords("This    is   a   test   string") == 5);
+    }
+
+    SECTION("Leading and trailing spaces") {
+        REQUIRE(countWords("   Hello world!   ") == 2);
     }
 }
