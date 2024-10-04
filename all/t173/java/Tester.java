@@ -3,6 +3,8 @@ package org.real.temp;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+
 
 import org.real.temp.*;
 public class Tester {
@@ -16,7 +18,7 @@ public class Tester {
 
         double t = 0.0;
         double[] expected = {0.0, 0.0};
-        assertArrayEquals(expected, Adapted.cubicBezier(t, p0, p1, p2, p3));
+        assertArrayEquals(expected, Answer.cubicBezier(t, p0, p1, p2, p3));
     }
 
     @Test
@@ -28,7 +30,7 @@ public class Tester {
 
         double t = 1.0;
         double[] expected = {1.0, 0.0};
-        assertArrayEquals(expected, Adapted.cubicBezier(t, p0, p1, p2, p3));
+        assertArrayEquals(expected, Answer.cubicBezier(t, p0, p1, p2, p3));
     }
 
     @Test
@@ -40,7 +42,7 @@ public class Tester {
 
         double t = 0.5;
         double[] expected = {0.5, 0.75};
-        assertArrayEquals(expected, Adapted.cubicBezier(t, p0, p1, p2, p3), 1e-9);
+        assertArrayEquals(expected, Answer.cubicBezier(t, p0, p1, p2, p3), 1e-9);
     }
 
     @Test
@@ -52,7 +54,7 @@ public class Tester {
 
         double t = 0.5;
         double[] expected = {1.5, 0.75};
-        assertArrayEquals(expected, Adapted.cubicBezier(t, p0, p1, p2, p3), 1e-9);
+        assertArrayEquals(expected, Answer.cubicBezier(t, p0, p1, p2, p3), 1e-9);
     }
 
     @Test
@@ -63,7 +65,7 @@ public class Tester {
         double[] p3 = {2.0, 0.0};
         double t = 0.75;
         double[] expected = {1.6875, 1.125};
-        assertArrayEquals(expected, Adapted.cubicBezier(t, p0, p1, p2, p3), 1e-9);
+        assertArrayEquals(expected, Answer.cubicBezier(t, p0, p1, p2, p3), 1e-9);
     }
 
 }

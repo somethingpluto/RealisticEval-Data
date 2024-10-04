@@ -1,7 +1,7 @@
 from typing import Tuple
 
 
-def rgb_to_hsv(r, g, b) -> Tuple[int, int, int]:
+def rgb_to_hsv(r: int, g: int, b: int) -> Tuple[int, int, int]:
     """
     convert RGB color to HSV color.
     For example:

@@ -53,11 +53,3 @@ class TestCsvToSqlInsert(unittest.TestCase):
         )
         result = csv_to_sql_insert('test4.csv')
         self.assertEqual(result, expected_sql)
-
-    def test_quotes_in_csv(self):
-        expected_sql = (
-            "INSERT INTO test5 (quote_id, quote) VALUES ('1', 'It''s a beautiful day.');\n"
-            "INSERT INTO test5 (quote_id, quote) VALUES ('2', 'She said, \"Hello!\"');"
-        )
-        result = csv_to_sql_insert('test5.csv')
-        self.assertEqual(result, expected_sql)

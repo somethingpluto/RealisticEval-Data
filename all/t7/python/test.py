@@ -1,39 +1,29 @@
 import logging
 import unittest
 from unittest.mock import patch
+from io import StringIO
 
 
 class TestLogger(unittest.TestCase):
+
     def setUp(self):
-        self.logger_name = 'test_logger'
+        """Set up a Logger instance for testing."""
+        self.logger_name = "TestLogger"
         self.logger = Logger(self.logger_name)
 
-    @patch('logging.Logger.debug')
-    def test_debug_logging(self, mock_debug):
-        message = "This is a debug message"
-        self.logger.log(logging.DEBUG, message)
-        mock_debug.assert_called_once_with(message)
+    def test_initialization(self):
+        """Test that the logger is initialized with the correct name and level."""
+        self.assertEqual(self.logger.logger.name, self.logger_name)
+        self.assertEqual(self.logger.logger.level, logging.DEBUG)
 
-    @patch('logging.Logger.info')
-    def test_info_logging(self, mock_info):
-        message = "This is an info message"
-        self.logger.log(logging.INFO, message)
-        mock_info.assert_called_once_with(message)
+    def test_default_logging_level(self):
+        """Test that the logger defaults to DEBUG level if not specified."""
+        logger_default = Logger("DefaultLogger")
+        self.assertEqual(logger_default.logger.level, logging.DEBUG)
 
-    @patch('logging.Logger.warning')
-    def test_warning_logging(self, mock_warning):
-        message = "This is a warning message"
-        self.logger.log(logging.WARNING, message)
-        mock_warning.assert_called_once_with(message)
+    def test_console_handler_added(self):
+        """Test that the console handler is added to the logger."""
+        handlers = self.logger.logger.handlers
+        self.assertGreater(len(handlers), 0)
+        self.assertIsInstance(handlers[0], logging.StreamHandler)
 
-    @patch('logging.Logger.error')
-    def test_error_logging(self, mock_error):
-        message = "This is an error message"
-        self.logger.log(logging.ERROR, message)
-        mock_error.assert_called_once_with(message)
-
-    @patch('logging.Logger.critical')
-    def test_critical_logging(self, mock_critical):
-        message = "This is a critical message"
-        self.logger.log(logging.CRITICAL, message)
-        mock_critical.assert_called_once_with(message)

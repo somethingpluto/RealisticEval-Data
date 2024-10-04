@@ -1,5 +1,10 @@
 package org.real.temp;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.util.Arrays;
+
 public class Answer {
     /**
      * Generates a 16-byte random salt value, hashes the provided password with that salt

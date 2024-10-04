@@ -13,7 +13,7 @@ public class Tester{
     public void testTargetPresent() {
         int[] array = {1, 3, 5, 7, 9, 11};
         int target = 7;
-        int result = Adapted.binarySearchClosest(array, target);
+        int result = Answer.binarySearchClosest(array, target);
         assertEquals(3, result, "Target should be found at index 3.");
     }
 
@@ -24,7 +24,7 @@ public class Tester{
     public void testClosestElementSmaller() {
         int[] array = {1, 3, 5, 7, 9, 11};
         int target = 6;
-        int result = Adapted.binarySearchClosest(array, target);
+        int result = Answer.binarySearchClosest(array, target);
         assertEquals(2, result, "Closest element should be 5 at index 2.");
     }
 
@@ -35,7 +35,7 @@ public class Tester{
     public void testClosestElementLarger() {
         int[] array = {1, 3, 5, 7, 9, 11};
         int target = 8;
-        int result = Adapted.binarySearchClosest(array, target);
+        int result = Answer.binarySearchClosest(array, target);
         assertEquals(3, result, "Closest element should be 7 at index 3.");
     }
 
@@ -46,7 +46,7 @@ public class Tester{
     public void testTargetSmallerThanAll() {
         int[] array = {1, 3, 5, 7, 9, 11};
         int target = 0;
-        int result = Adapted.binarySearchClosest(array, target);
+        int result = Answer.binarySearchClosest(array, target);
         assertEquals(0, result, "Closest element should be 1 at index 0.");
     }
 
@@ -57,7 +57,7 @@ public class Tester{
     public void testTargetLargerThanAll() {
         int[] array = {1, 3, 5, 7, 9, 11};
         int target = 12;
-        int result = Adapted.binarySearchClosest(array, target);
+        int result = Answer.binarySearchClosest(array, target);
         assertEquals(5, result, "Closest element should be 11 at index 5.");
     }
 }

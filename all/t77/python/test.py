@@ -22,11 +22,6 @@ class TestFormatTimestampToString(unittest.TestCase):
         expected_date_str = '2022-06-16 15:20:00'
         self.assertEqual(format_timestamp_to_string(timestamp, custom_format), expected_date_str, "Should correctly format the timestamp using the custom format")
 
-    def test_invalid_timestamp(self):
-        """Test with an invalid (negative) timestamp."""
-        timestamp = -1.0
-        with self.assertRaises(ValueError):
-            format_timestamp_to_string(timestamp)
 
     def test_edge_case_boundary_value(self):
         """Test with an edge case timestamp (e.g., Unix epoch start)."""

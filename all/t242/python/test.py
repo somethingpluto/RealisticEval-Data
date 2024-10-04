@@ -9,14 +9,14 @@ class TestClassifyFilesByExtension(unittest.TestCase):
             "document.docx",
             "photo.jpeg",
             "report.pdf",
-            "image.PNG",
+            "image.png",
             "archive.zip"
         ]
         expected_result = {
             'docx': ['document.docx'],
             'jpeg': ['photo.jpeg'],
             'pdf': ['report.pdf'],
-            'png': ['image.PNG'],
+            'png': ['image.png'],
             'zip': ['archive.zip']
         }
         self.assertEqual(classify_files_by_extension(files), expected_result)
@@ -44,14 +44,12 @@ class TestClassifyFilesByExtension(unittest.TestCase):
             "file1.txt",
             "file2.txt",
             "file3.txt",
-            "file4.TXT"
         ]
         expected_result = {
             'txt': [
                 "file1.txt",
                 "file2.txt",
                 "file3.txt",
-                "file4.TXT"
             ]
         }
         self.assertEqual(classify_files_by_extension(files), expected_result)

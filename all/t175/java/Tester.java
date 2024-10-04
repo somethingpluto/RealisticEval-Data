@@ -27,7 +27,7 @@ public class Tester {
                         "        print(\"False branch\")\n" +
                         "    return\n";
 
-        String actual = Adapted.fixIndentation(code);
+        String actual = Answer.fixIndentation(code);
         assertEquals(expected, actual);
     }
 
@@ -51,7 +51,7 @@ public class Tester {
                         "        print(\"True branch\")\n" +
                         "    return\n";
 
-        String actual = Adapted.fixIndentation(code);
+        String actual = Answer.fixIndentation(code);
         assertEquals(expected, actual);
     }
 
@@ -73,7 +73,7 @@ public class Tester {
                         "        print(\"Still in True branch\")\n" +
                         "    return\n";
 
-        String actual = Adapted.fixIndentation(code);
+        String actual = Answer.fixIndentation(code);
         assertEquals(expected, actual);
     }
 
@@ -97,7 +97,7 @@ public class Tester {
                         "            print(\"Else branch\")\n" +
                         "        return\n";
 
-        String actual = Adapted.fixIndentation(code);
+        String actual = Answer.fixIndentation(code);
         assertEquals(expected, actual);
     }
 
@@ -111,7 +111,7 @@ public class Tester {
 
         String expected = code; // Already correctly indented
 
-        String actual = Adapted.fixIndentation(code);
+        String actual = Answer.fixIndentation(code);
         assertEquals(expected, actual);
     }
 }

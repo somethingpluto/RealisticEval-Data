@@ -46,18 +46,21 @@ class PythonExecutor:
                         file.write(test_code)
                         file.write("\n")
                         file.write("if __name__ == '__main__':")
+                        file.write("\n")
                         file.write("    unittest.main()")
                         file.flush()
                     stdout, stderr, returncode = self._execute(f"{self._env_path}/temp.py")
                     item["result_return_code"] = returncode
                     item["stderr"] = stderr
                     item["stdout"] = stdout
+                    with open(f"{self._env_path}/temp.py", "r", encoding="utf8") as f:
+                        item["full_content"] = f.read()
                     data_list.append(item)
             except Exception as e:
                 print(e)
                 continue
         data = pd.DataFrame(data_list)
-        data.to_excel(f"../analysis/model_answer_result/{self.model_name}/{self.model_name}_python.xlsx")
+        data.to_csv(f"../analysis/model_answer_result/{self.model_name}/{self.model_name}_python.csv")
 
     def _execute(self, file_path):
         abs_path = os.path.abspath(file_path)
@@ -69,7 +72,8 @@ class PythonExecutor:
             stderr=subprocess.PIPE,
             shell=True,
             encoding='utf-8',
-            errors='ignore'  # 忽略编码错误
+            errors='ignore',  # 忽略编码错误
+            text=True
         )
         try:
             # 等待进程结束或超时

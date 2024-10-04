@@ -6,7 +6,7 @@ JAVA_RUN_ENV = "../envs/java/src"
 
 
 class JavaExecutor:
-    def __init__(self, model_name):
+    def __init__(self, model_name=""):
         self._env_path = JAVA_RUN_ENV
         self.model_name = model_name
 
@@ -16,7 +16,7 @@ class JavaExecutor:
             code_file.write(code)
             code_file.flush()
         # 向Test.java文件写入写入
-        with open(f"{JAVA_RUN_ENV}/test/java/org/real/temp/Tester.java.java", "w", encoding="utf8") as test_file:
+        with open(f"{JAVA_RUN_ENV}/test/java/org/real/temp/Tester.java", "w", encoding="utf8") as test_file:
             test_file.write(test_code)
             test_file.flush()
         self._execute()

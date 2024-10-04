@@ -2,9 +2,13 @@ package org.real.temp;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 
 import org.real.temp.*;
+
+import static org.junit.jupiter.api.Assertions.*;
+
 
 public class Tester {
 

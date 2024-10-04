@@ -1,13 +1,12 @@
-def process_markdown(s: str) -> str:
-    """
-    processing the content of the Markdown file, remove unnecessary asterisks from the string and keep only the outermost asterisks.
-    For example:
-        input: Example of **nested *asterisks***.
-        output: Example of *nested asterisks*.
+import re
+
+
+def process_markdown_file(file_path):
+    """Process the contents of a Markdown file to remove unnecessary asterisks.
 
     Args:
-        s (str): The input string containing markdown-style asterisks.
+        file_path (str): The path to the Markdown file.
 
     Returns:
-        str: The processed string with asterisks removed, except for the first and last ones.
+        str: The processed Markdown content with only outermost asterisks retained.
     """

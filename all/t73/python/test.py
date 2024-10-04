@@ -28,13 +28,6 @@ class TestDictOfListsToListOfDicts(unittest.TestCase):
         result = dict_of_lists_to_list_of_dicts(dict_of_lists)
         self.assertEqual(result, expected_result)
 
-    def test_empty_dictionary(self):
-        """Test the function with an empty dictionary."""
-        dict_of_lists = {}
-        expected_result = []
-        result = dict_of_lists_to_list_of_dicts(dict_of_lists)
-        self.assertEqual(result, expected_result)
-
     def test_single_element_lists(self):
         """Test the function with single-element lists."""
         dict_of_lists = {

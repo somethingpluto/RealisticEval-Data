@@ -7,7 +7,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.real.temp.*;public class TestClass {
+import org.real.temp.*;public class Tester {
     @Test
     public void testNonDecreasingSequence() {
         int[] nums = {5, 7, 4, 8, 6, 10, 2, 11};

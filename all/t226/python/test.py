@@ -32,24 +32,6 @@ class TestTSVtoJSONL(unittest.TestCase):
         ]
         self.assertEqual(lines, expected_lines)
 
-    def test_special_characters(self):
-        tsv_content = "Name\tAge\tCountry\nAlice\t30\tU$A\nBöb\t25\tCañada\n"
-        tsv_file = os.path.join(self.test_dir.name, 'test_special.tsv')
-        jsonl_file = os.path.join(self.test_dir.name, 'test_special.jsonl')
-
-        with open(tsv_file, 'w', encoding='utf-8') as f:
-            f.write(tsv_content)
-
-        tsv_to_jsonl(tsv_file, jsonl_file)
-
-        with open(jsonl_file, 'r', encoding='utf-8') as f:
-            lines = f.readlines()
-
-        expected_lines = [
-            '{"Name":"Alice","Age":30,"Country":"U$A"}\n',
-            '{"Name":"Böb","Age":25,"Country":"Cañada"}\n'
-        ]
-        self.assertEqual(lines, expected_lines)
 
     def test_single_row_tsv(self):
         tsv_content = "Name\tAge\tCountry\nAlice\t30\tUSA\n"

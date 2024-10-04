@@ -1,4 +1,5 @@
 import unittest
+from math import comb
 
 
 class TestProbabilityRedBalls(unittest.TestCase):

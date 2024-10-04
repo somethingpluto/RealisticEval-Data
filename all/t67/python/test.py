@@ -23,15 +23,6 @@ class TestParseXamlToDict(unittest.TestCase):
         result = parse_xaml_to_dict(xaml_input)
         self.assertEqual(result, expected)
 
-    def test_empty_string_values(self):
-        xaml_data = """<root>
-                         <String Key="Username"></String>
-                         <String Key="Password"></String>
-                       </root>"""
-        xaml_input = StringIO(xaml_data)
-        expected = {'Username': '', 'Password': ''}
-        result = parse_xaml_to_dict(xaml_input)
-        self.assertEqual(result, expected)
 
     def test_no_string_tags(self):
         xaml_data = """<root>

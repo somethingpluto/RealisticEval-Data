@@ -28,4 +28,4 @@ def rgb_to_hsv(r, g, b):
     # V (Value) is equal to max_rgb
     v = max_rgb
 
-    return (h, s, v)
+    return (h, s*100, v*100)

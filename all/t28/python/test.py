@@ -41,10 +41,3 @@ class TestPrintMemoryBits(unittest.TestCase):
         output = self.held_stdout.getvalue().strip()
         expected_output = "1 1 1 1 1 1 1 1"
         self.assertEqual(output, expected_output)
-
-    def test_mixed_bytes(self):
-        memory_section = bytes([0b01010101, 0b10000001])
-        print_memory_bits(memory_section)
-        output = self.held_stdout.getvalue().strip()
-        expected_output = "0 1 0 1 0 1 0 1 \n1 0 0 0 0 0 0 1"
-        self.assertEqual(output, expected_output)

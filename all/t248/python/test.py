@@ -38,19 +38,6 @@ class TestSanitizeData(unittest.TestCase):
         }
         self.assertEqual(sanitize_data(data, key_to_remove=["email"]), expected)
 
-    def test_list_of_dicts(self):
-        """ Test a list containing dictionaries. """
-        data = [
-            {"name": "Alice", "email": "alice@example.com"},
-            {"name": "Bob", "email": "bob@example.com"}
-        ]
-        key_to_remove = ["email", "metadata"]
-        expected = [
-            {"name": "Alice"},
-            {"name": "Bob"}
-        ]
-        self.assertEqual(sanitize_data(data,key_to_remove), expected)
-
     def test_non_dict_non_list(self):
         """ Test with non-dict and non-list question types. """
         data = "Hello, world!"

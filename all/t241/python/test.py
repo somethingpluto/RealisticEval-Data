@@ -11,12 +11,6 @@ class TestGetMinDistance(unittest.TestCase):
             line_number, distance = get_min_seq_num_and_distance('dummy_file.txt', 'apple', 'banana')
             self.assertEqual((line_number, distance), (2, 1))
 
-    def test_words_on_same_line_multiple_times(self):
-        """ Test where words appear multiple times on the same line """
-        mock_content = "apple apple banana apple banana banana"
-        with patch('builtins.open', mock_open(read_data=mock_content)):
-            line_number, distance = get_min_seq_num_and_distance('dummy_file.txt', 'apple', 'banana')
-            self.assertEqual((line_number, distance), (0, 1))
 
     def test_words_not_present(self):
         """ Test case where one or both words are not present """

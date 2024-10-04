@@ -35,7 +35,7 @@ public class Tester {
      */
     @Test
     public void testReadFileWithContent() throws IOException {
-        byte[] content = Adapted.readFileToByteArray(testFile.getAbsolutePath());
+        byte[] content = Answer.readFileToByteArray(testFile.getAbsolutePath());
         assertEquals("Test content", new String(content), "The file content should match the expected string.");
     }
 
@@ -47,7 +47,7 @@ public class Tester {
         File emptyFile = new File("emptyFile.txt");
         emptyFile.createNewFile();
 
-        byte[] content = Adapted.readFileToByteArray(emptyFile.getAbsolutePath());
+        byte[] content = Answer.readFileToByteArray(emptyFile.getAbsolutePath());
         assertEquals(0, content.length, "The content of an empty file should be a byte array of length 0.");
 
         emptyFile.delete();
@@ -60,7 +60,7 @@ public class Tester {
     public void testReadNonExistentFile() {
         String nonExistentFilePath = "nonExistentFile.txt";
         assertThrows(IllegalArgumentException.class, () -> {
-            Adapted.readFileToByteArray(nonExistentFilePath);
+            Answer.readFileToByteArray(nonExistentFilePath);
         }, "Reading a non-existent file should throw an IllegalArgumentException.");
     }
 
@@ -74,7 +74,7 @@ public class Tester {
             fos.write(specialContent.getBytes());
         }
 
-        byte[] content = Adapted.readFileToByteArray(testFile.getAbsolutePath());
+        byte[] content = Answer.readFileToByteArray(testFile.getAbsolutePath());
         assertEquals(specialContent, new String(content), "The file content should match the special characters string.");
     }
 
@@ -92,7 +92,7 @@ public class Tester {
             fos.write(largeContent);
         }
 
-        byte[] content = Adapted.readFileToByteArray(testFile.getAbsolutePath());
+        byte[] content = Answer.readFileToByteArray(testFile.getAbsolutePath());
         assertArrayEquals(largeContent, content, "The content of the large file should match the expected byte array.");
     }
 }

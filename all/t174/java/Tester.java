@@ -18,7 +18,7 @@ public class Tester {
         double p2 = 1.0;
         double targetX = 0.0;
 
-        double t = Adapted.findTForX(targetX, p0, p1, p2);
+        double t = Answer.findTForX(targetX, p0, p1, p2);
         assertEquals(0.0, t, TOLERANCE);
     }
 
@@ -29,7 +29,7 @@ public class Tester {
         double p2 = 1.0;
         double targetX = 1.0;
 
-        double t = Adapted.findTForX(targetX, p0, p1, p2);
+        double t = Answer.findTForX(targetX, p0, p1, p2);
         assertEquals(1.0, t, TOLERANCE);
     }
 
@@ -40,7 +40,7 @@ public class Tester {
         double p2 = 1.0;
         double targetX = 0.25;
 
-        double t = Adapted.findTForX(targetX, p0, p1, p2);
+        double t = Answer.findTForX(targetX, p0, p1, p2);
         assertEquals(0.25, t, TOLERANCE);
     }
 
@@ -52,7 +52,7 @@ public class Tester {
         double p2 = 2.0;
         double targetX = 1.5;
 
-        double t = Adapted.findTForX(targetX, p0, p1, p2);
+        double t = Answer.findTForX(targetX, p0, p1, p2);
         assertEquals(0.75, t, TOLERANCE);
     }
 

@@ -46,3 +46,11 @@ class UniqueDeque:
         Returns:
         - int: The number of unique elements in the deque.
         """
+
+    def __iter__(self):
+        """
+        Create an iterator for the deque.
+
+        Returns:
+        - iterator: An iterator over the elements in the deque.
+        """

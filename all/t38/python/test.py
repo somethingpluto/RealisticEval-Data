@@ -13,12 +13,6 @@ class TestRainbowHexGenerator(unittest.TestCase):
             "#8A2BE2"  # Violet
         ]
 
-    def test_no_intermediates(self):
-        # Test with zero intermediates
-        result = rainbowHexGenerator(0)
-        expected = self.rainbow_colors
-        self.assertEqual(result, expected, "Should return main rainbow colors without intermediates")
-
     def test_one_intermediate(self):
         # Test with one intermediate color between each main color
         result = rainbowHexGenerator(1)

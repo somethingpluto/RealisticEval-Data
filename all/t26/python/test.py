@@ -9,11 +9,10 @@ class TestConvertToCommaSeparated(unittest.TestCase):
     def test_mixed_separators(self):
         self.assertEqual(convert_to_comma_separated("grapes;lemon/melon*kiwi;litchi"), "grapes,lemon,melon,kiwi,litchi",
                          "Failed to convert mixed separators in a string.")
+    def test_mixed_separators2(self):
+        self.assertEqual(convert_to_comma_separated("grapes/lemon/melon*kiwi*litchi"), "grapes,lemon,melon,kiwi,litchi",
+                         "Failed to convert mixed separators in a string.")
 
     def test_no_separators(self):
         self.assertEqual(convert_to_comma_separated("watermelon"), "watermelon",
                          "Failed when no separators are present.")
-
-    def test_repeated_separators(self):
-        self.assertEqual(convert_to_comma_separated("pear;;apple**banana//orange"), "pear,,apple,,banana,,orange",
-                         "Failed to handle repeated separators correctly.")

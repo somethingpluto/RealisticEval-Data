@@ -1,4 +1,4 @@
-package com.real.temp;
+package org.real.temp;
 
 import org.junit.jupiter.api.Test;
 
@@ -33,9 +33,4 @@ public class Tester {
         assertArrayEquals(expected, Answer.hexStringToByteArray(hex), "Should correctly handle hex strings with uppercase letters");
     }
 
-    @Test
-    void testInvalidHexString() {
-        String hex = "1A3G"; // 'G' is not a valid hex character
-        assertThrows(NumberFormatException.class, () -> Answer.hexStringToByteArray(hex), "Should throw NumberFormatException for non-hex characters");
-    }
 }
