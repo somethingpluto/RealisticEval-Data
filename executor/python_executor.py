@@ -60,7 +60,8 @@ class PythonExecutor:
                 print(e)
                 continue
         data = pd.DataFrame(data_list)
-        data.to_csv(f"../analysis/model_answer_result/{self.model_name}/{self.model_name}_python.csv")
+        data.to_excel(f"../analysis/model_answer_result/{self.model_name}/{self.model_name}_python.xlsx",
+                      engine='xlsxwriter')
 
     def _execute(self, file_path):
         abs_path = os.path.abspath(file_path)
