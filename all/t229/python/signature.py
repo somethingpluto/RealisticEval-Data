@@ -1,16 +1,12 @@
-from typing import Tuple
-
-
-def get_file_size(size_in_bytes, unit=None) -> Tuple[int, float]:
+def convert_file_size(size_bytes: int) -> str:
     """
-    Convert file size from bytes to a more readable format (e.g. KB, MB, GB)
+    Converts a file size in bytes to a human-readable format.
     For example:
-        input:
-
+        input: 2120
+        output: 2KB
     Args:
-        size_in_bytes (int): File size in bytes.
-        unit (str, optional): The unit to convert the size to ('B', 'KB', 'MB', 'GB').
+        size_bytes (int): The size in bytes to be converted.
 
     Returns:
-        tuple: A tuple containing the formatted size string and the size converted to the specified or chosen unit as float.
+        str: The converted size in a human-readable format (e.g., "2KB", "1MB").
     """

@@ -1,11 +1,14 @@
-def string_side_by_side(string1: str, string2: str, column_width=20) -> str:
+from typing import Tuple
+
+
+def align_lines_left(str1: str, str2: str) -> Tuple[str, str]:
     """
-    Display the two strings side by side so that their rows are left aligned, and make sure that each row fits into the specified column width
+    Align two lines of string to the left, supplementing with Spaces if the length is not enough
+
     Args:
-        string1 (str): string1
-        string2 (str): string2
-        column_width (int): width of each line
+        str1 (str): str1
+        str2 (str): str2
 
     Returns:
-        str: format lines
+        Tuple[str,str]: aligned str1 aligned str2
     """

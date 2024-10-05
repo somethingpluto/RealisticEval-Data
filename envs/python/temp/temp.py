@@ -1,43 +1,55 @@
-import numpy as np
+from typing import Callable
 
-def are_sets_equal(set1, set2, rtol=1e-5, atol=1e-6):
-    set1_arr = np.array(sorted(set1))
-    set2_arr = np.array(sorted(set2))
-    return np.allclose(set1_arr, set2_arr, rtol=rtol, atol=atol)
+import inspect
+
+
+def method_arg_type_check(method_obj: Callable, *args, **kwargs):
+    """
+    Checks that the arguments passed to a given method object (e.g., method of a class) comply with their
+    expected types, based on the method's signature. If there's a discrepancy, it raises a ValueError.
+
+    Args:
+        method_obj (Callable): The method for which arguments are checked.
+        *args: Positional arguments passed to the method.
+        **kwargs: Keyword arguments passed to the method.
+
+    Raises:
+        ValueError: If any argument does not match the expected type.
+    """
+    sig = inspect.signature(method_obj)
+    bound_args = sig.bind(*args, **kwargs)
+
+    for param_name, value in bound_args.arguments.items():
+        param = sig.parameters[param_name]
+        if param.annotation is not param.empty and not isinstance(value, param.annotation):
+            raise ValueError(f"Argument '{param_name}' must be of type {param.annotation}, got {type(value).__name__}.")
+
+
 import unittest
+from typing import Callable
 
 
-class TestAreSetsEqual(unittest.TestCase):
+class MyClass:
+    def my_method(self, arg1: int, arg2: str, optional_arg: float = 3.14):
+        pass
 
-    def test_identical_sets(self):
-        """Test with two identical sets of floats."""
-        set1 = {1.0, 2.0, 3.0}
-        set2 = {1.0, 2.0, 3.0}
-        self.assertTrue(are_sets_equal(set1, set2))
 
-    def test_sets_with_close_values(self):
-        """Test with two sets that are close within the tolerance."""
-        set1 = {1.0, 2.00001, 3.0}
-        set2 = {1.0, 2.00002, 3.0}
-        self.assertTrue(are_sets_equal(set1, set2, rtol=1e-5, atol=1e-6))
+class TestMethodArgTypeCheck(unittest.TestCase):
+    def test_correct_types(self):
+        """ Test with correct argument types. """
+        try:
+            method_arg_type_check(MyClass.my_method, MyClass(), 10, "hello", optional_arg=3.14)
+        except ValueError:
+            self.fail("method_arg_type_check() raised ValueError unexpectedly!")
 
-    def test_sets_with_large_difference(self):
-        """Test with two sets that have large differences beyond tolerance."""
-        set1 = {1.0, 2.0, 3.0}
-        set2 = {1.0, 2.5, 3.0}
-        self.assertFalse(are_sets_equal(set1, set2))
 
-    def test_sets_with_negative_values(self):
-        """Test with two sets containing negative floats."""
-        set1 = {-1.0, -2.0, -3.0}
-        set2 = {-1.0, -2.000001, -3.0}
-        self.assertTrue(are_sets_equal(set1, set2, rtol=1e-5, atol=1e-6))
 
-    def test_empty_sets(self):
-        """Test with two empty sets."""
-        set1 = set()
-        set2 = set()
-        self.assertTrue(are_sets_equal(set1, set2))
+
+    def test_missing_argument(self):
+        """ Test with missing required argument. """
+        with self.assertRaises(TypeError):
+            method_arg_type_check(MyClass.my_method, MyClass(), 10)  # Missing arg2
+
 
 if __name__ == '__main__':
     unittest.main()

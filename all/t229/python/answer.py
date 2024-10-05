@@ -1,43 +1,16 @@
-def get_file_size(size_in_bytes, unit=None):
-    """
-    Converts a file size in bytes to a specified unit, or to an appropriately scaled unit if none is specified.
+def convert_file_size(size_bytes):
+    # Define the size units
+    units = ['B', 'KB', 'MB', 'GB', 'TB']
 
-    Parameters:
-    size_in_bytes (int): File size in bytes.
-    unit (str, optional): The unit to convert the size to ('B', 'KB', 'MB', 'GB').
+    # Handle the case when size is 0 bytes
+    if size_bytes == 0:
+        return "0B"
 
-    Returns:
-    tuple: A tuple containing the formatted size string and the size converted to the specified or chosen unit as float.
-    """
-    units = {
-        'B': 1,
-        'KB': 1024,
-        'MB': 1024 ** 2,
-        'GB': 1024 ** 3
-    }
+    # Calculate the appropriate unit
+    index = 0
+    while size_bytes >= 1024 and index < len(units) - 1:
+        size_bytes /= 1024
+        index += 1
 
-    if unit is None:
-        # Automatically choose unit based on size
-        if size_in_bytes < 1024:
-            unit = 'B'
-        elif size_in_bytes < 1024 ** 2:
-            unit = 'KB'
-        elif size_in_bytes < 1024 ** 3:
-            unit = 'MB'
-        else:
-            unit = 'GB'
-    else:
-        unit = unit.upper()  # Normalize unit input to uppercase
-        if unit not in units:
-            raise ValueError("Invalid unit. Choose among 'B', 'KB', 'MB', 'GB'.")
-
-    # Calculate the size in the chosen or specified unit
-    size_in_unit = size_in_bytes / units[unit]
-
-    # Format the size with two decimal places if not in bytes
-    if unit == 'B':
-        formatted_size = f"{size_in_bytes} B"
-    else:
-        formatted_size = f"{size_in_unit:.2f} {unit}"
-
-    return formatted_size, size_in_unit
+    # Return the formatted size with the appropriate unit
+    return f"{int(size_bytes)}{units[index]}"

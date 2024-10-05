@@ -1,88 +1,93 @@
 import unittest
-import csv
+import pandas as pd
+from io import StringIO
+
 import os
 
 
-class TestCleanCSV(unittest.TestCase):
+# Assuming process_csv function is imported from the module
+# from your_module import process_csv
+
+class TestProcessCSV(unittest.TestCase):
 
     def setUp(self):
-        """Create a sample CSV file for testing."""
-        self.input_file_path = 'test_input.csv'
-        self.output_file_path = 'test_output.csv'
-        self.sample_data = [
-            ['Name', 'Age', 'City', 'State'],
-            ['Alice', '25', '', ''],
-            ['Bob', '30', 'New York', 'NY'],
-            ['Charlie', '', '', ''],
-            ['David', '45', 'Los Angeles', '', '']
-        ]
-        with open(self.input_file_path, 'w', newline='', encoding='utf-8') as file:
-            writer = csv.writer(file)
-            writer.writerows(self.sample_data)
+        self.input_data_1 = """A,B,C
+1,2,3
+4,,6
+7,8,
+9,10,11"""
 
-    def tearDown(self):
-        """Clean up files created during the test.js."""
-        os.remove(self.input_file_path)
-        os.remove(self.output_file_path)
+        self.input_data_2 = """A,B
+1,2
+,4
+6,7
+8,,
+,9"""
 
-    def test_clean_csv(self):
-        """Test the cleaning functionality of the CSV."""
-        clean_csv(self.input_file_path, self.output_file_path)
-        with open(self.output_file_path, 'r', newline='', encoding='utf-8') as file:
-            reader = csv.reader(file)
-            result = list(reader)
+        self.input_data_3 = """A,B,C,D
+,,
+1,,3,4
+2,3,,5
+,,,"""
 
-        expected = [
-            ['Name', 'Age', 'City', 'State'],
-            ['Bob', '30', 'New York', 'NY'],
-        ]
-        self.assertEqual(result, expected)
+        self.input_data_4 = """"""  # Empty CSV
 
-    def test_empty_file(self):
-        """Test with an empty input file."""
-        with open(self.input_file_path, 'w', newline='', encoding='utf-8') as file:
-            file.write('')
-        clean_csv(self.input_file_path, self.output_file_path)
-        self.assertFalse(os.path.getsize(self.output_file_path))
+        self.input_data_5 = """A
+1
+2
+3"""
 
-    def test_all_rows_invalid(self):
-        """Test when all rows should be filtered out."""
-        with open(self.input_file_path, 'w', newline='', encoding='utf-8') as file:
-            writer = csv.writer(file)
-            writer.writerows([['John', '', ''], ['Jane', '', '']])
-        clean_csv(self.input_file_path, self.output_file_path)
-        with open(self.output_file_path, 'r', newline='', encoding='utf-8') as file:
-            reader = csv.reader(file)
-            result = list(reader)
-        self.assertEqual(result, [])
+        self.input_data_6 = """A,B,C
+,,,
+,2,3
+4,,6
+7,8,9"""
 
-    def test_no_rows_filtered(self):
-        """Test with no rows ending with two consecutive empty columns."""
-        data = [['Paul', '42', 'Denver', 'CO'], ['Sara', '35', 'Boston', 'MA']]
-        with open(self.input_file_path, 'w', newline='', encoding='utf-8') as file:
-            writer = csv.writer(file)
-            writer.writerows(data)
-        clean_csv(self.input_file_path, self.output_file_path)
-        with open(self.output_file_path, 'r', newline='', encoding='utf-8') as file:
-            reader = csv.reader(file)
-            result = list(reader)
-        self.assertEqual(result, data)
+        self.input_data_7 = """A,B,C
+NaN,2,3
+4,NaN,6
+7,8,9
+NaN,NaN,11"""
 
-    def test_mixed_rows(self):
-        """Test a file containing a mix of valid and invalid rows."""
-        data = [
-            ['Eve', '', ''],
-            ['Adam', '28', 'Seattle', 'WA'],
-            ['Noah', '32', '', '']
-        ]
-        expected = [
-            ['Adam', '28', 'Seattle', 'WA']
-        ]
-        with open(self.input_file_path, 'w', newline='', encoding='utf-8') as file:
-            writer = csv.writer(file)
-            writer.writerows(data)
-        clean_csv(self.input_file_path, self.output_file_path)
-        with open(self.output_file_path, 'r', newline='', encoding='utf-8') as file:
-            reader = csv.reader(file)
-            result = list(reader)
-        self.assertEqual(result, expected)
+    def process_data(self, input_data):
+        input_file = StringIO(input_data)
+        output_file = StringIO()
+        input_file_path = "input.csv"
+        output_file_path = "output.csv"
+
+        # Write input data to a temp CSV file
+        with open(input_file_path, 'w') as f:
+            f.write(input_data)
+
+        # Process the CSV
+        process_csv(input_file_path, output_file_path)
+
+        # Read the output
+        with open(output_file_path, 'r') as f:
+            output_data = f.read()
+
+        # Clean up temp files
+        os.remove(input_file_path)
+        os.remove(output_file_path)
+
+        return output_data
+
+    def test_case_1(self):
+        output = self.process_data(self.input_data_1)
+        expected_output = """A,B,C\n1,2.0,3.0\n4,,6.0\n7,8.0,\n9,10.0,11.0\n"""
+        self.assertEqual(output, expected_output)
+
+    def test_case_3(self):
+        output = self.process_data(self.input_data_3)
+        expected_output = """A,B,C,D\n1.0,,3.0,4.0\n2.0,3.0,,5.0\n"""
+        self.assertEqual(output, expected_output)
+
+    def test_case_4(self):
+        output = self.process_data(self.input_data_4)
+        expected_output = ""  # Empty CSV should remain empty
+        self.assertEqual(output, expected_output)
+
+    def test_case_5(self):
+        output = self.process_data(self.input_data_5)
+        expected_output = """A\n1\n2\n3\n"""  # Single-column CSV should remain unchanged
+        self.assertEqual(output, expected_output)

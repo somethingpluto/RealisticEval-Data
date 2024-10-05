@@ -1,20 +1,35 @@
-import csv
+import pandas as pd
 
 
-def clean_csv(input_file_path, output_file_path):
+def process_csv(file_path, output_path):
     """
-    Processes a CSV file, deleting rows that end with two consecutive empty columns.
+    Processes a CSV file and removes rows with two or more empty columns.
 
-    :param input_file_path: Path to the input CSV file.
-    :param output_file_path: Path to the output CSV file where cleaned question will be stored.
+    Parameters:
+    file_path (str): The path to the input CSV file.
+    output_path (str): The path where the processed CSV file will be saved.
+
+    Returns:
+    None
     """
-    with open(input_file_path, 'r', newline='', encoding='utf-8') as infile:
-        reader = csv.reader(infile)
-        rows = list(reader)
+    try:
+        # Read the CSV file into a DataFrame
+        df = pd.read_csv(file_path)
 
-    # Filter rows that do not end with two consecutive empty columns
-    cleaned_rows = [row for row in rows if len(row) < 2 or (row[-1] != '' or row[-2] != '')]
+        # Count the number of empty columns in each row
+        empty_count = df.isnull().sum(axis=1)
 
-    with open(output_file_path, 'w', newline='', encoding='utf-8') as outfile:
-        writer = csv.writer(outfile)
-        writer.writerows(cleaned_rows)
+        # Filter the DataFrame to keep only rows with less than 2 empty columns
+        filtered_df = df[empty_count < 2]
+
+        # Save the processed DataFrame to a new CSV file
+        filtered_df.to_csv(output_path, index=False)
+
+    except pd.errors.EmptyDataError:
+        # Handle the case of an empty CSV
+        with open(output_path, 'w') as f:
+            f.write("")  # Write an empty file
+
+    except pd.errors.ParserError:
+        # Handle parsing errors (e.g., inconsistent columns in rows)
+        print("Error: The input CSV has inconsistent row lengths. Please check the input data.")
