@@ -1,45 +1,62 @@
-import os
 import unittest
-
 import pandas as pd
+import os
 
 
 class TestReadCsvToDataFrame(unittest.TestCase):
 
     def setUp(self):
-        # Create temporary CSV files for testing
-        self.test_files = {
-            'valid_csv': 'test_valid.csv',
-            'empty_csv': 'test_empty.csv',
-            'non_existent_csv': 'non_existent.csv',
-            'invalid_csv': 'test_invalid.csv',
-            'another_valid_csv': 'test_another_valid.csv',
-        }
+        """Set up temporary CSV files for testing."""
+        # Create a valid CSV file
+        self.valid_csv_path = 'valid.csv'
+        pd.DataFrame({'col1': [1, 2], 'col2': [3, 4]}).to_csv(self.valid_csv_path, index=False)
 
-        # Valid CSV content
-        with open(self.test_files['valid_csv'], 'w') as f:
-            f.write("name,age\nAlice,30\nBob,25\n")
+        # Create an empty CSV file
+        self.empty_csv_path = 'empty.csv'
+        open(self.empty_csv_path, 'w').close()
 
-        # Empty CSV
-        with open(self.test_files['empty_csv'], 'w') as f:
-            f.write("")
+        # Create an invalid format CSV file
+        self.invalid_csv_path = 'invalid.csv'
+        with open(self.invalid_csv_path, 'w') as f:
+            f.write("col1, col2\n1, 2\n3, 4\ninvalid_line")
 
     def tearDown(self):
-        # Remove the test CSV files after tests
-        for file in self.test_files.values():
-            if os.path.exists(file):
-                os.remove(file)
+        """Clean up temporary files after tests."""
+        if os.path.exists(self.valid_csv_path):
+            os.remove(self.valid_csv_path)
+        if os.path.exists(self.empty_csv_path):
+            os.remove(self.empty_csv_path)
+        if os.path.exists(self.invalid_csv_path):
+            os.remove(self.invalid_csv_path)
 
-    def test_read_valid_csv(self):
-        df = read_csv_to_dataframe(self.test_files['valid_csv'])
+    def test_valid_csv(self):
+        """Test reading a valid CSV file."""
+        df = read_csv_to_dataframe(self.valid_csv_path)
         self.assertIsInstance(df, pd.DataFrame)
-        self.assertEqual(len(df), 2)  # should have 2 rows of data
-        self.assertIn('name', df.columns)
-        self.assertIn('age', df.columns)
+        self.assertEqual(df.shape, (2, 2))
+        self.assertListEqual(list(df.columns), ['col1', 'col2'])
 
-    def test_read_another_valid_csv(self):
-        df = read_csv_to_dataframe(self.test_files['another_valid_csv'])
-        self.assertIsInstance(df, pd.DataFrame)
-        self.assertEqual(len(df), 2)  # should have 2 rows of data
-        self.assertIn('item', df.columns)
-        self.assertIn('price', df.columns)
+
+
+    def test_correct_data(self):
+        """Test if the correct data is read from the CSV file."""
+        df = read_csv_to_dataframe(self.valid_csv_path)
+        expected_data = {'col1': [1, 2], 'col2': [3, 4]}
+        pd.testing.assert_frame_equal(df, pd.DataFrame(expected_data))
+
+    def test_read_csv_with_missing_values(self):
+        """Test reading a CSV file with missing values."""
+        missing_values_csv_path = 'missing_values.csv'
+        pd.DataFrame({'col1': [1, None], 'col2': [None, 4]}).to_csv(missing_values_csv_path, index=False)
+        df = read_csv_to_dataframe(missing_values_csv_path)
+        self.assertTrue(df.isnull().values.any())
+        os.remove(missing_values_csv_path)
+
+    def test_large_csv_file(self):
+        """Test reading a large CSV file."""
+        large_csv_path = 'large.csv'
+        large_df = pd.DataFrame({'col1': range(1000), 'col2': range(1000, 2000)})
+        large_df.to_csv(large_csv_path, index=False)
+        df = read_csv_to_dataframe(large_csv_path)
+        self.assertEqual(df.shape, (1000, 2))
+        os.remove(large_csv_path)

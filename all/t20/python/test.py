@@ -1,47 +1,32 @@
-import os
 import unittest
 
+# Assuming the transform_parentheses function is imported
+import re
 
-class TestMarkdownProcessor(unittest.TestCase):
-    def setUp(self):
-        """Setup test case data."""
-        # Sample Markdown content for testing
-        self.test_cases = {
-            "test_case_2.md": "This is _italic_ text.",
-            "test_case_3.md": "This is **bold** and _italic_ text.",
-            "test_case_5.md": "This text has no special formatting.",
-            "test_case_6.md": "*Asterisks at the start* and end*.",
-            "test_case_7.md": "Mixed *text with **multiple** asterisks*."
-        }
 
-        # Expected outputs after processing
-        self.expected_outputs = {
-            "test_case_1.md": "This is **bold** text.",
-            "test_case_2.md": "This is _italic_ text.",
-            "test_case_3.md": "This is **bold** and _italic_ text.",
-            "test_case_4.md": "This is **bold and _italic_** text.",
-            "test_case_5.md": "This text has no special formatting.",
-            "test_case_6.md": "*Asterisks at the start* and end*.",
-            "test_case_7.md": "Mixed *text with **multiple** asterisks*."
-        }
+class TestTransformParentheses(unittest.TestCase):
 
-    def write_temp_file(self, filename, content):
-        """Helper method to write content to a temporary test file."""
-        with open(filename, 'w', encoding='utf-8') as f:
-            f.write(content)
+    def test_basic_case(self):
+        text = "Hello (*wo*rld*)!"
+        expected = "Hello (*world*)!"
+        self.assertEqual(transform_parentheses(text), expected)
 
-    def test_markdown_processing(self):
-        """Run all test cases."""
-        for filename, content in self.test_cases.items():
-            self.write_temp_file(filename, content)
-            processed_content = process_markdown_file(filename)
-            expected_content = self.expected_outputs[filename]
-            self.assertEqual(processed_content, expected_content)
+    def test_multiple_asterisks(self):
+        text = "(*he*l*lo*)"
+        expected = "(*hello*)"
+        self.assertEqual(transform_parentheses(text), expected)
 
-    def tearDown(self):
-        """Cleanup temporary test files after tests."""
-        for filename in self.test_cases.keys():
-            try:
-                os.remove(filename)
-            except FileNotFoundError:
-                pass
+    def test_no_asterisks_inside(self):
+        text = "(*hello*)"
+        expected = "(*hello*)"
+        self.assertEqual(transform_parentheses(text), expected)
+
+    def test_multiple_patterns(self):
+        text = "(*hi*), (*there*), (*world*)!"
+        expected = "(*hi*), (*there*), (*world*)!"
+        self.assertEqual(transform_parentheses(text), expected)
+
+    def test_no_matching_pattern(self):
+        text = "This is a test without matching parentheses."
+        expected = "This is a test without matching parentheses."
+        self.assertEqual(transform_parentheses(text), expected)

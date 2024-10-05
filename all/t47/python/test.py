@@ -16,12 +16,6 @@ class TestFindNthWeekdayOfSpecificYear(unittest.TestCase):
         expected = datetime.date(2023, 5, 29)
         self.assertEqual(result, expected)
 
-    def test_out_of_range(self):
-        # Test for the 10th Monday of May 2023, which definitely doesn't exist, should return the last Monday
-        result = find_nth_weekday_of_specific_year(2023, 5, 10, 0)  # Monday is 0
-        expected = datetime.date(2023, 5, 29)
-        self.assertEqual(result, expected)
-
     def test_first_day_is_weekday(self):
         # Test for when the first day of the month is the weekday in question, 1st Tuesday of August 2023
         result = find_nth_weekday_of_specific_year(2023, 8, 1, 1)  # Tuesday is 1

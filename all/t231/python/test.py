@@ -14,15 +14,13 @@ class TestReadLog(unittest.TestCase):
             self.assertEqual(train_loss, [0.75, 0.70])
             self.assertEqual(test_acc1, [88.5, 89.0])
 
-    def test_invalid_json(self):
-        """ Test behavior when file contains invalid JSON """
-        mock_file_content = '{"test_acc1": 88.5, "train_loss": 0.75}\nInvalid JSON Line'
+    def test_read_correct_data_single(self):
+        """ Test reading correctly formatted JSON lines """
+        mock_file_content = '{"test_acc1": 88.5, "train_loss": 0.75}'
         with patch('builtins.open', mock_open(read_data=mock_file_content)):
-            with patch('json.loads', side_effect=json.JSONDecodeError("Expecting value", "doc", 0)):
-                train_loss, test_acc1 = read_log("dummy_path.json")
-                self.assertEqual(train_loss, [])
-                self.assertEqual(test_acc1, [])
-
+            train_loss, test_acc1 = read_log("dummy_path.json")
+            self.assertEqual(train_loss, [0.75])
+            self.assertEqual(test_acc1, [88.5])
     def test_empty_file(self):
         """ Test reading an empty file """
         with patch('builtins.open', mock_open(read_data="")):

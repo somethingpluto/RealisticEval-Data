@@ -5,8 +5,8 @@ class TestRemoveComments(unittest.TestCase):
 
     def test_single_line_comment(self):
         """ Test string with a comment on a single line """
-        input_string = "Hello, world! # This is a comment"
-        expected_output = "Hello, world! "
+        input_string = "Hello, world!# This is a comment"
+        expected_output = "Hello, world!"
         self.assertEqual(remove_comments(input_string), expected_output)
 
 

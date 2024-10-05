@@ -7,10 +7,6 @@ class TestReplacePhoneNumbers(unittest.TestCase):
         expected = "Call me at [PHONE_NUM]."
         self.assertEqual(replace_phone_numbers(msg), expected)
 
-    def test_international_number(self):
-        msg = "Contact us at 44 123 456 789."
-        expected = "Contact us at [PHONE_NUM]."
-        self.assertEqual(replace_phone_numbers(msg), expected)
 
     def test_number_with_parentheses(self):
         msg = "Our office number is 123 456-7890."

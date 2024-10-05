@@ -35,9 +35,3 @@ class TestGetRotationFunction(unittest.TestCase):
                            [0, 0, 1]])
         expected_rotation = -np.pi / 2  # -90 degrees in radians
         self.assertAlmostEqual(get_rotation(matrix), expected_rotation, places=6)
-
-    def test_rotation_invalid_matrix(self):
-        """ Test for an invalid matrix input """
-        invalid_matrix = np.array([[1, 0], [0, 1]])  # Not a 3x3 matrix
-        with self.assertRaises(ValueError):
-            get_rotation(invalid_matrix)

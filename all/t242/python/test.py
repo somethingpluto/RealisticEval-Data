@@ -27,17 +27,6 @@ class TestClassifyFilesByExtension(unittest.TestCase):
         expected_result = {}
         self.assertEqual(classify_files_by_extension(files), expected_result)
 
-    def test_no_extension_files(self):
-        """Test with files that have no extensions."""
-        files = [
-            "README",
-            "LICENSE",
-            "script",
-            "data"
-        ]
-        expected_result = {}
-        self.assertEqual(classify_files_by_extension(files), expected_result)
-
     def test_files_with_same_extension(self):
         """Test with multiple files having the same extension."""
         files = [

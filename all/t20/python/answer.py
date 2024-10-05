@@ -1,27 +1,22 @@
 import re
 
 
-def process_markdown_file(file_path):
-    """Process the contents of a Markdown file to remove unnecessary asterisks.
+def transform_parentheses(text: str) -> str:
+    """
 
     Args:
-        file_path (str): The path to the Markdown file.
+        text (str):
 
     Returns:
-        str: The processed Markdown content with only outermost asterisks retained.
+
     """
-    # Read the contents of the file
-    with open(file_path, 'r', encoding='utf-8') as file:
-        content = file.read()
+    # Regular expression to find patterns like (*...*)
+    pattern = re.compile(r'\(\*(.*?)\*\)')
 
-    # Function to replace asterisks while keeping only the outermost
-    def remove_inner_asterisks(text):
-        # This regex will find all occurrences of asterisks and 
-        # retain only the outermost ones
-        return re.sub(r'(\*+)(?=(\*+))', '', text)
+    # Function to replace matched patterns
+    def remove_inner_asterisks(match):
+        content = match.group(1).replace('*', '')
+        return f'(*{content}*)'
 
-    # Process the content
-    processed_content = remove_inner_asterisks(content)
-
-    # Return the processed content
-    return processed_content
+    # Substitute the pattern in text with the processed content
+    return pattern.sub(remove_inner_asterisks, text)

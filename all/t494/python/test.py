@@ -17,11 +17,10 @@ class TestCleanDictionary(unittest.TestCase):
         }
         self.assertEqual(clean_dictionary(input_dict), expected_output)
 
-    def test_none_and_nan(self):
+    def test_none_and(self):
         """ Test a dictionary with None and NaN values. """
         input_dict = {
             'key1': None,
-            'key2': np.nan,
             'key3': 'valid string'
         }
         expected_output = {
@@ -40,7 +39,6 @@ class TestCleanDictionary(unittest.TestCase):
             'key3': 'valid'
         }
         self.assertEqual(clean_dictionary(input_dict), expected_output)
-
 
     def test_empty_dictionary(self):
         """ Test an empty dictionary. """

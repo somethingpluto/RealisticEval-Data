@@ -1,39 +1,31 @@
 class Colors:
-    # ANSI escape codes for different colors
-    RED = '\033[31m'
-    GREEN = '\033[32m'
-    BLUE = '\033[34m'
-    YELLOW = '\033[33m'
-    MAGENTA = '\033[35m'
-    CYAN = '\033[36m'
-    RESET = '\033[0m'  # Resets the color to default
 
     @staticmethod
-    def red(text):
+    def red(text: str) -> str:
         """text in red color"""
-        return f"{Colors.RED}{text}{Colors.RESET}"
+        return f"\033[91m{text}\033[0m"
 
     @staticmethod
-    def green(text):
+    def green(text: str) -> str:
         """text in green color"""
-        return f"{Colors.GREEN}{text}{Colors.RESET}"
+        return f"\033[92m{text}\033[0m"
 
     @staticmethod
-    def blue(text):
+    def blue(text: str) -> str:
         """text in blue color"""
-        return f"{Colors.BLUE}{text}{Colors.RESET}"
+        return f"\033[94m{text}\033[0m"
 
     @staticmethod
-    def yellow(text):
+    def yellow(text: str) -> str:
         """text in yellow color"""
-        return f"{Colors.YELLOW}{text}{Colors.RESET}"
+        return f"\033[93m{text}\033[0m"
 
     @staticmethod
-    def magenta(text):
+    def magenta(text: str) -> str:
         """text in magenta color"""
-        return f"{Colors.MAGENTA}{text}{Colors.RESET}"
+        return f"\033[95m{text}\033[0m"
 
     @staticmethod
-    def cyan(text):
+    def cyan(text: str) -> str:
         """text in cyan color"""
-        return f"{Colors.CYAN}{text}{Colors.RESET}"
+        return f"\033[96m{text}\033[0m"

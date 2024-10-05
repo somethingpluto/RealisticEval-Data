@@ -32,7 +32,7 @@ class TestConvertCsvValues(unittest.TestCase):
 
     def test_edge_cases(self):
         """Test edge cases with empty strings and negative numbers."""
-        row = {'value1': '', 'value2': '0', 'value3': '1,23'}
-        expected = {'value1': None, 'value2': '0', 'value3': '1.23'}
+        row = {'value1': '', 'value2': '0.0', 'value3': '1,23'}
+        expected = {'value1': None, 'value2': '0.0', 'value3': '1.23'}
         result = convert_csv_values(row)
         self.assertEqual(result, expected)

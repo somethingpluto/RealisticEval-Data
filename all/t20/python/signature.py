@@ -1,12 +1,14 @@
 import re
 
 
-def process_markdown_file(file_path):
-    """Process the contents of a Markdown file to remove unnecessary asterisks.
+def transform_parentheses(text: str) -> str:
+    """
+    Transforms the input text by finding and modifying patterns that match the format '(*...*)'.
+    Specifically, it removes any asterisks inside the parentheses while preserving the outer format.
 
     Args:
-        file_path (str): The path to the Markdown file.
+        text (str): The input text containing patterns to be transformed.
 
     Returns:
-        str: The processed Markdown content with only outermost asterisks retained.
+        str: The transformed text with asterisks inside '(*...*)' patterns removed.
     """

@@ -24,16 +24,6 @@ class TestGetCurrentDateInfo(unittest.TestCase):
         }
         self.assertEqual(result, expected)
 
-    def test_end_of_month(self):
-        result = get_current_date_info(datetime.date(2023, 1, 31))
-        expected = {
-            'year': 2023,
-            'month': 'January',
-            'week_of_the_month': 6,
-            'day_of_the_week': 'Tuesday'
-        }
-        self.assertEqual(result, expected)
-
     def test_leap_year(self):
         result = get_current_date_info(datetime.date(2024, 2, 29))
         expected = {

@@ -1,55 +1,74 @@
-from typing import Callable
+from typing import List, Tuple
 
-import inspect
+Index = List[int]
+Shape = Tuple[int, ...]
+OutIndex = List[int]
 
+def broadcast_index(
+        big_index: Index,
+        big_shape: Shape,
+        shape: Shape,
+        out_index: OutIndex
+) -> None:
+    out_index.clear()
+    ndim_diff = len(big_shape) - len(shape)
 
-def method_arg_type_check(method_obj: Callable, *args, **kwargs):
-    """
-    Checks that the arguments passed to a given method object (e.g., method of a class) comply with their
-    expected types, based on the method's signature. If there's a discrepancy, it raises a ValueError.
+    for i in range(len(shape)):
+        if ndim_diff + i < 0:
+            out_index.append(0)
+        else:
+            out_index.append(big_index[ndim_diff + i])
 
-    Args:
-        method_obj (Callable): The method for which arguments are checked.
-        *args: Positional arguments passed to the method.
-        **kwargs: Keyword arguments passed to the method.
-
-    Raises:
-        ValueError: If any argument does not match the expected type.
-    """
-    sig = inspect.signature(method_obj)
-    bound_args = sig.bind(*args, **kwargs)
-
-    for param_name, value in bound_args.arguments.items():
-        param = sig.parameters[param_name]
-        if param.annotation is not param.empty and not isinstance(value, param.annotation):
-            raise ValueError(f"Argument '{param_name}' must be of type {param.annotation}, got {type(value).__name__}.")
-
-
+    for _ in range(ndim_diff):
+        out_index.append(0)
 import unittest
-from typing import Callable
 
 
-class MyClass:
-    def my_method(self, arg1: int, arg2: str, optional_arg: float = 3.14):
-        pass
+class TestBroadcastIndex(unittest.TestCase):
 
+    def setUp(self):
+        """Set up sample data for testing."""
+        # Data for a standard case
+        self.big_index = [0, 2, 1]
+        self.big_shape = (3, 4, 5)
+        self.shape = (4, 5)
 
-class TestMethodArgTypeCheck(unittest.TestCase):
-    def test_correct_types(self):
-        """ Test with correct argument types. """
-        try:
-            method_arg_type_check(MyClass.my_method, MyClass(), 10, "hello", optional_arg=3.14)
-        except ValueError:
-            self.fail("method_arg_type_check() raised ValueError unexpectedly!")
+        # Prepare an output index for the standard case
+        self.out_index = [0] * len(self.shape)
 
+    def test_standard_case(self):
+        """Test standard broadcasting behavior."""
+        broadcast_index(self.big_index, self.big_shape, self.shape, self.out_index)
+        self.assertEqual(self.out_index, [2, 1], "Failed to correctly broadcast standard case.")
 
+    def test_shape_with_one_dimension(self):
+        """Test case where shape contains a dimension of size 1."""
+        shape_with_one = (1, 5)
+        out_index_with_one = [0] * len(shape_with_one)
+        broadcast_index(self.big_index, self.big_shape, shape_with_one, out_index_with_one)
+        self.assertEqual(out_index_with_one, [0, 1], "Failed to handle shape with one dimension.")
 
+    def test_empty_shape(self):
+        """Test case with an empty shape."""
+        empty_shape = ()
+        out_index_empty = []
+        broadcast_index(self.big_index, self.big_shape, empty_shape, out_index_empty)
+        self.assertEqual(out_index_empty, [], "Failed to handle empty shape.")
 
-    def test_missing_argument(self):
-        """ Test with missing required argument. """
-        with self.assertRaises(TypeError):
-            method_arg_type_check(MyClass.my_method, MyClass(), 10)  # Missing arg2
+    def test_bigger_shape(self):
+        """Test case where the big_shape is larger than the shape."""
+        big_index = [1, 2, 3]
+        big_shape = (4, 5, 6)
+        shape = (6,)
+        out_index_big = [0] * len(shape)
+        broadcast_index(big_index, big_shape, shape, out_index_big)
+        self.assertEqual(out_index_big, [3], "Failed to handle bigger shape case.")
 
-
+    def test_shape_with_multiple_ones(self):
+        """Test case with multiple dimensions of size 1 in shape."""
+        shape_multiple_ones = (1, 4, 1)
+        out_index_multiple_ones = [0] * len(shape_multiple_ones)
+        broadcast_index(self.big_index, self.big_shape, shape_multiple_ones, out_index_multiple_ones)
+        self.assertEqual(out_index_multiple_ones, [0, 2, 0], "Failed to handle shape with multiple ones.")
 if __name__ == '__main__':
     unittest.main()

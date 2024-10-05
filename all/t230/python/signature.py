@@ -1,4 +1,4 @@
-import emoji
+import re
 
 
 def move_emojis_to_end(text: str):

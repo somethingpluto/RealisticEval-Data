@@ -1,28 +1,47 @@
 import unittest
 
-
 class TestColors(unittest.TestCase):
 
     def test_red(self):
-        """Test red color method"""
-        self.assertEqual(Colors.red("Hello"), "\033[31mHello\033[0m")
+        """Test the red color method"""
+        input_text = "Hello"
+        expected_output = "\033[91mHello\033[0m"
+        self.assertEqual(Colors.red(input_text), expected_output)
 
     def test_green(self):
-        """Test green color method"""
-        self.assertEqual(Colors.green("Hello"), "\033[32mHello\033[0m")
+        """Test the green color method"""
+        input_text = "Hello"
+        expected_output = "\033[92mHello\033[0m"
+        self.assertEqual(Colors.green(input_text), expected_output)
 
     def test_blue(self):
-        """Test blue color method"""
-        self.assertEqual(Colors.blue("Hello"), "\033[34mHello\033[0m")
+        """Test the blue color method"""
+        input_text = "Hello"
+        expected_output = "\033[94mHello\033[0m"
+        self.assertEqual(Colors.blue(input_text), expected_output)
 
     def test_yellow(self):
-        """Test yellow color method"""
-        self.assertEqual(Colors.yellow("Hello"), "\033[33mHello\033[0m")
+        """Test the yellow color method"""
+        input_text = "Hello"
+        expected_output = "\033[93mHello\033[0m"
+        self.assertEqual(Colors.yellow(input_text), expected_output)
 
     def test_magenta(self):
-        """Test magenta color method"""
-        self.assertEqual(Colors.magenta("Hello"), "\033[35mHello\033[0m")
+        """Test the magenta color method"""
+        input_text = "Hello"
+        expected_output = "\033[95mHello\033[0m"
+        self.assertEqual(Colors.magenta(input_text), expected_output)
 
     def test_cyan(self):
-        """Test cyan color method"""
-        self.assertEqual(Colors.cyan("Hello"), "\033[36mHello\033[0m")
+        """Test the cyan color method"""
+        input_text = "Hello"
+        expected_output = "\033[96mHello\033[0m"
+        self.assertEqual(Colors.cyan(input_text), expected_output)
+
+    def test_combined_colors(self):
+        """Test combining different color methods"""
+        input_text_red = Colors.red("Red")
+        input_text_blue = Colors.blue("Blue")
+        input_text_combined = f"{input_text_red} and {input_text_blue}"
+        expected_output = "\033[91mRed\033[0m and \033[94mBlue\033[0m"
+        self.assertEqual(input_text_combined, expected_output)
