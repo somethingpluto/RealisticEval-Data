@@ -4,6 +4,9 @@ from typing import Union
 def convert_decimal_to_binary(decimal_value: float, bit_length: int) -> Union[str, None]:
     """
     Converts a decimal number to its binary representation in either 32-bit or 64-bit format.
+    For example:
+        input: decimal 3.14 bit 32
+        output: 01000000010010001111010111000011
 
     Args:
         decimal_value (float): The decimal number to convert.

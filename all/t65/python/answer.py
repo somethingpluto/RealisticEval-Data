@@ -1,39 +1,26 @@
-import os
-import re
-
-
-def find_duplicate_ips(files, ignored_ips):
+def find_duplicate_ips(ip_list, ignore_list):
     """
-    Find duplicate IP addresses across multiple files, excluding any IPs in the ignored list.
+    Find duplicate IPs in the given IP list excluding specified IPs to ignore.
 
-    Args:
-    files (list): List of file paths to search.
-    ignored_ips (set): Set of IP addresses to ignore.
-
-    Returns:
-    dict: A dictionary where each key is a duplicated IP address and the value is a list of filenames where the IP appears.
+    :param ip_list: List of IP addresses (strings).
+    :param ignore_list: List of IP addresses to ignore (strings).
+    :return: A list of duplicate IPs excluding those in the ignore list.
     """
-    ip_regex = r"\b(?:\d{1,3}\.){3}\d{1,3}\b"
-    duplicates = {}
+    # Convert ignore_list to a set for faster lookups
+    ignore_set = set(ignore_list)
 
-    for filename in files:
-        # Check if the file exists before attempting to open
-        if not os.path.isfile(filename):
-            print(f"Skipping non-existent file: {filename}")
-            continue
+    # Dictionary to count occurrences of each IP
+    ip_count = {}
 
-        with open(filename, "r") as file:
-            for line in file:
-                ips = re.findall(ip_regex, line)
-                for ip in ips:
-                    # Skip any IPs that are in the ignored list
-                    if ip in ignored_ips:
-                        continue
+    # Count occurrences of each IP, excluding ignored IPs
+    for ip in ip_list:
+        if ip not in ignore_set:
+            if ip in ip_count:
+                ip_count[ip] += 1
+            else:
+                ip_count[ip] = 1
 
-                    if ip not in duplicates:
-                        duplicates[ip] = {filename}
-                    else:
-                        duplicates[ip].add(filename)
+    # Collect duplicate IPs
+    duplicates = [ip for ip, count in ip_count.items() if count > 1]
 
-    # Convert sets to lists for consistent output
-    return {ip: list(files) for ip, files in duplicates.items()}
+    return duplicates

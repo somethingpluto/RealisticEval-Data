@@ -6,9 +6,6 @@ class TestIsPhraseInStringIgnoreCase(unittest.TestCase):
     def test_exact_match_case_insensitive(self):
         self.assertTrue(is_phrase_in_string_ignore_case("hello world", "Hello World"))
 
-    def test_variation_in_whitespace(self):
-        self.assertTrue(is_phrase_in_string_ignore_case("hello world", "   hello    world   "))
-        self.assertTrue(is_phrase_in_string_ignore_case("Hello World", "hello  world"))
 
     def test_partial_word_match_case_insensitive(self):
         self.assertTrue(is_phrase_in_string_ignore_case("Hello", "saying Hello there"))

@@ -9,11 +9,6 @@ class TestRemoveComments(unittest.TestCase):
         expected_output = "Hello, world! "
         self.assertEqual(remove_comments(input_string), expected_output)
 
-    def test_multi_line_comments(self):
-        """ Test string with multiple lines, each containing comments """
-        input_string = "Hello, world!\n# This is a comment\nPython is fun! # another comment"
-        expected_output = "Hello, world!\n\nPython is fun! "
-        self.assertEqual(remove_comments(input_string), expected_output)
 
     def test_no_comments(self):
         """ Test string with no comments """

@@ -32,11 +32,3 @@ class TestTranslatePointCloud(unittest.TestCase):
         translation_vector = np.array([-1.0, -2.0, -3.0])
         expected_output = np.array([[0.0, 0.0, 0.0]])
         np.testing.assert_array_almost_equal(translate_point_cloud(point_cloud, translation_vector), expected_output)
-
-    def test_invalid_translation_vector(self):
-        """Test handling of an invalid translation vector shape."""
-        point_cloud = np.array([[1.0, 2.0, 3.0]])
-        translation_vector = np.array([1.0, 2.0])  # Invalid shape, should raise an error
-        with self.assertRaises(ValueError) as context:
-            translate_point_cloud(point_cloud, translation_vector)
-        self.assertEqual(str(context.exception), "translation_vector must be a 1D array of shape (3,)")

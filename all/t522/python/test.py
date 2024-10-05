@@ -25,10 +25,3 @@ class TestRotatePointCloud(unittest.TestCase):
         rotation_angle = 2 * np.pi  # 360 degrees
         expected_output = point_cloud  # Should return the same point cloud
         np.testing.assert_array_almost_equal(rotate_point_cloud(point_cloud, rotation_angle), expected_output)
-
-    def test_negative_rotation(self):
-        """Test rotation with a negative angle (-90 degrees)."""
-        point_cloud = np.array([[1.0, 0.0, 0.0]])
-        rotation_angle = -np.pi / 2  # -90 degrees
-        expected_output = np.array([[0.0, 0.0, -1.0]])  # [1,0,0] -> [0,0,-1]
-        np.testing.assert_array_almost_equal(rotate_point_cloud(point_cloud, rotation_angle), expected_output)

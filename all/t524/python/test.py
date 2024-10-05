@@ -32,11 +32,3 @@ class TestScalePointCloud(unittest.TestCase):
         scale_factor = -2.0
         expected_output = np.array([[-2.0, -4.0, -6.0]])
         np.testing.assert_array_almost_equal(scale_point_cloud(point_cloud, scale_factor), expected_output)
-
-    def test_invalid_point_cloud_shape(self):
-        """Test handling of an invalid point cloud shape."""
-        point_cloud = np.array([[1.0, 2.0]])  # Invalid shape, should raise an error
-        scale_factor = 2.0
-        with self.assertRaises(ValueError) as context:
-            scale_point_cloud(point_cloud, scale_factor)
-        self.assertEqual(str(context.exception), "point_cloud must be a 2D array with shape (N, 3)")

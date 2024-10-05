@@ -1,48 +1,43 @@
-import math
+import numpy as np
 
-def degrees_to_radians(degrees: int) -> float:
-    """
-    Convert an angle from degrees to radians.
-
-    Args:
-        degrees (int): The angle in degrees to convert.
-
-    Returns:
-        float: The angle in radians.
-    """
-    return degrees * (math.pi / 180)
-import math
+def are_sets_equal(set1, set2, rtol=1e-5, atol=1e-6):
+    set1_arr = np.array(sorted(set1))
+    set2_arr = np.array(sorted(set2))
+    return np.allclose(set1_arr, set2_arr, rtol=rtol, atol=atol)
 import unittest
 
 
-class TestDegreesToRadians(unittest.TestCase):
-    def test_zero_degrees(self):
-        """Test conversion of 0 degrees"""
-        self.assertAlmostEqual(degrees_to_radians(0), 0, places=5)
+class TestAreSetsEqual(unittest.TestCase):
 
-    def test_ninety_degrees(self):
-        """Test conversion of 90 degrees"""
-        self.assertAlmostEqual(degrees_to_radians(90), math.pi / 2, places=5)
+    def test_identical_sets(self):
+        """Test with two identical sets of floats."""
+        set1 = {1.0, 2.0, 3.0}
+        set2 = {1.0, 2.0, 3.0}
+        self.assertTrue(are_sets_equal(set1, set2))
 
-    def test_one_eighty_degrees(self):
-        """Test conversion of 180 degrees"""
-        self.assertAlmostEqual(degrees_to_radians(180), math.pi, places=5)
+    def test_sets_with_close_values(self):
+        """Test with two sets that are close within the tolerance."""
+        set1 = {1.0, 2.00001, 3.0}
+        set2 = {1.0, 2.00002, 3.0}
+        self.assertTrue(are_sets_equal(set1, set2, rtol=1e-5, atol=1e-6))
 
-    def test_two_seventy_degrees(self):
-        """Test conversion of 270 degrees"""
-        self.assertAlmostEqual(degrees_to_radians(270), 3 * math.pi / 2, places=5)
+    def test_sets_with_large_difference(self):
+        """Test with two sets that have large differences beyond tolerance."""
+        set1 = {1.0, 2.0, 3.0}
+        set2 = {1.0, 2.5, 3.0}
+        self.assertFalse(are_sets_equal(set1, set2))
 
-    def test_three_sixty_degrees(self):
-        """Test conversion of 360 degrees"""
-        self.assertAlmostEqual(degrees_to_radians(360), 2 * math.pi, places=5)
+    def test_sets_with_negative_values(self):
+        """Test with two sets containing negative floats."""
+        set1 = {-1.0, -2.0, -3.0}
+        set2 = {-1.0, -2.000001, -3.0}
+        self.assertTrue(are_sets_equal(set1, set2, rtol=1e-5, atol=1e-6))
 
-    def test_negative_degrees(self):
-        """Test conversion of negative degrees"""
-        self.assertAlmostEqual(degrees_to_radians(-90), -math.pi / 2, places=5)
-
-    def test_large_degrees(self):
-        """Test conversion of a large angle (720 degrees)"""
-        self.assertAlmostEqual(degrees_to_radians(720), 4 * math.pi, places=5)
+    def test_empty_sets(self):
+        """Test with two empty sets."""
+        set1 = set()
+        set2 = set()
+        self.assertTrue(are_sets_equal(set1, set2))
 
 if __name__ == '__main__':
     unittest.main()

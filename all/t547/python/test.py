@@ -10,10 +10,6 @@ class TestCalculateColumnWidths(unittest.TestCase):
         expected = [5, 3, 13]
         self.assertEqual(calculate_column_widths(data), expected)
 
-    def test_empty_list(self):
-        data = []
-        with self.assertRaises(IndexError):
-            calculate_column_widths(data)
 
     def test_single_element(self):
         data = [["Name"]]

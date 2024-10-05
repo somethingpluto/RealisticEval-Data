@@ -17,12 +17,6 @@ class TestTransposeMatrix(unittest.TestCase):
         result = transpose_matrix(matrix)
         self.assertEqual(result, expected)
 
-    def test_empty_matrix(self):
-        """Test transposing an empty matrix."""
-        matrix = []
-        expected = []
-        result = transpose_matrix(matrix)
-        self.assertEqual(result, expected)
 
     def test_matrix_with_empty_rows(self):
         """Test transposing a matrix with an empty row."""

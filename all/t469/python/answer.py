@@ -1,7 +1,9 @@
+from typing import Tuple
+
 import numpy as np
 
 
-def get_scale(matrix: np.ndarray) -> tuple[np.float64, np.float64]:
+def get_scale(matrix: np.ndarray) -> Tuple[np.float64, np.float64]:
     """
     Given a 3x3 affine transformation matrix, return the corresponding scaling factors
     along the x and y axes.

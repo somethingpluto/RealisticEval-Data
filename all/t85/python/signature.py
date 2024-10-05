@@ -1,14 +1,14 @@
+import pandas
 import pandas as pd
 
 
-def naive_ffill(df: pd.DataFrame, column: str) -> None:
+def fill_missing_with_first_valid(df: pandas.DataFrame, column_name: str) -> pd.DataFrame:
     """
-    Forward fills missing values in a specified column of a pandas DataFrame using a naive method.
-
+    Fills missing values in the specified column of the DataFrame with the first valid value in that column.
     Args:
-    df (pd.DataFrame): The DataFrame containing the question.
-    column (str): The name of the column in which to forward fill missing values.
+        df (pandas.DataFrame): The pandas DataFrame.
+        column_name (str): The name of the column to fill missing values.
 
     Returns:
-    None: The function modifies the DataFrame in place.
+        pd.DataFrame: The DataFrame with missing values filled.
     """

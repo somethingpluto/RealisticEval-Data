@@ -1,13 +1,14 @@
 from typing import List
 
 
-def find_duplicate_ips(files: List[str], ignored_ips: set) -> dict:
+def find_duplicate_ips(ip_list: List[str], ignore_list: List[str]) -> List[str]:
     """
-    find duplicate IP addresses across multiple files, excluding any IPs in the ignored list.
+    Find duplicate IPs in the given IP list excluding specified IPs to ignore.
+
     Args:
-        files (list): List of file paths to search.
-        ignored_ips (set): Set of IP addresses to ignore.
+        ip_list (List[str]): List of IP addresses
+        ignore_list (List[str]): List of IP addresses to ignor
 
     Returns:
-        dict: A dictionary where each key is a duplicated IP address and the value is a list of filenames where the IP appears.
+        List[str]: A list of duplicate IPs excluding those in the ignore list.
     """

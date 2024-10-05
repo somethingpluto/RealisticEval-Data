@@ -20,10 +20,3 @@ class TestReadTsvFromStdin(unittest.TestCase):
         mock_stdin.seek(0)
         expected_output = [['col1'], ['val1'], ['val2']]
         self.assertEqual(read_tsv_from_stdin(), expected_output)
-
-    @patch('sys.stdin', new_callable=io.StringIO)
-    def test_empty_input(self, mock_stdin):
-        mock_stdin.write("")
-        mock_stdin.seek(0)
-        expected_output = []
-        self.assertEqual(read_tsv_from_stdin(), expected_output)

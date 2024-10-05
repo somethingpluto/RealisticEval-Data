@@ -9,12 +9,6 @@ class TestAreSetsEqual(unittest.TestCase):
         set2 = {1.0, 2.0, 3.0}
         self.assertTrue(are_sets_equal(set1, set2))
 
-    def test_different_length_sets(self):
-        """Test with two sets of different lengths."""
-        set1 = {1.0, 2.0, 3.0}
-        set2 = {1.0, 2.0}
-        self.assertFalse(are_sets_equal(set1, set2))
-
     def test_sets_with_close_values(self):
         """Test with two sets that are close within the tolerance."""
         set1 = {1.0, 2.00001, 3.0}

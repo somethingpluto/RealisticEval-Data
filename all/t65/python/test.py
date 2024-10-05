@@ -1,51 +1,39 @@
 import unittest
-from unittest.mock import mock_open, patch
 
 
-class TestFindDuplicateIps(unittest.TestCase):
-    def setUp(self):
-        self.files = ["file1.txt", "file2.txt", "file3.txt"]
-        self.ignored_ips = {"192.168.1.1", "10.0.0.2"}
+class TestFindDuplicateIPs(unittest.TestCase):
 
-    @patch('os.path.isfile')
-    @patch('builtins.open', new_callable=mock_open, read_data="192.168.0.1\n192.168.1.1\n192.168.0.1\n")
-    def test_duplicates_with_ignored(self, mock_file, mock_isfile):
-        # Setup
-        mock_isfile.return_value = True
-        expected_result = {'192.168.0.1': ['file1.txt']}
+    def test_basic_duplicates(self):
+        ip_list = ["192.168.1.1", "192.168.1.2", "192.168.1.1"]
+        ignore_list = []
+        self.assertEqual(find_duplicate_ips(ip_list, ignore_list), ["192.168.1.1"])
 
-        # Execution
-        result = find_duplicate_ips(self.files[:1], self.ignored_ips)
+    def test_ignored_duplicates(self):
+        ip_list = ["192.168.1.1", "192.168.1.1", "192.168.1.2"]
+        ignore_list = ["192.168.1.1"]
+        self.assertEqual(find_duplicate_ips(ip_list, ignore_list), [])
 
-        # Assertion
-        self.assertEqual(result, expected_result)
+    def test_no_duplicates(self):
+        ip_list = ["192.168.1.1", "192.168.1.2", "192.168.1.3"]
+        ignore_list = []
+        self.assertEqual(find_duplicate_ips(ip_list, ignore_list), [])
 
-    @patch('os.path.isfile')
-    @patch('builtins.open', new_callable=mock_open, read_data="192.168.0.1\n192.168.0.1\n")
-    def test_single_file_duplicates(self, mock_file, mock_isfile):
-        mock_isfile.return_value = True
-        expected_result = {'192.168.0.1': ['file1.txt']}
-        result = find_duplicate_ips(self.files[:1], set())
-        self.assertEqual(result, expected_result)
+    def test_mixed_duplicates(self):
+        ip_list = ["192.168.1.1", "192.168.1.1", "10.0.0.1", "192.168.1.2"]
+        ignore_list = ["192.168.1.2"]
+        self.assertEqual(find_duplicate_ips(ip_list, ignore_list), ["192.168.1.1"])
 
-    @patch('os.path.isfile')
-    def test_non_existent_file(self, mock_isfile):
-        mock_isfile.return_value = False
-        result = find_duplicate_ips(["nonexistent.txt"], self.ignored_ips)
-        self.assertEqual(result, {})
+    def test_empty_input(self):
+        ip_list = []
+        ignore_list = []
+        self.assertEqual(find_duplicate_ips(ip_list, ignore_list), [])
 
-    @patch('os.path.isfile')
-    @patch('builtins.open', new_callable=mock_open, read_data="192.168.0.1\n10.0.0.1\n192.168.0.1\n")
-    def test_multiple_files_one_ignored(self, mock_file, mock_isfile):
-        mock_isfile.side_effect = [True, True, True]
-        expected_result = {'192.168.0.1': ['file1.txt', 'file2.txt']}
-        result = find_duplicate_ips(self.files, self.ignored_ips)
-        self.assertEqual(result, expected_result)
+    def test_only_ignored_ips(self):
+        ip_list = ["192.168.1.1", "192.168.1.1"]
+        ignore_list = ["192.168.1.1"]
+        self.assertEqual(find_duplicate_ips(ip_list, ignore_list), [])
 
-    @patch('os.path.isfile')
-    @patch('builtins.open', new_callable=mock_open, read_data="192.168.0.1\n192.168.0.1\n192.168.0.1\n")
-    def test_multiple_occurrences_single_file(self, mock_file, mock_isfile):
-        mock_isfile.return_value = True
-        expected_result = {'192.168.0.1': ['file1.txt']}
-        result = find_duplicate_ips(self.files[:1], set())
-        self.assertEqual(result, expected_result)
+    def test_all_duplicates(self):
+        ip_list = ["192.168.1.1", "192.168.1.1", "192.168.1.1"]
+        ignore_list = []
+        self.assertEqual(find_duplicate_ips(ip_list, ignore_list), ["192.168.1.1"])

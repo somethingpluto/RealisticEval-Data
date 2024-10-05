@@ -9,4 +9,4 @@ def print_memory_bits(memory_section: bytes):
 
     """
     for byte in memory_section:
-        print(' '.join(str((byte >> i) & 1) for i in range(7, -1, -1)))
+        print(''.join(str((byte >> i) & 1) for i in range(7, -1, -1)))

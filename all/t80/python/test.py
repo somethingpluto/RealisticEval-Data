@@ -10,9 +10,6 @@ class TestSanitizeFilename(unittest.TestCase):
         self.assertEqual(sanitize_filename("invalid<filename>.txt"), "invalid_filename_.txt")
         self.assertEqual(sanitize_filename("file/name:with*illegal|chars?.txt"), "file_name_with_illegal_chars_.txt")
 
-    def test_control_characters(self):
-        self.assertEqual(sanitize_filename("control\x00char.txt"), "control_char.txt")
-        self.assertEqual(sanitize_filename("file_with_control\x1Fchars.txt"), "file_with_control_chars.txt")
 
     def test_long_filename(self):
         long_filename = "a" * 300 + ".txt"

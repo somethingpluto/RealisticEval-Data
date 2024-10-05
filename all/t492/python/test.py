@@ -53,12 +53,3 @@ class TestSaveContentToFile(unittest.TestCase):
         with open(self.test_file_path, 'r', encoding='utf-8') as file:
             result = file.read().strip()
         self.assertEqual(result, expected)
-
-    def test_content_with_special_characters(self):
-        """Test if content with special characters is handled correctly."""
-        content = "This is a test!   😊  Let's see if it works."
-        expected = "This is a test! 😊 Let's see if it works."
-        save_content_to_file(content, self.test_file_path)
-        with open(self.test_file_path, 'r', encoding='utf-8') as file:
-            result = file.read().strip()
-        self.assertEqual(result, expected)

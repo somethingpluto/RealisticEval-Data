@@ -4,6 +4,8 @@ from typing import Tuple
 def get_file_size(size_in_bytes, unit=None) -> Tuple[int, float]:
     """
     Convert file size from bytes to a more readable format (e.g. KB, MB, GB)
+    For example:
+        input:
 
     Args:
         size_in_bytes (int): File size in bytes.

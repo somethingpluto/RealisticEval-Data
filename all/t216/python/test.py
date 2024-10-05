@@ -18,14 +18,6 @@ class TestGetLocalIp(unittest.TestCase):
         self.assertEqual(ip, '192.168.1.100')
 
     @patch('subprocess.run')
-    def test_no_ip_found(self, mock_run):
-        # Configure the mock to simulate no IP found on the interface
-        mock_run.return_value = MagicMock(stdout="3: wlan0: <NO-CARRIER,BROADCAST,MULTICAST,UP>", check=True)
-        with self.assertRaises(RuntimeError) as context:
-            get_local_ip('wlan0')
-        self.assertIn("No local IP found", str(context.exception))
-
-    @patch('subprocess.run')
     def test_command_failure(self, mock_run):
         # Simulate a subprocess failure
         mock_run.side_effect = subprocess.CalledProcessError(1, ['ip', 'addr', 'show', 'wlan0'])

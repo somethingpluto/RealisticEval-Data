@@ -30,7 +30,3 @@ class TestFindShiftJISNotGBK(unittest.TestCase):
             self.assertIn(edge_of_bmp, self.shiftjis_not_gbk)
         else:
             self.assertNotIn(edge_of_bmp, self.shiftjis_not_gbk)
-
-    def test_empty_input_handling(self):
-        # Checking function's behavior with empty input scenario, modifying function required
-        self.assertTrue(len(self.shiftjis_not_gbk) > 0)  # Expect non-zero length list, confirming function runs

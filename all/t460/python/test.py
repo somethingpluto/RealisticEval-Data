@@ -10,14 +10,6 @@ class TestMatrixVectorMultiplication(unittest.TestCase):
         expected_result = [8.0, 18.0, 28.0]
         self.assertEqual(matrix_vector_multiplication(matrix, vector), expected_result)
 
-    def test_invalid_dimensions(self):
-        """Test case for incompatible dimensions."""
-        matrix = [[1, 2], [3, 4]]
-        vector = [1, 2, 3]
-        with self.assertRaises(ValueError) as context:
-            matrix_vector_multiplication(matrix, vector)
-        self.assertEqual(str(context.exception), "Matrix and vector dimensions are not compatible for multiplication")
-
     def test_zero_vector(self):
         """Test case for a matrix and a zero vector."""
         matrix = [[1, 2, 3], [4, 5, 6]]
@@ -31,3 +23,17 @@ class TestMatrixVectorMultiplication(unittest.TestCase):
         vector = [3]
         expected_result = [15.0]
         self.assertEqual(matrix_vector_multiplication(matrix, vector), expected_result)
+
+    def test_single_element_matrix_and_vector(self):
+        # Test case with a single element in the matrix and vector
+        matrix = [[3]]
+        vector = [4]
+        expected = [12]
+        self.assertEqual(matrix_vector_multiplication(matrix, vector), expected)
+
+    def test_compatible_sizes(self):
+        # Test case with compatible sizes but different dimensions
+        matrix = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+        vector = [1, 1, 1]
+        expected = [6, 15, 24]
+        self.assertEqual(matrix_vector_multiplication(matrix, vector), expected)

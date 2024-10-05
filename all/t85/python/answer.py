@@ -1,26 +1,20 @@
 import pandas as pd
 
-
-def naive_ffill(df: pd.DataFrame, column: str) -> None:
+def fill_missing_with_first_valid(df, column_name):
     """
-    Forward fills missing values in a specified column of a pandas DataFrame using a naive method.
+    Fills missing values in the specified column of the DataFrame with the first valid value in that column.
 
-    Args:
-    df (pd.DataFrame): The DataFrame containing the question.
-    column (str): The name of the column in which to forward fill missing values.
-
-    Returns:
-    None: The function modifies the DataFrame in place.
-
-    Raises:
-    KeyError: If the specified column does not exist in the DataFrame.
+    :param df: The pandas DataFrame.
+    :param column_name: The name of the column to fill missing values.
+    :return: The DataFrame with missing values filled.
     """
-    if column not in df.columns:
-        raise KeyError(f"Column '{column}' not found in DataFrame.")
+    if column_name not in df.columns:
+        raise ValueError(f"Column '{column_name}' does not exist in the DataFrame.")
 
-    last_valid = None
-    for idx, value in df[column].items():
-        if pd.isna(value):
-            df.loc[idx, column] = last_valid
-        else:
-            last_valid = value
+    # Get the first valid (non-null) value in the specified column
+    first_valid_value = df[column_name].dropna().iloc[0] if not df[column_name].dropna().empty else None
+
+    # Fill missing values in the specified column with the first valid value
+    df[column_name] = df[column_name].fillna(first_valid_value)
+
+    return df

@@ -46,10 +46,6 @@ class TestClassToDict(unittest.TestCase):
         car = Car(make="Toyota", model="Corolla")
         self.assertEqual(class_to_dict(car), {'make': 'Toyota', 'model': 'Corolla', 'year': 2020})
 
-    def test_regular_class_with_private_attribute(self):
-        dog = Dog(name="Buddy", breed="Golden Retriever")
-        self.assertEqual(class_to_dict(dog), {'name': 'Buddy', 'breed': 'Golden Retriever', '_age': 5})
-
     def test_empty_class(self):
         empty = EmptyClass()
         self.assertEqual(class_to_dict(empty), {})

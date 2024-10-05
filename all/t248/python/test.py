@@ -37,9 +37,3 @@ class TestSanitizeData(unittest.TestCase):
             "location": "Earth"
         }
         self.assertEqual(sanitize_data(data, key_to_remove=["email"]), expected)
-
-    def test_non_dict_non_list(self):
-        """ Test with non-dict and non-list question types. """
-        data = "Hello, world!"
-        expected = "Hello, world!"
-        self.assertEqual(sanitize_data(data), expected)

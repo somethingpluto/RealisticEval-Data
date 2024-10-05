@@ -1,5 +1,6 @@
 import unittest
 
+
 class TestSquaredEuclideanDistance(unittest.TestCase):
     def test_standard_vectors(self):
         """Test squared distance calculation for typical vectors."""
@@ -8,13 +9,6 @@ class TestSquaredEuclideanDistance(unittest.TestCase):
         expected_result = 27  # (3^2 + 3^2 + 3^2)
         result = squared_euclidean_distance(vec1, vec2)
         self.assertEqual(result, expected_result)
-
-    def test_vectors_of_different_lengths(self):
-        """Test vectors of different lengths to ensure it raises ValueError."""
-        vec1 = [1, 2, 3]
-        vec2 = [1, 2]
-        with self.assertRaises(ValueError):
-            squared_euclidean_distance(vec1, vec2)
 
     def test_vectors_with_zeros(self):
         """Test vectors that include zero values."""

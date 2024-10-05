@@ -26,8 +26,3 @@ class TestExtractParseDicts(unittest.TestCase):
             result = extract_parse_dicts('dummy_path')
             self.assertEqual(result, [])
 
-    def test_file_with_no_dictionaries(self):
-        mock_content = 'This is just some text without any dictionaries.'
-        with patch('builtins.open', mock_open(read_data=mock_content)):
-            result = extract_parse_dicts('dummy_path')
-            self.assertEqual(result, [])

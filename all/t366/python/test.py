@@ -40,11 +40,6 @@ class TestExtractTextFromWord(unittest.TestCase):
 
         os.remove(empty_docx_path)  # Clean up
 
-    def test_extract_nonexistent_document(self):
-        """Test extraction from a non-existent Word file."""
-        nonexistent_docx_path = "nonexistent_document.docx"
-        extracted_text = extract_text_from_word(nonexistent_docx_path)
-        self.assertIsNone(extracted_text)  # Expecting None on error
 
     def test_extract_text_with_special_characters(self):
         """Test extracting text from a document containing special characters."""

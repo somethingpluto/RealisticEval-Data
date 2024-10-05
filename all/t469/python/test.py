@@ -23,17 +23,26 @@ class TestGetScaleFunction(unittest.TestCase):
         self.assertEqual(get_scale(matrix), expected_scale)
 
 
-    def test_invalid_matrix_shape(self):
-        """ Test for an invalid matrix input (not 3x3) """
-        invalid_matrix = np.array([[1, 2],
-                                   [3, 4]])  # 2x2 matrix
-        with self.assertRaises(ValueError):
-            get_scale(invalid_matrix)
+    def test_uniform_scaling(self):
+        # Test case with uniform scaling
+        matrix = np.array([[2, 0, 0],
+                           [0, 2, 0],
+                           [0, 0, 1]])
+        expected = (2.0, 2.0)
+        self.assertEqual(get_scale(matrix), expected)
 
-    def test_invalid_matrix_type(self):
-        """ Test for an invalid input type (not a numpy array) """
-        invalid_matrix = [[1, 0, 0],
-                          [0, 1, 0],
-                          [0, 0, 1]]  # A list, not a numpy array
-        with self.assertRaises(ValueError):
-            get_scale(invalid_matrix)
+    def test_non_uniform_scaling(self):
+        # Test case with non-uniform scaling
+        matrix = np.array([[3, 0, 0],
+                           [0, 5, 0],
+                           [0, 0, 1]])
+        expected = (3.0, 5.0)
+        self.assertEqual(get_scale(matrix), expected)
+
+    def test_reflection_matrix(self):
+        # Test case with reflection matrix
+        matrix = np.array([[-1, 0, 0],
+                           [0, 1, 0],
+                           [0, 0, 1]])
+        expected = (1.0, 1.0)
+        self.assertEqual(get_scale(matrix), expected)

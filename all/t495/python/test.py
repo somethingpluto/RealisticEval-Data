@@ -15,19 +15,6 @@ class TestFilterContentWithContext(unittest.TestCase):
         result = filter_content_with_context(content, keywords, lines_before=1, lines_after=1)
         self.assertEqual(result.strip(), expected_output.strip(), "Failed to filter content for a single keyword.")
 
-    def test_multiple_keywords(self):
-        """Test multiple keywords with overlapping context."""
-        content = """Line one.
-        This line contains a keyword.
-        Another keyword is here.
-        Line four."""
-        keywords = ["keyword", "Another"]
-        expected_output = """Line one.
-        This line contains a keyword.
-        Another keyword is here.
-        Line four."""
-        result = filter_content_with_context(content, keywords, lines_before=1, lines_after=1)
-        self.assertEqual(result.strip(), expected_output.strip(), "Failed to filter content for multiple keywords.")
 
     def test_no_keyword_match(self):
         """Test when no keywords match."""

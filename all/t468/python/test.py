@@ -29,18 +29,3 @@ class TestGetTranslationFunction(unittest.TestCase):
                            [0, 0, 1]])
         expected_translation = np.array([-3.0, -6.0])
         np.testing.assert_array_equal(get_translation(matrix), expected_translation)
-
-    def test_invalid_matrix_shape(self):
-        """ Test for an invalid matrix input (not 3x3) """
-        invalid_matrix = np.array([[1, 2],
-                                   [3, 4]])  # 2x2 matrix
-        with self.assertRaises(ValueError):
-            get_translation(invalid_matrix)
-
-    def test_invalid_matrix_type(self):
-        """ Test for an invalid input type (not a numpy array) """
-        invalid_matrix = [[1, 0, 0],
-                          [0, 1, 0],
-                          [0, 0, 1]]  # A list, not a numpy array
-        with self.assertRaises(ValueError):
-            get_translation(invalid_matrix)

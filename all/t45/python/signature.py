@@ -1,4 +1,7 @@
-def get_current_date_info(test_date=None) -> dict:
+import datetime
+
+
+def get_current_date_info(test_date: datetime.date) -> dict:
     """
     Returns the current time information including year, month, week of the month, and day of.eg {
             'year': 2024,
