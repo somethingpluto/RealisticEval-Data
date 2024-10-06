@@ -1,12 +1,9 @@
 describe('safeSplice', () => {
-    test('should remove specified elements without replacement', () => {
-        const inputArray = [1, 2, 3, 4, 5];
-        const amountToRemove = 2;
-        const indexToRemove = 1;
-        const result = safeSplice(inputArray, amountToRemove, indexToRemove);
-        expect(result).toEqual([1, 4, 5]);
+    test('replaces removed elements with a new element', () => {
+        const inputArray = ['a', 'b', 'c', 'd', 'e'];
+        const expected = ['a', 'z', 'e'];
+        expect(safeSplice(inputArray, 3, 1, 'z')).toEqual(expected);
     });
-
     test('should remove specified elements and replace with new element', () => {
         const inputArray = [1, 2, 3, 4, 5];
         const amountToRemove = 2;

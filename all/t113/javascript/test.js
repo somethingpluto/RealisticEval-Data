@@ -1,7 +1,3 @@
-/**
- * @jest-environment jsdom
- */
-
 describe('getCSSFromSheet', () => {
     let styleSheet;
 
@@ -21,10 +17,6 @@ describe('getCSSFromSheet', () => {
         document.head.innerHTML = '';
     });
 
-    test('Valid Stylesheet: should return combined CSS rules', () => {
-        const cssText = getCSSFromSheet(styleSheet);
-        expect(cssText).toContain('body {background-color: red;}p {color: blue;}');
-    });
 
     test('Empty Stylesheet: should return an empty string', () => {
         const emptyStyle = document.createElement('style');

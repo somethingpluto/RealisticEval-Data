@@ -1,12 +1,13 @@
+/**
+ * Count the number of letters in a string.
+ *
+ * @param {string} str - The input string from which to count letters.
+ * @returns {number} - The count of letters in the string.
+ */
 function countLetters(str) {
-    let letterCount = 0;
+    // Use a regular expression to match all letter characters (both uppercase and lowercase)
+    const letters = str.match(/[a-zA-Z]/g);
 
-    for (let i = 0; i < str.length; i++) {
-        const char = str[i];
-        if ((char >= 'a' && char <= 'z') || (char >= 'A' && char <= 'Z')) {
-            letterCount++;
-        }
-    }
-
-    return letterCount;
+    // Return the number of letters found, or 0 if none are found
+    return letters ? letters.length : 0;
 }

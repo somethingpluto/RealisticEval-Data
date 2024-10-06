@@ -24,13 +24,6 @@ class JavaScriptExecutor:
             file.write("\n")
             file.flush()
             self._execute()
-        # print(result.stdout)
-        # if result.stderr:
-        #     print("error：", result.stderr)
-        # if result.returncode == 0:
-        #     print("success")
-        # else:
-        #     print("error return code：", result.returncode)
 
     def batch_run(self, file_path):
         data_list = []
@@ -57,14 +50,15 @@ class JavaScriptExecutor:
                     item["result_return_code"] = returncode
                     item["stderr"] = self._remove_color_codes(stderr)
                     item["stdout"] = self._remove_color_codes(stdout)
-
+                    with open(f"{self._env_path}/test.test.js", "r", encoding="utf8") as f:
+                        item["full_content"] = f.read()
                     data_list.append(item)
-                    time.sleep(1)
             except Exception as e:
                 print(e)
                 continue
         data = pd.DataFrame(data_list)
-        data.to_excel(f"../analysis/model_answer_result/{self.model_name}/{self.model_name}_javascript.xlsx")
+        data.to_excel(f"../analysis/model_answer_result/{self.model_name}/{self.model_name}_javascript.xlsx",
+                      engine='xlsxwriter')
 
     def _execute(self):
         command = self._generate_command()

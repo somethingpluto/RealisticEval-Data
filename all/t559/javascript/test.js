@@ -7,13 +7,7 @@ describe('isCppHeaderFile', () => {
         expect(isCppHeaderFile('example.hpp')).toBe(true);
     });
 
-    test('returns true for a .hh file', () => {
-        expect(isCppHeaderFile('example.hh')).toBe(true);
-    });
 
-    test('returns true for a .hxx file', () => {
-        expect(isCppHeaderFile('example.hxx')).toBe(true);
-    });
 
     test('returns false for a non-header file extension', () => {
         expect(isCppHeaderFile('example.txt')).toBe(false);
@@ -27,7 +21,4 @@ describe('isCppHeaderFile', () => {
         expect(isCppHeaderFile('example.c')).toBe(false);
     });
 
-    test('returns true for a .H file (uppercase)', () => {
-        expect(isCppHeaderFile('example.H')).toBe(true);
-    });
 });

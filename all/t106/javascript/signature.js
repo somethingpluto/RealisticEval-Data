@@ -1,5 +1,5 @@
 /**
- * Checks if the provided image question is a valid Base64 encoded image string.
+ * Checks if the provided image data is a valid Base64 encoded image string.
  * 
  * @param {string} imageData - The image question string to be validated.
  */

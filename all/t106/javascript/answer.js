@@ -1,10 +1,18 @@
 /**
- * Checks if the provided image question is a valid Base64 encoded image string.
+ * Checks if the provided image data is a valid Base64 encoded image string.
  * 
- * @param {string} imageData - The image question string to be validated.
- * @returns {boolean} - Returns true if the image question is a valid Base64 encoded image, otherwise false.
+ * @param {string} imageData - The image data string to be validated.
+ * @returns {boolean} - Returns true if valid, otherwise false.
  */
 function isBase64Image(imageData) {
-    const base64ImageRegex = /^data:image\/(png|jpe?g|gif|webp);base64,/;
-    return base64ImageRegex.test(imageData);
+    // Check if the input is a non-empty string
+    if (typeof imageData !== 'string' || imageData.trim() === '') {
+        return false;
+    }
+
+    // Regular expression to validate a Base64 image string
+    const base64ImagePattern = /^data:image\/(jpeg|png|gif|bmp|webp);base64,[A-Za-z0-9+/]+={0,2}$/;
+
+    // Test the image data against the pattern
+    return base64ImagePattern.test(imageData);
 }

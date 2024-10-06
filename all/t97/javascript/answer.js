@@ -52,18 +52,3 @@ class Queue {
         return this.items.join(" ");
     }
 }
-
-// export default Queue;
-
-// Example usage of the Queue class
-let queue = new Queue();
-
-queue.enqueue(10);
-queue.enqueue(20);
-queue.enqueue(30);
-
-console.log(queue.printQueue()); // Output: "10 20 30"
-
-queue.dequeue();
-
-console.log(queue.front()); // Output: 20

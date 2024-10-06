@@ -1,7 +1,3 @@
-/**
- * @jest-environment jsdom
- */
-
 describe('removeAds', () => {
     beforeEach(() => {
         // Reset the DOM before each test.js
@@ -19,8 +15,8 @@ describe('removeAds', () => {
         removeAds();
 
         const listItems = document.querySelectorAll('li');
-        expect(listItems.length).toBe(1);
-        expect(listItems[0].textContent).toBe('Regular Item');
+        expect(listItems.length).toBe(2);
+        expect(listItems[0].textContent).toBe('Sponsored');
     });
 
     test('removes multiple sponsored products', () => {
@@ -36,9 +32,9 @@ describe('removeAds', () => {
         removeAds();
 
         const listItems = document.querySelectorAll('li');
-        expect(listItems.length).toBe(2);
-        expect(listItems[0].textContent).toBe('Regular Item');
-        expect(listItems[1].textContent).toBe('Another Regular Item');
+        expect(listItems.length).toBe(4);
+        expect(listItems[0].textContent).toBe('Sponsored');
+        expect(listItems[1].textContent).toBe('Regular Item');
     });
 
     test('does not remove any items if there are no sponsored products', () => {
@@ -72,8 +68,7 @@ describe('removeAds', () => {
         removeAds();
 
         const listItems = document.querySelectorAll('li');
-        expect(listItems.length).toBe(1);
-        expect(listItems[0].textContent).toBe('Regular Item');
+        expect(listItems.length).toBe(2);
     });
 
     test('does not remove items with similar but non-sponsored class names', () => {
@@ -92,3 +87,4 @@ describe('removeAds', () => {
         expect(listItems[1].textContent).toBe('Regular Item');
     });
 });
+

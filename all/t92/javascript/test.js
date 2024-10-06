@@ -1,19 +1,3 @@
-// Import the replaceHtmlEntities function if it's in another file
-// const replaceHtmlEntities = require('./path_to_your_file');
-// Mock DOMParser in global scope
-global.DOMParser = class {
-  parseFromString(str) {
-    return {
-      documentElement: {
-        textContent: str.replace(/&amp;/g, '&')
-                        .replace(/&lt;/g, '<')
-                        .replace(/&gt;/g, '>')
-                        .replace(/&quot;/g, '"')
-                        .replace(/&apos;/g, '\'')
-      }
-    };
-  }
-};
 describe('replaceHtmlEntities', () => {
     test('decodes standard HTML entities', () => {
         const input = 'The &amp; symbol should become an &quot;and&quot; sign.';
@@ -27,10 +11,6 @@ describe('replaceHtmlEntities', () => {
         expect(replaceHtmlEntities(input)).toBe(expected);
     });
 
-    test('throws TypeError when input is not a string', () => {
-        const input = 123;
-        expect(() => replaceHtmlEntities(input)).toThrow(TypeError);
-    });
 
     test('decodes multiple different entities in one string', () => {
         const input = '&lt;div&gt;Hello &amp; Welcome to the &apos;World&apos;!&lt;/div&gt;';

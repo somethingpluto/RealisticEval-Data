@@ -1,31 +1,29 @@
 describe('isBase64Image', () => {
-    // Test Case 1: Valid Base64 encoded PNG image
-    test('should return true for a valid Base64 encoded PNG image', () => {
-        const imageData1 = "question:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA";
-        expect(isBase64Image(imageData1)).toBe(true);
+    test('should return true for a valid PNG Base64 image string', () => {
+        const validPng = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA';
+        expect(isBase64Image(validPng)).toBe(true);
     });
 
-    // Test Case 2: Valid Base64 encoded JPEG image
-    test('should return true for a valid Base64 encoded JPEG image', () => {
-        const imageData2 = "question:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBD";
-        expect(isBase64Image(imageData2)).toBe(true);
+    test('should return true for a valid JPEG Base64 image string', () => {
+        const validJpeg = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAAAAAA';
+        expect(isBase64Image(validJpeg)).toBe(true);
     });
 
-    // Test Case 3: Invalid Base64 string without proper image MIME type
-    test('should return false for a Base64 encoded PDF, not an image', () => {
-        const imageData3 = "question:application/pdf;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA";
-        expect(isBase64Image(imageData3)).toBe(false);
+    test('should return false for a string without the image data prefix', () => {
+        const invalidFormat = 'data:text/plain;base64,SGVsbG8gd29ybGQ=';
+        expect(isBase64Image(invalidFormat)).toBe(false);
     });
 
-    // Test Case 4: Invalid string with no Base64 encoding
-    test('should return true for a string with valid Base64 image prefix but incorrect Base64 encoding', () => {
-        const imageData4 = "question:image/png;base64,ThisIsNotBase64Encoded";
-        expect(isBase64Image(imageData4)).toBe(true); // Based on function logic provided in the explanation
+    test('should return false for a string with invalid Base64 characters', () => {
+        const invalidBase64 = 'data:image/png;base64,invalidBase64String@#%';
+        expect(isBase64Image(invalidBase64)).toBe(false);
     });
 
-    // Test Case 5: Random string without Base64 prefix
-    test('should return false for a random string without a Base64 prefix', () => {
-        const imageData5 = "This is not a Base64 encoded image string.";
-        expect(isBase64Image(imageData5)).toBe(false);
+    test('should return false for an empty string', () => {
+        expect(isBase64Image('')).toBe(false);
+    });
+
+    test('should return false for a null input', () => {
+        expect(isBase64Image(null)).toBe(false);
     });
 });

@@ -1,58 +1,63 @@
-/**
- * Converts a Unix timestamp to a readable date format.
- *
- * @param {number} timestamp - The Unix timestamp in milliseconds.
- * @returns {string} A readable date string in the format "MMM DD, HH:MM".
- */
-function timestampToReadableDate(timestamp) {
-    const date = new Date(timestamp);
+function separateOctaveAndRoot(midiNotes) {
+    const octaves = [];
+    const rootNotes = [];
 
-    // Get local time components
-    const options = { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false };
-    const localDateString = date.toLocaleString('en-US', options);
+    midiNotes.forEach(note => {
+        const octave = Math.floor(note / 12);
+        const rootNote = note % 12;
 
-    // Format the string to remove the AM/PM and format it as needed
-    const [datePart, timePart] = localDateString.split(', ');
-    const [hour, minute] = timePart.split(':');
-    return `${datePart}, ${parseInt(hour)}:${minute}`;
+        if (!octaves[octave]) {
+            octaves[octave] = [];
+        }
+        octaves[octave].push(note);
+        rootNotes.push(rootNote);
+    });
+
+    return {
+        octaves: octaves.filter(Boolean), // remove undefined arrays
+        rootNotes: rootNotes
+    };
 }
-describe('timestampToReadableDate Tests', () => {
-    test('Converts current timestamp to readable date format', () => {
-        const now = Date.now();
-        const result = timestampToReadableDate(now);
-        const date = new Date(now);
-        const expected = `${date.toLocaleString('en-US', { month: 'short' })} ${date.getDate()}, ${date.getHours()}:${date.getMinutes().toString().padStart(2, '0')}`;
-
-        expect(result).toBe(expected);
+describe('separateOctaveAndRoot', () => {
+    test('correctly separates MIDI notes into octaves and root notes', () => {
+        const midiNotes = [60, 61, 62];  // C4, C#4, D4
+        const expected = {
+            octaveNotes: [5, 5, 5],  // All notes are in the 5th octave
+            rootNotes: [0, 1, 2]     // Root notes are C, C#, D
+        };
+        expect(separateOctaveAndRoot(midiNotes)).toEqual(expected);
     });
 
-    test('Handles a timestamp corresponding to midnight', () => {
-        const midnight = new Date('2024-01-01T00:00:00Z').getTime();
-        const result = timestampToReadableDate(midnight);
-        expect(result).toBe('Jan 1, 0:00');
+    test('handles single MIDI note input', () => {
+        const midiNotes = [24];  // C1
+        const expected = {
+            octaveNotes: [2],  // 2nd octave
+            rootNotes: [0]     // C note
+        };
+        expect(separateOctaveAndRoot(midiNotes)).toEqual(expected);
     });
 
-    test('Handles a timestamp at the end of the month', () => {
-        const endOfMonth = new Date('2024-01-31T23:59:59Z').getTime();
-        const result = timestampToReadableDate(endOfMonth);
-        expect(result).toBe('Jan 31, 23:59');
+    test('returns empty arrays for an empty input array', () => {
+        const midiNotes = [];
+        const expected = {
+            octaveNotes: [],
+            rootNotes: []
+        };
+        expect(separateOctaveAndRoot(midiNotes)).toEqual(expected);
     });
 
-    test('Handles a timestamp in a leap year', () => {
-        const leapDay = new Date('2024-02-29T12:30:00Z').getTime();
-        const result = timestampToReadableDate(leapDay);
-        expect(result).toBe('Feb 29, 12:30');
+    test('throws an error for invalid input types', () => {
+        const invalidInput = "not an array";
+        expect(() => separateOctaveAndRoot(invalidInput)).toThrow(TypeError);
+        expect(() => separateOctaveAndRoot([3.14])).toThrow(TypeError);
     });
 
-    test('Handles a timestamp from the previous year', () => {
-        const lastYear = new Date('2023-03-15T15:15:00Z').getTime();
-        const result = timestampToReadableDate(lastYear);
-        expect(result).toBe('Mar 15, 15:15');
-    });
-
-    test('Handles a timestamp from the future', () => {
-        const futureDate = new Date('2025-12-25T18:45:00Z').getTime();
-        const result = timestampToReadableDate(futureDate);
-        expect(result).toBe('Dec 25, 18:45');
+    test('handles MIDI notes from different octaves', () => {
+        const midiNotes = [12, 25, 37];  // C1, C#2, D#3
+        const expected = {
+            octaveNotes: [1, 2, 3],  // 1st, 2nd, and 3rd octaves
+            rootNotes: [0, 1, 1]     // Root notes are C, C#, D#
+        };
+        expect(separateOctaveAndRoot(midiNotes)).toEqual(expected);
     });
 });

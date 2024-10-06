@@ -1,27 +1,27 @@
-// Jest test cases for getFileIdFromUrl function
 describe('getFileIdFromUrl', () => {
-    test('should return the correct file ID for a valid URL', () => {
-        const result = getFileIdFromUrl('https://example.com/upload/v1234/someFileId.jpg');
-        expect(result).toBe('someFileId'); // 'someFileId' is the expected file ID
+    test('should return the file ID when a valid URL with fileId is provided', () => {
+        const url = 'https://example.com/download?fileId=12345';
+        expect(getFileIdFromUrl(url)).toBe('12345');
     });
 
-    test('should return null for a URL without the expected pattern', () => {
-        const result = getFileIdFromUrl('https://example.com/invalid/url');
-        expect(result).toBeNull(); // No valid pattern, should return null
+    test('should return null when the fileId query parameter is missing', () => {
+        const url = 'https://example.com/download';
+        expect(getFileIdFromUrl(url)).toBeNull();
     });
 
-    test('should return the correct file ID for a valid URL with different file types', () => {
-        const result = getFileIdFromUrl('https://example.com/upload/v5678/anotherFile123.pdf');
-        expect(result).toBe('anotherFile123'); // 'anotherFile123' is the expected file ID
+    test('should return null when the fileId query parameter is empty', () => {
+        const url = 'https://example.com/download?fileId=';
+        expect(getFileIdFromUrl(url)).toBeNull();
     });
 
-    test('should return the correct file ID for a URL with complex file ID', () => {
-        const result = getFileIdFromUrl('https://example.com/upload/v9876/file-id_456.png');
-        expect(result).toBe('file-id_456'); // 'file-id_456' is the expected file ID
+    test('should return null for an invalid URL', () => {
+        const url = 'invalid-url';
+        expect(getFileIdFromUrl(url)).toBeNull();
     });
 
-    test('should return null for an empty string', () => {
-        const result = getFileIdFromUrl('');
-        expect(result).toBeNull(); // An empty string should return null
+
+    test('should return null for a malformed URL', () => {
+        const url = 'https://example.com/download?fileId=12345&otherParam';
+        expect(getFileIdFromUrl(url)).toBe('12345'); // Adjust this depending on your needs; the function should still work correctly.
     });
 });

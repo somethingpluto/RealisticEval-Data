@@ -1,8 +1,7 @@
 /**
- * count the number of numbers in a string
+ * Count the number of letters in a string.
  *
- * @param {string} str - The string from which to count alphabetic characters.
- * @returns {number} - The count of alphabetic letters in the string.
+ * @param {string} str - The input string from which to count letters.
+ * @returns {number} - The count of letters in the string.
  */
-function countLetters(str) {
-}
+function countLetters(str) {}

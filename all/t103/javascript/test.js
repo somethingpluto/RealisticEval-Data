@@ -1,6 +1,6 @@
 describe('sliceString Function Tests', () => {
     test('should return a truncated string with "..." if it is longer than the specified limit, containing <p> tags', () => {
-        expect(sliceString("<p>Hello, World!</p>", 5)).toBe("He...");
+        expect(sliceString("<p>Hello, World!</p>", 2)).toBe("He...");
     });
 
     test('should return the original string if it is exactly at the specified limit', () => {

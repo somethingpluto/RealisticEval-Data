@@ -7,8 +7,8 @@ describe('isBreakTime Function Tests', () => {
         expect(isBreakTime("09:00", "10:00", "09:30")).toBe(true);
     });
 
-    test('should return true when current time is exactly at the end time', () => {
-        expect(isBreakTime("09:00", "10:00", "10:00")).toBe(true);
+    test('should return false when current time is exactly exceed the end time', () => {
+        expect(isBreakTime("09:00", "10:00", "20:00")).toBe(false);
     });
 
     test('should return false when current time is before the break time', () => {

@@ -1,36 +1,38 @@
-describe('htmlToMDSyntax', () => {
-    test('should convert basic HTML tags to Markdown syntax', () => {
-        const html = '<h1>Title</h1><p>Paragraph</p><code>code snippet</code>';
-        const expected = '# Title\nParagraph\n`code snippet`';
-        const result = htmlToMDSyntax(html);
-        expect(result).toBe(expected);
+describe('convertHtmlHeadingsToMarkdown', () => {
+    test('should convert <h1> to #', () => {
+        const input = '<h1>This is a Heading 1</h1>';
+        const output = '# This is a Heading 1';
+        expect(convertHtmlHeadingsToMarkdown(input)).toBe(output);
     });
 
-    test('should convert ordered list to Markdown syntax', () => {
-        const html = '<ol><li>First</li><li>Second</li><li>Third</li></ol>';
-        const expected = '1. First\n2. Second\n3. Third';
-        const result = htmlToMDSyntax(html);
-        expect(result).toBe(expected);
+    test('should convert <h2> to ##', () => {
+        const input = '<h2>This is a Heading 2</h2>';
+        const output = '## This is a Heading 2';
+        expect(convertHtmlHeadingsToMarkdown(input)).toBe(output);
     });
 
-    test('should convert unordered list to Markdown syntax', () => {
-        const html = '<ul><li>First</li><li>Second</li><li>Third</li></ul>';
-        const expected = '- First\n- Second\n- Third';
-        const result = htmlToMDSyntax(html);
-        expect(result).toBe(expected);
+    test('should convert <h3> to ###', () => {
+        const input = '<h3>This is a Heading 3</h3>';
+        const output = '### This is a Heading 3';
+        expect(convertHtmlHeadingsToMarkdown(input)).toBe(output);
     });
 
-    test('should handle nested lists correctly such as an ordered list containing an unordered sublist', () => {
-        const html = '<ol><li>First<ul><li>Sub First</li></ul></li><li>Second</li></ol>';
-        const expected = '1. First\n- Sub First\n\n\n2. Second';
-        const result = htmlToMDSyntax(html);
-        expect(result).toBe(expected);
+    test('should convert <h4> to ####', () => {
+        const input = '<h4>This is a Heading 4</h4>';
+        const output = '#### This is a Heading 4';
+        expect(convertHtmlHeadingsToMarkdown(input)).toBe(output);
     });
 
-    test('should handle mixed content with headings and lists', () => {
-        const html = '<h2>Subheading</h2><p>Some text</p><ul><li>Item</li></ul>';
-        const expected = '## Subheading\nSome text\n\n- Item';
-        const result = htmlToMDSyntax(html);
-        expect(result).toBe(expected);
+    test('should convert <h5> to #####', () => {
+        const input = '<h5>This is a Heading 5</h5>';
+        const output = '##### This is a Heading 5';
+        expect(convertHtmlHeadingsToMarkdown(input)).toBe(output);
     });
+
+    test('should convert <h6> to ######', () => {
+        const input = '<h6>This is a Heading 6</h6>';
+        const output = '###### This is a Heading 6';
+        expect(convertHtmlHeadingsToMarkdown(input)).toBe(output);
+    });
+
 });

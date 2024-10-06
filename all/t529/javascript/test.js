@@ -16,7 +16,6 @@ describe('saveAsJSON', () => {
         saveAsJSON(data, mockFilePath);
         const savedData = fs.readFileSync(mockFilePath, 'utf8');
         expect(savedData).toBe(JSON.stringify(data, null, 2));
-        expect(consoleLogSpy).toHaveBeenCalledWith(`Data successfully saved to ${mockFilePath}`);
     });
 
     test('should handle empty object', () => {

@@ -1,16 +1,39 @@
-function getTimeDifference(date) {
-    // Get the current date
+/**
+ * Calculates the time difference between a given date and the current date.
+ *
+ * @param {Date | string} givenDate - The date to compare against the current date.
+ * @returns {Object} - An object containing days, hours, and minutes elapsed.
+ * {
+ *         days: days,
+ *         hours: remainingHours,
+ *         minutes: remainingMinutes,
+ * }
+ */
+function calculateTimeDifference(givenDate) {
+    // Convert givenDate to a Date object if it's a string
+    const dateToCompare = new Date(givenDate);
     const currentDate = new Date();
 
-    // Calculate the time difference in milliseconds
-    const differenceInMilliseconds = currentDate - new Date(date);
+    // Calculate the difference in milliseconds
+    const differenceInMilliseconds = currentDate - dateToCompare;
 
-    // Convert the time difference to days, hours, and minutes
-    const totalMinutes = Math.floor(differenceInMilliseconds / (1000 * 60));
-    const days = Math.floor(totalMinutes / (60 * 24));
-    const hours = Math.floor((totalMinutes % (60 * 24)) / 60);
-    const minutes = totalMinutes % 60;
+    // If the given date is in the future
+    if (differenceInMilliseconds < 0) {
+        return { days: 0, hours: 0, minutes: 0 };
+    }
 
-    // Return the formatted string
-    return `Day: ${days} Hour: ${hours} Minutes: ${minutes}`;
+    // Calculate days, hours, and minutes
+    const minutes = Math.floor((differenceInMilliseconds / 1000) / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+
+    // Calculate remaining hours and minutes
+    const remainingHours = hours % 24;
+    const remainingMinutes = minutes % 60;
+
+    return {
+        days: days,
+        hours: remainingHours,
+        minutes: remainingMinutes,
+    };
 }

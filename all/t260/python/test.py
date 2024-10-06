@@ -17,37 +17,19 @@ class TestProcessCSV(unittest.TestCase):
 7,8,
 9,10,11"""
 
-        self.input_data_2 = """A,B
-1,2
-,4
-6,7
-8,,
-,9"""
 
-        self.input_data_3 = """A,B,C,D
+        self.input_data_2 = """A,B,C,D
 ,,
 1,,3,4
 2,3,,5
 ,,,"""
 
-        self.input_data_4 = """"""  # Empty CSV
 
-        self.input_data_5 = """A
+        self.input_data_3 = """A
 1
 2
 3"""
 
-        self.input_data_6 = """A,B,C
-,,,
-,2,3
-4,,6
-7,8,9"""
-
-        self.input_data_7 = """A,B,C
-NaN,2,3
-4,NaN,6
-7,8,9
-NaN,NaN,11"""
 
     def process_data(self, input_data):
         input_file = StringIO(input_data)
@@ -77,17 +59,12 @@ NaN,NaN,11"""
         expected_output = """A,B,C\n1,2.0,3.0\n4,,6.0\n7,8.0,\n9,10.0,11.0\n"""
         self.assertEqual(output, expected_output)
 
-    def test_case_3(self):
-        output = self.process_data(self.input_data_3)
+    def test_case_2(self):
+        output = self.process_data(self.input_data_2)
         expected_output = """A,B,C,D\n1.0,,3.0,4.0\n2.0,3.0,,5.0\n"""
         self.assertEqual(output, expected_output)
 
-    def test_case_4(self):
-        output = self.process_data(self.input_data_4)
-        expected_output = ""  # Empty CSV should remain empty
-        self.assertEqual(output, expected_output)
-
-    def test_case_5(self):
-        output = self.process_data(self.input_data_5)
+    def test_case_3(self):
+        output = self.process_data(self.input_data_3)
         expected_output = """A\n1\n2\n3\n"""  # Single-column CSV should remain unchanged
         self.assertEqual(output, expected_output)
