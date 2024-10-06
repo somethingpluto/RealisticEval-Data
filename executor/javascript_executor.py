@@ -34,12 +34,14 @@ class JavaScriptExecutor:
             try:
                 print(item["task_id"])
                 test_code = item['test_code']
+                addition_info = item["addition_info"]
                 answer_list = item["answer_list"]
                 for index, answer in enumerate(answer_list):
                     code = answer['code']
                     if code == None or code == "":
                         continue
                     with open(self.file_path, "w", encoding="utf8") as file:
+                        file.write(addition_info)
                         file.write(code)
                         file.write("\n")
                         file.write(test_code)

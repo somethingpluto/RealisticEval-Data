@@ -1,5 +1,4 @@
 describe('rgbToHsl', () => {
-
     test('should convert basic RGB values correctly (red)', () => {
         const rgb = { r: 255, g: 0, b: 0 };
         const result = rgbToHsl(rgb);
@@ -24,9 +23,16 @@ describe('rgbToHsl', () => {
         expect(result).toEqual({ h: 0, s: 0, l: 0 });
     });
 
-    test('should throw an error for invalid RGB values (negative values)', () => {
-        const rgb = { r: -50, g: 50, b: 50 };
-        expect(() => rgbToHsl(rgb)).toThrow('Invalid RGB value. Each value must be between 0 and 255.');
+    // Additional tests
+    test('should handle vibrant green', () => {
+        const rgb = { r: 0, g: 255, b: 0 };
+        const result = rgbToHsl(rgb);
+        expect(result).toEqual({ h: 120, s: 100, l: 50 });
     });
 
+    test('should handle deep blue', () => {
+        const rgb = { r: 0, g: 0, b: 255 };
+        const result = rgbToHsl(rgb);
+        expect(result).toEqual({ h: 240, s: 100, l: 50 });
+    });
 });

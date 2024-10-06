@@ -20,11 +20,11 @@ describe('getRelativeTime', () => {
 
     test('should return formatted date string for a message created 10 days ago', () => {
         const messageDate = new Date(Date.now() - 1000 * 60 * 60 * 24 * 10); // 10 days ago
-        expect(getRelativeTime(messageDate)).toBe("2024/9/21"); // Adjust based on the mock date
+        expect(getRelativeTime(messageDate)).toBe("2024/09/21"); // Adjust based on the mock date
     });
 
     test('should return formatted date string for a message created 15 days ago', () => {
         const messageDate = new Date(Date.now() - 1000 * 60 * 60 * 24 * 15); // 15 days ago
-        expect(getRelativeTime(messageDate)).toBe("2024/9/16"); // Adjust based on the mock date
+        expect(getRelativeTime(messageDate)).toBe("2024/09/16"); // Adjust based on the mock date
     });
 });

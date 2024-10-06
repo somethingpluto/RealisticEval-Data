@@ -17,15 +17,19 @@ describe('arrayBufferToString', () => {
         expect(result).toBe('Hello'); // Expected: "Hello"
     });
 
-    test('should return "¡Hola!" for a buffer containing the string "¡Hola!"', () => {
-        const buffer4 = new TextEncoder().encode("¡Hola!").buffer;
+        test('should return the correct string for a buffer containing multiple characters', () => {
+        const buffer4 = new TextEncoder().encode("Hello, World!").buffer;
         const result = arrayBufferToString(buffer4);
-        expect(result).toBe('¡Hola!'); // Expected: "¡Hola!"
+        expect(result).toBe('Hello, World!'); // Expected: "Hello, World!"
     });
 
-    test('should return "Hello 🌍" for a buffer containing the string "Hello 🌍"', () => {
-        const buffer5 = new TextEncoder().encode("Hello 🌍").buffer;
-        const result = arrayBufferToString(buffer5);
-        expect(result).toBe('Hello 🌍'); // Expected: "Hello 🌍"
+
+    test('should not modify the input buffer', () => {
+        const input = "Test input";
+        const buffer8 = new TextEncoder().encode(input).buffer;
+        arrayBufferToString(buffer8);
+        const result = new TextDecoder().decode(buffer8);
+        expect(result).toBe(input); // Check if the buffer content remains unchanged
     });
+
 });

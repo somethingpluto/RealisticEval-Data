@@ -5,7 +5,7 @@
  * @returns {string} A user-friendly string representing the relative time difference from the current date.
  * @throws {Error} If the date string is invalid.
  */
-export function formatDate(dateString: string): string {
+function formatDate(dateString: string): string {
     const date: Date = new Date(dateString);
     if (isNaN(date.getTime())) {
         throw new Error('Invalid Date');

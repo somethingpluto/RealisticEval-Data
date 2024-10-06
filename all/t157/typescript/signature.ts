@@ -4,7 +4,6 @@
  * @param {number} bytes - The number of bytes to be converted.
  * @returns {string} - A string representation of the size in Bytes, KB, MB, GB, or TB.
  */
-// @ts-ignore
-export function bytesToSize(bytes: number): string {
+function bytesToSize(bytes: number): string {
 
 }

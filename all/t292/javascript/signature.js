@@ -6,6 +6,5 @@
  * @param {number} numberOfPayments - The total number of payments.
  * @returns {number} - The calculated remaining payment.
  */
-function calculateRemainingPayment(principal, interestRate, numberOfPayments){
-    
+function calculateRemainingPayment(principal, interestRate, numberOfPayments) {
 }

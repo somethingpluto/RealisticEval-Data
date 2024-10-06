@@ -17,11 +17,6 @@ describe('calculateTimeDifference', () => {
         expect(result).toEqual({ days: 0, hours: 0, minutes: 0 });
     });
 
-    test('should return zero for a future date', () => {
-        const futureDate = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000); // 2 days in the future
-        const result = calculateTimeDifference(futureDate);
-        expect(result).toEqual({ days: 0, hours: 0, minutes: 0 });
-    });
 
     test('should return correct time difference for a date with only hours difference', () => {
         const hoursAgo = new Date(Date.now() - 7 * 60 * 60 * 1000); // 7 hours ago

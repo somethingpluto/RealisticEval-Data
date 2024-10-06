@@ -7,7 +7,7 @@
  * @param {string} bitName - The string to validate.
  * @returns {boolean} True if the remaining part after removing ".bit" is a valid 3-digit integer, otherwise false.
  */
-export function assert999(bitName: string): boolean {
+function assert999(bitName: string): boolean {
     // Remove the ".bit" suffix from the string
     const numericString = bitName.replace(".bit", "");
 

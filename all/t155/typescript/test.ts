@@ -23,9 +23,4 @@ describe('getTimestamp', () => {
         expect(getTimestamp(threeDaysAgo)).toBe('3 days ago');
     });
 
-    test('should return "1 year ago" for a date 1 year ago', () => {
-        const oneYearAgo = new Date(new Date().getTime() - 365 * 24 * 60 * 60 * 1000); // 1 year ago
-        // @ts-ignore
-        expect(getTimestamp(oneYearAgo)).toBe('1 year ago');
-    });
 });

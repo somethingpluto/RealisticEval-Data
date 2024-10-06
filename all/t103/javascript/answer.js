@@ -1,17 +1,16 @@
 /**
- * Truncates a string to a specified length and appends an ellipsis if necessary.
- * Removes any paragraph tags from the truncated string.
- * 
- * @param {string} str - The string to be truncated.
- * @param {number} num - The maximum number of characters allowed.
- * @returns {string} - The truncated string with an ellipsis, or the original string if it's shorter than the limit.
+ * Truncate a string to the specified length, replacing the excess part with an ellipsis.
+ *
+ * @param {string} str - The string to truncate.
+ * @param {number} maxLength - The maximum length of the resulting string.
+ * @returns {string} - The truncated string with ellipsis if applicable.
  */
-function sliceString(str, num) {
-    // Check if the string length exceeds the specified limit
-    if (str.length > num) {
-        // Truncate the string and remove any paragraph tags
-        return `${str.slice(0, num)}...`.replace(/<p>/g, "").replace(/<\/p>/g, "");
+const truncateStringWithReplacement = (str, maxLength) => {
+    // Check if the string length is less than or equal to the specified length
+    if (str.length <= maxLength) {
+        return str; // No need to truncate
     }
-    // Return the original string if it does not exceed the limit
-    return str;
-}
+
+    // Replace the excess part with ellipsis
+    return str.slice(0, maxLength) + '...';
+};

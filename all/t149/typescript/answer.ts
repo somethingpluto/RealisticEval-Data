@@ -1,30 +1,37 @@
-export function hslToRgb(hue: number, saturation: number, lightness: number): { r: number, g: number, b: number } {
-    // Normalize hue to be within [0, 360)
-    hue = (hue % 360 + 360) % 360;
+/**
+ * Converts an HSL color value to RGB.
+ * Assumes h, s, and l are contained in the set [0, 1] and
+ * returns r, g, and b in the set [0, 255].
+ *
+ * @param hue The hue of the color (0-360)
+ * @param saturation The saturation of the color (0-1)
+ * @param lightness The lightness of the color (0-1)
+ * @return An object containing the red, green, and blue channels.
+ */
+function hslToRgb(hue: number, saturation: number, lightness: number): { r: number, g: number, b: number } {
+    let r: number, g: number, b: number;
 
-    // Convert saturation and lightness to the range of [0, 1]
-    const s = saturation / 100;
-    const l = lightness / 100;
+    if (saturation == 0) {
+        // Achromatic case (saturation = 0), r, g, and b are the same.
+        r = g = b = lightness; // all equal to lightness
+    } else {
+        // Chromatic case (saturation != 0)
+        const hueToRgb = (p: number, q: number, t: number): number => {
+            if (t < 0) t += 1;
+            if (t > 1) t -= 1;
+            if (t < 1/6) return p + (q - p) * 6 * t;
+            if (t < 1/2) return q;
+            if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+            return p;
+        };
 
-    // Calculate chroma, secondary color, and match value
-    const c = (1 - Math.abs(2 * l - 1)) * s;
-    const x = c * (1 - Math.abs((hue / 60) % 2 - 1));
-    const m = l - c / 2;
+        const q = lightness < 0.5 ? lightness * (1 + saturation) : lightness + saturation - lightness * saturation;
+        const p = 2 * lightness - q;
+        r = hueToRgb(p, q, hue / 360 + 1/3);
+        g = hueToRgb(p, q, hue / 360);
+        b = hueToRgb(p, q, hue / 360 - 1/3);
+    }
 
-    // Determine RGB values based on the hue range
-    const [r1, g1, b1] = (() => {
-        if (hue < 60) return [c, x, 0];
-        if (hue < 120) return [x, c, 0];
-        if (hue < 180) return [0, c, x];
-        if (hue < 240) return [0, x, c];
-        if (hue < 300) return [x, 0, c];
-        return [c, 0, x];
-    })();
-
-    // Convert to RGB values on the [0, 255] scale
-    const r = Math.round((r1 + m) * 255);
-    const g = Math.round((g1 + m) * 255);
-    const b = Math.round((b1 + m) * 255);
-
-    return { r, g, b };
+    // Convert r, g, b from [0,1] range to [0,255] range
+    return { r: Math.round(r * 255), g: Math.round(g * 255), b: Math.round(b * 255) };
 }

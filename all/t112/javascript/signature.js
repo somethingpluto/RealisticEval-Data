@@ -1,9 +1,7 @@
 /**
- * The HTML text content is converted into Markdown format, and the ordered and unordered lists are specially processed
+ * Converts HTML heading tags (h1-h6) to corresponding Markdown headings.
  *
- * @param {string} html - The HTML string to be converted.
+ * @param {string} html - The HTML string containing headings.
  * @returns {string} - The converted Markdown string.
  */
-const { JSDOM } = require('jsdom');
-
-function htmlToMDSyntax(html) {}
+function convertHtmlHeadingsToMarkdown(html) {}

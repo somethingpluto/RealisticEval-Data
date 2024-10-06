@@ -1,26 +1,32 @@
 describe('timestampToReadableDate', () => {
-    test('converts Unix timestamp for New Year\'s Day', () => {
-        // January 1, 2023 00:00 GMT
-        expect(timestampToReadableDate(1672531200)).toBe('Jan 1, 8:00');
+    test('should convert UNIX timestamp to readable format', () => {
+        const timestamp = 1696516800;
+        expect(timestampToReadableDate(timestamp)).toBe('Oct 5, 22:40');
     });
 
-    test('converts Unix timestamp for a leap day', () => {
-        // February 29, 2024 12:00 GMT (leap year)
-        expect(timestampToReadableDate(1709227200)).toBe('Mar 1, 1:20');
+    test('should handle timestamp at the start of the year', () => {
+        const timestamp = 1672531200;
+        expect(timestampToReadableDate(timestamp)).toBe('Jan 1, 8:00');
     });
 
-    test('converts Unix timestamp for a summer day', () => {
-        // June 21, 2023 15:45 GMT
-        expect(timestampToReadableDate(1687362300)).toBe('Jun 21, 23:45');
+    test('should handle timestamp at the end of the year', () => {
+        const timestamp = 1672531199;
+        expect(timestampToReadableDate(timestamp)).toBe('Jan 1, 7:59');
     });
 
-    test('handles minutes with leading zero', () => {
-        // October 3, 2023 02:05 GMT
-        expect(timestampToReadableDate(1696377900)).toBe('Oct 4, 8:05');
+    test('should handle timestamps in the leap year', () => {
+        const timestamp = 1583020800;
+        expect(timestampToReadableDate(timestamp)).toBe('Mar 1, 8:00');
     });
 
-    test('handles end of the year', () => {
-        // December 31, 2023 23:59 GMT
-        expect(timestampToReadableDate(1704067140)).toBe('Jan 1, 7:59');
+    test('should convert timestamp to readable format with single-digit day', () => {
+        const timestamp = 1675190400;
+        expect(timestampToReadableDate(timestamp)).toBe('Feb 1, 2:40');
+    });
+
+
+    test('should handle zero UNIX timestamp', () => {
+        const timestamp = 0;
+        expect(timestampToReadableDate(timestamp)).toBe('Jan 1, 8:00');
     });
 });

@@ -6,8 +6,16 @@
  * @param {number} numberOfPayments - The total number of payments.
  * @returns {number} - The calculated remaining payment.
  */
-const calculateRemainingPayment = (principal, interestRate, numberOfPayments) => {
-    const numerator = principal * interestRate;
-    const denominator = 1 - Math.pow(1 + interestRate, -numberOfPayments);
-    return numerator / denominator;
+function calculateRemainingPayment(principal, interestRate, numberOfPayments) {
+    // Calculate the fixed monthly payment using the amortization formula
+    const monthlyPayment = principal * (interestRate * Math.pow(1 + interestRate, numberOfPayments)) / (Math.pow(1 + interestRate, numberOfPayments) - 1);
+
+    // Calculate the remaining balance after all payments (assuming all payments are made, should be very close to zero)
+    let balance = principal;
+    for (let i = 0; i < numberOfPayments; i++) {
+        balance = balance * (1 + interestRate) - monthlyPayment;
+    }
+
+    // Remaining balance after the payments
+    return balance;
 }

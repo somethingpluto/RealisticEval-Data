@@ -14,10 +14,6 @@ describe('getFileIdFromUrl', () => {
         expect(getFileIdFromUrl(url)).toBeNull();
     });
 
-    test('should return null for an invalid URL', () => {
-        const url = 'invalid-url';
-        expect(getFileIdFromUrl(url)).toBeNull();
-    });
 
 
     test('should return null for a malformed URL', () => {

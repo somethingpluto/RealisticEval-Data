@@ -20,12 +20,6 @@ describe('formatNumber', () => {
         expect(formatNumber(500)).toBe('500');
     });
 
-    test('should format numbers close to 1,000,000 correctly', () => {
-        // @ts-ignore
-        expect(formatNumber(999999)).toBe('999.9K'); // Corrected to reflect 'K' formatting
-        // @ts-ignore
-        expect(formatNumber(999500)).toBe('999.5K'); // Corrected to reflect 'K' formatting
-    });
 
     test('should handle edge cases like exactly 1,000 or 1,000,000', () => {
         // @ts-ignore

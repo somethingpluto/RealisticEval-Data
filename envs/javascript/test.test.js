@@ -1,63 +1,67 @@
-function separateOctaveAndRoot(midiNotes) {
-    const octaves = [];
-    const rootNotes = [];
-
-    midiNotes.forEach(note => {
-        const octave = Math.floor(note / 12);
-        const rootNote = note % 12;
-
-        if (!octaves[octave]) {
-            octaves[octave] = [];
-        }
-        octaves[octave].push(note);
-        rootNotes.push(rootNote);
-    });
-
-    return {
-        octaves: octaves.filter(Boolean), // remove undefined arrays
-        rootNotes: rootNotes
-    };
+function findMarkdownFiles(dir) {
+    const files = fs.readdirSync(dir);
+    return files
+        .filter(file => path.extname(file) === '.md')
+        .map(file => path.join(dir, file));
 }
-describe('separateOctaveAndRoot', () => {
-    test('correctly separates MIDI notes into octaves and root notes', () => {
-        const midiNotes = [60, 61, 62];  // C4, C#4, D4
-        const expected = {
-            octaveNotes: [5, 5, 5],  // All notes are in the 5th octave
-            rootNotes: [0, 1, 2]     // Root notes are C, C#, D
-        };
-        expect(separateOctaveAndRoot(midiNotes)).toEqual(expected);
+
+const fs = require('fs');
+const path = require('path');
+
+jest.mock('fs');
+
+describe('findMarkdownFiles', () => {
+    beforeEach(() => {
+        jest.clearAllMocks();
     });
 
-    test('handles single MIDI note input', () => {
-        const midiNotes = [24];  // C1
-        const expected = {
-            octaveNotes: [2],  // 2nd octave
-            rootNotes: [0]     // C note
-        };
-        expect(separateOctaveAndRoot(midiNotes)).toEqual(expected);
+    test('should return an empty array for an empty directory', () => {
+        fs.readdirSync.mockReturnValue([]);
+        fs.statSync.mockImplementation(() => ({isDirectory: () => false}));
+
+        const result = findMarkdownFiles('emptyDir');
+        expect(result).toEqual([]);
     });
 
-    test('returns empty arrays for an empty input array', () => {
-        const midiNotes = [];
-        const expected = {
-            octaveNotes: [],
-            rootNotes: []
-        };
-        expect(separateOctaveAndRoot(midiNotes)).toEqual(expected);
+    test('should return an array with one Markdown file', () => {
+        fs.readdirSync.mockReturnValue(['file1.md']);
+        fs.statSync.mockImplementation(file => ({
+            isDirectory: () => false,
+        }));
+
+        const result = findMarkdownFiles('dir');
+        expect(result).toEqual(['dir\\file1.md']);
     });
 
-    test('throws an error for invalid input types', () => {
-        const invalidInput = "not an array";
-        expect(() => separateOctaveAndRoot(invalidInput)).toThrow(TypeError);
-        expect(() => separateOctaveAndRoot([3.14])).toThrow(TypeError);
+    test('should return an array with multiple Markdown files in the same directory', () => {
+        fs.readdirSync.mockReturnValue(['file1.md', 'file2.md']);
+        fs.statSync.mockImplementation(file => ({
+            isDirectory: () => false,
+        }));
+
+        const result = findMarkdownFiles('dir');
+        expect(result).toEqual(['dir\\file1.md', 'dir\\file2.md']);
     });
 
-    test('handles MIDI notes from different octaves', () => {
-        const midiNotes = [12, 25, 37];  // C1, C#2, D#3
-        const expected = {
-            octaveNotes: [1, 2, 3],  // 1st, 2nd, and 3rd octaves
-            rootNotes: [0, 1, 1]     // Root notes are C, C#, D#
-        };
-        expect(separateOctaveAndRoot(midiNotes)).toEqual(expected);
+
+    test('should return Markdown files while ignoring non-Markdown files', () => {
+        fs.readdirSync.mockReturnValue(['file1.txt', 'file2.md', 'file3.doc']);
+        fs.statSync.mockImplementation(file => ({
+            isDirectory: () => false,
+        }));
+
+        const result = findMarkdownFiles('dir');
+        expect(result).toEqual(['dir\\file2.md']);
+    });
+
+
+    test('should handle a directory with only non-Markdown files', () => {
+        fs.readdirSync.mockReturnValue(['file1.txt', 'file2.doc']);
+        fs.statSync.mockImplementation(file => ({
+            isDirectory: () => false,
+        }));
+
+        const result = findMarkdownFiles('dir');
+        expect(result).toEqual([]);
     });
 });

@@ -4,4 +4,5 @@
  * @param coord - The coordinate string to check (can be latitude or longitude).
  * @returns A boolean indicating whether the coordinate is valid.
  */
-const isValidCoordinate = (coord: string): boolean => {}
+function isValidCoordinate(coord: string): boolean {
+}

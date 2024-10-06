@@ -1,4 +1,3 @@
-
 describe('assert999', () => {
     /**
      * Test case for a valid 3-digit number with the ".bit" suffix.

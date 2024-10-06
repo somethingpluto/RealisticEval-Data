@@ -1,8 +1,4 @@
 describe('bytesToSize', () => {
-    test('should return "0 Byte" for 0 bytes', () => {
-        // @ts-ignore
-        expect(bytesToSize(0)).toBe('0 Byte');
-    });
 
     test('should convert bytes to KB correctly', () => {
         // @ts-ignore

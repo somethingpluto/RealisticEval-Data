@@ -1,5 +1,5 @@
 /**
- * Hides the sensitive part of a bank account number with 17 characters only show the last 4 characters.
+ * Hides the sensitive part of a bank account number with 17 number only show the last 4 characters.
  *
  * @param {string} account - The bank account number to hide.
  * @returns {string} - The bank account number with the first part hidden.
