@@ -1,35 +1,23 @@
 #include <iostream>
-#include <vector>
-#include <functional>
-#include <fstream>
-#include <ctime>
 #include <string>
 
-string token_manager::extract_json(const std::string& input)
-{
-    std::string result;
-    int bracket_count = 0;
-    size_t start_pos = std::string::npos;
-    size_t end_pos = std::string::npos;
+std::string extractStringFromBraces(const std::string& input) {
+    // Find the position of the first opening brace
+    size_t openingBracePos = input.find('{');
 
-    for (size_t i = 0; i < input.length(); ++i) {
-        if (input[i] == '{') {
-            if (bracket_count == 0) {
-                start_pos = i;  // 记录第一个 '{' 的位置
-            }
-            bracket_count++;
-        } else if (input[i] == '}') {
-            bracket_count--;
-            if (bracket_count == 0) {
-                end_pos = i;  // 记录匹配的 '}' 的位置
-                break;
-            }
-        }
+    // Check if an opening brace was found
+    if (openingBracePos == std::string::npos) {
+        return "No opening brace found.";
     }
 
-    if (start_pos != std::string::npos && end_pos != std::string::npos) {
-        result = input.substr(start_pos, end_pos - start_pos + 1);
+    // Find the position of the first closing brace after the opening brace
+    size_t closingBracePos = input.find('}', openingBracePos);
+
+    // Check if a closing brace was found
+    if (closingBracePos == std::string::npos) {
+        return "No closing brace found.";
     }
 
-    return result;
+    // Extract the string between the braces (including the braces)
+    return input.substr(openingBracePos, closingBracePos - openingBracePos + 1);
 }

@@ -1,8 +1,12 @@
 /**
- * implement merge sort algorithms
+ * @brief Sorts a portion of an array using the merge sort algorithm.
  *
- * @param arr Pointer to the first element of the array to be sorted.
- * @param n The number of elements in the array.
- * @return Always returns true to indicate successful sorting (can be modified to handle errors).
+ *
+ * @param arr A reference to a vector of integers that contains the
+ *            elements to be sorted.
+ * @param left The starting index of the portion of the array to be
+ *             sorted.
+ * @param right The ending index of the portion of the array to be
+ *              sorted.
  */
-bool merge_sort(double *arr, int n) {}
+void merge_sort(std::vector<int>& arr, int left, int right) {}

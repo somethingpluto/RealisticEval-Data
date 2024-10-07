@@ -1,28 +1,28 @@
 TEST_CASE("General case", "[findMaxDifference]") {
-    vector<int> l = {2, 3, 10, 6, 4, 8, 1};
-    REQUIRE(findMaxDifference(l) == 8);  // 最大差值是 10 - 2 = 8
+    std::vector<int> l = {2, 3, 10, 6, 4, 8, 1};
+    REQUIRE(findMaxDifference(l) == 8);  // Maximum difference is 10 - 2 = 8
 }
 
-// 测试用例 2: 递减序列
+// Test case 2: Decreasing sequence
 TEST_CASE("Decreasing sequence", "[findMaxDifference]") {
-    vector<int> l = {10, 9, 8, 7, 6, 5};
-    REQUIRE(findMaxDifference(l) == -1);  // 最大差值是 9 - 10 = -1
+    std::vector<int> l = {10, 9, 8, 7, 6, 5};
+    REQUIRE(findMaxDifference(l) == 0);  // Maximum difference should be 0, as all differences are negative
 }
 
-// 测试用例 3: 全部相同元素
+// Test case 3: All elements the same
 TEST_CASE("All elements the same", "[findMaxDifference]") {
-    vector<int> l = {5, 5, 5, 5, 5};
-    REQUIRE(findMaxDifference(l) == 0);  // 最大差值是 5 - 5 = 0
+    std::vector<int> l = {5, 5, 5, 5, 5};
+    REQUIRE(findMaxDifference(l) == 0);  // Maximum difference is 5 - 5 = 0
 }
 
-// 测试用例 4: 只有两个元素
+// Test case 4: Only two elements
 TEST_CASE("Only two elements", "[findMaxDifference]") {
-    vector<int> l = {3, 8};
-    REQUIRE(findMaxDifference(l) == 5);  // 最大差值是 8 - 3 = 5
+    std::vector<int> l = {3, 8};
+    REQUIRE(findMaxDifference(l) == 5);  // Maximum difference is 8 - 3 = 5
 }
 
-// 测试用例 5: 只有一个元素
+// Test case 5: Only one element
 TEST_CASE("Single element", "[findMaxDifference]") {
-    vector<int> l = {4};
-    REQUIRE(findMaxDifference(l) == numeric_limits<int>::min());  // 只有一个元素，无法计算差值
+    std::vector<int> l = {4};
+    REQUIRE(findMaxDifference(l) == 0);  // Only one element, no difference to calculate
 }

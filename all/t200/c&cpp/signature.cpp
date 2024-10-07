@@ -1,7 +1,7 @@
 /**
- * string token_manager::extract_json(const std::string& input)
+ * @brief Extracts the string contained in the first pair of braces `{}` from the input string.
  *
- * @param input json str
- * @return the extracted JSON object or an empty string
+ * @param input The input string from which the braces content will be extracted.
+ * @return A substring enclosed within the first pair of braces, or an error message if braces are missing.
  */
-string token_manager::extract_json(const std::string& input){}
+std::string extractStringFromBraces(const std::string& input) {}

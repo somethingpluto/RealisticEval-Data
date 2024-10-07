@@ -1,17 +1,23 @@
 #include <iostream>
-#include <sstream>
 #include <string>
 
-int countWords(const std::string &str) {
-    // Initialize a word count variable
-    int wordCount = 0;
-    std::istringstream stream(str); // Create a string stream from the input string
-    std::string word; // Variable to hold each word
+std::string extractStringFromBraces(const std::string& input) {
+    // Find the position of the first opening brace
+    size_t openingBracePos = input.find('{');
 
-    // Extract words from the stream
-    while (stream >> word) {
-        wordCount++; // Increment the count for each word found
+    // Check if an opening brace was found
+    if (openingBracePos == std::string::npos) {
+        return "No opening brace found.";
     }
 
-    return wordCount; // Return the total word count
+    // Find the position of the first closing brace after the opening brace
+    size_t closingBracePos = input.find('}', openingBracePos);
+
+    // Check if a closing brace was found
+    if (closingBracePos == std::string::npos) {
+        return "No closing brace found.";
+    }
+
+    // Extract the string between the braces (including the braces)
+    return input.substr(openingBracePos, closingBracePos - openingBracePos + 1);
 }

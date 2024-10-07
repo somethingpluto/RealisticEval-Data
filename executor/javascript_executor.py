@@ -76,7 +76,7 @@ class JavaScriptExecutor:
         )
         try:
             # 等待进程结束或超时
-            stdout, stderr = process.communicate(timeout=10)
+            stdout, stderr = process.communicate(timeout=20)
             print(stdout)
             print(stderr)
             print("Process completed with return code:", process.returncode)

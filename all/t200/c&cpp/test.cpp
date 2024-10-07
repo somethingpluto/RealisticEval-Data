@@ -1,32 +1,37 @@
-TEST_CASE("JSON extraction tests", "[extract_json]") {
+TEST_CASE("Test cases for extractStringFromBraces function") {
 
-    SECTION("Basic JSON extraction") {
-        std::string input = "Here is a JSON: {\"key\": \"value\"} with text.";
-        std::string expected = "{\"key\": \"value\"}";
-        REQUIRE(token_manager::extract_json(input) == expected);
+    SECTION("Basic extraction") {
+        std::string input = "This is a sample text with some data {data: \"value\"} and more text.";
+        std::string result = extractStringFromBraces(input);
+        REQUIRE(result == "{data: \"value\"}");
     }
 
-    SECTION("Nested braces JSON extraction") {
-        std::string input = "Prefix {\"outer\": {\"inner\": \"value\"}} Suffix";
-        std::string expected = "{\"outer\": {\"inner\": \"value\"}}";
-        REQUIRE(token_manager::extract_json(input) == expected);
-    }
-
-    SECTION("No braces in input") {
-        std::string input = "No JSON here.";
-        std::string expected = "";
-        REQUIRE(token_manager::extract_json(input) == expected);
+    SECTION("No braces") {
+        std::string input = "This string has no braces.";
+        std::string result = extractStringFromBraces(input);
+        REQUIRE(result == "No opening brace found.");
     }
 
     SECTION("Only opening brace") {
-        std::string input = "Starts with a brace { but no closing one.";
-        std::string expected = "";
-        REQUIRE(token_manager::extract_json(input) == expected);
+        std::string input = "This string has an opening brace { but no closing brace.";
+        std::string result = extractStringFromBraces(input);
+        REQUIRE(result == "No closing brace found.");
     }
 
     SECTION("Only closing brace") {
-        std::string input = "Ends with a brace } but no opening one.";
-        std::string expected = "";
-        REQUIRE(token_manager::extract_json(input) == expected);
+        std::string input = "This string has a closing brace } but no opening brace.";
+        std::string result = extractStringFromBraces(input);
+        REQUIRE(result == "No opening brace found.");
+    }
+    SECTION("Multiple braces") {
+        std::string input = "First {first} and second {second} braces.";
+        std::string result = extractStringFromBraces(input);
+        REQUIRE(result == "{first}");
+    }
+
+    SECTION("Empty braces") {
+        std::string input = "This string has empty braces {} and some text.";
+        std::string result = extractStringFromBraces(input);
+        REQUIRE(result == "{}");
     }
 }

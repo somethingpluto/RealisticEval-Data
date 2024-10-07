@@ -35,17 +35,19 @@ class CCPPExecutor:
             try:
                 test_code = item['test_code']
                 answer_list = item["answer_list"]
+                addition_info = item["addition_info"]
                 for index, answer in enumerate(answer_list):
                     code = answer['code']
                     if code == None or code == "":
                         continue
-                    with open(f"{self._env_path}/solution.cpp", "w", encoding="utf8") as temp_file:
-                        temp_file.write(code)
-                        temp_file.flush()
+                    # with open(f"{self._env_path}/solution.cpp", "w", encoding="utf8") as temp_file:
+                    #     temp_file.write(code)
+                    #     temp_file.flush()
                     with open(f"{self._env_path}/answer_check.cpp", "w", encoding="utf8") as file:
                         file.write("#define CATCH_CONFIG_MAIN\n")
                         file.write("#include \"./lib/catch.hpp\"\n")
-                        file.write("#include \"./solution.cpp\"\n")
+                        file.write(addition_info)
+                        file.write(code)
                         file.write(test_code)
                         file.flush()
                     stdout, stderr, returncode = self._execute()
@@ -53,13 +55,15 @@ class CCPPExecutor:
                     item["result_return_code"] = returncode
                     item["stderr"] = stderr
                     item["stdout"] = stdout
-
+                    with open(f"{self._env_path}/answer_check.cpp", "r", encoding="utf8") as f:
+                        item["full_content"] = f.read()
                     data_list.append(item)
             except Exception as e:
                 print(e)
                 continue
         data = pd.DataFrame(data_list)
-        data.to_excel(f"../analysis/model_answer_result/{self.model_name}/{self.model_name}_c&cpp.xlsx")
+        data.to_excel(f"../analysis/model_answer_result/{self.model_name}/{self.model_name}_c&cpp.xlsx",
+                      engine='xlsxwriter')
 
     def _execute(self):
         command = self._generate_command()

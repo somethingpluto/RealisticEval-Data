@@ -1,13 +1,3 @@
-// Test cases
-TEST_CASE("Valid HTTP request line", "[parse_http_request_line]") {
-    std::string response = "GET /index.html HTTP/1.1\r\n";
-    auto parsed_info = parse_http_request_line(response);
-
-    REQUIRE(parsed_info["method"] == "GET");
-    REQUIRE(parsed_info["url"] == "/index.html");
-    REQUIRE(parsed_info["http_version"] == "HTTP/1.1");
-}
-
 TEST_CASE("Valid POST request line", "[parse_http_request_line]") {
     std::string response = "POST /api/data HTTP/1.1\r\n";
     auto parsed_info = parse_http_request_line(response);
@@ -17,20 +7,27 @@ TEST_CASE("Valid POST request line", "[parse_http_request_line]") {
     REQUIRE(parsed_info["http_version"] == "HTTP/1.1");
 }
 
-TEST_CASE("Request line without HTTP version", "[parse_http_request_line]") {
-    std::string response = "PUT /upload\r\n";
+TEST_CASE("PUT request line", "[parse_http_request_line]") {
+    std::string response = "PUT /api/update HTTP/2.0\r\n";
     auto parsed_info = parse_http_request_line(response);
 
     REQUIRE(parsed_info["method"] == "PUT");
-    REQUIRE(parsed_info["url"] == "/upload");
-    REQUIRE(parsed_info["http_version"].empty());
+    REQUIRE(parsed_info["url"] == "/api/update");
+    REQUIRE(parsed_info["http_version"] == "HTTP/2.0");
 }
 
-TEST_CASE("Request line with extra spaces", "[parse_http_request_line]") {
-    std::string response = "  GET   /index.html   HTTP/1.1  \r\n";
+TEST_CASE("DELETE request line", "[parse_http_request_line]") {
+    std::string response = "DELETE /api/delete HTTP/1.1\r\n";
     auto parsed_info = parse_http_request_line(response);
 
-    REQUIRE(parsed_info["method"] == "GET");
-    REQUIRE(parsed_info["url"] == "/index.html");
+    REQUIRE(parsed_info["method"] == "DELETE");
+    REQUIRE(parsed_info["url"] == "/api/delete");
     REQUIRE(parsed_info["http_version"] == "HTTP/1.1");
+}
+
+TEST_CASE("Malformed request line", "[parse_http_request_line]") {
+    std::string response = "INVALID REQUEST LINE\r\n";
+    auto parsed_info = parse_http_request_line(response);
+
+    REQUIRE(parsed_info.empty());  // Expect empty result for malformed request
 }

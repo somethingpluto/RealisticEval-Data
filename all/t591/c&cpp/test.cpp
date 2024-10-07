@@ -1,29 +1,87 @@
-TEST_CASE("Color RGB Values Test") {
-    // Define an array of colors and their expected RGB values
-    struct ColorTest {
-        Color color;
-        RGB expectedRGB;
-    };
+TEST_CASE("Color RGB Values", "[Color]") {
+    Color color;
 
-    ColorTest colorTests[] = {
-        {Color::RED, {255, 0, 0}},
-        {Color::GREEN, {0, 255, 0}},
-        {Color::BLUE, {0, 0, 255}},
-        {Color::YELLOW, {255, 255, 0}},
-        {Color::MAGENTA, {255, 0, 255}},
-        {Color::CYAN, {0, 255, 255}},
-        {Color::WHITE, {255, 255, 255}},
-        {Color::BLACK, {0, 0, 0}},
-        {Color::ORANGE, {255, 165, 0}},
-        {Color::PURPLE, {128, 0, 128}},
-        {Color::PINK, {255, 192, 203}},
-        {Color::BROWN, {165, 42, 42}}
-    };
+    SECTION("Verify RGB values for Red") {
+        auto rgb = color.getColor(Color::RED);
+        REQUIRE(std::get<0>(rgb) == 255);
+        REQUIRE(std::get<1>(rgb) == 0);
+        REQUIRE(std::get<2>(rgb) == 0);
+    }
 
-    for (const auto& test : colorTests) {
-        RGB rgb = getColorRGB(test.color);
-        REQUIRE(rgb.r == test.expectedRGB.r);
-        REQUIRE(rgb.g == test.expectedRGB.g);
-        REQUIRE(rgb.b == test.expectedRGB.b);
+    SECTION("Verify RGB values for Green") {
+        auto rgb = color.getColor(Color::GREEN);
+        REQUIRE(std::get<0>(rgb) == 0);
+        REQUIRE(std::get<1>(rgb) == 255);
+        REQUIRE(std::get<2>(rgb) == 0);
+    }
+
+    SECTION("Verify RGB values for Blue") {
+        auto rgb = color.getColor(Color::BLUE);
+        REQUIRE(std::get<0>(rgb) == 0);
+        REQUIRE(std::get<1>(rgb) == 0);
+        REQUIRE(std::get<2>(rgb) == 255);
+    }
+
+    SECTION("Verify RGB values for Yellow") {
+        auto rgb = color.getColor(Color::YELLOW);
+        REQUIRE(std::get<0>(rgb) == 255);
+        REQUIRE(std::get<1>(rgb) == 255);
+        REQUIRE(std::get<2>(rgb) == 0);
+    }
+
+    SECTION("Verify RGB values for Magenta") {
+        auto rgb = color.getColor(Color::MAGENTA);
+        REQUIRE(std::get<0>(rgb) == 255);
+        REQUIRE(std::get<1>(rgb) == 0);
+        REQUIRE(std::get<2>(rgb) == 255);
+    }
+
+    SECTION("Verify RGB values for Cyan") {
+        auto rgb = color.getColor(Color::CYAN);
+        REQUIRE(std::get<0>(rgb) == 0);
+        REQUIRE(std::get<1>(rgb) == 255);
+        REQUIRE(std::get<2>(rgb) == 255);
+    }
+
+    SECTION("Verify RGB values for White") {
+        auto rgb = color.getColor(Color::WHITE);
+        REQUIRE(std::get<0>(rgb) == 255);
+        REQUIRE(std::get<1>(rgb) == 255);
+        REQUIRE(std::get<2>(rgb) == 255);
+    }
+
+    SECTION("Verify RGB values for Black") {
+        auto rgb = color.getColor(Color::BLACK);
+        REQUIRE(std::get<0>(rgb) == 0);
+        REQUIRE(std::get<1>(rgb) == 0);
+        REQUIRE(std::get<2>(rgb) == 0);
+    }
+
+    SECTION("Verify RGB values for Orange") {
+        auto rgb = color.getColor(Color::ORANGE);
+        REQUIRE(std::get<0>(rgb) == 255);
+        REQUIRE(std::get<1>(rgb) == 165);
+        REQUIRE(std::get<2>(rgb) == 0);
+    }
+
+    SECTION("Verify RGB values for Purple") {
+        auto rgb = color.getColor(Color::PURPLE);
+        REQUIRE(std::get<0>(rgb) == 128);
+        REQUIRE(std::get<1>(rgb) == 0);
+        REQUIRE(std::get<2>(rgb) == 128);
+    }
+
+    SECTION("Verify RGB values for Pink") {
+        auto rgb = color.getColor(Color::PINK);
+        REQUIRE(std::get<0>(rgb) == 255);
+        REQUIRE(std::get<1>(rgb) == 192);
+        REQUIRE(std::get<2>(rgb) == 203);
+    }
+
+    SECTION("Verify RGB values for Brown") {
+        auto rgb = color.getColor(Color::BROWN);
+        REQUIRE(std::get<0>(rgb) == 165);
+        REQUIRE(std::get<1>(rgb) == 42);
+        REQUIRE(std::get<2>(rgb) == 42);
     }
 }

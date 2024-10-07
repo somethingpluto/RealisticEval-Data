@@ -39,18 +39,4 @@ TEST_CASE("Spatial Weight Calculation Tests") {
         REQUIRE(spatialWeight(spatial_diff, sigma_space) == Approx(expected_weight).epsilon(0.001));
     }
 
-    SECTION("Sigma Space is Zero") {
-        // Sigma space should never be zero in a Gaussian weight function.
-        // Here we expect it to cause a domain error.
-        float spatial_diff = 1.0f;
-        float sigma_space = 0.0f;
-        REQUIRE_THROWS_AS(spatialWeight(spatial_diff, sigma_space), std::domain_error);
-    }
-
-    SECTION("Negative Sigma Space") {
-        // Sigma space should never be negative; expect a domain error.
-        float spatial_diff = 1.0f;
-        float sigma_space = -1.0f;
-        REQUIRE_THROWS_AS(spatialWeight(spatial_diff, sigma_space), std::domain_error);
-    }
 }

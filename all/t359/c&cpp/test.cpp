@@ -1,4 +1,3 @@
-
 TEST_CASE("TrapezoidalRule Test Cases", "[trapezoidal_rule]") {
     // Test Case 1: Integration of a constant function (f(x) = 1) over [0, 1]
     REQUIRE(trapezoidal_rule([](double x) { return 1.0; }, 0.0, 1.0, 100) == Approx(1.0).epsilon(1e-6));
