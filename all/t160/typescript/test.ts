@@ -1,26 +1,19 @@
-describe('compressFileName', () => {
-    test('returns the original file name if within maxLength', () => {
-        // @ts-ignore
-        expect(compressFileName('example.txt', 12)).toBe('example.txt');
+describe('compressFilename', () => {
+    test('should return the filename unchanged if under max length', () => {
+        expect(compressFilename('file.txt', 10)).toBe('file.txt');
     });
 
-    test('compresses the file name correctly when it exceeds maxLength', () => {
-        // @ts-ignore
-        expect(compressFileName('longfilenameexample.txt', 18)).toBe('longf...xample.txt');
+    test('should truncate and append *** if filename exceeds max length', () => {
+        expect(compressFilename('verylongfilename.txt', 10)).toBe('verylongfi***.txt');
     });
 
-    test('handles file names without extension correctly', () => {
-        // @ts-ignore
-        expect(compressFileName('averylongfilenamewithoutanextension', 20)).toBe('averylon...extension');
+
+    test('should preserve file extension after compression', () => {
+        expect(compressFilename('document.pdf', 5)).toBe('docum***.pdf');
     });
 
-    test('returns the original file name when maxLength is larger than file name', () => {
-        // @ts-ignore
-        expect(compressFileName('short.txt', 20)).toBe('short.txt');
-    });
 
-    test('compresses file names with special characters correctly', () => {
-        // @ts-ignore
-        expect(compressFileName('my$pecialfilename.txt', 18)).toBe('my$pe...lename.txt');
+    test('should truncate and append *** if filename exceeds', () => {
+        expect(compressFilename('short.mp3', 2)).toBe('sh***.mp3');
     });
 });

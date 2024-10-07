@@ -4,7 +4,7 @@
  * @param {string} file_name - The full name of the file from which to remove the extension.
  * @returns {string} The file name without the extension. If no extension is found, returns the original file name.
  */
-export function removeFileExtension(file_name: string): string {
+function removeFileExtension(file_name: string): string {
     // Find the index of the last dot in the file name
     const lastDotIndex = file_name.lastIndexOf('.');
 

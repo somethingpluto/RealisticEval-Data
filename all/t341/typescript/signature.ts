@@ -5,5 +5,5 @@
  * @returns The time in milliseconds.
  * @throws Error if the input string does not match the expected format.
  */
-const convertTimeHmsStringToMs = (str: string): number => {
+function convertTimeHmsStringToMs(str: string): number {
 }

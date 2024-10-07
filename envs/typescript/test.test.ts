@@ -1,39 +1,55 @@
-export function compressFileName(fileName: string, maxLength: number = 18): string {
-    if (fileName.length <= maxLength) return fileName;
+/**
+ * Compresses the filename before the extension, truncating it to a maximum length,
+ * and replacing the excess with '***' if it exceeds the specified maximum length.
+ *
+ * @param {string} filename - The full filename with or without an extension.
+ * @param {number} maxLength - The maximum allowed length of the filename before the extension.
+ * @returns {string} The compressed filename with its extension preserved.
+ *
+ * @example
+ * // returns "shortName.txt"
+ * compressFilename("shortName.txt", 10);
+ *
+ * @example
+ * // returns "longNa***.txt"
+ * compressFilename("longNameFile.txt", 6);
+ */
+function compressFilename(filename: string, maxLength: number): string {
+    // Extract the file extension
+    const extensionMatch = filename.match(/\.[^\.]+$/);
+    const extension = extensionMatch ? extensionMatch[0] : '';
 
-    const extension = fileName.split('.').pop();
-    const baseName = fileName.substring(0, fileName.length - extension.length - 1);
-    const ellipsis = '...';
-    const allowedLength = maxLength - ellipsis.length - extension.length - 1;
+    // Remove the extension from the filename for manipulation
+    const basename = extension ? filename.slice(0, -extension.length) : filename;
 
-    const startLength = Math.ceil(allowedLength / 2);
-    const endLength = Math.floor(allowedLength / 2);
+    // Compress the basename if it's longer than maxLength
+    const compressedBasename = basename.length > maxLength ?
+        basename.slice(0, maxLength - 3) + '***' : basename;
 
-    return `${baseName.slice(0, startLength)}${ellipsis}${baseName.slice(-endLength)}.${extension}`;
+    // Reattach the extension and return
+    return compressedBasename + extension;
 }
-describe('compressFileName', () => {
-    test('returns the original file name if within maxLength', () => {
-        // @ts-ignore
-        expect(compressFileName('example.txt', 12)).toBe('example.txt');
+describe('compressFilename', () => {
+    test('should return the filename unchanged if under max length', () => {
+        expect(compressFilename('file.txt', 10)).toBe('file.txt');
     });
 
-    test('compresses the file name correctly when it exceeds maxLength', () => {
-        // @ts-ignore
-        expect(compressFileName('longfilenameexample.txt', 18)).toBe('longf...xample.txt');
+    test('should truncate and append *** if filename exceeds max length', () => {
+        expect(compressFilename('verylongfilename.txt', 10)).toBe('verylon***.txt');
     });
 
-    test('handles file names without extension correctly', () => {
-        // @ts-ignore
-        expect(compressFileName('averylongfilenamewithoutanextension', 20)).toBe('averylon...extension');
+
+    test('should preserve file extension after compression', () => {
+        expect(compressFilename('docum***.pdf', 5)).toBe('docu***.pdf');
+    });
+    
+
+    test('should return the original filename if max length is exactly the filename length', () => {
+        expect(compressFilename('short.mp3', 9)).toBe('short.mp3');
     });
 
-    test('returns the original file name when maxLength is larger than file name', () => {
-        // @ts-ignore
-        expect(compressFileName('short.txt', 20)).toBe('short.txt');
-    });
-
-    test('compresses file names with special characters correctly', () => {
-        // @ts-ignore
-        expect(compressFileName('my$pecialfilename.txt', 18)).toBe('my$pe...lename.txt');
+    test('should handle empty filenames and very short max lengths', () => {
+        expect(compressFilename('', 3)).toBe('');
+        expect(compressFilename('short.mp3', 3)).toBe('s***.mp3');
     });
 });

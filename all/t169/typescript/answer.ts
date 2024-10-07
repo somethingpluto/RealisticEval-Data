@@ -5,7 +5,7 @@
  * @returns {string} The Roman numeral representation of the input number.
  * @throws Will throw an error if the input is not a positive integer.
  */
-export function convertToRoman(num: number): string {
+function convertToRoman(num: number): string {
     if (!Number.isInteger(num) || num <= 0) {
         throw new Error('Input must be a positive integer');
     }

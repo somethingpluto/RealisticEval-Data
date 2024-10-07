@@ -1,4 +1,4 @@
-export function rgbToHsl({ r, g, b }: { r: number; g: number; b: number }): { h: number; s: number; l: number } {
+function rgbToHsl({ r, g, b }: { r: number; g: number; b: number }): { h: number; s: number; l: number } {
     if (r < 0 || r > 255 || g < 0 || g > 255 || b < 0 || b > 255) {
         throw new Error('Invalid RGB value. Each value must be between 0 and 255.');
     }

@@ -1,32 +1,24 @@
 /**
- * Compresses long filenames to the specified maximum length by inserting an ellipsis in the middle while preserving the filename extension, which defaults to 18 characters
+ * Compresses the filename before the extension, truncating it to a maximum length,
+ * and replacing the excess with '***' if it exceeds the specified maximum length.
  *
- * @param {string} fileName - The original file name to be compressed.
- * @param {number} maxLength - The maximum allowed length for the compressed file name. Defaults to 18.
- * @returns {string} The compressed file name, with the middle section replaced by ellipses ('...'), or the original file name if it is within the maximum length.
+ * @param {string} filename - The full filename with or without an extension.
+ * @param {number} maxLength - The maximum allowed length of the filename before the extension.
+ * @returns {string} The compressed filename with its extension preserved.
+ *
  */
-export function compressFileName(
-  fileName: string,
-  maxLength: number = 18
-): string {
-  if (fileName.length <= maxLength) {
-    return fileName.trim();
-  }
+function compressFilename(filename: string, maxLength: number): string {
+    // Extract the file extension
+    const extensionMatch = filename.match(/\.[^\.]+$/);
+    const extension = extensionMatch ? extensionMatch[0] : '';
 
-  let extensionIndex = fileName.lastIndexOf('.');
-  if (extensionIndex==-1) extensionIndex = fileName.length;
-  const fileNameWithoutExtension = fileName.substring(0, extensionIndex);
-  const fileExtension = fileName.substring(extensionIndex);
+    // Remove the extension from the filename for manipulation
+    const basename = extension ? filename.slice(0, -extension.length) : filename;
 
-  const availableLength = maxLength - fileExtension.length - 3;
-  const startLength = Math.floor(availableLength / 2);
-  const endLength = availableLength - startLength;
+    // Compress the basename if it's longer than maxLength
+    const compressedBasename = basename.length > maxLength ?
+        basename.slice(0, maxLength - 3) + '***' : basename;
 
-  const compressedFileName =
-    fileNameWithoutExtension.substring(0, startLength) +
-    '...' +
-    fileNameWithoutExtension.substring(fileNameWithoutExtension.length - endLength) +
-    fileExtension;
-
-  return compressedFileName;
+    // Reattach the extension and return
+    return compressedBasename + extension;
 }

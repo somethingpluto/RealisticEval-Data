@@ -14,6 +14,6 @@
  * @returns {number} s - The saturation value (0-100).
  * @returns {number} l - The lightness value (0-100).
  */
-export function rgbToHsl({ r, g, b }: { r: number; g: number; b: number }): { h: number; s: number; l: number } {
+function rgbToHsl({r, g, b}: { r: number; g: number; b: number }): { h: number; s: number; l: number } {
 
 }

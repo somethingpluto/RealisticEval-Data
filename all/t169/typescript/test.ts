@@ -15,4 +15,13 @@ describe('convertToRoman', () => {
         expect(result).toBe('MMMCMXCIX'); // 3999 = MMM + CM + XC + IX
     });
 
+    test('should return the correct Roman numeral for a number with different numeral repeats', () => {
+        const result = convertToRoman(1666);
+        expect(result).toBe('MDCLXVI'); // 1666 = M + D + CLX + VI
+    });
+
+    test('should return the correct Roman numeral for number with no 5s and 1s', () => {
+        const result = convertToRoman(2000);
+        expect(result).toBe('MM'); // 2000 = MM
+    });
 });

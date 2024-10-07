@@ -1,5 +1,5 @@
 function calculateGoodFriday(year: number): Date {
-    // Gauss's Algorithm to determine the date of Easter Sunday
+    // Anonymous Gregorian algorithm to compute the date of Easter Sunday
     const a = year % 19;
     const b = Math.floor(year / 100);
     const c = year % 100;
@@ -15,12 +15,11 @@ function calculateGoodFriday(year: number): Date {
     const month = Math.floor((h + l - 7 * m + 114) / 31);
     const day = ((h + l - 7 * m + 114) % 31) + 1;
 
-    // Easter Sunday Date
-    const easterSunday = new Date(year, month - 1, day);
+    const easter = new Date(year, month - 1, day);
 
-    // Good Friday is 2 days before Easter Sunday
-    const goodFriday = new Date(easterSunday.getTime());
-    goodFriday.setDate(goodFriday.getDate() - 2);
+    // Good Friday is two days before Easter Sunday
+    const goodFriday = new Date(easter.getTime());
+    goodFriday.setDate(easter.getDate() - 2);
 
     return goodFriday;
 }

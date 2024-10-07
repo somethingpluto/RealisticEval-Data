@@ -29,12 +29,12 @@ function parseMarkdownTitles(markdown) {
             // Extract the title after the header and push it to level1 array.
             result.level1.push(line.slice(2)); // Remove the '# ' prefix.
 
-        // Check if the line starts with a level 2 markdown header (##).
+            // Check if the line starts with a level 2 markdown header (##).
         } else if (line.startsWith('## ')) {
             // Extract the title after the header and push it to level2 array.
             result.level2.push(line.slice(3)); // Remove the '## ' prefix.
 
-        // Check if the line starts with a level 3 markdown header (###).
+            // Check if the line starts with a level 3 markdown header (###).
         } else if (line.startsWith('### ')) {
             // Extract the title after the header and push it to level3 array.
             result.level3.push(line.slice(4)); // Remove the '### ' prefix.
