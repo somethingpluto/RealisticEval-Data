@@ -1,6 +1,10 @@
+import json
 import os
 import re
 import subprocess
+
+import pandas as pd
+from tqdm import tqdm
 
 JAVA_RUN_ENV = "../envs/java/src"
 
@@ -20,6 +24,43 @@ class JavaExecutor:
             test_file.write(test_code)
             test_file.flush()
         self._execute()
+
+    def batch_run(self, file_path):
+        data_list = []
+        with open(file_path, "r", encoding="utf8") as file:
+            result_list = json.load(file)
+        for item in tqdm(result_list):
+            try:
+                print(item["task_id"])
+                test_code = item['test_code']
+                addition_info = item["addition_info"]
+                answer_list = item["answer_list"]
+                for index, answer in enumerate(answer_list):
+                    code = answer['code']
+                    if code == None or code == "":
+                        continue
+                    with open(f"{JAVA_RUN_ENV}/main/java/org/real/temp/Answer.java", "w", encoding="utf8") as code_file:
+                        code_file.write(code)
+                        code_file.flush()
+                    # 向Test.java文件写入写入
+                    with open(f"{JAVA_RUN_ENV}/test/java/org/real/temp/Tester.java", "w", encoding="utf8") as test_file:
+                        test_file.write(test_code)
+                        test_file.flush()
+                    stdout, stderr, returncode = self._execute()
+                    item["result_return_code"] = returncode
+                    item["stderr"] = stderr
+                    item["stdout"] = stdout
+                    with open(f"{JAVA_RUN_ENV}/main/java/org/real/temp/Answer.java", "r", encoding="utf8") as code_file:
+                        item["Answer"] = code_file.read()
+                    with open(f"{JAVA_RUN_ENV}/test/java/org/real/temp/Tester.java", "r", encoding="utf8") as test_file:
+                        item["Tester"] = test_file.read()
+                    data_list.append(item)
+            except Exception as e:
+                print(e)
+                continue
+        data = pd.DataFrame(data_list)
+        data.to_excel(f"../analysis/model_answer_result/{self.model_name}/{self.model_name}_java.xlsx",
+                      engine='xlsxwriter')
 
     def _execute(self):
         command = self._generate_command()

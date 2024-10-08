@@ -1,94 +1,75 @@
 package org.real.temp;
 
-import org.junit.jupiter.api.BeforeEach;
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.real.temp.Answer;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-
-import static org.junit.jupiter.api.Assertions.*;
+import java.util.List;
 
 public class Tester {
 
-    private Path testFilePath;
-
-    @BeforeEach
-    public void setUp() throws IOException {
-        // Create a temporary file for testing
-        testFilePath = Paths.get("testFile.txt");
-        Files.write(testFilePath, "This is a test file with oldText.".getBytes());
-    }
-
+    // Test case 1: Basic find and replace
     @Test
-    public void testFindAndReplace_SingleOccurrence() throws IOException {
-        // Arrange
-        String searchString = "oldText";
-        String replaceString = "newText";
+    public void testFindAndReplaceBasic(@TempDir Path tempDir) throws IOException {
+        Path filePath = tempDir.resolve("testfile.txt");
+        Files.write(filePath, List.of("Hello World", "Goodbye World"));
 
-        // Act
-        Answer.findAndReplaceInFile(testFilePath, searchString, replaceString);
+        Answer.findAndReplaceInFile(filePath, "World", "Java");
 
-        // Assert
-        String content = new String(Files.readAllBytes(testFilePath));
-        assertEquals("This is a test file with newText.", content);
+        List<String> result = Files.readAllLines(filePath);
+        assertEquals(List.of("Hello Java", "Goodbye Java"), result);
     }
 
+    // Test case 2: No occurrences of the search string
     @Test
-    public void testFindAndReplace_MultipleOccurrences() throws IOException {
-        // Arrange
-        Files.write(testFilePath, "oldText oldText oldText".getBytes()); // Setting up multiple occurrences
-        String searchString = "oldText";
-        String replaceString = "newText";
+    public void testFindAndReplaceNoOccurrences(@TempDir Path tempDir) throws IOException {
+        Path filePath = tempDir.resolve("testfile.txt");
+        Files.write(filePath, List.of("Hello World", "Goodbye World"));
 
-        // Act
-        Answer.findAndReplaceInFile(testFilePath, searchString, replaceString);
+        Answer.findAndReplaceInFile(filePath, "Python", "Java");
 
-        // Assert
-        String content = new String(Files.readAllBytes(testFilePath));
-        assertEquals("newText newText newText", content);
+        List<String> result = Files.readAllLines(filePath);
+        assertEquals(List.of("Hello World", "Goodbye World"), result);
     }
 
+    // Test case 3: Multiple occurrences in a single line
     @Test
-    public void testFindAndReplace_NoOccurrences() throws IOException {
-        // Arrange
-        String searchString = "nonExistentText";
-        String replaceString = "newText";
+    public void testFindAndReplaceMultipleOccurrences(@TempDir Path tempDir) throws IOException {
+        Path filePath = tempDir.resolve("testfile.txt");
+        Files.write(filePath, List.of("Hello World World", "Goodbye World"));
 
-        // Act
-        Answer.findAndReplaceInFile(testFilePath, searchString, replaceString);
+        Answer.findAndReplaceInFile(filePath, "World", "Java");
 
-        // Assert
-        String content = new String(Files.readAllBytes(testFilePath));
-        assertEquals("This is a test file with oldText.", content); // Content should remain unchanged
+        List<String> result = Files.readAllLines(filePath);
+        assertEquals(List.of("Hello Java Java", "Goodbye Java"), result);
     }
 
-
+    // Test case 4: Replace with an empty string
     @Test
-    public void testFindAndReplace_EmptyReplaceString() throws IOException {
-        // Arrange
-        String searchString = "oldText";
-        String replaceString = "";
+    public void testFindAndReplaceWithEmptyString(@TempDir Path tempDir) throws IOException {
+        Path filePath = tempDir.resolve("testfile.txt");
+        Files.write(filePath, List.of("Hello World", "Goodbye World"));
 
-        // Act
-        Answer.findAndReplaceInFile(testFilePath, searchString, replaceString);
+        Answer.findAndReplaceInFile(filePath, "World", "");
 
-        // Assert
-        String content = new String(Files.readAllBytes(testFilePath));
-        assertEquals("This is a test file with .", content); // Should remove "oldText"
+        List<String> result = Files.readAllLines(filePath);
+        assertEquals(List.of("Hello ", "Goodbye "), result);
     }
 
+    // Test case 5: Empty file
     @Test
-    public void testFindAndReplace_FileNotFound() {
-        // Arrange
-        Path nonExistentPath = Paths.get("nonExistentFile.txt");
-        String searchString = "oldText";
-        String replaceString = "newText";
+    public void testFindAndReplaceEmptyFile(@TempDir Path tempDir) throws IOException {
+        Path filePath = tempDir.resolve("testfile.txt");
+        Files.write(filePath, List.of(""));
 
-        // Act & Assert
-        assertThrows(IOException.class, () -> {
-            Answer.findAndReplaceInFile(nonExistentPath, searchString, replaceString);
-        });
+        Answer.findAndReplaceInFile(filePath, "World", "Java");
+
+        List<String> result = Files.readAllLines(filePath);
+        assertEquals(List.of(""), result);
     }
+
 }

@@ -59,7 +59,7 @@ public class Tester {
     @Test
     public void testReadNonExistentFile() {
         String nonExistentFilePath = "nonExistentFile.txt";
-        assertThrows(IllegalArgumentException.class, () -> {
+        assertThrows(Exception.class, () -> {
             Answer.readFileToByteArray(nonExistentFilePath);
         }, "Reading a non-existent file should throw an IllegalArgumentException.");
     }

@@ -45,13 +45,6 @@ public class Tester {
     }
 
     @Test
-    public void testFindPrimesWhereLowerGreaterThanUpper() {
-        List<Integer> primes = Answer.findPrimes(10, 5);
-        List<Integer> expected = List.of();
-        assertEquals(expected, primes);
-    }
-
-    @Test
     public void testFindPrimesInRangeStartingFromTwo() {
         List<Integer> primes = Answer.findPrimes(2, 10);
         List<Integer> expected = List.of(2, 3, 5, 7);

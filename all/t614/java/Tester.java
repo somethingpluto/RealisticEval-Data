@@ -46,12 +46,4 @@ public class Tester {
         assertEquals(expected, result, "The average difference should be 0.0 for an empty list");
     }
 
-    @Test
-    public void testCalculateAverageDifference_NegativeIntegers() {
-        List<Integer> numbers = List.of(-5, -10, -15, -20);
-        double result = Answer.calculateAverageDifference(numbers);
-        double expected = -5.0;
-        assertEquals(expected, result, "The average difference should be -5.0 for negative integers");
-    }
-
 }

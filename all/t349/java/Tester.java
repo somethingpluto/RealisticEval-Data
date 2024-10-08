@@ -11,7 +11,7 @@ import java.util.List;
 public class Tester {
     @Test
     public void testEmptyInput() {
-        Answer<String> generator = new Answer<>();
+        Answer generator = new Answer();
         List<List<String>> input = new ArrayList<>();
         List<List<String>> expected = new ArrayList<>();
         assertEquals(expected, generator.generateCombinations(input), "Testing with empty input");
@@ -19,7 +19,7 @@ public class Tester {
 
     @Test
     public void testSingleEmptyList() {
-        Answer<String> generator = new Answer<>();
+        Answer generator = new Answer();
         List<List<String>> input = Arrays.asList(new ArrayList<>());
         List<List<String>> expected = new ArrayList<>();
         assertEquals(expected, generator.generateCombinations(input), "Testing with a single empty list");
@@ -27,7 +27,7 @@ public class Tester {
 
     @Test
     public void testSingleNonEmptyList() {
-        Answer<String> generator = new Answer<>();
+        Answer generator = new Answer();
         List<List<String>> input = Arrays.asList(Arrays.asList("a", "b", "c"));
         List<List<String>> expected = Arrays.asList(
                 Arrays.asList("a"), Arrays.asList("b"), Arrays.asList("c")
@@ -37,7 +37,7 @@ public class Tester {
 
     @Test
     public void testMultipleLists() {
-        Answer<String> generator = new Answer<>();
+        Answer generator = new Answer();
         List<List<String>> input = Arrays.asList(
                 Arrays.asList("a", "b"),
                 Arrays.asList("1", "2")
@@ -51,7 +51,7 @@ public class Tester {
 
     @Test
     public void testInputContainingEmptyList() {
-        Answer<String> generator = new Answer<>();
+        Answer generator = new Answer();
         List<List<String>> input = Arrays.asList(
                 Arrays.asList("a", "b"),
                 new ArrayList<>(),

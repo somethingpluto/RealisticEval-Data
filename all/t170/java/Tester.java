@@ -7,38 +7,40 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.real.temp.*;
 
 public class Tester {
+
     @Test
-    public void testSimpleParagraph() {
-        String html = "<p>This is a test.</p>";
-        String expected = "This is a test.\n\n";
-        assertEquals(expected, Answer.convert(html));
+    public void testSimpleLineBreak() {
+        String input = "Hello<br>World";
+        String expectedOutput = "Hello\nWorld";
+        assertEquals(expectedOutput, Answer.convert(input));
+    }
+
+
+    @Test
+    public void testStrongTags() {
+        String input = "This is <strong>important</strong> text.";
+        String expectedOutput = "This is **important** text.";
+        assertEquals(expectedOutput, Answer.convert(input));
     }
 
     @Test
-    public void testComplexNestedTags() {
-        String html = "<p>This is <strong>bold and <em>italic</em></strong> text.</p>";
-        String expected = "This is **bold and *italic*** text.\n\n";
-        assertEquals(expected, Answer.convert(html));
+    public void testEmphasisTags() {
+        String input = "This is <em>emphasized</em> text.";
+        String expectedOutput = "This is *emphasized* text.";
+        assertEquals(expectedOutput, Answer.convert(input));
     }
 
     @Test
-    public void testLinks() {
-        String html = "<p>Check out this <a href='http://example.com'>link</a>.</p>";
-        String expected = "Check out this <a href='http://example.com'>link</a>.\n\n";
-        assertEquals(expected, Answer.convert(html));
+    public void testUnorderedList() {
+        String input = "<ul><li>Item 1</li><li>Item 2</li></ul>";
+        String expectedOutput = "* Item 1\n* Item 2";
+        assertEquals(expectedOutput, Answer.convert(input));
     }
 
     @Test
-    public void testListItems() {
-        String html = "<ul><li>Item 1</li><li>Item 2</li></ul>";
-        String expected = "* Item 1\n* Item 2\n";
-        assertEquals(expected, Answer.convert(html));
-    }
-
-    @Test
-    public void testEmptyString() {
-        String html = "";
-        String expected = "";
-        assertEquals(expected, Answer.convert(html));
+    public void testAnchorTags() {
+        String input = "Check this link: <a href=\"http://example.com\">Example</a>.";
+        String expectedOutput = "Check this link: [Example](http://example.com).";
+        assertEquals(expectedOutput, Answer.convert(input));
     }
 }

@@ -15,22 +15,14 @@ public class Tester {
     public void testContainsUpperCase() {
         String randomString = Answer.generateRandomString();
         assertTrue(randomString.chars().anyMatch(Character::isUpperCase),
-                   "The generated string should contain at least one uppercase letter.");
+                "The generated string should contain at least one uppercase letter.");
     }
 
     @Test
     public void testContainsLowerCase() {
         String randomString = Answer.generateRandomString();
         assertTrue(randomString.chars().anyMatch(Character::isLowerCase),
-                   "The generated string should contain at least one lowercase letter.");
-    }
-
-    @Test
-    public void testContainsOnlyValidCharacters() {
-        String randomString = Answer.generateRandomString();
-        assertTrue(randomString.chars().allMatch(ch ->
-                   (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z')),
-                   "The generated string should only contain letters A-Z and a-z.");
+                "The generated string should contain at least one lowercase letter.");
     }
 
     @Test

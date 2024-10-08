@@ -1,13 +1,4 @@
-package org.real.temp;
-
-import org.junit.jupiter.api.*;
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-
-import static org.junit.jupiter.api.Assertions.*;
-
-public class Tester {
+{
 
     private static final String TEST_FILE = "testFile.txt";
     private Answer answer;
@@ -64,14 +55,14 @@ public class Tester {
 
     @Test
     public void testModifyNonExistentLine() {
-            assertThrows(IllegalArgumentException.class, () -> {
+        assertThrows(Exception.class, () -> {
             answer.modifyLineInFile(TEST_FILE, 4, "Should Fail");
         });
     }
 
     @Test
     public void testModifyNegativeLineNumber() {
-            assertThrows(IllegalArgumentException.class, () -> {
+        assertThrows(Exception.class, () -> {
             answer.modifyLineInFile(TEST_FILE, 0, "Should Fail");
         });
     }

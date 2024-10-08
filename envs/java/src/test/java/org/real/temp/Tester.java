@@ -1,58 +1,112 @@
 package org.real.temp;
 
-import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class Tester {
 
+
     @Test
-    public void testLength() {
-        String randomString = Answer.generateRandomString();
-        assertEquals(25, randomString.length(), "The generated string length should be 25.");
+    public void testSingleEmptyList() {
+        Answer answer = new Answer();
+        List<List<String>> inputLists = Arrays.asList(new ArrayList<>());
+        List<List<String>> expected = new ArrayList<>();
+        List<List<String>> result = answer.generateCombinations(inputLists);
+        assertEquals(expected, result);
     }
 
     @Test
-    public void testContainsUpperCase() {
-        String randomString = Answer.generateRandomString();
-        assertTrue(randomString.chars().anyMatch(Character::isUpperCase),
-                   "The generated string should contain at least one uppercase letter.");
+    public void testSingleItemLists() {
+        Answer answer = new Answer();
+        List<List<String>> inputLists = Arrays.asList(
+                Arrays.asList("A"),
+                Arrays.asList("B"),
+                Arrays.asList("C")
+        );
+        List<List<String>> expected = Arrays.asList(
+                Arrays.asList("A", "B", "C")
+        );
+        List<List<String>> result = answer.generateCombinations(inputLists);
+        assertEquals(expected, result);
     }
 
     @Test
-    public void testContainsLowerCase() {
-        String randomString = Answer.generateRandomString();
-        assertTrue(randomString.chars().anyMatch(Character::isLowerCase),
-                   "The generated string should contain at least one lowercase letter.");
+    public void testMultipleItemsInSingleList() {
+        Answer answer = new Answer();
+        List<List<String>> inputLists = Arrays.asList(
+                Arrays.asList("A", "B"),
+                Arrays.asList("1", "2")
+        );
+        List<List<String>> expected = Arrays.asList(
+                Arrays.asList("A", "1"),
+                Arrays.asList("A", "2"),
+                Arrays.asList("B", "1"),
+                Arrays.asList("B", "2")
+        );
+        List<List<String>> result = answer.generateCombinations(inputLists);
+        assertEquals(expected, result);
     }
 
     @Test
-    public void testContainsOnlyValidCharacters() {
-        String randomString = Answer.generateRandomString();
-        assertTrue(randomString.chars().allMatch(ch ->
-                   (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z')),
-                   "The generated string should only contain letters A-Z and a-z.");
+    public void testAllItemsDifferent() {
+        Answer answer = new Answer();
+        List<List<String>> inputLists = Arrays.asList(
+                Arrays.asList("A", "B"),
+                Arrays.asList("1", "2"),
+                Arrays.asList("X", "Y")
+        );
+        List<List<String>> expected = Arrays.asList(
+                Arrays.asList("A", "1", "X"),
+                Arrays.asList("A", "1", "Y"),
+                Arrays.asList("A", "2", "X"),
+                Arrays.asList("A", "2", "Y"),
+                Arrays.asList("B", "1", "X"),
+                Arrays.asList("B", "1", "Y"),
+                Arrays.asList("B", "2", "X"),
+                Arrays.asList("B", "2", "Y")
+        );
+        List<List<String>> result = answer.generateCombinations(inputLists);
+        assertEquals(expected, result);
     }
 
     @Test
-    public void testRandomness() {
-        String string1 = Answer.generateRandomString();
-        String string2 = Answer.generateRandomString();
-        assertNotEquals(string1, string2, "Two generated strings should not be the same.");
+    public void testDifferentSizes() {
+        Answer answer = new Answer();
+        List<List<String>> inputLists = Arrays.asList(
+                Arrays.asList("A"),
+                Arrays.asList("1", "2"),
+                Arrays.asList("X", "Y", "Z")
+        );
+        List<List<String>> expected = Arrays.asList(
+                Arrays.asList("A", "1", "X"),
+                Arrays.asList("A", "1", "Y"),
+                Arrays.asList("A", "1", "Z"),
+                Arrays.asList("A", "2", "X"),
+                Arrays.asList("A", "2", "Y"),
+                Arrays.asList("A", "2", "Z")
+        );
+        List<List<String>> result = answer.generateCombinations(inputLists);
+        assertEquals(expected, result);
     }
 
     @Test
-    public void testMultipleGenerations() {
-        int numTests = 100;
-        boolean hasUpperCase = false;
-        boolean hasLowerCase = false;
-
-        for (int i = 0; i < numTests; i++) {
-            String randomString = Answer.generateRandomString();
-            hasUpperCase |= randomString.chars().anyMatch(Character::isUpperCase);
-            hasLowerCase |= randomString.chars().anyMatch(Character::isLowerCase);
-        }
-
-        assertTrue(hasUpperCase, "At least one generated string should contain an uppercase letter.");
-        assertTrue(hasLowerCase, "At least one generated string should contain a lowercase letter.");
+    public void testSingleItemInOneList() {
+        Answer answer = new Answer();
+        List<List<String>> inputLists = Arrays.asList(
+                Arrays.asList("A"),
+                Arrays.asList("B"),
+                Arrays.asList("C", "D")
+        );
+        List<List<String>> expected = Arrays.asList(
+                Arrays.asList("A", "B", "C"),
+                Arrays.asList("A", "B", "D")
+        );
+        List<List<String>> result = answer.generateCombinations(inputLists);
+        assertEquals(expected, result);
     }
 }

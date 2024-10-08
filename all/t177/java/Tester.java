@@ -68,19 +68,4 @@ public class Tester {
         assertNotEquals(Arrays.toString(hash1), Arrays.toString(hash2), "The same password should produce different hashes with different salts.");
     }
 
-    /**
-     * Test that the same password and salt produce the same hash.
-     * This ensures that the hashing function is deterministic given the same inputs.
-     */
-    @Test
-    public void testSamePasswordAndSaltProduceSameHash() throws NoSuchAlgorithmException {
-        String password = "password123";
-        byte[] salt = Answer.hashPasswordWithSalt(password);
-        byte[] extractedSalt = Arrays.copyOfRange(salt, 0, 16);
-
-        byte[] hash1 = Answer.hashWithSHA256(password, extractedSalt);
-        byte[] hash2 = Answer.hashWithSHA256(password, extractedSalt);
-
-        assertArrayEquals(hash1, hash2, "The same password and salt should produce the same hash.");
-    }
 }

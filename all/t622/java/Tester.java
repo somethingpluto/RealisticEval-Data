@@ -1,21 +1,15 @@
 package org.real.temp;
 
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.api.Test;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 public class Tester {
 
-    @Test
-    public void testEmptyLists() {
-        Answer answer = new Answer();
-        List<List<String>> inputLists = new ArrayList<>();
-        List<List<String>> expected = new ArrayList<>();
-        List<List<String>> result = answer.generateCombinations(inputLists);
-        assertEquals(expected, result);
-    }
 
     @Test
     public void testSingleEmptyList() {

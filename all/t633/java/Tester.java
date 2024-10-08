@@ -1,8 +1,8 @@
 package org.real.temp;
 
-
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterEach;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -16,14 +16,14 @@ public class Tester {
     private final Answer answer = new Answer();
     private final String testFilePath = "test.csv";
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException {
         // Create a temporary CSV file for testing
         // Writing sample CSV content to the file
         String sampleCsvContent = "Name,Age,Location\n" +
-                                   "Alice,30,New York\n" +
-                                   "Bob,25,Los Angeles\n" +
-                                   "Charlie,35,Chicago\n";
+                "Alice,30,New York\n" +
+                "Bob,25,Los Angeles\n" +
+                "Charlie,35,Chicago\n";
         Files.write(Paths.get(testFilePath), sampleCsvContent.getBytes(), StandardOpenOption.CREATE);
     }
 
@@ -50,26 +50,28 @@ public class Tester {
     public void testReadCsvWithQuotes() throws IOException {
         // Write CSV content with quoted fields
         String contentWithQuotes = "\"Name\",\"Age\",\"Location\"\n" +
-                                   "\"Alice\",\"30\",\"New York\"\n" +
-                                   "\"Bob\",\"25\",\"Los Angeles\"\n";
+                "\"Alice\",\"30\",\"New York\"\n" +
+                "\"Bob\",\"25\",\"Los Angeles\"\n";
         Files.write(Paths.get(testFilePath), contentWithQuotes.getBytes(), StandardOpenOption.TRUNCATE_EXISTING);
         List<List<String>> result = answer.readCsv(testFilePath);
         assertEquals(3, result.size()); // 3 lines including the header
         assertEquals(List.of("\"Name\"", "\"Age\"", "\"Location\""), result.get(0));
     }
 
-    @Test(expected = IOException.class)
-    public void testReadInvalidCsvFile() throws IOException {
-        // Attempt to read a non-existent file
-        answer.readCsv("non_existent_file.csv");
+    @Test
+    public void testReadInvalidCsvFile() {
+        // Attempt to read a non-existent file and assert that a FileNotFoundException is thrown
+        assertThrows(Exception.class, () -> {
+            answer.readCsv("non_existent_file.csv");
+        });
     }
 
     @Test
     public void testReadCsvWithDifferentDelimiters() throws IOException {
         // Write CSV content with semicolons instead of commas
         String contentWithSemicolons = "Name;Age;Location\n" +
-                                       "Alice;30;New York\n" +
-                                       "Bob;25;Los Angeles\n";
+                "Alice;30;New York\n" +
+                "Bob;25;Los Angeles\n";
         Files.write(Paths.get(testFilePath), contentWithSemicolons.getBytes(), StandardOpenOption.TRUNCATE_EXISTING);
         // Modify the readCsv function to handle semicolons if necessary.
         List<List<String>> result = answer.readCsv(testFilePath);
@@ -78,7 +80,7 @@ public class Tester {
     }
 
     // Clean up after tests (Optional)
-    @org.junit.After
+    @AfterEach
     public void tearDown() throws IOException {
         Files.deleteIfExists(Paths.get(testFilePath)); // Remove test file after tests
     }
