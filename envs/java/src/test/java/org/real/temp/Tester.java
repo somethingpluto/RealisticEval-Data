@@ -1,112 +1,87 @@
 package org.real.temp;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterEach;
 
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
+import static org.junit.jupiter.api.Assertions.*;
 public class Tester {
 
+    private final Answer answer = new Answer();
+    private final String testFilePath = "test.csv";
 
-    @Test
-    public void testSingleEmptyList() {
-        Answer answer = new Answer();
-        List<List<String>> inputLists = Arrays.asList(new ArrayList<>());
-        List<List<String>> expected = new ArrayList<>();
-        List<List<String>> result = answer.generateCombinations(inputLists);
-        assertEquals(expected, result);
+    @BeforeEach
+    public void setUp() throws IOException {
+        // Create a temporary CSV file for testing
+        // Writing sample CSV content to the file
+        String sampleCsvContent = "Name,Age,Location\n" +
+                "Alice,30,New York\n" +
+                "Bob,25,Los Angeles\n" +
+                "Charlie,35,Chicago\n";
+        Files.write(Paths.get(testFilePath), sampleCsvContent.getBytes(), StandardOpenOption.CREATE);
     }
 
     @Test
-    public void testSingleItemLists() {
-        Answer answer = new Answer();
-        List<List<String>> inputLists = Arrays.asList(
-                Arrays.asList("A"),
-                Arrays.asList("B"),
-                Arrays.asList("C")
-        );
-        List<List<String>> expected = Arrays.asList(
-                Arrays.asList("A", "B", "C")
-        );
-        List<List<String>> result = answer.generateCombinations(inputLists);
-        assertEquals(expected, result);
+    public void testReadValidCsv() throws IOException {
+        List<List<String>> result = answer.readCsv(testFilePath);
+        assertEquals(4, result.size()); // 4 lines including the header
+        assertEquals(List.of("Name", "Age", "Location"), result.get(0)); // Check header
+        assertEquals(List.of("Alice", "30", "New York"), result.get(1));
+        assertEquals(List.of("Bob", "25", "Los Angeles"), result.get(2));
+        assertEquals(List.of("Charlie", "35", "Chicago"), result.get(3));
     }
 
     @Test
-    public void testMultipleItemsInSingleList() {
-        Answer answer = new Answer();
-        List<List<String>> inputLists = Arrays.asList(
-                Arrays.asList("A", "B"),
-                Arrays.asList("1", "2")
-        );
-        List<List<String>> expected = Arrays.asList(
-                Arrays.asList("A", "1"),
-                Arrays.asList("A", "2"),
-                Arrays.asList("B", "1"),
-                Arrays.asList("B", "2")
-        );
-        List<List<String>> result = answer.generateCombinations(inputLists);
-        assertEquals(expected, result);
+    public void testReadEmptyCsv() throws IOException {
+        // Create an empty CSV file
+        Files.write(Paths.get(testFilePath), "".getBytes(), StandardOpenOption.TRUNCATE_EXISTING);
+        List<List<String>> result = answer.readCsv(testFilePath);
+        assertTrue(result.isEmpty()); // Expecting an empty list
+    }
+
+
+    @Test
+    public void testReadCsvWithQuotes() throws IOException {
+        // Write CSV content with quoted fields
+        String contentWithQuotes = "\"Name\",\"Age\",\"Location\"\n" +
+                "\"Alice\",\"30\",\"New York\"\n" +
+                "\"Bob\",\"25\",\"Los Angeles\"\n";
+        Files.write(Paths.get(testFilePath), contentWithQuotes.getBytes(), StandardOpenOption.TRUNCATE_EXISTING);
+        List<List<String>> result = answer.readCsv(testFilePath);
+        assertEquals(3, result.size()); // 3 lines including the header
+        assertEquals(List.of("\"Name\"", "\"Age\"", "\"Location\""), result.get(0));
     }
 
     @Test
-    public void testAllItemsDifferent() {
-        Answer answer = new Answer();
-        List<List<String>> inputLists = Arrays.asList(
-                Arrays.asList("A", "B"),
-                Arrays.asList("1", "2"),
-                Arrays.asList("X", "Y")
-        );
-        List<List<String>> expected = Arrays.asList(
-                Arrays.asList("A", "1", "X"),
-                Arrays.asList("A", "1", "Y"),
-                Arrays.asList("A", "2", "X"),
-                Arrays.asList("A", "2", "Y"),
-                Arrays.asList("B", "1", "X"),
-                Arrays.asList("B", "1", "Y"),
-                Arrays.asList("B", "2", "X"),
-                Arrays.asList("B", "2", "Y")
-        );
-        List<List<String>> result = answer.generateCombinations(inputLists);
-        assertEquals(expected, result);
+    public void testReadInvalidCsvFile() {
+        // Attempt to read a non-existent file and assert that a FileNotFoundException is thrown
+        assertThrows(Exception.class, () -> {
+            answer.readCsv("non_existent_file.csv");
+        });
     }
 
     @Test
-    public void testDifferentSizes() {
-        Answer answer = new Answer();
-        List<List<String>> inputLists = Arrays.asList(
-                Arrays.asList("A"),
-                Arrays.asList("1", "2"),
-                Arrays.asList("X", "Y", "Z")
-        );
-        List<List<String>> expected = Arrays.asList(
-                Arrays.asList("A", "1", "X"),
-                Arrays.asList("A", "1", "Y"),
-                Arrays.asList("A", "1", "Z"),
-                Arrays.asList("A", "2", "X"),
-                Arrays.asList("A", "2", "Y"),
-                Arrays.asList("A", "2", "Z")
-        );
-        List<List<String>> result = answer.generateCombinations(inputLists);
-        assertEquals(expected, result);
+    public void testReadCsvWithDifferentDelimiters() throws IOException {
+        // Write CSV content with semicolons instead of commas
+        String contentWithSemicolons = "Name;Age;Location\n" +
+                "Alice;30;New York\n" +
+                "Bob;25;Los Angeles\n";
+        Files.write(Paths.get(testFilePath), contentWithSemicolons.getBytes(), StandardOpenOption.TRUNCATE_EXISTING);
+        // Modify the readCsv function to handle semicolons if necessary.
+        List<List<String>> result = answer.readCsv(testFilePath);
+        assertEquals(3, result.size()); // Expecting 3 lines
+        assertEquals(List.of("Name;Age;Location"), result.get(0));
     }
 
-    @Test
-    public void testSingleItemInOneList() {
-        Answer answer = new Answer();
-        List<List<String>> inputLists = Arrays.asList(
-                Arrays.asList("A"),
-                Arrays.asList("B"),
-                Arrays.asList("C", "D")
-        );
-        List<List<String>> expected = Arrays.asList(
-                Arrays.asList("A", "B", "C"),
-                Arrays.asList("A", "B", "D")
-        );
-        List<List<String>> result = answer.generateCombinations(inputLists);
-        assertEquals(expected, result);
+    // Clean up after tests (Optional)
+    @AfterEach
+    public void tearDown() throws IOException {
+        Files.deleteIfExists(Paths.get(testFilePath)); // Remove test file after tests
     }
 }
