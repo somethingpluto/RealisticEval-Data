@@ -18,5 +18,4 @@
  *         found within the specified tolerance and iterations, the function
  *         returns the best approximation.
  */
-// Secant method to find the t value where Bézier curve reaches the target x value
 public static double findTForX(double targetX, double p0, double p1, double p2) {}

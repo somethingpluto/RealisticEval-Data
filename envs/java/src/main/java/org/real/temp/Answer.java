@@ -1,44 +1,53 @@
 package org.real.temp;
 
+import java.security.SecureRandom;
+
 public class Answer {
+    private static final String LOWER_CASE = "abcdefghijklmnopqrstuvwxyz";
+    private static final String UPPER_CASE = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    private static final int LENGTH = 25;
 
-    // Method to perform insertion sort
-    public static void insertionSort(double[] arr) {
-        int n = arr.length;
-        for (int i = 1; i < n; i++) {
-            // Current element to be inserted into sorted portion
-            double key = arr[i];
-            int j = i - 1;
+    /**
+     * Generates a random string of length 25 and must contain both upper case letters (A-Z) and lower case letters (a-z)
+     *
+     * @return random string
+     */
+    public static String generateRandomString() {
+        SecureRandom random = new SecureRandom();
+        StringBuilder sb = new StringBuilder(LENGTH);
 
-            // Move elements of arr[0..i-1] that are greater than key
-            // to one position ahead of their current position
-            while (j >= 0 && arr[j] > key) {
-                arr[j + 1] = arr[j];
-                j = j - 1;
-            }
-            arr[j + 1] = key;
+        // Ensure at least one upper case and one lower case letter
+        sb.append(LOWER_CASE.charAt(random.nextInt(LOWER_CASE.length())));
+        sb.append(UPPER_CASE.charAt(random.nextInt(UPPER_CASE.length())));
+
+        // Fill the rest of the string length with random characters
+        String allCharacters = LOWER_CASE + UPPER_CASE;
+        for (int i = 2; i < LENGTH; i++) {
+            int randomIndex = random.nextInt(allCharacters.length());
+            char randomChar = allCharacters.charAt(randomIndex);
+            sb.append(randomChar);
         }
+
+        // Shuffle the characters to ensure randomness
+        return shuffleString(sb.toString());
     }
 
-    // Method to display the array (optional for testing purposes)
-    public static void show(double[] arr) {
-        for (double element : arr) {
-            System.out.print(element + " ");
+    private static String shuffleString(String input) {
+        char[] characters = input.toCharArray();
+        SecureRandom random = new SecureRandom();
+        for (int i = characters.length - 1; i > 0; i--) {
+            int j = random.nextInt(i + 1);
+            // Swap characters
+            char temp = characters[i];
+            characters[i] = characters[j];
+            characters[j] = temp;
         }
-        System.out.println();
+        return new String(characters);
     }
 
-    // Main method to test the insertionSort function
     public static void main(String[] args) {
-        double[] arr = {12.4, 11.2, 13.5, 5.6, 6.7};
-
-        System.out.println("Original array:");
-        show(arr);
-
-        // Perform insertion sort
-        insertionSort(arr);
-
-        System.out.println("Sorted array:");
-        show(arr);
+        // Test the random string generator
+        String randomString = generateRandomString();
+        System.out.println("Generated Random String: " + randomString);
     }
 }

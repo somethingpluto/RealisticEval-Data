@@ -4,15 +4,4 @@
  * @return obj hashcode
  */
 @Override
-public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-
-    // Calculate hash code based on name
-    result = prime * result + (name == null ? 0 : name.hashCode());
-
-    // Calculate hash code based on age
-    result = prime * result + age;
-
-    return result;
-}
+public int hashCode() {}
