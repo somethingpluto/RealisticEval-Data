@@ -1,112 +1,74 @@
 package org.real.temp;
 
-import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 public class Tester {
 
+    private static final double DELTA = 1e-6;
+
     @Test
-    public void testZeroRotation() {
-        // Test when the original and target vectors are the same
-        Vec3 original = new Vec3(1, 0, 0);
-        Vec3 target = new Vec3(1, 0, 0);
-
-        double[][] result = Answer.calculateRotationMatrix(original, target);
-
-        // Expecting an identity matrix for no rotation
-        double[][] expected = {
-            {1, 0, 0},
-            {0, 1, 0},
-            {0, 0, 1}
-        };
-
-        assertArrayEquals(expected, result);
+    public void testRotation90DegreesXToY() {
+        double[] from = {1, 0, 0};
+        double[] to = {0, 1, 0};
+        double[][] expected = {{0, -1, 0}, {1, 0, 0}, {0, 0, 1}};
+        double[][] result = Answer.calculateRotationMatrix(from, to);
+        assertMatrixEquals(expected, result, DELTA);
     }
 
     @Test
-    public void test90DegreeRotation() {
-        // Test for a 90 degree rotation around the Z-axis (from X to Y)
-        Vec3 original = new Vec3(1, 0, 0);
-        Vec3 target = new Vec3(0, 1, 0);
-
-        double[][] result = Answer.calculateRotationMatrix(original, target);
-
-        // Expected 90-degree rotation matrix around the Z-axis
-        double[][] expected = {
-            {0, -1, 0},
-            {1, 0, 0},
-            {0, 0, 1}
-        };
-
-        assertArrayEquals(expected, result);
+    public void testRotation180DegreesXToMinusX() {
+        double[] from = {1, 0, 0};
+        double[] to = {-1, 0, 0};
+        double[][] expected = {{-1, 0, 0}, {0, -1, 0}, {0, 0, 1}};
+        double[][] result = Answer.calculateRotationMatrix(from, to);
+        assertMatrixEquals(expected, result, DELTA);
     }
 
     @Test
-    public void test180DegreeRotation() {
-        // Test for a 180 degree rotation (opposite direction)
-        Vec3 original = new Vec3(1, 0, 0);
-        Vec3 target = new Vec3(-1, 0, 0);
+    public void testNoRotation() {
+        double[] from = {1, 2, 3};
+        double[] to = {1, 2, 3};
+        double[][] expected = {{1, 0, 0}, {0, 1, 0}, {0, 0, 1}};
+        double[][] result = Answer.calculateRotationMatrix(from, to);
+        assertMatrixEquals(expected, result, DELTA);
+    }
 
-        double[][] result = Answer.calculateRotationMatrix(original, target);
+    @Test
+    public void testRotationNullVectors() {
+        double[] from = null;
+        double[] to = null;
+        assertThrows(NullPointerException.class, () -> Answer.calculateRotationMatrix(from, to));
+    }
 
-        // Expected 180-degree rotation matrix around the Z-axis
-        double[][] expected = {
-            {-1, 0, 0},
-            {0, -1, 0},
-            {0, 0, 1}
-        };
+    @Test
+    public void testRotationWithZeroVector() {
+        double[] from = {0, 0, 0};
+        double[] to = {1, 0, 0};
+        assertThrows(ArithmeticException.class, () -> Answer.calculateRotationMatrix(from, to));
+    }
 
-        assertArrayEquals(expected, result);
+    @Test
+    public void testRotationFromZToX() {
+        double[] from = {0, 0, 1};
+        double[] to = {1, 0, 0};
+        double[][] expected = {{0, -1, 0}, {1, 0, 0}, {0, 0, 1}};
+        double[][] result = Answer.calculateRotationMatrix(from, to);
+        assertMatrixEquals(expected, result, DELTA);
     }
 
     @Test
     public void testArbitraryRotation() {
-        // Test for an arbitrary rotation
-        Vec3 original = new Vec3(1, 0, 0);
-        Vec3 target = new Vec3(0, 0, 1);
-
-        double[][] result = Answer.calculateRotationMatrix(original, target);
-
-        // The expected rotation matrix should rotate from X-axis to Z-axis
-        double[][] expected = {
-            {0, 0, 1},
-            {0, 1, 0},
-            {-1, 0, 0}
-        };
-
-        assertArrayEquals(expected, result);
+        double[] from = {1, 0, 0};
+        double[] to = {0, 0, 1};
+        double[][] expected = {{0, 0, 1}, {0, 1, 0}, {-1, 0, 0}};
+        double[][] result = Answer.calculateRotationMatrix(from, to);
+        assertMatrixEquals(expected, result, DELTA);
     }
 
-    @Test
-    public void testNonOrthogonalRotation() {
-        // Test for a non-orthogonal vector rotation
-        Vec3 original = new Vec3(1, 1, 0);
-        Vec3 target = new Vec3(0, 1, 1);
-
-        double[][] result = Answer.calculateRotationMatrix(original, target);
-
-        // Since the vectors aren't aligned to a single axis, we won't use exact values.
-        // Instead, we verify the structure of the result matrix.
-        assertNotNull(result);
-        assertEquals(3, result.length);  // 3x3 matrix
-        assertEquals(3, result[0].length);
-    }
-
-    @Test
-    public void testDifferentLengthVectors() {
-        // Test when vectors have different lengths
-        Vec3 original = new Vec3(2, 0, 0);
-        Vec3 target = new Vec3(0, 3, 0);
-
-        double[][] result = Answer.calculateRotationMatrix(original, target);
-
-        // Expected 90-degree rotation matrix around the Z-axis
-        double[][] expected = {
-            {0, -1, 0},
-            {1, 0, 0},
-            {0, 0, 1}
-        };
-
-        assertArrayEquals(expected, result);
+    private void assertMatrixEquals(double[][] expected, double[][] actual, double delta) {
+        for (int i = 0; i < expected.length; i++) {
+            assertArrayEquals(expected[i], actual[i], delta, "Matrix rows do not match!");
+        }
     }
 }

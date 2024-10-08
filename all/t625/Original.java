@@ -1,12 +1,12 @@
-  /**
-   * Reads the description of the chaos game from a file.
-   * Some regex values is written by ChatGPT.
-   *
-   * @param path The path to the file containing the description.
-   * @return A list of strings containing the description of the chaos game.
-   */
+/**
+* Reads the description of the chaos game from a file.
+* Some regex values is written by ChatGPT.
+*
+* @param path The path to the file containing the description.
+* @return A list of strings containing the description of the chaos game.
+*/
 
-  public List<String> readFromFile(String path) {
+public List<String> readFromFile(String path) {
     Path filePath = Paths.get(path);
     try (BufferedReader reader = Files.newBufferedReader(filePath)) {
       String transform = reader.readLine().replaceAll("#.*", "")
@@ -22,4 +22,4 @@
       throw new IllegalArgumentException("Error reading file");
     }
     return Collections.emptyList(); //Returns empty list to avoid nullpointerexception
-  }
+}

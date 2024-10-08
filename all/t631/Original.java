@@ -1,5 +1,3 @@
-buildpackage org.example;
-
 import org.example.data.CustomerData;
 
 import java.io.IOException;

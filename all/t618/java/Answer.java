@@ -1,79 +1,103 @@
 package org.real.temp;
 
+import java.util.Arrays;
+
 public class Answer {
+    /**
+     * Calculates the rotation matrix required to rotate from vector "from" to vector "to".
+     * The method uses the Rodrigues' rotation formula for this purpose.
+     *
+     * @param from the starting vector, must be a non-zero vector.
+     * @param to the target vector, must be a non-zero vector.
+     * @return a 3x3 rotation matrix that when multiplied by "from" aligns it with "to".
+     */
+    public static double[][] calculateRotationMatrix(double[] from, double[] to) {
+        if (from.length != 3 || to.length != 3) {
+            throw new IllegalArgumentException("Both vectors must be three-dimensional.");
+        }
 
-    public static double[][] calculateRotationMatrix(Vec3 originalVector, Vec3 targetVector) {
-        // Step 1: Normalize the input vectors
-        Vec3 original = originalVector.normalize();
-        Vec3 target = targetVector.normalize();
+        // Normalize vectors to ensure calculations for unit vectors
+        double[] u = normalizeVector(from);
+        double[] v = normalizeVector(to);
 
-        // Step 2: Calculate the Axis of Rotation using the cross product
-        Vec3 axis = original.cross(target).normalize();
+        // Cross product u x v
+        double[] axis = crossProduct(u, v);
 
-        // Step 3: Calculate the Angle of Rotation
-        double angle = Math.acos(original.dot(target));
+        // Dot product u . v
+        double angle = Math.acos(dotProduct(u, v));
 
-        // Step 4: Construct the Rotation Matrix
-        return calculateRotationMatrix(axis, angle);
-    }
+        // Using Rodrigues' rotation formula
+        double[][] identityMatrix = {{1, 0, 0}, {0, 1, 0}, {0, 0, 1}};
+        double[][] kMatrix = new double[][]{
+            {0, -axis[2], axis[1]},
+            {axis[2], 0, -axis[0]},
+            {-axis[1], axis[0], 0}
+        };
+        double[][] kMatrixSquared = matrixMultiply(kMatrix, kMatrix);
 
-    private static double[][] calculateRotationMatrix(Vec3 axis, double angle) {
         double cosTheta = Math.cos(angle);
         double sinTheta = Math.sin(angle);
-        double oneMinusCos = 1 - cosTheta;
 
-        double x = axis.getX();
-        double y = axis.getY();
-        double z = axis.getZ();
+        return addMatrices(addMatrices(identityMatrix, scalarMultiply(kMatrix, sinTheta)),
+                           scalarMultiply(kMatrixSquared, 1 - cosTheta));
+    }
 
-        // Creating the rotation matrix using Rodrigues' rotation formula
-        return new double[][]{
-            {cosTheta + x * x * oneMinusCos, x * y * oneMinusCos - z * sinTheta, x * z * oneMinusCos + y * sinTheta},
-            {y * x * oneMinusCos + z * sinTheta, cosTheta + y * y * oneMinusCos, y * z * oneMinusCos - x * sinTheta},
-            {z * x * oneMinusCos - y * sinTheta, z * y * oneMinusCos + x * sinTheta, cosTheta + z * z * oneMinusCos}
+    private static double[] crossProduct(double[] a, double[] b) {
+        return new double[]{
+            a[1] * b[2] - a[2] * b[1],
+            a[2] * b[0] - a[0] * b[2],
+            a[0] * b[1] - a[1] * b[0]
         };
     }
-}
 
-class Vec3 {
-    private double x, y, z;
-
-    public Vec3(double x, double y, double z) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
+    private static double dotProduct(double[] a, double[] b) {
+        return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
     }
 
-    public double getX() {
-        return x;
+    private static double[][] addMatrices(double[][] a, double[][] b) {
+        double[][] result = new double[3][3];
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                result[i][j] = a[i][j] + b[i][j];
+            }
+        }
+        return result;
     }
 
-    public double getY() {
-        return y;
+    private static double[][] scalarMultiply(double[][] matrix, double scalar) {
+        double[][] result = new double[3][3];
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                result[i][j] = matrix[i][j] * scalar;
+            }
+        }
+        return result;
     }
 
-    public double getZ() {
-        return z;
+    private static double[] normalizeVector(double[] vector) {
+        double length = Math.sqrt(vector[0] * vector[0] + vector[1] * vector[1] + vector[2] * vector[2]);
+        return new double[]{vector[0] / length, vector[1] / length, vector[2] / length};
     }
 
-    public Vec3 normalize() {
-        double length = length();
-        return new Vec3(x / length, y / length, z / length);
+    private static double[][] matrixMultiply(double[][] a, double[][] b) {
+        double[][] result = new double[3][3];
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                for (int k = 0; k < 3; k++) {
+                    result[i][j] += a[i][k] * b[k][j];
+                }
+            }
+        }
+        return result;
     }
 
-    public double length() {
-        return Math.sqrt(x * x + y * y + z * z);
-    }
-
-    public double dot(Vec3 other) {
-        return this.x * other.x + this.y * other.y + this.z * other.z;
-    }
-
-    public Vec3 cross(Vec3 other) {
-        return new Vec3(
-            this.y * other.z - this.z * other.y,
-            this.z * other.x - this.x * other.z,
-            this.x * other.y - this.y * other.x
-        );
+    public static void main(String[] args) {
+        double[] from = {1, 0, 0};
+        double[] to = {0, 1, 0};
+        double[][] rotationMatrix = calculateRotationMatrix(from, to);
+        System.out.println("Rotation Matrix:");
+        for (double[] row : rotationMatrix) {
+            System.out.println(Arrays.toString(row));
+        }
     }
 }
