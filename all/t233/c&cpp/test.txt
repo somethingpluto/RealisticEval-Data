@@ -1,0 +1,73 @@
+To convert the given Python unittest test class to a C++ Catch2 test case, we first need to implement the `remove_comments` function in C++. Then, we can write the corresponding Catch2 test cases. Below is how you can do it:
+
+### Step 1: Implement the `remove_comments` Function in C++
+
+```cpp
+#include <string>
+#include <iostream>
+
+std::string remove_comments(const std::string& input) {
+    std::string result;
+    bool inside_comment = false;
+
+    for (char ch : input) {
+        if (ch == '#') {
+            inside_comment = true;
+        } else if (ch == '\n') {
+            inside_comment = false;
+        }
+
+        if (!inside_comment) {
+            result += ch;
+        }
+    }
+
+    return result;
+}
+```
+
+### Step 2: Write the Catch2 Test Cases
+
+First, make sure you have Catch2 installed. If not, you can download it from [Catch2's GitHub repository](https://github.com/catchorg/Catch2).
+
+Here is an example of how you can write the test cases using Catch2:
+
+```cpp
+#define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
+#include "catch.hpp"
+
+// Include the implementation of remove_comments
+#include "remove_comments.cpp"
+
+TEST_CASE("Remove comments from a string", "[remove_comments]") {
+    REQUIRE(remove_comments("Hello, world! # This is a comment") == "Hello, world!");
+    REQUIRE(remove_comments("# This is a comment\nHello, world!") == "\nHello, world!");
+    REQUIRE(remove_comments("No comments here!") == "No comments here!");
+    REQUIRE(remove_comments("Multiple #comments\n#on multiple lines") == "\n");
+    REQUIRE(remove_comments("Comments before newline #should stay") == "Comments before newline ");
+    REQUIRE(remove_comments("Comments after newline\n#should be removed") == "Comments after newline\n");
+}
+
+TEST_CASE("Edge cases", "[remove_comments]") {
+    REQUIRE(remove_comments("") == "");
+    REQUIRE(remove_comments("\n") == "\n");
+    REQUIRE(remove_comments("#") == "");
+    REQUIRE(remove_comments("##") == "#");
+    REQUIRE(remove_comments("a#b#c") == "ab#c");
+}
+```
+
+### Explanation
+
+- **`CATCH_CONFIG_MAIN`**: This macro tells Catch to provide a main() function. Only include this in one source file.
+- **`TEST_CASE`**: Defines a test case. The first argument is the name of the test case, and the second argument is a tag used to group related tests.
+- **`REQUIRE`**: Asserts that the condition is true. If the condition is false, the test will fail.
+
+Make sure to compile your C++ code with the Catch2 library. Here is an example command using g++:
+
+```sh
+g++ -std=c++14 -I/path/to/catch2/include -o test_remove_comments test_remove_comments.cpp remove_comments.cpp
+./test_remove_comments
+```
+
+Replace `/path/to/catch2/include` with the actual path where you have downloaded or cloned the Catch2 library.

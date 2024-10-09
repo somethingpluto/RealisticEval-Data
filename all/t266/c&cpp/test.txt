@@ -1,0 +1,92 @@
+Sure! Below is an example of how you can translate a Python unittest test class into a C++ Catch2 test case. The Python unittest test code provided does not include any actual tests, so I'll create some hypothetical tests for demonstration purposes.
+
+### Python Unittest Test Class
+```python
+import unittest
+from typing import Dict
+
+def handle_nested_data(data: Dict) -> Dict:
+    """
+    handle nested question structures (e.g., dictionaries, lists, and enumerations), decode bytes to UTF8-strings, and convert numbers to integers or floating point numbers
+    Args:
+        data (Dict): question object
+
+    Returns:
+        after converted question
+    """
+    # Hypothetical implementation
+    return {k: v.decode('utf-8') if isinstance(v, bytes) else v for k, v in data.items()}
+
+class TestHandleNestedData(unittest.TestCase):
+    def test_handle_nested_data(self):
+        input_data = {
+            'key1': b'value1',
+            'key2': 123,
+            'key3': [b'value2', b'value3'],
+            'key4': {'subkey1': b'value4'}
+        }
+        expected_output = {
+            'key1': 'value1',
+            'key2': 123,
+            'key3': ['value2', 'value3'],
+            'key4': {'subkey1': 'value4'}
+        }
+        self.assertEqual(handle_nested_data(input_data), expected_output)
+
+if __name__ == '__main__':
+    unittest.main()
+```
+
+### C++ Catch2 Test Case
+To translate the above Python unittest test class into a C++ Catch2 test case, you would write something like this:
+
+```cpp
+#include <catch2/catch.hpp>
+#include <string>
+#include <vector>
+#include <map>
+
+// Hypothetical implementation of handle_nested_data function
+std::map<std::string, std::any> handle_nested_data(const std::map<std::string, std::any>& data) {
+    std::map<std::string, std::any> result;
+    for (const auto& pair : data) {
+        if (pair.second.type() == typeid(std::string)) {
+            result[pair.first] = static_cast<std::string>(pair.second);
+        } else if (pair.second.type() == typeid(unsigned char*)) {
+            // Assuming unsigned char* represents a null-terminated C-style string
+            const char* cstr = *static_cast<unsigned char**>(pair.second.data());
+            result[pair.first] = std::string(cstr);
+        } else {
+            result[pair.first] = pair.second;
+        }
+    }
+    return result;
+}
+
+TEST_CASE("Test Handle Nested Data", "[handle_nested_data]") {
+    std::map<std::string, std::any> input_data = {
+        {"key1", "value1"},
+        {"key2", 123},
+        {"key3", std::vector<std::string>{"value2", "value3"}},
+        {"key4", std::map<std::string, std::string>{{"subkey1", "value4"}}}
+    };
+
+    std::map<std::string, std::any> expected_output = {
+        {"key1", "value1"},
+        {"key2", 123},
+        {"key3", std::vector<std::string>{"value2", "value3"}},
+        {"key4", std::map<std::string, std::string>{{"subkey1", "value4"}}}
+    };
+
+    std::map<std::string, std::any> output = handle_nested_data(input_data);
+
+    REQUIRE(output == expected_output);
+}
+```
+
+### Explanation:
+1. **Catch2 Setup**: The `#include <catch2/catch.hpp>` directive includes the Catch2 header file.
+2. **Function Implementation**: The `handle_nested_data` function is implemented similarly to the Python version, but it uses C++ types (`std::map`, `std::vector`, etc.) and handles different types appropriately.
+3. **Test Case**: The `TEST_CASE` macro defines a new test case named "Test Handle Nested Data". Inside the test case, we define the input data, expected output, and call the `handle_nested_data` function. We then use the `REQUIRE` macro to assert that the output matches the expected output.
+
+This should give you a good starting point for translating your Python unittest test class to a C++ Catch2 test case. Adjustments may be needed based on the specific details of your application.

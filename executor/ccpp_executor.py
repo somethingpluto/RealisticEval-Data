@@ -51,7 +51,7 @@ class CCPPExecutor:
                         file.write(test_code)
                         file.flush()
                     stdout, stderr, returncode = self._execute()
-
+                    os.remove(r"E:\code\code_back\python_project\RealisticEval-Data\envs\c&cpp\answer_check.exe")
                     item["result_return_code"] = returncode
                     item["stderr"] = stderr
                     item["stdout"] = stdout
@@ -100,7 +100,7 @@ class CCPPExecutor:
     def _generate_command(self):
         driver_flag = self._get_file_disk_flag()
         # TODO：替换为 本机中 /code/python_project/RealisticEval-Data/envs 文件中的路径 不必填写盘符
-        command = rf'{driver_flag} && cd /code/code_back/python_project/RealisticEval-Data/envs && cd "c&cpp" && g++ -std=c++17 answer_check.cpp -o answer_check && answer_check.exe'
+        command = rf'{driver_flag} && cd /code/code_back/python_project/RealisticEval-Data/envs && cd "c&cpp" && gcc answer_check.cpp -o answer_check && answer_check.exe'
         return command
 
 

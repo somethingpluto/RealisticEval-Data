@@ -1,0 +1,58 @@
+Sure! Below is the equivalent TypeScript code for your Python function `tsv_to_jsonl`. This TypeScript code uses the `fs` module for file operations and the `csv` module from Node.js for parsing TSV files.
+
+```typescript
+import * as fs from 'fs';
+import { parse } from 'csv';
+
+function tsvToJsonl(tsvFile: string, jsonlFile: string): void {
+    /**
+     * Convert tsv file to jsonl file
+     *
+     * @param tsvFile - Path to the TSV file
+     * @param jsonlFile - Path to the JSONL file
+     */
+    
+    const readStream = fs.createReadStream(tsvFile);
+    const writeStream = fs.createWriteStream(jsonlFile);
+
+    readStream.pipe(parse({ delimiter: '\t' }))
+        .on('data', (row) => {
+            const jsonString = JSON.stringify(row);
+            writeStream.write(`${jsonString}\n`);
+        })
+        .on('end', () => {
+            console.log(`Conversion complete. JSONL file saved at ${jsonlFile}`);
+            writeStream.end();
+        })
+        .on('error', (err) => {
+            console.error('Error during conversion:', err);
+            writeStream.destroy(err);
+        });
+}
+
+// Example usage:
+const tsvFilePath = 'path/to/your/input.tsv';
+const jsonlFilePath = 'path/to/your/output.jsonl';
+tsvToJsonl(tsvFilePath, jsonlFilePath);
+```
+
+### Explanation:
+1. **Imports**: The `fs` module is used for file system operations, and the `csv` module is used to parse CSV/TSV files.
+2. **Function Definition**: The `tsvToJsonl` function takes two parameters: `tsvFile` and `jsonlFile`, both of which are strings representing the paths to the input TSV file and the output JSONL file, respectively.
+3. **Reading and Writing Streams**: 
+   - A readable stream is created from the TSV file using `fs.createReadStream`.
+   - A writable stream is created for the JSONL file using `fs.createWriteStream`.
+4. **Parsing and Conversion**:
+   - The `parse` function from the `csv` module is used to parse the TSV data. The delimiter is set to `\t` (tab).
+   - For each row parsed, it is converted to a JSON string using `JSON.stringify` and written to the output JSONL file.
+5. **Event Handling**:
+   - The `end` event is triggered when all rows have been processed, indicating that the conversion is complete.
+   - The `error` event handles any errors that occur during the conversion process.
+
+Make sure you have the necessary dependencies installed. You can install them using npm:
+
+```sh
+npm install csv
+```
+
+This TypeScript code should work similarly to your original Python function, converting a TSV file to a JSONL file.

@@ -1,0 +1,71 @@
+Sure, here's how you can convert your Python unittest test class to a C++ Catch2 test case. Below is an example of how you might write the equivalent test cases in C++ using Catch2.
+
+First, make sure you have Catch2 installed in your project. If not, you can download it from [Catch2 GitHub repository](https://github.com/catchorg/Catch2).
+
+Here's a sample C++ test case that corresponds to your Python unittest test class:
+
+```cpp
+#include <catch2/catch.hpp>
+#include <fstream>
+#include <string>
+#include <iostream>
+
+// Assuming extract_log_entries function is defined somewhere in your codebase
+void extract_log_entries(const std::string& log_file_path);
+
+TEST_CASE("Extract Log Entries", "[log]") {
+    // Create a temporary log file with some log entries
+    const std::string temp_log_file = "temp_log.txt";
+    std::ofstream log_file(temp_log_file);
+    
+    if (!log_file.is_open()) {
+        FAIL("Failed to create temporary log file");
+    }
+
+    log_file << "WARNING: This is a warning message\n";
+    log_file << "ERROR: This is an error message\n";
+    log_file << "CRITICAL: This is a critical message\n";
+    log_file << "ALERT: This is an alert message\n";
+
+    log_file.close();
+
+    // Call the function under test
+    extract_log_entries(temp_log_file);
+
+    // Check if the output files exist and contain the correct content
+    std::ifstream warning_file("WARNING.log");
+    REQUIRE(warning_file.is_open());
+    std::string warning_content((std::istreambuf_iterator<char>(warning_file)), std::istreambuf_iterator<char>());
+    warning_file.close();
+    REQUIRE(warning_content.find("WARNING: This is a warning message") != std::string::npos);
+
+    std::ifstream error_file("ERROR.log");
+    REQUIRE(error_file.is_open());
+    std::string error_content((std::istreambuf_iterator<char>(error_file)), std::istreambuf_iterator<char>());
+    error_file.close();
+    REQUIRE(error_content.find("ERROR: This is an error message") != std::string::npos);
+
+    std::ifstream critical_file("CRITICAL.log");
+    REQUIRE(critical_file.is_open());
+    std::string critical_content((std::istreambuf_iterator<char>(critical_file)), std::istreambuf_iterator<char>());
+    critical_file.close();
+    REQUIRE(critical_content.find("CRITICAL: This is a critical message") != std::string::npos);
+
+    std::ifstream alert_file("ALERT.log");
+    REQUIRE(alert_file.is_open());
+    std::string alert_content((std::istreambuf_iterator<char>(alert_file)), std::istreambuf_iterator<char>());
+    alert_file.close();
+    REQUIRE(alert_content.find("ALERT: This is an alert message") != std::string::npos);
+
+    // Clean up the temporary log file
+    std::remove(temp_log_file.c_str());
+}
+```
+
+### Explanation:
+1. **Temporary Log File Creation**: A temporary log file (`temp_log.txt`) is created and populated with some log entries.
+2. **Function Call**: The `extract_log_entries` function is called with the path to the temporary log file.
+3. **File Existence and Content Check**: The script checks if the output files (`WARNING.log`, `ERROR.log`, etc.) exist and contain the expected content.
+4. **Cleanup**: The temporary log file is deleted after the tests are run.
+
+Make sure to replace the placeholder `extract_log_entries` function with the actual implementation or include the appropriate header where it is defined.

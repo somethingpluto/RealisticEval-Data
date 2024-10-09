@@ -1,0 +1,44 @@
+Here's how you can convert your Python code to JavaScript while keeping the same functionality and comments:
+
+```javascript
+/**
+ * This function modifies a SQL query string containing named parameters
+ * (like $name, $age) into a format compatible with libraries that require
+ * positional parameters (like $1, $2, etc.), such as asyncpg. It returns
+ * an object containing the modified SQL string and a list of parameter values
+ * ordered according to their new positions in the query.
+ * For example:
+ *     input:
+ *         sql: "SELECT * FROM users WHERE id = $user_id AND status = $status"
+ *         params: {'user_id': 42,'status': 'active'}
+ *     output:
+ *         {sql: "SELECT * FROM users WHERE id = $1 AND status = $2", params: [42, 'active']}
+ *
+ * @param {string} sql - The original SQL query string with named parameters.
+ * @param {Object} params - An object mapping parameter names to their values.
+ * @returns {Object} An object where the `sql` property is the modified SQL query string with positional parameters, and the `params` property is a list of parameter values sorted according to the order of the positional parameters.
+ */
+function prepareQuery(sql, params) {
+    // Regular expression to find all occurrences of named parameters
+    const regex = /\$\w+/g;
+    let match;
+    let index = 0;
+    let paramValues = [];
+    
+    // Replace each named parameter with its corresponding positional parameter
+    const modifiedSql = sql.replace(regex, () => {
+        const paramName = RegExp.$&; // Get the matched named parameter
+        const value = params[paramName]; // Retrieve the value from the params object
+        
+        if (value !== undefined) {
+            paramValues[index++] = value; // Add the value to the list and increment the index
+        }
+        
+        return `$${index}`; // Return the new positional parameter
+    });
+    
+    return {sql: modifiedSql, params: paramValues};
+}
+```
+
+This JavaScript function `prepareQuery` performs the same operation as your Python function `prepare_query`. It takes a SQL query string and a parameter object, replaces the named parameters with positional parameters, and returns an object containing the modified SQL query and the corresponding parameter values.

@@ -1,0 +1,74 @@
+Sure, here's how you can convert your Python function `tsv_to_jsonl` into Java. Since Java doesn't have built-in support for reading and writing TSV files like Python does with Pandas, we'll use Apache Commons CSV and Gson libraries to handle these tasks.
+
+First, make sure to add the following dependencies to your `pom.xml` if you're using Maven:
+
+```xml
+<dependencies>
+    <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-csv</artifactId>
+        <version>1.9.0</version>
+    </dependency>
+    <dependency>
+        <groupId>com.google.code.gson</groupId>
+        <artifactId>gson</artifactId>
+        <version>2.8.6</version>
+    </dependency>
+</dependencies>
+```
+
+Now, here's the equivalent Java code in the `Answer.java` class under the `org.real.temp` package:
+
+```java
+package org.real.temp;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
+
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+
+public class Answer {
+
+    public static void tsvToJsonl(String tsvFile, String jsonlFile) {
+        try (Reader reader = new FileReader(tsvFile);
+             BufferedWriter writer = new BufferedWriter(new FileWriter(jsonlFile));
+             CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withHeader().withIgnoreHeaderCase().trim())) {
+
+            List<String> headers = csvParser.getHeaderMap().keySet();
+            Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
+            for (CSVRecord record : csvParser) {
+                StringBuilder jsonLine = new StringBuilder();
+                jsonLine.append("{");
+                for (String header : headers) {
+                    jsonLine.append("\"").append(header).append("\": \"").append(record.get(header)).append("\", ");
+                }
+                // Remove the trailing comma and space
+                jsonLine.deleteCharAt(jsonLine.length() - 2);
+                jsonLine.append("}\n");
+                writer.write(jsonLine.toString());
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void main(String[] args) {
+        tsvToJsonl("path/to/your/input.tsv", "path/to/your/output.jsonl");
+    }
+}
+```
+
+### Explanation:
+- **Dependencies**: We use Apache Commons CSV to parse the TSV file and Gson to format the JSON output.
+- **Reading TSV File**: The `CSVParser` reads the TSV file using the default format with headers.
+- **Processing Records**: For each record, we construct a JSON string manually, ensuring that the keys and values are properly quoted.
+- **Writing JSONL File**: The constructed JSON strings are written to the output file, one per line.
+
+Make sure to replace `"path/to/your/input.tsv"` and `"path/to/your/output.jsonl"` with the actual paths to your input and output files.

@@ -1,0 +1,97 @@
+Sure! Here's how you can translate the Python code signature to Java:
+
+```java
+import java.util.*;
+
+public class QueryPreparer {
+
+    /**
+     * This method modifies a SQL query string containing named parameters
+     * (like $name, $age) into a format compatible with libraries that require
+     * positional parameters (like $1, $2, etc.), such as asyncpg. It returns
+     * a tuple containing the modified SQL string and a list of parameter values
+     * ordered according to their new positions in the query.
+     * For example:
+     *      input:
+     *          sql: SELECT * FROM users WHERE id = $user_id AND status = $status
+     *          params: {'user_id': 42,'status': 'active'}
+     *      output:
+     *          SELECT * FROM users WHERE id = $1 AND status = $2,[42, 'active']
+     *
+     * @param sql The original SQL query string with named parameters.
+     * @param params A map mapping parameter names to their values.
+     * @return A tuple where the first element is the modified SQL query string with positional parameters,
+     *         and the second element is a list of parameter values sorted according to the order of the positional parameters.
+     */
+    public static Map.Entry<String, List<Object>> prepareQuery(String sql, Map<String, Object> params) {
+        // Regular expression to find named parameters ($name)
+        Pattern pattern = Pattern.compile("\\$([a-zA-Z_][a-zA-Z0-9_]*)");
+        Matcher matcher = pattern.matcher(sql);
+
+        // List to hold the parameter values in the correct order
+        List<Object> paramValues = new ArrayList<>();
+        
+        // StringBuffer to build the modified SQL query
+        StringBuffer sb = new StringBuffer();
+        
+        int index = 1; // Positional parameter index starting from 1
+        
+        while (matcher.find()) {
+            String paramName = matcher.group(1);
+            if (!params.containsKey(paramName)) {
+                throw new IllegalArgumentException("Parameter " + paramName + " not found in provided parameters.");
+            }
+            // Append the positional parameter placeholder
+            matcher.appendReplacement(sb, "$" + index++);
+            // Add the corresponding parameter value to the list
+            paramValues.add(params.get(paramName));
+        }
+        
+        // Append the rest of the SQL query
+        matcher.appendTail(sb);
+        
+        // Return the modified SQL query and the list of parameter values
+        return new AbstractMap.SimpleEntry<>(sb.toString(), paramValues);
+    }
+
+    public static void main(String[] args) {
+        // Example usage
+        Map<String, Object> params = new HashMap<>();
+        params.put("user_id", 42);
+        params.put("status", "active");
+
+        Map.Entry<String, List<Object>> result = prepareQuery(
+            "SELECT * FROM users WHERE id = $user_id AND status = $status",
+            params
+        );
+
+        System.out.println(result.getKey()); // Modified SQL query
+        System.out.println(result.getValue()); // Parameter values
+    }
+}
+```
+
+### Explanation:
+1. **Method Signature**: 
+   - The method `prepareQuery` now takes two parameters: a `String` for the SQL query and a `Map<String, Object>` for the parameters.
+   - The method returns a `Map.Entry<String, List<Object>>`, which represents a tuple-like structure in Java.
+
+2. **Regular Expression**:
+   - We use a regular expression to find named parameters (`$name`) in the SQL query.
+
+3. **Matcher**:
+   - We create a `Matcher` object to find matches in the SQL query.
+
+4. **StringBuilder**:
+   - We use a `StringBuffer` to build the modified SQL query by replacing named parameters with positional parameters (`$1`, `$2`, etc.).
+
+5. **List of Parameter Values**:
+   - We maintain a list to store the parameter values in the order they appear in the modified SQL query.
+
+6. **Exception Handling**:
+   - If a parameter name is not found in the provided parameters, an `IllegalArgumentException` is thrown.
+
+7. **Return Value**:
+   - The method returns a `Map.Entry<String, List<Object>>` containing the modified SQL query and the list of parameter values.
+
+This Java code should achieve the same functionality as the provided Python code.

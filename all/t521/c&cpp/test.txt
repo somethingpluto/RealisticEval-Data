@@ -1,0 +1,121 @@
+To convert the Python `unittest` test class into a C++ test case using Catch2, you first need to define your function and then write tests for it. Below is an example of how you can do this:
+
+### Python Code (word_filter_counter.py)
+```python
+import re
+from collections import Counter
+from typing import List, Dict
+
+def word_filter_counter(text: str, filter_words: List[str]) -> Dict[str, int]:
+    """
+    Counts the occurrences of specified words in the given text.
+
+    This function filters the words from the text based on the provided list,
+    counts their occurrences, and returns a dictionary with the words in the
+    order they were provided.
+
+    Args:
+        text (str): The input text from which to count words.
+        filter_words (List[str]): A list of words to filter and count.
+
+    Returns:
+        Dict[str, int]: A dictionary with the count of each filter word in the text,
+                         maintaining the order from filter_words.
+    """
+    # Use regex to split the text into words
+    words = re.findall(r'\b\w+\b', text.lower())
+    
+    # Initialize a counter with the filter words
+    result = {word: 0 for word in filter_words}
+    
+    # Count occurrences of each filter word
+    for word in words:
+        if word in filter_words:
+            result[word] += 1
+    
+    return result
+```
+
+### C++ Code (word_filter_counter.cpp) with Catch2
+First, ensure you have Catch2 installed. If not, you can install it via vcpkg or manually download it.
+
+Here's the C++ code with tests:
+
+```cpp
+#define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
+#include "catch.hpp"
+
+#include <string>
+#include <vector>
+#include <map>
+
+// Function declaration
+std::map<std::string, int> wordFilterCounter(const std::string& text, const std::vector<std::string>& filterWords);
+
+// Function definition
+std::map<std::string, int> wordFilterCounter(const std::string& text, const std::vector<std::string>& filterWords) {
+    // Use regex to split the text into words
+    std::regex wordRegex(R"(\b\w+\b)");
+    auto words_begin = std::sregex_iterator(text.begin(), text.end(), wordRegex);
+    auto words_end = std::sregex_iterator();
+
+    // Initialize a counter with the filter words
+    std::map<std::string, int> result;
+    for (const auto& word : filterWords) {
+        result[word] = 0;
+    }
+
+    // Count occurrences of each filter word
+    for (std::sregex_iterator i = words_begin; i != words_end; ++i) {
+        std::smatch match = *i;
+        std::string matchedWord = match.str();
+        std::transform(matchedWord.begin(), matchedWord.end(), matchedWord.begin(),
+                       [](unsigned char c){ return std::tolower(c); });
+
+        if (result.find(matchedWord) != result.end()) {
+            result[matchedWord]++;
+        }
+    }
+
+    return result;
+}
+
+TEST_CASE("wordFilterCounter", "[word_filter_counter]") {
+    SECTION("Test with simple text") {
+        std::string text = "Hello world, hello everyone!";
+        std::vector<std::string> filterWords = {"hello", "world"};
+        std::map<std::string, int> expected = {{"hello", 2}, {"world", 1}};
+        REQUIRE(wordFilterCounter(text, filterWords) == expected);
+    }
+
+    SECTION("Test with case-insensitivity") {
+        std::string text = "Hello World, hello EVERYONE!";
+        std::vector<std::string> filterWords = {"hello", "world"};
+        std::map<std::string, int> expected = {{"hello", 2}, {"world", 1}};
+        REQUIRE(wordFilterCounter(text, filterWords) == expected);
+    }
+
+    SECTION("Test with missing words") {
+        std::string text = "Goodbye, see you later!";
+        std::vector<std::string> filterWords = {"hello", "world"};
+        std::map<std::string, int> expected = {{"hello", 0}, {"world", 0}};
+        REQUIRE(wordFilterCounter(text, filterWords) == expected);
+    }
+
+    SECTION("Test with empty text") {
+        std::string text = "";
+        std::vector<std::string> filterWords = {"hello", "world"};
+        std::map<std::string, int> expected = {{"hello", 0}, {"world", 0}};
+        REQUIRE(wordFilterCounter(text, filterWords) == expected);
+    }
+
+    SECTION("Test with multiple occurrences") {
+        std::string text = "Hello, hello, HELLO!";
+        std::vector<std::string> filterWords = {"hello"};
+        std::map<std::string, int> expected = {{"hello", 3}};
+        REQUIRE(wordFilterCounter(text, filterWords) == expected);
+    }
+}
+```
+
+This C++ code includes the necessary headers, defines the function `wordFilterCounter`, and provides several test cases using Catch2 to verify its correctness.

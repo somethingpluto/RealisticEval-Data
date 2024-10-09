@@ -1,0 +1,59 @@
+Here's how you can convert the Python code to Java. Note that Java doesn't have a direct equivalent for Pandas' DataFrame operations, so we'll use Apache Commons CSV library for reading and writing CSV files.
+
+```java
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.csv.CSVRecord;
+
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
+public class Answer {
+
+    public static void processCSV(String filePath, String outputPath) {
+        try (Reader reader = Files.newBufferedReader(Paths.get(filePath));
+             CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withFirstRecordAsHeader());
+             Writer writer = Files.newBufferedWriter(Paths.get(outputPath));
+             CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT)) {
+
+            boolean headerPrinted = false;
+            for (CSVRecord csvRecord : csvParser) {
+                int nullCount = 0;
+                for (String value : csvRecord.values()) {
+                    if (value == null || value.trim().isEmpty()) {
+                        nullCount++;
+                    }
+                }
+
+                // Skip records with two or more empty columns
+                if (nullCount < 2) {
+                    if (!headerPrinted) {
+                        csvPrinter.printRecord(csvRecord);
+                        headerPrinted = true;
+                    } else {
+                        csvPrinter.printRecord(csvRecord);
+                    }
+                }
+            }
+        } catch (IOException e) {
+            System.err.println("Error occurred while processing the CSV file: " + e.getMessage());
+        }
+    }
+}
+```
+
+Make sure to add the following dependencies in your Maven `pom.xml` file to use Apache Commons CSV:
+
+```xml
+<dependencies>
+    <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-csv</artifactId>
+        <version>1.8</version>
+    </dependency>
+</dependencies>
+```
+
+Please replace the version number with the latest one available at the time of using it.

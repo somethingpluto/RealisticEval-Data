@@ -1,0 +1,79 @@
+Sure, I can help you convert the Python code to C++ code. However, it's important to note that C++ itself doesn't have built-in support for reading YAML files like Python does with `PyYAML`. We'll need to use a third-party library such as `yaml-cpp`.
+
+First, make sure you have `yaml-cpp` installed on your system. You can install it using a package manager like `apt` on Ubuntu:
+
+```sh
+sudo apt-get install libyaml-cpp-dev
+```
+
+Here's how you can write the equivalent C++ code:
+
+```cpp
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <yaml-cpp/yaml.h>
+
+std::variant<std::map<std::string, std::any>, std::vector<std::any>> read_yaml(const std::string& file_path) {
+    try {
+        // Load the YAML file
+        YAML::Node config = YAML::LoadFile(file_path);
+
+        if (config.IsMap()) {
+            std::map<std::string, std::any> result;
+            for (const auto& pair : config) {
+                result[pair.first.as<std::string>()] = pair.second.as<std::any>();
+            }
+            return result;
+        } else if (config.IsSequence()) {
+            std::vector<std::any> result;
+            for (const auto& item : config) {
+                result.push_back(item.as<std::any>());
+            }
+            return result;
+        } else {
+            throw std::runtime_error("Unsupported YAML type");
+        }
+    } catch (const YAML::Exception& e) {
+        throw std::runtime_error(e.what());
+    } catch (const std::exception& e) {
+        throw std::runtime_error(e.what());
+    }
+}
+
+int main() {
+    try {
+        auto content = read_yaml("path/to/your/file.yaml");
+
+        if (content.index() == 0) { // map
+            const auto& map_content = std::get<0>(content);
+            for (const auto& [key, value] : map_content) {
+                std::cout << key << ": " << value << std::endl;
+            }
+        } else if (content.index() == 1) { // vector
+            const auto& vec_content = std::get<1>(content);
+            for (const auto& item : vec_content) {
+                std::cout << item << std::endl;
+            }
+        }
+    } catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+        return 1;
+    }
+
+    return 0;
+}
+```
+
+### Explanation:
+
+1. **Dependencies**: The code uses `yaml-cpp`, so ensure it's installed on your system.
+2. **Function `read_yaml`**:
+   - It reads a YAML file from the given path.
+   - It checks if the YAML content is a map or a sequence and converts it accordingly.
+   - It throws exceptions if there are errors in reading or parsing the YAML file.
+3. **Main Function**:
+   - Calls `read_yaml` and prints the content based on whether it's a map or a sequence.
+   - Handles exceptions and prints error messages.
+
+Make sure to replace `"path/to/your/file.yaml"` with the actual path to your YAML file. This code will give you a basic idea of how to parse YAML in C++.

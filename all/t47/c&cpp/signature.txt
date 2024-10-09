@@ -1,0 +1,83 @@
+```cpp
+#include <iostream>
+#include <ctime>
+
+/**
+ * Calculates the date of the nth occurrence of a specific weekday (k) in a given month (m) and year (y).
+ * If the nth occurrence does not exist within the month, it returns the last occurrence of that weekday in the month.
+ * This function extends the capability to handle edge cases where the nth weekday might not be present,
+ * by providing the closest previous weekday in such cases
+ * 
+ * @param y The year for which the date is to be calculated.
+ * @param m The month for which the date is to be calculated, where January is 1 and December is 12.
+ * @param n The nth occurrence of the weekday within the month. For example, 1 for the first occurrence, 2 for the second, etc.
+ * @param k The weekday, where Monday is 0 and Sunday is 6.
+ * 
+ * @return std::tm* The calculated date of the nth occurrence of the weekday in the given month and year.
+ *         If the nth occurrence does not exist, returns the date of the last occurrence of that weekday in the month.
+ */
+std::tm* findNthWeekdayOfSpecificYear(int y, int m, int n, int k) {
+    std::tm time = {};
+    time.tm_year = y - 1900; // tm_year is years since 1900
+    time.tm_mon = m - 1;     // tm_mon is months since January (0-11)
+    time.tm_mday = 1;         // Start from the first day of the month
+
+    mktime(&time); // Calculate the actual date based on the provided year, month, and day
+
+    int found = 0;
+    while (true) {
+        if (time.tm_wday == k) {
+            ++found;
+            if (found == n) {
+                return new std::tm(time);
+            }
+        }
+
+        // Move to the next day
+        time.tm_mday += 1;
+
+        // Check if we've moved into the next month or year
+        if (mktime(&time) == -1 || (time.tm_mon != m - 1 && time.tm_year != y - 1900)) {
+            break;
+        }
+    }
+
+    // Return the last occurrence of the specified weekday in the month
+    while (true) {
+        if (time.tm_wday == k) {
+            return new std::tm(time);
+        }
+
+        // Move backwards one day
+        time.tm_mday -= 1;
+
+        // Check if we've moved out of the current month
+        if (mktime(&time) == -1 || (time.tm_mon != m - 1 && time.tm_year != y - 1900)) {
+            break;
+        }
+    }
+
+    return nullptr; // Should never reach here if input parameters are valid
+}
+
+int main() {
+    // Example usage
+    std::tm* result = findNthWeekdayOfSpecificYear(2023, 4, 2, 0); // Find the second Thursday in April 2023
+    if (result != nullptr) {
+        std::cout << "Date: " << result->tm_mday << "/" << result->tm_mon + 1 << "/" << result->tm_year + 1900 << std::endl;
+        delete result; // Remember to free the allocated memory
+    } else {
+        std::cout << "No such date found." << std::endl;
+    }
+
+    return 0;
+}
+```
+
+### Explanation:
+1. **Function Signature**: The C++ version uses `std::tm*` instead of `datetime.date`, as C++ does not have a built-in date type like Python.
+2. **Memory Management**: In C++, you need to manually manage memory using `new` and `delete`. Ensure to call `delete` when you're done with the returned pointer to avoid memory leaks.
+3. **Edge Cases**: The function handles edge cases similar to the Python version, ensuring that if the nth occurrence doesn't exist, it returns the last occurrence of that weekday in the month.
+4. **Time Calculation**: The function uses `mktime` to calculate the actual date based on the provided year, month, and day.
+
+This C++ code should provide the same functionality as your original Python function.

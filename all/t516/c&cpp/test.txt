@@ -1,0 +1,43 @@
+To convert your Python unittest test class to a C++ test case using Catch2, you would need to create a new C++ file and write the equivalent test cases in C++. Here's how you might do it:
+
+```cpp
+#define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
+#include "catch.hpp"
+#include <fstream>
+#include <yaml-cpp/yaml.h>
+
+// Function to be tested
+std::variant<std::map<std::string, std::any>, std::vector<std::any>> read_yaml(const std::string& file_path) {
+    // Your implementation here
+}
+
+TEST_CASE("Read valid YAML file", "[read_yaml]") {
+    auto result = read_yaml("path_to_valid_file.yaml");
+    REQUIRE(result.index() == 0);  // Assuming the function returns a map for valid files
+    // Add more specific checks based on expected content of the YAML file
+}
+
+TEST_CASE("Read invalid YAML file", "[read_yaml]") {
+    try {
+        read_yaml("path_to_invalid_file.yaml");
+        FAIL("Expected exception was not thrown");
+    } catch (const YAML::Exception& e) {
+        // Check if the exception message contains the expected error
+        REQUIRE(e.what() == "Expected sequence item at line X, column Y");
+    }
+}
+
+TEST_CASE("File not found", "[read_yaml]") {
+    try {
+        read_yaml("non_existent_file.yaml");
+        FAIL("Expected exception was not thrown");
+    } catch (const std::exception& e) {
+        // Check if the exception message contains the expected error
+        REQUIRE(std::string(e.what()).find("No such file or directory") != std::string::npos);
+    }
+}
+```
+
+In this example, we're using the `std::variant` type from C++17 to handle the return type of `read_yaml`, which can either be a `std::map<std::string, std::any>` or a `std::vector<std::any>`. We're also using the `YAML::Exception` type from the yaml-cpp library to handle exceptions related to YAML parsing errors.
+
+Make sure to replace `"path_to_valid_file.yaml"`, `"path_to_invalid_file.yaml"`, and `"non_existent_file.yaml"` with actual paths to your test files.

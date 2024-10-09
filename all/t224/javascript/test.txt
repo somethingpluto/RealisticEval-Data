@@ -1,0 +1,75 @@
+Certainly! Below is the equivalent JavaScript test case using Jest for the Python `empty_directory` function:
+
+```javascript
+const fs = require('fs');
+const path = require('path');
+
+function emptyDirectory(directoryPath) {
+    if (!fs.existsSync(directoryPath)) {
+        throw new Error(`The specified path ${directoryPath} does not exist.`);
+    }
+
+    if (!fs.lstatSync(directoryPath).isDirectory()) {
+        throw new Error(`${directoryPath} is not a directory.`);
+    }
+
+    fs.readdirSync(directoryPath).forEach((file) => {
+        const filePath = path.join(directoryPath, file);
+        try {
+            if (fs.lstatSync(filePath).isDirectory()) {
+                emptyDirectory(filePath); // Recursively delete subdirectories
+            } else {
+                fs.unlinkSync(filePath); // Delete files
+            }
+        } catch (error) {
+            console.error(`Error deleting ${filePath}:`, error.message);
+        }
+    });
+}
+
+// Test cases using Jest
+describe('emptyDirectory', () => {
+    let tempDir;
+
+    beforeEach(() => {
+        // Create a temporary directory for testing
+        tempDir = fs.mkdtempSync(path.join(__dirname, 'test-dir-'));
+        fs.mkdirSync(path.join(tempDir, 'subdir'));
+        fs.writeFileSync(path.join(tempDir, 'file.txt'), 'Some content');
+    });
+
+    afterEach(() => {
+        // Clean up the temporary directory after each test
+        emptyDirectory(tempDir);
+        fs.rmdirSync(tempDir);
+    });
+
+    it('should empty a directory with files and subdirectories', () => {
+        expect(fs.readdirSync(tempDir)).toEqual(['subdir', 'file.txt']);
+        emptyDirectory(tempDir);
+        expect(fs.readdirSync(tempDir)).toEqual([]);
+    });
+
+    it('should throw an error if the path does not exist', () => {
+        expect(() => emptyDirectory('/nonexistent/path')).toThrow(/does not exist/);
+    });
+
+    it('should throw an error if the path is not a directory', () => {
+        const filePath = path.join(tempDir, 'file.txt');
+        fs.writeFileSync(filePath, 'Some content');
+        expect(() => emptyDirectory(filePath)).toThrow(/is not a directory/);
+    });
+});
+```
+
+### Explanation:
+1. **Setup and Teardown**:
+   - The `beforeEach` hook creates a temporary directory for testing purposes.
+   - The `afterEach` hook cleans up the temporary directory after each test by calling `emptyDirectory`.
+
+2. **Test Cases**:
+   - `it('should empty a directory with files and subdirectories')`: This test checks that the directory is emptied correctly.
+   - `it('should throw an error if the path does not exist')`: This test ensures that an error is thrown when the specified path does not exist.
+   - `it('should throw an error if the path is not a directory')`: This test ensures that an error is thrown when the specified path is not a directory.
+
+This setup ensures that your JavaScript code behaves similarly to the Python `unittest` test class you provided.

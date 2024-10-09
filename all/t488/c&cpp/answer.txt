@@ -1,0 +1,108 @@
+To convert the given Python code to C/C++ code, we need to consider that C and C++ do not have built-in support for retrieving network interfaces in the same way Python does with `subprocess` and regular expressions. Instead, we can use system-specific libraries or APIs to achieve similar functionality.
+
+Here's an example of how you might implement this in C using the Windows API:
+
+```c
+#include <windows.h>
+#include <iphlpapi.h>
+#include <stdio.h>
+
+#pragma comment(lib, "Iphlpapi.lib")
+
+typedef struct _IP_ADAPTER_ADDRESSES {
+    ULONG            Length;
+    ULONG            Flags;
+    ULONGLONG        Next;
+    PUNICODE_STRING  Description;
+    PUNICODE_STRING  FriendlyName;
+    PUNICODE_STRING  PhysicalAddress;
+    ULONG            PhysicalAddressLength;
+    ULONG            AddressFamily;
+    union {
+        sockaddr_in  ipv4;
+        sockaddr_in6 ipv6;
+    };
+    ULONG            Mtu;
+    ULONG            IfType;
+    ULONG            OperStatus;
+    ULONG            Ipv6IfIndex;
+    ULONG            Ipv4IfIndex;
+} IP_ADAPTER_ADDRESSES, *PIP_ADAPTER_ADDRESSES;
+
+DWORD GetLocalIp(const char* interfaceName, char* ipBuffer, size_t bufferSize) {
+    DWORD dwRetVal = 0;
+    ULONG ulOutBufLen = sizeof(IP_ADAPTER_ADDRESSES);
+    PIP_ADAPTER_ADDRESSES pAddresses = NULL;
+
+    // Allocate memory for the adapter addresses structure
+    pAddresses = (IP_ADAPTER_ADDRESSES*)malloc(ulOutBufLen);
+
+    if (pAddresses == NULL) {
+        printf("Error allocating memory.\n");
+        return 1;
+    }
+
+    // Retrieve the adapter addresses
+    dwRetVal = GetAdaptersAddresses(AF_UNSPEC, GAA_FLAG_INCLUDE_PREFIX, NULL, pAddresses, &ulOutBufLen);
+    if (dwRetVal != ERROR_BUFFER_OVERFLOW) {
+        free(pAddresses);
+        printf("GetAdaptersAddresses failed with error: %d\n", dwRetVal);
+        return 1;
+    }
+
+    // Reallocate memory to hold the actual data
+    pAddresses = (IP_ADAPTER_ADDRESSES*)realloc(pAddresses, ulOutBufLen);
+    if (pAddresses == NULL) {
+        printf("Error reallocating memory.\n");
+        return 1;
+    }
+
+    // Retrieve the adapter addresses again
+    dwRetVal = GetAdaptersAddresses(AF_UNSPEC, GAA_FLAG_INCLUDE_PREFIX, NULL, pAddresses, &ulOutBufLen);
+    if (dwRetVal != NO_ERROR) {
+        free(pAddresses);
+        printf("GetAdaptersAddresses failed with error: %d\n", dwRetVal);
+        return 1;
+    }
+
+    // Iterate through the list of adapters
+    for (PIP_ADAPTER_ADDRESSES pCurrAddr = pAddresses; pCurrAddr != NULL; pCurrAddr = pCurrAddr->Next) {
+        if ((pCurrAddr->Flags & IP_ADAPTER_ADDRESS_DDNS_ENABLED) != 0 &&
+            (pCurrAddr->Flags & IP_ADAPTER_ADDRESS_DHCP_ENABLED) != 0 &&
+            (pCurrAddr->OperStatus == IfOperStatusUp)) {
+
+            // Check if the adapter description matches the specified interface name
+            if (_stricmp(pCurrAddr->Description->Buffer, interfaceName) == 0) {
+                // Print the IPv4 address
+                if (pCurrAddr->FirstUnicastAddress != NULL && pCurrAddr->FirstUnicastAddress->Address.lpSockaddr->sa_family == AF_INET) {
+                    SOCKADDR_IN* pAddr = (SOCKADDR_IN*)pCurrAddr->FirstUnicastAddress->Address.lpSockaddr;
+                    sprintf(ipBuffer, "%s", inet_ntoa(pAddr->sin_addr));
+                    break;
+                }
+            }
+        }
+    }
+
+    // Free the allocated memory
+    free(pAddresses);
+
+    return dwRetVal;
+}
+
+int main() {
+    char ip[INET_ADDRSTRLEN];
+    DWORD result = GetLocalIp("Wi-Fi", ip, sizeof(ip));
+
+    if (result == NO_ERROR) {
+        printf("Local IP address: %s\n", ip);
+    } else {
+        printf("Failed to retrieve local IP address.\n");
+    }
+
+    return 0;
+}
+```
+
+This C code uses the Windows API to retrieve information about network adapters and their IP addresses. It iterates through the list of adapters, checks if the adapter description matches the specified interface name ("Wi-Fi" in this case), and prints the first IPv4 address it finds.
+
+Note that this code requires linking against the `Iphlpapi.lib` library, which provides access to the `GetAdaptersAddresses` function. This function is available only on Windows systems. If you need cross-platform support, you would need to use platform-specific APIs or libraries for each target operating system.

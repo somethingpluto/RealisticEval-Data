@@ -1,0 +1,56 @@
+Sure, here is how you can convert the provided Python unittest test class into a TypeScript test case using Jest:
+
+```typescript
+// Import necessary modules
+import { describe, expect, test } from '@jest/globals';
+
+// Define the method_arg_type_check function
+function method_arg_type_check(methodObj: CallableFunction, ...args: any[]): void {
+    const methodSignature = methodObj.toString();
+    // Extract parameter names and types from the method signature
+    const paramRegex = /([a-zA-Z_$][0-9a-zA-Z_$]*)\s*:\s*(\w+)/g;
+    let match;
+    const params: { [key: string]: string } = {};
+
+    while ((match = paramRegex.exec(methodSignature)) !== null) {
+        params[match[1]] = match[2];
+    }
+
+    // Check if all arguments match their expected types
+    args.forEach((arg, index) => {
+        const paramName = Object.keys(params)[index];
+        if (paramName && typeof arg !== params[paramName]) {
+            throw new Error(`Argument '${paramName}' must be of type ${params[paramName]}, but got ${typeof arg}`);
+        }
+    });
+}
+
+// Test cases using Jest
+describe('method_arg_type_check', () => {
+    test('should pass when arguments match expected types', () => {
+        const method = (str: string, num: number) => {};
+        method_arg_type_check(method, 'test', 42);
+    });
+
+    test('should fail when an argument does not match the expected type', () => {
+        const method = (str: string, num: number) => {};
+        expect(() => method_arg_type_check(method, 'test', 'not a number')).toThrowError('Argument \'num\' must be of type number, but got string');
+    });
+
+    test('should handle optional parameters correctly', () => {
+        const method = (str: string, num?: number) => {};
+        method_arg_type_check(method, 'test'); // Should pass
+        method_arg_type_check(method, 'test', 42); // Should also pass
+    });
+});
+```
+
+### Explanation:
+1. **Importing Modules**: We import `describe`, `expect`, and `test` from `@jest/globals` to use Jest's testing utilities.
+2. **method_arg_type_check Function**: This function checks if the arguments passed to a method match their expected types based on the method's signature.
+3. **Test Cases**:
+   - `should_pass_when_arguments_match_expected_types`: Tests that the function passes when the arguments match the expected types.
+   - `should_fail_when_an_argument_does_not_match_the_expected_type`: Tests that the function throws an error when an argument does not match the expected type.
+   - `should_handle_optional_parameters_correctly`: Tests that optional parameters are handled correctly.
+
+This should give you a good starting point for writing TypeScript test cases using Jest!

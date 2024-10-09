@@ -1,0 +1,97 @@
+To convert your Python `unittest` test class to a C++ test case using Catch2, you first need to define the function `topological_sort_dfs` and then write the corresponding tests. Below is how you can do it:
+
+### Step 1: Define the Function in C++
+First, let's define the function `topological_sort_dfs` in C++. We'll assume that the input vertices are integers and the edges are pairs of integers.
+
+```cpp
+#include <vector>
+#include <unordered_map>
+#include <stack>
+
+std::vector<int> topological_sort_dfs(const std::vector<int>& vertices, const std::vector<std::pair<int, int>>& edges) {
+    // Build adjacency list
+    std::unordered_map<int, std::vector<int>> adj_list;
+    for (const auto& edge : edges) {
+        adj_list[edge.first].push_back(edge.second);
+    }
+
+    // Track visited nodes
+    std::unordered_set<int> visited;
+    std::stack<int> stack;
+
+    // Depth-first search
+    for (int vertex : vertices) {
+        if (!visited.count(vertex)) {
+            dfs_util(vertex, visited, adj_list, stack);
+        }
+    }
+
+    // Result vector
+    std::vector<int> result;
+    while (!stack.empty()) {
+        result.push_back(stack.top());
+        stack.pop();
+    }
+
+    return result;
+}
+
+void dfs_util(int vertex, std::unordered_set<int>& visited, const std::unordered_map<int, std::vector<int>>& adj_list, std::stack<int>& stack) {
+    visited.insert(vertex);
+
+    for (int neighbor : adj_list[vertex]) {
+        if (!visited.count(neighbor)) {
+            dfs_util(neighbor, visited, adj_list, stack);
+        }
+    }
+
+    stack.push(vertex);
+}
+```
+
+### Step 2: Write Tests Using Catch2
+Next, we will write the tests for this function using Catch2. Make sure you have Catch2 installed and properly set up in your project.
+
+```cpp
+#define CATCH_CONFIG_MAIN
+#include "catch.hpp"
+
+TEST_CASE("Topological Sort DFS", "[topological_sort]") {
+    SECTION("Empty graph") {
+        std::vector<int> vertices = {};
+        std::vector<std::pair<int, int>> edges = {};
+        REQUIRE(topological_sort_dfs(vertices, edges).empty());
+    }
+
+    SECTION("Single node") {
+        std::vector<int> vertices = {1};
+        std::vector<std::pair<int, int>> edges = {};
+        REQUIRE(topological_sort_dfs(vertices, edges) == std::vector<int>{1});
+    }
+
+    SECTION("Linear graph") {
+        std::vector<int> vertices = {1, 2, 3, 4};
+        std::vector<std::pair<int, int>> edges = {{1, 2}, {2, 3}, {3, 4}};
+        REQUIRE(topological_sort_dfs(vertices, edges) == std::vector<int>{1, 2, 3, 4});
+    }
+
+    SECTION("Graph with cycle") {
+        std::vector<int> vertices = {1, 2, 3};
+        std::vector<std::pair<int, int>> edges = {{1, 2}, {2, 3}, {3, 1}};
+        REQUIRE(topological_sort_dfs(vertices, edges).empty());
+    }
+
+    SECTION("Disconnected graph") {
+        std::vector<int> vertices = {1, 2, 3, 4};
+        std::vector<std::pair<int, int>> edges = {{1, 2}, {3, 4}};
+        REQUIRE(topological_sort_dfs(vertices, edges) == std::vector<int>{1, 2, 3, 4});
+    }
+}
+```
+
+### Explanation
+- **topological_sort_dfs**: This function builds an adjacency list from the given edges and performs a depth-first search to determine the topological order.
+- **dfs_util**: This helper function recursively visits all the neighbors of a vertex and adds them to the stack.
+- **Catch2 Tests**: These tests cover various scenarios including an empty graph, a single node, a linear graph, a graph with a cycle, and a disconnected graph.
+
+Make sure to include the Catch2 header file and link against the Catch2 library when compiling your C++ program.

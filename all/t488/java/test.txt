@@ -1,0 +1,70 @@
+Certainly! Below is the equivalent Java JUnit test case for the provided Python `unittest` class. The package is set to `org.real.temp`, and the class is named `Tester`.
+
+```java
+package org.real.temp;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.junit.Test;
+
+public class Tester {
+
+    @Test
+    public void testGetLocalIp() throws IOException {
+        String expectedIp = "192.168.1.1"; // Replace with your expected IP address
+        String actualIp = getLocalIp("Wi-Fi");
+        
+        assertEquals(expectedIp, actualIp);
+    }
+
+    @Test
+    public void testGetLocalIpNotFound() throws IOException {
+        String nonExistentInterface = "NonExistentInterface";
+        String actualIp = getLocalIp(nonExistentInterface);
+        
+        assertNull(actualIp);
+    }
+
+    private String getLocalIp(String interfaceName) throws IOException {
+        Process process = Runtime.getRuntime().exec("ipconfig /all");
+        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+        String line;
+        boolean foundInterface = false;
+        StringBuilder ipBuilder = null;
+
+        while ((line = reader.readLine()) != null) {
+            if (line.contains(interfaceName)) {
+                foundInterface = true;
+                ipBuilder = new StringBuilder();
+            } else if (foundInterface && line.trim().startsWith("IPv4 Address")) {
+                Pattern pattern = Pattern.compile("\\b(?:\\d{1,3}\\.){3}\\d{1,3}\\b");
+                Matcher matcher = pattern.matcher(line);
+                if (matcher.find()) {
+                    ipBuilder.append(matcher.group());
+                    break;
+                }
+            }
+        }
+
+        return ipBuilder != null ? ipBuilder.toString() : null;
+    }
+}
+```
+
+### Explanation:
+
+1. **Package Declaration**: The Java class is placed in the `org.real.temp` package.
+2. **JUnit Imports**: Necessary imports for JUnit testing and other utilities are included.
+3. **Test Methods**:
+   - `testGetLocalIp`: This method tests the `getLocalIp` function with an existing interface and checks if the returned IP matches the expected value.
+   - `testGetLocalIpNotFound`: This method tests the `getLocalIp` function with a non-existent interface and ensures that it returns `null`.
+4. **getLocalIp Method**: This method is implemented to mimic the behavior of the Python function using Java's `Runtime.exec` to execute the `ipconfig /all` command and parse the output to find the IP address associated with the specified interface.
+
+Make sure to replace `"192.168.1.1"` with the expected IP address you want to test against. This example assumes you are running on a Windows system where the `ipconfig /all` command provides the necessary information. Adjustments may be needed for other operating systems or network configurations.

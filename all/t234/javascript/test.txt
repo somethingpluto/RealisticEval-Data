@@ -1,0 +1,70 @@
+Here's how you can convert your Python unittest test case into a Jest test case in JavaScript:
+
+```javascript
+const fs = require('fs');
+const csv = require('csv-parser');
+
+describe('appendOrSkipRow', () => {
+  let fileHandler;
+  let reader;
+
+  beforeEach(() => {
+    // Mocking the file handler and reader objects
+    fileHandler = {
+      writeFileSync: jest.fn(),
+      createReadStream: jest.fn().mockReturnValue({
+        pipe: jest.fn()
+      })
+    };
+
+    reader = {
+      on: jest.fn()
+    };
+  });
+
+  it('appends a new row if there isn\'t a row with matching values in the first three columns', () => {
+    const rowCandidate = ['value1', 'value2', 'value3', 'otherValue'];
+    const existingRows = [
+      ['value1', 'value2', 'value4'],
+      ['value5', 'value6', 'value7']
+    ];
+
+    reader.on.mockImplementation((event, callback) => {
+      if (event === 'data') {
+        existingRows.forEach(row => {
+          callback({ data: row });
+        });
+      }
+    });
+
+    appendOrSkipRow(fileHandler, reader, rowCandidate);
+
+    expect(fileHandler.writeFileSync).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.stringContaining('value1,value2,value3,otherValue')
+    );
+  });
+
+  it('skips appending a new row if there is already a row with matching values in the first three columns', () => {
+    const rowCandidate = ['value1', 'value2', 'value3', 'otherValue'];
+    const existingRows = [
+      ['value1', 'value2', 'value3'],
+      ['value5', 'value6', 'value7']
+    ];
+
+    reader.on.mockImplementation((event, callback) => {
+      if (event === 'data') {
+        existingRows.forEach(row => {
+          callback({ data: row });
+        });
+      }
+    });
+
+    appendOrSkipRow(fileHandler, reader, rowCandidate);
+
+    expect(fileHandler.writeFileSync).not.toHaveBeenCalled();
+  });
+});
+```
+
+In this example, we're using Jest's `beforeEach` hook to set up mock objects for the file handler and reader before each test. We then define two tests: one that checks if a new row is appended when there isn't a matching row, and another that checks if no new row is appended when there is a matching row. The `appendOrSkipRow` function is called within these tests, and we use Jest's `expect` function to assert that the appropriate methods were called on the file handler.

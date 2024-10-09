@@ -1,0 +1,70 @@
+Sure! Below is an example of how you might convert your Python unittest test class to a Jest test case in JavaScript using the `describe` and `it` functions:
+
+```javascript
+const fs = require('fs');
+const path = require('path');
+
+function readLog(logFilePath) {
+    /**
+     * Reads a log file containing JSON entries and extracts training loss and test accuracy.
+     * Json entries such as {"test_acc1": 88.5, "train_loss": 0.75}
+     * Args:
+     *     logFilePath (string): The path to the log file to be read.
+     *
+     * Returns:
+     *     Array: An array containing two lists:
+     *         - trainLossList (Array): A list of training loss values extracted from the log.
+     *         - testAcc1List (Array): A list of test accuracy values extracted from the log.
+     */
+    const data = fs.readFileSync(logFilePath, 'utf-8');
+    const lines = data.split('\n').filter(line => line.trim() !== '');
+    const trainLossList = [];
+    const testAcc1List = [];
+
+    for (const line of lines) {
+        try {
+            const jsonEntry = JSON.parse(line);
+            if ('train_loss' in jsonEntry && typeof jsonEntry.train_loss === 'number') {
+                trainLossList.push(jsonEntry.train_loss);
+            }
+            if ('test_acc1' in jsonEntry && typeof jsonEntry.test_acc1 === 'number') {
+                testAcc1List.push(jsonEntry.test_acc1);
+            }
+        } catch (e) {
+            console.error(`Error parsing line: ${line}`, e);
+        }
+    }
+
+    return [trainLossList, testAcc1List];
+}
+
+// Jest test cases
+describe('readLog function', () => {
+    it('should extract training loss and test accuracy from a valid log file', () => {
+        const logFilePath = path.join(__dirname, 'example.log'); // Replace with actual log file path
+        const expectedTrainLossList = [0.75]; // Replace with expected training loss values
+        const expectedTestAcc1List = [88.5]; // Replace with expected test accuracy values
+
+        const [trainLossList, testAcc1List] = readLog(logFilePath);
+
+        expect(trainLossList).toEqual(expectedTrainLossList);
+        expect(testAcc1List).toEqual(expectedTestAcc1List);
+    });
+
+    it('should handle empty or invalid log files gracefully', () => {
+        const logFilePath = path.join(__dirname, 'empty.log'); // Replace with actual log file path
+        const [trainLossList, testAcc1List] = readLog(logFilePath);
+
+        expect(trainLossList).toEqual([]);
+        expect(testAcc1List).toEqual([]);
+    });
+});
+```
+
+### Explanation:
+1. **Function Definition**: The `readLog` function reads a log file, parses each line as JSON, and extracts the training loss and test accuracy values into separate arrays.
+2. **Jest Test Cases**:
+   - **First Test Case**: Checks that the function correctly extracts training loss and test accuracy from a valid log file.
+   - **Second Test Case**: Ensures that the function handles empty or invalid log files gracefully by returning empty arrays.
+
+Make sure to replace `'example.log'` and `'empty.log'` with the actual paths to your log files. Also, adjust the `expectedTrainLossList` and `expectedTestAcc1List` with the expected values based on your test scenarios.

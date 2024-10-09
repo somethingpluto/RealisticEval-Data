@@ -1,0 +1,100 @@
+Certainly! Below is the equivalent JavaScript test case using Jest for the given Python `BloomFilter` class.
+
+First, let's define the `BloomFilter` class in JavaScript:
+
+```javascript
+class BloomFilter {
+    constructor(size, hashCount) {
+        this.size = size;
+        this.hashCount = hashCount;
+        this.bitArray = new Array(size).fill(0);
+    }
+
+    _hash1(item) {
+        return item.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % this.size;
+    }
+
+    _hash2(item) {
+        return item.split('').reduce((acc, char) => acc + (char.charCodeAt(0) * 33) % this.size, 0) % this.size;
+    }
+
+    add(item) {
+        const hashes = [this._hash1(item), this._hash2(item)];
+        for (let i = 0; i < this.hashCount; i++) {
+            this.bitArray[hashes[i]] = 1;
+        }
+    }
+
+    contains(item) {
+        const hashes = [this._hash1(item), this._hash2(item)];
+        for (let i = 0; i < this.hashCount; i++) {
+            if (this.bitArray[hashes[i]] === 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+}
+```
+
+Next, we'll write the Jest test cases for this class:
+
+```javascript
+const BloomFilter = require('./BloomFilter'); // Adjust the path as necessary
+
+describe('BloomFilter', () => {
+    let bloomFilter;
+
+    beforeEach(() => {
+        bloomFilter = new BloomFilter(100, 2); // Initialize with a size of 100 and 2 hash functions
+    });
+
+    test('should add items to the bloom filter', () => {
+        bloomFilter.add('apple');
+        expect(bloomFilter.contains('apple')).toBe(true);
+    });
+
+    test('should not contain items not added to the bloom filter', () => {
+        expect(bloomFilter.contains('banana')).toBe(false);
+    });
+
+    test('should handle collisions correctly', () => {
+        bloomFilter.add('apple');
+        bloomFilter.add('apples');
+        expect(bloomFilter.contains('apple')).toBe(true);
+        expect(bloomFilter.contains('apples')).toBe(true);
+    });
+});
+```
+
+### Explanation:
+
+1. **Class Definition**:
+   - The `BloomFilter` class is defined with a constructor that initializes the bit array and hash count.
+   - Two private methods `_hash1` and `_hash2` are used to generate hash values for the items.
+   - The `add` method sets bits in the bit array based on the hash values.
+   - The `contains` method checks if all corresponding bits are set for the given item.
+
+2. **Jest Test Cases**:
+   - We create a new instance of `BloomFilter` before each test case using `beforeEach`.
+   - The first test case checks if an item is correctly added to the bloom filter.
+   - The second test case verifies that an item not added to the bloom filter is not contained within it.
+   - The third test case demonstrates handling collisions where two different items might produce the same hash values.
+
+Make sure you have Jest installed in your project. You can install it using npm or yarn:
+
+```sh
+npm install --save-dev jest
+# or
+yarn add --dev jest
+```
+
+Then, you can run the tests using:
+
+```sh
+npx jest
+# or
+yarn jest
+```
+
+This setup should give you a good starting point for testing your `BloomFilter` implementation in JavaScript using Jest.

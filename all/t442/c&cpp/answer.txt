@@ -1,0 +1,43 @@
+Here is an equivalent C++ code using the boost::variant library:
+
+```c++
+#include <boost/variant.hpp>
+#include <string>
+#include <map>
+#include <vector>
+
+using namespace std;
+using namespace boost;
+
+typedef variant<int, float, string, map<string, variant<int, float, string>>, vector<variant<int, float, string>>> VarType;
+
+VarType convert_strings_to_numbers(VarType data){
+    apply_visitor([](auto&& arg)->VarType{
+        using T = decay_t<decltype(arg)>;
+
+        if constexpr(is_same_v<T, int> || is_same_v<T, float>)
+            return arg;
+        else if constexpr(is_same_v<T, string>)
+            try {
+                // Try to convert string to integer
+                int val = stoi(arg);
+                return val;
+            } catch (...) {
+                // If it fails, try to convert string to float
+                float val = stof(arg);
+                return val;
+            }
+        else if constexpr(is_same_v<T, map<string, VarType>>)
+            for(auto &p : arg)
+                p.second = convert_strings_to_numbers(p.second);
+        else if constexpr(is_same_v<T, vector<VarType>>)
+            for(size_t i = 0; i < arg.size(); ++i)
+                arg[i] = convert_strings_to_numbers(arg[i]);
+        
+        return arg;
+    }, data);
+}
+```
+This function uses Boost.Variant to handle different types of values (int, float, string, dict, list). It recursively traverses through each element in the input and tries to convert it to a number if it's a string.
+
+Note: This code assumes that the string can always be converted into either an integer or a float. If this might not be the case, you may need to add error handling for those cases. Also, make sure to install the Boost library on your system before compiling this code.

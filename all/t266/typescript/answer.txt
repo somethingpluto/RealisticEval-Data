@@ -1,0 +1,66 @@
+Sure! Below is the equivalent TypeScript code for your Python function `handleNestedData`. Note that TypeScript does not have built-in support for decoding bytes to UTF-8 strings like Python does with `decode('utf-8')`, so you would need to use additional libraries or functions to achieve this.
+
+```typescript
+import { isObject, isArray } from 'lodash';
+
+interface QuestionObject {
+  [key: string]: any;
+}
+
+function handleNestedData(data: QuestionObject): QuestionObject {
+  /**
+   * Handle nested question structures (e.g., objects, arrays, and enums), decode bytes to UTF-8 strings,
+   * and convert numbers to integers or floating point numbers.
+   *
+   * @param data - The question object to be processed.
+   * @returns The converted question object.
+   */
+  
+  const processValue = (value: any): any => {
+    if (typeof value === 'string' && value.startsWith('b\'')) {
+      // Assuming the byte string starts with 'b\'' and ends with '\''
+      try {
+        return Buffer.from(value.slice(2, -1), 'hex').toString('utf-8');
+      } catch (error) {
+        console.error('Failed to decode byte string:', error);
+        return value; // Return original value on failure
+      }
+    }
+
+    if (typeof value === 'number') {
+      return Number.isInteger(value) ? Math.floor(value) : parseFloat(value.toFixed(2));
+    }
+
+    if (isObject(value)) {
+      return Object.keys(value).reduce((acc, key) => {
+        acc[key] = processValue(value[key]);
+        return acc;
+      }, {} as QuestionObject);
+    }
+
+    if (isArray(value)) {
+      return value.map(processValue);
+    }
+
+    return value;
+  };
+
+  return processValue(data);
+}
+```
+
+### Explanation:
+1. **Type Definitions**: We define an interface `QuestionObject` to represent the structure of the input and output data.
+2. **Utility Functions**: We use `isObject` and `isArray` from the `lodash` library to check if a value is an object or an array.
+3. **Recursive Processing**: The `processValue` function recursively processes each value in the input object or array. It decodes byte strings, converts numbers to integers or floats, and handles nested objects and arrays.
+4. **Error Handling**: If decoding a byte string fails, it logs an error and returns the original value.
+
+Make sure to install `lodash` using npm or yarn:
+
+```sh
+npm install lodash
+# or
+yarn add lodash
+```
+
+This TypeScript code should provide similar functionality to your Python function. Adjustments may be needed based on specific requirements or edge cases.

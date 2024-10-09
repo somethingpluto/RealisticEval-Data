@@ -1,0 +1,60 @@
+Sure! Here's how you can convert your Python unittest test class to a TypeScript test case using Jest:
+
+```typescript
+import { describe, it, expect } from '@jest/globals';
+import fs from 'fs';
+import path from 'path';
+
+function readMappingFile(mappingFilePath: string): Array<[RegExp, string]> {
+    const content = fs.readFileSync(mappingFilePath, 'utf8');
+    return content.split('\n')
+        .filter(line => line.trim() !== '')
+        .map(line => {
+            const [regexStr, replacement] = line.split(',');
+            return [new RegExp(regexStr), replacement];
+        });
+}
+
+describe('readMappingFile', () => {
+    it('should read and parse the mapping file correctly', () => {
+        const filePath = path.join(__dirname, 'mapping.txt');
+        const expectedOutput: Array<[RegExp, string]> = [
+            [/hello/, 'hi'],
+            [/world/, 'earth']
+        ];
+
+        const result = readMappingFile(filePath);
+
+        expect(result).toEqual(expectedOutput);
+    });
+
+    it('should handle empty lines in the mapping file', () => {
+        const filePath = path.join(__dirname, 'empty_lines_mapping.txt');
+        const expectedOutput: Array<[RegExp, string]> = [
+            [/hello/, 'hi']
+        ];
+
+        const result = readMappingFile(filePath);
+
+        expect(result).toEqual(expectedOutput);
+    });
+
+    it('should throw an error if the mapping file does not exist', () => {
+        const nonExistentFilePath = path.join(__dirname, 'non_existent_mapping.txt');
+
+        expect(() => readMappingFile(nonExistentFilePath)).toThrow();
+    });
+});
+```
+
+### Explanation:
+
+1. **Imports**: We import necessary modules such as `@jest/globals` for Jest functions, `fs` for file system operations, and `path` for handling file paths.
+2. **Function Definition**: The `readMappingFile` function reads the content of the mapping file, splits it into lines, filters out any empty lines, and then maps each line to a tuple containing a compiled regular expression and its replacement string.
+3. **Describe Block**: We use `describe` to group related tests together.
+4. **It Blocks**: 
+   - The first `it` block checks if the function correctly reads and parses the mapping file.
+   - The second `it` block ensures that the function handles empty lines gracefully.
+   - The third `it` block verifies that the function throws an error when the specified mapping file does not exist.
+
+Make sure to create the test files (`mapping.txt`, `empty_lines_mapping.txt`) in the same directory as your test file to match the file paths used in the test cases.

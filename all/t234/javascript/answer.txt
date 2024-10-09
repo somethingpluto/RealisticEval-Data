@@ -1,0 +1,53 @@
+Sure! Below is the equivalent JavaScript code using Node.js and the `csv-parser` and `fast-csv` libraries to handle CSV files. This code will check if a row with matching values in the first three columns already exists before appending a new row.
+
+First, make sure you have the necessary packages installed:
+
+```bash
+npm install csv-parser fast-csv
+```
+
+Here's the JavaScript code:
+
+```javascript
+const fs = require('fs');
+const csvParser = require('csv-parser');
+const fastCsv = require('fast-csv');
+
+function appendOrSkipRow(filePath, rowCandidate) {
+    return new Promise((resolve, reject) => {
+        const firstThreeColumns = rowCandidate.slice(0, 3).join(',');
+        let exists = false;
+
+        // Read the CSV file and check for duplicate rows
+        fastCsv.parseFile(filePath)
+            .on('data', (row) => {
+                if (row.slice(0, 3).join(',') === firstThreeColumns) {
+                    exists = true;
+                }
+            })
+            .on('end', () => {
+                if (!exists) {
+                    // Append the new row if it doesn't exist
+                    fastCsv.writeToPath(filePath, [rowCandidate], { headers: false, delimiter: ',' })
+                        .then(() => resolve())
+                        .catch(reject);
+                } else {
+                    resolve();
+                }
+            });
+    });
+}
+
+// Example usage
+appendOrSkipRow('example.csv', ['value1', 'value2', 'value3', 'otherValues'])
+    .then(() => console.log('Row appended or skipped successfully'))
+    .catch(err => console.error('Error:', err));
+```
+
+### Explanation:
+1. **Reading the CSV File**: The `fastCsv.parseFile` function reads the CSV file line by line.
+2. **Checking for Duplicates**: For each row, it checks if the first three columns match the candidate row's first three columns.
+3. **Appending the Row**: If no duplicate is found, the `fastCsv.writeToPath` function appends the new row to the CSV file.
+4. **Handling Promises**: The function returns a promise that resolves when the operation completes, either by appending the row or skipping it.
+
+This approach ensures that the new row is only added if it does not already exist in the CSV file based on the first three columns.

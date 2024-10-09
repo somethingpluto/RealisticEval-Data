@@ -1,0 +1,79 @@
+Sure, here's how you can translate the given Python `unittest` test class into a C++ `Catch2` test case:
+
+```cpp
+#include <catch2/catch.hpp>
+#include <fstream>
+#include <string>
+#include <vector>
+
+std::vector<std::string> compare_files(const std::string& file1_path, const std::string& file2_path) {
+    std::ifstream file1(file1_path);
+    std::ifstream file2(file2_path);
+
+    if (!file1.is_open() || !file2.is_open()) {
+        throw std::runtime_error("File not found");
+    }
+
+    std::vector<std::string> differences;
+    std::string line1, line2;
+
+    while (getline(file1, line1) && getline(file2, line2)) {
+        if (line1 != line2) {
+            differences.push_back(line1);
+            differences.push_back(line2);
+        }
+    }
+
+    return differences;
+}
+
+TEST_CASE("Compare files with no differences", "[compare_files]") {
+    std::ofstream file1("temp_file1.txt");
+    file1 << "Hello\nWorld";
+    file1.close();
+
+    std::ofstream file2("temp_file2.txt");
+    file2 << "Hello\nWorld";
+    file2.close();
+
+    auto result = compare_files("temp_file1.txt", "temp_file2.txt");
+
+    REQUIRE(result.empty());
+
+    remove("temp_file1.txt");
+    remove("temp_file2.txt");
+}
+
+TEST_CASE("Compare files with differences", "[compare_files]") {
+    std::ofstream file1("temp_file1.txt");
+    file1 << "Hello\nWorld";
+    file1.close();
+
+    std::ofstream file2("temp_file2.txt");
+    file2 << "Hello\nUniverse";
+    file2.close();
+
+    auto result = compare_files("temp_file1.txt", "temp_file2.txt");
+
+    REQUIRE(result.size() == 4);
+    REQUIRE(result[0] == "World");
+    REQUIRE(result[1] == "Universe");
+
+    remove("temp_file1.txt");
+    remove("temp_file2.txt");
+}
+```
+
+### Explanation:
+1. **Function Implementation**:
+   - The `compare_files` function reads the contents of two files line by line and compares them. If a difference is found, it adds both lines to the `differences` vector.
+   - If either file cannot be opened, it throws a `std::runtime_error`.
+
+2. **Test Cases**:
+   - `TEST_CASE("Compare files with no differences", "[compare_files]")`: This test case creates two identical temporary files, calls `compare_files`, and checks that the result is empty.
+   - `TEST_CASE("Compare files with differences", "[compare_files]")`: This test case creates two different temporary files, calls `compare_files`, and checks that the result contains the expected lines.
+
+3. **Cleanup**:
+   - After each test case, the temporary files are removed using the `remove` function.
+
+Make sure to include the Catch2 library in your project and link against it when compiling your C++ code.

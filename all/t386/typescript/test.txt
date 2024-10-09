@@ -1,0 +1,49 @@
+Here's how you can write a Jest test case in TypeScript for the given Python function using `jest` and `fs-extra`:
+
+```typescript
+import fs from 'fs-extra';
+import { convertEncoding } from './convertEncoding'; // Adjust the path according to your project structure
+
+describe('convertEncoding', () => {
+  const tempDir = fs.mkdtempSync('/tmp/');
+  let inputFile: string;
+  let outputFile: string;
+
+  beforeEach(() => {
+    inputFile = `${tempDir}/input.txt`;
+    outputFile = `${tempDir}/output.txt`;
+
+    // Create an example input file with some text encoded in cp932
+    fs.writeFileSync(inputFile, '\u3042\u308a\u304c\u3057\u304b\u3089\u3081\u306f\u3002', 'binary');
+  });
+
+  afterEach(() => {
+    fs.removeSync(tempDir);
+  });
+
+  it('should convert encoding from cp932 to utf-16 successfully', async () => {
+    expect(await convertEncoding(inputFile, outputFile)).toBe(true);
+
+    // Read the output file and check its contents
+    const outputContent = fs.readFileSync(outputFile, 'utf-16le');
+    expect(outputContent).toBe('\u3042\u308a\u304c\u3057\u304b\u3089\u3081\u306f\u3002');
+  });
+
+  it('should return false if no conversion was needed', async () => {
+    // Ensure the input file has already been saved with the target encoding
+    fs.writeFileSync(outputFile, '\u3042\u308a\u304c\u3057\u304b\u3089\u3081\u306f\u3002', 'utf-16le');
+
+    expect(await convertEncoding(outputFile, outputFile)).toBe(false);
+  });
+});
+```
+
+This test suite sets up a temporary directory before each test case and cleans it up after each test case. It tests two scenarios: when the input file needs to be converted from `cp932` to `utf-16`, and when no conversion is needed because the file is already in the target encoding.
+
+Make sure to install the required dependencies (`fs-extra`) before running the tests:
+
+```sh
+npm install --save-dev jest @types/jest fs-extra @types/fs-extra
+```
+
+Also, update the import statement at the top of the file to point to the correct location of your `convertEncoding` function.

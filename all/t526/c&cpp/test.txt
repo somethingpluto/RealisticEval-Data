@@ -1,0 +1,82 @@
+Sure, I can help you convert the Python unittest test class to a C++ test case using Catch2. Below is the equivalent C++ code for your Python unittest test class:
+
+```cpp
+#include <iostream>
+#include <string>
+#include <unordered_map>
+#include <cassert>
+#include "catch.hpp"
+
+std::string min_window(const std::string& s, const std::string& t) {
+    /**
+     * Find the minimum window substring in `s` that contains all characters of `t`.
+     *
+     * Args:
+     *     s (const std::string&): The input string in which to search for the substring.
+     *     t (const std::string&): The target string whose characters must be included in the substring.
+     *
+     * Returns:
+     *     std::string: The minimum window substring of `s` that contains all characters of `t`. Returns an empty string if no such substring exists.
+     */
+    
+    std::unordered_map<char, int> target_count;
+    std::unordered_map<char, int> window_count;
+    int required = 0;
+    int formed = 0;
+    int left = 0, right = 0;
+    int min_length = INT_MAX;
+    int start = -1;
+
+    // Count the frequency of each character in t
+    for (char c : t) {
+        ++target_count[c];
+        if (target_count[c] == 1) {
+            ++required;
+        }
+    }
+
+    while (right < s.size()) {
+        char c = s[right++];
+        if (target_count.count(c)) {
+            ++window_count[c];
+            if (window_count[c] == target_count[c]) {
+                ++formed;
+            }
+        }
+
+        // Try and contract the window till it becomes invalid
+        while (left <= right && formed == required) {
+            char d = s[left++];
+            if (min_length > right - left + 1) {
+                min_length = right - left + 1;
+                start = left - 1;
+            }
+            if (window_count.count(d)) {
+                --window_count[d];
+                if (window_count[d] < target_count[d]) {
+                    --formed;
+                }
+            }
+        }
+    }
+
+    return start == -1 ? "" : s.substr(start, min_length);
+}
+
+TEST_CASE("Min Window Substring", "[min_window]") {
+    REQUIRE(min_window("ADOBECODEBANC", "ABC") == "BANC");
+    REQUIRE(min_window("a", "a") == "a");
+    REQUIRE(min_window("a", "aa") == "");
+    REQUIRE(min_window("ab", "b") == "b");
+    REQUIRE(min_window("abcdebdde", "dbd") == "bcdebdde");
+}
+```
+
+### Explanation:
+1. **Include Necessary Headers**: We include the necessary headers for strings, unordered maps, assertions, and Catch2.
+2. **Function Definition**: The `min_window` function remains unchanged from your Python code.
+3. **Catch2 Test Case**:
+   - `TEST_CASE` macro defines a test case named "Min Window Substring".
+   - `REQUIRE` macro asserts that the output of `min_window` matches the expected result.
+
+Make sure you have Catch2 installed and properly configured in your project to compile and run these tests.

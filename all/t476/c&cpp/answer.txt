@@ -1,0 +1,118 @@
+Sure, here's how you can implement a topological sort using Depth-First Search (DFS) in C++. The implementation assumes that vertices are labeled from 0 to n-1.
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <stack>
+
+using namespace std;
+
+class Graph {
+private:
+    int V; // Number of vertices
+    vector<int> *adj; // Adjacency lists
+
+public:
+    Graph(int V);
+    void addEdge(int v, int w);
+    bool dfsUtil(int v, stack<int>& Stack, vector<bool>& visited);
+    vector<int> topologicalSort();
+};
+
+Graph::Graph(int V) {
+    this->V = V;
+    adj = new vector<int>[V];
+}
+
+void Graph::addEdge(int v, int w) {
+    adj[v].push_back(w); // Add w to v’s list.
+}
+
+bool Graph::dfsUtil(int v, stack<int>& Stack, vector<bool>& visited) {
+    // Mark the current node as visited.
+    visited[v] = true;
+
+    // Recur for all the vertices adjacent to this vertex.
+    for (int i = 0; i != adj[v].size(); ++i) {
+        if (!visited[adj[v][i]]) {
+            if (!dfsUtil(adj[v][i], Stack, visited)) return false;
+        }
+    }
+
+    // Push current vertex to stack which stores result
+    Stack.push(v);
+
+    return true;
+}
+
+vector<int> Graph::topologicalSort() {
+    stack<int> Stack;
+    vector<bool> visited(V, false);
+
+    // Call the recursive helper function to store Topological Sort starting from all vertices one by one
+    for (int i = 0; i < V; i++)
+        if (!visited[i])
+            if (!dfsUtil(i, Stack, visited))
+                return {}; // Cycle detected, no topological sort possible
+
+    vector<int> topoOrder;
+    while (!Stack.empty()) {
+        topoOrder.push_back(Stack.top());
+        Stack.pop();
+    }
+
+    return topoOrder;
+}
+
+// Example usage
+int main() {
+    int V = 6;
+    Graph g(V);
+
+    g.addEdge(5, 2);
+    g.addEdge(5, 0);
+    g.addEdge(4, 0);
+    g.addEdge(4, 1);
+    g.addEdge(2, 3);
+    g.addEdge(3, 1);
+
+    vector<int> topoOrder = g.topologicalSort();
+
+    if (topoOrder.empty())
+        cout << "Cycle detected, no topological sort possible." << endl;
+    else {
+        cout << "Topological Order: ";
+        for (int i : topoOrder)
+            cout << i << " ";
+        cout << endl;
+    }
+
+    return 0;
+}
+```
+
+### Explanation:
+
+1. **Graph Class**:
+   - `V`: Number of vertices.
+   - `adj`: An array of vectors representing adjacency lists.
+
+2. **Constructor (`Graph::Graph`)**:
+   - Initializes the number of vertices and creates adjacency lists.
+
+3. **Add Edge (`Graph::addEdge`)**:
+   - Adds an edge from vertex `v` to vertex `w`.
+
+4. **DFS Util (`Graph::dfsUtil`)**:
+   - Helper function for DFS to visit nodes and push them onto the stack when all their descendants have been visited.
+   - Returns `false` if a cycle is detected.
+
+5. **Topological Sort (`Graph::topologicalSort`)**:
+   - Uses DFS to perform a topological sort.
+   - Returns an empty vector if a cycle is detected, otherwise returns the topological order.
+
+6. **Main Function**:
+   - Creates a graph and performs a topological sort.
+   - Prints the topological order or indicates if a cycle was detected.
+
+This code handles the same functionality as your Python implementation but in C++.

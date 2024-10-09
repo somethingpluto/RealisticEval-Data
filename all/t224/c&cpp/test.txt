@@ -1,0 +1,72 @@
+To convert the given Python unittest test class to a C++ test case using Catch2, you need to define the function `empty_directory` first, and then create a corresponding test case. Below is an example of how you can do it:
+
+1. Define the `empty_directory` function in C++.
+2. Create a test case using Catch2.
+
+Here's the complete code:
+
+```cpp
+#include <catch2/catch.hpp>
+#include <filesystem>
+#include <iostream>
+
+namespace fs = std::filesystem;
+
+void empty_directory(const std::string& directory_path) {
+    try {
+        if (!fs::exists(directory_path)) {
+            throw std::invalid_argument("Directory does not exist");
+        }
+        if (!fs::is_directory(directory_path)) {
+            throw std::invalid_argument("Path is not a directory");
+        }
+
+        for (const auto& entry : fs::directory_iterator(directory_path)) {
+            fs::remove_all(entry.path());
+        }
+    } catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+        throw;
+    }
+}
+
+TEST_CASE("Empty Directory", "[empty_directory]") {
+    // Test cases go here
+
+    SECTION("Non-existent directory") {
+        REQUIRE_THROWS_AS(empty_directory("/path/to/nonexistent/directory"), std::invalid_argument);
+    }
+
+    SECTION("Non-directory path") {
+        REQUIRE_THROWS_AS(empty_directory("/path/to/file.txt"), std::invalid_argument);
+    }
+
+    SECTION("Empty directory") {
+        fs::create_directories("/tmp/test_dir");
+        empty_directory("/tmp/test_dir");
+        REQUIRE(fs::directory_iterator("/tmp/test_dir").begin() == fs::directory_iterator("/tmp/test_dir").end());
+        fs::remove_all("/tmp/test_dir");
+    }
+
+    SECTION("Directory with files") {
+        fs::create_directories("/tmp/test_dir");
+        fs::create_file("/tmp/test_dir/file1.txt");
+        fs::create_file("/tmp/test_dir/file2.txt");
+        empty_directory("/tmp/test_dir");
+        REQUIRE(fs::directory_iterator("/tmp/test_dir").begin() == fs::directory_iterator("/tmp/test_dir").end());
+        fs::remove_all("/tmp/test_dir");
+    }
+}
+```
+
+### Explanation:
+
+1. **Include Catch2 Header**: The `#include <catch2/catch.hpp>` directive includes the Catch2 testing framework.
+2. **Define `empty_directory` Function**: This function uses the `<filesystem>` library to handle file system operations. It checks if the directory exists and is a directory, and then removes all its contents.
+3. **Create Test Cases**:
+   - `SECTION("Non-existent directory")`: Tests what happens when the specified directory does not exist.
+   - `SECTION("Non-directory path")`: Tests what happens when the specified path is not a directory.
+   - `SECTION("Empty directory")`: Creates an empty directory, calls `empty_directory`, and verifies that the directory is indeed empty.
+   - `SECTION("Directory with files")`: Creates a directory with some files, calls `empty_directory`, and verifies that all files have been removed.
+
+Make sure to replace `/path/to/nonexistent/directory` and `/path/to/file.txt` with actual paths for your tests. Also, ensure that the directory paths used in the test cases exist on your system or adjust them accordingly.

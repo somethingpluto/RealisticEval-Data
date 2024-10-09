@@ -1,0 +1,63 @@
+Sure! Below is the equivalent C++ code for the provided Python function `filter_content_with_context`. Note that C++ does not have built-in support for regular expressions in the standard library like Python does, so we will use the `<regex>` header from the C++ Standard Library.
+
+```cpp
+#include <iostream>
+#include <string>
+#include <vector>
+#include <sstream>
+#include <regex>
+
+std::string filterContentWithContext(const std::string& content, const std::vector<std::string>& keywords, int linesBefore = 1, int linesAfter = 1) {
+    std::istringstream iss(content);
+    std::string line;
+    std::vector<std::string> lines;
+
+    // Read all lines into a vector
+    while (std::getline(iss, line)) {
+        lines.push_back(line);
+    }
+
+    std::ostringstream result;
+    std::regex pattern("\\b(" + std::regex_replace(keywords[0], std::regex(R"([\.\^\$\|\?\(\)\[\]\{\}\\\/])"), R"(\$&)") + "\\b");
+
+    for (size_t i = 0; i < lines.size(); ++i) {
+        if (std::regex_search(lines[i], pattern)) {
+            size_t start = std::max(i - linesBefore, size_t(0));
+            size_t end = std::min(i + linesAfter + 1, lines.size());
+
+            for (size_t j = start; j < end; ++j) {
+                result << lines[j] << "\n";
+            }
+        }
+    }
+
+    return result.str();
+}
+
+int main() {
+    std::string content = "This is a sample content.\n"
+                          "It contains some example lines.\n"
+                          "We are looking for specific keywords here.";
+
+    std::vector<std::string> keywords = {"sample", "keywords"};
+    std::string filteredContent = filterContentWithContext(content, keywords);
+
+    std::cout << filteredContent;
+
+    return 0;
+}
+```
+
+### Explanation:
+1. **Reading Content**: The content is read into a vector of strings (`lines`).
+2. **Pattern Creation**: A regex pattern is created using the first keyword. The `\b` ensures that only whole words are matched.
+3. **Regex Search**: For each line, the regex search is performed. If a match is found, the specified number of lines before and after are added to the result.
+4. **Output**: The filtered content is returned as a single string.
+
+### Notes:
+- The regex pattern creation handles basic escape characters for special regex symbols.
+- The `std::regex_replace` function is used to escape special characters in the keywords.
+- The `std::regex_search` function checks if the keyword appears as a whole word in the line.
+- The `std::max` and `std::min` functions ensure that the indices do not go out of bounds when accessing lines before and after the match.
+
+This C++ code should provide similar functionality to the original Python function.

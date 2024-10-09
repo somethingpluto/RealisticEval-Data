@@ -1,0 +1,125 @@
+To convert the given Python `unittest` test class into a C++ test case using Catch2, you first need to define the function `parse_type_hint` in C++. Then, create a Catch2 test file to write the test cases for it. Below is an example of how you can achieve this:
+
+### Step 1: Define the Function in C++
+
+First, let's define the `parse_type_hint` function in C++. We'll assume that the function will take a string and return a vector of strings representing the individual types.
+
+```cpp
+#include <string>
+#include <vector>
+
+std::vector<std::string> parse_type_hint(const std::string& type_hint_string);
+```
+
+The implementation of `parse_type_hint` would depend on your specific requirements and the libraries you are using. For simplicity, let's assume you have a library or custom logic to split the string based on commas and brackets.
+
+Here is a simplified version of the implementation:
+
+```cpp
+#include <iostream>
+#include <sstream>
+#include <vector>
+#include <string>
+#include <regex>
+
+std::vector<std::string> parse_type_hint(const std::string& type_hint_string) {
+    std::vector<std::string> result;
+    std::istringstream iss(type_hint_string);
+    std::string token;
+
+    while (getline(iss, token, ',')) {
+        // Remove leading and trailing whitespace
+        token.erase(token.begin(), std::find_if(token.begin(), token.end(), [](unsigned char ch) {
+            return !std::isspace(ch);
+        }));
+        token.erase(std::find_if(token.rbegin(), token.rend(), [](unsigned char ch) {
+            return !std::isspace(ch);
+        }).base(), token.end());
+
+        // Handle nested structures like Union[Tuple[a, b]]
+        if (token.find('[') != std::string::npos || token.find('{') != std::string::npos) {
+            std::smatch matches;
+            std::regex re(R"((\w+)\[(.*)\])");
+            if (std::regex_match(token, matches, re)) {
+                result.push_back(matches.str(1));
+                result.insert(result.end(), parse_type_hint(matches.str(2)).begin(), parse_type_hint(matches.str(2)).end());
+            }
+        } else {
+            result.push_back(token);
+        }
+    }
+
+    return result;
+}
+```
+
+### Step 2: Write the Catch2 Test Case
+
+Now, let's write the Catch2 test case for the `parse_type_hint` function. Create a new file named `test_parse_type_hint.cpp`.
+
+```cpp
+#define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
+#include "catch.hpp"
+
+#include "parse_type_hint.h"  // Include the header where parse_type_hint is defined
+
+TEST_CASE("Parse Type Hint", "[type_hint]") {
+    std::string type_hint = "Union[typing.List[str], typing.Dict[str, int], Tuple[int, str], Optional[int]]";
+    std::vector<std::string> expected = {"Union", "typing.List", "str", "typing.Dict", "str", "int", "Tuple", "int", "str", "Optional", "int"};
+    std::vector<std::string> result = parse_type_hint(type_hint);
+
+    REQUIRE(result == expected);
+}
+
+TEST_CASE("Empty Type Hint", "[type_hint]") {
+    std::string type_hint = "";
+    std::vector<std::string> expected = {};
+    std::vector<std::string> result = parse_type_hint(type_hint);
+
+    REQUIRE(result == expected);
+}
+
+TEST_CASE("Single Type", "[type_hint]") {
+    std::string type_hint = "int";
+    std::vector<std::string> expected = {"int"};
+    std::vector<std::string> result = parse_type_hint(type_hint);
+
+    REQUIRE(result == expected);
+}
+
+TEST_CASE("Nested Types", "[type_hint]") {
+    std::string type_hint = "Dict[str, List[int]]";
+    std::vector<std::string> expected = {"Dict", "str", "List", "int"};
+    std::vector<std::string> result = parse_type_hint(type_hint);
+
+    REQUIRE(result == expected);
+}
+```
+
+### Step 3: Compile and Run the Tests
+
+To compile and run the tests, you need to link against the Catch2 library. If you are using a build system like CMake, you can add the following to your `CMakeLists.txt`:
+
+```cmake
+cmake_minimum_required(VERSION 3.10)
+project(ParseTypeHintTest)
+
+set(CMAKE_CXX_STANDARD 14)
+
+add_executable(parse_type_hint_test test_parse_type_hint.cpp parse_type_hint.cpp)
+
+find_package(Catch2 REQUIRED)
+target_link_libraries(parse_type_hint_test PRIVATE Catch2::Catch2)
+```
+
+Then, build and run the tests using CMake:
+
+```sh
+mkdir build
+cd build
+cmake ..
+make
+./parse_type_hint_test
+```
+
+This should output the results of the tests, indicating whether each test passed or failed.

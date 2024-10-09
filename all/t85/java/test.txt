@@ -1,0 +1,112 @@
+Sure, here's how you can convert your Python unittest test class to a Java JUnit test case using the `org.junit.jupiter` package. I'll assume you have some basic tests for the `fill_missing_with_first_valid` function.
+
+Here's an example of what your Java JUnit test case might look like:
+
+```java
+package org.real.temp;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+
+import java.util.Arrays;
+import java.util.List;
+
+public class Tester {
+
+    private FillMissingWithFirstValid fillMissingWithFirstValid;
+
+    @BeforeEach
+    public void setUp() {
+        fillMissingWithFirstValid = new FillMissingWithFirstValid();
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"column1", "column2"})
+    public void testFillMissingWithFirstValid(String columnName) {
+        // Create a sample DataFrame
+        List<String> columnData = Arrays.asList("A", null, "C", "D");
+        DataFrame df = new DataFrame(columnName, columnData);
+
+        // Call the method under test
+        DataFrame result = fillMissingWithFirstValid.fill(df, columnName);
+
+        // Verify the results
+        assertEquals("A", result.getValue(0));
+        assertEquals("A", result.getValue(1));
+        assertEquals("C", result.getValue(2));
+        assertEquals("D", result.getValue(3));
+    }
+
+    @Test
+    public void testFillMissingWithFirstValidEmptyColumn() {
+        // Create a sample DataFrame with an empty column
+        List<String> columnData = Arrays.asList(null, null, null);
+        DataFrame df = new DataFrame("column1", columnData);
+
+        // Call the method under test
+        DataFrame result = fillMissingWithFirstValid.fill(df, "column1");
+
+        // Verify the results
+        assertNull(result.getValue(0));
+        assertNull(result.getValue(1));
+        assertNull(result.getValue(2));
+    }
+}
+
+class FillMissingWithFirstValid {
+    public DataFrame fill(DataFrame df, String columnName) {
+        if (df.getColumnNames().contains(columnName)) {
+            Object[] data = df.getData(columnName);
+            for (int i = 0; i < data.length; i++) {
+                if (data[i] == null && i > 0) {
+                    data[i] = data[i - 1];
+                }
+            }
+        }
+        return df;
+    }
+}
+
+class DataFrame {
+    private String columnName;
+    private Object[] data;
+
+    public DataFrame(String columnName, List<String> data) {
+        this.columnName = columnName;
+        this.data = data.toArray();
+    }
+
+    public String getColumnName() {
+        return columnName;
+    }
+
+    public Object[] getData(String columnName) {
+        if (!this.columnName.equals(columnName)) {
+            throw new IllegalArgumentException("Column not found: " + columnName);
+        }
+        return data;
+    }
+
+    public Object getValue(int index) {
+        if (index >= data.length || index < 0) {
+            throw new IndexOutOfBoundsException("Index out of bounds: " + index);
+        }
+        return data[index];
+    }
+}
+```
+
+### Explanation:
+1. **Package Declaration**: The package declaration is set to `org.real.temp`.
+2. **Class Declaration**: The class `Tester` is declared and annotated with `@Test` to indicate it contains test methods.
+3. **Setup Method**: A `@BeforeEach` method is used to initialize any necessary objects before each test method runs.
+4. **Parameterized Test**: A `@ParameterizedTest` method is used to test the `fill_missing_with_first_valid` function with different column names.
+5. **Single Test Case**: A single test method `testFillMissingWithFirstValidEmptyColumn` is provided to test the scenario where the column has no valid values.
+6. **Helper Classes**: Two helper classes, `FillMissingWithFirstValid` and `DataFrame`, are implemented to mimic the functionality of your Python code.
+
+Make sure to adjust the implementation details according to your specific requirements and the actual structure of your project.

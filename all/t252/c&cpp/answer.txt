@@ -1,0 +1,39 @@
+Here's how you can write the equivalent C++ code for your Python `BitSequenceEncoder` class using the `nlohmann/json` library:
+
+```cpp
+#include <iostream>
+#include <string>
+#include <nlohmann/json.hpp>
+
+using json = nlohmann::json;
+
+class BitSequenceEncoder : public json::serializer<json> {
+public:
+    static void encode(json &j, const std::string &key, const json &value) {
+        if (key == "bits" && value.is_number_integer()) {
+            j[key] = std::bitset<32>(value.get<int>()).to_string();
+        } else {
+            j[key] = value;
+        }
+    }
+
+    template<typename T>
+    static void encode(json &j, const std::string &key, const T &value) {
+        json::serializer<json>::encode(j, key, value);
+    }
+};
+
+int main() {
+    json j;
+    j["bits"] = 255;
+    j.dump(4); // Pretty print with indentation of 4 spaces
+
+    return 0;
+}
+```
+
+This C++ code defines a custom JSON serializer class called `BitSequenceEncoder`. The `encode()` function checks if the key is "bits" and the corresponding value is an integer. If so, it converts the integer to a binary string using `std::bitset<32>()` and stores it in the JSON object.
+
+In the `main()` function, we create a JSON object `j`, set its "bits" field to 255, and then serialize it to a pretty-printed string with an indentation of 4 spaces.
+
+Make sure to include the `nlohmann/json.hpp` header file in your project and link against the `nlohmann_json` library when compiling your C++ code.

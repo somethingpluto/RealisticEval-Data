@@ -1,0 +1,74 @@
+Sure! Below is the JavaScript equivalent of your Python function using the `xml2js` library to parse the XML file and `pandas-js` for creating a DataFrame:
+
+First, you need to install the required libraries:
+```bash
+npm install xml2js pandas-js
+```
+
+Then, here's the JavaScript code:
+
+```javascript
+const fs = require('fs');
+const { promisify } = require('util');
+const xml2js = require('xml2js');
+
+const readFileSync = promisify(fs.readFileSync);
+
+async function xmlToDataFrame(xmlFile) {
+    /**
+     * Convert the XML file into a pandas DataFrame, where each <sequence> tag is treated as a row record in the XML,
+     * and the tag and text content of each sub-element are treated as columns and values of the DataFrame.
+     *
+     * @param {string} xmlFile - Path to the XML file.
+     * @returns {Promise<Object>} - Promise that resolves to a DataFrame object.
+     */
+    
+    try {
+        // Read the XML file
+        const xmlData = await readFileSync(xmlFile, 'utf8');
+        
+        // Parse the XML data
+        const parser = new xml2js.Parser();
+        const result = await parser.parseStringPromise(xmlData);
+        
+        // Extract data from the parsed XML
+        const sequences = result.root.sequence;
+        const headers = Object.keys(sequences[0]);
+        
+        // Create an array of objects to represent the DataFrame rows
+        const data = sequences.map(sequence => 
+            headers.reduce((acc, header) => {
+                acc[header] = sequence[header][0];
+                return acc;
+            }, {})
+        );
+        
+        // Return the DataFrame
+        return {
+            headers,
+            data
+        };
+    } catch (error) {
+        console.error('Error parsing XML:', error);
+        throw error;
+    }
+}
+
+// Example usage:
+(async () => {
+    try {
+        const df = await xmlToDataFrame('path/to/your/xmlfile.xml');
+        console.log(df);
+    } catch (error) {
+        console.error(error);
+    }
+})();
+```
+
+### Explanation:
+1. **Reading the XML File**: The `readFileSync` function reads the XML file synchronously.
+2. **Parsing the XML**: The `xml2js.Parser` class is used to parse the XML string into a JavaScript object.
+3. **Extracting Data**: The function extracts the `<sequence>` tags and their sub-elements to create an array of objects, which represents the DataFrame rows.
+4. **Returning the DataFrame**: The function returns an object with `headers` and `data`, similar to a DataFrame structure.
+
+Make sure to replace `'path/to/your/xmlfile.xml'` with the actual path to your XML file.

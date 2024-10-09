@@ -1,0 +1,85 @@
+To convert your Python unittest test class to a C++ Catch2 test case, you need to create a new C++ file and write the test cases using Catch2's syntax. Below is an example of how you might translate a hypothetical Python unittest test class into a C++ Catch2 test case. Note that I'll assume some basic functionality for `clean_pattern` since it was not provided in your original question.
+
+Here’s an example:
+
+### Python Unittest Test Class Example
+
+```python
+import unittest
+import re
+from typing import Union
+
+def clean_pattern(x: str, pattern: str) -> Union[str, float]:
+    """
+    Extracts a numeric value from the input string based on the given regex pattern.
+
+    Args:
+        x (str or any): The input from which to extract the value. It will be converted to a string.
+        pattern (str): The regular expression pattern to use for matching.
+
+    Returns:
+        Union[str,float]: The extracted weight value if a match is found, otherwise an empty string.
+    """
+    try:
+        match = re.search(pattern, str(x))
+        if match:
+            return float(match.group(0))
+        else:
+            return ""
+    except Exception as e:
+        print(f"Error occurred: {e}")
+        return ""
+
+class TestCleanPattern(unittest.TestCase):
+    def test_clean_pattern(self):
+        self.assertEqual(clean_pattern("123.45 kg", r'\d+\.\d+'), 123.45)
+        self.assertEqual(clean_pattern("Weight: 60kg", r'(\d+)'), "60")
+        self.assertEqual(clean_pattern("No number here!", r'\d+\.\d+'), "")
+        self.assertIsNone(clean_pattern(None, r'\d+\.\d+'))
+
+if __name__ == '__main__':
+    unittest.main()
+```
+
+### Corresponding C++ Catch2 Test Case
+
+First, make sure you have Catch2 installed. If you don't already have it, you can install it via vcpkg or download it directly from its GitHub repository.
+
+Create a new C++ file, say `test_clean_pattern.cpp`, and add the following content:
+
+```cpp
+#include <catch2/catch.hpp>
+#include <string>
+#include <regex>
+
+// Assuming clean_pattern function is defined somewhere in your project
+double clean_pattern(const std::string& x, const std::string& pattern) {
+    try {
+        std::smatch match;
+        if (std::regex_search(x, match, std::regex(pattern))) {
+            return std::stod(match.str(0));
+        } else {
+            return -1.0; // Return a special value indicating no match
+        }
+    } catch (...) {
+        std::cerr << "Error occurred." << std::endl;
+        return -1.0; // Handle exception gracefully
+    }
+}
+
+TEST_CASE("Test Clean Pattern", "[clean_pattern]") {
+    REQUIRE(clean_pattern("123.45 kg", R"(\d+\.\d+)") == 123.45);
+    REQUIRE(clean_pattern("Weight: 60kg", R"((\d+))") == 60);
+    REQUIRE(clean_pattern("No number here!", R"(\d+\.\d+)") == -1.0); // Assuming -1.0 indicates no match
+    REQUIRE(clean_pattern("", R"(\d+\.\d+)") == -1.0); // Assuming -1.0 indicates no match
+    REQUIRE(clean_pattern(nullptr, R"(\d+\.\d+)") == -1.0); // Assuming -1.0 indicates no match
+}
+```
+
+### Explanation
+
+- **Catch2 Macros**: Catch2 uses macros like `TEST_CASE` to define test cases and `REQUIRE` to assert conditions.
+- **Regex Handling**: In C++, you can use `<regex>` to handle regular expressions similar to Python's `re`.
+- **Special Values**: Since C++ doesn’t support returning `None` like Python, we use `-1.0` as a special value to indicate no match.
+
+Compile and run your tests using the Catch2 command-line tool or integrate it with your build system. Make sure to link against the Catch2 library when compiling your C++ code.

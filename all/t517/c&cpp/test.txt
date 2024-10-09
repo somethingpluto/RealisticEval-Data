@@ -1,0 +1,113 @@
+To convert your Python unittest test class to a C++ test case using Catch2, you need to follow these steps:
+
+1. **Install Catch2**: Ensure that Catch2 is installed on your system. You can download it from [Catch2's GitHub repository](https://github.com/catchorg/Catch2) or install it via package managers like vcpkg or conan.
+
+2. **Create the C++ Test Case**: Write the equivalent C++ code for your Python unittest test class using Catch2 syntax.
+
+Here's an example of how you might translate your Python function `read_jsonl` into a C++ test case using Catch2:
+
+### Python Code
+```python
+import json
+import os
+from typing import List, Dict, Any
+
+def read_jsonl(file_path: str) -> List[Dict[str, Any]]:
+    """
+    Reads a JSON Lines file and returns its content as a list of dictionaries.
+
+    Args:
+        file_path (str): The path to the JSON Lines file.
+
+    Returns:
+        List[Dict[str, Any]]: A list of JSON objects parsed from the file.
+
+    Raises:
+        FileNotFoundError: If the specified file does not exist.
+        json.JSONDecodeError: If there is an error parsing a line in the JSON Lines file.
+    """
+    if not os.path.exists(file_path):
+        raise FileNotFoundError(f"The file {file_path} does not exist.")
+    
+    result = []
+    with open(file_path, 'r') as file:
+        for line in file:
+            try:
+                result.append(json.loads(line))
+            except json.JSONDecodeError as e:
+                raise json.JSONDecodeError(f"Error decoding JSON from line: {line}") from e
+    
+    return result
+```
+
+### C++ Code Using Catch2
+```cpp
+#include <catch2/catch.hpp>
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <vector>
+#include <nlohmann/json.hpp>
+
+using namespace std;
+using json = nlohmann::json;
+
+vector<json> read_jsonl(const string& file_path) {
+    ifstream file(file_path);
+    if (!file.is_open()) {
+        throw runtime_error("The file " + file_path + " does not exist.");
+    }
+
+    vector<json> result;
+    string line;
+    while (getline(file, line)) {
+        try {
+            result.push_back(json::parse(line));
+        } catch (const json::parse_error& e) {
+            throw runtime_error("Error decoding JSON from line: " + line);
+        }
+    }
+
+    return result;
+}
+
+TEST_CASE("Read JSONL File", "[read_jsonl]") {
+    // Prepare test data
+    string test_data = R"(
+        {"name": "Alice", "age": 30}
+        {"name": "Bob", "age": 25}
+    )";
+
+    // Write test data to a temporary file
+    ofstream temp_file("temp.jsonl");
+    temp_file << test_data;
+    temp_file.close();
+
+    // Call the function under test
+    vector<json> result = read_jsonl("temp.jsonl");
+
+    // Verify the results
+    REQUIRE(result.size() == 2);
+    REQUIRE(result[0]["name"] == "Alice");
+    REQUIRE(result[0]["age"] == 30);
+    REQUIRE(result[1]["name"] == "Bob");
+    REQUIRE(result[1]["age"] == 25);
+
+    // Clean up the temporary file
+    remove("temp.jsonl");
+}
+```
+
+### Explanation
+1. **Include Catch2 Header**: Include the Catch2 header (`#include <catch2/catch.hpp>`).
+2. **Define the Function**: Define the `read_jsonl` function in C++, similar to the Python version.
+3. **Write the Test Case**: Use the `TEST_CASE` macro to define a test case. Inside the test case, prepare test data, write it to a temporary file, call the function, and verify the results.
+4. **Clean Up**: Remove the temporary file after the test case completes.
+
+Make sure to link against the Catch2 library when compiling your C++ code. For example, if you're using g++, you can compile the code with:
+
+```sh
+g++ -std=c++17 -o test_read_jsonl test_read_jsonl.cpp -lcatch2
+```
+
+This will create an executable named `test_read_jsonl` that runs the Catch2 tests.

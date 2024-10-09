@@ -1,0 +1,60 @@
+Here is a basic implementation in C++ that uses the `fstream` library to read the file and parse its contents:
+
+```c++
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <vector>
+
+using namespace std;
+
+struct Article {
+    string title;
+    vector<string> authors;
+    int year;
+};
+
+Article extractBibInfo(string bibFile) {
+    ifstream file(bibFile);
+    if (!file.is_open()) {
+        cerr << "Unable to open file";
+        exit(1); 
+    }
+
+    string line;
+    Article article;
+    while (getline(file, line)) {
+        if (line.find("@article") != string::npos) {
+            stringstream ss(line);
+            string token;
+            getline(ss, token, '{');
+            getline(ss, token, '}');
+            article.title = token;
+        }
+        else if (line.find("author") != string::npos) {
+            stringstream ss(line);
+            string token;
+            getline(ss, token, '=');
+            getline(ss, token, ','); // This assumes there's only one author
+            article.authors.push_back(token.substr(1)); // Remove leading space
+        }
+        else if (line.find("year") != string::npos) {
+            stringstream ss(line);
+            string token;
+            getline(ss, token, '=');
+            getline(ss, token, '}');
+            article.year = stoi(token);
+        }
+    }
+    return article;
+}
+```
+
+This function reads a single `.bib` file at a time and returns an `Article` struct which contains the parsed information about the article. 
+
+Please note that this is a very simple implementation and doesn't handle all possible cases of a `.bib` file. It also doesn't check if the input file exists or if it's a valid `.bib` file before trying to open it. You might want to add these checks in your actual program.
+
+Also, C++ does not have built-in support for JSON or dictionary data types like Python, so you would need to implement those yourself or use an external library.
+
+For a more advanced version, consider using a parser generator like Bison/Flex or ANTLR to generate a parser for the BibTeX language. This would allow you to accurately parse complex `.bib` files and represent them as structured data in your program.

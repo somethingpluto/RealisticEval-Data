@@ -1,0 +1,84 @@
+To convert the given Python `unittest` test class to a C++ `Catch2` test case, you need to first implement the function `compress_whitespace` in C++. Then, you can write the corresponding tests using Catch2. Below is an example of how you might do this:
+
+### Step 1: Implement the Function in C++
+
+First, let's implement the `compress_whitespace` function in C++:
+
+```cpp
+#include <string>
+#include <cctype>
+
+std::string compress_whitespace(const std::string& input_string) {
+    std::string result;
+    bool last_was_space = false;
+
+    for (char ch : input_string) {
+        if (std::isspace(ch)) {
+            if (!last_was_space) {
+                result += ' ';
+                last_was_space = true;
+            }
+        } else {
+            result += ch;
+            last_was_space = false;
+        }
+    }
+
+    // Remove trailing space if present
+    if (!result.empty() && result.back() == ' ') {
+        result.pop_back();
+    }
+
+    return result;
+}
+```
+
+### Step 2: Write the Test Case Using Catch2
+
+Next, let's write the test cases using Catch2. Assuming you have a file named `test_compress_whitespace.cpp`, here is how you can write the tests:
+
+```cpp
+#define CATCH_CONFIG_MAIN
+#include "catch.hpp"
+
+// Include the implementation of compress_whitespace
+#include "compress_whitespace.h"
+
+TEST_CASE("Compress Whitespace", "[compress_whitespace]") {
+    REQUIRE(compress_whitespace("") == "");
+    REQUIRE(compress_whitespace("a") == "a");
+    REQUIRE(compress_whitespace("   ") == " ");
+    REQUIRE(compress_whitespace("a   b") == "a b");
+    REQUIRE(compress_whitespace("  a  b  c  ") == "a b c");
+    REQUIRE(compress_whitespace("a\nb\nc") == "a\nb\nc");
+    REQUIRE(compress_whitespace("a\tb\tc") == "a\tb\tc");
+    REQUIRE(compress_whitespace("a b c") == "a b c");
+    REQUIRE(compress_whitespace("a  b  c") == "a b c");
+    REQUIRE(compress_whitespace("  a  b  c  d  e  f  g  h  i  j  k  l  m  n  o  p  q  r  s  t  u  v  w  x  y  z  ") == "a b c d e f g h i j k l m n o p q r s t u v w x y z");
+}
+
+```
+
+### Explanation
+
+- **CATCH_CONFIG_MAIN**: This macro tells Catch2 to generate the main function.
+- **#include "catch.hpp"**: This includes the Catch2 header file.
+- **#include "compress_whitespace.h"**: This includes the header file where your `compress_whitespace` function is declared.
+- **TEST_CASE**: This macro defines a test case. The first argument is the name of the test case, and the second argument is the tag(s) associated with the test case.
+- **REQUIRE**: This macro asserts that the condition is true. If the condition is false, the test will fail.
+
+Make sure to compile your C++ code with the Catch2 library. If you're using CMake, your `CMakeLists.txt` should look something like this:
+
+```cmake
+cmake_minimum_required(VERSION 3.10)
+project(Catch2Example)
+
+set(CMAKE_CXX_STANDARD 14)
+
+find_package(Catch2 REQUIRED)
+
+add_executable(test_compress_whitespace test_compress_whitespace.cpp)
+target_link_libraries(test_compress_whitespace Catch2::Catch2WithMain)
+```
+
+This setup ensures that your test executable links against the Catch2 library and runs the tests defined in `test_compress_whitespace.cpp`.

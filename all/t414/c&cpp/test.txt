@@ -1,0 +1,68 @@
+To convert the provided Python unittest test class into a C++ test case using Catch2, you'll need to follow these steps:
+
+1. Install Catch2 if you haven't already. You can do this via vcpkg or manually download it.
+2. Write the equivalent C++ code using Catch2's syntax.
+
+Here is an example of how you might write the equivalent C++ test case:
+
+```cpp
+#include <catch2/catch.hpp>
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <vector>
+#include <map>
+
+// Assuming the function extract_bib_info is defined in a header file named "bib_parser.h"
+#include "bib_parser.h"
+
+std::string createBibFileContent(const std::map<std::string, std::string>& entries) {
+    std::ostringstream oss;
+    for (const auto& entry : entries) {
+        oss << "@" << entry.first << "{";
+        for (const auto& field : entry.second) {
+            oss << field.first << " = {" << field.second << "}";
+        }
+        oss << "}\n";
+    }
+    return oss.str();
+}
+
+TEST_CASE("Extract Bib Info", "[bib]") {
+    // Create a temporary BibTeX file content
+    std::map<std::string, std::map<std::string, std::string>> entries = {
+        {"sample2024", {{"author", "John Doe and Jane Smith"}, {"title", "A Comprehensive Study on AI"}, {"year", "2024"}}}
+    };
+    std::string bibFileContent = createBibFileContent(entries);
+
+    // Write the content to a temporary file
+    std::ofstream tempFile("temp.bib");
+    tempFile << bibFileContent;
+    tempFile.close();
+
+    // Call the function to be tested
+    std::vector<std::map<std::string, std::string>> result = extract_bib_info("temp.bib");
+
+    // Clean up the temporary file
+    remove("temp.bib");
+
+    // Verify the results
+    REQUIRE(result.size() == 1);
+    REQUIRE(result[0]["title"] == "A Comprehensive Study on AI");
+    REQUIRE(result[0]["author"] == "John Doe and Jane Smith");
+    REQUIRE(result[0]["year"] == "2024");
+}
+```
+
+### Explanation:
+
+1. **createBibFileContent**: This helper function creates a string representing the content of a BibTeX file based on the given entries.
+2. **TEST_CASE**: This macro defines a test case in Catch2.
+3. **entries**: A map representing the entries in the BibTeX file.
+4. **bibFileContent**: The content of the temporary BibTeX file.
+5. **tempFile**: A temporary file where the BibTeX content is written.
+6. **extract_bib_info**: The function being tested.
+7. **remove("temp.bib")**: Removes the temporary file after the test.
+8. **REQUIRE**: Macros used to verify the correctness of the results.
+
+Make sure to include the appropriate headers and link against the Catch2 library when compiling your C++ code.

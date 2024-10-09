@@ -1,0 +1,71 @@
+Here's an example of how you can implement the Python function `process_csv` in C++. Note that the C++ code uses the CSV-parser library provided by Boost to read and write CSV files. If you don't have Boost installed on your system, you'll need to install it first.
+
+```cpp
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <vector>
+#include <string>
+#include <boost/algorithm/string.hpp>
+
+struct Row {
+    std::vector<std::string> cells;
+};
+
+bool has_two_or_more_empty_columns(const Row& row) {
+    int count = 0;
+    for (const auto& cell : row.cells) {
+        if (cell.empty()) {
+            count++;
+            if (count >= 2) {
+                return true;
+            }
+        } else {
+            count = 0;
+        }
+    }
+    return false;
+}
+
+void process_csv(const std::string& file_path, const std::string& output_path) {
+    std::ifstream file(file_path);
+    if (!file.is_open()) {
+        std::cerr << "Error opening file: " << file_path << std::endl;
+        return;
+    }
+
+    std::ofstream output_file(output_path);
+    if (!output_file.is_open()) {
+        std::cerr << "Error opening output file: " << output_path << std::endl;
+        return;
+    }
+
+    std::string line;
+    while (std::getline(file, line)) {
+        Row row;
+        boost::split(row.cells, line, boost::is_any_of(","));
+        if (!has_two_or_more_empty_columns(row)) {
+            std::cout << line << std::endl; // Output to console
+            output_file << line << std::endl; // Write to output file
+        }
+    }
+
+    file.close();
+    output_file.close();
+}
+```
+
+This C++ code does the following:
+
+1. Defines a `Row` struct to hold the cells of a CSV row.
+2. Implements a helper function `has_two_or_more_empty_columns` to check if a row has two or more consecutive empty columns.
+3. Defines the `process_csv` function, which reads the input CSV file line by line, processes each row, and writes non-empty rows to the output file.
+
+To use this code, make sure you have Boost installed and properly linked in your project. You can compile and run the program using a command like this:
+
+```sh
+g++ -o process_csv process_csv.cpp -lboost_system -lboost_filesystem
+./process_csv input.csv output.csv
+```
+
+This assumes you're using GCC and linking against the Boost System and Filesystem libraries. Adjust the compilation command according to your environment and compiler.

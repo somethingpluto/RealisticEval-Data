@@ -1,0 +1,57 @@
+Sure, here is how you can convert your Python `unittest` test class to a TypeScript test case using Jest:
+
+```typescript
+import * as fs from 'fs';
+import { parse } from 'csv-parse';
+
+describe('CSV to SQL Insert', () => {
+  it('should convert CSV content to SQL insert statement', async () => {
+    // Mock CSV file content
+    const mockCsvContent = `
+      id,name,age
+      1,Alice,30
+      2,Bob,25
+    `;
+
+    // Write mock CSV file to disk
+    const tempFilePath = '/tmp/temp.csv';
+    fs.writeFileSync(tempFilePath, mockCsvContent);
+
+    // Function to simulate reading the CSV file and converting to SQL
+    function csvToSqlInsert(filePath: string): Promise<string> {
+      return new Promise((resolve, reject) => {
+        let sqlStatements = '';
+        fs.createReadStream(filePath)
+          .pipe(parse({ columns: true }))
+          .on('data', (row) => {
+            sqlStatements += `INSERT INTO ${filePath.replace('.csv', '')} (${Object.keys(row).join(', ')}) VALUES (${Object.values(row).map(value => `'${value}'`).join(', ')});\n`;
+          })
+          .on('end', () => resolve(sqlStatements))
+          .on('error', (err) => reject(err));
+      });
+    }
+
+    // Call the function with the temporary file path
+    csvToSqlInsert(tempFilePath).then((sql) => {
+      expect(sql.trim()).toBe(`
+        INSERT INTO /tmp/temp.csv (id, name, age) VALUES ('1', 'Alice', '30');
+        INSERT INTO /tmp/temp.csv (id, name, age) VALUES ('2', 'Bob', '25');
+      `.trim());
+    }).catch((err) => {
+      console.error(err);
+    });
+
+    // Clean up - remove the temporary file
+    fs.unlinkSync(tempFilePath);
+  });
+});
+```
+
+### Explanation:
+1. **Mock CSV Content**: We create a mock CSV content string.
+2. **Write to Temporary File**: We write this mock content to a temporary file on the disk.
+3. **Simulate CSV Reading and Conversion**: We define a function `csvToSqlInsert` that reads the CSV file, parses its contents, and constructs SQL insert statements.
+4. **Test Case**: We use Jest's `it` function to write our test case. The test calls `csvToSqlInsert` with the temporary file path and checks if the output matches the expected SQL insert statements.
+5. **Clean Up**: Finally, we clean up by removing the temporary file.
+
+This TypeScript test case uses Jest for assertions and handles asynchronous operations properly using Promises.

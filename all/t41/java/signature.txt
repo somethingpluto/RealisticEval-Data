@@ -1,0 +1,81 @@
+Here's how you could translate your Python code into Java, keeping the same structure and comments:
+
+```java
+import java.util.BitSet;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
+/**
+ * Implement a bloom filter class with an add method that adds an element to the Bloom filter.
+ * Callers can check for the presence of an element directly using the contains() method.
+ */
+public class BloomFilter {
+    
+    private BitSet bitSet;
+    private int size;
+    private int hashCount;
+    private MessageDigest digest;
+    
+    /**
+     * Constructor for the Bloom Filter
+     *
+     * @param size The size of the bit set used for storing bits
+     * @param hashCount The number of hash functions to use
+     */
+    public BloomFilter(int size, int hashCount) throws NoSuchAlgorithmException {
+        this.size = size;
+        this.hashCount = hashCount;
+        this.bitSet = new BitSet(size);
+        this.digest = MessageDigest.getInstance("SHA-256");
+    }
+    
+    /**
+     * Adds an item to the bloom filter
+     *
+     * @param item The item to be added
+     */
+    public void add(String item) {
+        byte[] bytes = item.getBytes();
+        for (int i = 0; i < hashCount; i++) {
+            long hashValue = getHash(bytes, i);
+            bitSet.set((int)(hashValue % size));
+        }
+    }
+
+    /**
+     * Checks if an item is possibly present in the bloom filter
+     *
+     * @param item The item to check
+     * @return true if the item might be in the filter, false otherwise
+     */
+    public boolean contains(String item) {
+        byte[] bytes = item.getBytes();
+        for (int i = 0; i < hashCount; i++) {
+            long hashValue = getHash(bytes, i);
+            if (!bitSet.get((int)(hashValue % size))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Generates a hash value for a given byte array and hash index
+     *
+     * @param bytes The byte array to generate a hash from
+     * @param hashIndex The index of the hash function to use
+     * @return A hash value
+     */
+    private long getHash(byte[] bytes, int hashIndex) {
+        digest.update(bytes);
+        byte[] hashBytes = digest.digest(new byte[]{(byte)hashIndex});
+        long hashValue = 0;
+        for (byte b : hashBytes) {
+            hashValue = (hashValue << 8) | (b & 0xFF);
+        }
+        return Math.abs(hashValue);
+    }
+}
+```
+
+This Java version uses `BitSet` to represent the bit set, `MessageDigest` for generating hash values, and implements both `add()` and `contains()` methods to manage items in the Bloom filter. Note that Java does not support operator overloading, so we cannot directly override the `in` keyword like in Python. Instead, we provide a `contains()` method to check for the presence of an item.

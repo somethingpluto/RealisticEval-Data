@@ -1,0 +1,94 @@
+Sure! Below is the equivalent C++ test case using Catch2 for the `im2col` function from your Python unittest code. Note that Catch2 is a header-only C++ testing framework, so you will need to include it in your project.
+
+First, make sure you have Catch2 included in your project. If you're using CMake, you can add it like this:
+
+```cmake
+find_package(Catch2 REQUIRED)
+target_link_libraries(your_target PRIVATE Catch2::Catch2WithMain)
+```
+
+Here's the C++ test case:
+
+```cpp
+#include <catch2/catch.hpp>
+#include <iostream>
+#include <vector>
+
+// Assuming the im2col function is implemented in im2col.cpp
+extern std::vector<int> im2col(const std::vector<int>& image, int filter_height, int filter_width, int stride = 1, int padding = 0);
+
+TEST_CASE("im2col Function", "[im2col]") {
+    // Test case 1
+    SECTION("Single channel, no padding, no stride") {
+        std::vector<int> image = {1, 2, 3, 4,
+                                 5, 6, 7, 8};
+        int filter_height = 2;
+        int filter_width = 2;
+        std::vector<int> expected_result = {1, 2, 5, 6,
+                                           2, 3, 6, 7};
+        REQUIRE(im2col(image, filter_height, filter_width) == expected_result);
+    }
+
+    // Test case 2
+    SECTION("Single channel, padding, stride") {
+        std::vector<int> image = {1, 2, 3, 4,
+                                 5, 6, 7, 8};
+        int filter_height = 2;
+        int filter_width = 2;
+        int stride = 2;
+        int padding = 1;
+        std::vector<int> expected_result = {0, 0, 0, 0, 0, 0, 0, 0,
+                                           0, 1, 2, 0, 0, 0, 0, 0,
+                                           0, 5, 6, 0, 0, 0, 0, 0,
+                                           0, 0, 0, 0, 0, 0, 0, 0};
+        REQUIRE(im2col(image, filter_height, filter_width, stride, padding) == expected_result);
+    }
+
+    // Add more test cases as needed
+}
+```
+
+In this C++ code, we define a test suite called "im2col Function" and add individual sections for different test cases. Each section contains the necessary setup and assertions to verify the correctness of the `im2col` function.
+
+Make sure to implement the `im2col` function in a separate file (e.g., `im2col.cpp`) and link it with your test executable. Here's a simple implementation of `im2col` for reference:
+
+```cpp
+#include <vector>
+
+std::vector<int> im2col(const std::vector<int>& image, int filter_height, int filter_width, int stride = 1, int padding = 0) {
+    int C = static_cast<int>(image.size()) / (image.size() / C);
+    int H = image.size() / (C * W);
+    int W = image.size() / C;
+
+    int out_h = (H + 2 * padding - filter_height) / stride + 1;
+    int out_w = (W + 2 * padding - filter_width) / stride + 1;
+
+    std::vector<int> col(out_h * out_w * filter_height * filter_width * C);
+
+    for (int c = 0; c < C; ++c) {
+        for (int h = 0; h < out_h; ++h) {
+            for (int w = 0; w < out_w; ++w) {
+                for (int kh = 0; kh < filter_height; ++kh) {
+                    for (int kw = 0; kw < filter_width; ++kw) {
+                        int h_in = h * stride + kh - padding;
+                        int w_in = w * stride + kw - padding;
+                        if (h_in >= 0 && h_in < H && w_in >= 0 && w_in < W) {
+                            int idx_out = (c * out_h * out_w + h * out_w + w) * filter_height * filter_width +
+                                          kh * filter_width + kw;
+                            int idx_in = c * H * W + h_in * W + w_in;
+                            col[idx_out] = image[idx_in];
+                        } else {
+                            col[(c * out_h * out_w + h * out_w + w) * filter_height * filter_width +
+                                kh * filter_width + kw] = 0;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return col;
+}
+```
+
+This implementation should be placed in a file named `im2col.cpp`. Make sure to compile and run your tests using a C++ compiler that supports C++11 or later.

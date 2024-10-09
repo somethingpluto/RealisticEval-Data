@@ -1,0 +1,58 @@
+Here is the equivalent C++ code:
+
+```C++
+#include <string>
+#include <regex>
+
+std::string compressWhitespace(const std::string &inputString) {
+    return std::regex_replace(inputString, std::regex("\\s+"), " ");
+}
+```
+
+And here is the equivalent C code using regular expressions from PCRE library:
+
+```C
+#include <pcre.h>
+#include <stdlib.h>
+#include <stdio.h>
+
+char* compressWhitespace(const char *inputString) {
+    const char *error;
+    int erroffset;
+
+    pcre *re = pcre_compile("\\s+", 0, &error, &erroffset, NULL);
+    if (re == NULL) {
+        printf("PCRE compilation failed at offset %d: %s\n", erroffset, error);
+        return NULL;
+    }
+
+    const char *subject = inputString;
+    int ovector[30];
+    int subject_length = strlen(subject);
+
+    char *result = malloc(subject_length + 1);
+    int result_length = 0;
+
+    while (1) {
+        int rc = pcre_exec(re, NULL, subject, subject_length, 0, 0, ovector, 30, NULL);
+        if (rc > 0) {
+            strncpy(result + result_length, subject, ovector[0]);
+            result_length += ovector[0];
+            subject += ovector[1];
+            subject_length -= ovector[1];
+        } else if (rc == PCRE_ERROR_NOMATCH) {
+            strcpy(result + result_length, subject);
+            break;
+        } else {
+            fprintf(stderr, "Matching error %d\n", rc);
+            free(result);
+            return NULL;
+        }
+    }
+
+    result[result_length] = '\0';
+    pcre_free(re);
+    return result;
+}
+```
+Please note that you need to link against the PCRE library when compiling the C code. For example, on Linux, you can use `gcc -o program program.c -lpcre`.

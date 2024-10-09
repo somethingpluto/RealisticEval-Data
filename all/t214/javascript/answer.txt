@@ -1,0 +1,34 @@
+Here's how you can write the JavaScript equivalent for your Python function:
+
+```javascript
+const fs = require('fs');
+const path = require('path');
+
+function readMappingFile(mappingFilePath) {
+  return new Promise((resolve, reject) => {
+    fs.readFile(path.resolve(__dirname, mappingFilePath), 'utf8', (err, data) => {
+      if (err) {
+        reject(err);
+      } else {
+        const lines = data.split('\n').map(line => line.trim());
+        const result = lines.map(line => {
+          const [regexStr, replaceStr] = line.split(',');
+          try {
+            const regex = new RegExp(regexStr);
+            return { regex, replaceStr };
+          } catch(e) {
+            console.error(`Error parsing regex ${regexStr}:`, e);
+            return null;
+          }
+        }).filter(Boolean); // Remove any null entries due to error
+
+        resolve(result);
+      }
+    });
+  });
+}
+
+module.exports = readMappingFile;
+```
+
+This JavaScript function reads the file asynchronously using Node.js's `fs` module, parses each line into a regular expression and its replacement string, and then returns a promise that resolves with an array of objects containing the compiled regex and replacement string. Note that this assumes the input file has one mapping per line in the format "regex,replacement". If your actual file format differs, you'll need to adjust the parsing logic accordingly.

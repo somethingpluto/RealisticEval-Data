@@ -1,0 +1,75 @@
+Sure! Below is the equivalent C++ code for the provided Python function `csv_to_sql_insert`. This code assumes that the CSV file has headers and that you want to generate SQL INSERT statements for each row in the CSV file.
+
+```cpp
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <vector>
+#include <string>
+
+std::string csvToSQLInsert(const std::string& csvFilePath) {
+    std::ifstream csvFile(csvFilePath);
+    if (!csvFile.is_open()) {
+        return "Error opening file";
+    }
+
+    std::string line;
+    std::getline(csvFile, line); // Read the header line
+    std::istringstream ss(line);
+    std::vector<std::string> headers((std::istream_iterator<std::string>(ss)),
+                                     std::istream_iterator<std::string>());
+
+    std::string tableName = csvFilePath.substr(0, csvFilePath.find_last_of('.'));
+    std::string sqlStatements;
+
+    while (std::getline(csvFile, line)) {
+        ss.clear();
+        ss.str(line);
+        std::vector<std::string> values((std::istream_iterator<std::string>(ss)),
+                                        std::istream_iterator<std::string>());
+
+        if (values.size() != headers.size()) {
+            continue; // Skip rows with incorrect number of columns
+        }
+
+        sqlStatements += "INSERT INTO " + tableName + "(";
+        for (size_t i = 0; i < headers.size(); ++i) {
+            sqlStatements += headers[i];
+            if (i < headers.size() - 1) {
+                sqlStatements += ", ";
+            }
+        }
+        sqlStatements += ") VALUES (";
+
+        for (size_t i = 0; i < values.size(); ++i) {
+            if (values[i].find_first_not_of("0123456789.-") == std::string::npos) {
+                sqlStatements += "'" + values[i] + "'";
+            } else {
+                sqlStatements += values[i];
+            }
+            if (i < values.size() - 1) {
+                sqlStatements += ", ";
+            }
+        }
+        sqlStatements += ");\n";
+    }
+
+    csvFile.close();
+    return sqlStatements;
+}
+
+int main() {
+    std::string csvFilePath = "example.csv"; // Replace with your CSV file path
+    std::string sqlStatements = csvToSQLInsert(csvFilePath);
+    std::cout << sqlStatements << std::endl;
+    return 0;
+}
+```
+
+### Explanation:
+1. **Reading the CSV File**: The code opens the specified CSV file and reads it line by line.
+2. **Parsing Headers**: The first line is assumed to be the header, which contains the column names.
+3. **Generating SQL Statements**: For each subsequent line, the code constructs an SQL INSERT statement. It checks if the number of values matches the number of headers and handles different types of data (e.g., strings, numbers).
+4. **Output**: The generated SQL statements are printed to the console.
+
+Make sure to replace `"example.csv"` with the actual path to your CSV file when running the program.

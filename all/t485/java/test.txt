@@ -1,0 +1,64 @@
+Sure! Below is the equivalent Java JUnit test case for your Python `unittest` test class. The package name is `org.real.temp`, and the class name is `Tester`.
+
+```java
+package org.real.temp;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
+
+public class Tester {
+
+    @Test
+    public void testPrepareQuery() {
+        // Test data
+        String sql = "SELECT * FROM users WHERE id = $user_id AND status = $status";
+        String[] expectedSql = {"SELECT * FROM users WHERE id = $1 AND status = $2"};
+        int[] expectedPositions = {1, 2};
+        Object[][] expectedParams = {{42}, {"active"}};
+
+        // Call the method under test
+        Object[] result = prepareQuery(sql, new java.util.HashMap<String, Object>() {{
+            put("user_id", 42);
+            put("status", "active");
+        }});
+
+        // Verify the results
+        assertEquals(expectedSql[0], (String) result[0]);
+        assertArrayEquals(expectedPositions, (int[]) result[1]);
+        assertArrayEquals(expectedParams[0], (Object[]) result[2]);
+    }
+
+    private Object[] prepareQuery(String sql, java.util.Map<String, Object> params) {
+        StringBuilder newSql = new StringBuilder();
+        java.util.ArrayList<Object> paramList = new java.util.ArrayList<>();
+        int pos = 1;
+
+        for (char c : sql.toCharArray()) {
+            if (c == '$') {
+                if (sql.charAt(pos) != '{' && sql.charAt(pos) != '}') {
+                    newSql.append('$').append(pos++);
+                    continue;
+                }
+            }
+            newSql.append(c);
+        }
+
+        for (String key : params.keySet()) {
+            paramList.add(params.get(key));
+        }
+
+        return new Object[]{newSql.toString(), pos - 1, paramList.toArray()};
+    }
+}
+```
+
+### Explanation:
+
+1. **Package Declaration**: The package declaration is at the top of the file.
+2. **Class Declaration**: The class `Tester` is declared within the package.
+3. **Test Method**: The `testPrepareQuery` method is annotated with `@Test` to indicate it is a JUnit test method.
+4. **Test Data**: Test data is defined including the SQL query, expected results, and the actual parameters.
+5. **Method Under Test**: The `prepareQuery` method is called with the test data.
+6. **Assertions**: Assertions are used to verify the correctness of the method's output.
+
+This Java code should be placed in a file named `Tester.java` within the appropriate directory structure under the `src/test/java/org/real/temp` directory.

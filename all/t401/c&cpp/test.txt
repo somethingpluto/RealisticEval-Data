@@ -1,0 +1,84 @@
+To convert your Python unittest test class to a C++ test case using Catch2, you first need to provide the implementation for the `find_placeholders` function and then write the corresponding test cases in C++. Below is an example of how you can achieve this:
+
+### Step 1: Implement the `find_placeholders` Function in C++
+
+First, let's implement the `find_placeholders` function in C++.
+
+```cpp
+#include <string>
+#include <vector>
+#include <regex>
+
+std::vector<std::string> find_placeholders(const std::string& text) {
+    std::vector<std::string> placeholders;
+    std::regex pattern(R"(\{\{ ([^}]+) \}\})");
+    auto words_begin = std::sregex_iterator(text.begin(), text.end(), pattern);
+    auto words_end = std::sregex_iterator();
+
+    for (std::sregex_iterator i = words_begin; i != words_end; ++i) {
+        std::smatch match = *i;
+        placeholders.push_back(match.str(1));
+    }
+
+    return placeholders;
+}
+```
+
+### Step 2: Write Test Cases Using Catch2
+
+Next, let's write the test cases using Catch2. Assume you have a file named `test_find_placeholders.cpp`.
+
+```cpp
+#define CATCH_CONFIG_MAIN
+#include "catch.hpp"
+
+#include "find_placeholders.h"
+
+TEST_CASE("Find Placeholders", "[find_placeholders]") {
+    SECTION("Empty String") {
+        std::string text = "";
+        std::vector<std::string> expected = {};
+        REQUIRE(find_placeholders(text) == expected);
+    }
+
+    SECTION("No Placeholders") {
+        std::string text = "This is a normal sentence.";
+        std::vector<std::string> expected = {};
+        REQUIRE(find_placeholders(text) == expected);
+    }
+
+    SECTION("Single Placeholder") {
+        std::string text = "{{ user_name }}";
+        std::vector<std::string> expected = {"user_name"};
+        REQUIRE(find_placeholders(text) == expected);
+    }
+
+    SECTION("Multiple Placeholders") {
+        std::string text = "{{ user_name }} and {{ age }} years old.";
+        std::vector<std::string> expected = {"user_name", "age"};
+        REQUIRE(find_placeholders(text) == expected);
+    }
+
+    SECTION("Placeholders with Spaces") {
+        std::string text = "{{ full name }}";
+        std::vector<std::string> expected = {"full name"};
+        REQUIRE(find_placeholders(text) == expected);
+    }
+}
+```
+
+### Explanation
+
+1. **Implementation**:
+   - The `find_placeholders` function uses regular expressions to find placeholders in the input string.
+   - It returns a vector of strings containing all the found placeholders.
+
+2. **Test Cases**:
+   - Each `SECTION` represents a different scenario or test case.
+   - The `REQUIRE` macro is used to assert that the actual result matches the expected result.
+
+3. **Catch2 Configuration**:
+   - `#define CATCH_CONFIG_MAIN` tells Catch2 to define the main function.
+   - `#include "catch.hpp"` includes the Catch2 header file.
+
+Make sure you have Catch2 installed and properly set up in your development environment. If you're using a build system like CMake, you can add Catch2 as a subdirectory or link it to your project accordingly.

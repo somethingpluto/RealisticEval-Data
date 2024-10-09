@@ -1,0 +1,96 @@
+Sure! Below is the equivalent C++ code that uses the `yaml-cpp` library for parsing YAML and the `nlohmann/json` library for generating JSON. Make sure you have these libraries installed on your system.
+
+First, install the required libraries using vcpkg or conan if you're using package managers, or download them from their respective websites.
+
+### C++ Code
+
+```cpp
+#include <iostream>
+#include <fstream>
+#include <string>
+#include "yaml-cpp/yaml.h"
+#include "nlohmann/json.hpp"
+
+using namespace std;
+using json = nlohmann::json;
+
+void convertYamlToJson(const string& yamlFile, const string& jsonFile) {
+    try {
+        // Load YAML file
+        ifstream yamlStream(yamlFile);
+        if (!yamlStream.is_open()) {
+            cerr << "Error opening YAML file: " << yamlFile << endl;
+            return;
+        }
+
+        YAML::Node yamlNode = YAML::Load(yamlStream);
+
+        // Convert YAML node to JSON
+        json jsonObj = json::parse(yamlNode.dump());
+
+        // Write JSON to file
+        ofstream jsonStream(jsonFile);
+        if (!jsonStream.is_open()) {
+            cerr << "Error opening JSON file: " << jsonFile << endl;
+            return;
+        }
+
+        jsonStream << jsonObj.dump(4);  // Pretty print with indentation of 4 spaces
+
+        cout << "Conversion successful!" << endl;
+    } catch (const exception& e) {
+        cerr << "Exception occurred: " << e.what() << endl;
+    }
+}
+
+int main(int argc, char* argv[]) {
+    if (argc != 3) {
+        cerr << "Usage: " << argv[0] << " <input.yaml> <output.json>" << endl;
+        return 1;
+    }
+
+    string yamlFile = argv[1];
+    string jsonFile = argv[2];
+
+    convertYamlToJson(yamlFile, jsonFile);
+
+    return 0;
+}
+```
+
+### Compilation Instructions
+
+To compile the above C++ code, you need to link against the `yaml-cpp` and `nlohmann-json` libraries. Assuming you have both libraries installed via vcpkg, you can compile the code using the following command:
+
+```sh
+g++ -o convert_yaml_to_json convert_yaml_to_json.cpp -lyaml-cpp -lnlohmann_json
+```
+
+If you're using conan, add the following lines to your `conanfile.txt`:
+
+```
+[requires]
+yaml-cpp/0.7.0
+nlohmann_json/3.9.1
+
+[generators]
+cmake
+```
+
+Then run:
+
+```sh
+conan install .
+cmake . -G "Unix Makefiles"
+make
+```
+
+### Usage
+
+Run the compiled program with the paths to your input YAML file and output JSON file:
+
+```sh
+./convert_yaml_to_json input.yaml output.json
+```
+
+This will convert the contents of `input.yaml` to `output.json`.

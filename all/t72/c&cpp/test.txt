@@ -1,0 +1,49 @@
+Sure! Below is an example of how you can convert your Python `unittest` test class to a C++ test case using Catch2.
+
+First, let's assume that the function `get_3d_coordinates` is already implemented in C++. For the sake of completeness, I'll also provide a mock implementation of the function in C++.
+
+Here's the C++ code:
+
+```cpp
+#include <catch2/catch.hpp>
+#include <Eigen/Dense>
+
+using namespace Eigen;
+
+Vector3d get_3d_coordinates(const Matrix3d& K, double d, double x, double y) {
+    Vector3d X;
+    X(0) = (x - K(0, 2)) * d / K(0, 0);
+    X(1) = (y - K(1, 2)) * d / K(1, 1);
+    X(2) = d;
+    return X;
+}
+
+TEST_CASE("Test get_3d_coordinates", "[get_3d_coordinates]") {
+    // Test data
+    Matrix3d K = Matrix3d::Identity();
+    K(0, 0) = 500.0; // fx
+    K(1, 1) = 500.0; // fy
+    K(0, 2) = 320.0; // cx
+    K(1, 2) = 240.0; // cy
+    double d = 10.0;  // depth
+    double x = 300.0; // pixel x coordinate
+    double y = 200.0; // pixel y coordinate
+
+    // Expected result
+    Vector3d expected_result(200.0, 160.0, 10.0);
+
+    // Actual result
+    Vector3d actual_result = get_3d_coordinates(K, d, x, y);
+
+    // Check if the results match within a small tolerance
+    REQUIRE(actual_result.isApprox(expected_result, 1e-6));
+}
+```
+
+### Explanation:
+1. **Include Catch2**: The `#include <catch2/catch.hpp>` line includes the Catch2 header file which provides the testing framework.
+2. **Matrix and Vector Types**: We use `Eigen::Matrix3d` for the camera intrinsic matrix and `Eigen::Vector3d` for the 3D coordinates.
+3. **Function Implementation**: The `get_3d_coordinates` function computes the 3D coordinates from the given 2D pixel coordinates, camera intrinsic parameters, and depth.
+4. **Test Case**: The `TEST_CASE` macro defines a new test case named "Test get_3d_coordinates". Inside this macro, we define the test data, call the `get_3d_coordinates` function, and check if the actual result matches the expected result using `REQUIRE`.
+
+Make sure you have Catch2 installed and properly configured in your project. If you're using a build system like CMake, you can add Catch2 as a subdirectory or find it via a package manager.

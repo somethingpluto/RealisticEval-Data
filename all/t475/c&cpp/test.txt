@@ -1,0 +1,67 @@
+To convert the given Python unittest test class into a C++ test case using Catch2, you first need to define the `safe_format` function and then write a test case for it. Below is an example of how you can achieve this:
+
+### Python Code (unittest)
+```python
+import unittest
+
+def safe_format(template, **kwargs):
+    """
+    Safely formats a template string by replacing placeholders with corresponding values
+    from the provided keyword arguments. If a placeholder does not have a corresponding
+    value in kwargs, it remains unchanged.
+
+    Args:
+        template (str): The string template containing placeholders in the form {key}.
+        **kwargs: Keyword arguments that map keys to their replacement values.
+
+    Returns:
+        str: The formatted string with placeholders replaced by values.
+    """
+    return template.format(**{k: v for k, v in kwargs.items() if k in template})
+
+class TestSafeFormat(unittest.TestCase):
+    def test_safe_format(self):
+        self.assertEqual(safe_format("Hello, {name}!", name="Alice"), "Hello, Alice!")
+        self.assertEqual(safe_format("Hello, {name}!", age=30), "Hello, {name}!")
+        self.assertEqual(safe_format("{greeting}, {name}! How old are you?", greeting="Hi", name="Bob", age=30), "Hi, Bob! How old are you?")
+        self.assertEqual(safe_format("{greeting}, {name}! How old are you?", greeting="Hi"), "{greeting}, {name}! How old are you?")
+
+if __name__ == '__main__':
+    unittest.main()
+```
+
+### C++ Code (Catch2)
+First, ensure you have Catch2 installed. You can install it via your package manager or download it directly from the [Catch2 GitHub repository](https://github.com/catchorg/Catch2).
+
+Here's how you can rewrite the test case in C++:
+
+```cpp
+#include <catch2/catch.hpp>
+#include <string>
+
+std::string safe_format(const std::string& template_str, const std::map<std::string, std::string>& kwargs) {
+    std::string result = template_str;
+    for (const auto& kv : kwargs) {
+        size_t pos = 0;
+        while ((pos = result.find("{" + kv.first + "}", pos)) != std::string::npos) {
+            result.replace(pos, kv.first.size() + 2, kv.second);
+            pos += kv.second.size();
+        }
+    }
+    return result;
+}
+
+TEST_CASE("Test Safe Format", "[safe_format]") {
+    REQUIRE(safe_format("Hello, {name}!", {{"name", "Alice"}}) == "Hello, Alice!");
+    REQUIRE(safe_format("Hello, {name}!", {{"age", "30"}}) == "Hello, {name}!");
+    REQUIRE(safe_format("{greeting}, {name}! How old are you?", {{"greeting", "Hi"}, {"name", "Bob"}, {"age", "30"}}) == "Hi, Bob! How old are you?");
+    REQUIRE(safe_format("{greeting}, {name}! How old are you?", {{"greeting", "Hi"}}) == "{greeting}, {name}! How old are you?");
+}
+```
+
+### Explanation:
+1. **Include Catch2 Header**: Include the Catch2 header file at the beginning of your C++ file.
+2. **Define `safe_format` Function**: Implement the `safe_format` function in C++. This function iterates over the key-value pairs in the `kwargs` map and replaces placeholders in the `template_str`.
+3. **Write Test Case**: Use the `TEST_CASE` macro to define a test case named "Test Safe Format". Inside the test case, use `REQUIRE` statements to assert that the output of `safe_format` matches the expected results.
+
+This should give you a good starting point for converting your Python unittest test class to a C++ test case using Catch2.

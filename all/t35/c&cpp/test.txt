@@ -1,0 +1,88 @@
+To convert the Python `unittest` test class into a C++ test case using Catch2, you first need to define the function `is_point_in_polygon` in C++. After that, you can create a test case using Catch2. Below is an example of how you might do it:
+
+### Step 1: Define the Function in C++
+
+First, let's define the `is_point_in_polygon` function in C++. This will be placed in a header file and a corresponding source file.
+
+**polygon.h**
+```cpp
+#ifndef POLYGON_H
+#define POLYGON_H
+
+#include <vector>
+#include <utility> // for std::pair
+
+bool is_point_in_polygon(const std::pair<double, double>& point, const std::vector<std::pair<double, double>>& polygon);
+
+#endif // POLYGON_H
+```
+
+**polygon.cpp**
+```cpp
+#include "polygon.h"
+
+bool is_point_in_polygon(const std::pair<double, double>& point, const std::vector<std::pair<double, double>>& polygon) {
+    int n = polygon.size();
+    bool inside = false;
+
+    for (int i = 0, j = n - 1; i < n; j = i++) {
+        const auto& xi = polygon[i].first;
+        const auto& yi = polygon[i].second;
+        const auto& xj = polygon[j].first;
+        const auto& yj = polygon[j].second;
+
+        if (((yi > point.second) != (yj > point.second)) &&
+            (point.first < (xj - xi) * (point.second - yi) / (yj - yi) + xi)) {
+            inside = !inside;
+        }
+    }
+
+    return inside;
+}
+```
+
+### Step 2: Create a Test Case Using Catch2
+
+Next, we'll create a test case using Catch2. Assume you have a main file where you include Catch2 and your test cases.
+
+**main.cpp**
+```cpp
+#define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
+#include "catch.hpp"
+#include "polygon.h"
+
+TEST_CASE("Point Inside Polygon", "[polygon]") {
+    SECTION("Point inside") {
+        std::vector<std::pair<double, double>> polygon = {{0, 0}, {5, 0}, {5, 5}, {0, 5}};
+        REQUIRE(is_point_in_polygon({3, 3}, polygon) == true);
+    }
+
+    SECTION("Point outside") {
+        std::vector<std::pair<double, double>> polygon = {{0, 0}, {5, 0}, {5, 5}, {0, 5}};
+        REQUIRE(is_point_in_polygon({6, 3}, polygon) == false);
+    }
+
+    SECTION("Point on edge") {
+        std::vector<std::pair<double, double>> polygon = {{0, 0}, {5, 0}, {5, 5}, {0, 5}};
+        REQUIRE(is_point_in_polygon({5, 0}, polygon) == true); // Edge points should also be considered inside
+    }
+}
+
+TEST_CASE("Polygon with Single Point", "[polygon]") {
+    std::vector<std::pair<double, double>> polygon = {{3, 3}};
+    REQUIRE(is_point_in_polygon({3, 3}, polygon) == true);
+}
+
+TEST_CASE("Empty Polygon", "[polygon]") {
+    std::vector<std::pair<double, double>> polygon = {};
+    REQUIRE(is_point_in_polygon({3, 3}, polygon) == false);
+}
+```
+
+### Explanation
+
+- **Catch2 Setup**: We include the necessary headers and define `CATCH_CONFIG_MAIN` to automatically generate the `main` function.
+- **Test Cases**: We create multiple test cases using `TEST_CASE` and `SECTION`. Each section represents a different scenario or condition.
+- **Assertions**: We use `REQUIRE` to assert that the function returns the expected result.
+
+This setup allows you to run the tests and verify that the `is_point_in_polygon` function behaves correctly under various conditions.

@@ -1,0 +1,95 @@
+To convert your Python unittest test class to a C++ test case using Catch2, you'll need to follow these steps:
+
+1. Install Catch2 if you haven't already. You can download it from [Catch2's GitHub repository](https://github.com/catchorg/Catch2).
+
+2. Create a new C++ file for your tests and include the necessary headers.
+
+3. Define your function in C++ (if not already done).
+
+4. Write the test cases using Catch2 syntax.
+
+Here's how you can do it:
+
+### Step 1: Include Catch2 Header
+
+Create a new file, say `test_gen_timeout_timedelta.cpp`, and include the Catch2 header:
+
+```cpp
+#define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
+#include "catch.hpp"
+
+// Assuming the function is defined here or in another file
+#include "gen_timeout_timedelta.h"  // Replace with the actual path to your function definition
+```
+
+### Step 2: Define Your Function in C++
+
+If your function is not yet written in C++, you can define it like so:
+
+```cpp
+#include <chrono>
+#include <string>
+
+std::chrono::nanoseconds gen_timeout_timedelta(const std::string& time_string) {
+    std::chrono::nanoseconds total_time(0);
+    std::regex re("(\\d+)([dhms])");
+    auto words_begin = std::sregex_iterator(time_string.begin(), time_string.end(), re);
+    auto words_end = std::sregex_iterator();
+
+    for (std::sregex_iterator i = words_begin; i != words_end; ++i) {
+        std::smatch match = *i;
+        int value = std::stoi(match.str(1));
+        char unit = match.str(2)[0];
+
+        switch (unit) {
+            case 'd':
+                total_time += std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::hours(value * 24));
+                break;
+            case 'h':
+                total_time += std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::hours(value));
+                break;
+            case 'm':
+                total_time += std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::minutes(value));
+                break;
+            case 's':
+                total_time += std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::seconds(value));
+                break;
+            default:
+                throw std::invalid_argument("Invalid unit");
+        }
+    }
+
+    return total_time;
+}
+```
+
+### Step 3: Write Test Cases Using Catch2 Syntax
+
+Now, write your test cases using Catch2 syntax:
+
+```cpp
+TEST_CASE("Test gen_timeout_timedelta", "[timedelta]") {
+    REQUIRE(gen_timeout_timedelta("1d") == std::chrono::nanoseconds(86400000000000LL));  // 1 day in nanoseconds
+    REQUIRE(gen_timeout_timedelta("2h") == std::chrono::nanoseconds(7200000000000LL));   // 2 hours in nanoseconds
+    REQUIRE(gen_timeout_timedelta("3m") == std::chrono::nanoseconds(1800000000000LL));   // 3 minutes in nanoseconds
+    REQUIRE(gen_timeout_timedelta("4s") == std::chrono::nanoseconds(4000000000LL));      // 4 seconds in nanoseconds
+    REQUIRE(gen_timeout_timedelta("500ms") == std::chrono::nanoseconds(500000000LL));     // 500 milliseconds in nanoseconds
+    REQUIRE(gen_timeout_timedelta("1d 2h 3m 4s 500ms") == std::chrono::nanoseconds(93964000000000LL));  // Mixed units
+}
+
+TEST_CASE("Test invalid input", "[error]") {
+    CHECK_THROWS_AS(gen_timeout_timedelta("1z"), std::invalid_argument);  // Invalid unit character
+    CHECK_THROWS_WITH(gen_timeout_timedelta(""), std::invalid_argument, "Empty string");  // Empty string
+}
+```
+
+### Step 4: Compile and Run Your Tests
+
+Compile your test file along with the Catch2 library and run the executable. For example, if you're using g++:
+
+```sh
+g++ -std=c++11 -o test_gen_timeout_timedelta test_gen_timeout_timedelta.cpp -lcatch2
+./test_gen_timeout_timedelta
+```
+
+This will execute your test cases and output the results. If all tests pass, you should see no errors or failures. If any test fails, Catch2 will report the failure details.

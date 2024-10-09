@@ -1,0 +1,70 @@
+Here's how you can write the JavaScript test case using Jest for the Python function `read_mapping_file`:
+
+```javascript
+const fs = require('fs');
+const path = require('path');
+
+function readMappingFile(mappingFilePath) {
+  const mappingData = fs.readFileSync(path.resolve(__dirname, mappingFilePath), 'utf8');
+  return mappingData.split('\n')
+    .map(line => line.trim())
+    .filter(line => line !== '')
+    .map(line => {
+      const [regexStr, replacement] = line.split(',');
+      return [new RegExp(regexStr, 'g'), replacement];
+    });
+}
+
+// Jest Test Case
+describe('readMappingFile', () => {
+  it('should read the mapping file and return an array of regex and replacement pairs', async () => {
+    // Mocking the fs.readFileSync method
+    const mockReadFileSync = jest.fn().mockReturnValue(`
+      /hello/g,world
+      /test/,example
+    `);
+    
+    jest.spyOn(fs, 'readFileSync').mockImplementation(mockReadFileSync);
+
+    const result = readMappingFile('mapping.txt');
+
+    expect(result).toEqual([
+      [/hello/g, 'world'],
+      [/test/, 'example']
+    ]);
+
+    // Verify that the mocked method was called with the correct arguments
+    expect(mockReadFileSync).toHaveBeenCalledWith(expect.any(String));
+  });
+
+  it('should handle empty lines and spaces in the mapping file', async () => {
+    const mockReadFileSync = jest.fn().mockReturnValue(`
+      /hello/g, world
+
+      /test/, example
+    `);
+    
+    jest.spyOn(fs, 'readFileSync').mockImplementation(mockReadFileSync);
+
+    const result = readMappingFile('mapping.txt');
+
+    expect(result).toEqual([
+      [/hello/g, 'world'],
+      [/test/, 'example']
+    ]);
+  });
+
+  it('should throw an error if the mapping file does not exist', async () => {
+    jest.spyOn(fs, 'readFileSync').mockImplementation(() => {
+      throw new Error('ENOENT: no such file or directory, open \'nonexistentfile.txt\'');
+    });
+
+    expect(() => readMappingFile('nonexistentfile.txt')).toThrowError('ENOENT: no such file or directory, open \'nonexistentfile.txt\'');
+  });
+});
+```
+
+This Jest test suite includes three test cases:
+1. Verifies that the function correctly reads the mapping file and returns the expected array of regex and replacement pairs.
+2. Ensures that the function handles empty lines and spaces gracefully.
+3. Checks that the function throws an error when the specified mapping file does not exist.

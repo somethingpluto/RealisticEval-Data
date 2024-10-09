@@ -1,50 +1,83 @@
 #define CATCH_CONFIG_MAIN
 #include "./lib/catch.hpp"
-double calculateSteeringAngle(double angularVelocity, double speed, double wheelbase) {
-    if (speed <= 0) {
-        throw std::invalid_argument("Speed must be greater than zero.");
-    }
-    return atan((angularVelocity * wheelbase) / speed);
-}TEST_CASE("Calculate Steering Angle Tests") {
-    const double wheelbase = 2.5; // Setting wheelbase constant for all tests
+#include <vector>
 
-    SECTION("Normal case") {
-        double angularVelocity = 1.0; // radians/second
-        double speed = 10.0;          // meters/second
-        double expectedAngle = atan((angularVelocity * wheelbase) / speed);
-        REQUIRE(calculateSteeringAngle(angularVelocity, speed, wheelbase) == Approx(expectedAngle));
-    }
+void merge(std::vector<int>& arr, int left, int mid, int right) {
+    int n1 = mid - left + 1;
+    int n2 = right - mid;
 
-    SECTION("Zero speed") {
-        double angularVelocity = 1.0; // radians/second
-        double speed = 0.0;           // meters/second
-        REQUIRE_THROWS_AS(calculateSteeringAngle(angularVelocity, speed, wheelbase), std::invalid_argument);
-    }
+    std::vector<int> L(n1), R(n2);
 
-    SECTION("Negative speed") {
-        double angularVelocity = 1.0; // radians/second
-        double speed = -5.0;          // meters/second
-        REQUIRE_THROWS_AS(calculateSteeringAngle(angularVelocity, speed, wheelbase), std::invalid_argument);
-    }
+    for (int i = 0; i < n1; i++)
+        L[i] = arr[left + i];
+    for (int j = 0; j < n2; j++)
+        R[j] = arr[mid + 1 + j];
 
-    SECTION("Zero angular velocity") {
-        double angularVelocity = 0.0; // radians/second
-        double speed = 10.0;          // meters/second
-        double expectedAngle = 0.0;   // Steering angle should be zero
-        REQUIRE(calculateSteeringAngle(angularVelocity, speed, wheelbase) == Approx(expectedAngle));
+    int i = 0, j = 0;
+    int k = left;
+
+    while (i < n1 && j < n2) {
+        if (L[i] <= R[j]) {
+            arr[k] = L[i];
+            i++;
+        } else {
+            arr[k] = R[j];
+            j++;
+        }
+        k++;
     }
 
-    SECTION("Large values") {
-        double angularVelocity = 100.0; // radians/second
-        double speed = 1000.0;          // meters/second
-        double expectedAngle = atan((angularVelocity * wheelbase) / speed);
-        REQUIRE(calculateSteeringAngle(angularVelocity, speed, wheelbase) == Approx(expectedAngle));
+    while (i < n1) {
+        arr[k] = L[i];
+        i++;
+        k++;
     }
 
-    SECTION("High angular velocity") {
-        double angularVelocity = 10.0; // radians/second
-        double speed = 1.0;             // meters/second
-        double expectedAngle = atan((angularVelocity * wheelbase) / speed);
-        REQUIRE(calculateSteeringAngle(angularVelocity, speed, wheelbase) == Approx(expectedAngle));
+    while (j < n2) {
+        arr[k] = R[j];
+        j++;
+        k++;
+    }
+}
+
+void merge_sort(std::vector<int>& arr, int left, int right) {
+    if (left < right) {
+        int mid = left + (right - left) / 2;
+
+        merge_sort(arr, left, mid);
+        merge_sort(arr, mid + 1, right);
+
+        merge(arr, left, mid, right);
+    }
+}TEST_CASE("Merge Sort Test Cases", "[merge_sort]") {
+    SECTION("Sorting an empty array") {
+        std::vector<int> empty_array = {};
+        merge_sort(empty_array, 0, empty_array.size() - 1);
+        REQUIRE(empty_array.empty() == true);
+    }
+
+    SECTION("Sorting a single element array") {
+        std::vector<int> single_element = {1};
+        merge_sort(single_element, 0, single_element.size() - 1);
+        REQUIRE(single_element == std::vector<int>{1});
+    }
+
+    SECTION("Sorting a sorted array") {
+        std::vector<int> sorted_array = {1, 2, 3, 4, 5};
+        merge_sort(sorted_array, 0, sorted_array.size() - 1);
+        REQUIRE(sorted_array == std::vector<int>{1, 2, 3, 2, 5});
+    }
+
+    SECTION("Sorting a reverse sorted array") {
+        std::vector<int> reverse_sorted_array = {5, 4, 3, 2, 1};
+        merge_sort(reverse_sorted_array, 0, reverse_sorted_array.size() - 1);
+        REQUIRE(reverse_sorted_array == std::vector<int>{1, 2, 3, 4, 5});
+    }
+
+    SECTION("Sorting an array with random integers") {
+        std::vector<int> random_array = {38, 27, 43, 3, 9, 82, 10};
+        std::vector<int> expected_sorted_array = {3, 9, 10, 27, 38, 43, 82};
+        merge_sort(random_array, 0, random_array.size() - 1);
+        REQUIRE(random_array == expected_sorted_array);
     }
 }

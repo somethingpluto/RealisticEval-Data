@@ -1,0 +1,90 @@
+To convert the Python unittest test class to a C++ Catch2 test case, you first need to define the function `extract_paragraphs_and_lines` in C++. Then, you can create a Catch2 test case to verify its functionality. Below is an example of how you might do this:
+
+### Step 1: Define the Function in C++
+
+First, let's define the `extract_paragraphs_and_lines` function in C++. We'll assume it returns a `std::map<std::string, std::vector<std::string>>`.
+
+```cpp
+#include <iostream>
+#include <sstream>
+#include <vector>
+#include <map>
+#include <string>
+
+std::map<std::string, std::vector<std::string>> extract_paragraphs_and_lines(const std::string& text) {
+    std::map<std::string, std::vector<std::string>> result;
+    std::istringstream iss(text);
+    std::string line;
+
+    std::string currentParagraph;
+    while (std::getline(iss, line)) {
+        if (!line.empty()) {
+            currentParagraph += line + "\n";
+        } else {
+            if (!currentParagraph.empty()) {
+                result["paragraphs"].push_back(currentParagraph);
+                result["lines"].insert(result["lines"].end(), 
+                                      currentParagraph.begin(),
+                                      currentParagraph.end() - 1); // Exclude the last newline character
+                currentParagraph.clear();
+            }
+        }
+    }
+
+    if (!currentParagraph.empty()) {
+        result["paragraphs"].push_back(currentParagraph);
+        result["lines"].insert(result["lines"].end(), 
+                              currentParagraph.begin(),
+                              currentParagraph.end() - 1); // Exclude the last newline character
+    }
+
+    return result;
+}
+```
+
+### Step 2: Create a Catch2 Test Case
+
+Next, we'll create a Catch2 test case to verify the functionality of the `extract_paragraphs_and_lines` function.
+
+```cpp
+#define CATCH_CONFIG_MAIN
+#include "catch.hpp"
+
+TEST_CASE("Extract Paragraphs and Lines", "[extract]") {
+    std::map<std::string, std::vector<std::string>> result = extract_paragraphs_and_lines(
+        "First paragraph.\n"
+        "This is the second line.\n\n"
+        "Second paragraph.\n"
+        "Another line."
+    );
+
+    REQUIRE(result["paragraphs"].size() == 2);
+    REQUIRE(result["paragraphs"][0] == "First paragraph.\nThis is the second line.\n");
+    REQUIRE(result["paragraphs"][1] == "Second paragraph.\nAnother line.\n");
+
+    REQUIRE(result["lines"].size() == 7);
+    REQUIRE(result["lines"][0] == 'F');
+    REQUIRE(result["lines"][1] == 'i');
+    REQUIRE(result["lines"][2] == 'r');
+    REQUIRE(result["lines"][3] == 's');
+    REQUIRE(result["lines"][4] == 't');
+    REQUIRE(result["lines"][5] == ' ');
+    REQUIRE(result["lines"][6] == 'p');
+}
+
+int main(int argc, char *argv[]) {
+    return Catch::Session().run(argc, argv);
+}
+```
+
+### Explanation
+
+1. **Function Definition**: The `extract_paragraphs_and_lines` function reads the input string line by line and constructs paragraphs based on empty lines. It stores the paragraphs and lines in a `std::map`.
+
+2. **Catch2 Test Case**:
+   - `TEST_CASE`: Defines a test case named "Extract Paragraphs and Lines".
+   - `REQUIRE`: Checks that the conditions are met. If any condition fails, the test case will fail.
+
+3. **Main Function**: The `main` function initializes the Catch2 session and runs the tests.
+
+This setup ensures that your C++ code behaves similarly to the original Python unittest code using Catch2 for testing.

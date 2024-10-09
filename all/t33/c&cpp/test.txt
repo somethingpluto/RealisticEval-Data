@@ -1,0 +1,87 @@
+Certainly! Below is the equivalent C++ test case using Catch2 for your Python unittest test class. Note that Catch2 does not directly support testing functions that return `std::optional` or `std::variant`, so we'll assume the function returns a `std::optional<pd::DataFrame>` for error handling.
+
+First, make sure you have Catch2 installed and set up in your project. You can install it via vcpkg or conan, or download it manually from [Catch2's GitHub repository](https://github.com/catchorg/Catch2).
+
+Here's how you might translate your Python test class to a C++ test case:
+
+```cpp
+#include "catch.hpp"
+#include "pandas.h" // Assuming you have a header file for pandas-like operations
+#include <fstream>
+#include <string>
+
+// Mock implementation of xml_to_dataframe for demonstration purposes
+std::optional<pd::DataFrame> xml_to_dataframe(const std::string& xml_file) {
+    // Implement your XML parsing logic here
+    // For now, let's assume it always succeeds and returns an empty DataFrame
+    return pd::DataFrame();
+}
+
+TEST_CASE("XML to DataFrame Conversion", "[xml_to_dataframe]") {
+    SECTION("Valid XML File") {
+        std::string xml_content = R"(
+            <root>
+                <sequence id="1">
+                    <tag1>value1</tag1>
+                    <tag2>value2</tag2>
+                </sequence>
+                <sequence id="2">
+                    <tag1>value3</tag1>
+                    <tag2>value4</tag2>
+                </sequence>
+            </root>
+        )";
+
+        // Write the XML content to a temporary file
+        std::ofstream xml_file("temp.xml");
+        if (!xml_file.is_open()) {
+            FAIL("Failed to create temporary XML file");
+        }
+        xml_file << xml_content;
+        xml_file.close();
+
+        // Call the function under test
+        auto result = xml_to_dataframe("temp.xml");
+
+        // Clean up the temporary file
+        std::remove("temp.xml");
+
+        REQUIRE(result.has_value());
+        REQUIRE(result->size() == 2); // Assuming there are two sequences in the XML
+    }
+
+    SECTION("Invalid XML File") {
+        std::string invalid_xml_content = "<invalid></invalid>";
+
+        // Write the invalid XML content to a temporary file
+        std::ofstream invalid_xml_file("temp_invalid.xml");
+        if (!invalid_xml_file.is_open()) {
+            FAIL("Failed to create temporary invalid XML file");
+        }
+        invalid_xml_file << invalid_xml_content;
+        invalid_xml_file.close();
+
+        // Call the function under test
+        auto result = xml_to_dataframe("temp_invalid.xml");
+
+        // Clean up the temporary file
+        std::remove("temp_invalid.xml");
+
+        REQUIRE(!result.has_value());
+    }
+}
+```
+
+### Explanation:
+
+1. **Mock Implementation**: The `xml_to_dataframe` function is mocked to always succeed and return an empty DataFrame. In a real-world scenario, you would replace this with actual XML parsing logic.
+
+2. **Temporary Files**: We create temporary XML files to simulate input for the function. After running the tests, we clean up these files.
+
+3. **Catch2 Test Cases**:
+   - `SECTION("Valid XML File")`: Tests the function with valid XML data.
+   - `SECTION("Invalid XML File")`: Tests the function with invalid XML data to ensure it handles errors gracefully.
+
+4. **Assertions**: We use Catch2's `REQUIRE` macro to assert conditions such as the presence of a value and the size of the DataFrame.
+
+Make sure to include the appropriate headers and link against the Catch2 library when compiling your C++ code.

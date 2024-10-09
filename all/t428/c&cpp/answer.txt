@@ -1,0 +1,44 @@
+Here is the equivalent C++ code using boost::python library for parsing type hints:
+
+```c++
+#include <boost/python.hpp>
+#include <string>
+#include <vector>
+
+using namespace boost::python;
+using namespace std;
+
+list parse_type_hint(const string &type_hint_string) {
+    exec("import ast", globals(), locals());
+    exec("parsed = ast.literal_eval('" + replace_all_copy(type_hint_string, "'", "\\'") + "')", globals(), locals());
+
+    object obj = eval("locals()['parsed']", globals(), locals());
+    if (obj.ptr() == Py_None) {
+        return list();
+    }
+
+    list result;
+    if (extract<vector<string>>(obj)) {
+        vector<string> vec = extract<vector<string>>(obj);
+        for (const auto &item : vec) {
+            result.append(item);
+        }
+    } else if (extract<map<string, string>>(obj)) {
+        map<string, string> dict = extract<map<string, string>>(obj);
+        for (auto it = dict.begin(); it != dict.end(); ++it) {
+            result.append(it->first);
+            result.append(it->second);
+        }
+    } else {
+        // Handle other types as needed
+    }
+
+    return result;
+}
+```
+
+This function uses Boost.Python to execute Python code within C++. It imports the `ast` module, evaluates the type hint string, and then extracts the parsed types into a Python list. Finally, it converts the Python list to a C++ list and returns it.
+
+Please note that you need to link against the Boost.Python library when compiling this code.
+
+Also, please note that this code does not handle all possible Python type hints. You may need to extend the code to handle more complex cases as needed.

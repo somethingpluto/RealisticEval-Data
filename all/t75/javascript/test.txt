@@ -1,0 +1,80 @@
+Sure, here's how you can convert your Python `unittest` test class into a JavaScript test case using Jest:
+
+First, ensure you have Jest installed in your project. If not, you can install it using npm:
+
+```sh
+npm install --save-dev jest
+```
+
+Next, create a new JavaScript file for your test cases, e.g., `renameFiles.test.js`. Then, write your test case using Jest syntax.
+
+Here's an example of how you might write the test case:
+
+```javascript
+const fs = require('fs');
+const path = require('path');
+const renameFiles = require('./renameFiles'); // Adjust the import path accordingly
+
+// Mock the fs module functions
+jest.mock('fs', () => ({
+  ...jest.requireActual('fs'),
+  readdirSync: jest.fn(),
+  renameSync: jest.fn(),
+}));
+
+describe('renameFiles function', () => {
+  let tempDir;
+
+  beforeEach(() => {
+    // Create a temporary directory with some PNG files
+    tempDir = fs.mkdtempSync(path.join(__dirname, 'test-'));
+    fs.writeFileSync(path.join(tempDir, 'image1.png'), '');
+    fs.writeFileSync(path.join(tempDir, 'image2.png'), '');
+    fs.writeFileSync(path.join(tempDir, 'image3.png'), '');
+  });
+
+  afterEach(() => {
+    // Clean up the temporary directory
+    fs.rmSync(tempDir, { recursive: true });
+  });
+
+  test('renames PNG files in a specified directory', () => {
+    const directory = tempDir;
+    renameFiles(directory);
+
+    // Check if the files were renamed correctly
+    expect(fs.readdirSync(directory)).toEqual([
+      'image1001.png',
+      'image2001.png',
+      'image3001.png',
+    ]);
+
+    // Check if the renameSync method was called with the correct arguments
+    expect(fs.renameSync).toBeCalledTimes(3);
+    expect(fs.renameSync).toHaveBeenCalledWith(
+      path.join(directory, 'image1.png'),
+      path.join(directory, 'image1001.png')
+    );
+    expect(fs.renameSync).toHaveBeenCalledWith(
+      path.join(directory, 'image2.png'),
+      path.join(directory, 'image2001.png')
+    );
+    expect(fs.renameSync).toHaveBeenCalledWith(
+      path.join(directory, 'image3.png'),
+      path.join(directory, 'image3001.png')
+    );
+  });
+});
+```
+
+### Explanation:
+
+1. **Mocking `fs` Module**: We mock the `fs` module to control its behavior during testing. This allows us to avoid actual file system operations and focus on testing the logic of our function.
+
+2. **Temporary Directory**: We create a temporary directory using `fs.mkdtempSync` before each test and clean it up afterward using `fs.rmSync`.
+
+3. **Test Case**: We write a test case that calls the `renameFiles` function with the temporary directory as an argument. We then check if the files were renamed correctly and if the `fs.renameSync` method was called with the expected arguments.
+
+4. **Assertions**: We use Jest's assertion methods like `expect` to verify the behavior of our function.
+
+Make sure to adjust the import path for `renameFiles` according to where your function is located.

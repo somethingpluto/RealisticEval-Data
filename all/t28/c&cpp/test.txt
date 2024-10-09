@@ -1,0 +1,61 @@
+To convert the provided Python unittest test class to a C++ Catch2 test case, we need to first define the function `print_memory_bits` and then create a corresponding test case using Catch2's syntax. Below is how you can do it:
+
+### Step 1: Define the Function in C++
+First, let's define the function `print_memory_bits` in C++. We'll assume that the function takes a `std::vector<uint8_t>` instead of `bytes` for better compatibility with C++ types.
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <sstream>
+
+void print_memory_bits(const std::vector<uint8_t>& memory_section) {
+    std::stringstream ss;
+    for (const auto& byte : memory_section) {
+        for (int i = 7; i >= 0; --i) {
+            ss << ((byte >> i) & 1);
+        }
+        ss << '\n';
+    }
+    std::cout << ss.str();
+}
+```
+
+### Step 2: Write the Catch2 Test Case
+Next, we will write a Catch2 test case to verify the functionality of `print_memory_bits`.
+
+```cpp
+#define CATCH_CONFIG_MAIN
+#include "catch.hpp"
+
+TEST_CASE("Test print_memory_bits function", "[memory_bits]") {
+    // Test case 1: Single byte
+    std::vector<uint8_t> single_byte = {0b10101010};
+    std::ostringstream expected_output_1;
+    expected_output_1 << "10101010";
+    std::ostringstream actual_output_1;
+    std::streambuf* old_cout_buf = std::cout.rdbuf(actual_output_1.rdbuf());
+    print_memory_bits(single_byte);
+    std::cout.rdbuf(old_cout_buf);
+    REQUIRE(expected_output_1.str() == actual_output_1.str());
+
+    // Test case 2: Multiple bytes
+    std::vector<uint8_t> multiple_bytes = {0b11001100, 0b11110000};
+    std::ostringstream expected_output_2;
+    expected_output_2 << "11001100\n11110000";
+    std::ostringstream actual_output_2;
+    old_cout_buf = std::cout.rdbuf(actual_output_2.rdbuf());
+    print_memory_bits(multiple_bytes);
+    std::cout.rdbuf(old_cout_buf);
+    REQUIRE(expected_output_2.str() == actual_output_2.str());
+}
+```
+
+### Explanation:
+1. **Function Definition**: The `print_memory_bits` function iterates through each byte and each bit within the byte, printing them out in binary format.
+2. **Catch2 Test Case**:
+   - We use `std::ostringstream` to capture the output of `print_memory_bits`.
+   - We redirect `std::cout` to our stream buffer temporarily so that the output from `print_memory_bits` goes into our `ostringstream`.
+   - After capturing the output, we reset `std::cout` back to its original state.
+   - Finally, we compare the captured output with the expected output using `REQUIRE`.
+
+This should give you a good starting point for converting your Python unittest test class to a C++ Catch2 test case.

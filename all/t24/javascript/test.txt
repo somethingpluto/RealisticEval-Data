@@ -1,0 +1,70 @@
+Sure! Here's how you can translate the given Python unittest test class into a Jest test case in JavaScript using the `jest` framework:
+
+```javascript
+const fs = require('fs');
+const path = require('path');
+const { convertYamlToJson } = require('./yourModule'); // Adjust the import based on your actual module structure
+
+describe('convertYamlToJson', () => {
+  it('should convert a YAML file to a JSON file', async () => {
+    const yamlFilePath = path.join(__dirname, 'test.yaml');
+    const jsonFilePath = path.join(__dirname, 'output.json');
+
+    // Create a temporary YAML file for testing
+    fs.writeFileSync(yamlFilePath, `
+      name: John Doe
+      age: 30
+      isStudent: false
+    `);
+
+    try {
+      await convertYamlToJson(yamlFilePath, jsonFilePath);
+
+      // Read the generated JSON file and parse its content
+      const jsonContent = fs.readFileSync(jsonFilePath, 'utf8');
+      const jsonData = JSON.parse(jsonContent);
+
+      expect(jsonData).toEqual({
+        name: 'John Doe',
+        age: 30,
+        isStudent: false
+      });
+    } finally {
+      // Clean up the temporary files after the test
+      fs.unlinkSync(yamlFilePath);
+      fs.unlinkSync(jsonFilePath);
+    }
+  });
+
+  it('should handle errors if the input YAML file does not exist', async () => {
+    const nonExistentFilePath = path.join(__dirname, 'non-existent.yaml');
+    const jsonFilePath = path.join(__dirname, 'output.json');
+
+    try {
+      await convertYamlToJson(nonExistentFilePath, jsonFilePath);
+      throw new Error('Expected an error to be thrown');
+    } catch (error) {
+      expect(error.message).toContain('ENOENT');
+    }
+
+    // Ensure the output JSON file was not created
+    expect(fs.existsSync(jsonFilePath)).toBe(false);
+  });
+});
+```
+
+### Explanation:
+1. **Importing Modules**: The `fs` and `path` modules are used for file operations, and the `convertYamlToJson` function is imported from your module.
+2. **Test Suite**: A Jest test suite is defined with `describe`.
+3. **First Test Case**: This test checks that the `convertYamlToJson` function correctly converts a YAML file to a JSON file.
+   - It creates a temporary YAML file for testing.
+   - Calls the `convertYamlToJson` function.
+   - Reads the generated JSON file and parses its content.
+   - Uses `expect` to verify that the parsed JSON matches the expected output.
+   - Cleans up the temporary files after the test.
+4. **Second Test Case**: This test checks that the function handles errors gracefully when the input YAML file does not exist.
+   - Attempts to call the `convertYamlToJson` function with a non-existent file.
+   - Uses `expect` to verify that an error is thrown.
+   - Ensures that the output JSON file was not created.
+
+Make sure to adjust the import statement (`require('./yourModule')`) to match the actual location of your `convertYamlToJson` function.

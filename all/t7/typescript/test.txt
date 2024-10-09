@@ -1,0 +1,107 @@
+To convert your Python unittest test class to a TypeScript Jest test case, you first need to define the `Logger` class in TypeScript and then write a test case using Jest. Below is how you can do it:
+
+### Step 1: Define the `Logger` Class in TypeScript
+
+```typescript
+// logger.ts
+import * as winston from 'winston';
+
+export class Logger {
+    private logger: winston.Logger;
+
+    constructor(name: string, level: winston.Level = 'debug') {
+        this.logger = winston.createLogger({
+            level,
+            format: winston.format.json(),
+            transports: [
+                new winston.transports.Console()
+            ]
+        });
+    }
+
+    public log(level: winston.Level, message: string): void {
+        this.logger.log({ level, message });
+    }
+}
+```
+
+### Step 2: Write a Test Case Using Jest
+
+```typescript
+// logger.test.ts
+import { Logger } from './logger';
+import * as winston from 'winston';
+
+describe('Logger', () => {
+    let logger: Logger;
+    const mockLog = jest.fn();
+
+    beforeEach(() => {
+        // Mock the console output
+        jest.spyOn(console, 'log').mockImplementation(mockLog);
+
+        logger = new Logger('test-logger');
+    });
+
+    afterEach(() => {
+        jest.clearAllMocks();
+    });
+
+    it('should initialize with the correct level', () => {
+        expect(logger).toBeInstanceOf(Logger);
+        expect((logger as any).logger.level).toBe('debug');
+    });
+
+    it('should log messages correctly', () => {
+        logger.log('info', 'This is an info message');
+        expect(mockLog).toHaveBeenCalledWith(JSON.stringify({ level: 'info', message: 'This is an info message' }));
+    });
+
+    it('should handle different levels', () => {
+        logger.log('error', 'This is an error message');
+        expect(mockLog).toHaveBeenCalledWith(JSON.stringify({ level: 'error', message: 'This is an error message' }));
+    });
+});
+```
+
+### Explanation
+
+1. **Logger Class**:
+   - The `Logger` class uses Winston, a popular logging library for Node.js.
+   - It initializes a logger with a specified level and format.
+   - The `log` method logs messages with the given level.
+
+2. **Test Cases**:
+   - We use Jest's `describe`, `beforeEach`, `afterEach`, and `it` functions to organize and run tests.
+   - `beforeEach` sets up the test environment by creating a new `Logger` instance and mocking the `console.log` function.
+   - `afterEach` clears all mocks after each test to ensure isolation.
+   - We have three test cases:
+     - One checks if the logger is initialized correctly.
+     - Another checks if messages are logged correctly.
+     - A third one ensures that different log levels work as expected.
+
+Make sure you have Jest installed in your project. If not, you can install it using npm or yarn:
+
+```sh
+npm install --save-dev jest
+# or
+yarn add --dev jest
+```
+
+Then, update your `package.json` to include a test script:
+
+```json
+"scripts": {
+    "test": "jest"
+}
+```
+
+Now you can run your tests using:
+
+```sh
+npm test
+# or
+yarn test
+```
+
+This setup should help you transition your Python unittest test class to a TypeScript Jest test case effectively.

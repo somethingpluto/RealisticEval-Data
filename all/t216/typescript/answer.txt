@@ -1,0 +1,43 @@
+Sure, here's how you can convert your Python function into TypeScript:
+
+```typescript
+import { exec } from 'child_process';
+import { promisify } from 'util';
+
+const execAsync = promisify(exec);
+
+async function getLocalIp(interface: string = 'wlan0'): Promise<string> {
+    /**
+     * Gets the IPv4 address of the local computer on a specific network interface, such as wlan0,
+     * which is usually a wireless network interface.
+     *
+     * @param {string} [interface='wlan0'] - The network interface to query. Default is 'wlan0'.
+     * @returns {Promise<string>} - A promise that resolves with the local IP address, or a message indicating no IP was found.
+     */
+    
+    try {
+        const { stdout } = await execAsync(`ifconfig ${interface}`);
+        const ipMatch = stdout.match(/inet\s+(\d+\.\d+\.\d+\.\d+)/);
+        
+        if (ipMatch && ipMatch[1]) {
+            return ipMatch[1];
+        } else {
+            throw new Error('No IP address found');
+        }
+    } catch (error) {
+        console.error(error.message);
+        return 'No IP address found';
+    }
+}
+
+// Example usage:
+getLocalIp().then(ip => console.log(ip));
+```
+
+### Explanation:
+- **Imports**: We use `exec` and `promisify` from Node.js's `child_process` module to run shell commands asynchronously.
+- **Function Definition**: The `getLocalIp` function is defined as an asynchronous function that returns a `Promise`.
+- **Regular Expression**: The regular expression `/inet\s+(\d+\.\d+\.\d+\.\d+)/` is used to extract the IP address from the output of the `ifconfig` command.
+- **Error Handling**: If no IP address is found or an error occurs during the execution of the command, an appropriate error message is returned.
+
+This TypeScript version should work similarly to your original Python code, assuming you're running it in a Node.js environment.

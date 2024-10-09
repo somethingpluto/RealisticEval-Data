@@ -1,0 +1,55 @@
+Here's a C++ version of your Python code using standard libraries and Boost.Locale for character encoding conversions:
+
+```c++
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <boost/locale.hpp>
+
+bool convert_encoding(const std::string& input_file_path, const std::string& output_file_path,
+                      const std::string& original_encoding = "Shift_JIS", 
+                      const std::string& target_encoding = "UTF-16LE") {
+    
+    try {
+        // Open the input file in binary mode
+        std::ifstream input_stream(input_file_path, std::ios::binary);
+        
+        if (!input_stream.is_open()) {
+            throw std::runtime_error("Failed to open input file");
+        }
+        
+        // Read the entire contents of the input file into a string
+        std::string content((std::istreambuf_iterator<char>(input_stream)), std::istreambuf_iterator<char>());
+        
+        // Close the input file stream
+        input_stream.close();
+        
+        // Convert the encoding of the content
+        boost::locale::conv::between between(original_encoding, target_encoding);
+        std::wstring wide_content = between(content.begin(), content.end());
+        
+        // Open the output file in binary mode
+        std::ofstream output_stream(output_file_path, std::ios::binary);
+        
+        if (!output_stream.is_open()) {
+            throw std::runtime_error("Failed to open output file");
+        }
+        
+        // Write the converted content to the output file
+        output_stream.write(wide_content.data(), sizeof(wchar_t) * wide_content.length());
+        
+        // Close the output file stream
+        output_stream.close();
+
+        return true;
+    } catch (...) {
+        return false;
+    }
+}
+```
+
+This C++ function reads the entire contents of an input file, converts its encoding using Boost.Locale, and writes the converted content to an output file. If any errors occur during these operations, the function returns `false`. Otherwise, it returns `true`.
+
+Note that you need to install the Boost library on your system to use this code. You can download it from the official Boost website.
+
+Also, please note that the Boost.Locale library does not support all encodings, so you may need to adjust the encoding names used in the `convert_encoding` function according to your needs.

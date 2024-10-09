@@ -1,0 +1,56 @@
+Here's how you can convert the given Python unittest test class into a TypeScript test case using Jest:
+
+```typescript
+import { readJsonL } from './path_to_your_module'; // Adjust the import according to your module structure
+import * as fs from 'fs';
+import * as path from 'path';
+
+describe('readJsonL', () => {
+  const filePath = path.join(__dirname, 'test.jsonl'); // Path to your test file
+
+  beforeAll(() => {
+    // Create a temporary JSON Lines file for testing
+    const jsonData = [
+      { name: 'Alice', age: 30 },
+      { name: 'Bob', age: 25 }
+    ];
+
+    const jsonString = jsonData.map(obj => JSON.stringify(obj)).join('\n');
+    fs.writeFileSync(filePath, jsonString);
+  });
+
+  afterAll(() => {
+    // Clean up the temporary file after tests
+    fs.unlinkSync(filePath);
+  });
+
+  it('should return a list of dictionaries from a valid JSON Lines file', async () => {
+    try {
+      const result = await readJsonL(filePath);
+      expect(result).toEqual([
+        { name: 'Alice', age: 30 },
+        { name: 'Bob', age: 25 }
+      ]);
+    } catch (error) {
+      fail(`Expected no error but got ${error}`);
+    }
+  });
+
+  it('should throw an error if the file does not exist', async () => {
+    const nonExistentFilePath = path.join(__dirname, 'non_existent_file.jsonl');
+
+    await expect(readJsonL(nonExistentFilePath)).rejects.toThrow(FileNotFoundError);
+  });
+
+  it('should throw an error if there is a JSON decoding error', async () => {
+    const invalidJsonFilePath = path.join(__dirname, 'invalid_json.jsonl');
+
+    // Write an invalid JSON string to the file
+    fs.writeFileSync(invalidJsonFilePath, '{"name": "Charlie", "age": 35} invalid');
+
+    await expect(readJsonL(invalidJsonFilePath)).rejects.toThrow(JSONDecodeError);
+  });
+});
+```
+
+In this TypeScript version, we're using Jest's `beforeAll` and `afterAll` hooks to set up and clean up the test environment, respectively. We're also using `expect` along with Jest matchers like `toEqual`, `rejects.toThrow`, etc., to assert our expectations about the behavior of the `readJsonL` function. Note that you'll need to replace `'./path_to_your_module'` with the actual path to your module where the `readJsonL` function is defined. Additionally, ensure that the `FileNotFoundError` and `JSONDecodeError` classes are properly imported or defined in your project context.

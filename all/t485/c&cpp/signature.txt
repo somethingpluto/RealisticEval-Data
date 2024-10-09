@@ -1,0 +1,61 @@
+```cpp
+#include <iostream>
+#include <string>
+#include <vector>
+#include <map>
+#include <regex>
+
+/**
+ * This function modifies a SQL query string containing named parameters
+ * (like :name, :age) into a format compatible with libraries that require
+ * positional parameters (like ?, ?, etc.), such as pqxx or libpqxx. It returns
+ * a tuple containing the modified SQL string and a vector of parameter values
+ * ordered according to their new positions in the query.
+ * For example:
+ *      input:
+ *          sql: SELECT * FROM users WHERE id = :user_id AND status = :status
+ *          params: {"user_id": "42", "status": "active"}
+ *      output:
+ *          SELECT * FROM users WHERE id = ? AND status = ?, ["42", "active"]
+ *
+ * @param sql The original SQL query string with named parameters.
+ * @param params A map mapping parameter names to their values.
+ * @return A pair where the first element is the modified SQL query string with positional parameters, and the second element is a vector of parameter values sorted according to the order of the positional parameters.
+ */
+std::pair<std::string, std::vector<std::string>> prepareQuery(const std::string& sql, const std::map<std::string, std::string>& params) {
+    std::regex paramPattern(R"(\:(\w+))");
+    std::smatch match;
+    std::string resultSQL = sql;
+    std::vector<std::string> paramValues;
+
+    // Iterate through all matches of the pattern in the SQL string
+    while (std::regex_search(resultSQL, match, paramPattern)) {
+        std::string paramName = match.str(1);
+        if (params.find(paramName) != params.end()) {
+            size_t pos = match.position();
+            resultSQL.replace(pos, match.length(), "?"); // Replace named parameter with '?'
+            paramValues.push_back(params.at(paramName)); // Add value to the list
+        }
+    }
+
+    return {resultSQL, paramValues};
+}
+
+int main() {
+    std::string sql = "SELECT * FROM users WHERE id = :user_id AND status = :status";
+    std::map<std::string, std::string> params = {{"user_id", "42"}, {"status", "active"}};
+
+    auto [modifiedSql, values] = prepareQuery(sql, params);
+
+    std::cout << "Modified SQL: " << modifiedSql << std::endl;
+    std::cout << "Parameter Values: ";
+    for (const auto& value : values) {
+        std::cout << value << ", ";
+    }
+    std::cout << std::endl;
+
+    return 0;
+}
+```
+
+This C++ code snippet defines a function `prepareQuery` that takes an SQL string and a map of parameter names to values, and returns a pair consisting of the modified SQL string with positional parameters (`?`) and a vector of parameter values. The function uses regular expressions to identify named parameters in the SQL string and replaces them with placeholders (`?`). It also collects the corresponding values from the map and stores them in a vector. The `main` function demonstrates how to use the `prepareQuery` function with a sample SQL query and parameters.

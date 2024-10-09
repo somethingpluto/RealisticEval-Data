@@ -1,0 +1,83 @@
+Sure, here's the equivalent Java code for your Python function:
+
+```java
+package org.real.temp;
+
+import java.util.*;
+
+public class Answer {
+    
+    public static Tuple<String, List<Object>> prepareQuery(String sql, Map<String, Object> params) {
+        // Create a map to hold the new position of each parameter
+        Map<String, Integer> paramPositions = new HashMap<>();
+        
+        // Create a list to hold the new parameters in order
+        List<Object> newParams = new ArrayList<>();
+        
+        // Regular expression to find named parameters
+        Pattern pattern = Pattern.compile("\\$(\\w+)");
+        Matcher matcher = pattern.matcher(sql);
+        
+        int pos = 1; // Position counter
+        
+        // Replace named parameters with placeholders and store their positions
+        StringBuffer sb = new StringBuffer();
+        while (matcher.find()) {
+            String paramName = matcher.group(1);
+            if (!paramPositions.containsKey(paramName)) {
+                paramPositions.put(paramName, pos++);
+            }
+            matcher.appendReplacement(sb, "$" + paramPositions.get(paramName));
+        }
+        matcher.appendTail(sb);
+        
+        // Sort the parameters based on their new positions
+        for (Map.Entry<String, Integer> entry : paramPositions.entrySet()) {
+            String paramName = entry.getKey();
+            int newPosition = entry.getValue();
+            newParams.add(params.get(paramName));
+        }
+        
+        return new Tuple<>(sb.toString(), newParams);
+    }
+
+    // Helper class to return a tuple of two elements
+    public static class Tuple<X, Y> {
+        private final X x;
+        private final Y y;
+
+        public Tuple(X x, Y y) {
+            this.x = x;
+            this.y = y;
+        }
+
+        public X getX() {
+            return x;
+        }
+
+        public Y getY() {
+            return y;
+        }
+    }
+
+    public static void main(String[] args) {
+        String sql = "SELECT * FROM users WHERE id = $user_id AND status = $status";
+        Map<String, Object> params = new HashMap<>();
+        params.put("user_id", 42);
+        params.put("status", "active");
+
+        Tuple<String, List<Object>> result = prepareQuery(sql, params);
+        System.out.println(result.getX()); // Output: SELECT * FROM users WHERE id = $1 AND status = $2
+        System.out.println(result.getY()); // Output: [42, active]
+    }
+}
+```
+
+### Explanation:
+1. **Regular Expression**: The `Pattern` and `Matcher` classes from the `java.util.regex` package are used to find named parameters (`$name`, `$age`) in the SQL string.
+2. **Parameter Positions**: A `HashMap` is used to keep track of the new positions of each parameter.
+3. **StringBuffer**: The `StringBuffer` class is used to construct the new SQL string with placeholders (`$1`, `$2`, etc.).
+4. **Sorting Parameters**: The parameters are added to a `List` in the order of their new positions.
+5. **Helper Class**: A simple `Tuple` class is created to return two values from the method.
+
+This Java code should achieve the same functionality as your Python function.

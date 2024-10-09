@@ -1,0 +1,90 @@
+Sure! Below is the equivalent Java JUnit test case for your Python `unittest` test class. The package name is `org.real.temp`, and the class name is `Tester`.
+
+```java
+package org.real.temp;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.time.Duration;
+import java.util.regex.Pattern;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+public class Tester {
+
+    private Pattern pattern;
+
+    @BeforeEach
+    public void setUp() {
+        // Define the regex pattern to match the time string format
+        pattern = Pattern.compile("(\\d+)d(\\d+)h(\\d+)m(\\d+)s(\\d+)ms");
+    }
+
+    @Test
+    public void testGenTimeoutTimedelta() {
+        String timeString = "1d 2h 3m 4s 500ms";
+        Duration expectedDuration = Duration.ofDays(1).plusHours(2).plusMinutes(3).plusSeconds(4).plusMillis(500);
+        Duration actualDuration = genTimeoutTimedelta(timeString);
+
+        assertEquals(expectedDuration.toDays(), actualDuration.toDays());
+        assertEquals(expectedDuration.toHoursPart(), actualDuration.toHoursPart());
+        assertEquals(expectedDuration.toMinutesPart(), actualDuration.toMinutesPart());
+        assertEquals(expectedDuration.getSeconds(), actualDuration.getSeconds());
+        assertEquals(expectedDuration.getNano() / 1_000_000, actualDuration.getNano() / 1_000_000);
+    }
+
+    @Test
+    public void testInvalidTimeFormat() {
+        String invalidTimeString = "1d 2h 3m 4s 500"; // Missing 'ms' at the end
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            genTimeoutTimedelta(invalidTimeString);
+        });
+    }
+
+    @Test
+    public void testEmptyTimeFormat() {
+        String emptyTimeString = "";
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            genTimeoutTimedelta(emptyTimeString);
+        });
+    }
+
+    private Duration genTimeoutTimedelta(String timeString) {
+        if (timeString == null || timeString.isEmpty()) {
+            throw new IllegalArgumentException("Input string cannot be null or empty");
+        }
+
+        Matcher matcher = pattern.matcher(timeString);
+        if (!matcher.matches()) {
+            throw new IllegalArgumentException("Invalid time format");
+        }
+
+        int days = Integer.parseInt(matcher.group(1));
+        int hours = Integer.parseInt(matcher.group(2));
+        int minutes = Integer.parseInt(matcher.group(3));
+        int seconds = Integer.parseInt(matcher.group(4));
+        int milliseconds = Integer.parseInt(matcher.group(5));
+
+        return Duration.ofDays(days)
+                .plusHours(hours)
+                .plusMinutes(minutes)
+                .plusSeconds(seconds)
+                .plusMillis(milliseconds);
+    }
+}
+```
+
+### Explanation:
+1. **Pattern Definition**: We define a regex pattern to match the time string format.
+2. **Setup Method**: The `setUp` method initializes the regex pattern before each test.
+3. **Valid Time String Test**: The `testGenTimeoutTimedelta` method tests the `genTimeoutTimedelta` function with a valid time string and checks if the returned `Duration` matches the expected value.
+4. **Invalid Time Format Test**: The `testInvalidTimeFormat` method tests the `genTimeoutTimedelta` function with an invalid time string that lacks the 'ms' part and expects an `IllegalArgumentException`.
+5. **Empty Time Format Test**: The `testEmptyTimeFormat` method tests the `genTimeoutTimedelta` function with an empty string and expects an `IllegalArgumentException`.
+6. **Helper Method**: The `genTimeoutTimedelta` method parses the time string and converts it into a `Duration` object using the defined pattern.
+
+This Java JUnit test case covers the same functionality as your original Python `unittest` test class.

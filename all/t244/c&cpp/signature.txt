@@ -1,0 +1,66 @@
+```cpp
+#include <iostream>
+#include <functional>
+#include <string>
+#include <vector>
+#include <tuple>
+
+// Define a struct to hold parameter information
+struct ParameterInfo {
+    std::string name;
+    std::type_info type;
+};
+
+class MethodSignatureChecker {
+public:
+    // Constructor takes a function pointer and extracts its signature
+    template<typename Func>
+    MethodSignatureChecker(Func func) : func_(func) {
+        extract_signature();
+    }
+
+    // Function to perform argument type checking
+    template<typename... Args>
+    void check_args(Args&&... args) const {
+        auto arg_types = get_argument_types(std::forward<Args>(args)...);
+        
+        if(arg_types.size() != param_infos_.size()) {
+            throw std::runtime_error("Incorrect number of arguments provided.");
+        }
+        
+        for(size_t i = 0; i < arg_types.size(); ++i) {
+            if(arg_types[i] != param_infos_[i].type) {
+                throw std::runtime_error("Type mismatch in argument " + param_infos_[i].name);
+            }
+        }
+    }
+
+private:
+    std::function<void()> func_;
+    std::vector<ParameterInfo> param_infos_;
+
+    // Helper function to extract function signature
+    template<typename Ret, typename... Params>
+    void extract_signature(Ret (*func)(Params...)) {
+        // Assuming we know the function signature at compile time,
+        // here you would typically use introspection or macros to get 
+        // parameter names/types. For simplicity, let's assume we have these predefined.
+        param_infos_ = {
+            {"param1", typeid(Params)}
+            // Add more parameters as needed
+        };
+    }
+
+    // Recursive helper to get argument types from variadic arguments
+    template<typename T, typename... Rest>
+    std::vector<std::type_info> get_argument_types(T&& first, Rest&&... rest) const {
+        return {typeid(first), get_argument_types(std::forward<Rest>(rest)...)};
+    }
+
+    // Base case for recursion
+    std::vector<std::type_info> get_argument_types() const {
+        return {};
+    }
+};
+```
+This C++ code defines a `MethodSignatureChecker` class that can be used to check the types of arguments passed to a function against the function's expected parameter types. It uses templates and recursive variadic functions to handle variable numbers of arguments and their types. Note that extracting function signatures dynamically in C++ is more complex than in Python and often requires additional libraries or manual specification.

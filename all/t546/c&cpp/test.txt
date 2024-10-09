@@ -1,0 +1,117 @@
+To convert your Python `unittest` test class to a C++ test case using Catch2, you need to follow these steps:
+
+1. Install Catch2 if you haven't already. You can download it from [Catch2's GitHub repository](https://github.com/catchorg/Catch2).
+2. Write the equivalent C++ code for your Python function.
+3. Create a C++ test case using Catch2.
+
+Here's how you can do it:
+
+### Step 1: Install Catch2
+
+If you're using a package manager like `vcpkg`, you can install Catch2 with the following command:
+
+```sh
+vcpkg install catch2
+```
+
+Alternatively, you can manually download and include Catch2 in your project.
+
+### Step 2: Write the Equivalent C++ Code
+
+First, let's write the equivalent C++ function for `read_tsv_from_stdin`. We'll assume that the input is provided through a string instead of standard input for simplicity.
+
+```cpp
+#include <iostream>
+#include <sstream>
+#include <vector>
+#include <string>
+
+std::vector<std::vector<std::string>> read_tsv(const std::string& tsv_data) {
+    std::istringstream stream(tsv_data);
+    std::vector<std::vector<std::string>> rows;
+    std::string line;
+
+    while (std::getline(stream, line)) {
+        std::istringstream lineStream(line);
+        std::vector<std::string> fields;
+        std::string field;
+
+        while (std::getline(lineStream, field, '\t')) {
+            fields.push_back(field);
+        }
+
+        // Pad with empty strings if necessary
+        size_t max_fields = 0;
+        for (const auto& r : rows) {
+            if (r.size() > max_fields) {
+                max_fields = r.size();
+            }
+        }
+
+        while (fields.size() < max_fields) {
+            fields.push_back("");
+        }
+
+        rows.push_back(fields);
+    }
+
+    return rows;
+}
+```
+
+### Step 3: Create a C++ Test Case Using Catch2
+
+Now, let's create a C++ test case using Catch2 to verify the functionality of the `read_tsv` function.
+
+```cpp
+#define CATCH_CONFIG_MAIN
+#include "catch.hpp"
+
+TEST_CASE("Read TSV from String", "[tsv]") {
+    std::string tsv_data = "name\tage\tcity\nAlice\t30\tNew York\nBob\t25\tLos Angeles";
+    auto result = read_tsv(tsv_data);
+
+    REQUIRE(result.size() == 2);
+    REQUIRE(result[0].size() == 3);
+    REQUIRE(result[1].size() == 3);
+
+    CHECK(result[0][0] == "Alice");
+    CHECK(result[0][1] == "30");
+    CHECK(result[0][2] == "New York");
+
+    CHECK(result[1][0] == "Bob");
+    CHECK(result[1][1] == "25");
+    CHECK(result[1][2] == "Los Angeles");
+}
+
+TEST_CASE("Unequal Length Rows", "[tsv]") {
+    std::string tsv_data = "name\tage\ncar\nAlice\t30\tToyota\nBob\t25\tFord";
+    auto result = read_tsv(tsv_data);
+
+    REQUIRE(result.size() == 2);
+    REQUIRE(result[0].size() == 3);
+    REQUIRE(result[1].size() == 3);
+
+    CHECK(result[0][0] == "Alice");
+    CHECK(result[0][1] == "30");
+    CHECK(result[0][2] == "Toyota");
+
+    CHECK(result[1][0] == "Bob");
+    CHECK(result[1][1] == "25");
+    CHECK(result[1][2] == "Ford");
+}
+```
+
+### Explanation
+
+- **CATCH_CONFIG_MAIN**: This macro tells Catch2 to generate the main function for the test executable.
+- **TEST_CASE**: This macro defines a test case. The first argument is the name of the test case, and the second argument is a tag that can be used to group tests.
+- **REQUIRE** and **CHECK**: These macros are used to assert conditions in the test cases. `REQUIRE` will fail the test if the condition is not met, while `CHECK` will only mark the test as failed but continue running other tests.
+
+Make sure to link against the Catch2 library when compiling your C++ code. For example, using `g++`:
+
+```sh
+g++ -o my_tests my_tests.cpp -lcatch
+```
+
+This will compile your test code and link it with the Catch2 library.

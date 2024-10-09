@@ -1,0 +1,85 @@
+To convert the given Python `unittest` test class to a Java `TestCase` using JUnit, you need to follow these steps:
+
+1. Create a new Java class named `Tester`.
+2. Import the necessary libraries.
+3. Write the equivalent test methods for your Python functions.
+
+Here's how you can do it:
+
+```java
+package org.real.temp;
+
+import static org.junit.Assert.assertEquals;
+import org.junit.Before;
+import org.junit.Test;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
+public class Tester {
+
+    private String tempFilePath = "temp.md";
+
+    @Before
+    public void setUp() throws IOException {
+        // Clean up any existing temporary files
+        try {
+            new FileWriter(tempFilePath).close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void test_dataframe_to_markdown() throws IOException {
+        Map<String, Object> data = new HashMap<>();
+        data.put("Name", new String[]{"Alice", "Bob"});
+        data.put("Age", new Integer[]{25, 30});
+
+        String markdownContent = dataframeToMarkdown(data);
+
+        assertEquals("| Name | Age |\n| --- | --- |\n| Alice | 25 |\n| Bob | 30 |\n", markdownContent);
+    }
+
+    private String dataframeToMarkdown(Map<String, Object> data) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        CSVPrinter csvPrinter = null;
+
+        try (FileWriter out = new FileWriter(tempFilePath)) {
+            csvPrinter = new CSVPrinter(out, CSVFormat.DEFAULT.withHeader((String[]) data.keySet().toArray()));
+            for (int i = 0; i < ((Object[]) data.get("Name")).length; i++) {
+                csvPrinter.printRecord(((Object[]) data.get("Name"))[i], ((Integer[]) data.get("Age"))[i]);
+            }
+        } finally {
+            if (csvPrinter != null) {
+                csvPrinter.close();
+            }
+        }
+
+        return sb.toString();
+    }
+}
+```
+
+### Explanation:
+
+1. **Package Declaration**: The package declaration is set to `org.real.temp`, which matches the Python package name.
+2. **Imports**: Necessary imports are included for JUnit and Apache Commons CSV library.
+3. **Setup Method**: A `@Before` method is used to clean up any existing temporary files before each test.
+4. **Test Method**: The `test_dataframe_to_markdown` method is written to test the `dataframeToMarkdown` function. It uses `assertEquals` to verify that the output matches the expected result.
+5. **Data Preparation**: The `dataframeToMarkdown` method prepares the data in a `Map` and then converts it to a Markdown string using the Apache Commons CSV library.
+
+Make sure to include the Apache Commons CSV dependency in your `pom.xml` if you're using Maven:
+
+```xml
+<dependency>
+    <groupId>org.apache.commons</groupId>
+    <artifactId>commons-csv</artifactId>
+    <version>1.9.0</version>
+</dependency>
+```
+
+This will allow you to run the tests using JUnit in a Java environment.

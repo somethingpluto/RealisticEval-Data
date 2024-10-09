@@ -1,0 +1,80 @@
+To convert the given Python `unittest` test class to a C++ test case using Catch2, you need to follow these steps:
+
+1. Install Catch2 if you haven't already. You can download it from [Catch2's GitHub repository](https://github.com/catchorg/Catch2).
+2. Create a C++ file and include the necessary headers.
+3. Write the equivalent test cases in C++.
+
+Here's how you can do it:
+
+### Step 1: Install Catch2
+You can install Catch2 via vcpkg or manually. Here's a simple way to add it to your project using CMake:
+
+```cmake
+vcpkg install catch2
+```
+
+### Step 2: Create a C++ File
+Create a file named `test_prepare_query.cpp` and include the necessary headers.
+
+```cpp
+#include <catch2/catch.hpp>
+#include <string>
+#include <vector>
+#include <map>
+
+// Assuming the function prepare_query is defined somewhere else in your project
+std::pair<std::string, std::vector<std::any>> prepare_query(const std::string& sql, const std::map<std::string, std::any>& params);
+```
+
+### Step 3: Write the Test Cases
+Write the test cases in C++ using Catch2 syntax.
+
+```cpp
+#include "test_prepare_query.h" // Include the header file
+
+TEST_CASE("prepare_query should replace named parameters with positional ones", "[prepare_query]") {
+    std::map<std::string, std::any> params = {{"user_id", 42}, {"status", "active"}};
+    auto result = prepare_query("SELECT * FROM users WHERE id = $user_id AND status = $status", params);
+
+    REQUIRE(result.first == "SELECT * FROM users WHERE id = $1 AND status = $2");
+    REQUIRE(result.second.size() == 2);
+    REQUIRE(std::get<int>(result.second[0]) == 42);
+    REQUIRE(std::get<std::string>(result.second[1]) == "active");
+}
+
+TEST_CASE("prepare_query should handle different types of parameters", "[prepare_query]") {
+    std::map<std::string, std::any> params = {{"id", 1}, {"name", "Alice"}, {"is_active", true}};
+    auto result = prepare_query("SELECT * FROM users WHERE id = $id AND name = $name AND is_active = $is_active", params);
+
+    REQUIRE(result.first == "SELECT * FROM users WHERE id = $1 AND name = $2 AND is_active = $3");
+    REQUIRE(result.second.size() == 3);
+    REQUIRE(std::get<int>(result.second[0]) == 1);
+    REQUIRE(std::get<std::string>(result.second[1]) == "Alice");
+    REQUIRE(std::get<bool>(result.second[2]) == true);
+}
+```
+
+### Step 4: Build and Run the Tests
+If you're using CMake, you can create a `CMakeLists.txt` file to build and run the tests.
+
+```cmake
+cmake_minimum_required(VERSION 3.10)
+project(TestPrepareQuery)
+
+find_package(Catch2 REQUIRED)
+
+add_executable(test_prepare_query test_prepare_query.cpp)
+target_link_libraries(test_prepare_query Catch2::Catch2WithMain)
+```
+
+Then, build and run the tests using:
+
+```sh
+mkdir build
+cd build
+cmake ..
+make
+./test_prepare_query
+```
+
+This will compile and run the tests using Catch2. If all tests pass, you should see output indicating success. If any test fails, Catch2 will provide details about the failure.

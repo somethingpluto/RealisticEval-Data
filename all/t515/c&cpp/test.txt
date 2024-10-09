@@ -1,0 +1,73 @@
+To convert the given Python `unittest` test class to a C++ test case using Catch2, we first need to implement the function `format_date_string` and then write the corresponding tests in C++. Below is the complete implementation:
+
+### Python Code (for reference)
+```python
+from datetime import datetime
+
+def format_date_string(date_str: str):
+    """
+    Converts a date string from the format '%a, %d %b %Y %H:%M:%S %z (%Z)'
+    to the format '%Y-%m-%d_%H:%M:%S'.
+
+    Args:
+        date_str (str): The input date string.
+
+    Returns:
+        str: The formatted date string in the format '%Y-%m-%d_%H:%M:%S'.
+        None: If the input date string is invalid.
+    """
+    try:
+        dt = datetime.strptime(date_str, '%a, %d %b %Y %H:%M:%S %z (%Z)')
+        return dt.strftime('%Y-%m-%d_%H:%M:%S')
+    except ValueError:
+        return None
+```
+
+### C++ Code Using Catch2
+First, ensure you have Catch2 installed in your project. You can download it from [Catch2 GitHub repository](https://github.com/catchorg/Catch2).
+
+Here's how you can write the C++ test cases for the `format_date_string` function:
+
+```cpp
+#include <catch2/catch.hpp>
+#include <string>
+#include <chrono>
+
+// Function to be tested
+std::string format_date_string(const std::string& date_str) {
+    try {
+        auto dt = std::chrono::system_clock::from_time_t(std::stoll(date_str));
+        auto time_tm = *std::localtime(&dt);
+        char buffer[80];
+        strftime(buffer, sizeof(buffer), "%Y-%m-%d_%H:%M:%S", &time_tm);
+        return std::string(buffer);
+    } catch (...) {
+        return nullptr;
+    }
+}
+
+TEST_CASE("Format Date String") {
+    // Test valid date string
+    SECTION("Valid Date String") {
+        REQUIRE(format_date_string("Mon, 11 Oct 2021 17:45:30 +0000 (UTC)") == "2021-10-11_17:45:30");
+    }
+
+    // Test invalid date string
+    SECTION("Invalid Date String") {
+        REQUIRE(format_date_string("InvalidDate") == nullptr);
+    }
+
+    // Additional test cases can be added here
+}
+```
+
+### Explanation
+1. **Function Implementation**: 
+   - The `format_date_string` function in C++ uses `std::chrono` to parse the date string and then formats it using `strftime`.
+
+2. **Catch2 Test Cases**:
+   - `TEST_CASE` macro defines a test suite.
+   - `SECTION` macro defines individual test cases within the test suite.
+   - `REQUIRE` macro checks if the condition is true; otherwise, the test fails.
+
+This setup ensures that the C++ test cases cover both valid and invalid inputs, similar to the Python `unittest` test cases.

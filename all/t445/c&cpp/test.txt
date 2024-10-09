@@ -1,0 +1,73 @@
+To convert your Python unittest test class to a C++ test case using Catch2, you need to define a test case that includes setup and teardown if necessary, and then write individual test cases within that setup. Below is an example of how you might translate your Python unittest test class into a C++ Catch2 test case:
+
+```cpp
+#include <catch2/catch.hpp>
+#include <Eigen/Dense>
+
+using namespace Eigen;
+
+// Define the function to create rotation matrices
+Matrix4d createRotMatrix(double angleDeg, char axis) {
+    double angleRad = angleDeg * M_PI / 180.0;
+    Matrix4d rotMat = Matrix4d::Identity();
+    
+    switch(axis) {
+        case 'X':
+            rotMat << 1, 0, 0, 0,
+                      0, cos(angleRad), -sin(angleRad), 0,
+                      0, sin(angleRad), cos(angleRad), 0,
+                      0, 0, 0, 1;
+            break;
+        case 'Y':
+            rotMat << cos(angleRad), 0, sin(angleRad), 0,
+                      0, 1, 0, 0,
+                      -sin(angleRad), 0, cos(angleRad), 0,
+                      0, 0, 0, 1;
+            break;
+        case 'Z':
+            rotMat << cos(angleRad), -sin(angleRad), 0, 0,
+                      sin(angleRad), cos(angleRad), 0, 0,
+                      0, 0, 1, 0,
+                      0, 0, 0, 1;
+            break;
+        default:
+            throw std::invalid_argument("Invalid axis specified");
+    }
+    
+    return rotMat;
+}
+
+TEST_CASE("Create Rotation Matrix", "[rotation]") {
+    // Test for X-axis rotation
+    auto xRotation = createRotMatrix(90.0, 'X');
+    REQUIRE(xRotation(1, 1) == Approx(cos(M_PI / 2)).margin(1e-6));
+    REQUIRE(xRotation(1, 2) == Approx(-sin(M_PI / 2)).margin(1e-6));
+    REQUIRE(xRotation(2, 1) == Approx(sin(M_PI / 2)).margin(1e-6));
+    REQUIRE(xRotation(2, 2) == Approx(cos(M_PI / 2)).margin(1e-6));
+
+    // Test for Y-axis rotation
+    auto yRotation = createRotMatrix(90.0, 'Y');
+    REQUIRE(yRotation(0, 0) == Approx(cos(M_PI / 2)).margin(1e-6));
+    REQUIRE(yRotation(0, 2) == Approx(sin(M_PI / 2)).margin(1e-6));
+    REQUIRE(yRotation(2, 0) == Approx(-sin(M_PI / 2)).margin(1e-6));
+    REQUIRE(yRotation(2, 2) == Approx(cos(M_PI / 2)).margin(1e-6));
+
+    // Test for Z-axis rotation
+    auto zRotation = createRotMatrix(90.0, 'Z');
+    REQUIRE(zRotation(0, 0) == Approx(cos(M_PI / 2)).margin(1e-6));
+    REQUIRE(zRotation(0, 1) == Approx(-sin(M_PI / 2)).margin(1e-6));
+    REQUIRE(zRotation(1, 0) == Approx(sin(M_PI / 2)).margin(1e-6));
+    REQUIRE(zRotation(1, 1) == Approx(cos(M_PI / 2)).margin(1e-6));
+}
+```
+
+### Explanation:
+1. **Include Necessary Headers**: We include the Catch2 header (`<catch2/catch.hpp>`) and the Eigen library for matrix operations (`<Eigen/Dense>`).
+  
+2. **Define the Function**: The `createRotMatrix` function is translated from Python to C++. It takes an angle in degrees and an axis character ('X', 'Y', or 'Z') and returns a 4x4 rotation matrix using Eigen's `Matrix4d`.
+
+3. **Test Case**: The `TEST_CASE` macro defines a new test case named "Create Rotation Matrix". Inside this test case, we perform three separate tests, each checking the correctness of the rotation matrix for the X, Y, and Z axes respectively.
+
+4. **Assertions**: We use the `REQUIRE` macro to assert that the elements of the rotation matrices match the expected values within a small margin of error (`margin(1e-6)`).
+
+This C++ test case should provide similar functionality to your original Python unittest test class using Catch2. Make sure to link against the Catch2 library when compiling your C++ program.

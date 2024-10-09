@@ -1,0 +1,154 @@
+Sure, here is how you can convert the Python function `count_unique_colors` to C++ code:
+
+```c++
+#include <iostream>
+#include <unordered_set>
+#include <fstream>
+#include <vector>
+
+using namespace std;
+
+int countUniqueColors(const string& imagePath) {
+    // TODO: Implement the logic to read the image and count unique colors
+    // For simplicity, let's assume that we have already read the image into a vector of RGB values
+    vector<vector<vector<int>>> image = readImage(imagePath);
+
+    unordered_set<string> uniqueColors;
+    for (const auto& row : image) {
+        for (const auto& pixel : row) {
+            string color = to_string(pixel[0]) + "," + to_string(pixel[1]) + "," + to_string(pixel[2]);
+            uniqueColors.insert(color);
+        }
+    }
+
+    return uniqueColors.size();
+}
+
+// This function reads the image and returns it as a vector of RGB values
+vector<vector<vector<int>>> readImage(const string& imagePath) {
+    // TODO: Implement the logic to read the image from the given path
+    // For simplicity, let's assume that we have implemented this function elsewhere
+    vector<vector<vector<int>>> image;
+    return image;
+}
+
+int main() {
+    string imagePath = "path/to/image.jpg";
+    cout << "Number of unique colors: " << countUniqueColors(imagePath) << endl;
+    return 0;
+}
+```
+
+Please note that the above code assumes that you have already implemented the logic to read the image and convert it into a vector of RGB values. You may need to use a library like OpenCV or PIL to accomplish this task.
+
+Here is the equivalent C code using the SDL library:
+
+```c
+#include <SDL.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+#include <unistd.h>
+
+typedef struct {
+    Uint8 r, g, b;
+} Color;
+
+typedef struct {
+    int width, height;
+    Color* pixels;
+} Image;
+
+Image loadImage(const char* imagePath) {
+    Image img = {0};
+    SDL_Surface* surface = IMG_Load(imagePath);
+    if (!surface) {
+        fprintf(stderr, "Failed to load image: %s\n", SDL_GetError());
+        return img;
+    }
+    
+    img.width = surface->w;
+    img.height = surface->h;
+    img.pixels = (Color*)malloc(img.width * img.height * sizeof(Color));
+    
+    for (int y = 0; y < img.height; ++y) {
+        for (int x = 0; x < img.width; ++x) {
+            Uint32 pixel = GetPixel(surface, x, y);
+            Color color = {(Uint8)(pixel >> 16), (Uint8)(pixel >> 8), (Uint8)pixel};
+            img.pixels[y * img.width + x] = color;
+        }
+    }
+    
+    SDL_FreeSurface(surface);
+    return img;
+}
+
+void freeImage(Image* img) {
+    free(img->pixels);
+}
+
+bool compareColors(Color a, Color b) {
+    return a.r == b.r && a.g == b.g && a.b == b.b;
+}
+
+int countUniqueColors(const char* imagePath) {
+    Image img = loadImage(imagePath);
+    if (!img.pixels) {
+        return -1;
+    }
+    
+    bool** visited = (bool**)calloc(img.height, sizeof(bool*));
+    for (int i = 0; i < img.height; ++i) {
+        visited[i] = (bool*)calloc(img.width, sizeof(bool));
+    }
+    
+    int uniqueCount = 0;
+    for (int y = 0; y < img.height; ++y) {
+        for (int x = 0; x < img.width; ++x) {
+            if (!visited[y][x]) {
+                Color startColor = img.pixels[y * img.width + x];
+                bool found = false;
+                for (int yy = 0; yy < img.height; ++yy) {
+                    for (int xx = 0; xx < img.width; ++xx) {
+                        if (!visited[yy][xx] && compareColors(startColor, img.pixels[yy * img.width + xx])) {
+                            visited[yy][xx] = true;
+                            found = true;
+                        }
+                    }
+                }
+                if (found) {
+                    ++uniqueCount;
+                }
+            }
+        }
+    }
+    
+    for (int i = 0; i < img.height; ++i) {
+        free(visited[i]);
+    }
+    free(visited);
+    
+    freeImage(&img);
+    return uniqueCount;
+}
+
+int main(int argc, char* argv[]) {
+    if (argc != 2) {
+        printf("Usage: %s <image_path>\n", argv[0]);
+        return 1;
+    }
+    
+    const char* imagePath = argv[1];
+    int uniqueColors = countUniqueColors(imagePath);
+    if (uniqueColors >= 0) {
+        printf("Number of unique colors: %d\n", uniqueColors);
+    } else {
+        printf("Failed to load image.\n");
+    }
+    
+    return 0;
+}
+```
+
+This C code uses the SDL library to load an image and count the number of unique colors. It also includes a simple implementation of the flood fill algorithm to group connected pixels with the same color together and count them as one unique color. Note that this is just one possible approach, and there may be more efficient ways to implement this functionality depending on your specific requirements.

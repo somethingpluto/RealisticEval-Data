@@ -1,0 +1,65 @@
+To convert the given Python unittest test class to a C++ test case using Catch2, you'll need to define a test suite with individual test cases that correspond to the assertions in your original Python tests. Below is an example of how you might write these tests in C++:
+
+```cpp
+#include <catch2/catch.hpp>
+#include <vector>
+#include <cmath>
+
+// Function declaration from the Python code
+bool are_sets_equal(const std::vector<double>& set1, const std::vector<double>& set2, double rtol = 1e-5, double atol = 1e-6);
+
+// Test suite for the are_sets_equal function
+TEST_CASE("are_sets_equal", "[set_comparison]") {
+    // Test case 1: Sets are exactly the same
+    SECTION("Sets are exactly the same") {
+        std::vector<double> set1 = {1.0, 2.0, 3.0};
+        std::vector<double> set2 = {1.0, 2.0, 3.0};
+        REQUIRE(are_sets_equal(set1, set2));
+    }
+
+    // Test case 2: Sets have the same elements but different order
+    SECTION("Sets have the same elements but different order") {
+        std::vector<double> set1 = {1.0, 2.0, 3.0};
+        std::vector<double> set2 = {3.0, 2.0, 1.0};
+        REQUIRE(are_sets_equal(set1, set2));
+    }
+
+    // Test case 3: Sets differ by a small amount within tolerance
+    SECTION("Sets differ by a small amount within tolerance") {
+        std::vector<double> set1 = {1.0, 2.0, 3.0};
+        std::vector<double> set2 = {1.00001, 2.00001, 3.00001};
+        REQUIRE(are_sets_equal(set1, set2));
+    }
+
+    // Test case 4: Sets differ by more than tolerance
+    SECTION("Sets differ by more than tolerance") {
+        std::vector<double> set1 = {1.0, 2.0, 3.0};
+        std::vector<double> set2 = {1.01, 2.01, 3.01};
+        REQUIRE_FALSE(are_sets_equal(set1, set2));
+    }
+}
+
+// Implementation of the are_sets_equal function
+bool are_sets_equal(const std::vector<double>& set1, const std::vector<double>& set2, double rtol, double atol) {
+    if (set1.size() != set2.size()) {
+        return false;
+    }
+    for (size_t i = 0; i < set1.size(); ++i) {
+        double diff = std::abs(set1[i] - set2[i]);
+        if (diff > atol && diff > std::abs(set1[i]) * rtol + std::abs(set2[i]) * rtol) {
+            return false;
+        }
+    }
+    return true;
+}
+```
+
+### Explanation:
+1. **Include Catch2 Header**: The `#include <catch2/catch.hpp>` directive includes the Catch2 testing framework.
+2. **Function Declaration**: The `are_sets_equal` function is declared at the top so it can be used in the test cases.
+3. **Test Suite**: The `TEST_CASE` macro defines a test suite named "are_sets_equal".
+4. **Sections**: Each `SECTION` inside `TEST_CASE` represents a separate test case.
+5. **Assertions**: The `REQUIRE` and `REQUIRE_FALSE` macros are used to assert conditions. If any assertion fails, the test will fail.
+6. **Implementation**: The `are_sets_equal` function is implemented after the test cases. This ensures that the function is available for the test cases to call.
+
+This setup allows you to run the tests using a Catch2-compatible test runner, such as `ctest`.

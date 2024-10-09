@@ -1,0 +1,105 @@
+To convert your Python unittest test class into a C++ Catch2 test case, you'll need to follow these steps:
+
+1. Include the necessary headers.
+2. Define the `UniqueDeque` class with its methods.
+3. Write the corresponding test cases using Catch2.
+
+Here's how you can do it:
+
+### Step 1: Include Necessary Headers
+
+```cpp
+#include <catch2/catch.hpp>
+#include <deque>
+#include <unordered_set>
+```
+
+### Step 2: Define the `UniqueDeque` Class
+
+```cpp
+class UniqueDeque {
+private:
+    std::deque<int> items;
+    std::unordered_set<int> set;
+
+public:
+    bool add(int item) {
+        if (set.find(item) != set.end()) {
+            return false;
+        }
+        items.push_back(item);
+        set.insert(item);
+        return true;
+    }
+
+    bool deleteItem(int item) {
+        auto it = std::find(items.begin(), items.end(), item);
+        if (it == items.end() || set.find(item) == set.end()) {
+            return false;
+        }
+        items.erase(it);
+        set.erase(item);
+        return true;
+    }
+
+    bool contains(int item) const {
+        return set.find(item) != set.end();
+    }
+
+    size_t size() const {
+        return set.size();
+    }
+
+    auto begin() -> decltype(items.begin()) {
+        return items.begin();
+    }
+
+    auto end() -> decltype(items.end()) {
+        return items.end();
+    }
+};
+```
+
+### Step 3: Write the Corresponding Test Cases Using Catch2
+
+```cpp
+TEST_CASE("UniqueDeque Tests", "[UniqueDeque]") {
+    UniqueDeque uqDeq;
+
+    SECTION("Adding Items") {
+        REQUIRE(uqDeq.add(1));
+        REQUIRE_FALSE(uqDeq.add(1)); // Duplicate should not be added again
+        REQUIRE(uqDeq.contains(1));
+        REQUIRE(uqDeq.size() == 1);
+
+        uqDeq.add(2);
+        REQUIRE(uqDeq.contains(2));
+        REQUIRE(uqDeq.size() == 2);
+    }
+
+    SECTION("Deleting Items") {
+        uqDeq.add(3);
+        uqDeq.add(4);
+
+        REQUIRE(uqDeq.deleteItem(3));
+        REQUIRE_FALSE(uqDeq.contains(3));
+        REQUIRE(uqDeq.size() == 1);
+
+        REQUIRE_FALSE(uqDeq.deleteItem(5)); // Item not in deque
+        REQUIRE(uqDeq.size() == 1);
+    }
+
+    SECTION("Iterating Over Items") {
+        uqDeq.add(6);
+        uqDeq.add(7);
+
+        int count = 0;
+        for (auto it = uqDeq.begin(); it != uqDeq.end(); ++it) {
+            ++count;
+        }
+        REQUIRE(count == 2);
+    }
+}
+```
+
+This C++ code defines a `UniqueDeque` class that behaves similarly to your Python class and includes a set of test cases using Catch2 to verify its functionality. Make sure to compile and run your tests with Catch2 installed.

@@ -1,0 +1,110 @@
+To convert the given Python unittest test class to TypeScript using Jest, you need to follow these steps:
+
+1. Install Jest if you haven't already.
+2. Write the TypeScript equivalent of the Python function `rename_files`.
+3. Write the corresponding Jest test cases for the TypeScript function.
+
+Here's how you can do it:
+
+### Step 1: Install Jest
+
+If you're using npm, you can install Jest by running:
+
+```sh
+npm install --save-dev jest @types/jest
+```
+
+### Step 2: Write the TypeScript Function
+
+Create a file named `renameFiles.ts` and write the TypeScript version of the `rename_files` function:
+
+```typescript
+import fs from 'fs';
+import path from 'path';
+
+/**
+ * Renames PNG files in a specified directory by appending a sequence number to each file.
+ * The files are sorted alphabetically, and each base name is assigned sequential numbers.
+ * For example:
+ *     director have three PNG files such as "image1.png", "image2.png", "image3.png"
+ *     after renaming PNG files are "image1001.png", "image2001.png", "image3001.png"
+ *
+ * @param {string} directory - The path to the directory containing PNG files to be renamed.
+ */
+function renameFiles(directory: string): void {
+    const pngFiles = fs.readdirSync(directory)
+        .filter(file => path.extname(file).toLowerCase() === '.png')
+        .sort();
+
+    let counter = 1001;
+    pngFiles.forEach((file, index) => {
+        const oldPath = path.join(directory, file);
+        const newFileName = `${path.basename(file, '.png')}${counter}.png`;
+        const newPath = path.join(directory, newFileName);
+
+        fs.renameSync(oldPath, newPath);
+        counter++;
+    });
+}
+
+export default renameFiles;
+```
+
+### Step 3: Write Jest Test Cases
+
+Create a file named `renameFiles.test.ts` and write the Jest test cases:
+
+```typescript
+import renameFiles from './renameFiles';
+
+describe('renameFiles', () => {
+    let tempDir: string;
+
+    beforeAll(() => {
+        // Create a temporary directory for testing
+        tempDir = fs.mkdtempSync(path.join(__dirname, 'test-'));
+        fs.writeFileSync(path.join(tempDir, 'image1.png'), '');
+        fs.writeFileSync(path.join(tempDir, 'image2.png'), '');
+        fs.writeFileSync(path.join(tempDir, 'image3.png'), '');
+    });
+
+    afterAll(() => {
+        // Clean up the temporary directory
+        fs.rmdirSync(tempDir, { recursive: true });
+    });
+
+    it('renames PNG files in a directory', () => {
+        renameFiles(tempDir);
+
+        const files = fs.readdirSync(tempDir);
+        expect(files).toEqual(['image1001.png', 'image2001.png', 'image3001.png']);
+    });
+
+    it('does not rename non-PNG files', () => {
+        fs.writeFileSync(path.join(tempDir, 'non-image.txt'), '');
+
+        renameFiles(tempDir);
+
+        const files = fs.readdirSync(tempDir);
+        expect(files).toEqual(['image1001.png', 'image2001.png', 'image3001.png', 'non-image.txt']);
+    });
+});
+```
+
+### Step 4: Run the Tests
+
+You can run the tests using Jest by adding a script in your `package.json`:
+
+```json
+"scripts": {
+    "test": "jest"
+}
+```
+
+Then run the tests with:
+
+```sh
+npm test
+```
+
+This setup will create a temporary directory for testing, run the `renameFiles` function, and then clean up the temporary directory after all tests are done. The Jest test cases ensure that the function behaves as expected.

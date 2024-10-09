@@ -1,0 +1,74 @@
+Sure! Below is an example of how you can convert a Python `unittest` test case to a C++ test case using Catch2. The original Python function `flatten` is assumed to be implemented in C++ and will be tested with Catch2.
+
+First, let's define the `flatten` function in C++. Then, we'll write a Catch2 test case to verify its correctness.
+
+### C++ Code for Flatten Function
+
+```cpp
+#include <vector>
+#include <iostream>
+
+std::vector<int> flatten(const std::vector<std::variant<int, std::vector<int>>>& nested_list) {
+    std::vector<int> result;
+    for (const auto& item : nested_list) {
+        if (std::holds_alternative<int>(item)) {
+            result.push_back(std::get<int>(item));
+        } else {
+            const auto& sublist = std::get<std::vector<int>>(item);
+            result.insert(result.end(), sublist.begin(), sublist.end());
+        }
+    }
+    return result;
+}
+```
+
+### Catch2 Test Case
+
+```cpp
+#define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
+#include "catch.hpp"
+
+#include <vector>
+#include <variant>
+
+// Forward declaration of the flatten function
+std::vector<int> flatten(const std::vector<std::variant<int, std::vector<int>>>& nested_list);
+
+TEST_CASE("Flatten Nested List", "[flatten]") {
+    SECTION("Empty List") {
+        std::vector<std::variant<int, std::vector<int>>> emptyList = {};
+        REQUIRE(flatten(emptyList).empty());
+    }
+
+    SECTION("Single Element") {
+        std::vector<std::variant<int, std::vector<int>>> singleElement = {42};
+        std::vector<int> expected = {42};
+        REQUIRE(flatten(singleElement) == expected);
+    }
+
+    SECTION("Nested List") {
+        std::vector<std::variant<int, std::vector<int>>> nestedList = {1, {2, 3}, 4, {5, {6, 7}}};
+        std::vector<int> expected = {1, 2, 3, 4, 5, 6, 7};
+        REQUIRE(flatten(nestedList) == expected);
+    }
+
+    SECTION("Mixed Types") {
+        std::vector<std::variant<int, std::vector<int>>> mixedTypes = {1, {2, 3}, 4, {"a", "b"}};
+        std::vector<int> expected = {1, 2, 3, 4};
+        REQUIRE(flatten(mixedTypes) == expected);
+    }
+}
+```
+
+### Explanation
+
+1. **C++ Flatten Function**:
+   - The `flatten` function takes a vector of variants, where each variant can either be an integer or another vector of integers.
+   - It iterates through the list and checks the type of each element. If it's an integer, it adds it to the result vector. If it's a vector, it inserts all elements from the sublist into the result vector.
+
+2. **Catch2 Test Case**:
+   - We include the necessary headers and forward declare the `flatten` function.
+   - We define a test suite named "Flatten Nested List" with several sections to test different scenarios.
+   - Each section creates a test case with an input and an expected output, and uses `REQUIRE` to assert that the actual output matches the expected output.
+
+To compile and run these tests, you need to have Catch2 installed and properly set up in your build system.

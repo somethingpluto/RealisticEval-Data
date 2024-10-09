@@ -1,0 +1,81 @@
+To convert the provided Python unittest test class to a C++ test case using Catch2, you'll need to follow these steps:
+
+1. **Define the function `format_comment`** in C++. This will be your utility function that formats a string into a commented block with a specified maximum line length.
+
+2. **Write a test case** using Catch2 to verify the functionality of `format_comment`.
+
+Here's how you can do it:
+
+### Step 1: Define the Function `format_comment`
+
+```cpp
+#include <string>
+#include <vector>
+#include <sstream>
+
+std::string format_comment(const std::string& input, int max_length = 60) {
+    std::istringstream iss(input);
+    std::ostringstream oss;
+    std::string word;
+    size_t current_line_length = 3; // Starting from "# "
+
+    while (iss >> word) {
+        if (current_line_length + word.length() > static_cast<size_t>(max_length)) {
+            oss << "\n# ";
+            current_line_length = 3;
+        }
+        oss << word << " ";
+        current_line_length += word.length() + 1;
+    }
+
+    return oss.str();
+}
+```
+
+### Step 2: Write a Test Case Using Catch2
+
+First, make sure you have Catch2 installed and set up in your project. If you're using CMake, you might add something like this to your `CMakeLists.txt`:
+
+```cmake
+find_package(Catch2 REQUIRED)
+add_executable(your_test_executable tests.cpp)
+target_link_libraries(your_test_executable Catch2::Catch2WithMain)
+```
+
+Then, create a file named `tests.cpp` and write your test cases:
+
+```cpp
+#define CATCH_CONFIG_MAIN
+#include <catch2/catch.hpp>
+#include "your_source_file.h" // Include the header where format_comment is defined
+
+TEST_CASE("Format Comment", "[format_comment]") {
+    SECTION("Empty String") {
+        REQUIRE(format_comment("") == "");
+    }
+
+    SECTION("Single Word") {
+        REQUIRE(format_comment("Hello") == "# Hello");
+    }
+
+    SECTION("Long Single Line") {
+        std::string long_string = "ThisIsAVeryLongStringThatShouldBeSplitIntoMultipleLines";
+        std::string expected = "# ThisIsAVeryLongStringThat\n# ShouldBeSplitIntoMultipleLines";
+        REQUIRE(format_comment(long_string) == expected);
+    }
+
+    SECTION("Words That Fit In One Line") {
+        REQUIRE(format_comment("One Two Three Four Five") == "# One Two Three Four Five");
+    }
+
+    SECTION("Words Exceeding Max Length") {
+        std::string long_words = "Lorem ipsum dolor sit amet, consectetur adipiscing elit.";
+        std::string expected = "# Lorem ipsum dolor sit amet,\n# consectetur adipiscing elit.";
+        REQUIRE(format_comment(long_words) == expected);
+    }
+}
+```
+
+In this example, replace `"your_source_file.h"` with the actual path to the header file containing the `format_comment` function.
+
+This setup provides a basic unit test for the `format_comment` function using Catch2. You can extend it further based on your specific requirements.

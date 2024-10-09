@@ -1,0 +1,52 @@
+Here is your Python function translated into C++:
+
+```cpp
+#include <variant>
+#include <map>
+#include <vector>
+#include <string>
+
+using namespace std;
+
+// Recursive template function to handle nested structures
+template<typename T>
+auto convertStringsToNumbers(T& data)
+{
+    if constexpr(is_same_v<T, map<string, variant<int, double, string>>>)
+    {
+        for(auto& [key, value] : data)
+        {
+            if(get_if<string>(&value))
+                value = stod(*get_if<string>(&value));
+            else if(get_if<map<string, variant<int, double, string>>*>(&value))
+                convertStringsToNumbers(value);
+        }
+    }
+    else if constexpr(is_same_v<T, vector<variant<int, double, string>>>)
+    {
+        for(auto& item : data)
+        {
+            if(get_if<string>(&item))
+                item = stod(*get_if<string>(&item));
+            else if(get_if<vector<variant<int, double, string>>*>(&item))
+                convertStringsToNumbers(item);
+        }
+    }
+}
+
+/*
+ * This function takes either a dictionary or list and converts any string values to numbers where possible.
+ *
+ * Parameters:
+ * - data: A variant type that can hold either a map of strings to variants or a vector of variants.
+ *
+ * Returns:
+ * - The same type as input but with string values converted to numbers where possible.
+ */
+void convertStringsToNumbers(variant<map<string, variant<int, double, string>>, vector<variant<int, double, string>>>& data)
+{
+    visit(convertStringsToNumbers, data);
+}
+```
+
+This C++ version uses `std::variant` and `std::visit` to handle the recursive nature of the problem. Note that this implementation assumes that all strings represent valid numbers. If there's a possibility of non-numeric strings, you'll need to add error handling. Also, please make sure that you have included necessary headers according to your project setup.

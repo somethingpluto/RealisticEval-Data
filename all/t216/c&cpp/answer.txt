@@ -1,0 +1,87 @@
+Here is a simple C++ implementation using POSIX API:
+
+```c++
+#include <iostream>
+#include <cstring>
+#include <sys/ioctl.h>
+#include <net/if.h>
+#include <arpa/inet.h>
+
+std::string getLocalIP(const std::string &interface) {
+    struct ifreq ifr;
+    int fd;
+
+    fd = socket(AF_INET, SOCK_DGRAM, 0);
+    if (fd == -1) {
+        perror("socket");
+        return "Error";
+    }
+
+    memset(&ifr, 0, sizeof(ifr));
+    strncpy(ifr.ifr_name, interface.c_str(), IFNAMSIZ-1);
+
+    if (ioctl(fd, SIOCGIFADDR, &ifr) != 0) {
+        close(fd);
+        perror("ioctl");
+        return "Error";
+    }
+
+    close(fd);
+
+    char ip[INET_ADDRSTRLEN];
+    inet_ntop(AF_INET, &((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr, ip, INET_ADDRSTRLEN);
+    
+    return std::string(ip);
+}
+```
+
+This function uses the `ioctl` system call with the `SIOCGIFADDR` command to retrieve the IP address of the specified network interface.
+
+Please note that this solution works only on Linux and it's not portable to other operating systems. Also, error handling is very basic in this example, you might want to add more robustness depending on your needs.
+
+For Windows platform, you would need to use Winsock library and `GetAdaptersAddresses` function instead. Here is a simplified version for Windows:
+
+```cpp
+#include <winsock2.h>
+#include <iphlpapi.h>
+#include <ws2tcpip.h>
+#include <iostream>
+
+#pragma comment(lib, "Ws2_32.lib")
+#pragma comment(lib, "Iphlpapi.lib")
+
+std::string getLocalIP(const std::string &interface) {
+    WSADATA wsaData;
+    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
+        return "Error";
+    }
+
+    ULONG flags = GAA_FLAG_INCLUDE_PREFIX | GAA_FLAG_SKIP_ANYCAST | GAA_FLAG_SKIP_MULTICAST | GAA_FLAG_SKIP_DNS_SERVER;
+    PIP_ADAPTER_ADDRESSES pAddresses = NULL;
+    ULONG outBufLen = 0;
+
+    // Get required buffer size.
+    if (GetAdaptersAddresses(AF_UNSPEC, flags, NULL, pAddresses, &outBufLen) == ERROR_BUFFER_OVERFLOW) {
+        pAddresses = (IP_ADAPTER_ADDRESSES *)malloc(outBufLen);
+    }
+
+    // Get addresses.
+    if (GetAdaptersAddresses(AF_UNSPEC, flags, NULL, pAddresses, &outBufLen) == NO_ERROR) {
+        for (PIP_ADAPTER_ADDRESSES pCurrAddr = pAddresses; pCurrAddr != NULL; pCurrAddr = pCurrAddr->Next) {
+            for (PIP_ADAPTER_UNICAST_ADDRESS pUnicastAddr = pCurrAddr->FirstUnicastAddress; pUnicastAddr != NULL; pUnicastAddr = pUnicastAddr->Next) {
+                char ip[NI_MAXHOST];
+                if (getnameinfo(pUnicastAddr->Address.lpSockaddr, pUnicastAddr->Address.iSockaddrLength, ip, NI_MAXHOST, NULL, 0, NI_NUMERICHOST) == 0) {
+                    free(pAddresses);
+                    WSACleanup();
+                    return std::string(ip);
+                }
+            }
+        }
+    }
+
+    free(pAddresses);
+    WSACleanup();
+    return "Error";
+}
+```
+This code will list all unicast addresses for all adapters, including loopback and link-local addresses. If you specifically need an IPv4 address for a certain adapter, you may need to add additional checks.

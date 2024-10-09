@@ -1,0 +1,89 @@
+To convert your Python unittest test class to a C++ test case using Catch2, you'll need to follow these steps:
+
+1. Install Catch2 if you haven't already. You can download it from its [GitHub repository](https://github.com/catchorg/Catch2).
+2. Create a new C++ file for your tests.
+3. Write the equivalent test cases using Catch2 syntax.
+
+Here's an example of how you might write the test cases for the `sum_calibration_values` function in C++ using Catch2:
+
+```cpp
+#include "catch.hpp"
+#include <vector>
+#include <string>
+
+// Function prototype
+int sum_calibration_values(const std::vector<std::string>& calibration_document);
+
+// Test cases using Catch2
+TEST_CASE("Sum Calibration Values", "[sum_calibration_values]") {
+    SECTION("Single Line with Single Number") {
+        std::vector<std::string> input = {"123"};
+        REQUIRE(sum_calibration_values(input) == 13);
+    }
+
+    SECTION("Multiple Lines with Single Numbers") {
+        std::vector<std::string> input = {"456", "789", "012"};
+        REQUIRE(sum_calibration_values(input) == 12);
+    }
+
+    SECTION("Line with Multiple Numbers") {
+        std::vector<std::string> input = {"12a34b56"};
+        REQUIRE(sum_calibration_values(input) == 16);
+    }
+
+    SECTION("Empty Line") {
+        std::vector<std::string> input = {""};
+        REQUIRE(sum_calibration_values(input) == 0);
+    }
+
+    SECTION("No Numbers in Line") {
+        std::vector<std::string> input = {"abc"};
+        REQUIRE(sum_calibration_values(input) == 0);
+    }
+}
+
+// Implementation of the function for completeness
+int sum_calibration_values(const std::vector<std::string>& calibration_document) {
+    int total_sum = 0;
+    for (const auto& line : calibration_document) {
+        // Extract the first and last digit from the line
+        char first_digit = '0';
+        char last_digit = '0';
+        bool found_first = false;
+
+        for (char ch : line) {
+            if (isdigit(ch)) {
+                if (!found_first) {
+                    first_digit = ch;
+                    found_first = true;
+                } else {
+                    last_digit = ch;
+                }
+            }
+        }
+
+        // Convert the characters to integers and add to total_sum
+        if (first_digit != '0' && last_digit != '0') {
+            total_sum += (first_digit - '0') * 10 + (last_digit - '0');
+        }
+    }
+    return total_sum;
+}
+```
+
+### Explanation:
+
+1. **Include Catch2**: The `#include "catch.hpp"` directive includes the Catch2 header file.
+2. **Test Cases**: The `TEST_CASE` macro defines a test case. Inside the test case, `SECTION` macros define individual test scenarios.
+3. **Function Implementation**: The `sum_calibration_values` function is implemented at the end of the file. This implementation is necessary because Catch2 needs access to the function being tested.
+
+### Running the Tests
+
+To run the tests, compile your program with the Catch2 library linked. Here's an example command using g++:
+
+```sh
+g++ -std=c++14 -o test_sum_calibration test_sum_calibration.cpp -lcatch
+./test_sum_calibration
+```
+
+This will execute the test cases and output the results. If any test fails, Catch2 will provide detailed information about the failure.

@@ -1,0 +1,77 @@
+To convert the provided Python `unittest` test class into a C++ test case using Catch2, we need to follow these steps:
+
+1. Install Catch2 if you haven't already.
+2. Write the equivalent C++ test case using Catch2.
+
+Here's an example of how you might write the test case in C++ using Catch2:
+
+```cpp
+#include <catch2/catch.hpp>
+#include <iostream>
+#include <string>
+#include <regex>
+
+std::string get_local_ip(const std::string& interface = "wlan0") {
+    /**
+     * gets the IPv4 address of the local computer on a specific network interface, such as wlan0, which is usually a wireless network interface
+     * Args:
+     *     interface (str): The network interface to query. Default is 'wlan0'.
+     *
+     * Returns:
+     *     str: The local IP address, or a message indicating no IP was found.
+     */
+    try {
+        std::string command = "ip addr show " + interface;
+        std::string output = "";
+        FILE* pipe = popen(command.c_str(), "r");
+        if (!pipe) throw std::runtime_error("popen() failed!");
+        try {
+            char buffer[128];
+            while (fgets(buffer, 128, pipe) != nullptr) {
+                output += buffer;
+            }
+        } catch (...) {
+            pclose(pipe);
+            throw;
+        }
+        pclose(pipe);
+
+        // Use regex to extract the IP address
+        std::regex ip_regex(R"((\d{1,3}\.){3}\d{1,3})");
+        std::smatch matches;
+        if (std::regex_search(output, matches, ip_regex)) {
+            return matches.str(0);
+        }
+    } catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << '\n';
+    }
+    return "No IP found";
+}
+
+TEST_CASE("get_local_ip", "[network]") {
+    SECTION("Default interface") {
+        std::string result = get_local_ip();
+        REQUIRE(result != "No IP found");
+        std::cout << "Default interface IP: " << result << std::endl;
+    }
+
+    SECTION("Specific interface") {
+        std::string result = get_local_ip("eth0");
+        REQUIRE(result != "No IP found");
+        std::cout << "Specific interface IP: " << result << std::endl;
+    }
+}
+```
+
+### Explanation:
+
+1. **Include Catch2 Header**: We include the Catch2 header file (`catch.hpp`) at the beginning of the file.
+2. **Function Implementation**: The `get_local_ip` function remains unchanged from your original Python code.
+3. **Catch2 Test Case**:
+   - `TEST_CASE("get_local_ip", "[network]")`: Defines a test case named `get_local_ip` and tags it with `[network]`.
+   - `SECTION("Default interface")`: Defines a sub-section for testing the default interface.
+   - `SECTION("Specific interface")`: Defines another sub-section for testing a specific interface (e.g., `eth0`).
+   - `REQUIRE(result != "No IP found")`: Asserts that the returned IP address is not "No IP found".
+   - `std::cout`: Prints the result for debugging purposes.
+
+Make sure you have Catch2 installed and properly configured in your build system. If you're using CMake, you can add Catch2 as a subdirectory or use a package manager like vcpkg.

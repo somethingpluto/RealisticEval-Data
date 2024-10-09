@@ -1,0 +1,69 @@
+To convert the given Python unittest test class to a C++ Catch2 test case, you would need to define a similar function in C++ and then write tests for that function using Catch2's testing framework. Below is an example of how you might implement the `log` function in C++ and write some basic tests for it using Catch2:
+
+```cpp
+#include <iostream>
+#include <string>
+#include <vector>
+#include <map>
+#include <nlohmann/json.hpp>
+
+// Define the log function
+template<typename T>
+T log(const T& item) {
+    // Handle different types of items
+    if constexpr (std::is_same_v<T, std::string>) {
+        std::cout << item;
+    } else if constexpr (std::is_arithmetic_v<T>) {
+        std::cout << item;
+    } else if constexpr (std::is_same_v<T, std::vector<std::any>>) {
+        for (const auto& elem : item) {
+            log(elem);
+        }
+    } else if constexpr (std::is_same_v<T, std::map<std::string, std::any>>) {
+        nlohmann::json json_obj;
+        for (const auto& pair : item) {
+            json_obj[pair.first] = pair.second;
+        }
+        std::cout << json_obj.dump(4); // Pretty print JSON
+    } else {
+        std::cerr << "Error: Unsupported type";
+    }
+    return item;
+}
+
+// Include Catch2 header
+#define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
+#include "catch.hpp"
+
+// Write tests for the log function
+TEST_CASE("Logging Tests", "[log]") {
+    SECTION("String Logging") {
+        log(std::string("Hello, World!"));
+        REQUIRE(true); // Replace with actual assertion
+    }
+
+    SECTION("Integer Logging") {
+        log(42);
+        REQUIRE(true); // Replace with actual assertion
+    }
+
+    SECTION("Vector Logging") {
+        std::vector<std::any> vec = {1, "two", 3.0};
+        log(vec);
+        REQUIRE(true); // Replace with actual assertion
+    }
+
+    SECTION("Map Logging") {
+        std::map<std::string, std::any> map = {{"one", 1}, {"two", "two"}, {"three", 3.0}};
+        log(map);
+        REQUIRE(true); // Replace with actual assertion
+    }
+}
+```
+
+In this C++ code:
+- We define a template function `log` that handles different types of inputs similarly to your Python function.
+- We include the Catch2 library and define a test suite named "Logging Tests".
+- Each `SECTION` represents a separate test case for different types of input.
+
+Note that you will need to replace the `REQUIRE(true)` statements with actual assertions that verify the correctness of the `log` function's output. Additionally, ensure that you have the necessary headers and libraries installed to use Catch2 and the `nlohmann/json` library for handling JSON serialization.

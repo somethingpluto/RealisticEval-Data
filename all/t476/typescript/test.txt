@@ -1,0 +1,146 @@
+To convert the given Python unittest test class to TypeScript using Jest, you need to follow these steps:
+
+1. Install Jest if it's not already installed.
+2. Write the equivalent TypeScript code for the function `topological_sort_dfs`.
+3. Create a Jest test file and write the tests.
+
+Here's how you can do it:
+
+### Step 1: Install Jest
+
+If you haven't installed Jest yet, you can do so using npm or yarn:
+
+```sh
+npm install --save-dev jest
+```
+
+or
+
+```sh
+yarn add --dev jest
+```
+
+### Step 2: Write the TypeScript Code for the Function
+
+Create a file named `topologicalSort.ts` with the following content:
+
+```typescript
+type Vertex = number;
+type Edge = [Vertex, Vertex];
+type Graph = { [vertex: number]: Vertex[] };
+
+function topological_sort_dfs(vertices: Vertex[], edges: Edge[]): Vertex[] {
+    const graph: Graph = {};
+    const visited: Set<Vertex> = new Set();
+    const stack: Vertex[] = [];
+
+    // Build the graph
+    for (const [from, to] of edges) {
+        if (!graph[from]) {
+            graph[from] = [];
+        }
+        graph[from].push(to);
+    }
+
+    // DFS helper function
+    function dfs(vertex: Vertex): boolean {
+        if (visited.has(vertex)) {
+            return false; // Cycle detected
+        }
+        if (!graph[vertex]) {
+            stack.push(vertex);
+            return true;
+        }
+
+        visited.add(vertex);
+
+        for (const neighbor of graph[vertex]) {
+            if (!dfs(neighbor)) {
+                return false; // Cycle detected
+            }
+        }
+
+        visited.delete(vertex);
+        stack.push(vertex);
+        return true;
+    }
+
+    // Perform DFS for all vertices
+    for (const vertex of vertices) {
+        if (!visited.has(vertex)) {
+            if (!dfs(vertex)) {
+                return []; // Cycle detected, no topological sort possible
+            }
+        }
+    }
+
+    return stack.reverse();
+}
+
+export { topological_sort_dfs };
+```
+
+### Step 3: Create a Jest Test File
+
+Create a file named `topologicalSort.test.ts` with the following content:
+
+```typescript
+import { topological_sort_dfs } from './topologicalSort';
+
+describe('topological_sort_dfs', () => {
+    test('should return correct topological order', () => {
+        const vertices = [5, 4, 3, 2, 1];
+        const edges: [number, number][] = [
+            [5, 2],
+            [5, 0],
+            [4, 0],
+            [4, 1],
+            [2, 3],
+            [3, 1]
+        ];
+
+        const result = topological_sort_dfs(vertices, edges);
+        expect(result).toEqual([5, 4, 2, 3, 1, 0]);
+    });
+
+    test('should return empty array if there is a cycle', () => {
+        const vertices = [5, 4, 3, 2, 1];
+        const edges: [number, number][] = [
+            [5, 2],
+            [5, 0],
+            [4, 0],
+            [4, 1],
+            [2, 3],
+            [3, 1],
+            [3, 2] // Cycle detected
+        ];
+
+        const result = topological_sort_dfs(vertices, edges);
+        expect(result).toEqual([]);
+    });
+});
+```
+
+### Step 4: Run the Tests
+
+Add a script to your `package.json` to run the tests:
+
+```json
+"scripts": {
+    "test": "jest"
+}
+```
+
+Then run the tests using:
+
+```sh
+npm test
+```
+
+or
+
+```sh
+yarn test
+```
+
+This will execute the tests written in `topologicalSort.test.ts` and verify that the `topological_sort_dfs` function works correctly.

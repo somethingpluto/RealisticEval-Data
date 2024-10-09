@@ -1,0 +1,75 @@
+Certainly! Below is the equivalent C++ test case using Catch2 for the Python `unittest` test class you provided:
+
+```cpp
+#include <catch2/catch.hpp>
+#include <fstream>
+#include <sstream>
+#include <string>
+
+void saveContentToFile(const std::string& content, const std::string& path) {
+    /**
+     * Saves the provided content to a specified file after cleaning up
+     * redundant whitespace.
+     *
+     * @param content The text content to be saved to the file.
+     * @param path The file path where the content will be saved.
+     */
+    
+    // Clean up redundant whitespace
+    std::stringstream ss;
+    bool inWhitespace = false;
+    for (char ch : content) {
+        if (std::isspace(ch)) {
+            if (!inWhitespace) {
+                ss << ' ';
+                inWhitespace = true;
+            }
+        } else {
+            ss << ch;
+            inWhitespace = false;
+        }
+    }
+    std::string cleanedContent = ss.str();
+
+    // Save the cleaned content to the file
+    std::ofstream outFile(path);
+    if (outFile.is_open()) {
+        outFile << cleanedContent;
+        outFile.close();
+    } else {
+        throw std::runtime_error("Unable to open file for writing");
+    }
+}
+
+TEST_CASE("saveContentToFile", "[file]") {
+    // Test data
+    std::string content = "  This   is  some  content  with  redundant   whitespace.\n";
+    std::string expectedContent = "This is some content with redundant whitespace.\n";
+    std::string filePath = "test_output.txt";
+
+    // Call the function under test
+    saveContentToFile(content, filePath);
+
+    // Read the content back from the file
+    std::ifstream inFile(filePath);
+    std::string actualContent((std::istreambuf_iterator<char>(inFile)), std::istreambuf_iterator<char>());
+
+    // Verify the content
+    REQUIRE(actualContent == expectedContent);
+
+    // Cleanup
+    remove(filePath.c_str());
+}
+```
+
+### Explanation:
+1. **Function Implementation**: The `saveContentToFile` function is implemented in C++. It cleans up redundant whitespace and saves the content to a file.
+2. **Catch2 Test Case**:
+   - `TEST_CASE` defines a new test case named "saveContentToFile".
+   - Test data is prepared, including the input content, expected output, and the file path.
+   - The function `saveContentToFile` is called with the test data.
+   - The content of the file is read back into a string.
+   - The `REQUIRE` macro is used to verify that the actual content matches the expected content.
+   - Finally, the test file is removed to clean up after the test.
+
+Make sure to include the Catch2 library in your project and link it properly when compiling the C++ code.

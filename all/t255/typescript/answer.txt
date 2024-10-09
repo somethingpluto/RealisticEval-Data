@@ -1,0 +1,72 @@
+Sure! Here is the equivalent TypeScript code for the provided Python function:
+
+```typescript
+import { createCanvas, loadImage } from 'canvas';
+
+interface BitArray {
+  [index: number]: number;
+}
+
+async function convertImageToBits(imagePath: string): Promise<BitArray> {
+  /**
+   * Convert a picture to an array of binary bits. Convert it to black and white mode (only 0s and 1s, corresponding to black and white),
+   * convert the white pixel (value 255) to 1, convert the black pixel to 0, and finally store these bits in an array and return.
+   *
+   * @param imagePath - The path to the image file.
+   * @returns A promise that resolves with a list of bits (0 or 1) representing the image.
+   */
+
+  const canvas = createCanvas(1, 1);
+  const ctx = canvas.getContext('2d');
+
+  try {
+    const img = await loadImage(imagePath);
+    canvas.width = img.width;
+    canvas.height = img.height;
+    ctx.drawImage(img, 0, 0);
+
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+
+    const bitArray: BitArray = [];
+
+    for (let i = 0; i < data.length; i += 4) {
+      // Each pixel has 4 values (RGBA)
+      const r = data[i];
+      const g = data[i + 1];
+      const b = data[i + 2];
+
+      // Convert to grayscale by averaging RGB values
+      const gray = Math.round((r + g + b) / 3);
+
+      // Convert to binary bit
+      const bit = gray > 127 ? 1 : 0;
+
+      bitArray.push(bit);
+    }
+
+    return bitArray;
+  } catch (error) {
+    throw new Error(`Error converting image to bits: ${error}`);
+  }
+}
+```
+
+### Explanation:
+1. **Imports**: We use `createCanvas` and `loadImage` from the `canvas` package to handle image processing.
+2. **Type Definitions**: We define an interface `BitArray` to represent the array of bits.
+3. **Function Definition**: The `convertImageToBits` function is defined as asynchronous to handle the asynchronous nature of loading images.
+4. **Image Loading and Processing**:
+   - Load the image using `loadImage`.
+   - Draw the image onto a canvas.
+   - Get the image data using `getImageData`.
+   - Iterate through each pixel's RGBA values, calculate the average (grayscale value), and convert it to a binary bit (1 if greater than 127, otherwise 0).
+5. **Return Value**: The function returns a promise that resolves with the array of bits.
+
+Make sure you have the `canvas` package installed in your project. You can install it using npm:
+
+```sh
+npm install canvas
+```
+
+This TypeScript code should work similarly to the original Python function, converting an image to an array of binary bits.

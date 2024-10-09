@@ -1,0 +1,41 @@
+Sure! Here is the equivalent TypeScript code for your Python function:
+
+```typescript
+interface Record {
+    ticker: string;
+    exDividendDate: string;
+    dividendAmount: number;
+}
+
+function checkDividendVariances(records: Record[]): Record[] {
+    const result: Record[] = [];
+    const map = new Map<string, { dates: Set<string>, amounts: Set<number> }>();
+
+    for (const record of records) {
+        const key = `${record.ticker}-${record.exDividendDate}`;
+        if (!map.has(key)) {
+            map.set(key, { dates: new Set(), amounts: new Set() });
+        }
+        map.get(key).dates.add(record.exDividendDate);
+        map.get(key).amounts.add(record.dividendAmount);
+    }
+
+    for (const [key, value] of map.entries()) {
+        if (value.dates.size === 1 && value.amounts.size > 1) {
+            const [ticker, exDividendDate] = key.split('-');
+            result.push({ ticker, exDividendDate, dividendAmount: NaN }); // Assuming dividend amount is not relevant here
+        }
+    }
+
+    return result;
+}
+```
+
+### Explanation:
+1. **Interface Definition**: The `Record` interface defines the structure of each item in the input list.
+2. **Map Usage**: A `Map` is used to group records by their combination of `ticker` and `exDividendDate`. This helps in identifying duplicates based on these fields.
+3. **Loop Through Records**: For each record, we create a unique key (`ticker-exDividendDate`) and add it to the map. We also store the distinct `exDividendDate` and `dividendAmount` values for each key.
+4. **Check Conditions**: After populating the map, we iterate through its entries. If an entry has only one distinct `exDividendDate` but multiple distinct `dividendAmount` values, it means there's a variance in dividends for the same ex-dividend date.
+5. **Result Construction**: For each variance found, we construct a result object and push it into the `result` array.
+
+This TypeScript code should behave similarly to your original Python function.

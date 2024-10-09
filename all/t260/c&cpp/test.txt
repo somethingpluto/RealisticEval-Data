@@ -1,0 +1,147 @@
+Sure! Below is the equivalent C++ test case using Catch2 for the given Python unittest test class. Note that I'll assume you have a function `processCSV` that performs the same operation as `process_csv` in your Python code.
+
+First, let's define the `processCSV` function in C++. For simplicity, we'll use the Boost library to handle CSV files.
+
+```cpp
+#include <boost/csv.hpp>
+#include <fstream>
+#include <sstream>
+#include <string>
+
+void processCSV(const std::string& file_path, const std::string& output_path) {
+    boost::csv::reader reader(file_path);
+    boost::csv::writer writer(output_path);
+
+    for (const auto& row : reader) {
+        bool has_two_or_more_empty = false;
+        int empty_count = 0;
+
+        for (const auto& cell : row) {
+            if (cell.empty()) {
+                ++empty_count;
+                if (empty_count >= 2) {
+                    has_two_or_more_empty = true;
+                    break;
+                }
+            } else {
+                empty_count = 0;
+            }
+        }
+
+        if (!has_two_or_more_empty) {
+            writer.write_row(row);
+        }
+    }
+}
+```
+
+Now, let's write the Catch2 test cases for this function.
+
+```cpp
+#define CATCH_CONFIG_MAIN
+#include "catch2/catch.hpp"
+
+#include <fstream>
+#include <sstream>
+#include <string>
+
+// Helper function to create a temporary CSV file
+std::string createTempCsvFile(const std::string& content) {
+    static int temp_file_counter = 0;
+    std::ostringstream oss;
+    oss << "temp_file_" << temp_file_counter++ << ".csv";
+    std::ofstream ofs(oss.str());
+    ofs << content;
+    ofs.close();
+    return oss.str();
+}
+
+// Helper function to read the contents of a CSV file
+std::string readCsvFile(const std::string& file_path) {
+    std::ifstream ifs(file_path);
+    std::stringstream buffer;
+    buffer << ifs.rdbuf();
+    ifs.close();
+    return buffer.str();
+}
+
+TEST_CASE("Process CSV with no empty columns", "[processCSV]") {
+    std::string input_csv = "col1,col2,col3\n"
+                             "data1,data2,data3\n"
+                             "data4,data5,data6";
+
+    std::string temp_input_file = createTempCsvFile(input_csv);
+    std::string temp_output_file = "output.csv";
+
+    processCSV(temp_input_file, temp_output_file);
+
+    std::string expected_output = "col1,col2,col3\n"
+                                  "data1,data2,data3\n"
+                                  "data4,data5,data6";
+
+    REQUIRE(readCsvFile(temp_output_file) == expected_output);
+}
+
+TEST_CASE("Process CSV with one empty column", "[processCSV]") {
+    std::string input_csv = "col1,col2,col3\n"
+                             "data1,,data3\n"
+                             "data4,data5,data6";
+
+    std::string temp_input_file = createTempCsvFile(input_csv);
+    std::string temp_output_file = "output.csv";
+
+    processCSV(temp_input_file, temp_output_file);
+
+    std::string expected_output = "col1,col2,col3\n"
+                                  "data1,,data3\n"
+                                  "data4,data5,data6";
+
+    REQUIRE(readCsvFile(temp_output_file) == expected_output);
+}
+
+TEST_CASE("Process CSV with two consecutive empty columns", "[processCSV]") {
+    std::string input_csv = "col1,col2,col3\n"
+                             "data1,,\n"
+                             "data4,data5,data6";
+
+    std::string temp_input_file = createTempCsvFile(input_csv);
+    std::string temp_output_file = "output.csv";
+
+    processCSV(temp_input_file, temp_output_file);
+
+    std::string expected_output = "col1,col2,col3\n"
+                                  "data4,data5,data6";
+
+    REQUIRE(readCsvFile(temp_output_file) == expected_output);
+}
+
+TEST_CASE("Process CSV with all empty columns", "[processCSV]") {
+    std::string input_csv = "col1,col2,col3\n"
+                             ",,\n"
+                             ",,\n";
+
+    std::string temp_input_file = createTempCsvFile(input_csv);
+    std::string temp_output_file = "output.csv";
+
+    processCSV(temp_input_file, temp_output_file);
+
+    std::string expected_output = "";
+
+    REQUIRE(readCsvFile(temp_output_file) == expected_output);
+}
+
+TEST_CASE("Process empty CSV file", "[processCSV]") {
+    std::string input_csv = "";
+
+    std::string temp_input_file = createTempCsvFile(input_csv);
+    std::string temp_output_file = "output.csv";
+
+    processCSV(temp_input_file, temp_output_file);
+
+    std::string expected_output = "";
+
+    REQUIRE(readCsvFile(temp_output_file) == expected_output);
+}
+```
+
+Make sure you have the Boost library installed and properly configured in your project to compile these tests. You can install Boost using a package manager like vcpkg or conan, or download it from the official website and build it manually.

@@ -1,0 +1,76 @@
+To convert the provided Python unittest test class to a C++ test case using Catch2, you need to follow these steps:
+
+1. **Include Catch2**: Ensure you have Catch2 installed and included in your project.
+2. **Define the Function**: Implement the `probability_of_red_balls` function in C++.
+3. **Write Test Cases**: Use Catch2's macros to write test cases for the function.
+
+Here is an example of how you can do it:
+
+### Step 1: Include Catch2
+
+First, include Catch2 in your C++ project. If you're using a build system like CMake, you might add something like this to your `CMakeLists.txt`:
+
+```cmake
+find_package(Catch2 REQUIRED)
+include_directories(${CATCH2_INCLUDE_DIRS})
+```
+
+### Step 2: Define the Function
+
+Implement the `probability_of_red_balls` function in C++. Note that C++ does not support floating-point arithmetic directly with integers, so we'll use `double` instead of `float`.
+
+```cpp
+#include <iostream>
+#include <cmath>
+
+// Function to calculate factorial
+double factorial(int num) {
+    if (num == 0 || num == 1) return 1;
+    double result = 1;
+    for (int i = 2; i <= num; ++i) {
+        result *= i;
+    }
+    return result;
+}
+
+// Function to calculate combinations (n choose k)
+double combination(int n, int k) {
+    return factorial(n) / (factorial(k) * factorial(n - k));
+}
+
+// Function to calculate the probability of drawing exactly n red balls
+double probability_of_red_balls(int n, int x, int y) {
+    if (n > x || n > 15 || n < 0 || x < 0 || y < 0) {
+        throw std::invalid_argument("Invalid input values");
+    }
+    double total_ways = combination(15, n);
+    double favorable_ways = combination(x, n) * combination(y, 15 - n);
+    return favorable_ways / total_ways;
+}
+```
+
+### Step 3: Write Test Cases
+
+Now, write test cases using Catch2. Create a new file named `test_probability.cpp` and include the following code:
+
+```cpp
+#define CATCH_CONFIG_MAIN
+#include "catch.hpp"
+
+TEST_CASE("Probability of Red Balls", "[probability]") {
+    REQUIRE(probability_of_red_balls(0, 5, 10) == Approx(0.24609375).epsilon(1e-6));
+    REQUIRE(probability_of_red_balls(1, 5, 10) == Approx(0.390625).epsilon(1e-6));
+    REQUIRE(probability_of_red_balls(2, 5, 10) == Approx(0.234375).epsilon(1e-6));
+    REQUIRE(probability_of_red_balls(3, 5, 10) == Approx(0.0859375).epsilon(1e-6));
+    REQUIRE(probability_of_red_balls(4, 5, 10) == Approx(0.0234375).epsilon(1e-6));
+    REQUIRE_THROWS(probability_of_red_balls(-1, 5, 10)); // Invalid input
+    REQUIRE_THROWS(probability_of_red_balls(6, 5, 10)); // Invalid input
+}
+```
+
+### Explanation
+
+- **Factorial and Combination Functions**: These helper functions are used to calculate the factorial and combinations required for the probability calculation.
+- **Test Cases**: Each `REQUIRE` macro checks if the output of `probability_of_red_balls` matches the expected value within a small epsilon margin. The `REQUIRE_THROWS` macro ensures that the function throws an exception when given invalid input.
+
+Compile and run your tests using a build system that supports Catch2, such as CMake or Makefile. This setup should allow you to verify the correctness of your C++ implementation against the Python unittests.

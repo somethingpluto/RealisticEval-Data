@@ -1,50 +1,48 @@
-import re
-from typing import Union
+import math
 
-def clean_pattern(x: str, pattern: str) -> Union[str, float]:
-    x = str(x)
-    match = re.search(pattern, x)
-    if match:
-        return float(match.group(0))
-    return ''
+def degrees_to_radians(degrees: int) -> float:
+    """
+    Convert an angle from degrees to radians.
+
+    Args:
+        degrees (int): The angle in degrees to convert.
+
+    Returns:
+        float: The angle in radians.
+    """
+    return degrees * (math.pi / 180)
+import math
 import unittest
 
 
-class TestCleanPattern(unittest.TestCase):
+class TestDegreesToRadians(unittest.TestCase):
+    def test_zero_degrees(self):
+        """Test conversion of 0 degrees"""
+        self.assertAlmostEqual(degrees_to_radians(0), 0, places=5)
 
-    def setUp(self):
-        """Sets up a common regex pattern for testing."""
-        self.pattern = r'(\d+\.?\d*) kg'  # Regex pattern to match weight in kg
+    def test_ninety_degrees(self):
+        """Test conversion of 90 degrees"""
+        self.assertAlmostEqual(degrees_to_radians(90), math.pi / 2, places=5)
 
-    def test_valid_integer_weight(self):
-        """Test case for valid integer weight."""
-        input_string = "The weight is 25 kg"
-        result = clean_pattern(input_string, self.pattern)
-        self.assertEqual(result, 25.0)
+    def test_one_eighty_degrees(self):
+        """Test conversion of 180 degrees"""
+        self.assertAlmostEqual(degrees_to_radians(180), math.pi, places=5)
 
-    def test_valid_float_weight(self):
-        """Test case for valid float weight."""
-        input_string = "Weight measured at 15.75 kg"
-        result = clean_pattern(input_string, self.pattern)
-        self.assertEqual(result, 15.75)
+    def test_two_seventy_degrees(self):
+        """Test conversion of 270 degrees"""
+        self.assertAlmostEqual(degrees_to_radians(270), 3 * math.pi / 2, places=5)
 
-    def test_no_weight_found(self):
-        """Test case where no weight is present."""
-        input_string = "No weight provided."
-        result = clean_pattern(input_string, self.pattern)
-        self.assertEqual(result, '')
+    def test_three_sixty_degrees(self):
+        """Test conversion of 360 degrees"""
+        self.assertAlmostEqual(degrees_to_radians(360), 2 * math.pi, places=5)
 
-    def test_invalid_float_conversion(self):
-        """Test case for non-numeric weight."""
-        input_string = "The weight is thirty kg"
-        result = clean_pattern(input_string, self.pattern)
-        self.assertEqual(result, '')
+    def test_negative_degrees(self):
+        """Test conversion of negative degrees"""
+        self.assertAlmostEqual(degrees_to_radians(-90), -math.pi / 2, places=5)
 
-    def test_weight_with_extra_text(self):
-        """Test case for weight with additional text."""
-        input_string = "The total weight is 45.3 kg as per the last measurement."
-        result = clean_pattern(input_string, self.pattern)
-        self.assertEqual(result, 45.3)
+    def test_large_degrees(self):
+        """Test conversion of a large angle (720 degrees)"""
+        self.assertAlmostEqual(degrees_to_radians(720), 4 * math.pi, places=5)
 
 if __name__ == '__main__':
     unittest.main()

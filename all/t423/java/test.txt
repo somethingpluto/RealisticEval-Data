@@ -1,0 +1,92 @@
+Certainly! Below is the equivalent Java JUnit test case for your Python `unittest` class. The Java class will be named `Tester` and it will be placed in the package `org.real.temp`.
+
+```java
+package org.real.temp;
+
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
+public class Tester {
+
+    private File tempFile;
+
+    @BeforeEach
+    public void setUp() throws IOException {
+        // Create a temporary file for testing
+        tempFile = File.createTempFile("test", ".txt");
+    }
+
+    @Test
+    public void testWriteUniqueLineToExistingFile() throws IOException {
+        String existingContent = "This is an existing line.";
+        Files.write(Paths.get(tempFile.getAbsolutePath()), existingContent.getBytes());
+
+        writeUniqueLineToFile(tempFile.getAbsolutePath(), existingContent);
+
+        // Read the file content and verify that the line was not added again
+        String fileContent = new String(Files.readAllBytes(Paths.get(tempFile.getAbsolutePath())));
+        assertTrue(fileContent.contains(existingContent));
+        assertEquals(1, fileContent.split(System.lineSeparator()).length);
+    }
+
+    @Test
+    public void testWriteUniqueLineToEmptyFile() throws IOException {
+        String newContent = "This is a new line.";
+
+        writeUniqueLineToFile(tempFile.getAbsolutePath(), newContent);
+
+        // Read the file content and verify that the line was added
+        String fileContent = new String(Files.readAllBytes(Paths.get(tempFile.getAbsolutePath())));
+        assertTrue(fileContent.contains(newContent));
+        assertEquals(1, fileContent.split(System.lineSeparator()).length);
+    }
+
+    @Test
+    public void testWriteUniqueLineToNonExistentFile() throws IOException {
+        String newContent = "This is another new line.";
+        String nonExistentFilePath = tempFile.getParentFile().getAbsolutePath() + "/non_existent.txt";
+
+        writeUniqueLineToFile(nonExistentFilePath, newContent);
+
+        // Verify that the file was created and the line was added
+        File nonExistentFile = new File(nonExistentFilePath);
+        assertTrue(nonExistentFile.exists());
+        assertTrue(nonExistentFile.isFile());
+        String fileContent = new String(Files.readAllBytes(Paths.get(nonExistentFilePath)));
+        assertTrue(fileContent.contains(newContent));
+        assertEquals(1, fileContent.split(System.lineSeparator()).length);
+    }
+
+    /**
+     * Writes a line to a text file only if the line with the same content does not already exist.
+     *
+     * @param filename The name of the file to write to.
+     * @param lineContent The content of the line to write.
+     */
+    public void writeUniqueLineToFile(String filename, String lineContent) throws IOException {
+        boolean lineExists = Files.lines(Paths.get(filename)).anyMatch(line -> line.equals(lineContent));
+
+        if (!lineExists) {
+            Files.write(Paths.get(filename), System.lineSeparator().getBytes(), java.nio.file.StandardOpenOption.APPEND);
+            Files.write(Paths.get(filename), lineContent.getBytes(), java.nio.file.StandardOpenOption.APPEND);
+        }
+    }
+}
+```
+
+### Explanation:
+1. **Package Declaration**: The package declaration at the top specifies where the class resides.
+2. **Imports**: Necessary imports are included for file operations and assertions.
+3. **Setup Method**: `setUp()` method creates a temporary file before each test.
+4. **Test Methods**:
+   - `testWriteUniqueLineToExistingFile`: Tests writing to a file that already contains the line.
+   - `testWriteUniqueLineToEmptyFile`: Tests writing to an empty file.
+   - `testWriteUniqueLineToNonExistentFile`: Tests writing to a non-existent file.
+5. **writeUniqueLineToFile Method**: This method is implemented to match the functionality of your Python function. It checks if the line exists and appends it if it doesn't.
+
+Make sure you have JUnit 5 set up in your project to run these tests. If you're using Maven or Gradle, include the appropriate dependencies in your build configuration.

@@ -1,0 +1,108 @@
+To convert your Python `unittest` test class into a Jest test case in JavaScript, you'll need to first implement the function `check_dividend_variances` in JavaScript and then write a Jest test case to verify its functionality.
+
+Here's how you can do it:
+
+1. **Implement the Function in JavaScript**:
+
+```javascript
+// dividendChecker.js
+
+/**
+ * Check for ticker symbols with the same ex-dividend date but different dividend amounts.
+ * @param {Array} records - Each element is an array containing [ticker, exDividendDate, dividendAmount].
+ * @returns {Array} - Each element is an array containing [ticker, exDividendDate] that have different dividend amounts.
+ */
+function checkDividendVariances(records) {
+    const varianceMap = new Map();
+    const result = [];
+
+    records.forEach(record => {
+        const [ticker, exDividendDate, dividendAmount] = record;
+        const key = `${ticker}-${exDividendDate}`;
+
+        if (!varianceMap.has(key)) {
+            varianceMap.set(key, { amount: dividendAmount, count: 1 });
+        } else {
+            const entry = varianceMap.get(key);
+            if (entry.amount !== dividendAmount) {
+                if (entry.count === 1) {
+                    result.push([ticker, exDividendDate]);
+                }
+                entry.amount = dividendAmount;
+                entry.count++;
+            }
+        }
+    });
+
+    return result;
+}
+
+module.exports = checkDividendVariances;
+```
+
+2. **Write the Jest Test Case**:
+
+```javascript
+// dividendChecker.test.js
+
+const checkDividendVariances = require('./dividendChecker');
+
+describe('checkDividendVariances', () => {
+    it('should return tickers with the same ex-dividend date but different dividend amounts', () => {
+        const records = [
+            ['AAPL', '2023-04-14', 50],
+            ['AAPL', '2023-04-14', 60], // Different dividend amount
+            ['GOOGL', '2023-04-15', 2800],
+            ['GOOGL', '2023-04-15', 2800], // Same dividend amount
+            ['MSFT', '2023-04-16', 310]
+        ];
+
+        const expected = [
+            ['AAPL', '2023-04-14']
+        ];
+
+        expect(checkDividendVariances(records)).toEqual(expected);
+    });
+
+    it('should handle empty input gracefully', () => {
+        const records = [];
+        const expected = [];
+        expect(checkDividendVariances(records)).toEqual(expected);
+    });
+
+    it('should handle single record correctly', () => {
+        const records = [['AAPL', '2023-04-14', 50]];
+        const expected = [];
+        expect(checkDividendVariances(records)).toEqual(expected);
+    });
+});
+```
+
+### Explanation:
+
+1. **Function Implementation**:
+   - The `checkDividendVariances` function uses a `Map` to keep track of the dividend amounts for each `(ticker, exDividendDate)` pair.
+   - If the same pair is encountered again with a different dividend amount, it adds the pair to the result list only once.
+
+2. **Jest Test Cases**:
+   - The `describe` block groups related tests together.
+   - The `it` blocks define individual test cases.
+   - The `expect` function is used to assert the correctness of the output.
+
+Make sure you have Jest installed in your project. You can install it using npm or yarn:
+
+```bash
+npm install --save-dev jest
+# or
+yarn add --dev jest
+```
+
+Then, run your tests using the following command:
+
+```bash
+npx jest
+# or
+yarn test
+```
+
+This will execute the Jest test cases and provide you with the results.

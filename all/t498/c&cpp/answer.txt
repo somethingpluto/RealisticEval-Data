@@ -1,0 +1,59 @@
+Here is an equivalent C++ code using OpenSSL library:
+
+```cpp
+#include <openssl/md5.h>
+#include <iomanip>
+#include <sstream>
+#include <string>
+
+std::string compute_md5(const std::string &input_string)
+{
+    unsigned char digest[MD5_DIGEST_LENGTH];
+    MD5((unsigned char*)input_string.c_str(), input_string.size(), (unsigned char*)&digest);    
+
+    std::stringstream ss;
+    for(int i = 0; i < MD5_DIGEST_LENGTH; ++i)
+    {
+        ss << std::hex << std::setw(2) << std::setfill('0') << (int)digest[i];
+    }
+
+    return ss.str();
+}
+```
+
+And here is the equivalent C code using the standard library:
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdint.h>
+
+void compute_md5(const char *input_string, char *output_buffer)
+{
+    uint8_t digest[16];
+    FILE *fp = popen("echo -n " input_string "| md5sum | awk '{print $1}'", "r");
+    fread(output_buffer, 1, 33, fp);
+    pclose(fp);
+
+    // Remove newline character if it exists
+    size_t len = strlen(output_buffer);
+    if(len > 0 && output_buffer[len-1] == '\n')
+        output_buffer[len-1] = '\0';
+}
+
+int main() {
+    char output_buffer[34]; // MD5 produces 32 bytes of data, plus null terminator
+    compute_md5("your_input_string", output_buffer);
+    printf("%s\n", output_buffer);
+    return 0;
+}
+```
+
+Please note that you need to link against OpenSSL library when compiling the C++ code. For example:
+
+```bash
+g++ -o my_program my_program.cpp -lssl -lcrypto
+```
+
+For the C code, you can use the system call `popen` which might not be secure depending on your context, consider using a safer alternative like `exec` or creating your own MD5 implementation if security is a concern.

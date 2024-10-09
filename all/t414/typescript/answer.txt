@@ -1,0 +1,72 @@
+Sure! Here's how you can convert your Python function `extract_bib_info` to TypeScript:
+
+```typescript
+import * as fs from 'fs';
+import * as path from 'path';
+
+interface BibEntry {
+    title: string;
+    author: string;
+    year: string;
+}
+
+function extractBibInfo(bibFile: string): BibEntry[] {
+    /**
+     * Extracts the title, author, and year from a BibTeX file.
+     *
+     * @param {string} bibFile - The path to the BibTeX file.
+     * @returns {BibEntry[]} - A list containing dictionaries with title, author, and year for each article.
+     */
+    
+    // Read the content of the BibTeX file
+    const fileContent = fs.readFileSync(bibFile, 'utf-8');
+    
+    // Split the content into individual entries based on '@'
+    const entries = fileContent.split('@').filter(entry => entry.trim() !== '');
+    
+    const results: BibEntry[] = [];
+    
+    for (const entry of entries) {
+        // Find the type of entry (e.g., article, book)
+        const entryTypeMatch = entry.match(/^\s*([a-zA-Z]+)\{/);
+        if (!entryTypeMatch) continue;
+        
+        const entryType = entryTypeMatch[1];
+        
+        // Extract the title, author, and year
+        const fields = entry.split(',').map(field => field.trim());
+        let title = '', author = '', year = '';
+        
+        for (const field of fields) {
+            const [key, value] = field.split('=').map(part => part.trim().replace(/^{/, '').replace(/}$/, '').trim());
+            if (key === 'title') title = value;
+            else if (key === 'author') author = value;
+            else if (key === 'year') year = value;
+        }
+        
+        results.push({ title, author, year });
+    }
+    
+    return results;
+}
+```
+
+### Explanation:
+1. **Interfaces**: We define an interface `BibEntry` to represent the structure of each entry in the BibTeX file.
+2. **Reading File Content**: We use Node.js's `fs.readFileSync` to read the content of the BibTeX file synchronously.
+3. **Splitting Entries**: We split the content into individual entries using `@` as the delimiter.
+4. **Extracting Information**: For each entry, we determine its type and then parse out the `title`, `author`, and `year`.
+5. **Returning Results**: We collect all parsed entries into an array and return it.
+
+Make sure you have Node.js installed to run this TypeScript code. You can compile and run it using the following commands:
+
+```sh
+# Install TypeScript if not already installed
+npm install -g typescript
+
+# Compile the TypeScript code
+tsc extract-bib-info.ts
+
+# Run the compiled JavaScript code
+node extract-bib-info.js
+```

@@ -1,0 +1,87 @@
+Sure! Below is the equivalent JavaScript test case using Jest for the provided Python unittest test class. Note that I'll assume you want to write a test for the `read_jsonl` function, but since no actual implementation or test cases were provided in the Python code, I'll create a basic example.
+
+First, let's define the `read_jsonl` function in JavaScript:
+
+```javascript
+const fs = require('fs');
+const readline = require('readline');
+
+function readJsonl(filePath) {
+  return new Promise((resolve, reject) => {
+    const results = [];
+    const rl = readline.createInterface({
+      input: fs.createReadStream(filePath),
+      crlfDelay: Infinity
+    });
+
+    rl.on('line', (line) => {
+      try {
+        results.push(JSON.parse(line));
+      } catch (error) {
+        reject(new Error(`JSONDecodeError: ${error.message}`));
+      }
+    });
+
+    rl.on('close', () => {
+      resolve(results);
+    });
+  });
+}
+
+module.exports = { readJsonl };
+```
+
+Now, let's write a Jest test case for this function:
+
+```javascript
+const readJsonl = require('./readJsonl'); // Adjust the path as necessary
+
+describe('readJsonl', () => {
+  it('should read a valid JSONL file and return its content as a list of dictionaries', async () => {
+    const filePath = 'path/to/your/file.jsonl'; // Replace with your actual file path
+    const expectedOutput = [
+      { key1: 'value1' },
+      { key2: 'value2' }
+    ];
+
+    const result = await readJsonl(filePath);
+
+    expect(result).toEqual(expectedOutput);
+  });
+
+  it('should reject if the file does not exist', async () => {
+    const nonExistentFilePath = 'path/to/nonexistent/file.jsonl';
+
+    await expect(readJsonl(nonExistentFilePath)).rejects.toThrow('FileNotFoundError');
+  });
+
+  it('should reject if there is an error parsing a line in the JSONL file', async () => {
+    const invalidJsonFilePath = 'path/to/invalid_json_file.jsonl'; // Create a file with invalid JSON on purpose
+    const expectedErrorMessage = /JSONDecodeError/;
+
+    await expect(readJsonl(invalidJsonFilePath)).rejects.toMatch(expectedErrorMessage);
+  });
+});
+```
+
+Make sure you have Jest installed in your project. You can install it using npm:
+
+```sh
+npm install --save-dev jest
+```
+
+Then, add the following script to your `package.json` to run the tests:
+
+```json
+"scripts": {
+  "test": "jest"
+}
+```
+
+Finally, run the tests using:
+
+```sh
+npm test
+```
+
+This will execute the Jest test cases and verify that the `readJsonl` function works as expected.

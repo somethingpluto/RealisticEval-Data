@@ -1,0 +1,58 @@
+To convert your Python unittest test class to a C++ test case using Catch2, you need to define a test fixture in C++. Below is an example of how you can do this. This assumes that `extract_parse_dicts` function is already implemented and available for testing.
+
+First, ensure you have Catch2 installed. If not, you can install it via vcpkg or manually download it from [Catch2 GitHub repository](https://github.com/catchorg/Catch2).
+
+Here's how you can write the equivalent C++ test case:
+
+```cpp
+#include <catch2/catch.hpp>
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <vector>
+#include <map>
+
+// Assuming this function is defined somewhere in your project
+std::vector<std::map<std::string, std::string>> extract_parse_dicts(const std::string& file_path);
+
+TEST_CASE("Extract and Parse Dictionaries", "[file parsing]") {
+    // Create a temporary file with some dictionary-like content
+    std::ofstream tempFile;
+    tempFile.open("temp_dict_file.txt");
+    tempFile << "{ \"key1\": \"value1\", \"key2\": \"value2\" }\n";
+    tempFile << "{ \"key3\": \"value3\", \"key4\": \"value4\" }\n";
+    tempFile.close();
+
+    // Call the function under test
+    auto result = extract_parse_dicts("temp_dict_file.txt");
+
+    // Check if the result contains the correct number of dictionaries
+    REQUIRE(result.size() == 2);
+
+    // Check if each dictionary is correctly parsed
+    CHECK(result[0]["key1"] == "value1");
+    CHECK(result[0]["key2"] == "value2");
+    CHECK(result[1]["key3"] == "value3");
+    CHECK(result[1]["key4"] == "value4");
+
+    // Clean up the temporary file
+    std::remove("temp_dict_file.txt");
+}
+```
+
+### Explanation:
+
+1. **Include Catch2 Header**: The `#include <catch2/catch.hpp>` line includes the Catch2 header file, which is necessary for writing tests in Catch2.
+
+2. **Temporary File Creation**: In the test case, a temporary file named `temp_dict_file.txt` is created and populated with some dictionary-like content. This is done to simulate the input file for the `extract_parse_dicts` function.
+
+3. **Function Call**: The `extract_parse_dicts` function is called with the path to the temporary file.
+
+4. **Assertions**:
+   - `REQUIRE(result.size() == 2);`: Ensures that the function returns the expected number of dictionaries.
+   - `CHECK(result[0]["key1"] == "value1");`: Checks if the first dictionary contains the correct key-value pairs.
+   - `CHECK(result[1]["key3"] == "value3");`: Checks if the second dictionary contains the correct key-value pairs.
+
+5. **Cleanup**: After the test, the temporary file is removed to clean up.
+
+This should give you a good starting point for converting your Python unittest test class to a C++ test case using Catch2. Adjust the file handling and dictionary parsing logic according to your specific requirements.

@@ -1,0 +1,69 @@
+Certainly! Below is an equivalent C++ test case using Catch2 for the given Python unittest test function `read_log`. Note that Catch2 uses a different syntax compared to Python's unittest framework.
+
+First, ensure you have Catch2 installed in your project. If not, you can install it via vcpkg or manually download it from [Catch2 GitHub repository](https://github.com/catchorg/Catch2).
+
+Here is the equivalent C++ test case:
+
+```cpp
+#define CATCH_CONFIG_MAIN
+#include <catch2/catch.hpp>
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <vector>
+#include <nlohmann/json.hpp>
+
+using json = nlohmann::json;
+
+std::pair<std::vector<double>, std::vector<double>> read_log(const std::string& log_file_path) {
+    std::ifstream file(log_file_path);
+    if (!file.is_open()) {
+        throw std::runtime_error("Failed to open log file");
+    }
+
+    std::vector<double> train_loss_list;
+    std::vector<double> test_acc1_list;
+
+    std::string line;
+    while (getline(file, line)) {
+        try {
+            json entry = json::parse(line);
+            train_loss_list.push_back(entry["train_loss"].get<double>());
+            test_acc1_list.push_back(entry["test_acc1"].get<double>());
+        } catch (const json::parse_error& e) {
+            // Handle parsing error, e.g., skip invalid lines
+        }
+    }
+
+    return {train_loss_list, test_acc1_list};
+}
+
+TEST_CASE("Read Log File", "[read_log]") {
+    // Create a temporary log file for testing
+    std::ofstream tempFile("temp_log.json");
+    tempFile << R"({"test_acc1": 88.5, "train_loss": 0.75})";
+    tempFile.close();
+
+    auto result = read_log("temp_log.json");
+
+    REQUIRE(result.first.size() == 1);
+    REQUIRE(result.second.size() == 1);
+
+    CHECK(result.first[0] == Approx(0.75));
+    CHECK(result.second[0] == Approx(88.5));
+
+    // Clean up the temporary file
+    remove("temp_log.json");
+}
+```
+
+### Explanation:
+1. **Headers**: Include necessary headers such as `catch2/catch.hpp` for Catch2, `<fstream>` for file operations, `<sstream>` for string stream, `<string>` for string handling, `<vector>` for vector containers, `<nlohmann/json.hpp>` for JSON parsing.
+2. **Function Definition**: The `read_log` function remains the same as in the original Python code.
+3. **Test Case**:
+   - **Temporary File Creation**: Create a temporary log file with a known content for testing purposes.
+   - **Call Function**: Call the `read_log` function with the path to the temporary file.
+   - **Assertions**: Use Catch2 assertions (`REQUIRE`, `CHECK`) to verify that the function returns the expected results.
+   - **Cleanup**: Remove the temporary file after the test.
+
+This C++ test case ensures that the `read_log` function works correctly by reading a log file and extracting the required data.

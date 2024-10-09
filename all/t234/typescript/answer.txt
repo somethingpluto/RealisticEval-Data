@@ -1,0 +1,76 @@
+Here's how you can convert the Python function `append_or_skip_row` into TypeScript:
+
+```typescript
+import * as fs from 'fs';
+import { createReadStream, ReadStream } from 'fs';
+import { parse, ParseOptions } from 'csv-parse';
+
+interface Row {
+  [key: string]: any;
+}
+
+async function appendOrSkipRow(filePath: string, rowCandidate: Row): Promise<void> {
+  const existingRows: Row[] = [];
+
+  // Open the file and create a read stream
+  const fileStream: ReadStream = createReadStream(filePath);
+
+  // Configure csv-parse options
+  const parserOptions: ParseOptions = {
+    columns: true,
+    skip_empty_lines: true,
+  };
+
+  // Create a csv-parser instance
+  const parser = fileStream.pipe(parse(parserOptions));
+
+  // Listen for data events to collect existing rows
+  parser.on('data', (row) => {
+    existingRows.push(row);
+  });
+
+  // Wait for the parsing to complete
+  await new Promise((resolve, reject) => {
+    parser.on('end', resolve);
+    parser.on('error', reject);
+  });
+
+  // Check if the candidate row already exists in the first three columns
+  const rowExists = existingRows.some((existingRow) =>
+    Object.keys(existingRow).slice(0, 3).every(
+      (key) => existingRow[key] === rowCandidate[key]
+    )
+  );
+
+  // If the row does not exist, append it to the file
+  if (!rowExists) {
+    const writer = fs.createWriteStream(filePath, { flags: 'a' });
+    writer.write(JSON.stringify(rowCandidate) + '\n');
+    writer.end();
+  }
+}
+```
+
+### Explanation:
+1. **File Handling**: The function uses Node.js's `fs` module to handle file operations.
+2. **CSV Parsing**: The `csv-parse` library is used to parse the CSV file. It reads the file line by line and emits `data` events for each row.
+3. **Checking Existing Rows**: The function checks if a row with the same values in the first three columns already exists.
+4. **Appending New Rows**: If the row does not exist, it appends the new row to the file.
+
+### Usage:
+To use this function, you need to install the `csv-parse` package using npm:
+```sh
+npm install csv-parse
+```
+
+Then, you can call the function with the path to your CSV file and the row candidate:
+```typescript
+const filePath = 'path/to/your/file.csv';
+const rowCandidate = { col1: 'value1', col2: 'value2', col3: 'value3' };
+
+appendOrSkipRow(filePath, rowCandidate)
+  .then(() => console.log('Row appended or skipped successfully'))
+  .catch((err) => console.error('Error appending or skipping row:', err));
+```
+
+This TypeScript code should provide similar functionality to your original Python function.

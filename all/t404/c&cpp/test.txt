@@ -1,0 +1,122 @@
+To convert your Python unittest test class to a C++ Catch2 test case, you'll need to write equivalent functionality in C++. Below is an example of how you might translate a simple unit test for the `power` function into a Catch2 test case:
+
+First, let's assume you have a `MatrixPower.cpp` file where you will implement the `power` function and its tests.
+
+### MatrixPower.cpp
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <catch2/catch.hpp>
+
+// Function to compute the n-th power of a matrix using the fast exponentiation method
+std::vector<std::vector<int>> power(const std::vector<std::vector<int>>& matrix, int n) {
+    if (n < 0) {
+        throw std::invalid_argument("Exponent must be non-negative.");
+    }
+
+    // Initialize result as identity matrix
+    size_t size = matrix.size();
+    std::vector<std::vector<int>> result(size, std::vector<int>(size, 0));
+    for (size_t i = 0; i < size; ++i) {
+        result[i][i] = 1;
+    }
+
+    std::vector<std::vector<int>> base = matrix;
+
+    while (n > 0) {
+        if (n % 2 == 1) {
+            result = multiply(result, base);
+        }
+        base = multiply(base, base);
+        n /= 2;
+    }
+
+    return result;
+}
+
+// Helper function to multiply two matrices
+std::vector<std::vector<int>> multiply(const std::vector<std::vector<int>>& a, const std::vector<std::vector<int>>& b) {
+    size_t size = a.size();
+    std::vector<std::vector<int>> product(size, std::vector<int>(size, 0));
+
+    for (size_t i = 0; i < size; ++i) {
+        for (size_t j = 0; j < size; ++j) {
+            for (size_t k = 0; k < size; ++k) {
+                product[i][j] += a[i][k] * b[k][j];
+            }
+        }
+    }
+
+    return product;
+}
+```
+
+### MatrixPowerTests.cpp
+
+In this file, we will write the Catch2 tests for the `power` function.
+
+```cpp
+#include "MatrixPower.h"
+#include <catch2/catch.hpp>
+
+TEST_CASE("Power of matrix with zero exponent", "[matrix_power]") {
+    std::vector<std::vector<int>> matrix = {{1, 2}, {3, 4}};
+    std::vector<std::vector<int>> expected = {{1, 2}, {3, 4}};
+    REQUIRE(power(matrix, 0) == expected);
+}
+
+TEST_CASE("Power of matrix with one exponent", "[matrix_power]") {
+    std::vector<std::vector<int>> matrix = {{1, 2}, {3, 4}};
+    std::vector<std::vector<int>> expected = {{1, 2}, {3, 4}};
+    REQUIRE(power(matrix, 1) == expected);
+}
+
+TEST_CASE("Power of matrix with positive exponent", "[matrix_power]") {
+    std::vector<std::vector<int>> matrix = {{1, 2}, {3, 4}};
+    std::vector<std::vector<int>> expected = {{7, 10}, {15, 22}};
+    REQUIRE(power(matrix, 2) == expected);
+}
+
+TEST_CASE("Negative exponent throws exception", "[matrix_power]") {
+    std::vector<std::vector<int>> matrix = {{1, 2}, {3, 4}};
+    REQUIRE_THROWS_AS(power(matrix, -1), std::invalid_argument);
+}
+
+TEST_CASE("Non-square matrix throws exception", "[matrix_power]") {
+    std::vector<std::vector<int>> matrix = {{1, 2, 3}, {4, 5, 6}};
+    REQUIRE_THROWS(power(matrix, 2));
+}
+```
+
+### Explanation
+
+1. **MatrixPower.h**: This header file contains the declaration of the `power` function and any helper functions like `multiply`.
+
+2. **MatrixPower.cpp**: This file contains the implementation of the `power` function and the `multiply` helper function.
+
+3. **MatrixPowerTests.cpp**: This file contains the Catch2 tests. Each test case checks a different aspect of the `power` function, such as raising a matrix to the power of zero, one, a positive number, handling negative exponents, and checking that exceptions are thrown when necessary.
+
+To compile and run these tests, you would typically use a build system like CMake and link against the Catch2 library. Here is an example CMakeLists.txt:
+
+```cmake
+cmake_minimum_required(VERSION 3.10)
+project(MatrixPower)
+
+find_package(Catch2 REQUIRED)
+
+add_executable(MatrixPowerTests MatrixPowerTests.cpp MatrixPower.cpp)
+target_link_libraries(MatrixPowerTests Catch2::Catch2)
+```
+
+With this setup, you can build and run your tests using CMake commands like:
+
+```sh
+mkdir build
+cd build
+cmake ..
+make
+./MatrixPowerTests
+```
+
+This will execute all the tests defined in `MatrixPowerTests.cpp`.

@@ -1,0 +1,40 @@
+Here's how you could translate that Python function into C++:
+
+```cpp
+#include <iostream>
+#include <string>
+#include <regex>
+#include <cstdlib>
+
+std::string getLocalIP(const std::string& interface = "wlan0") {
+    /*
+    gets the IPv4 address of the local computer on a specific network interface, such as wlan0, which is usually a wireless network interface
+    Args:
+        interface (const std::string&): The network interface to query. Default is "wlan0".
+
+    Returns:
+        std::string: The local IP address, or a message indicating no IP was found.
+    */
+    
+    // Execute the command and capture its output
+    std::string cmd = "ifconfig " + interface;
+    FILE* pipe = popen(cmd.c_str(), "r");
+    if (!pipe) return "Failed to execute command";
+
+    char buffer[128];
+    std::string result = "";
+    while(fgets(buffer, 128, pipe) != nullptr)
+        result += buffer;
+
+    pclose(pipe);
+
+    // Parse the output to find the IP address
+    std::smatch matches;
+    std::regex pattern(R"((inet\s+)(\d+\.\d+\.\d+\.\d+))");
+    if(std::regex_search(result, matches, pattern))
+        return matches.str(2); // Return the second group in the match
+
+    return "No IP found";
+}
+```
+This C++ code uses `popen` to run the same command as the Python code (`ifconfig`) and then parses the output using regular expressions to extract the IP address. Note that this implementation assumes that your system has `ifconfig`, and that it outputs in a format similar to what `ifconfig` typically does on Linux systems. If your system uses a different tool or format for displaying network interfaces, you will need to adjust the command and parsing logic accordingly.
