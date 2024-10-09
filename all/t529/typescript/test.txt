@@ -1,53 +1,78 @@
-Sure! Here's how you can convert the JavaScript Jest test case to a TypeScript Jest test case using `describe`:
+Certainly! Below is the equivalent TypeScript Jest test case for your JavaScript function using `describe`:
 
 ```typescript
-import * as fs from 'fs';
-import * as path from 'path';
+import fs from 'fs';
+import { promisify } from 'util';
+
+// Promisify the writeFile method to return a Promise
+const writeFileAsync = promisify(fs.writeFile);
 
 /**
  * Converts the data object to JSON format and saves it to the specified file path.
  * @param {Object} data - The data object to be converted to JSON.
  * @param {string} outputFilePath - The file path where the JSON will be saved.
  */
-function saveAsJSON(data: any, outputFilePath: string): void {
-    const jsonContent = JSON.stringify(data, null, 2);
-    fs.writeFileSync(outputFilePath, jsonContent);
+async function saveAsJSON(data: any, outputFilePath: string): Promise<void> {
+  try {
+    await writeFileAsync(outputFilePath, JSON.stringify(data, null, 2));
+  } catch (error) {
+    throw new Error(`Error writing to file ${outputFilePath}: ${error.message}`);
+  }
 }
 
-// Test suite for saveAsJSON function
 describe('saveAsJSON', () => {
-    let tempFilePath: string;
+  let mockData: any;
+  let mockOutputFilePath: string;
 
-    beforeEach(() => {
-        // Create a temporary file path for testing
-        tempFilePath = path.join(__dirname, 'temp.json');
+  beforeEach(() => {
+    mockData = { key: 'value' };
+    mockOutputFilePath = 'mock.json';
+  });
+
+  afterEach(() => {
+    // Clean up any mocked functions or files after each test
+    jest.clearAllMocks();
+  });
+
+  test('should save data as JSON to the specified file path', async () => {
+    const spy = jest.spyOn(fs, 'writeFile').mockImplementation((filePath, content, callback) => {
+      if (filePath === mockOutputFilePath && content === JSON.stringify(mockData, null, 2)) {
+        callback(null);
+      } else {
+        callback(new Error('Mocked error'));
+      }
     });
 
-    afterEach(() => {
-        // Clean up the temporary file after each test
-        if (fs.existsSync(tempFilePath)) {
-            fs.unlinkSync(tempFilePath);
-        }
+    await expect(saveAsJSON(mockData, mockOutputFilePath)).resolves.not.toThrow();
+
+    expect(spy).toHaveBeenCalledWith(
+      mockOutputFilePath,
+      JSON.stringify(mockData, null, 2),
+      expect.any(Function)
+    );
+  });
+
+  test('should handle errors when saving JSON to file', async () => {
+    const spy = jest.spyOn(fs, 'writeFile').mockImplementation((filePath, content, callback) => {
+      callback(new Error('Mocked error'));
     });
 
-    it('should save an object as JSON to the specified file path', () => {
-        const testData = { name: 'John', age: 30 };
-        saveAsJSON(testData, tempFilePath);
+    await expect(saveAsJSON(mockData, mockOutputFilePath)).rejects.toThrow('Error writing to file mock.json: Mocked error');
 
-        expect(fs.existsSync(tempFilePath)).toBe(true);
-        const fileContent = fs.readFileSync(tempFilePath, 'utf8');
-        expect(fileContent).toEqual(JSON.stringify(testData, null, 2));
-    });
+    expect(spy).toHaveBeenCalledWith(
+      mockOutputFilePath,
+      JSON.stringify(mockData, null, 2),
+      expect.any(Function)
+    );
+  });
 });
 ```
 
 ### Explanation:
-1. **Imports**: We import `fs` and `path` modules from Node.js to handle file operations and path manipulations respectively.
-2. **TypeScript Function**: The `saveAsJSON` function is updated to accept type parameters (`any` for `data` and `string` for `outputFilePath`) and return `void`.
-3. **Test Suite**: We use `describe` to create a test suite named `'saveAsJSON'`.
-4. **Before/After Hooks**:
-   - `beforeEach`: Creates a temporary file path before each test.
-   - `afterEach`: Deletes the temporary file after each test to clean up.
-5. **Test Case**: The `it` function contains a test case that checks if the `saveAsJSON` function correctly saves an object as JSON to the specified file path.
+1. **Promisification**: We use `promisify` from Node.js to convert `fs.writeFile` into a promise-based function.
+2. **TypeScript Types**: The `saveAsJSON` function now includes type annotations for its parameters and return type.
+3. **Jest Describe/It**: The test cases are wrapped in a `describe` block with individual `test` blocks for different scenarios.
+4. **Mocking**: We use `jest.spyOn` to mock the `fs.writeFile` function and control its behavior during testing.
+5. **Assertions**: We use Jest's assertion methods (`expect`) to verify that the function behaves as expected.
 
-This TypeScript test case ensures that the `saveAsJSON` function works as expected when saving JSON data to a file.
+This should give you a good starting point for testing your TypeScript function using Jest.

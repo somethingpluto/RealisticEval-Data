@@ -1,14 +1,93 @@
-To convert the given JavaScript Jest test case to a Java JUnit test case, you'll need to follow these steps:
+Certainly! Below is the equivalent Java JUnit test case for the provided JavaScript Jest test code. The package name is `org.real.temp` and the class name is `Tester`.
 
-1. Import necessary libraries.
-2. Create a method that mimics the functionality of `findMarkdownFiles`.
-3. Write a JUnit test class to verify the behavior of the method.
+```java
+package org.real.temp;
 
-Here's how you can do it:
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
-### Step 1: Import Necessary Libraries
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
-First, ensure you have the necessary dependencies in your `pom.xml` file if you're using Maven:
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
+public class Tester {
+
+    private Finder finder;
+
+    @BeforeEach
+    public void setUp() {
+        finder = new Finder();
+    }
+
+    @Test
+    public void testFindMarkdownFiles() throws Exception {
+        // Define the directory path
+        String dirPath = "testDir";
+        Path dir = Paths.get(dirPath);
+
+        // Create mock files and directories
+        List<Path> markdownFiles = new ArrayList<>();
+        Path mdFile1 = dir.resolve("file1.md");
+        Path mdFile2 = dir.resolve("file2.md");
+        Files.createFile(mdFile1);
+        Files.createFile(mdFile2);
+        markdownFiles.add(mdFile1);
+        markdownFiles.add(mdFile2);
+
+        // Mock the FileSystemUtils.listFiles method
+        Mockito.when(FileSystemUtils.listFiles(eq(dir.toFile()), eq(".md"))).thenReturn(markdownFiles);
+
+        // Call the method under test
+        List<String> result = finder.findMarkdownFiles(dirPath);
+
+        // Verify the result
+        assertEquals(2, result.size());
+        assertTrue(result.contains(mdFile1.toString()));
+        assertTrue(result.contains(mdFile2.toString()));
+
+        // Clean up
+        Files.deleteIfExists(mdFile1);
+        Files.deleteIfExists(mdFile2);
+    }
+}
+
+class Finder {
+    public List<String> findMarkdownFiles(String dir) {
+        return FileSystemUtils.listFiles(new File(dir), ".md");
+    }
+}
+
+class FileSystemUtils {
+    public static List<Path> listFiles(File dir, String extension) {
+        List<Path> fileList = new ArrayList<>();
+        if (dir.isDirectory()) {
+            File[] files = dir.listFiles((d, name) -> name.endsWith(extension));
+            if (files != null) {
+                for (File file : files) {
+                    fileList.add(file.toPath());
+                }
+            }
+        }
+        return fileList;
+    }
+}
+```
+
+### Explanation:
+1. **Package and Class**: The Java code is placed in the `org.real.temp` package and the class is named `Tester`.
+2. **Setup**: The `@BeforeEach` annotation is used to initialize the `Finder` object before each test method.
+3. **Mocking**: The `FileSystemUtils.listFiles` method is mocked using Mockito to return a predefined list of Markdown files.
+4. **Test Method**: The `testFindMarkdownFiles` method tests the `findMarkdownFiles` method of the `Finder` class.
+5. **Assertions**: The test verifies that the returned list contains the correct number of Markdown files and their paths.
+
+Make sure you have the necessary dependencies for JUnit and Mockito in your project. If you're using Maven, add the following to your `pom.xml`:
 
 ```xml
 <dependencies>
@@ -27,119 +106,11 @@ First, ensure you have the necessary dependencies in your `pom.xml` file if you'
 </dependencies>
 ```
 
-### Step 2: Create the Method
+If you're using Gradle, add the following to your `build.gradle`:
 
-Create a Java class with the same functionality as the JavaScript function. For simplicity, let's assume the method will return a list of strings representing Markdown file paths.
-
-```java
-package org.real.temp;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-
-public class MarkdownFinder {
-
-    /**
-     * Searches for Markdown files in the specified directory and returns the path of the files as a list
-     *
-     * @param dir - The directory path to search in.
-     * @return - A list of paths to Markdown files.
-     */
-    public List<String> findMarkdownFiles(String dir) {
-        List<String> markdownFiles = new ArrayList<>();
-        File directory = new File(dir);
-        
-        if (directory.exists() && directory.isDirectory()) {
-            File[] files = directory.listFiles((dir1, name) -> name.endsWith(".md"));
-            
-            if (files != null) {
-                for (File file : files) {
-                    markdownFiles.add(file.getAbsolutePath());
-                }
-            }
-        }
-        
-        return markdownFiles;
-    }
+```groovy
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+    testImplementation 'org.mockito:mockito-core:4.0.0'
 }
 ```
-
-### Step 3: Write the JUnit Test Class
-
-Now, write a JUnit test class to verify the behavior of the `findMarkdownFiles` method.
-
-```java
-package org.real.temp;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
-import java.io.File;
-import java.util.Arrays;
-import java.util.List;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
-public class MarkdownFinderTest {
-
-    private MarkdownFinder markdownFinder;
-
-    @Mock
-    private File mockDirectory;
-
-    @BeforeEach
-    public void setUp() {
-        MockitoAnnotations.openMocks(this);
-        markdownFinder = new MarkdownFinder();
-    }
-
-    @Test
-    public void testFindMarkdownFiles_emptyDirectory() {
-        when(mockDirectory.exists()).thenReturn(true);
-        when(mockDirectory.isDirectory()).thenReturn(true);
-        when(mockDirectory.listFiles(any())).thenReturn(new File[0]);
-
-        List<String> result = markdownFinder.findMarkdownFiles("path/to/empty/directory");
-
-        assertTrue(result.isEmpty());
-    }
-
-    @Test
-    public void testFindMarkdownFiles_withMarkdownFiles() {
-        File mockFile1 = mock(File.class);
-        File mockFile2 = mock(File.class);
-
-        when(mockDirectory.exists()).thenReturn(true);
-        when(mockDirectory.isDirectory()).thenReturn(true);
-        when(mockDirectory.listFiles(any())).thenReturn(new File[]{mockFile1, mockFile2});
-        when(mockFile1.getName()).thenReturn("file1.md");
-        when(mockFile2.getName()).thenReturn("file2.txt");
-
-        List<String> result = markdownFinder.findMarkdownFiles("path/to/directory");
-
-        assertEquals(1, result.size());
-        assertTrue(result.contains("path/to/directory/file1.md"));
-    }
-
-    @Test
-    public void testFindMarkdownFiles_nonExistentDirectory() {
-        when(mockDirectory.exists()).thenReturn(false);
-        when(mockDirectory.isDirectory()).thenReturn(false);
-
-        List<String> result = markdownFinder.findMarkdownFiles("non/existent/path");
-
-        assertTrue(result.isEmpty());
-    }
-}
-```
-
-This Java JUnit test class includes three test methods:
-- One to check the behavior when the directory is empty.
-- Another to check the behavior when there are Markdown files in the directory.
-- And one more to check the behavior when the directory does not exist.
-
-Make sure to adjust the paths and file names according to your specific requirements.

@@ -1,55 +1,47 @@
-Sure! Here is the equivalent C++ code for converting a string to Base64 encoding:
+Certainly! Below is the equivalent C++ code for converting a string to Base64 encoding:
 
 ```cpp
 #include <iostream>
 #include <vector>
 #include <string>
-#include <bitset>
 
 std::string base64_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-std::string convertToBase64(const std::string& input) {
+std::string encode_to_base64(const std::string &input) {
     std::string output;
-    int val = 0, count = 0;
+    int val = 0, valb = -6;
+
     for (unsigned char c : input) {
         val = (val << 8) + c;
-        ++count;
-        if (count == 3) {
-            output += base64_chars[(val >> 18) & 0x3F];
-            output += base64_chars[(val >> 12) & 0x3F];
-            output += base64_chars[(val >> 6) & 0x3F];
-            output += base64_chars[val & 0x3F];
-            val = 0;
-            count = 0;
+        valb += 8;
+        while (valb >= 0) {
+            output.push_back(base64_chars[(val >> valb) & 0x3F]);
+            valb -= 6;
         }
     }
-    if (count) {
-        output += base64_chars[(val >> 18) & 0x3F];
-        output += base64_chars[(val >> 12) & 0x3F];
-        if (count == 1)
-            output += '=';
-        else
-            output += base64_chars[(val >> 6) & 0x3F];
-        output += '=';
-    }
+
+    if (valb > -6) output.push_back(base64_chars[((val << 8) >> (valb + 8)) & 0x3F]);
+
+    while (output.size() % 4 != 0) output.push_back('=');
+
     return output;
 }
 
 int main() {
     std::string input = "Hello, World!";
-    std::string base64 = convertToBase64(input);
-    std::cout << "Base64: " << base64 << std::endl;
+    std::string encoded = encode_to_base64(input);
+    std::cout << "Encoded: " << encoded << std::endl;
     return 0;
 }
 ```
 
 ### Explanation:
-1. **base64_chars**: This string contains all the characters used in Base64 encoding.
-2. **convertToBase64 Function**:
-   - It iterates through each character of the input string and constructs the Base64 encoded string.
-   - It uses bitwise operations to shift and mask the bits of the input characters.
-   - When three bytes are processed, it appends four Base64 characters to the output string.
-   - If there are remaining bytes (either one or two), it pads with `=` characters.
+- **base64_chars**: This string contains all the characters used in Base64 encoding.
+- **encode_to_base64**: This function takes an input string and converts it to Base64 encoding.
+  - It initializes `val` and `valb` to handle the bit manipulation.
+  - For each character in the input string, it shifts `val` left by 8 bits and adds the ASCII value of the character. It then adjusts `valb` accordingly.
+  - When `valb` is greater than or equal to 0, it extracts 6 bits from `val`, finds the corresponding character in `base64_chars`, and appends it to the output string.
+  - If there are remaining bits in `val`, it handles them appropriately.
+  - Finally, it pads the output with '=' characters to ensure the length is a multiple of 4.
 
-### Usage:
-- The `main` function demonstrates how to use the `convertToBase64` function by converting the string "Hello, World!" to Base64 and printing the result.
+This code should work correctly for converting strings to Base64 encoding in C++.

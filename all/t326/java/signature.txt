@@ -1,23 +1,55 @@
-Sure, here is the equivalent Java method with the same functionality and comments:
+Sure, here is the equivalent Java method signature with the same comments:
 
 ```java
-import java.time.LocalDateTime;
-import java.time.Duration;
-
 /**
  * Calculates the time difference between a given date and the current date.
  *
- * @param givenDate - The date to compare against the current date.
- * @return A TimeDifference object containing days, hours, and minutes elapsed.
+ * @param givenDate The date to compare against the current date. Can be either a Date object or a String in ISO 8601 format.
+ * @return An object containing days, hours, and minutes elapsed.
+ * {
+ *     days: days,
+ *     hours: remainingHours,
+ *     minutes: remainingMinutes,
+ * }
  */
+public TimeDifference calculateTimeDifference(Object givenDate) {
+}
+```
+
+In this Java version:
+- I've used `Object` for the parameter `givenDate` because it can accept either a `Date` object or a `String`.
+- I've assumed you have a class named `TimeDifference` that holds the fields `days`, `hours`, and `minutes`.
+
+Here's an example of how you might implement this method:
+
+```java
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+
 public class DateUtils {
 
-    public static TimeDifference calculateTimeDifference(String givenDate) {
-        LocalDateTime currentDate = LocalDateTime.now();
-        LocalDateTime dateTimeToCompare = LocalDateTime.parse(givenDate);
-        
-        Duration duration = Duration.between(currentDate, dateTimeToCompare);
+    /**
+     * Calculates the time difference between a given date and the current date.
+     *
+     * @param givenDate The date to compare against the current date. Can be either a Date object or a String in ISO 8601 format.
+     * @return An object containing days, hours, and minutes elapsed.
+     */
+    public static TimeDifference calculateTimeDifference(Object givenDate) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime targetDateTime;
 
+        if (givenDate instanceof Date) {
+            targetDateTime = ((Date) givenDate).toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+        } else if (givenDate instanceof String) {
+            DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+            targetDateTime = LocalDateTime.parse((String) givenDate, formatter);
+        } else {
+            throw new IllegalArgumentException("Invalid date type");
+        }
+
+        Duration duration = Duration.between(now, targetDateTime);
         long days = duration.toDays();
         long hours = duration.toHours() % 24;
         long minutes = duration.toMinutes() % 60;
@@ -37,6 +69,7 @@ public class DateUtils {
             this.minutes = minutes;
         }
 
+        // Getters and toString method
         public long getDays() {
             return days;
         }
@@ -48,14 +81,17 @@ public class DateUtils {
         public long getMinutes() {
             return minutes;
         }
+
+        @Override
+        public String toString() {
+            return "TimeDifference{" +
+                    "days=" + days +
+                    ", hours=" + hours +
+                    ", minutes=" + minutes +
+                    '}';
+        }
     }
 }
 ```
 
-### Explanation:
-- **Java Method**: `calculateTimeDifference` takes a `String` parameter representing the date in ISO format (e.g., "yyyy-MM-ddTHH:mm:ss").
-- **LocalDateTime**: Used to represent both the current date and the provided date.
-- **Duration**: Used to calculate the difference between the two dates.
-- **TimeDifference Class**: A helper class to encapsulate the results of the calculation.
-
-This Java code should provide the same functionality as your original JavaScript function.
+This implementation uses Java 8's `java.time` package to handle dates and times more robustly than the old `java.util.Date` and `java.util.Calendar`.

@@ -1,80 +1,98 @@
-Certainly! Below is the equivalent Java JUnit test case for your JavaScript Jest test function using JUnit and Mockito.
+Sure! Below is the equivalent Java JUnit test case for the provided JavaScript Jest test function `sortByField`. This assumes that you have a Java method `sortByField` in your class `Tester`.
 
-### Java Test Case
+First, let's define the Java method `sortByField`:
 
 ```java
-package org.real.temp;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.List;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
 public class Tester {
 
-    @Mock
-    private Comparator<Object> comparator;
+    public static <T> T[] sortByField(T[] array, String field, boolean ascending) {
+        Arrays.sort(array, new Comparator<T>() {
+            @Override
+            public int compare(T o1, T o2) {
+                try {
+                    Comparable<?> val1 = (Comparable<?>) getFieldValue(o1, field);
+                    Comparable<?> val2 = (Comparable<?>) getFieldValue(o2, field);
+                    return ascending ? val1.compareTo(val2) : val2.compareTo(val1);
+                } catch (Exception e) {
+                    throw new RuntimeException("Error comparing fields", e);
+                }
+            }
 
-    @InjectMocks
-    private YourClass yourClass; // Replace with the actual class name that contains sortByField method
-
-    @BeforeEach
-    public void setUp() {
-        MockitoAnnotations.openMocks(this);
+            private Object getFieldValue(Object obj, String fieldName) throws Exception {
+                Class<?> clazz = obj.getClass();
+                while (clazz != null) {
+                    try {
+                        return clazz.getDeclaredField(fieldName).get(obj);
+                    } catch (NoSuchFieldException e) {
+                        clazz = clazz.getSuperclass();
+                    }
+                }
+                throw new NoSuchFieldException("Field not found: " + fieldName);
+            }
+        });
+        return array;
     }
+}
+```
+
+Next, we'll write the JUnit test case:
+
+```java
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
+public class TesterTest {
 
     @Test
-    public void testSortByFieldAscending() {
-        List<Object> array = Arrays.asList(
-            new Object() { String field = "apple"; },
-            new Object() { String field = "banana"; },
-            new Object() { String field = "cherry"; }
-        );
+    public void testSortByField() {
+        // Create sample data
+        Person person1 = new Person("Alice", 30);
+        Person person2 = new Person("Bob", 25);
+        Person person3 = new Person("Charlie", 35);
 
-        when(comparator.compare(any(), any())).thenReturn(0); // Mocking the comparator behavior
+        Person[] people = {person1, person2, person3};
 
-        List<Object> sortedArray = yourClass.sortByField(array, "field", true);
+        // Sort by name in ascending order
+        Person[] sortedPeopleAsc = Tester.sortByField(people, "name", true);
+        assertEquals("Alice", sortedPeopleAsc[0].getName());
+        assertEquals("Bob", sortedPeopleAsc[1].getName());
+        assertEquals("Charlie", sortedPeopleAsc[2].getName());
 
-        assertEquals("apple", ((Object) sortedArray.get(0)).getClass().getDeclaredFields()[0].getName());
-        assertEquals("banana", ((Object) sortedArray.get(1)).getClass().getDeclaredFields()[0].getName());
-        assertEquals("cherry", ((Object) sortedArray.get(2)).getClass().getDeclaredFields()[0].getName());
+        // Sort by age in descending order
+        Person[] sortedPeopleDesc = Tester.sortByField(people, "age", false);
+        assertEquals("Charlie", sortedPeopleDesc[0].getName());
+        assertEquals("Alice", sortedPeopleDesc[1].getName());
+        assertEquals("Bob", sortedPeopleDesc[2].getName());
+    }
+}
+
+class Person {
+    private String name;
+    private int age;
+
+    public Person(String name, int age) {
+        this.name = name;
+        this.age = age;
     }
 
-    @Test
-    public void testSortByFieldDescending() {
-        List<Object> array = Arrays.asList(
-            new Object() { String field = "apple"; },
-            new Object() { String field = "banana"; },
-            new Object() { String field = "cherry"; }
-        );
+    public String getName() {
+        return name;
+    }
 
-        when(comparator.compare(any(), any())).thenReturn(0); // Mocking the comparator behavior
-
-        List<Object> sortedArray = yourClass.sortByField(array, "field", false);
-
-        assertEquals("cherry", ((Object) sortedArray.get(0)).getClass().getDeclaredFields()[0].getName());
-        assertEquals("banana", ((Object) sortedArray.get(1)).getClass().getDeclaredFields()[0].getName());
-        assertEquals("apple", ((Object) sortedArray.get(2)).getClass().getDeclaredFields()[0].getName());
+    public int getAge() {
+        return age;
     }
 }
 ```
 
 ### Explanation:
+1. **Java Method**: The `sortByField` method sorts an array of objects based on a specified field and order using Java's `Arrays.sort` with a custom comparator.
+2. **JUnit Test Case**:
+   - We create a simple `Person` class with `name` and `age` fields.
+   - We then test sorting by both `name` and `age` fields in both ascending and descending orders.
+   - The assertions check if the sorted arrays match the expected results.
 
-1. **Imports**: Import necessary packages from JUnit and Mockito.
-2. **Mockito Annotations**: Use `@Mock` to create mock instances of dependencies and `@InjectMocks` to inject these mocks into the class under test (`YourClass`).
-3. **Setup Method**: Initialize mocks before each test using `@BeforeEach`.
-4. **Tests**:
-   - `testSortByFieldAscending`: Tests sorting in ascending order.
-   - `testSortByFieldDescending`: Tests sorting in descending order.
-5. **Assertions**: Verify that the sorted array has the correct order of elements.
-
-Make sure to replace `YourClass` with the actual class name that contains the `sortByField` method. This example assumes that the objects being sorted have a single string field named `field`. Adjust the assertions accordingly if the fields or logic differ.
+This should give you a good starting point for testing your Java code similar to how you would do it in JavaScript with Jest.

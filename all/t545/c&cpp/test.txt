@@ -1,78 +1,80 @@
-To convert the given JavaScript Jest test case to a C++ Catch2 test case, we need to follow these steps:
-
-1. Define the function `elementsBeforeNull` in C++.
-2. Write the corresponding Catch2 test cases for the function.
-
-Here's how you can do it:
-
-### Step 1: Define the Function
-
-First, let's define the `elementsBeforeNull` function in C++. We'll assume that the input and output arrays will be handled using standard C++ containers like `std::vector`.
+Sure! Below is an equivalent C++ Catch2 test case for the JavaScript Jest function `elementsBeforeNull`.
 
 ```cpp
+#include <catch2/catch.hpp>
 #include <vector>
-#include <optional>
 
-// Function to get elements before the first null (std::nullopt)
-std::vector<std::optional<int>> elementsBeforeNull(const std::vector<std::optional<int>>& array) {
-    std::vector<std::optional<int>> result;
-    for (const auto& element : array) {
-        if (!element.has_value()) {
+/**
+ * Iterates through the vector of elements until the first nullptr is encountered,
+ * returning a new vector that includes all elements before the nullptr.
+ *
+ * @param vec - The vector to iterate through.
+ * @returns A new vector containing elements before the first nullptr.
+ */
+std::vector<int*> elementsBeforeNull(const std::vector<int*>& vec) {
+    std::vector<int*> result;
+    for (const auto& element : vec) {
+        if (element == nullptr) {
             break;
         }
         result.push_back(element);
     }
     return result;
 }
-```
 
-### Step 2: Write Catch2 Test Cases
-
-Now, let's write the Catch2 test cases for the `elementsBeforeNull` function. Make sure you have Catch2 installed and properly set up in your project.
-
-```cpp
-#define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
-#include "catch.hpp"
-
-TEST_CASE("Test elementsBeforeNull function", "[elementsBeforeNull]") {
-    SECTION("Empty array") {
-        std::vector<std::optional<int>> input = {};
-        std::vector<std::optional<int>> expected_output = {};
-        REQUIRE(elementsBeforeNull(input) == expected_output);
+TEST_CASE("elementsBeforeNull", "[elementsBeforeNull]") {
+    SECTION("Empty vector") {
+        std::vector<int*> emptyVec;
+        auto result = elementsBeforeNull(emptyVec);
+        REQUIRE(result.empty());
     }
 
-    SECTION("Array with no nulls") {
-        std::vector<std::optional<int>> input = {1, 2, 3, 4};
-        std::vector<std::optional<int>> expected_output = {1, 2, 3, 4};
-        REQUIRE(elementsBeforeNull(input) == expected_output);
+    SECTION("Vector with no nullptr") {
+        int values[] = {1, 2, 3};
+        std::vector<int*> vec(values, values + 3);
+        auto result = elementsBeforeNull(vec);
+        REQUIRE(result.size() == 3);
+        REQUIRE(*result[0] == 1);
+        REQUIRE(*result[1] == 2);
+        REQUIRE(*result[2] == 3);
     }
 
-    SECTION("Array with a null at the end") {
-        std::vector<std::optional<int>> input = {1, 2, 3, std::nullopt};
-        std::vector<std::optional<int>> expected_output = {1, 2, 3};
-        REQUIRE(elementsBeforeNull(input) == expected_output);
+    SECTION("Vector with nullptr in the middle") {
+        int values[] = {1, 2, 0, 4};
+        std::vector<int*> vec(values, values + 4);
+        auto result = elementsBeforeNull(vec);
+        REQUIRE(result.size() == 2);
+        REQUIRE(*result[0] == 1);
+        REQUIRE(*result[1] == 2);
     }
 
-    SECTION("Array with a null in the middle") {
-        std::vector<std::optional<int>> input = {1, 2, std::nullopt, 4};
-        std::vector<std::optional<int>> expected_output = {1, 2};
-        REQUIRE(elementsBeforeNull(input) == expected_output);
+    SECTION("Vector with nullptr at the beginning") {
+        int values[] = {0, 2, 3};
+        std::vector<int*> vec(values, values + 3);
+        auto result = elementsBeforeNull(vec);
+        REQUIRE(result.empty());
     }
 
-    SECTION("Array with a single null") {
-        std::vector<std::optional<int>> input = {std::nullopt};
-        std::vector<std::optional<int>> expected_output = {};
-        REQUIRE(elementsBeforeNull(input) == expected_output);
+    SECTION("Vector with nullptr at the end") {
+        int values[] = {1, 2, 3};
+        std::vector<int*> vec(values, values + 3);
+        vec.push_back(nullptr); // Adding nullptr at the end
+        auto result = elementsBeforeNull(vec);
+        REQUIRE(result.size() == 3);
+        REQUIRE(*result[0] == 1);
+        REQUIRE(*result[1] == 2);
+        REQUIRE(*result[2] == 3);
     }
 }
 ```
 
-### Explanation
+### Explanation:
+1. **Function Definition**: The `elementsBeforeNull` function takes a vector of integer pointers and returns a new vector containing all elements before the first `nullptr`.
+2. **Catch2 Test Cases**:
+   - **Empty Vector**: Tests the function with an empty vector.
+   - **No Nullptr**: Tests the function with a vector that contains no `nullptr`.
+   - **Nullptr in the Middle**: Tests the function with a vector that has a `nullptr` in the middle.
+   - **Nullptr at the Beginning**: Tests the function with a vector that starts with a `nullptr`.
+   - **Nullptr at the End**: Tests the function with a vector that ends with a `nullptr`.
 
-- **Catch2 Configuration**: The `#define CATCH_CONFIG_MAIN` directive tells Catch to provide a `main()` function for running the tests. Include the Catch2 header file (`catch.hpp`).
-  
-- **Test Sections**: Each `SECTION` block defines a separate test case. The `REQUIRE` macro is used to assert that the actual output matches the expected output.
-
-- **Function Implementation**: The `elementsBeforeNull` function iterates through the input vector and collects elements until it encounters a `std::nullopt`. It then returns the collected elements.
-
-By following these steps, you should have a working C++ Catch2 test case for the `elementsBeforeNull` function.
+This should cover various scenarios similar to the Jest test cases you provided.

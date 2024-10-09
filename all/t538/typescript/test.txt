@@ -1,8 +1,52 @@
-Sure! Below is the TypeScript version of your JavaScript Jest test case using `describe`:
+Sure! Here's how you can convert your JavaScript Jest test case to TypeScript and use `describe` blocks:
 
 ```typescript
-import { describe, it, expect } from '@jest/globals';
+import { sortByField } from './yourModule'; // Adjust the import path accordingly
 
+describe('sortByField function', () => {
+  it('should sort an array of objects alphabetically in ascending order', () => {
+    const array = [
+      { name: 'John' },
+      { name: 'Alice' },
+      { name: 'Bob' }
+    ];
+    const field = 'name';
+    const expected = [
+      { name: 'Alice' },
+      { name: 'Bob' },
+      { name: 'John' }
+    ];
+
+    expect(sortByField(array, field)).toEqual(expected);
+  });
+
+  it('should sort an array of objects alphabetically in descending order', () => {
+    const array = [
+      { name: 'John' },
+      { name: 'Alice' },
+      { name: 'Bob' }
+    ];
+    const field = 'name';
+    const expected = [
+      { name: 'John' },
+      { name: 'Bob' },
+      { name: 'Alice' }
+    ];
+
+    expect(sortByField(array, field, false)).toEqual(expected);
+  });
+});
+```
+
+### Explanation:
+1. **Import Statement**: Ensure that you import the `sortByField` function from the appropriate module.
+2. **Describe Block**: Use `describe` to group related tests together. In this case, all tests for the `sortByField` function are grouped under one `describe` block.
+3. **It Blocks**: Each `it` block represents a single test case. The first test checks if the function sorts the array in ascending order, and the second test checks if it sorts the array in descending order.
+4. **Expectations**: Use `expect` along with `.toEqual` to check if the output of `sortByField` matches the expected result.
+
+Make sure that your `sortByField` function is correctly implemented in your TypeScript file. Here's a simple implementation:
+
+```typescript
 /**
  * Sorts an array of objects alphabetically based on a specified field.
  *
@@ -11,97 +55,22 @@ import { describe, it, expect } from '@jest/globals';
  * @param {boolean} [ascending=true] - If true, sort in ascending order; if false, sort in descending order.
  * @returns {Array} - The sorted array of objects.
  */
-function sortByField(array: any[], field: string, ascending: boolean = true): any[] {
-    return array.sort((a, b) => {
-        const aValue = a[field];
-        const bValue = b[field];
+export function sortByField<T>(array: T[], field: keyof T, ascending: boolean = true): T[] {
+  return array.sort((a, b) => {
+    const aValue = (a[field] as unknown as string).toLowerCase();
+    const bValue = (b[field] as unknown as string).toLowerCase();
 
-        if (typeof aValue === 'string' && typeof bValue === 'string') {
-            if (ascending) {
-                return aValue.localeCompare(bValue);
-            } else {
-                return bValue.localeCompare(aValue);
-            }
-        }
+    if (aValue < bValue) {
+      return ascending ? -1 : 1;
+    }
 
-        if (ascending) {
-            return aValue - bValue;
-        } else {
-            return bValue - aValue;
-        }
-    });
+    if (aValue > bValue) {
+      return ascending ? 1 : -1;
+    }
+
+    return 0;
+  });
 }
-
-describe('sortByField function', () => {
-    it('should sort an array of objects alphabetically in ascending order', () => {
-        const data = [
-            { name: 'John', age: 30 },
-            { name: 'Alice', age: 25 },
-            { name: 'Bob', age: 35 }
-        ];
-
-        const sortedData = sortByField(data, 'name');
-
-        expect(sortedData).toEqual([
-            { name: 'Alice', age: 25 },
-            { name: 'Bob', age: 35 },
-            { name: 'John', age: 30 }
-        ]);
-    });
-
-    it('should sort an array of objects alphabetically in descending order', () => {
-        const data = [
-            { name: 'John', age: 30 },
-            { name: 'Alice', age: 25 },
-            { name: 'Bob', age: 35 }
-        ];
-
-        const sortedData = sortByField(data, 'name', false);
-
-        expect(sortedData).toEqual([
-            { name: 'John', age: 30 },
-            { name: 'Bob', age: 35 },
-            { name: 'Alice', age: 25 }
-        ]);
-    });
-
-    it('should sort an array of objects numerically in ascending order', () => {
-        const data = [
-            { name: 'John', age: 30 },
-            { name: 'Alice', age: 25 },
-            { name: 'Bob', age: 35 }
-        ];
-
-        const sortedData = sortByField(data, 'age');
-
-        expect(sortedData).toEqual([
-            { name: 'Alice', age: 25 },
-            { name: 'John', age: 30 },
-            { name: 'Bob', age: 35 }
-        ]);
-    });
-
-    it('should sort an array of objects numerically in descending order', () => {
-        const data = [
-            { name: 'John', age: 30 },
-            { name: 'Alice', age: 25 },
-            { name: 'Bob', age: 35 }
-        ];
-
-        const sortedData = sortByField(data, 'age', false);
-
-        expect(sortedData).toEqual([
-            { name: 'Bob', age: 35 },
-            { name: 'John', age: 30 },
-            { name: 'Alice', age: 25 }
-        ]);
-    });
-});
 ```
 
-In this TypeScript version:
-- I've added type annotations for the parameters and return value of the `sortByField` function.
-- I've used the `@jest/globals` import to access the `describe`, `it`, and `expect` functions from Jest.
-- I've included test cases that cover sorting strings and numbers both in ascending and descending order.
-
-Make sure you have the necessary TypeScript and Jest setup in your project to run these tests.
+This implementation assumes that the values being compared are strings and performs a case-insensitive sort. Adjust the type annotations and logic as needed for your specific use case.

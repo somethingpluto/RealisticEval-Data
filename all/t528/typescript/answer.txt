@@ -1,31 +1,40 @@
-Sure! Here's how you can convert your JavaScript code into TypeScript:
+Sure! Here is the TypeScript version of your JavaScript code:
 
 ```typescript
-import * as fs from 'fs';
-import * as path from 'path';
+import fs from 'fs';
+import path from 'path';
 
 /**
  * Searches for Markdown files in the specified directory and returns the path of the files as an array
  *
  * @param {string} dir - The directory path to search in.
- * @returns {Promise<string[]>} - A promise that resolves to an array of paths to Markdown files.
+ * @returns {Promise<string[]>} - A Promise that resolves to an array of paths to Markdown files.
  */
 async function findMarkdownFiles(dir: string): Promise<string[]> {
   return new Promise((resolve, reject) => {
     fs.readdir(dir, (err, files) => {
       if (err) {
-        return reject(err);
+        reject(err);
+        return;
       }
 
       const markdownFiles: string[] = [];
-
       files.forEach(file => {
         const filePath = path.join(dir, file);
-        const extname = path.extname(filePath).toLowerCase();
+        fs.stat(filePath, (err, stats) => {
+          if (err) {
+            reject(err);
+            return;
+          }
 
-        if (extname === '.md') {
-          markdownFiles.push(filePath);
-        }
+          if (stats.isDirectory()) {
+            findMarkdownFiles(filePath).then(subFiles => {
+              markdownFiles.push(...subFiles);
+            }).catch(reject);
+          } else if (path.extname(file).toLowerCase() === '.md') {
+            markdownFiles.push(filePath);
+          }
+        });
       });
 
       resolve(markdownFiles);
@@ -35,8 +44,9 @@ async function findMarkdownFiles(dir: string): Promise<string[]> {
 ```
 
 ### Explanation:
-1. **Imports**: We use `import * as fs` and `import * as path` to import the necessary modules from Node.js.
-2. **Type Annotations**: We add type annotations to the parameters and return type of the `findMarkdownFiles` function. Since we're dealing with asynchronous operations, the function now returns a `Promise`.
-3. **Async/Await**: We use `async/await` inside the function to handle the asynchronous nature of reading directories and checking file extensions.
+1. **Imports**: We import `fs` and `path` modules from Node.js.
+2. **Type Annotations**: We add type annotations to the function parameters and return type.
+3. **Async/Await**: Since `fs.readdir`, `fs.stat`, and `findMarkdownFiles` are asynchronous operations, we use Promises to handle them. The `findMarkdownFiles` function now returns a `Promise`.
+4. **Recursive Search**: The function recursively searches for Markdown files in subdirectories.
 
-This TypeScript version should work similarly to your original JavaScript code but with added type safety.
+This TypeScript code should work similarly to your original JavaScript code but with better type safety and support for asynchronous operations.

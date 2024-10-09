@@ -1,81 +1,48 @@
-Sure! Here is the equivalent Java code for the provided JavaScript function:
+Here is the equivalent Java code for your JavaScript function:
 
 ```java
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.Comparator;
-import java.util.List;
 
 /**
- * Sorts a list of objects alphabetically based on a specified field.
+ * Sorts an array of objects alphabetically based on a specified field.
  *
- * @param <T>       the type of objects in the list
- * @param array     the list of objects to sort
- * @param field     the field of the objects to sort by
- * @param ascending if true, sort in ascending order; if false, sort in descending order
- * @return the sorted list of objects
+ * @param <T>       The type of object in the array.
+ * @param array     The array of objects to sort.
+ * @param field     The field of the objects to sort by.
+ * @param ascending If true, sort in ascending order; if false, sort in descending order.
+ * @return The sorted array of objects.
  */
-public static <T> List<T> sortByField(List<T> array, String field, boolean ascending) {
-    // Create a custom comparator based on reflection
-    Comparator<T> comparator = (o1, o2) -> {
-        try {
-            // Get the value of the field using reflection
-            Comparable<?> val1 = (Comparable<?>) getField(o1, field);
-            Comparable<?> val2 = (Comparable<?>) getField(o2, field);
+public static <T> T[] sortByField(T[] array, String field, boolean ascending) {
+    Arrays.sort(array, new Comparator<T>() {
+        @Override
+        public int compare(T o1, T o2) {
+            try {
+                Comparable<?> c1 = (Comparable<?>) getFieldValue(o1, field);
+                Comparable<?> c2 = (Comparable<?>) getFieldValue(o2, field);
 
-            if (val1 == null || val2 == null) {
-                return 0; // Handle null values appropriately
+                return ascending ? c1.compareTo(c2) : c2.compareTo(c1);
+            } catch (Exception e) {
+                throw new RuntimeException("Error sorting", e);
             }
-
-            int result = val1.compareTo(val2);
-            return ascending ? result : -result;
-        } catch (Exception e) {
-            throw new RuntimeException("Error sorting by field: " + field, e);
         }
-    };
 
-    // Sort the list using the custom comparator
-    Collections.sort(array, comparator);
+        private Object getFieldValue(Object obj, String fieldName) throws Exception {
+            Class<?> clazz = obj.getClass();
+            while (clazz != null) {
+                try {
+                    return clazz.getDeclaredField(fieldName).get(obj);
+                } catch (NoSuchFieldException e) {
+                    clazz = clazz.getSuperclass();
+                }
+            }
+            throw new NoSuchFieldException("Field " + fieldName + " not found");
+        }
+    });
     return array;
 }
-
-/**
- * Helper method to get the value of a field using reflection.
- *
- * @param obj   the object from which to retrieve the field value
- * @param field the name of the field to retrieve
- * @return the value of the field
- * @throws Exception if there is an error accessing the field
- */
-private static Object getField(Object obj, String field) throws Exception {
-    Class<?> clazz = obj.getClass();
-    java.lang.reflect.Field f = clazz.getDeclaredField(field);
-    f.setAccessible(true);
-    return f.get(obj);
-}
 ```
 
-### Explanation:
-1. **sortByField Method**:
-   - This method takes a `List` of generic type `T`, a `String` representing the field to sort by, and a `boolean` indicating whether to sort in ascending or descending order.
-   - It uses a custom `Comparator` to compare objects based on the specified field.
-   - Reflection is used to access the field value dynamically.
+Please note that this code uses reflection to access fields, so it might be slow and could cause security issues if used improperly. It also assumes that all elements in the array have a field with the given name and that the field's value implements `Comparable`. 
 
-2. **getField Method**:
-   - This helper method retrieves the value of a field using Java reflection.
-   - It sets the field accessible if it is private and returns its value.
-
-3. **Usage**:
-   - To use this method, you need to have your objects with fields that implement the `Comparable` interface.
-   - For example, if you have a class `Person` with a field `name`, you can sort a list of `Person` objects by `name` like this:
-
-```java
-List<Person> people = new ArrayList<>();
-people.add(new Person("John"));
-people.add(new Person("Alice"));
-people.add(new Person("Bob"));
-
-List<Person> sortedPeople = sortByField(people, "name", true);
-```
-
-This will sort the `people` list by the `name` field in ascending order.
+Also, remember that arrays in Java are covariant, meaning that you can't directly assign the result of this method back to the original array variable. For example, if you had an array of `Person`, you would need to use a `Person[]` instead of just `Object[]`.

@@ -1,71 +1,52 @@
-To convert the provided JavaScript Jest test case to a C++ Catch2 test case, you'll need to follow these steps:
-
-1. Define the `getLineNumber` function in C++.
-2. Write a Catch2 test case that checks the functionality of `getLineNumber`.
-
-Here's how you can do it:
-
-### Step 1: Implement the `getLineNumber` Function
-
-First, let's implement the `getLineNumber` function in C++. We'll assume that the function takes a `const std::string&` and an `int` as parameters and returns an `int`.
+Sure! Below is an equivalent C++ test case using Catch2 for the provided JavaScript Jest function `getLineNumber`.
 
 ```cpp
-#include <iostream>
+#include <catch2/catch.hpp>
 #include <string>
 
-// Function to get the line number in the content at the specified index
-int getLineNumber(const std::string& content, int index) {
-    if (index < 0 || index >= static_cast<int>(content.length())) {
-        return -1; // Invalid index
+/**
+ * Gets the line number in the content at the specified index.
+ *
+ * @param {std::string} content - The string content to check.
+ * @param {size_t} index - The character index to find the line number for.
+ * @returns {size_t} - The line number corresponding to the given index.
+ */
+size_t getLineNumber(const std::string& content, size_t index) {
+    if (index >= content.size()) {
+        return 0; // Return 0 or throw an exception if index is out of bounds
     }
 
-    int lineNumber = 1;
-    for (int i = 0; i < index; ++i) {
+    size_t lineNumber = 1;
+    for (size_t i = 0; i <= index; ++i) {
         if (content[i] == '\n') {
             ++lineNumber;
         }
     }
+
     return lineNumber;
 }
-```
 
-### Step 2: Write a Catch2 Test Case
-
-Next, let's write a Catch2 test case to verify the functionality of `getLineNumber`. Assume you have a file named `test_get_line_number.cpp`.
-
-```cpp
-#define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
-#include "catch.hpp"
-
-// Forward declaration of the function
-int getLineNumber(const std::string& content, int index);
-
-TEST_CASE("getLineNumber", "[getLineNumber]") {
-    REQUIRE(getLineNumber("", 0) == -1); // Empty string should return -1
-    REQUIRE(getLineNumber("Hello\nWorld", 5) == 1); // Line number after 'Hello' should be 1
-    REQUIRE(getLineNumber("Hello\nWorld", 6) == 2); // Line number after '\n' should be 2
-    REQUIRE(getLineNumber("Hello\nWorld\nC++", 11) == 3); // Line number after 'World' should be 3
-    REQUIRE(getLineNumber("Hello\nWorld\nC++", 12) == 4); // Line number after '\n' should be 4
-    REQUIRE(getLineNumber("Hello\nWorld\nC++", 13) == 4); // Line number after 'C++' should be 4
-    REQUIRE(getLineNumber("Hello\nWorld\nC++", 14) == 4); // Out of bounds should return -1
+TEST_CASE("getLineNumber tests", "[getLineNumber]") {
+    REQUIRE(getLineNumber("", 0) == 0);
+    REQUIRE(getLineNumber("Hello", 4) == 1);
+    REQUIRE(getLineNumber("Hello\nWorld", 4) == 1);
+    REQUIRE(getLineNumber("Hello\nWorld", 5) == 2);
+    REQUIRE(getLineNumber("Hello\nWorld\nC++", 7) == 2);
+    REQUIRE(getLineNumber("Hello\nWorld\nC++", 8) == 3);
 }
-
-// Include the implementation of getLineNumber here or link against the source file where it is defined
 ```
 
-### Explanation
+In this C++ code:
+- We include the Catch2 header file.
+- We define the `getLineNumber` function similar to the original JavaScript function.
+- We write several test cases using the `TEST_CASE` macro from Catch2 to verify the functionality of `getLineNumber`.
 
-- **Catch2 Configuration**: The `#define CATCH_CONFIG_MAIN` directive tells Catch to generate a `main()` function for you.
-- **Test Case**: The `TEST_CASE` macro defines a new test case with the name `"getLineNumber"` and a tag `[getLineNumber]`.
-- **Assertions**: The `REQUIRE` macro is used to assert that the function behaves as expected.
+To run these tests, you need to have Catch2 installed and properly set up in your project. If you're using a build system like CMake, you can add the following lines to your `CMakeLists.txt`:
 
-### Running the Test
-
-To run the test, compile your test file using a C++ compiler that supports Catch2 (e.g., g++, clang++) and execute the resulting binary. For example:
-
-```sh
-g++ -std=c++17 -o test_get_line_number test_get_line_number.cpp
-./test_get_line_number
+```cmake
+find_package(Catch2 REQUIRED)
+add_executable(your_test_executable your_test_file.cpp)
+target_link_libraries(your_test_executable PRIVATE Catch2::Catch2)
 ```
 
-This will run the test and output the results, indicating whether each test passed or failed.
+Then, you can run the tests using a command like `./your_test_executable`.

@@ -1,54 +1,43 @@
-Sure! Below is the equivalent C++ code for the JavaScript function you provided:
+Here is your JavaScript function translated into C++:
 
 ```cpp
 #include <iostream>
-#include <chrono>
 #include <ctime>
 
-struct TimeDifference {
+struct TimeDiff {
     int days;
     int hours;
     int minutes;
 };
 
-TimeDifference calculateTimeDifference(const std::string& givenDateString) {
-    // Convert the given date string to a time_t object
-    std::tm tm = {};
-    strptime(givenDateString.c_str(), "%Y-%m-%d %H:%M:%S", &tm);
-    std::time_t givenDate = mktime(&tm);
+TimeDiff calculateTimeDifference(std::string givenDate) {
+    std::time_t now = std::time(nullptr);
+    std::tm* localNow = std::localtime(&now);
 
-    // Get the current date and time
-    auto now = std::chrono::system_clock::now();
-    std::time_t currentDate = std::chrono::system_clock::to_time_t(now);
+    std::tm givenTm;
+    strptime(givenDate.c_str(), "%Y-%m-%d %H:%M", &givenTm);
 
-    // Calculate the difference in seconds
-    std::time_t diffSeconds = difftime(currentDate, givenDate);
+    if (difftime(mktime(localNow), mktime(&givenTm)) < 0) {
+        throw std::invalid_argument("Given date must be in the future");
+    }
 
-    // Convert seconds to days, hours, and minutes
+    double diffSeconds = difftime(mktime(localNow), mktime(&givenTm));
     int days = static_cast<int>(diffSeconds / (24 * 3600));
-    int remainingSeconds = static_cast<int>(diffSeconds % (24 * 3600));
-    int hours = static_cast<int>(remainingSeconds / 3600);
-    int minutes = static_cast<int>((remainingSeconds % 3600) / 60);
+    int hours = static_cast<int>((diffSeconds - (days * 24 * 3600)) / 3600);
+    int minutes = static_cast<int>((diffSeconds - (days * 24 * 3600) - (hours * 3600)) / 60);
 
     return {days, hours, minutes};
 }
 
 int main() {
-    std::string givenDateString = "2023-10-01 12:00:00";
-    TimeDifference diff = calculateTimeDifference(givenDateString);
-
-    std::cout << "Days: " << diff.days << ", Hours: " << diff.hours << ", Minutes: " << diff.minutes << std::endl;
-
+    try {
+        auto diff = calculateTimeDifference("2024-12-31 23:59");
+        std::cout << "Days: " << diff.days << ", Hours: " << diff.hours << ", Minutes: " << diff.minutes << std::endl;
+    } catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+    }
     return 0;
 }
 ```
 
-### Explanation:
-1. **Struct Definition**: A `TimeDifference` struct is defined to hold the calculated days, hours, and minutes.
-2. **Date Parsing**: The `strptime` function is used to parse the given date string into a `std::tm` structure.
-3. **Current Date**: The current date and time are obtained using `std::chrono::system_clock`.
-4. **Difference Calculation**: The difference in seconds between the given date and the current date is calculated using `difftime`.
-5. **Conversion**: The total seconds are converted into days, hours, and minutes.
-6. **Main Function**: The `main` function demonstrates how to use the `calculateTimeDifference` function.
-
-This code assumes that the input date string is in the format `"YYYY-MM-DD HH:MM:SS"`. If your date format is different, you will need to adjust the `strptime` format string accordingly.
+Please note that this C++ version assumes that the input `givenDate` string is in the format "YYYY-MM-DD HH:MM". If you want to support different formats or handle errors differently, you may need to modify the `strptime` call accordingly. Also, make sure to link with the C++ Standard Library when compiling this code.
