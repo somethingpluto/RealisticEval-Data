@@ -1,0 +1,77 @@
+Certainly! Below is an equivalent C++ Catch2 test case for your JavaScript Jest test function `getTime`. Note that in C++, you'll need to implement the `getTime` function and then write a test to check its behavior.
+
+First, let's assume the implementation of `getTime`:
+
+```cpp
+#include <chrono>
+#include <iomanip>
+#include <sstream>
+
+std::string getTime() {
+    auto now = std::chrono::system_clock::now();
+    auto now_c = std::chrono::system_clock::to_time_t(now);
+    std::tm local_tm = *std::localtime(&now_c);
+
+    std::ostringstream oss;
+    oss << std::put_time(&local_tm, "%I:%M %p");
+    return oss.str();
+}
+```
+
+Now, let's write the Catch2 test case:
+
+```cpp
+#define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
+#include "catch.hpp"
+
+#include <iostream>
+#include <string>
+
+// Assuming the implementation of getTime is in a header or source file
+#include "getTime.h"  // Replace with the actual include path
+
+TEST_CASE("Check if getTime returns the correct format", "[getTime]") {
+    std::string timeStr = getTime();
+
+    // Check if the string has the expected length (e.g., 8 characters for "01:30 PM")
+    REQUIRE(timeStr.length() == 8);
+
+    // Check if the last character is either 'A' or 'P'
+    char lastChar = timeStr[timeStr.length() - 1];
+    REQUIRE(lastChar == 'A' || lastChar == 'P');
+
+    // Check if there are exactly two colons in the string
+    int colonCount = 0;
+    for (char c : timeStr) {
+        if (c == ':') {
+            colonCount++;
+        }
+    }
+    REQUIRE(colonCount == 1);
+
+    // Optionally, you can add more specific checks based on the expected output
+    // For example, checking if the hour part is valid (1-12)
+    int hourStart = 0;
+    while (isdigit(timeStr[hourStart])) {
+        hourStart++;
+    }
+    int hourEnd = hourStart + 2;
+    int hour = std::stoi(timeStr.substr(hourStart, hourEnd));
+    REQUIRE(hour >= 1 && hour <= 12);
+}
+```
+
+### Explanation:
+1. **Include Catch2 Header**: The `#define CATCH_CONFIG_MAIN` directive tells Catch2 to generate the `main()` function automatically. The `#include "catch.hpp"` includes the Catch2 library.
+  
+2. **Include Implementation**: The `#include "getTime.h"` should be replaced with the actual include path where the `getTime` function is defined.
+
+3. **Test Case**: The `TEST_CASE` macro defines a test case named "Check if getTime returns the correct format". Inside the test case, we call the `getTime` function and store the result in `timeStr`.
+
+4. **Assertions**:
+   - We check if the length of the time string is 8 characters.
+   - We ensure the last character is either 'A' or 'P'.
+   - We count the number of colons in the string and expect it to be exactly one.
+   - We optionally check if the hour part is within the valid range (1-12).
+
+This test case ensures that the `getTime` function returns a string in the expected format. Adjust the assertions according to your specific requirements.

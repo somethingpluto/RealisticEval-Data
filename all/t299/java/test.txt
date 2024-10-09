@@ -1,0 +1,97 @@
+To convert the JavaScript Jest test case into a Java JUnit test case, you need to follow these steps:
+
+1. Define the method `calculateAge` in a Java class.
+2. Create a JUnit test class with the appropriate package and class name.
+3. Write JUnit test methods to validate the functionality of `calculateAge`.
+
+Here's how you can do it:
+
+### Java Class: `DateUtils.java`
+
+```java
+package org.real.temp;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+
+public class DateUtils {
+
+    /**
+     * Calculates the age from the given birth date string and returns a string containing the original birth date and the calculated age.
+     * If the entered date string is invalid or empty, the function returns an empty string.
+     *
+     * @param birthDateString - The birth date as a string in a recognizable date format (e.g., 'YYYY-MM-DD').
+     * @return - A string that includes the original birth date and the calculated age in the format 'birthDateString (age)', or an empty string if the input is invalid.
+     */
+    public static String calculateAge(String birthDateString) {
+        if (birthDateString == null || birthDateString.isEmpty()) {
+            return "";
+        }
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        try {
+            LocalDate birthDate = LocalDate.parse(birthDateString, formatter);
+            LocalDate currentDate = LocalDate.now();
+            int age = currentDate.getYear() - birthDate.getYear();
+
+            // Adjust the age if the current date is before the birthday in the current year
+            if (currentDate.getMonthValue() < birthDate.getMonthValue() ||
+                    (currentDate.getMonthValue() == birthDate.getMonthValue() && currentDate.getDayOfMonth() < birthDate.getDayOfMonth())) {
+                age--;
+            }
+
+            return birthDateString + " (" + age + ")";
+        } catch (DateTimeParseException e) {
+            return "";
+        }
+    }
+}
+```
+
+### JUnit Test Class: `Tester.java`
+
+```java
+package org.real.temp;
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+public class Tester {
+
+    @Test
+    public void testCalculateAgeValidDate() {
+        String result = DateUtils.calculateAge("1990-05-15");
+        assertEquals("1990-05-15 (33)", result); // Assuming the current year is 2023
+    }
+
+    @Test
+    public void testCalculateAgeInvalidDate() {
+        String result = DateUtils.calculateAge("2024-02-30"); // Invalid date
+        assertEquals("", result);
+    }
+
+    @Test
+    public void testCalculateAgeEmptyString() {
+        String result = DateUtils.calculateAge("");
+        assertEquals("", result);
+    }
+
+    @Test
+    public void testCalculateAgeNullInput() {
+        String result = DateUtils.calculateAge(null);
+        assertEquals("", result);
+    }
+}
+```
+
+### Explanation
+
+1. **Java Class (`DateUtils.java`)**:
+   - Contains the `calculateAge` method which follows the same logic as your JavaScript function.
+
+2. **JUnit Test Class (`Tester.java`)**:
+   - Uses JUnit 5 annotations like `@Test`.
+   - Each test method calls `DateUtils.calculateAge` with different inputs and checks the output using `assertEquals`.
+
+Make sure to add the necessary dependencies for JUnit 5 in your project's build configuration file (e.g., `pom.xml` for Maven or `build.gradle` for Gradle).

@@ -1,0 +1,82 @@
+Certainly! Below is the equivalent C++ code using the Chromium Embedded Framework (CEF) to achieve similar functionality. This example assumes you have set up a basic CEF application and have access to the DOM elements.
+
+```cpp
+#include "include/cef_app.h"
+#include "include/cef_browser.h"
+#include "include/cef_frame.h"
+#include "include/wrapper/cef_helpers.h"
+
+class MyClient : public CefClient,
+                 public CefLifeSpanHandler,
+                 public CefLoadHandler {
+public:
+    MyClient() {}
+
+    // CefClient methods
+    virtual CefRefPtr<CefLifeSpanHandler> GetLifeSpanHandler() OVERRIDE { return this; }
+    virtual CefRefPtr<CefLoadHandler> GetLoadHandler() OVERRIDE { return this; }
+
+    // CefLifeSpanHandler methods
+    virtual void OnAfterCreated(CefRefPtr<CefBrowser> browser) OVERRIDE {
+        browser_ = browser;
+    }
+
+    // CefLoadHandler methods
+    virtual void OnLoadEnd(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, int httpStatusCode) OVERRIDE {
+        if (frame->IsMain()) {
+            RemoveAds(frame);
+        }
+    }
+
+private:
+    void RemoveAds(CefRefPtr<CefFrame> frame) {
+        CefRefPtr<CefJSExecutor> executor = frame->GetJavaScriptExecutor();
+        if (!executor.get())
+            return;
+
+        std::string script = R"(
+            var ads = document.querySelectorAll('.ad-class-name');
+            for (var i = 0; i < ads.length; ++i) {
+                ads[i].parentNode.removeChild(ads[i]);
+            }
+        )";
+
+        executor->ExecuteFunction(NULL, NULL, script.c_str(), NULL);
+    }
+
+    IMPLEMENT_REFCOUNTING(MyClient);
+
+    CefRefPtr<CefBrowser> browser_;
+};
+
+int main(int argc, char* argv[]) {
+    CefMainArgs main_args(argc, argv);
+
+    CefSettings settings;
+    CefInitialize(main_args, settings, new MyClient(), nullptr);
+
+    // Load your URL here
+    CefWindowInfo window_info;
+    CefBrowserSettings browser_settings;
+    CefBrowserHost::CreateBrowser(window_info, new MyClient(), "http://example.com", browser_settings, nullptr, nullptr);
+
+    CefRunMessageLoop();
+
+    CefShutdown();
+
+    return 0;
+}
+```
+
+### Explanation:
+1. **MyClient Class**: This class implements `CefClient`, `CefLifeSpanHandler`, and `CefLoadHandler` to handle browser events.
+2. **OnAfterCreated**: This method is called when the browser is created. It stores the browser reference.
+3. **OnLoadEnd**: This method is called when the page finishes loading. If it's the main frame, it calls `RemoveAds`.
+4. **RemoveAds**: This function uses JavaScript execution to find and remove elements with the specified class name (`ad-class-name`).
+
+### Notes:
+- Ensure you have the necessary headers and libraries for CEF installed.
+- Replace `"http://example.com"` with the actual URL you want to load.
+- Adjust the class name `.ad-class-name` to match the actual ad class name you want to target.
+
+This code provides a basic structure to integrate ad removal into a CEF-based application. Depending on your requirements, you may need to extend or modify it further.

@@ -1,0 +1,66 @@
+Certainly! Below is an equivalent C++ test case using Catch2 for the `calculateAge` function. The JavaScript Jest test case you provided calculates the age based on a birth date string. In C++, we'll simulate similar functionality.
+
+First, ensure you have Catch2 installed in your project. If not, you can install it via your package manager or download it from its [GitHub repository](https://github.com/catchorg/Catch2).
+
+Here's the C++ test case:
+
+```cpp
+#include <catch2/catch.hpp>
+#include <iostream>
+#include <string>
+#include <chrono>
+#include <ctime>
+
+// Function to calculate age based on birth date string
+int calculateAge(const std::string& birthDateString) {
+    // Parse the birth date string into year, month, and day
+    size_t hyphenPos1 = birthDateString.find('-');
+    size_t hyphenPos2 = birthDateString.find('-', hyphenPos1 + 1);
+    
+    int year = std::stoi(birthDateString.substr(0, hyphenPos1));
+    int month = std::stoi(birthDateString.substr(hyphenPos1 + 1, hyphenPos2 - hyphenPos1 - 1));
+    int day = std::stoi(birthDateString.substr(hyphenPos2 + 1));
+    
+    // Get the current date
+    auto now = std::chrono::system_clock::now();
+    std::time_t nowTimeT = std::chrono::system_clock::to_time_t(now);
+    std::tm nowTm = *std::localtime(&nowTimeT);
+    
+    // Create a tm structure for the birth date
+    std::tm birthDate = {};
+    birthDate.tm_year = year - 1900; // tm_year is years since 1900
+    birthDate.tm_mon = month - 1;   // tm_mon is months since January (0-11)
+    birthDate.tm_mday = day;
+    
+    // Calculate the difference in days between the current date and the birth date
+    double secondsSinceEpochNow = difftime(nowTimeT, mktime(&birthDate));
+    double secondsSinceEpochBirth = difftime(mktime(&birthDate), mktime(&birthDate)); // This will be zero
+    
+    // Convert seconds to years
+    int age = static_cast<int>(secondsSinceEpochNow / (365.25 * 24 * 60 * 60));
+    
+    return age;
+}
+
+TEST_CASE("Calculate Age", "[age]") {
+    REQUIRE(calculateAge("2000-01-01") == 23); // Assuming the test is run in 2023
+    REQUIRE(calculateAge("1990-05-15") == 32); // Assuming the test is run in 2022
+    REQUIRE(calculateAge("2005-12-31") == 17); // Assuming the test is run in 2023
+    REQUIRE(calculateAge("1980-03-10") == 43); // Assuming the test is run in 2023
+}
+
+```
+
+### Explanation:
+1. **Parsing the Birth Date String**: The `calculateAge` function parses the input string to extract the year, month, and day.
+2. **Getting the Current Date**: It uses the `<chrono>` library to get the current date and time.
+3. **Calculating Age**: It calculates the age by comparing the number of days between the current date and the birth date.
+4. **Catch2 Test Case**: The `TEST_CASE` macro defines a test case named "Calculate Age". Inside this, multiple `REQUIRE` statements are used to verify that the `calculateAge` function returns the correct age for different birth dates.
+
+Make sure to compile your C++ code with Catch2 included, typically by linking against the Catch2 library. For example, if you're using g++, you might compile with something like:
+
+```sh
+g++ -std=c++17 -o test_age test_age.cpp -lCatch2
+```
+
+This will create an executable named `test_age` that you can run to execute the tests.

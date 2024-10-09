@@ -1,0 +1,69 @@
+Sure! Below is the equivalent C++ test case using Catch2 for the provided JavaScript Jest test case. Note that Catch2 is a header-only testing framework for C++, so you need to include it in your project.
+
+First, ensure you have Catch2 included in your project. If you're using CMake, you can add it like this:
+
+```cmake
+find_package(Catch2 REQUIRED)
+add_executable(your_test_executable your_test_file.cpp)
+target_link_libraries(your_test_executable PRIVATE Catch2::Catch2WithMain)
+```
+
+Now, here's the equivalent C++ test case using Catch2:
+
+```cpp
+#include <catch2/catch.hpp>
+#include <filesystem>
+#include <vector>
+#include <string>
+
+namespace fs = std::filesystem;
+
+/**
+ * Searches for Markdown files in the specified directory and returns the path of the files as an array
+ *
+ * @param {std::string} dir - The directory path to search in.
+ * @returns {std::vector<std::string>} - A vector of paths to Markdown files.
+ */
+std::vector<std::string> findMarkdownFiles(const std::string& dir) {
+    std::vector<std::string> markdownFiles;
+    if (fs::exists(dir) && fs::is_directory(dir)) {
+        for (const auto& entry : fs::directory_iterator(dir)) {
+            if (entry.is_regular_file() && entry.path().extension() == ".md") {
+                markdownFiles.push_back(entry.path().string());
+            }
+        }
+    }
+    return markdownFiles;
+}
+
+TEST_CASE("Find Markdown Files", "[findMarkdownFiles]") {
+    // Create a temporary directory for testing
+    fs::path tempDir = fs::temp_directory_path() / "test_find_markdown_files";
+    fs::create_directories(tempDir);
+
+    // Create some Markdown files
+    fs::create_regular_file(tempDir / "file1.md");
+    fs::create_regular_file(tempDir / "file2.txt");
+    fs::create_regular_file(tempDir / "file3.md");
+
+    // Call the function
+    std::vector<std::string> result = findMarkdownFiles(tempDir.string());
+
+    // Check the results
+    REQUIRE(result.size() == 2);
+    REQUIRE(std::find(result.begin(), result.end(), (tempDir / "file1.md").string()) != result.end());
+    REQUIRE(std::find(result.begin(), result.end(), (tempDir / "file3.md").string()) != result.end());
+
+    // Clean up
+    fs::remove_all(tempDir);
+}
+```
+
+This C++ test case does the following:
+1. Creates a temporary directory for testing.
+2. Creates some Markdown files and a non-Markdown file in the temporary directory.
+3. Calls the `findMarkdownFiles` function with the temporary directory path.
+4. Checks if the function correctly identifies the Markdown files.
+5. Cleans up the temporary directory after the test.
+
+Make sure to include the necessary headers and link against Catch2 when compiling your test executable.

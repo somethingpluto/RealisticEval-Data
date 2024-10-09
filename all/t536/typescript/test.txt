@@ -1,0 +1,54 @@
+Certainly! Below is the TypeScript version of your Jest test case using `describe`:
+
+```typescript
+import { describe, it, expect } from '@jest/globals';
+
+/**
+ * Gets the current date formatted as 'Month Day, Year'.
+ *
+ * @returns {string} The formatted date string.
+ */
+function getDate(): string {
+  const now = new Date();
+  const month = now.toLocaleString('default', { month: 'long' });
+  const day = now.getDate();
+  const year = now.getFullYear();
+  return `${month} ${day}, ${year}`;
+}
+
+describe('getDate function', () => {
+  it('should return the current date in the format "Month Day, Year"', () => {
+    const currentDate = new Date();
+    const expectedFormat = `${currentDate.toLocaleString('default', { month: 'long' })} ${currentDate.getDate()}, ${currentDate.getFullYear()}`;
+
+    // Mocking the Date object for consistent testing
+    Object.defineProperty(global, 'Date', {
+      value: class extends Date {
+        constructor(...args) {
+          if (args.length === 0) {
+            super(currentDate.getTime());
+          } else {
+            super(...args);
+          }
+        }
+      },
+      writable: true,
+    });
+
+    const result = getDate();
+
+    expect(result).toBe(expectedFormat);
+
+    // Clean up the mock after the test
+    delete global.Date;
+  });
+});
+```
+
+### Explanation:
+1. **TypeScript Function Signature**: The `getDate` function is defined with a return type of `string`.
+2. **Jest Describe Block**: We wrap our tests within a `describe` block for better organization and readability.
+3. **Mocking the Date Object**: To ensure that the test is not affected by the actual system date, we mock the `Date` object using `Object.defineProperty`. This allows us to control the date returned by the `getDate` function during the test.
+4. **Test Case**: The `it` block contains the actual test case. It checks whether the `getDate` function returns the correct date string in the specified format.
+
+This setup ensures that your test is isolated and reliable, regardless of the actual system date when running the tests.

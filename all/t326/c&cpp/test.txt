@@ -1,0 +1,76 @@
+Sure, here's how you can convert the JavaScript Jest test case to a C++ Catch2 test case:
+
+```cpp
+#include <catch2/catch.hpp>
+#include <chrono>
+#include <iostream>
+
+/**
+ * Calculates the time difference between a given date and the current date.
+ *
+ * @param {Date | string} givenDate - The date to compare against the current date.
+ * @returns {Object} - An object containing days, hours, and minutes elapsed.
+ * {
+ *         days: days,
+ *         hours: remainingHours,
+ *         minutes: remainingMinutes,
+ * }
+ */
+struct TimeDifference {
+    int days;
+    int hours;
+    int minutes;
+};
+
+TimeDifference calculateTimeDifference(const std::string& givenDate) {
+    auto now = std::chrono::system_clock::now();
+    auto now_c = std::chrono::system_clock::to_time_t(now);
+    std::tm now_tm = *std::localtime(&now_c);
+
+    std::istringstream iss(givenDate);
+    std::tm given_tm = {};
+    if (!(iss >> std::get_time(&given_tm, "%Y-%m-%d %H:%M:%S"))) {
+        throw std::invalid_argument("Invalid date format");
+    }
+
+    auto given = std::chrono::system_clock::from_time_t(std::mktime(&given_tm));
+    auto duration = now - given;
+
+    auto seconds = std::chrono::duration_cast<std::chrono::seconds>(duration).count();
+    auto minutes = seconds / 60;
+    auto hours = minutes / 60;
+    auto days = hours / 24;
+
+    return {days, hours % 24, minutes % 60};
+}
+
+TEST_CASE("calculateTimeDifference", "[time_difference]") {
+    SECTION("Given date is in the future") {
+        TimeDifference result = calculateTimeDifference("2023-12-31 23:59:59");
+        REQUIRE(result.days == 0);
+        REQUIRE(result.hours == 23);
+        REQUIRE(result.minutes == 59);
+    }
+
+    SECTION("Given date is today") {
+        TimeDifference result = calculateTimeDifference("2023-10-10 12:00:00");
+        REQUIRE(result.days == 0);
+        REQUIRE(result.hours == 12);
+        REQUIRE(result.minutes == 0);
+    }
+
+    SECTION("Given date is in the past") {
+        TimeDifference result = calculateTimeDifference("2023-01-01 00:00:00");
+        REQUIRE(result.days > 0); // Depending on the current date
+        REQUIRE(result.hours >= 0); // Depending on the current date
+        REQUIRE(result.minutes >= 0); // Depending on the current date
+    }
+}
+```
+
+In this C++ code:
+- We define a `TimeDifference` struct to hold the days, hours, and minutes.
+- The `calculateTimeDifference` function converts the given date string to a `std::tm` structure and calculates the time difference from the current time.
+- We use Catch2's `TEST_CASE` and `SECTION` macros to create test cases that check different scenarios for the `calculateTimeDifference` function.
+
+Make sure to include the necessary headers and link against the Catch2 library when compiling your C++ program.

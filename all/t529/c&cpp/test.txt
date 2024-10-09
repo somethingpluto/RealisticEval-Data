@@ -1,0 +1,78 @@
+To convert the given JavaScript Jest test case into a C++ Catch2 test case, we need to follow these steps:
+
+1. Include the necessary headers for file operations and Catch2 testing framework.
+2. Define the `saveAsJSON` function in C++.
+3. Write the Catch2 test cases to verify the functionality of the `saveAsJSON` function.
+
+Here's how you can do it:
+
+### C++ Code
+
+```cpp
+#include <fstream>
+#include <sstream>
+#include <string>
+#include "catch.hpp"
+
+// Function to save data as JSON to a file
+void saveAsJSON(const std::map<std::string, std::string>& data, const std::string& outputFilePath) {
+    std::ofstream outFile(outputFilePath);
+    if (outFile.is_open()) {
+        outFile << "{";
+        bool firstEntry = true;
+        for (const auto& pair : data) {
+            if (!firstEntry) {
+                outFile << ", ";
+            }
+            outFile << "\"" << pair.first << "\": \"" << pair.second << "\"";
+            firstEntry = false;
+        }
+        outFile << "}";
+        outFile.close();
+    } else {
+        throw std::runtime_error("Unable to open file: " + outputFilePath);
+    }
+}
+
+TEST_CASE("Save As JSON", "[json]") {
+    // Test with an empty map
+    std::map<std::string, std::string> emptyData;
+    saveAsJSON(emptyData, "test_empty.json");
+    std::ifstream inFileEmpty("test_empty.json");
+    REQUIRE(inFileEmpty.good());
+    std::string contentEmpty((std::istreambuf_iterator<char>(inFileEmpty)), std::istreambuf_iterator<char>());
+    REQUIRE(contentEmpty == "{}");
+
+    // Test with some data
+    std::map<std::string, std::string> testData = {{"name", "John"}, {"age", "30"}};
+    saveAsJSON(testData, "test_data.json");
+    std::ifstream inFileData("test_data.json");
+    REQUIRE(inFileData.good());
+    std::string contentData((std::istreambuf_iterator<char>(inFileData)), std::istreambuf_iterator<char>());
+    REQUIRE(contentData == "{\"name\": \"John\", \"age\": \"30\"}");
+
+    // Clean up files after tests
+    remove("test_empty.json");
+    remove("test_data.json");
+}
+```
+
+### Explanation
+
+1. **Headers**:
+   - `#include <fstream>`: For file operations.
+   - `#include <sstream>`: For string stream operations (not used here but often useful).
+   - `#include <string>`: For string handling.
+   - `#include "catch.hpp"`: The Catch2 header file.
+
+2. **Function Definition**:
+   - `saveAsJSON`: This function takes a map of strings to strings and a file path, then writes the map as a JSON object to the specified file.
+
+3. **Catch2 Test Cases**:
+   - `TEST_CASE("Save As JSON", "[json]")`: Defines a test case named "Save As JSON" under the "json" tag.
+   - Two test scenarios are included:
+     - One with an empty map to ensure that the function correctly handles no data.
+     - Another with some test data to ensure that the function correctly formats the JSON.
+   - After each test, the generated JSON files are removed using `remove()` to clean up the environment.
+
+This C++ code should provide a similar level of testing coverage as the original JavaScript Jest test case.
