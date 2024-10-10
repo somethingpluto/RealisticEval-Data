@@ -1,25 +1,23 @@
-/**
- * Computes and returns an approximate size of an object in bytes.
- *
- * @param obj The object to measure the memory size of.
- * @returns The size of the object in bytes (approximate).
- */
 function sizeInBytes(obj: any): number {
-  if (typeof obj === 'string') {
-    // For strings, use Buffer to get byte length
-    return Buffer.byteLength(obj, 'utf8');
-  } else if (Array.isArray(obj)) {
-    // Approximate size for arrays
-    return obj.reduce((sum, item) => sum + sizeInBytes(item), 0);
-  } else if (typeof obj === 'object' && obj !== null) {
-    // Approximate size for objects
-    return Object.keys(obj).reduce((sum, key) => sum + sizeInBytes(key) + sizeInBytes(obj[key]), 0);
-  } else {
-    // Fallback for other types like number, boolean, null
-    return 0;
-  }
-}
+    /**
+     * Computes and returns the size of an object in bytes in memory
+     *
+     * @param {any} obj - The object whose size is being computed.
+     * @returns {number} The size of the object in bytes in memory.
+     */
+    
+    // Note: In JavaScript/TypeScript, there's no built-in way to get the exact memory usage of an object,
+    // so we're using Buffer.byteLength() as a proxy for string data sizes.
 
-// Example usage
-const exampleObject = { key: 'value', anotherKey: 123 };
-console.log(sizeInBytes(exampleObject));
+    if (typeof obj === 'string') {
+        return Buffer.byteLength(obj);
+    } else if (Buffer.isBuffer(obj)) {
+        return obj.length;
+    } else if (Array.isArray(obj)) {
+        return obj.reduce((sum, item) => sum + sizeInBytes(item), 0);
+    } else if (obj instanceof Object) {
+        return Object.keys(obj).reduce((sum, key) => sum + sizeInBytes(key) + sizeInBytes(obj[key]), 0);
+    } else {
+        return 0; // For primitive types like numbers, booleans, null, undefined etc., their memory usage is negligible
+    }
+}

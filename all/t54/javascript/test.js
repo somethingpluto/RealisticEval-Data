@@ -1,8 +1,11 @@
-// Import the function to test
-const removeTripleBackticks = require('./path-to-your-function');
-
 describe('removeTripleBackticks', () => {
-    
-    test('removes triple backticks in basic examples', () => {
-        // Test basic functionality
-        const inputStrings = ['Here is
+  it('should remove triple backticks from a string', () => {
+    expect(removeTripleBackticks(['abc````def'])).toEqual(['abc``def']);
+  });
+
+  it('should remove multiple triple backticks from a string', () => {
+    expect(removeTripleBackticks(['abc````def````ghi'])).toEqual(['abc``def``ghi']);
+  });
+
+  // Add more tests as needed...
+});
