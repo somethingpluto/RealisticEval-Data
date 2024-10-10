@@ -1,34 +1,12 @@
-import { findShiftJISNotInGBK } from './path-to-your-function'; // Adjust import based on your file structure
+describe('findShiftjisNotGbk', () => {
+  it('should return a list of characters that can be represented in Shift-JIS but not in GBK', async () => {
+    // Call the function
+    const result = await findShiftjisNotGbk();
 
-describe('findShiftJISNotInGBK', () => {
-    let shiftjisNotGBK: string[];
+    // Define expected output (this would need to be determined based on actual behavior)
+    const expectedResult: string[] = ['¥', '£', '€']; // Example expected output
 
-    beforeAll(() => {
-        // Compute the result once before all tests
-        shiftjisNotGBK = findShiftJISNotInGBK();
-    });
-
-    it('should not include known Shift-JIS only characters in GBK', () => {
-        const knownShiftjisOnly = 'ヱ'; // Ensure this character is correct based on encoding
-        expect(shiftjisNotGBK).toContain(knownShiftjisOnly);
-    });
-
-    it('should not include characters that are common in both encodings', () => {
-        const commonCharacter = '水'; // Common in both, ensure accuracy
-        expect(shiftjisNotGBK).not.toContain(commonCharacter);
-    });
-
-    it('should not include characters in neither encoding', () => {
-        const neitherEncodingChar = '\u{1F4A9}'; // Emoji, not in basic Shift-JIS or GBK
-        expect(shiftjisNotGBK).not.toContain(neitherEncodingChar);
-    });
-
-    it('should handle edge cases at the bounds of the BMP', () => {
-        const edgeOfBMP = '\uFFFF'; // Last character in BMP
-        expect(shiftjisNotGBK).not.toContain(edgeOfBMP);
-    });
-
-    it('should handle the list not being empty', () => {
-        expect(shiftjisNotGBK.length).toBeGreaterThan(0);
-    });
+    // Check if the result matches the expected output
+    expect(result).toEqual(expectedResult);
+  });
 });
