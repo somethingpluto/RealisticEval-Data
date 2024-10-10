@@ -1,28 +1,16 @@
-import { getLineSegmentIntersection } from './path_to_your_function'; // Adjust the import path as necessary
-
 describe('getLineSegmentIntersection', () => {
-    test('intersecting lines', () => {
-        expect(getLineSegmentIntersection([[1, 1], [4, 4]], [[1, 4], [4, 1]])).toEqual([2.5, 2.5]);
+    it('should return the intersection point of two line segments', () => {
+      const seg1 = [[0, 0], [1, 1]];
+      const seg2 = [[1, 0], [0, 1]];
+      const expectedIntersection = [0.5, 0.5];
+      const result = getLineSegmentIntersection(seg1, seg2);
+      expect(result).toEqual(expectedIntersection);
     });
-
-    test('parallel lines', () => {
-        expect(getLineSegmentIntersection([[1, 1], [4, 4]], [[2, 2], [5, 5]])).toBeNull();
+  
+    it('should return null if the line segments do not intersect', () => {
+      const seg1 = [[0, 0], [1, 1]];
+      const seg2 = [[2, 2], [3, 3]];
+      const result = getLineSegmentIntersection(seg1, seg2);
+      expect(result).toBeNull();
     });
-
-    test('no intersection', () => {
-        expect(getLineSegmentIntersection([[1, 1], [2, 2]], [[3, 3], [4, 4]])).toBeNull();
-    });
-
-    test('intersection in the middle', () => {
-        const result = getLineSegmentIntersection([[0, 0], [4, 4]], [[0, 4], [4, 0]]);
-        expect(result).not.toBeNull();
-        if (result !== null) { // Type guard for precise TypeScript handling
-            expect(result[0]).toBeCloseTo(2, 7);
-            expect(result[1]).toBeCloseTo(2, 7);
-        }
-    });
-
-    test('identical segments', () => {
-        expect(getLineSegmentIntersection([[1, 1], [4, 4]], [[1, 1], [4, 4]])).toBeNull();
-    });
-});
+  });

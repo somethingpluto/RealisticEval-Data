@@ -1,24 +1,23 @@
-function stringSideBySide(string1, string2, columnWidth = 20) {
-  const lines1 = string1.split('\n');
-  const lines2 = string2.split('\n');
+function alignLinesLeft(str1, str2) {
+  // Get the lengths of both strings
+  let len1 = str1.length;
+  let len2 = str2.length;
 
-  const maxLength = Math.max(lines1.length, lines2.length);
+  // If the first string is longer, pad the second one with spaces
+  if(len1 > len2){
+      while(len2 < len1){
+          str2 += ' ';
+          len2++;
+      }
+  } 
+  // If the second string is longer, pad the first one with spaces
+  else if(len2 > len1){
+      while(len1 < len2){
+          str1 += ' ';
+          len1++;
+      }
+  }
 
-  // Pad shorter array with empty strings
-  const paddedLines1 = Array.from({ length: maxLength }, (_, i) => lines1[i] || '');
-  const paddedLines2 = Array.from({ length: maxLength }, (_, i) => lines2[i] || '');
-
-  // Format and concatenate lines
-  const formattedLines = paddedLines1.map((line1, i) => {
-    const line2 = paddedLines2[i];
-    const formattedLine1 = line1.padEnd(columnWidth, ' ');
-    const formattedLine2 = line2.padEnd(columnWidth, ' ');
-    return `${formattedLine1} | ${formattedLine2}`;
-  });
-
-  // Join all formatted lines into a single string
-  return formattedLines.join('\n');
+  // Return the aligned strings in an array
+  return [str1, str2];
 }
-
-// Example usage
-console.log(stringSideBySide("Hello\nWorld", "Foo\nBar"));

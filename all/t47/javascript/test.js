@@ -1,38 +1,23 @@
-const { findNthWeekdayOfSpecificYear } = require('./path/to/your/module'); // Adjust the path to your module
-
 describe('findNthWeekdayOfSpecificYear', () => {
-    test('regular occurrence', () => {
-        // Test for the 2nd Monday of May 2023
-        const result = findNthWeekdayOfSpecificYear(2023, 5, 2, 0);
-        const expected = new Date(2023, 4, 8); // Note: months are 0-based in JS
-        expect(result).toEqual(expected);
+    it('should return the correct date for the nth weekday of a specific year', () => {
+      expect(findNthWeekdayOfSpecificYear(2023, 4, 1, 0)).toEqual(new Date(2023, 3, 3)); // April 3, 2023 (Monday)
+      expect(findNthWeekdayOfSpecificYear(2023, 4, 2, 0)).toEqual(new Date(2023, 3, 10)); // April 10, 2023 (Monday)
+      expect(findNthWeekdayOfSpecificYear(2023, 4, 3, 0)).toEqual(new Date(2023, 3, 17)); // April 17, 2023 (Monday)
+      expect(findNthWeekdayOfSpecificYear(2023, 4, 4, 0)).toEqual(new Date(2023, 3, 24)); // April 24, 2023 (Monday)
+      expect(findNthWeekdayOfSpecificYear(2023, 4, 5, 0)).toEqual(new Date(2023, 3, 31)); // April 31, 2023 (Monday)
+  
+      expect(findNthWeekdayOfSpecificYear(2023, 4, 1, 6)).toEqual(new Date(2023, 3, 30)); // April 30, 2023 (Sunday)
+      expect(findNthWeekdayOfSpecificYear(2023, 4, 2, 6)).toEqual(new Date(2023, 3, 23)); // April 23, 2023 (Sunday)
+      expect(findNthWeekdayOfSpecificYear(2023, 4, 3, 6)).toEqual(new Date(2023, 3, 16)); // April 16, 2023 (Sunday)
+      expect(findNthWeekdayOfSpecificYear(2023, 4, 4, 6)).toEqual(new Date(2023, 3, 9)); // April 9, 2023 (Sunday)
+      expect(findNthWeekdayOfSpecificYear(2023, 4, 5, 6)).toEqual(new Date(2023, 3, 2)); // April 2, 2023 (Sunday)
     });
-
-    test('last occurrence', () => {
-        // Test for the 5th Monday of May 2023, which doesn't exist, should return the last Monday
-        const result = findNthWeekdayOfSpecificYear(2023, 5, 5, 0);
-        const expected = new Date(2023, 4, 29);
-        expect(result).toEqual(expected);
+  
+    it('should return the last occurrence of the weekday if the nth occurrence does not exist', () => {
+      expect(findNthWeekdayOfSpecificYear(2023, 2, 1, 0)).toEqual(new Date(2023, 1, 27)); // February 27, 2023 (Monday)
+      expect(findNthWeekdayOfSpecificYear(2023, 2, 2, 0)).toEqual(new Date(2023, 1, 27)); // February 27, 2023 (Monday)
+      expect(findNthWeekdayOfSpecificYear(2023, 2, 3, 0)).toEqual(new Date(2023, 1, 27)); // February 27, 2023 (Monday)
+      expect(findNthWeekdayOfSpecificYear(2023, 2, 4, 0)).toEqual(new Date(2023, 1, 27)); // February 27, 2023 (Monday)
+      expect(findNthWeekdayOfSpecificYear(2023, 2, 5, 0)).toEqual(new Date(2023, 1, 27)); // February 27, 2023 (Monday)
     });
-
-    test('out of range', () => {
-        // Test for the 10th Monday of May 2023, which definitely doesn't exist, should return the last Monday
-        const result = findNthWeekdayOfSpecificYear(2023, 5, 10, 0);
-        const expected = new Date(2023, 4, 29);
-        expect(result).toEqual(expected);
-    });
-
-    test('first day is weekday', () => {
-        // Test for when the first day of the month is the weekday in question, 1st Tuesday of August 2023
-        const result = findNthWeekdayOfSpecificYear(2023, 8, 1, 1);
-        const expected = new Date(2023, 7, 1);
-        expect(result).toEqual(expected);
-    });
-
-    test('edge year transition', () => {
-        // Test for the 1st Friday of December 2023, checking the transition to a new year boundary condition
-        const result = findNthWeekdayOfSpecificYear(2023, 12, 1, 4);
-        const expected = new Date(2023, 11, 1);
-        expect(result).toEqual(expected);
-    });
-});
+  });

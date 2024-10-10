@@ -2,19 +2,12 @@
 #include <regex>
 #include <string>
 
-std::string replacePhoneNumbers(const std::string &text) {
-    // Define a regex pattern to match phone numbers
-    std::regex phonePattern(R"(\b(?:\+\d{1,2}\s?)?(\d{1,4}[-.\s]?)?\(?\d{1,4}\)?[-.\s]?\d{1,9}[-.\s]?\d{1,9}\b)");
-
-    // Replace all matches in the text with [PHONE_NUM]
-    std::string replacedText = std::regex_replace(text, phonePattern, "[PHONE_NUM]");
-
-    return replacedText;
-}
-
-int main() {
-    std::string text = "Contact me at +1-800-555-1234 or (123) 456 7890.";
-    std::string result = replacePhoneNumbers(text);
-    std::cout << result << std::endl;  // Output should be "Contact me at [PHONE_NUM] or [PHONE_NUM]."
-    return 0;
+std::string replace_phone_numbers(const std::string& text) {
+    // Define the regex pattern for phone numbers
+    std::regex phone_pattern(R"((\d{3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}))");
+    
+    // Replace phone numbers with "[PHONE_NUM]"
+    std::string result = std::regex_replace(text, phone_pattern, "[PHONE_NUM]");
+    
+    return result;
 }

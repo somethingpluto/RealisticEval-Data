@@ -1,0 +1,66 @@
+package org.real.temp;
+
+import java.util.BitSet;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
+public class BloomFilter {
+    private BitSet bitSet;
+    private int[] seeds;
+
+    public BloomFilter(int size, int hashCount) {
+        this.bitSet = new BitSet(size);
+        this.seeds = new int[hashCount];
+        
+        for (int i = 0; i < hashCount; i++) {
+            seeds[i] = i * 16777619 + 23333333; // Just some prime numbers
+        }
+    }
+
+    public void add(String item) {
+        byte[] bytes = item.getBytes();
+        for (int seed : seeds) {
+            MessageDigest digest = null;
+            try {
+                digest = MessageDigest.getInstance("MD5");
+            } catch (NoSuchAlgorithmException e) {
+                e.printStackTrace();
+            }
+            digest.update(bytes);
+            long hash = ((long)digest.digest()[i] & 0xFF) << 56 |
+                    ((long)digest.digest()[i+1] & 0xFF) << 48 |
+                    ((long)digest.digest()[i+2] & 0xFF) << 40 |
+                    ((long)digest.digest()[i+3] & 0xFF) << 32 |
+                    ((long)digest.digest()[i+4] & 0xFF) << 24 |
+                    ((long)digest.digest()[i+5] & 0xFF) << 16 |
+                    ((long)digest.digest()[i+6] & 0xFF) << 8 |
+                    ((long)digest.digest()[i+7] & 0xFF);
+            hash = hash % bitSet.size(); // To make sure it fits within the BitSet
+            bitSet.set((int)hash);
+        }
+    }
+
+    public boolean contains(String item) {
+        byte[] bytes = item.getBytes();
+        for (int seed : seeds) {
+            MessageDigest digest = null;
+            try {
+                digest = MessageDigest.getInstance("MD5");
+            } catch (NoSuchAlgorithmException e) {
+                e.printStackTrace();
+            }
+            digest.update(bytes);
+            long hash = ((long)digest.digest()[i] & 0xFF) << 56 |
+                    ((long)digest.digest()[i+1] & 0xFF) << 48 |
+                    ((long)digest.digest()[i+2] & 0xFF) << 40 |
+                    ((long)digest.digest()[i+3] & 0xFF) << 32 |
+                    ((long)digest.digest()[i+4] & 0xFF) << 24 |
+                    ((long)digest.digest()[i+5] & 0xFF) << 16 |
+                    ((long)digest.digest()[i+6] & 0xFF) << 8 |
+                    ((long)digest.digest()[i+7] & 0xFF);
+            hash = hash % bitSet.size();
+            if (!bitSet.get((int)hash)) return false;
+        }
+        return true;
+    }
+}
