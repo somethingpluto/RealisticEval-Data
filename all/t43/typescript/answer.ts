@@ -1,41 +1,41 @@
 function rgbToHsv(r: number, g: number, b: number): [number, number, number] {
-    // Normalize the RGB values by dividing by 255
-    r = r / 255.0;
-    g = g / 255.0;
-    b = b / 255.0;
+    /**
+     * Convert RGB color to HSV color.
+     * For example:
+     *      input: 0, 0, 255
+     *      output: 240, 100, 100
+     * Args:
+     *      r (number): rgb red value
+     *      g (number): rgb green value
+     *      b (number): rgb blue value
+     *
+     * Returns:
+     *    [number, number, number]: HSV value
+     */
     
-    // Find the minimum and maximum values among R, G, and B
-    const maxRgb = Math.max(r, g, b);
-    const minRgb = Math.min(r, g, b);
-    const delta = maxRgb - minRgb;
+    let max = Math.max(r, g, b);
+    let min = Math.min(r, g, b);
+    let delta = max - min;
+    let h = 0;
+    let s = 0;
+    let v = max;
 
-    let h: number;
-    let s: number;
-    const v: number = maxRgb;
-
-    // Calculate H (Hue)
     if (delta === 0) {
         h = 0;
-    } else if (maxRgb === r) {
-        h = ((g - b) / delta) % 6;
-    } else if (maxRgb === g) {
-        h = ((b - r) / delta) + 2;
     } else {
-        h = ((r - g) / delta) + 4;
+        switch(max){
+            case r: h = ((g - b) / delta) % 6; break;
+            case g: h = (b - r) / delta + 2; break;
+            case b: h = (r - g) / delta + 4; break;
+        }
+        h = Math.round(h * 60);
+
+        if (h < 0) {
+            h += 360;
+        }
     }
 
-    h *= 60;  // Convert to degrees on the color circle
-
-    if (h < 0) {
-        h += 360;  // Ensure hue is non-negative
-    }
-
-    // Calculate S (Saturation)
-    if (maxRgb === 0) {
-        s = 0;
-    } else {
-        s = delta / maxRgb;
-    }
+    s = Math.round((delta / max) * 100);
 
     return [h, s, v];
 }

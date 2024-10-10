@@ -1,62 +1,37 @@
-#define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
-#include "catch.hpp"
-#include <ctime>
-
-// Assuming findNthWeekdayOfSpecificYear function is implemented as in the previous conversion
-
-std::tm make_tm(int year, int month, int day) {
-    std::tm timeStruct = {};
-    timeStruct.tm_year = year - 1900;
-    timeStruct.tm_mon = month - 1;
-    timeStruct.tm_mday = day;
-    std::mktime(&timeStruct); // normalize
-    return timeStruct;
-}
-
-TEST_CASE("TestFindNthWeekdayOfSpecificYear") {
-
-    SECTION("test_regular_occurrence") {
-        // Test for the 2nd Monday of May 2023
-        std::tm result = findNthWeekdayOfSpecificYear(2023, 5, 2, 0);
-        std::tm expected = make_tm(2023, 5, 8);
-        REQUIRE(result.tm_year == expected.tm_year);
-        REQUIRE(result.tm_mon == expected.tm_mon);
-        REQUIRE(result.tm_mday == expected.tm_mday);
+TEST_CASE("Find Nth Weekday of Specific Year", "[weekday]") {
+    // Test Case 1: First Monday of April 2023
+    SECTION("First Monday of April 2023") {
+        auto result = find_nth_weekday_of_specific_year(2023, 4, 1, 0);
+        REQUIRE(result == datetime::date(2023, 4, 3)); // April 3, 2023 is the first Monday
     }
 
-    SECTION("test_last_occurrence") {
-        // Test for the 5th Monday of May 2023, which doesn't exist, should return the last Monday
-        std::tm result = findNthWeekdayOfSpecificYear(2023, 5, 5, 0);
-        std::tm expected = make_tm(2023, 5, 29);
-        REQUIRE(result.tm_year == expected.tm_year);
-        REQUIRE(result.tm_mon == expected.tm_mon);
-        REQUIRE(result.tm_mday == expected.tm_mday);
+    // Test Case 2: Second Wednesday of May 2023
+    SECTION("Second Wednesday of May 2023") {
+        auto result = find_nth_weekday_of_specific_year(2023, 5, 2, 2);
+        REQUIRE(result == datetime::date(2023, 5, 17)); // May 17, 2023 is the second Wednesday
     }
 
-    SECTION("test_out_of_range") {
-        // Test for the 10th Monday of May 2023, which definitely doesn't exist, should return the last Monday
-        std::tm result = findNthWeekdayOfSpecificYear(2023, 5, 10, 0);
-        std::tm expected = make_tm(2023, 5, 29);
-        REQUIRE(result.tm_year == expected.tm_year);
-        REQUIRE(result.tm_mon == expected.tm_mon);
-        REQUIRE(result.tm_mday == expected.tm_mday);
+    // Test Case 3: Third Friday of June 2023
+    SECTION("Third Friday of June 2023") {
+        auto result = find_nth_weekday_of_specific_year(2023, 6, 3, 4);
+        REQUIRE(result == datetime::date(2023, 6, 16)); // June 16, 2023 is the third Friday
     }
 
-    SECTION("test_first_day_is_weekday") {
-        // Test for when the first day of the month is the weekday in question, 1st Tuesday of August 2023
-        std::tm result = findNthWeekdayOfSpecificYear(2023, 8, 1, 1);
-        std::tm expected = make_tm(2023, 8, 1);
-        REQUIRE(result.tm_year == expected.tm_year);
-        REQUIRE(result.tm_mon == expected.tm_mon);
-        REQUIRE(result.tm_mday == expected.tm_mday);
+    // Test Case 4: Fourth Saturday of July 2023
+    SECTION("Fourth Saturday of July 2023") {
+        auto result = find_nth_weekday_of_specific_year(2023, 7, 4, 5);
+        REQUIRE(result == datetime::date(2023, 7, 29)); // July 29, 2023 is the fourth Saturday
     }
 
-    SECTION("test_edge_year_transition") {
-        // Test for the 1st Friday of December 2023, checking the transition to a new year boundary condition
-        std::tm result = findNthWeekdayOfSpecificYear(2023, 12, 1, 4);
-        std::tm expected = make_tm(2023, 12, 1);
-        REQUIRE(result.tm_year == expected.tm_year);
-        REQUIRE(result.tm_mon == expected.tm_mon);
-        REQUIRE(result.tm_mday == expected.tm_mday);
+    // Test Case 5: Fifth Sunday of August 2023
+    SECTION("Fifth Sunday of August 2023") {
+        auto result = find_nth_weekday_of_specific_year(2023, 8, 5, 6);
+        REQUIRE(result == datetime::date(2023, 8, 27)); // August 27, 2023 is the fifth Sunday
+    }
+
+    // Test Case 6: Non-existent occurrence, should return the last occurrence
+    SECTION("Non-existent occurrence, should return the last occurrence") {
+        auto result = find_nth_weekday_of_specific_year(2023, 2, 5, 0); // February 2023 has only 4 Mondays
+        REQUIRE(result == datetime::date(2023, 2, 20)); // Last Monday in February 2023
     }
 }

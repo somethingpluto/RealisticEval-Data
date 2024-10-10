@@ -1,26 +1,22 @@
+import { format } from 'date-fns';
+
 interface DateInfo {
     year: number;
     month: string;
-    weekOfTheMonth: number;
-    dayOfTheWeek: string;
+    weekOfMonth: number;
+    dayOfWeek: string;
 }
 
-function getCurrentDateInfo(testDate?: Date): DateInfo {
-    const today = testDate || new Date();
-
-    const year = today.getFullYear();
-    const month = today.toLocaleString('default', { month: 'long' });
-    const dayOfWeek = today.toLocaleString('default', { weekday: 'long' });
-
-    // Calculate the week of the month
-    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-    const firstDayWeekday = firstDayOfMonth.getDay();
-    const weekOfMonth = Math.ceil((today.getDate() + firstDayWeekday) / 7);
+function getCurrentDateInfo(testDate: Date = new Date()): DateInfo {
+    const year = testDate.getFullYear();
+    const month = format(testDate, 'MMMM');
+    const weekOfMonth = Math.ceil(testDate.getDate() / 7);
+    const dayOfWeek = format(testDate, 'dddd');
 
     return {
-        year: year,
-        month: month,
-        weekOfTheMonth: weekOfMonth,
-        dayOfTheWeek: dayOfWeek
+        year,
+        month,
+        weekOfMonth,
+        dayOfWeek
     };
 }

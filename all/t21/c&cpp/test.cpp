@@ -1,77 +1,35 @@
-#define CATCH_CONFIG_MAIN
-#include "catch.hpp"
-#include <fstream>
-#include <iostream>
-#include <stdexcept>
-#include <string>
-#include <vector>
+TEST_CASE("Compare files with no differences", "[compare_files]") {
+    std::ofstream file1("temp_file1.txt");
+    file1 << "Hello\nWorld";
+    file1.close();
 
-// Assume the `compareFiles` function is defined exactly as in the previous example
-std::vector<std::string> compareFiles(const std::string &file1Path, const std::string &file2Path);
+    std::ofstream file2("temp_file2.txt");
+    file2 << "Hello\nWorld";
+    file2.close();
 
-void writeFile(const std::string &filePath, const std::string &content) {
-    std::ofstream file(filePath);
-    if (!file.is_open()) {
-        throw std::runtime_error("Cannot open file: " + filePath);
-    }
-    file << content;
-    file.close();
+    auto result = compare_files("temp_file1.txt", "temp_file2.txt");
+
+    REQUIRE(result.empty());
+
+    remove("temp_file1.txt");
+    remove("temp_file2.txt");
 }
 
-void removeFile(const std::string &filePath) {
-    std::remove(filePath.c_str());
-}
+TEST_CASE("Compare files with differences", "[compare_files]") {
+    std::ofstream file1("temp_file1.txt");
+    file1 << "Hello\nWorld";
+    file1.close();
 
-TEST_CASE("TestCompareFiles") {
-    const std::string file1Path = "file1.txt";
-    const std::string file2Path = "file2.txt";
+    std::ofstream file2("temp_file2.txt");
+    file2 << "Hello\nUniverse";
+    file2.close();
 
-    SECTION("Identical files") {
-        std::string file1Content = "Line1\nLine2\nLine3\n";
-        std::string file2Content = "Line1\nLine2\nLine3\n";
+    auto result = compare_files("temp_file1.txt", "temp_file2.txt");
 
-        writeFile(file1Path, file1Content);
-        writeFile(file2Path, file2Content);
+    REQUIRE(result.size() == 4);
+    REQUIRE(result[0] == "World");
+    REQUIRE(result[1] == "Universe");
 
-        auto result = compareFiles(file1Path, file2Path);
-        REQUIRE(result.size() == 0);
-        
-        removeFile(file1Path);
-        removeFile(file2Path);
-    }
-
-    SECTION("Files with differences") {
-        std::string file1Content = "Line1\nLine2\nLine3\n";
-        std::string file2Content = "Line1\nLineChanged\nLine3\n";
-
-        writeFile(file1Path, file1Content);
-        writeFile(file2Path, file2Content);
-
-        auto result = compareFiles(file1Path, file2Path);
-        REQUIRE(result.size() != 0);
-        
-        removeFile(file1Path);
-        removeFile(file2Path);
-    }
-
-    SECTION("Nonexistent file") {
-        std::remove(file1Path.c_str());
-
-        REQUIRE_THROWS_AS(compareFiles("nonexistent.txt", "file2.txt"), std::runtime_error);
-
-        removeFile(file2Path);
-    }
-
-    SECTION("File reading error") {
-        // To simulate a file-reading error, we would need to set conditions that trigger an error, but in practice,
-        // it's not as straightforward to mock low-level file reading as it is in Python.
-        //
-        // For testing purposes, we can define a special test function that throws directly:
-        auto compareFilesWithError = [](const std::string &file1Path, const std::string &file2Path) -> std::vector<std::string> {
-            throw std::runtime_error("Error reading file");
-            return {};
-        };
-
-        REQUIRE_THROWS_AS(compareFilesWithError(file1Path, file2Path), std::runtime_error);
-    }
+    remove("temp_file1.txt");
+    remove("temp_file2.txt");
 }

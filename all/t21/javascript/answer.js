@@ -1,49 +1,24 @@
-const fs = require('fs');
-const { diffLines } = require('diff');
-
 function compareFiles(file1Path, file2Path) {
-    /**
-     * Compare the contents of two files and return the differences in unified diff format.
-     *
-     * Args:
-     * file1Path (string): Path to the first file.
-     * file2Path (string): Path to the second file.
-     *
-     * Returns:
-     * Array<string>: An array containing the lines of differences, if any.
-     *
-     * Throws:
-     * Error: If either file does not exist or there is an error reading the files.
-     */
-
-    let lines1, lines2;
     try {
-        lines1 = fs.readFileSync(file1Path, 'utf-8');
-        lines2 = fs.readFileSync(file2Path, 'utf-8');
-    } catch (error) {
-        if (error.code === 'ENOENT') {
-            throw new Error("One of the files was not found.");
-        } else {
-            throw new Error(`Error reading files: ${error.message}`);
-        }
-    }
+        const file1Content = fs.readFileSync(file1Path, 'utf8');
+        const file2Content = fs.readFileSync(file2Path, 'utf8');
 
-    const diff = diffLines(lines1, lines2);
-    const diffLinesArray = [];
+        // Split the content into lines
+        const lines1 = file1Content.split('\n');
+        const lines2 = file2Content.split('\n');
 
-    diff.forEach((part) => {
-        const prefix = part.added ? '+' : part.removed ? '-' : ' ';
-        part.value.split('\n').forEach((line) => {
-            if (line) {
-                const diffLine = `${prefix} ${line}`;
-                console.log(diffLine);
-                diffLinesArray.push(diffLine);
+        let result = [];
+
+        for(let i = 0; i < Math.max(lines1.length, lines2.length); i++) {
+            if (lines1[i] !== lines2[i]) {
+                result.push(`-${lines1[i]}`);
+                result.push(`+${lines2[i]}`);
             }
-        });
-    });
+        }
 
-    return diffLinesArray;
+        return result;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
 }
-
-// Example usage:
-// compareFiles('path/to/file1.txt', 'path/to/file2.txt');

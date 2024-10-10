@@ -1,27 +1,18 @@
-function stringSideBySide(string1: string, string2: string, columnWidth: number = 20): string {
-    const lines1 = string1.split("\n");
-    const lines2 = string2.split("\n");
-
-    const maxLength = Math.max(lines1.length, lines2.length);
-
-    // Create arrays with the padded lines
-    const paddedLines1 = Array.from({ length: maxLength }, (_, i) =>
-        i < lines1.length ? lines1[i] : ""
-    );
-    const paddedLines2 = Array.from({ length: maxLength }, (_, i) =>
-        i < lines2.length ? lines2[i] : ""
-    );
-
-    // Format and concatenate lines
-    const formattedLines = paddedLines1.map((line1, i) => {
-        const line2 = paddedLines2[i];
-        return `${line1.padEnd(columnWidth)} | ${line2.padEnd(columnWidth)}`;
-    });
-
-    // Join all formatted lines into a single string
-    return formattedLines.join("\n");
+function alignLinesLeft(str1: string, str2: string): [string, string] {
+    /**
+     * Align two lines of string to the left, supplementing with Spaces if the length is not enough
+     *
+     * @param {string} str1 - The first string
+     * @param {string} str2 - The second string
+     * @returns {[string, string]} - Aligned str1 and str2
+     */
+    
+    // Determine the maximum length between the two strings
+    const maxLength = Math.max(str1.length, str2.length);
+    
+    // Pad both strings with spaces to match the maximum length
+    const paddedStr1 = str1.padEnd(maxLength);
+    const paddedStr2 = str2.padEnd(maxLength);
+    
+    return [paddedStr1, paddedStr2];
 }
-
-// Example usage
-const result = stringSideBySide("Hello\nWorld", "Side\nBy\nSide");
-console.log(result);

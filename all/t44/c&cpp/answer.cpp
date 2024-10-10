@@ -1,47 +1,16 @@
 #include <iostream>
-#include <sstream>
 #include <string>
-#include <vector>
-#include <iomanip>
+#include <algorithm>
 
-// Helper function to split a string into lines
-std::vector<std::string> splitLines(const std::string &str) {
-    std::vector<std::string> lines;
-    std::istringstream stream(str);
-    std::string line;
-    while (std::getline(stream, line)) {
-        lines.push_back(line);
-    }
-    return lines;
-}
-
-// Function to display two strings side by side
-std::string stringSideBySide(const std::string &string1, const std::string &string2, int columnWidth = 20) {
-    std::vector<std::string> lines1 = splitLines(string1);
-    std::vector<std::string> lines2 = splitLines(string2);
-
-    size_t maxLength = std::max(lines1.size(), lines2.size());
-    lines1.resize(maxLength, "");  // Pad lines1 with empty strings if necessary
-    lines2.resize(maxLength, "");  // Pad lines2 with empty strings if necessary
-
-    std::ostringstream resultStream;
+std::pair<std::string, std::string> alignLinesLeft(const std::string& str1, const std::string& str2) {
+    size_t maxLength = std::max(str1.length(), str2.length());
     
-    for (size_t i = 0; i < maxLength; ++i) {
-        resultStream << std::left << std::setw(columnWidth) << lines1[i] 
-                     << " | " 
-                     << std::left << std::setw(columnWidth) << lines2[i] 
-                     << '\n';
-    }
+    // Create new strings with padding
+    std::string paddedStr1 = str1;
+    std::string paddedStr2 = str2;
 
-    return resultStream.str();
-}
+    paddedStr1.resize(maxLength);
+    paddedStr2.resize(maxLength);
 
-int main() {
-    std::string string1 = "This is the first string.\nIt has multiple lines.";
-    std::string string2 = "Second string example.\nWith some lines too.";
-
-    std::string result = stringSideBySide(string1, string2);
-    std::cout << result;
-    
-    return 0;
+    return {paddedStr1, paddedStr2};
 }
