@@ -1,68 +1,126 @@
-To convert your Python unittest test class to a C++ test case using Catch2, you need to define a test suite and write test cases within it. Below is an example of how you can translate a hypothetical unittest test class into a Catch2 test case. Note that I'll assume you have a corresponding function `convertImageToBits` in C++ that performs the same operation as your Python function.
+Certainly! Let's convert the provided Python unittest test class into an equivalent test class using Catch2 in C++. We will ensure that the functionality and logic of the tests are preserved, making any necessary adjustments for language differences between Python and C++.
 
-### Python Unittest Test Class Example
+### Python Unittest Code
+
 ```python
 import unittest
 from PIL import Image
-import io
 
-class TestConvertImageToBits(unittest.TestCase):
-    def test_convert_image_to_bits(self):
-        # Create a simple white image
-        img = Image.new('L', (2, 2), color=255)
-        img_byte_arr = io.BytesIO()
-        img.save(img_byte_arr, format='PNG')
-        img_byte_arr = img_byte_arr.getvalue()
+def convert_image_to_bits(image_path: str):
+    """
+    Converts an image to a binary representation. Convert the image to black and white mode, that is, each pixel is represented by only 1 bit, with a white pixel value of 255 and a black pixel value of 0.
 
-        expected_result = [1, 1, 1, 1]
-        result = convert_image_to_bits(io.BytesIO(img_byte_arr))
+    Args:
+        image_path (str): The file path of the image to convert.
 
-        self.assertEqual(result, expected_result)
+    Returns:
+        list: A list of bits representing the image, where 1 is for white pixels and 0 is for black pixels.
+    """
+    image = Image.open(image_path)
+    image = image.convert('1')
+    pixel_data = image.load()
+    w, h = image.size
+    bits_array = []
+    for y in range(h):
+        for x in range(w):
+            pixel = pixel_data[x, y]
+            bit = 1 if pixel == 255 else 0
+            bits_array.append(bit)
+    return bits_array
+
+class TestImageConversion(unittest.TestCase):
+
+    def test_conversion(self):
+        image_path = 'path/to/test_image.png'
+        expected_bits = [1, 0, 1, 0, 1, 0, 1, 0]  # Example expected bits
+        actual_bits = convert_image_to_bits(image_path)
+        self.assertEqual(actual_bits, expected_bits)
 
 if __name__ == '__main__':
     unittest.main()
 ```
 
-### Corresponding C++ Test Case Using Catch2
-First, ensure you have Catch2 installed. If not, you can install it via vcpkg or manually download it from its GitHub repository.
+### C++ Catch2 Test Class
 
-Here's how you might write the equivalent C++ test case:
+Here is the equivalent C++ code using Catch2 for testing the `convert_image_to_bits` function:
 
 ```cpp
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <vector>
-#include <memory>
-#include "image_converter.h" // Assuming this is where your convertImageToBits function is defined
+#include <string>
+#include <CImg.h>
 
-// Mock implementation of convertImageToBits for testing purposes
-std::vector<int> convertImageToBits(const std::string& image_path) {
-    // This is just a placeholder. Replace it with actual logic if needed.
-    return {1, 1, 1, 1};
+using namespace std;
+using namespace cimg_library;
+
+/**
+ * Converts an image to a binary representation.
+ * Convert the image to black and white mode, that is, each pixel is represented by only 1 bit,
+ * with a white pixel value of 255 and a black pixel value of 0.
+ *
+ * @param image_path The file path of the image to convert.
+ * @return A vector of bits representing the image, where 1 is for white pixels and 0 is for black pixels.
+ */
+vector<int> convert_image_to_bits(const string& image_path) {
+    CImg<unsigned char> image(image_path);
+    image.resize(image.width(), image.height(), 1, 1, 1); // Convert to grayscale
+    image.normalize(0, 255); // Normalize the image values between 0 and 255
+
+    vector<int> bits_array;
+
+    int w = image.width();
+    int h = image.height();
+
+    for (int y = 0; y < h; ++y) {
+        for (int x = 0; x < w; ++x) {
+            unsigned char pixel = image(x, y);
+            int bit = (pixel == 255) ? 1 : 0;
+            bits_array.push_back(bit);
+        }
+    }
+
+    return bits_array;
 }
 
-TEST_CASE("Convert image to bits", "[image_conversion]") {
-    // Create a simple white image
-    auto img = std::make_unique<Image>(2, 2); // Assuming Image is a class that represents an image
-    img->fill(255);
+TEST_CASE("Test conversion of image to bits", "[image_conversion]") {
+    const string image_path = "path/to/test_image.png";
+    const vector<int> expected_bits = {1, 0, 1, 0, 1, 0, 1, 0};  // Example expected bits
+    vector<int> actual_bits = convert_image_to_bits(image_path);
 
-    // Convert the image to a byte array
-    std::vector<unsigned char> img_byte_arr;
-    img->save(img_byte_arr);
+    REQUIRE(actual_bits == expected_bits);
+}
 
-    // Call the function under test
-    std::vector<int> result = convertImageToBits("dummy_path"); // Use a dummy path for simplicity
-
-    // Define the expected result
-    std::vector<int> expected_result = {1, 1, 1, 1};
-
-    // Check if the result matches the expected result
-    REQUIRE(result == expected_result);
+int main(int argc, char* argv[]) {
+    return Catch::Session().run(argc, argv);
 }
 ```
 
-### Explanation
-1. **Mock Implementation**: In the C++ version, we mock the `convertImageToBits` function because we don't want to actually create and save images during tests. Replace this with the actual implementation once you have one.
-2. **Image Representation**: Assume there's an `Image` class that represents an image and has methods like `fill` and `save`. Adjust this according to your actual implementation.
-3. **Catch2 Test Case**: We use the `TEST_CASE` macro to define a test case named "Convert image to bits". Inside the test case, we create a simple white image, convert it to a byte array, call the `convertImageToBits` function, and then check if the result matches the expected result using `REQUIRE`.
+### Explanation:
 
-Make sure to include the necessary headers and link against the Catch2 library when compiling your C++ code.
+1. **Header Files**:
+   - `#include <catch2/catch_test_macros.hpp>` for Catch2 testing macros.
+   - `#include <vector>` for using vectors.
+   - `#include <string>` for using strings.
+   - `#include <CImg.h>` for image processing with CImg.
+
+2. **Using Directives**:
+   - `using namespace std;` for standard C++ libraries.
+   - `using namespace cimg_library;` for the CImg library.
+
+3. **Function Documentation**:
+   - The function `convert_image_to_bits` includes a multi-line comment block (`/* ... */`) that describes the purpose, arguments, and return value of the function.
+
+4. **Function Implementation**:
+   - The function `convert_image_to_bits` takes a `const string&` parameter `image_path` which represents the file path of the image.
+   - It loads the image using `CImg<unsigned char> image(image_path);`.
+   - It converts the image to grayscale and normalizes the pixel values to be between 0 and 255.
+   - It iterates over each pixel and appends the binary value (1 for white, 0 for black) to the `bits_array`.
+
+5. **Catch2 Test Case**:
+   - The `TEST_CASE` macro defines a test case named "Test conversion of image to bits".
+   - The test case sets up an expected bits array and compares it with the actual bits array returned by `convert_image_to_bits` using `REQUIRE(actual_bits == expected_bits)`.
+
+6. **Main Function**:
+   - The `main` function runs the Catch2 test session.
+
+This translation preserves the original purpose and structure of the Python code while adapting it to C++ conventions and syntax, ensuring that the tests are equivalent and functional.

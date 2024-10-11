@@ -1,85 +1,85 @@
-To convert your Python unittest test class into a C++ test case using Catch2, you need to follow these steps:
+Certainly! Below is the equivalent C++ test class using the Catch2 testing framework. The provided Python unittest class will be converted into a Catch2 test suite, ensuring that the functionality and logic of the tests are preserved.
 
-1. **Include Catch2**: Make sure you have Catch2 included in your project.
-2. **Define Your Function**: Ensure your function `are_siblings` is correctly defined in C++.
-3. **Write Test Cases**: Use Catch2's syntax to write test cases.
+First, make sure you have the Catch2 library included in your project. You can install it via vcpkg or another package manager, or include it directly in your project.
 
-Here’s how you can do it:
-
-### Step 1: Include Catch2
-
-Make sure you have Catch2 installed. If you're using CMake, you can add it like this:
-
-```cmake
-find_package(Catch2 REQUIRED)
-target_link_libraries(your_target PRIVATE Catch2::Catch2)
-```
-
-### Step 2: Define Your Function
-
-Your function `are_siblings` should be implemented in C++. Here’s how you can define it:
+Here is the complete C++ code with the test class:
 
 ```cpp
+#include <catch2/catch_test_macros.hpp>
 #include <vector>
-#include <iostream>
+#include <algorithm>
 
+// Function to determine if two values are siblings in a binary tree represented as a vector.
 bool are_siblings(const std::vector<int>& tree, int val1, int val2) {
-    // Implementation of the function goes here
-    // This is just a placeholder implementation
-    return false;
+    // A node cannot be a sibling to itself
+    if (val1 == val2) {
+        return false;
+    }
+
+    // Find indices of the values
+    auto it1 = std::find(tree.begin(), tree.end(), val1);
+    auto it2 = std::find(tree.begin(), tree.end(), val2);
+
+    // If either value is not found in the tree
+    if (it1 == tree.end() || it2 == tree.end()) {
+        return false;
+    }
+
+    // Calculate the indices of the values
+    size_t index1 = std::distance(tree.begin(), it1);
+    size_t index2 = std::distance(tree.begin(), it2);
+
+    // Check if they have the same parent
+    return (index1 - 1) / 2 == (index2 - 1) / 2 && index1 != index2;
+}
+
+TEST_CASE("Test are_siblings function", "[are_siblings]") {
+    SECTION("Sibling check with valid siblings") {
+        std::vector<int> tree = {1, 2, 3, 4, 5, 6, 7};
+        REQUIRE(are_siblings(tree, 4, 5) == true);
+    }
+
+    SECTION("Sibling check with non-siblings") {
+        std::vector<int> tree = {1, 2, 3, 4, 5, 6, 7};
+        REQUIRE(are_siblings(tree, 4, 6) == false);
+    }
+
+    SECTION("Sibling check with self") {
+        std::vector<int> tree = {1, 2, 3, 4, 5, 6, 7};
+        REQUIRE(are_siblings(tree, 4, 4) == false);
+    }
+
+    SECTION("Sibling check with missing value") {
+        std::vector<int> tree = {1, 2, 3, 4, 5, 6, 7};
+        REQUIRE(are_siblings(tree, 8, 9) == false);
+    }
+}
+
+int main(int argc, char* argv[]) {
+    // Run Catch2 tests
+    return Catch::Session().run(argc, argv);
 }
 ```
 
-### Step 3: Write Test Cases
+### Explanation:
+1. **Catch2 Headers**:
+   - `#include <catch2/catch_test_macros.hpp>` includes the necessary Catch2 headers for writing tests.
 
-Now, let's write some test cases using Catch2:
+2. **Function Definition**:
+   - The `are_siblings` function is defined as before, with the same logic and structure.
 
-```cpp
-#define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
-#include "catch.hpp"
+3. **Test Class**:
+   - The `TEST_CASE` macro defines a test case named "Test are_siblings function".
+   - Each `SECTION` defines a specific test scenario.
+   - `REQUIRE` is used to assert the expected behavior of the `are_siblings` function.
 
-// Forward declaration of the function
-bool are_siblings(const std::vector<int>& tree, int val1, int val2);
+4. **Test Scenarios**:
+   - **Sibling check with valid siblings**: Tests whether 4 and 5 are siblings.
+   - **Sibling check with non-siblings**: Tests whether 4 and 6 are not siblings.
+   - **Sibling check with self**: Tests whether a node is not a sibling of itself.
+   - **Sibling check with missing value**: Tests whether values not in the tree are considered non-siblings.
 
-TEST_CASE("Siblings Test Cases", "[siblings]") {
-    SECTION("Both values not in the tree") {
-        std::vector<int> tree = {1, 2, 3};
-        REQUIRE(!are_siblings(tree, 4, 5));
-    }
+5. **Main Function**:
+   - The `main` function runs the Catch2 tests using `Catch::Session().run(argc, argv)`.
 
-    SECTION("One value not in the tree") {
-        std::vector<int> tree = {1, 2, 3};
-        REQUIRE(!are_siblings(tree, 1, 5));
-    }
-
-    SECTION("Values are siblings") {
-        std::vector<int> tree = {1, 2, 3, 4, 5};
-        REQUIRE(are_siblings(tree, 2, 3));
-    }
-
-    SECTION("Values are not siblings") {
-        std::vector<int> tree = {1, 2, 3, 4, 5};
-        REQUIRE(!are_siblings(tree, 2, 5));
-    }
-}
-
-// Implementation of the function (placeholder)
-bool are_siblings(const std::vector<int>& tree, int val1, int val2) {
-    // Placeholder implementation
-    // In a real scenario, you would implement the logic to determine if two values are siblings
-    return false;
-}
-```
-
-### Explanation
-
-- **CATCH_CONFIG_MAIN**: This macro tells Catch2 to generate the main function.
-- **#include "catch.hpp"**: This includes the Catch2 header file.
-- **TEST_CASE** and **SECTION**: These macros are used to define test cases and sections within those test cases.
-- **REQUIRE**: This macro asserts that a condition must be true; if it's not, the test will fail.
-
-### Running the Tests
-
-To run the tests, compile your project with the Catch2 library and execute the resulting executable. If everything is set up correctly, Catch2 will automatically discover and run all the tests.
-
-This is a basic example to get you started. Depending on the complexity of your function, you might need to adjust the test cases accordingly.
+This C++ code ensures that the functionality and logic of the tests are preserved, using appropriate assertions and test scenarios provided by Catch2.

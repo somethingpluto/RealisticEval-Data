@@ -1,38 +1,199 @@
-Sure, here's how you can convert your Python unittest test class to TypeScript using Jest:
+Certainly! Below is the equivalent TypeScript code for the provided Python unittest test class, converted to use Jest for testing. The test cases will be written to ensure that the functionality and logic of the tests are preserved.
+
+### Python Code
+
+```python
+import unittest
+import numpy as np
+
+def create_rot_matrix(angle_deg: float, axis: str) -> np.ndarray:
+    """
+    Create a pose matrix representing a rotation about a given axis.
+
+    Args:
+        angle_deg (float): Rotation angle in degrees.
+        axis (str): Axis to rotate about, must be one of 'X', 'Y', or 'Z'.
+
+    Returns:
+        numpy.ndarray: 4x4 pose matrix representing the rotation.
+    """
+    angle_rad = np.deg2rad(angle_deg)
+
+    if axis.upper() == 'X':
+        rotation_matrix = np.array([
+            [1, 0, 0, 0],
+            [0, np.cos(angle_rad), -np.sin(angle_rad), 0],
+            [0, np.sin(angle_rad), np.cos(angle_rad), 0],
+            [0, 0, 0, 1]
+        ])
+    elif axis.upper() == 'Y':
+        rotation_matrix = np.array([
+            [np.cos(angle_rad), 0, np.sin(angle_rad), 0],
+            [0, 1, 0, 0],
+            [-np.sin(angle_rad), 0, np.cos(angle_rad), 0],
+            [0, 0, 0, 1]
+        ])
+    elif axis.upper() == 'Z':
+        rotation_matrix = np.array([
+            [np.cos(angle_rad), -np.sin(angle_rad), 0, 0],
+            [np.sin(angle_rad), np.cos(angle_rad), 0, 0],
+            [0, 0, 1, 0],
+            [0, 0, 0, 1]
+        ])
+    else:
+        raise ValueError("Invalid axis. Must be one of 'X', 'Y', or 'Z'.")
+
+    return rotation_matrix
+
+class TestRotationMatrix(unittest.TestCase):
+
+    def test_create_rot_matrix_x_axis(self):
+        angle_deg = 90
+        expected_matrix = np.array([
+            [1, 0, 0, 0],
+            [0, 0, -1, 0],
+            [0, 1, 0, 0],
+            [0, 0, 0, 1]
+        ])
+        actual_matrix = create_rot_matrix(angle_deg, 'X')
+        self.assertTrue(np.allclose(actual_matrix, expected_matrix))
+
+    def test_create_rot_matrix_y_axis(self):
+        angle_deg = 90
+        expected_matrix = np.array([
+            [0, 0, 1, 0],
+            [0, 1, 0, 0],
+            [-1, 0, 0, 0],
+            [0, 0, 0, 1]
+        ])
+        actual_matrix = create_rot_matrix(angle_deg, 'Y')
+        self.assertTrue(np.allclose(actual_matrix, expected_matrix))
+
+    def test_create_rot_matrix_z_axis(self):
+        angle_deg = 90
+        expected_matrix = np.array([
+            [0, -1, 0, 0],
+            [1, 0, 0, 0],
+            [0, 0, 1, 0],
+            [0, 0, 0, 1]
+        ])
+        actual_matrix = create_rot_matrix(angle_deg, 'Z')
+        self.assertTrue(np.allclose(actual_matrix, expected_matrix))
+
+    def test_invalid_axis(self):
+        with self.assertRaises(ValueError):
+            create_rot_matrix(90, 'W')
+
+if __name__ == '__main__':
+    unittest.main()
+```
+
+### TypeScript Code with Jest Tests
 
 ```typescript
 import { expect } from '@jest/globals';
-import * as np from 'numpy';
+import * as math from 'mathjs';
 
-describe('create_rot_matrix', () => {
-    it('should return a 4x4 pose matrix for X-axis rotation', () => {
+/**
+ * Create a pose matrix representing a rotation about a given axis.
+ *
+ * @param angleDeg - Rotation angle in degrees.
+ * @param axis - Axis to rotate about, must be one of 'X', 'Y', or 'Z'.
+ * @returns A 4x4 pose matrix representing the rotation.
+ */
+function createRotMatrix(angleDeg: number, axis: 'X' | 'Y' | 'Z'): number[][] {
+    // Convert angle from degrees to radians
+    const angleRad = math.unit(angleDeg, 'deg').toNumber('rad');
+
+    // Define the rotation matrix based on the specified axis
+    let rotationMatrix: number[][];
+
+    switch (axis.toUpperCase()) {
+        case 'X':
+            rotationMatrix = [
+                [1, 0, 0, 0],
+                [0, math.cos(angleRad), -math.sin(angleRad), 0],
+                [0, math.sin(angleRad), math.cos(angleRad), 0],
+                [0, 0, 0, 1]
+            ];
+            break;
+        case 'Y':
+            rotationMatrix = [
+                [math.cos(angleRad), 0, math.sin(angleRad), 0],
+                [0, 1, 0, 0],
+                [-math.sin(angleRad), 0, math.cos(angleRad), 0],
+                [0, 0, 0, 1]
+            ];
+            break;
+        case 'Z':
+            rotationMatrix = [
+                [math.cos(angleRad), -math.sin(angleRad), 0, 0],
+                [math.sin(angleRad), math.cos(angleRad), 0, 0],
+                [0, 0, 1, 0],
+                [0, 0, 0, 1]
+            ];
+            break;
+        default:
+            throw new Error("Invalid axis. Must be one of 'X', 'Y', or 'Z'.");
+    }
+
+    return rotationMatrix;
+}
+
+describe('createRotMatrix', () => {
+    it('should create a rotation matrix for X axis', () => {
         const angleDeg = 90;
-        const axis = 'X';
-        const result = create_rot_matrix(angleDeg, axis);
-        
-        // Assuming create_rot_matrix is defined somewhere and returns a 4x4 matrix
-        expect(result).toBeInstanceOf(np.ndarray);
-        expect(result.shape).toEqual([4, 4]);
+        const expectedMatrix = [
+            [1, 0, 0, 0],
+            [0, 0, -1, 0],
+            [0, 1, 0, 0],
+            [0, 0, 0, 1]
+        ];
+        const actualMatrix = createRotMatrix(angleDeg, 'X');
+        expect(actualMatrix).toEqual(expectedMatrix);
     });
 
-    it('should return a 4x4 pose matrix for Y-axis rotation', () => {
-        const angleDeg = 180;
-        const axis = 'Y';
-        const result = create_rot_matrix(angleDeg, axis);
-        
-        expect(result).toBeInstanceOf(np.ndarray);
-        expect(result.shape).toEqual([4, 4]);
+    it('should create a rotation matrix for Y axis', () => {
+        const angleDeg = 90;
+        const expectedMatrix = [
+            [0, 0, 1, 0],
+            [0, 1, 0, 0],
+            [-1, 0, 0, 0],
+            [0, 0, 0, 1]
+        ];
+        const actualMatrix = createRotMatrix(angleDeg, 'Y');
+        expect(actualMatrix).toEqual(expectedMatrix);
     });
 
-    it('should return a 4x4 pose matrix for Z-axis rotation', () => {
-        const angleDeg = -30;
-        const axis = 'Z';
-        const result = create_rot_matrix(angleDeg, axis);
-        
-        expect(result).toBeInstanceOf(np.ndarray);
-        expect(result.shape).toEqual([4, 4]);
+    it('should create a rotation matrix for Z axis', () => {
+        const angleDeg = 90;
+        const expectedMatrix = [
+            [0, -1, 0, 0],
+            [1, 0, 0, 0],
+            [0, 0, 1, 0],
+            [0, 0, 0, 1]
+        ];
+        const actualMatrix = createRotMatrix(angleDeg, 'Z');
+        expect(actualMatrix).toEqual(expectedMatrix);
+    });
+
+    it('should throw an error for invalid axis', () => {
+        expect(() => createRotMatrix(90, 'W')).toThrow('Invalid axis. Must be one of \'X\', \'Y\', or \'Z\'.');
     });
 });
+
+// Example usage
+const angleDeg = 90;
+const axis = 'X';
+const rotMatrix = createRotMatrix(angleDeg, axis);
+console.log(rotMatrix);
 ```
 
-Please note that the `numpy` package might not work directly with TypeScript. You would need to find a compatible library like `@types/numpy` or use another library that provides similar functionality in TypeScript. If you don't have access to such libraries, you may need to mock the `numpy` functions or use a different approach to validate the output of your function.
+### Explanation:
+1. **Imports**: We import `expect` from `@jest/globals` and `mathjs` for mathematical operations.
+2. **Function Definition**: The `createRotMatrix` function is defined with proper type annotations and logic.
+3. **Jest Testing**: The `describe` block sets up the test suite, and each `it` block defines a specific test case.
+4. **Assertions**: We use `expect` and `toEqual` for array equality checks and `toThrow` for error checking.
+5. **Example Usage**: Provided example usage demonstrates how to call the function and print the result.
+
+This code ensures that the functionality, structure, and logic of the tests are preserved while adhering to TypeScript and Jest conventions.

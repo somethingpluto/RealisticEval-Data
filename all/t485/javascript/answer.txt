@@ -1,27 +1,52 @@
-Here's the equivalent JavaScript code for your Python function:
+Certainly! Below is the equivalent JavaScript code that replicates the functionality and logic of the provided Python code:
 
 ```javascript
-function prepareQuery(sql, params) {
-    const regex = /\$[a-zA-Z_][a-zA-Z0-9_]*/g;
-    let matches = sql.match(regex);
-    
-    if (!matches || !params) return [sql, []];
+const prepareQuery = (sql, params) => {
+    /**
+     * This function modifies a SQL query string containing named parameters
+     * (like $name, $age) into a format compatible with libraries that require
+     * positional parameters (like $1, $2, etc.), such as asyncpg. It returns
+     * a tuple containing the modified SQL string and a list of parameter values
+     * ordered according to their new positions in the query.
+     *
+     * @param {string} sql - The original SQL query string with named parameters.
+     * @param {Object} params - A dictionary mapping parameter names to their values.
+     *
+     * @returns {Array} - An array where the first element is the modified SQL query string
+     *                    with positional parameters, and the second element is an array of
+     *                    parameter values sorted according to the order of the positional parameters.
+     */
 
-    let newSql = sql;
-    let paramValues = [];
+    // Find all occurrences of named parameters in the SQL string
+    const namedParams = sql.match(/\$(\w+)/g).map(match => match.slice(1));
 
-    matches.forEach((match, index) => {
-        let paramName = match.slice(1); // Remove the '$' character
-        if (params.hasOwnProperty(paramName)) {
-            newSql = newSql.replace(match, `$${index + 1}`);
-            paramValues.push(params[paramName]);
-        } else {
-            console.warn(`Parameter ${paramName} not found in params`);
-        }
-    });
+    // Remove duplicates while preserving order
+    const uniqueParams = [...new Set(namedParams)];
 
-    return [newSql, paramValues];
-}
+    // Substitute each named parameter with its corresponding positional parameter
+    for (let index = 0; index < uniqueParams.length; index++) {
+        const param = uniqueParams[index];
+        sql = sql.replace(new RegExp(`\\$${param}`, 'g'), `$${index + 1}`);
+    }
+
+    // Prepare the list of values corresponding to the order of the positional parameters
+    const values = uniqueParams.map(param => params[param]).filter(value => value !== undefined);
+
+    return [sql, values];
+};
+
+// Example usage
+const sql = "SELECT * FROM users WHERE name = $name AND age = $age";
+const params = { name: 'Alice', age: 30 };
+
+console.log(prepareQuery(sql, params));
 ```
 
-This JavaScript function works similarly to your Python function. It takes an SQL query string and a parameter object as inputs and returns a tuple containing the modified SQL query string with positional parameters and a list of parameter values sorted according to their new positions in the query. If a parameter from the `params` object is not found in the SQL query, it logs a warning message.
+### Explanation:
+1. **Finding Named Parameters**: Uses `match` with a regular expression to find all named parameters in the SQL string and maps them to extract the parameter names.
+2. **Removing Duplicates**: Converts the array to a set and back to an array to remove any duplicate named parameters while preserving the order.
+3. **Substituting Parameters**: Replaces each named parameter with its corresponding positional parameter using `replace` with a global regex.
+4. **Preparing Values**: Maps over the unique parameters to get their values from the `params` object and filters out any undefined values.
+5. **Returning the Result**: Returns the modified SQL string and the list of values as an array.
+
+This JavaScript code should provide the same functionality as the Python code you provided.

@@ -1,0 +1,76 @@
+To convert the provided JavaScript Jest test cases into Python's unittest framework, you can follow the structure outlined below. This Python code will define a test class, with individual test methods corresponding to each test case.
+Here's how the conversion looks:
+python
+import unittest
+
+def is_cron_between_2_and_4_am(cron_expression: str) -> bool:
+    """
+    Parse a cron expression and determine whether it is between 2 a.m. and 4 a.m.
+
+    Args:
+        cron_expression (str): The cron expression to parse.
+
+    Returns:
+        bool: True if any hour in the cron expression is between 2 a.m. and 4 a.m., False otherwise.
+    """
+    # Split the cron expression by spaces
+    parts = cron_expression.split(' ')
+    
+    # Get the hour part (second part in the cron expression)
+    hour_part = parts[1]
+    
+    # Handle ranges
+    if '-' in hour_part:
+        ranges = hour_part.split(',')
+        hours = []
+        for r in ranges:
+            if '-' in r:
+                start, end = map(int, r.split('-'))
+                hours.extend(range(start, end + 1))
+            else:
+                hours.append(int(r))
+        return any(2 <= hour < 4 for hour in hours)
+    
+    # Split the hour part by comma and convert it to a list of integers
+    hours = list(map(int, hour_part.split(',')))
+    
+    # Check if any hour is between 2 (inclusive) and 4 (exclusive)
+    return any(2 <= hour < 4 for hour in hours)
+
+
+class TestIsCronBetween2And4AM(unittest.TestCase):
+
+    def test_specific_hours(self):
+        """should return true for specific hours 2, 3, and 4"""
+        self.assertTrue(is_cron_between_2_and_4_am('0 2,3,4 * * *'))
+
+    def test_range_includes_2_to_4_am(self):
+        """should return false for range that includes 2 to 4 a.m."""
+        self.assertFalse(is_cron_between_2_and_4_am('0 1-5 * * *'))
+
+    def test_range_excludes_2_to_4_am(self):
+        """should return false for range that excludes 2 to 4 a.m."""
+        self.assertFalse(is_cron_between_2_and_4_am('0 0-1,5-23 * * *'))
+
+    def test_wildcard_in_hour_field(self):
+        """should return false for wildcard in hour field"""
+        self.assertFalse(is_cron_between_2_and_4_am('0 * * * *'))
+
+# Run the tests
+if __name__ == '__main__':
+    unittest.main()
+Explanation:
+Function Definition: The function is_cron_between_2_and_4_am is defined first, which includes additional logic to handle ranges (like 1-5) in the hour field of the cron expression.
+Test Class: A test class TestIsCronBetween2And4AM is created, inheriting from unittest.TestCase.
+Test Methods: Each test case from the JavaScript code has a corresponding method in Python:
+test_specific_hours: Tests specific hours (2, 3, 4).
+test_range_includes_2_to_4_am: Tests a range that includes hours 2 to 4.
+test_range_excludes_2_to_4_am: Tests a range that excludes hours 2 to 4.
+test_wildcard_in_hour_field: Tests a wildcard in the hour field.
+Assertions: Each test method uses self.assertTrue or self.assertFalse to check the expected results.
+Main Block: The if __name__ == '__main__': block runs the tests when the script is executed.
+Running the Tests
+You can run the tests by saving the code into a .py file and executing it using Python:
+bash
+python your_test_file.py
+Make sure to replace your_test_file.py with the actual name of your Python file. The output will indicate whether the tests passed or failed.

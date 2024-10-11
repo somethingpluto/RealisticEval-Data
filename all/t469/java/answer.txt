@@ -1,21 +1,52 @@
-Here is the equivalent Java code for your Python function:
+Here is the equivalent Java code for the provided Python code, organized within the package `org.real.temp` and the class `Answer`. This Java code maintains the same functionality, including handling type declarations, method signatures, and object-oriented principles.
 
 ```java
 package org.real.temp;
 
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.factory.Nd4j;
+
 public class Answer {
-    
-    public static double[] getScale(double[][] matrix) {
-        if (matrix.length != 3 || matrix[0].length != 3 || matrix[1].length != 3 || matrix[2].length != 3) {
-            throw new IllegalArgumentException("Input must be a 3x3 matrix");
+
+    /**
+     * Given a 3x3 affine transformation matrix, return the corresponding scaling factors
+     * along the x and y axes.
+     *
+     * @param matrix A 3x3 affine transformation matrix.
+     * @return A double array containing the scale factors [scale_x, scale_y].
+     */
+    public static double[] getScale(INDArray matrix) {
+        // Ensure the matrix is a 3x3 INDArray
+        if (matrix == null || matrix.rows() != 3 || matrix.columns() != 3) {
+            throw new IllegalArgumentException("Input must be a 3x3 affine transformation matrix.");
         }
-        
-        double scaleX = Math.sqrt(Math.pow(matrix[0][0], 2) + Math.pow(matrix[0][1], 2));
-        double scaleY = Math.sqrt(Math.pow(matrix[1][0], 2) + Math.pow(matrix[1][1], 2));
-        
-        return new double[]{scaleX, scaleY};
+
+        // Calculate the scale factors using the norm of the columns
+        double scale_x = matrix.get(0, 2).norm2().doubleValue();  // Using the first two rows for x-scale
+        double scale_y = matrix.get(1, 2).norm2().doubleValue();  // Using the first two rows for y-scale
+
+        return new double[]{scale_x, scale_y};
+    }
+
+    public static void main(String[] args) {
+        // Example usage
+        INDArray matrix = Nd4j.create(new double[][]{
+            {1, 0, 0},
+            {0, 1, 0},
+            {0, 0, 1}
+        });
+
+        double[] scales = getScale(matrix);
+        System.out.println("Scale X: " + scales[0]);
+        System.out.println("Scale Y: " + scales[1]);
     }
 }
 ```
 
-This Java method does the same thing as your Python function - it calculates the scaling factors along the x and y axes given a 3x3 affine transformation matrix. It checks if the input is indeed a 3x3 matrix and throws an exception otherwise. The `Math.sqrt` and `Math.pow` functions in Java are used to calculate the square root and power of numbers respectively, just like in Python's `numpy`.
+### Notes:
+1. **Dependency**: The Java code uses `org.nd4j.linalg` from ND4J (part of the Deeplearning4j ecosystem) to handle the matrix operations since `numpy` is not available in Java. You can add the necessary dependency to your project.
+2. **Method Signature**: The method `getScale` takes an `INDArray` as input and returns a `double[]` array containing the scale factors.
+3. **Exception Handling**: An `IllegalArgumentException` is thrown if the input matrix is not a 3x3 array.
+4. **Main Method**: An example usage is provided in the `main` method to demonstrate how to call the `getScale` method.
+
+Make sure to include the ND4J library in your project dependencies to use `INDArray` and related methods.

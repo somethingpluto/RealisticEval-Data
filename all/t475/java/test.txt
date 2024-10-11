@@ -1,74 +1,117 @@
-To convert your Python `unittest` test class to a Java test case using JUnit, you need to follow these steps:
+Certainly! Below is the equivalent Java test class using JUnit for the provided Python `unittest` test class. The Java test class will be placed in the package `org.real.temp` and named `Tester`.
 
-1. Create a new Java class named `Tester`.
-2. Use JUnit annotations to define test methods.
-3. Write assertions to validate the behavior of the `safe_format` method.
+### Python Code:
+```python
+import re
 
-Here's how you can do it:
 
+def safe_format(template, **kwargs):
+    """
+    Safely formats a template string by replacing placeholders with corresponding values
+    from the provided keyword arguments. If a placeholder does not have a corresponding
+    value in kwargs, it remains unchanged.
+
+    Args:
+        template (str): The string template containing placeholders in the form {key}.
+        **kwargs: Keyword arguments that map keys to their replacement values.
+
+    Returns:
+        str: The formatted string with placeholders replaced by values.
+    """
+
+    # Compile a regex pattern to match placeholders in the form {key}
+    pattern = re.compile(r'\{(\w+)\}')
+
+    def replacer(match):
+        """
+        Replacement function for the regex sub method.
+
+        Args:
+            match (re.Match): A regex match object containing the matched placeholder.
+
+        Returns:
+            str: The replacement value if the key exists in kwargs, otherwise the original placeholder.
+        """
+        key = match.group(1)  # Extract the placeholder key
+        # Return the corresponding value from kwargs, or the original placeholder if not found
+        return str(kwargs[key]) if key in kwargs else match.group(0)
+
+    # Replace placeholders in the template using the replacer function
+    return pattern.sub(replacer, template)
+```
+
+### Java Test Class Using JUnit:
 ```java
 package org.real.temp;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Tester {
 
     /**
      * Safely formats a template string by replacing placeholders with corresponding values
      * from the provided keyword arguments. If a placeholder does not have a corresponding
-     * value in kwargs, it remains unchanged.
+     * value in the keyword arguments, it remains unchanged.
      *
      * @param template The string template containing placeholders in the form {key}.
-     * @param args Keyword arguments that map keys to their replacement values.
+     * @param kwargs   A map of keyword arguments that map keys to their replacement values.
      * @return The formatted string with placeholders replaced by values.
      */
-    public String safeFormat(String template, Object... args) {
-        for (Object arg : args) {
-            if (arg instanceof String && ((String) arg).startsWith("{") && ((String) arg).endsWith("}")) {
-                String key = ((String) arg).substring(1, ((String) arg).length() - 1);
-                int index = template.indexOf(arg);
-                while (index != -1) {
-                    if (index + arg.length() < template.length() && Character.isLetterOrDigit(template.charAt(index + arg.length()))) {
-                        // Skip if the next character is a letter or digit to avoid partial matches
-                        index = template.indexOf(arg, index + arg.length());
-                    } else {
-                        template = template.substring(0, index) + args[index / 2] + template.substring(index + arg.length());
-                        index += args[index / 2].toString().length();
-                    }
-                }
-            }
+    public static String safeFormat(String template, Map<String, Object> kwargs) {
+        // Compile a regex pattern to match placeholders in the form {key}
+        Pattern pattern = Pattern.compile("\\{\\w+\\}");
+
+        // Replace placeholders in the template using the replacer function
+        Matcher matcher = pattern.matcher(template);
+        StringBuffer result = new StringBuffer();
+
+        while (matcher.find()) {
+            String key = matcher.group().substring(1, matcher.group().length() - 1); // Extract the placeholder key
+            // Return the corresponding value from kwargs, or the original placeholder if not found
+            String replacement = kwargs.containsKey(key) ? kwargs.get(key).toString() : matcher.group();
+            matcher.appendReplacement(result, replacement);
         }
-        return template;
+        matcher.appendTail(result);
+
+        return result.toString();
     }
 
     @Test
     public void testSafeFormat() {
-        assertEquals("Hello, John!", safeFormat("Hello, {name}!", "John"));
-        assertEquals("The answer is {answer}.", safeFormat("The answer is {answer}.", "42"));
-        assertEquals("No replacements here.", safeFormat("No replacements here."));
-        assertEquals("Keep {unchanged} unchanged.", safeFormat("Keep {unchanged} unchanged."));
-        assertEquals("Replace {first}, keep {second}.", safeFormat("Replace {first}, keep {second}.", "first"));
+        // Test case 1: All placeholders are present in kwargs
+        Map<String, Object> kwargs1 = Map.of("name", "Alice", "age", 30);
+        String template1 = "Hello, my name is {name} and I am {age} years old.";
+        assertEquals("Hello, my name is Alice and I am 30 years old.", safeFormat(template1, kwargs1));
+
+        // Test case 2: Some placeholders are missing in kwargs
+        Map<String, Object> kwargs2 = Map.of("name", "Bob");
+        String template2 = "Hello, my name is {name} and I am {age} years old.";
+        assertEquals("Hello, my name is Bob and I am {age} years old.", safeFormat(template2, kwargs2));
+
+        // Test case 3: No placeholders in the template
+        String template3 = "Hello, world!";
+        assertEquals("Hello, world!", safeFormat(template3, Map.of()));
+
+        // Test case 4: Empty template
+        String template4 = "";
+        assertEquals("", safeFormat(template4, Map.of()));
     }
 }
 ```
 
 ### Explanation:
+1. **JUnit Annotations**: The `@Test` annotation is used to mark each test method.
+2. **Assertion Methods**: The `assertEquals` method is used to verify the expected output.
+3. **Method Implementation**: The `safeFormat` method is implemented within the `Tester` class.
+4. **Test Cases**:
+   - **Test Case 1**: All placeholders are present in `kwargs`.
+   - **Test Case 2**: Some placeholders are missing in `kwargs`.
+   - **Test Case 3**: No placeholders in the template.
+   - **Test Case 4**: Empty template.
 
-1. **Package Declaration**: The package declaration is set to `org.real.temp`, which matches the Python package you mentioned.
-2. **Class Definition**: The class `Tester` is defined within the package.
-3. **Method Implementation**: The `safeFormat` method is implemented in Java. It takes a template string and an array of objects as arguments. The method replaces placeholders `{key}` with the corresponding values from the `args` array.
-4. **JUnit Test Method**: The `testSafeFormat` method contains several test cases using JUnit's `assertEquals` assertion to verify the correctness of the `safeFormat` method.
-
-Make sure you have the JUnit library included in your project dependencies. If you're using Maven, add the following dependency to your `pom.xml`:
-
-```xml
-<dependency>
-    <groupId>org.junit.jupiter</groupId>
-    <artifactId>junit-jupiter-engine</artifactId>
-    <version>5.8.1</version>
-    <scope>test</scope>
-</dependency>
-```
-
-This will allow you to run the tests using JUnit.
+This Java test class preserves the original functionality and logic of the Python tests while adhering to JUnit conventions and best practices.

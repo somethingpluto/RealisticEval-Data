@@ -1,37 +1,103 @@
-Sure! Below is the equivalent TypeScript test case using Jest for the `safeFormat` function:
+Certainly! Below is the equivalent TypeScript code for the provided Python function, along with a Jest test class to verify its functionality. I'll include the necessary type annotations and Jest assertions to ensure that the tests are equivalent to the Python `unittest` tests.
+
+### TypeScript Code for `safeFormat` Function
 
 ```typescript
-import { describe, it, expect } from '@jest/globals';
+/**
+ * Safely formats a template string by replacing placeholders with corresponding values
+ * from the provided keyword arguments. If a placeholder does not have a corresponding
+ * value in kwargs, it remains unchanged.
+ *
+ * @param template - The string template containing placeholders in the form {key}.
+ * @param kwargs - Keyword arguments that map keys to their replacement values.
+ * @returns The formatted string with placeholders replaced by values.
+ */
+function safeFormat(template: string, ...kwargs: [string, any][]): string {
+    // Compile a regex pattern to match placeholders in the form {key}
+    const pattern = /\{(\w+)\}/g;
 
-function safeFormat(template: string, ...args: any[]): string {
-    return template.replace(/{(\w+)}/g, (match, key) => args[key] || match);
+    const replacer = (match: string, key: string): string => {
+        // Extract the placeholder key
+        // Return the corresponding value from kwargs, or the original placeholder if not found
+        const keyValuePairs = new Map(kwargs);
+        return keyValuePairs.has(key) ? String(keyValuePairs.get(key)) : match;
+    };
+
+    // Replace placeholders in the template using the replacer function
+    return template.replace(pattern, replacer);
 }
 
+export default safeFormat;
+```
+
+### Jest Test Class for `safeFormat` Function
+
+```typescript
+import safeFormat from './path/to/safeFormat'; // Adjust the import path as needed
+
 describe('safeFormat', () => {
-    it('replaces placeholders with corresponding values', () => {
-        const result = safeFormat('Hello, {name}!', { name: 'Alice' });
-        expect(result).toBe('Hello, Alice!');
+    it('should format the template with provided values', () => {
+        const template = "Hello, {name}! Today is {day}.";
+        const kwargs = [["name", "Alice"], ["day", "Monday"]];
+        const expected = "Hello, Alice! Today is Monday.";
+        expect(safeFormat(template, ...kwargs)).toBe(expected);
     });
 
-    it('leaves unpaired placeholders unchanged', () => {
-        const result = safeFormat('Hello, {name}!', { age: 25 });
-        expect(result).toBe('Hello, {name}!');
+    it('should leave placeholders unchanged if no corresponding values are provided', () => {
+        const template = "Hello, {name}! Today is {day}.";
+        const kwargs = [["name", "Alice"]];
+        const expected = "Hello, Alice! Today is {day}.";
+        expect(safeFormat(template, ...kwargs)).toBe(expected);
     });
 
-    it('handles multiple placeholders', () => {
-        const result = safeFormat('Hello, {name}! You are {age} years old.', { name: 'Bob', age: 30 });
-        expect(result).toBe('Hello, Bob! You are 30 years old.');
+    it('should handle empty templates correctly', () => {
+        const template = "";
+        const kwargs = [["name", "Alice"], ["day", "Monday"]];
+        const expected = "";
+        expect(safeFormat(template, ...kwargs)).toBe(expected);
     });
 
-    it('returns the original string if no placeholders are found', () => {
-        const result = safeFormat('Hello, world!', {});
-        expect(result).toBe('Hello, world!');
+    it('should handle templates without placeholders correctly', () => {
+        const template = "Hello, world!";
+        const kwargs = [["name", "Alice"], ["day", "Monday"]];
+        const expected = "Hello, world!";
+        expect(safeFormat(template, ...kwargs)).toBe(expected);
+    });
+
+    it('should handle templates with multiple placeholders', () => {
+        const template = "Hello, {name}! Today is {day} and the weather is {weather}.";
+        const kwargs = [["name", "Alice"], ["day", "Monday"], ["weather", "sunny"]];
+        const expected = "Hello, Alice! Today is Monday and the weather is sunny.";
+        expect(safeFormat(template, ...kwargs)).toBe(expected);
+    });
+
+    it('should handle templates with some placeholders missing values', () => {
+        const template = "Hello, {name}! Today is {day} and the weather is {weather}.";
+        const kwargs = [["name", "Alice"], ["weather", "sunny"]];
+        const expected = "Hello, Alice! Today is {day} and the weather is sunny.";
+        expect(safeFormat(template, ...kwargs)).toBe(expected);
     });
 });
 ```
 
-In this TypeScript code:
-- We import the necessary functions (`describe`, `it`, and `expect`) from the `@jest/globals` module.
-- We define the `safeFormat` function, which replaces placeholders in a string with corresponding values from an object.
-- We create a `describe` block to group our test cases together.
-- Each `it` block contains a specific test case, and we use the `expect` function to assert that the output of `safeFormat` matches the expected result.
+### Explanation:
+1. **Function Definition**:
+   - The `safeFormat` function is defined with proper type annotations.
+   - The `template` parameter is of type `string`.
+   - The `kwargs` parameter is an array of tuples `[string, any][]`.
+
+2. **Jest Test Class**:
+   - The `describe` block defines a test suite for the `safeFormat` function.
+   - Each `it` block represents a test case.
+   - Jest assertions (`expect`) are used to check the expected behavior of the function.
+
+3. **Test Cases**:
+   - Various test cases are included to cover different scenarios:
+     - Formatting with provided values.
+     - Leaving placeholders unchanged if no corresponding values are provided.
+     - Handling empty templates.
+     - Handling templates without placeholders.
+     - Handling templates with multiple placeholders.
+     - Handling templates with some placeholders missing values.
+
+This TypeScript code and Jest test class preserve the original functionality and logic of the Python code while ensuring that the tests are equivalent and comprehensive.

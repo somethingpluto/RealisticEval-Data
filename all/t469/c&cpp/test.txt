@@ -1,89 +1,164 @@
-To convert the given Python unittest test class to a C++ test case using Catch2, you need to follow these steps:
+Certainly! Below is the conversion of the provided Python unittest test class into an equivalent test class using Catch2 in C++. The goal is to preserve the functionality and logic of the tests while making necessary adjustments for language differences and using appropriate assertions in Catch2.
 
-1. Install Catch2 if you haven't already.
-2. Write the equivalent C++ code for the function `get_scale`.
-3. Write the test cases in C++ using Catch2 syntax.
+### Python Code (unittest)
 
-Here's an example of how you can do it:
+```python
+import unittest
+import numpy as np
 
-### Step 1: Install Catch2
-You can install Catch2 via vcpkg or manually download it. For simplicity, let's assume you have downloaded it manually and added it to your project.
+def get_scale(matrix: np.ndarray) -> Tuple[np.float64, np.float64]:
+    """
+    Given a 3x3 affine transformation matrix, return the corresponding scaling factors
+    along the x and y axes.
 
-### Step 2: Implement the Function in C++
+    Args:
+        matrix (np.ndarray): A 3x3 affine transformation matrix.
+
+    Returns:
+        Tuple[np.float64, np.float64]: A tuple containing the scale factors (scale_x, scale_y).
+    """
+    if not isinstance(matrix, np.ndarray) or matrix.shape != (3, 3):
+        raise ValueError("Input must be a 3x3 affine transformation matrix.")
+
+    scale_x = np.linalg.norm(matrix[0:2, 0])
+    scale_y = np.linalg.norm(matrix[0:2, 1])
+
+    return float(scale_x), float(scale_y)
+
+
+class TestGetScale(unittest.TestCase):
+
+    def test_get_scale(self):
+        matrix = np.array([
+            [2.0, 0.0, 0.0],
+            [0.0, 3.0, 0.0],
+            [0.0, 0.0, 1.0]
+        ])
+        expected_scale = (2.0, 3.0)
+        self.assertEqual(get_scale(matrix), expected_scale)
+
+        matrix = np.array([
+            [1.0, 1.0, 0.0],
+            [1.0, 1.0, 0.0],
+            [0.0, 0.0, 1.0]
+        ])
+        expected_scale = (np.sqrt(2.0), np.sqrt(2.0))
+        self.assertEqual(get_scale(matrix), expected_scale)
+
+        matrix = np.array([
+            [0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0],
+            [0.0, 0.0, 1.0]
+        ])
+        expected_scale = (0.0, 0.0)
+        self.assertEqual(get_scale(matrix), expected_scale)
+
+    def test_invalid_input(self):
+        matrix = np.array([1.0, 2.0, 3.0])
+        with self.assertRaises(ValueError):
+            get_scale(matrix)
+
+
+if __name__ == '__main__':
+    unittest.main()
+```
+
+### C++ Code (Catch2)
+
+First, ensure you have the Catch2 library installed and included in your project. You can include Catch2 directly or link it statically.
+
+#### C++ Code
+
 ```cpp
-#include <iostream>
-#include <tuple>
-#include <cmath>
-
-// Assuming Eigen is used for matrix operations
 #include <Eigen/Dense>
+#include <stdexcept>
+#include <utility>
+#include <catch2/catch_test_macros.hpp>
 
-std::tuple<double, double> get_scale(const Eigen::Matrix3d& matrix) {
-    // Extract the scaling factors from the matrix
-    double scale_x = std::sqrt(matrix(0, 0) * matrix(0, 0) + matrix(0, 1) * matrix(0, 1));
-    double scale_y = std::sqrt(matrix(1, 0) * matrix(1, 0) + matrix(1, 1) * matrix(1, 1));
+using Eigen::MatrixXd;
+using std::pair;
+using std::runtime_error;
 
-    return {scale_x, scale_y};
+// Function to calculate scaling factors from a 3x3 affine transformation matrix
+pair<double, double> get_scale(const MatrixXd& matrix) {
+    // Ensure the matrix is a 3x3 matrix
+    if (matrix.rows() != 3 || matrix.cols() != 3) {
+        throw runtime_error("Input must be a 3x3 affine transformation matrix.");
+    }
+
+    // Calculate the scale factors using the norm of the columns
+    double scale_x = matrix.block(0, 0, 2, 1).norm();  // Using the first two rows for x-scale
+    double scale_y = matrix.block(0, 1, 2, 1).norm();  // Using the first two rows for y-scale
+
+    return make_pair(scale_x, scale_y);
 }
-```
 
-### Step 3: Write Test Cases Using Catch2
-Create a file named `test_get_scale.cpp` and add the following code:
-
-```cpp
-#define CATCH_CONFIG_MAIN
-#include "catch.hpp"
-#include "get_scale.h"  // Include the header where get_scale is defined
-
+// Test cases using Catch2
 TEST_CASE("Test get_scale function", "[get_scale]") {
-    Eigen::Matrix3d matrix;
+    SECTION("Test valid inputs") {
+        MatrixXd matrix(3, 3);
+        matrix << 2.0, 0.0, 0.0,
+                  0.0, 3.0, 0.0,
+                  0.0, 0.0, 1.0;
+        auto expected_scale = make_pair(2.0, 3.0);
+        REQUIRE(get_scale(matrix) == expected_scale);
 
-    SECTION("Identity matrix") {
-        matrix << 1, 0, 0,
-                  0, 1, 0,
-                  0, 0, 1;
-        auto [scale_x, scale_y] = get_scale(matrix);
-        REQUIRE(scale_x == Approx(1.0));
-        REQUIRE(scale_y == Approx(1.0));
+        matrix << 1.0, 1.0, 0.0,
+                  1.0, 1.0, 0.0,
+                  0.0, 0.0, 1.0;
+        expected_scale = make_pair(std::sqrt(2.0), std::sqrt(2.0));
+        REQUIRE(get_scale(matrix) == expected_scale);
+
+        matrix << 0.0, 0.0, 0.0,
+                  0.0, 0.0, 0.0,
+                  0.0, 0.0, 1.0;
+        expected_scale = make_pair(0.0, 0.0);
+        REQUIRE(get_scale(matrix) == expected_scale);
     }
 
-    SECTION("Scaling matrix along x-axis") {
-        matrix << 2, 0, 0,
-                  0, 1, 0,
-                  0, 0, 1;
-        auto [scale_x, scale_y] = get_scale(matrix);
-        REQUIRE(scale_x == Approx(2.0));
-        REQUIRE(scale_y == Approx(1.0));
+    SECTION("Test invalid input") {
+        MatrixXd matrix(1, 3);
+        matrix << 1.0, 2.0, 3.0;
+        REQUIRE_THROWS_AS(get_scale(matrix), runtime_error);
+        REQUIRE_THROWS_WITH(get_scale(matrix), "Input must be a 3x3 affine transformation matrix.");
     }
+}
 
-    SECTION("Scaling matrix along y-axis") {
-        matrix << 1, 0, 0,
-                  0, 3, 0,
-                  0, 0, 1;
-        auto [scale_x, scale_y] = get_scale(matrix);
-        REQUIRE(scale_x == Approx(1.0));
-        REQUIRE(scale_y == Approx(3.0));
-    }
-
-    SECTION("Scaling matrix along both axes") {
-        matrix << 2, 0, 0,
-                  0, 3, 0,
-                  0, 0, 1;
-        auto [scale_x, scale_y] = get_scale(matrix);
-        REQUIRE(scale_x == Approx(2.0));
-        REQUIRE(scale_y == Approx(3.0));
-    }
+int main(int argc, char* argv[]) {
+    // Run Catch2 tests
+    int result = Catch::Session().run(argc, argv);
+    return result;
 }
 ```
 
-### Explanation
-- **Catch2 Setup**: The `#define CATCH_CONFIG_MAIN` directive tells Catch2 to generate the main function for you. The `#include "catch.hpp"` includes the Catch2 library.
-- **Test Cases**: Each `SECTION` represents a different test case. The `REQUIRE` macro is used to assert that the conditions hold true.
+### Explanation:
+1. **Include Directives**:
+   - `#include <Eigen/Dense>`: Includes the Eigen library for matrix operations.
+   - `#include <stdexcept>`: Includes the standard exception library for throwing exceptions.
+   - `#include <utility>`: Includes the utility library for using `std::pair`.
+   - `#include <catch2/catch_test_macros.hpp>`: Includes the Catch2 test macros.
 
-Make sure to link against the Eigen library when compiling your test case. If you're using g++, you can compile the test case with the following command:
+2. **Using Directives**:
+   - `using Eigen::MatrixXd;`: Alias for `MatrixXd`.
+   - `using std::pair;`: Alias for `std::pair`.
+   - `using std::runtime_error;`: Alias for `std::runtime_error`.
 
-```sh
-g++ -std=c++17 -I/path/to/eigen -I/path/to/catch2/include -o test_get_scale test_get_scale.cpp
-```
+3. **Function Documentation**:
+   - Single-line comments (`//`) are used for brief descriptions and explanations.
 
-Replace `/path/to/eigen` and `/path/to/catch2/include` with the actual paths to the Eigen and Catch2 include directories on your system.
+4. **Function Implementation**:
+   - The function `get_scale` takes a `const MatrixXd&` (a reference to a 3x3 matrix) as an argument.
+   - It checks if the matrix is 3x3 and throws a `runtime_error` if not.
+   - It calculates the scale factors using the Euclidean norm of the first two rows of the matrix columns.
+   - It returns a `std::pair<double, double>` containing the scale factors.
+
+5. **Test Cases**:
+   - `TEST_CASE` is used to define a test case with a name and tags.
+   - `SECTION` is used to define sections within a test case.
+   - `REQUIRE` is used to assert conditions and equality.
+   - `REQUIRE_THROWS_AS` and `REQUIRE_THROWS_WITH` are used to check for specific exceptions and their messages.
+
+6. **Main Function**:
+   - The `main` function runs the Catch2 tests and returns the result.
+
+This code preserves the functionality and logic of the Python unittest while adhering to C++ conventions and best practices.

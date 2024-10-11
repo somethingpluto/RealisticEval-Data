@@ -1,70 +1,136 @@
-To convert your Python unittest test class to JavaScript using Jest, you can follow these steps:
+Certainly! Below is the equivalent JavaScript code using Jest to convert the given Python unittest test class into a Jest test suite. I will ensure that the functionality and logic of the tests are maintained, and any necessary changes due to language differences are documented.
 
-1. Install Jest and any necessary dependencies.
-2. Create a new JavaScript file for your tests.
-3. Write the equivalent test cases in JavaScript using Jest syntax.
+### Python Code
 
-Here's an example of how you might write the test cases in JavaScript using Jest:
+```python
+import numpy as np
+import unittest
+
+def get_translation(matrix: np.ndarray) -> np.ndarray:
+    """
+    Given a 3x3 matrix, return the corresponding translation vector.
+
+    Args:
+        matrix (np.ndarray): A 3x3 affine transformation matrix.
+
+    Returns:
+        np.ndarray: A 2-element array containing the translation components (translation_x, translation_y).
+    """
+    if not isinstance(matrix, np.ndarray) or matrix.shape != (3, 3):
+        raise ValueError("Input must be a 3x3 affine transformation matrix.")
+
+    translation = matrix[:2, 2]
+    return translation.astype(np.float64)
+
+class TestGetTranslation(unittest.TestCase):
+
+    def test_valid_matrix(self):
+        matrix = np.array([
+            [1, 0, 5],
+            [0, 1, 3],
+            [0, 0, 1]
+        ])
+        expected_translation = np.array([5, 3])
+        result = get_translation(matrix)
+        np.testing.assert_array_almost_equal(result, expected_translation)
+
+    def test_invalid_matrix_shape(self):
+        matrix = np.array([
+            [1, 0, 5],
+            [0, 1, 3]
+        ])
+        with self.assertRaises(ValueError):
+            get_translation(matrix)
+
+    def test_invalid_matrix_type(self):
+        matrix = [[1, 0, 5], [0, 1, 3], [0, 0, 1]]
+        with self.assertRaises(ValueError):
+            get_translation(matrix)
+
+if __name__ == '__main__':
+    unittest.main()
+```
+
+### JavaScript Code Using Jest
 
 ```javascript
-const { getTranslation } = require('./your-python-module'); // Adjust the path accordingly
+const assert = require('assert');
+
+function getTranslation(matrix) {
+    /**
+     * Given a 3x3 matrix, return the corresponding translation vector.
+     *
+     * @param {Array<Array<number>>} matrix - A 3x3 affine transformation matrix.
+     * @returns {Array<number>} A 2-element array containing the translation components (translation_x, translation_y).
+     */
+    if (!Array.isArray(matrix) || matrix.length !== 3 || matrix.some(row => !Array.isArray(row) || row.length !== 3)) {
+        throw new Error("Input must be a 3x3 affine transformation matrix.");
+    }
+
+    const translation = [matrix[0][2], matrix[1][2]];
+    return translation.map(value => Number(value));
+}
 
 describe('getTranslation', () => {
-    it('should return the correct translation vector for a given 3x3 matrix', () => {
-        const matrix = [
-            [1, 0, 5],
-            [0, 1, 10],
-            [0, 0, 1]
-        ];
-        const expectedTranslation = [5, 10];
-        const result = getTranslation(matrix);
-        expect(result).toEqual(expectedTranslation);
+    describe('when given a valid 3x3 matrix', () => {
+        it('should return the correct translation vector', () => {
+            const matrix = [
+                [1, 0, 5],
+                [0, 1, 3],
+                [0, 0, 1]
+            ];
+            const expectedTranslation = [5, 3];
+            const result = getTranslation(matrix);
+            expect(result).toEqual(expectedTranslation);
+        });
     });
 
-    it('should handle matrices with different values', () => {
-        const matrix = [
-            [2, 0, 7],
-            [0, 3, 9],
-            [0, 0, 1]
-        ];
-        const expectedTranslation = [7, 9];
-        const result = getTranslation(matrix);
-        expect(result).toEqual(expectedTranslation);
+    describe('when given an invalid matrix shape', () => {
+        it('should throw an error', () => {
+            const matrix = [
+                [1, 0, 5],
+                [0, 1, 3]
+            ];
+            expect(() => getTranslation(matrix)).toThrowError("Input must be a 3x3 affine transformation matrix.");
+        });
     });
 
-    it('should throw an error if the input is not a 3x3 matrix', () => {
-        const matrix = [
-            [1, 0, 5],
-            [0, 1, 10] // Missing third row
-        ];
-
-        expect(() => getTranslation(matrix)).toThrowError('Input matrix must be a 3x3 matrix');
+    describe('when given an invalid matrix type', () => {
+        it('should throw an error', () => {
+            const matrix = [[1, 0, 5], [0, 1, 3], [0, 0, 1]];
+            expect(() => getTranslation(matrix)).toThrowError("Input must be a 3x3 affine transformation matrix.");
+        });
     });
 });
+
+// Example usage
+const matrix = [
+    [1, 0, 5],
+    [0, 1, 3],
+    [0, 0, 1]
+];
+
+console.log(getTranslation(matrix));  // Output: [5, 3]
 ```
 
 ### Explanation:
 
-- **`describe`**: This function groups related test cases together.
-- **`it`**: This function defines a single test case. It takes two arguments: a string description of the test case and a callback function that contains the actual test logic.
-- **`expect`**: This function is used to make assertions about the result of the test. In this case, we're checking if the `result` matches the `expectedTranslation`.
-- **`toEqual`**: This matcher checks if the two objects or arrays are equal.
-- **`toThrowError`**: This matcher checks if the function throws an error when called.
+1. **Function Definition**:
+   - The `getTranslation` function is defined with the same logic and structure as the Python function.
+   - It validates the input matrix and extracts the translation components.
 
-Make sure you have Jest installed in your project. You can install it using npm or yarn:
+2. **Jest Testing Framework**:
+   - Jest is used for writing unit tests.
+   - The `describe` block is used to group related tests.
+   - Each `it` block represents a specific test case.
 
-```sh
-npm install --save-dev jest
-# or
-yarn add --dev jest
-```
+3. **Test Cases**:
+   - **Valid Matrix**: Checks if the function returns the correct translation vector.
+   - **Invalid Matrix Shape**: Checks if the function throws an error when the matrix shape is incorrect.
+   - **Invalid Matrix Type**: Checks if the function throws an error when the matrix type is incorrect.
 
-Then, you can run your tests using the following command:
+4. **Assertions**:
+   - `expect(result).toEqual(expectedTranslation)` is used to check if the result matches the expected translation vector.
+   - `expect(() => getTranslation(matrix)).toThrowError("Input must be a 3x3 affine transformation matrix.")` is used to check if the function throws the expected error.
 
-```sh
-npx jest
-# or
-yarn jest
-```
-
-This will execute all the test cases defined in your JavaScript files.
+This JavaScript code maintains the functionality and logic of the original Python unittest test cases and uses Jest for the testing framework.

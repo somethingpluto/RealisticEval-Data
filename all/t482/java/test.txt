@@ -1,60 +1,152 @@
-Sure! Below is the equivalent Java JUnit test case for the provided Python unittest test class. The package is `org.real.temp`, and the class is named `Tester`.
+Certainly! Below is the equivalent Java test class using JUnit for the provided Python unittest test class. The Java test class will be placed in the package `org.real.temp` and named `Tester`. It includes appropriate JUnit annotations and assertion methods to ensure the functionality and logic of the tests are preserved.
 
+### Python Code:
+```python
+import unittest
+
+def extract_outermost_brackets(s: str) -> str:
+    """
+    Extracts the contents of the outermost brackets from the input string.
+    For example:
+        input: Text [with [nested] brackets] and more text
+        output: with [nested] brackets
+    Args:
+        s (str): The input string containing brackets.
+
+    Returns:
+        str: The contents within the outermost brackets, or an empty string if no brackets are found.
+    """
+    stack = []
+    start_index = -1
+    opening_brackets = "({["
+    closing_brackets = ")}]"
+    matching_bracket = {')': '(', '}': '{', ']': '['}
+
+    for i, char in enumerate(s):
+        if char in opening_brackets:  # Check for any opening bracket
+            if not stack:  # If the stack is empty, we have found the outermost opening bracket
+                start_index = i  # Remember the position of the first opening bracket
+            stack.append(char)
+        elif char in closing_brackets:  # Check for any closing bracket
+            if stack and stack[-1] == matching_bracket[char]:  # Match with the latest opening bracket
+                stack.pop()
+                if not stack:  # When stack is empty, we found the outermost closing bracket
+                    return s[start_index + 1:i]  # Extract contents between the brackets
+
+    return ""  # Return an empty string if no outermost brackets were found
+
+
+class TestExtractOutermostBrackets(unittest.TestCase):
+
+    def test_no_brackets(self):
+        self.assertEqual(extract_outermost_brackets("No brackets here"), "")
+
+    def test_single_outermost_brackets(self):
+        self.assertEqual(extract_outermost_brackets("[Single]"), "Single")
+
+    def test_nested_brackets(self):
+        self.assertEqual(extract_outermost_brackets("Text [with [nested] brackets] and more text"), "with [nested] brackets")
+
+    def test_multiple_outermost_brackets(self):
+        self.assertEqual(extract_outermost_brackets("[First] [Second]"), "First")
+
+
+if __name__ == '__main__':
+    unittest.main()
+```
+
+### Java Code:
 ```java
 package org.real.temp;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
+/**
+ * Tests for the extractOutermostBrackets method.
+ */
 public class Tester {
-
-    @Test
-    public void testExtractOutermostBrackets() {
-        // Test cases
-        assertEquals("", extractOutermostBrackets("Text without brackets"));
-        assertEquals("[nested]", extractOutermostBrackets("Text [nested] and more text"));
-        assertEquals("[nested] and more", extractOutermostBrackets("Text [nested] and more text [and again]"));
-        assertEquals("", extractOutermostBrackets(""));
-        assertEquals("[]", extractOutermostBrackets("[]"));
-        assertEquals("[[nested]]", extractOutermostBrackets("[[nested]]"));
-    }
 
     /**
      * Extracts the contents of the outermost brackets from the input string.
+     * For example:
+     *     input: Text [with [nested] brackets] and more text
+     *     output: with [nested] brackets
      *
      * @param s The input string containing brackets.
      * @return The contents within the outermost brackets, or an empty string if no brackets are found.
      */
-    private String extractOutermostBrackets(String s) {
+    public static String extractOutermostBrackets(String s) {
         int startIndex = -1;
-        int endIndex = -1;
+        Stack<Character> stack = new Stack<>();
+        String openingBrackets = "({[";
+        String closingBrackets = ")}]";
+        Map<Character, Character> matchingBracket = new HashMap<>();
+        matchingBracket.put(')', '(');
+        matchingBracket.put('}', '{');
+        matchingBracket.put(']', '[');
 
         for (int i = 0; i < s.length(); i++) {
-            char c = s.charAt(i);
-            if (c == '[') {
-                if (startIndex == -1) {
-                    startIndex = i + 1;
+            char charAtI = s.charAt(i);
+
+            if (openingBrackets.indexOf(charAtI) != -1) {
+                if (stack.isEmpty()) {
+                    startIndex = i;
                 }
-            } else if (c == ']') {
-                endIndex = i;
-                break;
+                stack.push(charAtI);
+            } else if (closingBrackets.indexOf(charAtI) != -1) {
+                if (!stack.isEmpty() && stack.peek().equals(matchingBracket.get(charAtI))) {
+                    stack.pop();
+                    if (stack.isEmpty()) {
+                        return s.substring(startIndex + 1, i);
+                    }
+                }
             }
         }
 
-        if (startIndex != -1 && endIndex != -1) {
-            return s.substring(startIndex, endIndex);
-        }
+        return ""; // Return an empty string if no outermost brackets were found
+    }
 
-        return "";
+    @Test
+    public void testNoBrackets() {
+        assertEquals("", extractOutermostBrackets("No brackets here"));
+    }
+
+    @Test
+    public void testSingleOutermostBrackets() {
+        assertEquals("Single", extractOuterMostBrackets("[Single]"));
+    }
+
+    @Test
+    public void testNestedBrackets() {
+        assertEquals("with [nested] brackets", extractOuterMostBrackets("Text [with [nested] brackets] and more text"));
+    }
+
+    @Test
+    public void testMultipleOutermostBrackets() {
+        assertEquals("First", extractOuterMostBrackets("[First] [Second]"));
     }
 }
 ```
 
 ### Explanation:
-1. **Package Declaration**: The `package` declaration specifies the package name `org.real.temp`.
-2. **Class Declaration**: The `class` declaration defines the class `Tester`.
-3. **JUnit Test Method**: The `@Test` annotation marks the `testExtractOutermostBrackets` method as a JUnit test method.
-4. **Test Cases**: Several test cases are included to verify the functionality of the `extractOutermostBrackets` method.
-5. **Method Implementation**: The `extractOutermostBrackets` method is implemented to mimic the behavior described in the Python function.
+1. **Package and Class Definition**:
+   - The code starts with the package declaration `package org.real.temp;`.
+   - The class `Tester` contains the test methods.
 
-This Java code should be placed in a file named `Tester.java` within the appropriate directory structure under `src/test/java/org/real/temp`.
+2. **JUnit Annotations**:
+   - Each test method is annotated with `@Test` to indicate that it is a test case.
+
+3. **Javadoc Comments**:
+   - The Javadoc comments provide a detailed description of the method, its parameters, and its return value.
+
+4. **Method Implementation**:
+   - The `extractOutermostBrackets` method is implemented to extract the contents of the outermost brackets from the input string.
+
+5. **Test Methods**:
+   - Each test method uses `assertEquals` to verify the expected behavior of the `extractOutermostBrackets` method.
+
+6. **Assertions**:
+   - The assertions check various scenarios, such as no brackets, single outermost brackets, nested brackets, and multiple outermost brackets.
+
+This Java code preserves the original functionality and logic of the Python code while adhering to Java's syntax and conventions.

@@ -1,55 +1,59 @@
-Sure! Here is the equivalent JavaScript code using the `math` and `mat4` modules:
+Sure! Below is the equivalent JavaScript code for the given Python function. This code will use the `tf` (TensorFlow.js) library to handle matrix operations and ensure the functionality, logic, and structure are consistent with the Python code.
+
+First, you need to install TensorFlow.js. You can do this using npm:
+
+```bash
+npm install @tensorflow/tfjs
+```
+
+Here is the JavaScript code:
 
 ```javascript
-const { mat4 } = require('gl-matrix');
+import * as tf from '@tensorflow/tfjs';
 
 function getRotation(matrix) {
     /**
      * Given an affine transformation matrix, return the corresponding rotation angle in radians.
      *
-     * @param {Array} matrix - A 2D affine transformation matrix.
+     * @param {Array<Array<number>>} matrix - A 2D affine transformation matrix.
      * @returns {number} The rotation angle in radians, extracted from the affine matrix.
      */
 
-    // Extract the rotation component from the matrix
-    const rotationMatrix = [
-        [matrix[0], matrix[1]],
-        [matrix[3], matrix[4]]
-    ];
-
-    // Calculate the trace of the rotation matrix
-    const trace = rotationMatrix[0][0] + rotationMatrix[1][1];
-
-    // Calculate the determinant of the rotation matrix
-    const det = rotationMatrix[0][0] * rotationMatrix[1][1] - rotationMatrix[0][1] * rotationMatrix[1][0];
-
-    // Calculate the rotation angle in radians
-    let rotationAngle;
-
-    if (det >= 0) {
-        rotationAngle = Math.atan2(rotationMatrix[1][0], rotationMatrix[0][0]);
-    } else {
-        rotationAngle = Math.PI - Math.atan2(-rotationMatrix[1][0], -rotationMatrix[0][0]);
+    // Ensure the matrix is a 2D array and has the correct shape
+    if (!Array.isArray(matrix) || matrix.length !== 3 || matrix.some(row => row.length !== 3)) {
+        throw new Error("Input must be a 3x3 affine transformation matrix.");
     }
+
+    // Convert the matrix to a tensor
+    const matrixTensor = tf.tensor(matrix);
+
+    // Extract the elements needed for calculating the rotation angle
+    const m10 = matrixTensor.get([1, 0]);
+    const m00 = matrixTensor.get([0, 0]);
+
+    // Calculate the rotation angle using atan2
+    const rotationAngle = tf.atan2(m10, m00).dataSync()[0];
 
     return rotationAngle;
 }
 
-// Example usage:
+// Example usage
 const matrix = [
-    1, 0, 0, 0,
-    0, 1, 0, 0,
-    0, 0, 1, 0,
-    0, 0, 0, 1
+    [1, 0, 0],
+    [0, 1, 0],
+    [0, 0, 1]
 ];
 
 console.log(getRotation(matrix));
 ```
 
-In this JavaScript code, we use the `gl-matrix` library for handling matrices. Make sure you have the `gl-matrix` package installed:
+### Explanation:
+1. **Import TensorFlow.js**: We import TensorFlow.js at the beginning of the script.
+2. **Function Definition**: The `getRotation` function is defined with a docstring similar to the Python version.
+3. **Matrix Validation**: We check if the input matrix is a 2D array and has the correct shape (3x3).
+4. **Tensor Conversion**: We convert the input matrix to a TensorFlow.js tensor using `tf.tensor`.
+5. **Element Extraction**: We extract the necessary elements (`m10` and `m00`) from the tensor.
+6. **Rotation Angle Calculation**: We calculate the rotation angle using `tf.atan2`.
+7. **Result Extraction**: We retrieve the scalar value from the tensor using `.dataSync()[0]`.
 
-```bash
-npm install gl-matrix
-```
-
-This function extracts the rotation component from the input matrix and calculates the rotation angle in radians. Note that this assumes the input matrix is a 2D affine transformation matrix represented as a 4x4 array. Adjustments may be needed based on your specific requirements.
+This ensures that the JavaScript code mirrors the functionality and logic of the original Python code.

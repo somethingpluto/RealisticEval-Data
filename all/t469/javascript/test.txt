@@ -1,67 +1,150 @@
-To convert the given Python unittest test class into a Jest test case in JavaScript, you'll need to follow these steps:
+Certainly! Below is the equivalent JavaScript test class using Jest, which ensures that the functionality and logic of the tests are maintained. I'll also document any necessary changes due to language differences between Python and JavaScript.
 
-1. Install Jest if you haven't already.
-2. Write the equivalent Jest test cases using the `describe` and `it` functions.
-3. Mock any dependencies or external libraries like NumPy.
+### Python Test Class
 
-Here's an example of how you might write the Jest test cases for your function:
+```python
+import unittest
+import numpy as np
 
-```javascript
-// Import necessary packages
-const { describe, it, expect } = require('@jest/globals');
+from typing import Tuple
 
-// Mock NumPy library if needed
-// For simplicity, let's assume we're not using any external libraries here
+def get_scale(matrix: np.ndarray) -> Tuple[np.float64, np.float64]:
+    """
+    Given a 3x3 affine transformation matrix, return the corresponding scaling factors
+    along the x and y axes.
 
-function getScale(matrix) {
-    // Implement the logic similar to the Python function
-    // This is just a placeholder implementation
-    const scaleX = Math.sqrt(matrix[0][0] ** 2 + matrix[0][1] ** 2);
-    const scaleY = Math.sqrt(matrix[1][0] ** 2 + matrix[1][1] ** 2);
-    return [scaleX, scaleY];
-}
+    Args:
+        matrix (np.ndarray): A 3x3 affine transformation matrix.
 
-describe('getScale', () => {
-    it('should return correct scale factors for a valid 3x3 matrix', () => {
-        const matrix = [
+    Returns:
+        Tuple[np.float64, np.float64]: A tuple containing the scale factors (scale_x, scale_y).
+    """
+    if not isinstance(matrix, np.ndarray) or matrix.shape != (3, 3):
+        raise ValueError("Input must be a 3x3 affine transformation matrix.")
+
+    scale_x = np.linalg.norm(matrix[0:2, 0])
+    scale_y = np.linalg.norm(matrix[0:2, 1])
+
+    return float(scale_x), float(scale_y)
+
+class TestGetScale(unittest.TestCase):
+
+    def test_identity_matrix(self):
+        matrix = np.array([
+            [1, 0, 0],
+            [0, 1, 0],
+            [0, 0, 1]
+        ])
+        expected = (1.0, 1.0)
+        self.assertEqual(get_scale(matrix), expected)
+
+    def test_scaling_matrix(self):
+        matrix = np.array([
             [2, 0, 0],
             [0, 3, 0],
             [0, 0, 1]
-        ];
-        const expected = [2, 3];
-        const result = getScale(matrix);
-        expect(result).toEqual(expected);
+        ])
+        expected = (2.0, 3.0)
+        self.assertEqual(get_scale(matrix), expected)
+
+    def test_invalid_matrix(self):
+        matrix = np.array([
+            [2, 0, 0],
+            [0, 3, 0]
+        ])
+        with self.assertRaises(ValueError):
+            get_scale(matrix)
+
+if __name__ == '__main__':
+    unittest.main()
+```
+
+### JavaScript Test Class Using Jest
+
+First, make sure you have Jest installed in your project:
+
+```bash
+npm install --save-dev jest
+```
+
+Then, create the JavaScript test file:
+
+```javascript
+const math = require('mathjs');
+
+/**
+ * Given a 3x3 affine transformation matrix, return the corresponding scaling factors
+ * along the x and y axes.
+ *
+ * @param {Array<Array<number>>} matrix - A 3x3 affine transformation matrix.
+ * @returns {[number, number]} A tuple containing the scale factors (scale_x, scale_y).
+ */
+function getScale(matrix) {
+    // Ensure the matrix is a 3x3 array
+    if (!Array.isArray(matrix) || matrix.length !== 3 || matrix.some(row => !Array.isArray(row) || row.length !== 3)) {
+        throw new Error("Input must be a 3x3 affine transformation matrix.");
+    }
+
+    // Calculate the scale factors using the norm of the columns
+    const scaleX = math.norm(math.matrix(matrix.slice(0, 2).map(row => row[0])));
+    const scaleY = math.norm(math.matrix(matrix.slice(0, 2).map(row => row[1])));
+
+    return [parseFloat(scaleX), parseFloat(scaleY)];
+}
+
+describe('Test Get Scale Function', () => {
+    describe('Valid Matrices', () => {
+        test('Identity Matrix', () => {
+            const matrix = [
+                [1, 0, 0],
+                [0, 1, 0],
+                [0, 0, 1]
+            ];
+            const expected = [1.0, 1.0];
+            expect(getScale(matrix)).toEqual(expected);
+        });
+
+        test('Scaling Matrix', () => {
+            const matrix = [
+                [2, 0, 0],
+                [0, 3, 0],
+                [0, 0, 1]
+            ];
+            const expected = [2.0, 3.0];
+            expect(getScale(matrix)).toEqual(expected);
+        });
     });
 
-    it('should handle zero scaling correctly', () => {
-        const matrix = [
-            [0, 0, 0],
-            [0, 0, 0],
-            [0, 0, 1]
-        ];
-        const expected = [0, 0];
-        const result = getScale(matrix);
-        expect(result).toEqual(expected);
-    });
-
-    it('should throw error for non-3x3 matrix', () => {
-        const matrix = [
-            [2, 0],
-            [0, 3]
-        ];
-        expect(() => getScale(matrix)).toThrow('Matrix must be 3x3');
+    describe('Invalid Matrices', () => {
+        test('Invalid Matrix', () => {
+            const matrix = [
+                [2, 0, 0],
+                [0, 3, 0]
+            ];
+            expect(() => getScale(matrix)).toThrowError('Input must be a 3x3 affine transformation matrix.');
+        });
     });
 });
+
+// Example usage
+const exampleMatrix = [
+    [1, 0, 0],
+    [0, 1, 0],
+    [0, 0, 1]
+];
+
+console.log(getScale(exampleMatrix));  // Output should be [1, 1]
 ```
 
 ### Explanation:
+1. **Importing Mathjs**: The `mathjs` library is used for numerical operations similar to NumPy in Python.
+2. **Function Definition**: The `getScale` function is defined to mimic the behavior of the Python function.
+3. **Jest Test Suite**:
+   - The `describe` block groups related tests.
+   - The `test` function defines individual test cases.
+4. **Assertions**:
+   - `expect(getScale(matrix)).toEqual(expected)` is used to check if the output matches the expected values.
+   - `expect(() => getScale(matrix)).toThrowError('Input must be a 3x3 affine transformation matrix.')` is used to check if the function throws the correct error for invalid inputs.
+5. **Example Usage**: An example usage is provided at the end for demonstration purposes.
 
-1. **Importing Jest Functions**: We import `describe`, `it`, and `expect` from `@jest/globals`.
-2. **Mocking Dependencies**: In this simple example, we don't have any external dependencies, so we mock them directly. If you had a dependency like NumPy, you would mock that accordingly.
-3. **Implementing the Function**: The `getScale` function is implemented similarly to the Python version. Note that JavaScript uses arrays instead of NumPy arrays, and we use `Math.sqrt` for square root calculations.
-4. **Writing Test Cases**:
-   - The first test checks if the function returns the correct scale factors for a valid 3x3 matrix.
-   - The second test checks if the function handles zero scaling correctly.
-   - The third test checks if the function throws an error when provided with a non-3x3 matrix.
-
-This should give you a good starting point for converting your Python unittest test class to a Jest test case in JavaScript.
+This JavaScript code preserves the functionality and logic of the original Python test class and uses Jest for testing.

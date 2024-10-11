@@ -1,56 +1,146 @@
-To convert the given Python unittest test class to a C++ Catch2 test case, you'll need to follow these steps:
+Certainly! Below is the equivalent C++ code using the Catch2 testing framework to replicate the functionality and logic of the provided Python unittest class.
 
-1. Include the necessary headers for Catch2 and NumPy.
-2. Define the `get_translation` function in C++.
-3. Write the test cases using Catch2's syntax.
+### Python Code:
 
-Here's an example of how you can do it:
+```python
+import numpy as np
+
+
+def get_translation(matrix: np.ndarray) -> np.ndarray:
+    """
+    Given a 3x3 matrix, return the corresponding translation vector.
+
+    Args:
+        matrix (np.ndarray): A 3x3 affine transformation matrix.
+
+    Returns:
+        np.ndarray: A 2-element array containing the translation components (translation_x, translation_y).
+    """
+    if not isinstance(matrix, np.ndarray) or matrix.shape != (3, 3):
+        raise ValueError("Input must be a 3x3 affine transformation matrix.")
+
+    translation = matrix[:2, 2]
+    return translation.astype(np.float64)
+
+
+import unittest
+
+
+class TestTranslation(unittest.TestCase):
+
+    def test_get_translation(self):
+        matrix = np.array([
+            [1, 0, 10],
+            [0, 1, 20],
+            [0, 0, 1]
+        ])
+        expected_translation = np.array([10, 20], dtype=np.float64)
+        result = get_translation(matrix)
+        np.testing.assert_array_almost_equal(result, expected_translation)
+
+    def test_invalid_matrix(self):
+        matrix = np.array([
+            [1, 0, 10],
+            [0, 1, 20]
+        ])
+        with self.assertRaises(ValueError):
+            get_translation(matrix)
+
+
+if __name__ == '__main__':
+    unittest.main()
+```
+
+### Equivalent C++ Code Using Catch2:
+
+First, make sure you have the Catch2 library installed. You can include it via a package manager or download it directly.
+
+#### CMake Setup (if using CMake):
+
+```cmake
+cmake_minimum_required(VERSION 3.10)
+project(TranslationTests)
+
+# Add Catch2
+find_package(Catch2 REQUIRED)
+
+# Add executable
+add_executable(TranslationTests main.cpp test_translation.cpp)
+target_link_libraries(TranslationTests PRIVATE Catch2::Catch2)
+```
+
+#### Main File (`main.cpp`):
 
 ```cpp
-#include <catch2/catch.hpp>
+#include "test_translation.h"
+
+int main(int argc, char* argv[]) {
+    return Catch::Session().run(argc, argv);
+}
+```
+
+#### Test File (`test_translation.cpp`):
+
+```cpp
+#include <catch2/catch_test_macros.hpp>
 #include <Eigen/Dense>
 
-// Assuming Eigen is used for matrix operations
+// Function to extract the translation vector from a 3x3 affine transformation matrix
+Eigen::Matrix<double, 2, 1> get_translation(const Eigen::Matrix3d& matrix) {
+    // Ensure the input matrix is a 3x3 matrix
+    if (matrix.rows() != 3 || matrix.cols() != 3) {
+        throw std::invalid_argument("Input must be a 3x3 affine transformation matrix.");
+    }
 
-Eigen::Vector2d get_translation(const Eigen::Matrix3d& matrix) {
-    // Extract the translation part from the 3x3 matrix
-    Eigen::Vector2d translation = matrix.block<2, 1>(0, 2);
+    // Extract the translation components from the matrix
+    Eigen::Matrix<double, 2, 1> translation;
+    translation << matrix(0, 2), matrix(1, 2);
+
     return translation;
 }
 
-TEST_CASE("Test get_translation function", "[get_translation]") {
-    // Test case 1: Identity matrix should have no translation
-    Eigen::Matrix3d identity_matrix = Eigen::Matrix3d::Identity();
-    REQUIRE(get_translation(identity_matrix).isApprox(Eigen::Vector2d(0, 0)));
+TEST_CASE("Test get_translation function", "[translation]") {
+    SECTION("Test valid matrix") {
+        Eigen::Matrix3d matrix;
+        matrix << 1, 0, 10,
+                  0, 1, 20,
+                  0, 0, 1;
 
-    // Test case 2: Translation matrix should return the correct translation vector
-    Eigen::Matrix3d translation_matrix = Eigen::Matrix3d::Identity();
-    translation_matrix(0, 2) = 5.0;
-    translation_matrix(1, 2) = 10.0;
-    REQUIRE(get_translation(translation_matrix).isApprox(Eigen::Vector2d(5.0, 10.0)));
+        Eigen::Matrix<double, 2, 1> expected_translation;
+        expected_translation << 10, 20;
 
-    // Add more test cases as needed
+        REQUIRE(get_translation(matrix) == expected_translation);
+    }
+
+    SECTION("Test invalid matrix") {
+        Eigen::MatrixXd invalid_matrix(2, 3);
+        invalid_matrix << 1, 0, 10,
+                          0, 1, 20;
+
+        REQUIRE_THROWS_AS(get_translation(invalid_matrix), std::invalid_argument);
+    }
 }
 ```
 
 ### Explanation:
-
-1. **Include Headers**:
-   - `#include <catch2/catch.hpp>`: This includes the Catch2 testing framework.
-   - `#include <Eigen/Dense>`: This includes the Eigen library for matrix operations.
+1. **Imports**:
+   - `#include <catch2/catch_test_macros.hpp>`: Includes the Catch2 test macros.
+   - `#include <Eigen/Dense>`: Includes the Eigen library for matrix operations.
 
 2. **Function Definition**:
-   - The `get_translation` function takes an `Eigen::Matrix3d` as input and returns an `Eigen::Vector2d`. It extracts the translation part from the 3x3 matrix using the `block` method.
+   - `get_translation`: This function takes a `Eigen::Matrix3d` (a 3x3 double precision matrix) as input and returns a `Eigen::Matrix<double, 2, 1>` (a 2x1 double precision column vector).
 
-3. **Test Cases**:
-   - `TEST_CASE("Test get_translation function", "[get_translation]")`: Defines a test case with a description and a tag.
-   - `REQUIRE(condition)`: Checks if the condition is true. If not, the test fails.
-   - `identity_matrix` and `translation_matrix` are examples of matrices that are tested. The `isApprox` method checks if two vectors are approximately equal within a default tolerance.
+3. **Test Class**:
+   - `TEST_CASE`: Defines a test case named "Test get_translation function".
+   - `SECTION`: Defines sections within the test case for different scenarios.
 
-Make sure to link against the Catch2 and Eigen libraries when compiling your C++ code. For example, using g++, you might compile the code like this:
+4. **Valid Matrix Test**:
+   - `SECTION("Test valid matrix")`: Tests the function with a valid 3x3 matrix and checks if the returned translation matches the expected translation.
 
-```sh
-g++ -std=c++14 -I/path/to/catch2/include -I/path/to/eigen src/test_get_translation.cpp -o test_get_translation
-```
+5. **Invalid Matrix Test**:
+   - `SECTION("Test invalid matrix")`: Tests the function with an invalid matrix and checks if it throws the expected exception (`std::invalid_argument`).
 
-Replace `/path/to/catch2/include` and `/path/to/eigen` with the actual paths to the Catch2 and Eigen header files on your system.
+6. **Main Function**:
+   - `main`: Entry point for running the tests using Catch2.
+
+This conversion preserves the functionality and logic of the Python unittest class in C++ using Catch2.

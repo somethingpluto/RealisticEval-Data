@@ -1,81 +1,121 @@
-To convert the provided Python unittest test class to a C++ test case using Catch2, you'll need to follow these steps:
+Certainly! Below is the equivalent C++ code using the Catch2 testing framework to test the `format_comment` function. I'll include the necessary setup, the function itself, and the test cases.
 
-1. **Define the function `format_comment`** in C++. This will be your utility function that formats a string into a commented block with a specified maximum line length.
-
-2. **Write a test case** using Catch2 to verify the functionality of `format_comment`.
-
-Here's how you can do it:
-
-### Step 1: Define the Function `format_comment`
+### C++ Code with Catch2 Testing Framework
 
 ```cpp
+#include <iostream>
 #include <string>
 #include <vector>
 #include <sstream>
+#include <catch2/catch_test_macros.hpp>
 
-std::string format_comment(const std::string& input, int max_length = 60) {
-    std::istringstream iss(input);
-    std::ostringstream oss;
-    std::string word;
-    size_t current_line_length = 3; // Starting from "# "
+// Function to format a string into a commented block with specified maximum line length
+std::string format_comment(const std::string& string, int max_length = 60) {
+    // Split the string into lines
+    std::istringstream iss(string);
+    std::vector<std::string> lines;
+    std::string line;
+    while (std::getline(iss, line, '\n')) {
+        lines.push_back(line);
+    }
 
-    while (iss >> word) {
-        if (current_line_length + word.length() > static_cast<size_t>(max_length)) {
-            oss << "\n# ";
-            current_line_length = 3;
+    // Initialize a vector to store the formatted lines
+    std::vector<std::string> formatted_lines;
+
+    // Iterate through the lines
+    for (const auto& current_line : lines) {
+        // Split the line into words
+        std::istringstream word_stream(current_line);
+        std::string word;
+        std::string current_formatted_line = "";
+
+        // Iterate through the words
+        while (word_stream >> word) {
+            // If the current formatted line plus the next word would be too long,
+            // append the current formatted line to the list of formatted lines and start a new line
+            if (current_formatted_line.length() + word.length() + 2 > max_length) {
+                formatted_lines.push_back(current_formatted_line);
+                current_formatted_line = "";
+            }
+
+            // If the current formatted line is empty, add the word to the line
+            // Otherwise, add a space and the word to the line
+            if (!current_formatted_line.empty()) {
+                current_formatted_line += " " + word;
+            } else {
+                current_formatted_line = word;
+            }
         }
-        oss << word << " ";
-        current_line_length += word.length() + 1;
+
+        // Add the remaining line to the list of formatted lines
+        formatted_lines.push_back(current_formatted_line);
+    }
+
+    // Return the formatted comment
+    std::ostringstream oss;
+    for (const auto& formatted_line : formatted_lines) {
+        oss << "# " << formatted_line << "\n";
     }
 
     return oss.str();
 }
-```
 
-### Step 2: Write a Test Case Using Catch2
-
-First, make sure you have Catch2 installed and set up in your project. If you're using CMake, you might add something like this to your `CMakeLists.txt`:
-
-```cmake
-find_package(Catch2 REQUIRED)
-add_executable(your_test_executable tests.cpp)
-target_link_libraries(your_test_executable Catch2::Catch2WithMain)
-```
-
-Then, create a file named `tests.cpp` and write your test cases:
-
-```cpp
-#define CATCH_CONFIG_MAIN
-#include <catch2/catch.hpp>
-#include "your_source_file.h" // Include the header where format_comment is defined
-
-TEST_CASE("Format Comment", "[format_comment]") {
-    SECTION("Empty String") {
-        REQUIRE(format_comment("") == "");
+TEST_CASE("Test format_comment function") {
+    SECTION("Empty string") {
+        std::string input = "";
+        std::string expected = "\n";
+        REQUIRE(format_comment(input) == expected);
     }
 
-    SECTION("Single Word") {
-        REQUIRE(format_comment("Hello") == "# Hello");
+    SECTION("Single line") {
+        std::string input = "This is a short string.";
+        std::string expected = "# This is a short string.\n";
+        REQUIRE(format_comment(input) == expected);
     }
 
-    SECTION("Long Single Line") {
-        std::string long_string = "ThisIsAVeryLongStringThatShouldBeSplitIntoMultipleLines";
-        std::string expected = "# ThisIsAVeryLongStringThat\n# ShouldBeSplitIntoMultipleLines";
-        REQUIRE(format_comment(long_string) == expected);
+    SECTION("Multiple lines") {
+        std::string input = "This is a very long string that needs to be split into multiple lines.\n"
+                            "Each line should be prefixed with '# ' and should not exceed the specified maximum length.";
+        std::string expected = "# This is a very long string that needs to be split into multiple\n"
+                               "# lines.\n"
+                               "# Each line should be prefixed with '# ' and should not exceed\n"
+                               "# the specified maximum length.\n";
+        REQUIRE(format_comment(input) == expected);
     }
 
-    SECTION("Words That Fit In One Line") {
-        REQUIRE(format_comment("One Two Three Four Five") == "# One Two Three Four Five");
+    SECTION("Max length") {
+        std::string input = "A very long string that will be split into multiple lines because it exceeds the maximum length.";
+        std::string expected = "# A very long string that will be split into multiple\n"
+                               "# lines because it exceeds the maximum\n"
+                               "# length.\n";
+        REQUIRE(format_comment(input, 50) == expected);
     }
 
-    SECTION("Words Exceeding Max Length") {
-        std::string long_words = "Lorem ipsum dolor sit amet, consectetur adipiscing elit.";
-        std::string expected = "# Lorem ipsum dolor sit amet,\n# consectetur adipiscing elit.";
-        REQUIRE(format_comment(long_words) == expected);
+    SECTION("Single word exceeding max length") {
+        std::string input = "ThisIsAVeryLongWordThatExceedsTheMaximumLength";
+        std::string expected = "# ThisIsAVeryLongWordThatExceedsTheMaximum\n"
+                               "# Length\n";
+        REQUIRE(format_comment(input, 30) == expected);
     }
+}
+
+int main(int argc, char* argv[]) {
+    return Catch::Session().run(argc, argv);
 }
 ```
 
-In this example, replace `"your_source_file.h"` with the actual path to the header file containing the `format_comment` function.
+### Explanation:
+1. **Function Definition**:
+   - The `format_comment` function is defined to format the input string into a commented block with a specified maximum line length.
 
-This setup provides a basic unit test for the `format_comment` function using Catch2. You can extend it further based on your specific requirements.
+2. **Catch2 Test Class**:
+   - The `TEST_CASE` macro is used to define a test case for the `format_comment` function.
+   - Each `SECTION` defines a specific test scenario with input and expected output.
+
+3. **Assertions**:
+   - `REQUIRE` is used to assert that the actual output matches the expected output for each test case.
+
+4. **Main Function**:
+   - The `main` function initializes and runs the Catch2 test suite.
+
+This setup ensures that the functionality and logic of the tests are preserved, and the tests are executed using the Catch2 testing framework.

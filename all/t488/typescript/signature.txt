@@ -1,16 +1,89 @@
-Sure, here's the TypeScript code signature with the same comments:
+Certainly! Below is the equivalent TypeScript code for the provided Python function, including proper type annotations and JSDoc-style documentation comments.
+
+### TypeScript Code
 
 ```typescript
 import { exec } from 'child_process';
-import * as re from 're';
+import { promisify } from 'util';
+
+// Promisify the exec function for async/await usage
+const execPromise = promisify(exec);
 
 /**
  * Retrieve the local IP address of the specified network interface on Windows.
  *
- * @param {string} [interface='Wi-Fi'] - The name of the network interface to check (default is 'Wi-Fi').
- * @returns {Promise<string | null>} A promise that resolves to the local IP address if found, otherwise null.
+ * @param interfaceName - The name of the network interface to check (default is 'Wi-Fi').
+ * @returns A Promise that resolves to the local IP address if found, otherwise null.
  */
-async function getLocalIP(interface: string = 'Wi-Fi'): Promise<string | null> {
+async function getLocalIp(interfaceName: string = 'Wi-Fi'): Promise<string | null> {
+    try {
+        // Execute the 'ipconfig' command to get addresses for the specified interface
+        const { stdout, stderr } = await execPromise('ipconfig');
+
+        // Regular expression to match IPv4 addresses
+        const ipPattern = /(\d+\.\d+\.\d+\.\d+)/g;
+
+        // Search for IP addresses in the command output
+        const matches = stdout.match(ipPattern);
+        if (!matches) {
+            return null;
+        }
+
+        const ips: string[] = matches;
+
+        // Return the first local IP found that starts with "192.168."
+        for (const ip of ips) {
+            if (ip.startsWith("192.168.")) {
+                return ip;
+            }
+        }
+
+        return null; // Return null if no suitable IP is found
+
+    } catch (error) {
+        console.error(`Error executing command: ${error}`);
+        return null;
+    }
+}
+
+// Example usage
+(async () => {
+    const ip = await getLocalIp();
+    console.log(ip);
+})();
 ```
 
-Note that in TypeScript, we use `Promise` instead of `Optional` for asynchronous operations like retrieving an IP address. Also, TypeScript doesn't have a direct equivalent to Python's `typing.Optional`, so we use `| null` to indicate that the return type can be either a string or `null`.
+### Explanation:
+1. **Imports**:
+   - `exec` and `promisify` from `child_process` and `util` respectively are used to run the `ipconfig` command asynchronously.
+
+2. **Promisify Function**:
+   - `execPromise` is created to use `async/await` syntax for running the `ipconfig` command.
+
+3. **Function Definition**:
+   - `getLocalIp` is defined as an asynchronous function that returns a promise.
+   - It takes an optional parameter `interfaceName` which defaults to `'Wi-Fi'`.
+
+4. **Command Execution**:
+   - `execPromise` is used to execute the `ipconfig` command and capture its output in `stdout`.
+
+5. **Regex Matching**:
+   - The regular expression `ipPattern` is used to find all IPv4 addresses in the output.
+   - `stdout.match(ipPattern)` returns an array of matches.
+
+6. **IP Address Filtering**:
+   - Iterate through the matches and return the first IP address that starts with `"192.168."`.
+   - If no such IP is found, return `null`.
+
+7. **Error Handling**:
+   - Catch any errors during command execution or processing and log them.
+
+8. **JSDoc Documentation**:
+   - The JSDoc-style documentation comments are added to describe the function, parameters, and return type.
+
+### JSDoc Documentation Comments:
+- The `/** */` style comments are used to document the function, parameters, and return type.
+- The `@param` tag is used to describe the `interfaceName` parameter.
+- The `@returns` tag is used to describe the return value.
+
+This TypeScript code preserves the original functionality and structure of the Python code while adapting it to TypeScript conventions and syntax.

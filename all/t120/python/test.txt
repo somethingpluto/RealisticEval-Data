@@ -1,0 +1,116 @@
+To convert the JavaScript Jest test cases into Python's unittest framework, you'll need to make a few changes:
+JSDOM is specific to JavaScript. In Python, we will use BeautifulSoup for parsing HTML.
+We'll replace the expect() assertions with self.assertEqual() in Python.
+The describe block will be replaced by Python's class-based unittest.TestCase.
+Here is the equivalent Python code using unittest and BeautifulSoup:
+Python Version with unittest and BeautifulSoup
+python
+import unittest
+from bs4 import BeautifulSoup
+
+def extract_csv_data_from_html(html_content: str):
+    """Extract table data from HTML content and return as a 2D list."""
+    soup = BeautifulSoup(html_content, 'html.parser')
+    table = soup.find('table', class_='waffle')
+    result = []
+    
+    if table:
+        rows = table.find_all('tr')
+        for row in rows:
+            row_data = [cell.get_text(strip=True) for cell in row.find_all('td')]
+            result.append(row_data)
+    
+    return result
+
+class TestHTMLToCSVExtraction(unittest.TestCase):
+
+    def test_table_with_multiple_rows_and_columns(self):
+        test_case_html = """
+        <table class="waffle">
+            <tbody>
+                <tr><td>Cell 1</td><td>Cell 2</td></tr>
+                <tr><td>Cell 3</td><td>Cell 4</td></tr>
+            </tbody>
+        </table>
+        """
+        expected = [["Cell 1", "Cell 2"], ["Cell 3", "Cell 4"]]
+        self.assertEqual(extract_csv_data_from_html(test_case_html), expected)
+
+    def test_table_with_empty_cells(self):
+        test_case_html = """
+        <table class="waffle">
+            <tbody>
+                <tr><td>Cell 1</td><td></td></tr>
+                <tr><td></td><td>Cell 4</td></tr>
+            </tbody>
+        </table>
+        """
+        expected = [["Cell 1", ""], ["", "Cell 4"]]
+        self.assertEqual(extract_csv_data_from_html(test_case_html), expected)
+
+    def test_table_with_only_one_row(self):
+        test_case_html = """
+        <table class="waffle">
+            <tbody>
+                <tr><td>Single Cell 1</td><td>Single Cell 2</td></tr>
+            </tbody>
+        </table>
+        """
+        expected = [["Single Cell 1", "Single Cell 2"]]
+        self.assertEqual(extract_csv_data_from_html(test_case_html), expected)
+
+    def test_table_with_only_one_column(self):
+        test_case_html = """
+        <table class="waffle">
+            <tbody>
+                <tr><td>Column Cell 1</td></tr>
+                <tr><td>Column Cell 2</td></tr>
+            </tbody>
+        </table>
+        """
+        expected = [["Column Cell 1"], ["Column Cell 2"]]
+        self.assertEqual(extract_csv_data_from_html(test_case_html), expected)
+
+    def test_no_table_with_class_waffle_present(self):
+        test_case_html = """
+        <div>
+            <p>No table here!</p>
+        </div>
+        """
+        expected = []
+        self.assertEqual(extract_csv_data_from_html(test_case_html), expected)
+
+if __name__ == '__main__':
+    unittest.main()
+Explanation:
+HTML Parsing:
+The extract_csv_data_from_html function uses BeautifulSoup (from the bs4 module) to parse the HTML string and extract table data.
+It searches for a table with the class "waffle" and extracts the text content of each cell in the rows using find_all('tr') and find_all('td').
+Test Case Class:
+unittest.TestCase is the base class for all test cases.
+Each test case method begins with test_, which is required by unittest.
+self.assertEqual() checks whether the actual output from extract_csv_data_from_html matches the expected result.
+Tests:
+test_table_with_multiple_rows_and_columns: Tests a table with multiple rows and columns.
+test_table_with_empty_cells: Tests a table with some empty cells.
+test_table_with_only_one_row: Tests a table with only one row.
+test_table_with_only_one_column: Tests a table with only one column.
+test_no_table_with_class_waffle_present: Tests a case where no table with the class "waffle" is present in the HTML.
+Running the Tests:
+The unittest.main() in the if __name__ == '__main__': block will automatically run all test methods when the script is executed.
+How to Run:
+Install the beautifulsoup4 library if not already installed:
+bash
+pip install beautifulsoup4
+Save the Python code above in a file (e.g., test_html_to_csv.py).
+Run the test:
+bash
+python -m unittest test_html_to_csv.py
+This will run all the test cases, and you will see the output in the terminal indicating whether the tests passed or failed.
+Output Example (if tests pass):
+bash
+.
+----------------------------------------------------------------------
+Ran 5 tests in 0.002s
+
+OK

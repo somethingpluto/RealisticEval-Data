@@ -1,28 +1,87 @@
-Here's how you can translate your Python unittest test class into a Catch2 C++ test case:
+Certainly! Below is the equivalent C++ code using the Catch2 testing framework to convert the provided Python unittest test class. This includes the conversion of the `contains_email` function and the corresponding test cases.
+
+### C++ Code with Catch2 Testing Framework
+
+First, make sure you have the Catch2 library installed and included in your project. You can download it from [here](https://github.com/catchorg/Catch2).
 
 ```cpp
-#include <catch2/catch.hpp>
-#include <string>
+#include <catch2/catch_test_macros.hpp>
+#include <iostream>
 #include <regex>
+#include <string>
 
+// Function to check if the given text contains an email address
 bool contains_email(const std::string& text) {
-    // Regular expression pattern for matching email addresses
-    std::regex pattern(R"(\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b)");
+    // Define a regex pattern for validating an email address
+    std::regex email_pattern("[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}");
 
-    // Use regex_search to check if there is at least one match in the text
-    return std::regex_search(text, pattern);
+    // Search for the email pattern in the text
+    return std::regex_search(text, email_pattern);
 }
 
-TEST_CASE("Contains Email", "[contains_email]") {
-    REQUIRE(contains_email("Hello, my email is example@example.com.") == true);
-    REQUIRE(contains_email("No email here!") == false);
-    REQUIRE(contains_email("Multiple emails: test@test.com and another@another.com") == true);
-    REQUIRE(contains_email("") == false);
+TEST_CASE("Test contains_email function") {
+    // Test case 1: Text containing an email address
+    SECTION("Email present") {
+        std::string test1 = "Contact me at example@example.com";
+        REQUIRE(contains_email(test1));
+    }
+
+    // Test case 2: Text without an email address
+    SECTION("No email present") {
+        std::string test2 = "No email here";
+        REQUIRE_FALSE(contains_email(test2));
+    }
+
+    // Test case 3: Email with special characters
+    SECTION("Email with special characters") {
+        std::string test3 = "Contact me at user.name+tag+sorting@example.com";
+        REQUIRE(contains_email(test3));
+    }
+
+    // Test case 4: Email with dots and underscores
+    SECTION("Email with dots and underscores") {
+        std::string test4 = "Contact me at user.name@example.com";
+        REQUIRE(contains_email(test4));
+    }
+
+    // Test case 5: Email with domain name
+    SECTION("Email with domain name") {
+        std::string test5 = "Contact me at user@domain.com";
+        REQUIRE(contains_email(test5));
+    }
+}
+
+int main(int argc, char* argv[]) {
+    // Run all the Catch2 tests
+    return Catch::Session().run(argc, argv);
 }
 ```
 
-In this C++ code:
+### Explanation:
+1. **Headers**:
+   - `<catch2/catch_test_macros.hpp>`: For Catch2 testing macros.
+   - `<iostream>`, `<regex>`, `<string>`: For input/output, regular expressions, and string manipulation.
 
-1. We include the necessary headers (`<catch2/catch.hpp>` for Catch2 testing framework and `<string>`, `<regex>` for standard library features).
-2. We define the `contains_email` function which uses regular expressions to find email addresses in a given string.
-3. We create a Catch2 test case named "Contains Email". Inside this test case, we have several `REQUIRE` statements to validate our `contains_email` function with different inputs. These statements will automatically pass or fail based on whether the function behaves as expected according to our assertions.
+2. **Function `contains_email`**:
+   - Takes a `const std::string& text` parameter.
+   - Defines a regex pattern `email_pattern` to validate email addresses.
+   - Uses `std::regex_search` to find if the pattern matches within the text.
+   - Returns `true` if a match is found; otherwise, returns `false`.
+
+3. **Catch2 Test Case**:
+   - `TEST_CASE` macro defines a test case.
+   - Each `SECTION` defines a specific test scenario.
+   - `REQUIRE` and `REQUIRE_FALSE` are used for assertions.
+
+4. **Main Function**:
+   - Runs all the Catch2 tests.
+
+### Running the Tests
+To run the tests, you need to compile the code with Catch2 enabled. Here’s an example command using g++:
+
+```sh
+g++ -o email_test email_test.cpp -lcatch2
+./email_test
+```
+
+This will execute the tests and output the results, ensuring that the `contains_email` function behaves as expected.

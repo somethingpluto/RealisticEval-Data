@@ -1,61 +1,102 @@
-Sure! Below is the equivalent TypeScript test case using Jest for the given Python function `extract_outermost_brackets`. Note that I'll assume you have the implementation of `extract_outermost_brackets` in a file named `bracketExtractor.ts`.
+Certainly! Below is the equivalent TypeScript code for the provided Python function along with a Jest test suite to ensure the functionality is preserved. I'll include the function definition and the Jest test class.
 
-First, let's create the TypeScript function:
+### TypeScript Function Definition
+
+First, let's define the TypeScript function:
 
 ```typescript
-// bracketExtractor.ts
+/**
+ * Extracts the contents of the outermost brackets from the input string.
+ *
+ * Example:
+ *   Input: "Text [with [nested] brackets] and more text"
+ *   Output: "with [nested] brackets"
+ *
+ * @param s - The input string containing brackets.
+ * @returns The contents within the outermost brackets, or an empty string if no brackets are found.
+ */
+function extractOutermostBrackets(s: string): string {
+    const stack: string[] = [];
+    let startIndex = -1;
+    const openingBrackets = "({[";
+    const closingBrackets = ")}]";
+    const matchingBracket: { [key: string]: string } = { ')': '(', '}': '{', ']': '[' };
 
-export function extractOutermostBrackets(s: string): string {
-    const regex = /\[(.*?)\]/;
-    const match = s.match(regex);
-    return match ? match[1] : '';
+    for (let i = 0; i < s.length; i++) {
+        const char = s[i];
+        if (openingBrackets.includes(char)) {  // Check for any opening bracket
+            if (stack.length === 0) {  // If the stack is empty, we have found the outermost opening bracket
+                startIndex = i;  // Remember the position of the first opening bracket
+            }
+            stack.push(char);
+        } else if (closingBrackets.includes(char)) {  // Check for any closing bracket
+            if (stack.length > 0 && stack[stack.length - 1] === matchingBracket[char]) {  // Match with the latest opening bracket
+                stack.pop();
+                if (stack.length === 0) {  // When stack is empty, we found the outermost closing bracket
+                    return s.substring(startIndex + 1, i);  // Extract contents between the brackets
+                }
+            }
+        }
+    }
+
+    return "";  // Return an empty string if no outermost brackets were found
 }
 ```
 
-Now, let's write the Jest test cases:
+### Jest Test Class
+
+Now, let's define the Jest test class to ensure the function works correctly:
 
 ```typescript
-// bracketExtractor.test.ts
-
-import { extractOutermostBrackets } from './bracketExtractor';
+import { extractOutermostBrackets } from './path/to/extractOutermostBrackets'; // Replace with the actual path
 
 describe('extractOutermostBrackets', () => {
-    it('should extract the contents of the outermost brackets', () => {
-        expect(extractOutermostBrackets('Text [with [nested] brackets] and more text')).toBe('with [nested] brackets');
+    it('should return the contents of the outermost brackets', () => {
+        expect(extractOutermostBrackets("Text [with [nested] brackets] and more text")).toBe("with [nested] brackets");
     });
 
-    it('should handle nested brackets correctly', () => {
-        expect(extractOutermostBrackets('Nested [brackets [are] here]')).toBe('brackets [are] here');
+    it('should handle strings without brackets', () => {
+        expect(extractOutermostBrackets("No brackets here")).toBe("");
     });
 
-    it('should return an empty string if no brackets are found', () => {
-        expect(extractOutermostBrackets('No brackets here')).toBe('');
+    it('should handle nested brackets', () => {
+        expect(extractOutermostBrackets("[[[Nested]]]")).toBe("[[Nested]]");
     });
 
-    it('should handle strings with multiple sets of brackets', () => {
-        expect(extractOutermostBrackets('[One set] [Another set]')).toBe('One set');
+    it('should handle multiple pairs of brackets', () => {
+        expect(extractOutermostBrackets("[One] [Two] [Three]")).toBe("One");
     });
 
-    it('should handle strings with leading/trailing spaces around brackets', () => {
-        expect(extractOutermostBrackets('  [Leading and trailing spaces]  ')).toBe('Leading and trailing spaces');
+    it('should handle empty strings', () => {
+        expect(extractOutermostBrackets("")).toBe("");
+    });
+
+    it('should handle single brackets', () => {
+        expect(extractOutermostBrackets("[Single]")).toBe("Single");
+    });
+
+    it('should handle mixed brackets', () => {
+        expect(extractOutermostBrackets("{[Mixed]}")).toBe("[Mixed]");
+    });
+
+    it('should handle complex cases', () => {
+        expect(extractOutermostBrackets("Complex {example [with (mixed)] brackets}")).toBe("example [with (mixed)]");
     });
 });
 ```
 
-To run these tests, make sure you have Jest installed. If not, you can install it using npm or yarn:
+### Explanation:
 
-```sh
-npm install --save-dev jest
-# or
-yarn add --dev jest
-```
+1. **Function Definition**: The TypeScript function `extractOutermostBrackets` is defined with proper type annotations and JSDoc documentation.
+2. **Jest Test Suite**: The Jest test suite uses `describe` and `it` blocks to define test cases.
+3. **Test Cases**:
+    - **Basic Test**: Ensures the function extracts the correct content from nested brackets.
+    - **No Brackets**: Ensures the function returns an empty string when there are no brackets.
+    - **Nested Brackets**: Ensures the function handles nested brackets correctly.
+    - **Multiple Pairs**: Ensures the function extracts the correct content from multiple pairs of brackets.
+    - **Empty String**: Ensures the function returns an empty string for an empty input.
+    - **Single Brackets**: Ensures the function extracts the content from a single pair of brackets.
+    - **Mixed Brackets**: Ensures the function handles mixed brackets correctly.
+    - **Complex Case**: Ensures the function handles a complex case with various types of brackets.
 
-Then, you can run the tests using the following command:
-
-```sh
-npx jest
-# or
-yarn jest
-```
-
-This will execute all the test cases and provide you with the results.
+By following these steps, you can ensure that the TypeScript function and its Jest tests accurately reflect the functionality of the original Python code.

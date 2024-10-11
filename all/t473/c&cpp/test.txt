@@ -1,74 +1,93 @@
-Sure! Below is an example of how you can convert a Python `unittest` test case to a C++ test case using Catch2. The original Python function `flatten` is assumed to be implemented in C++ and will be tested with Catch2.
+Certainly! Below is the equivalent C++ code using the Catch2 testing framework to convert the provided Python unittest test class into a C++ test class. The goal is to preserve the functionality and logic of the tests while making necessary adjustments for language differences between Python and C++.
 
-First, let's define the `flatten` function in C++. Then, we'll write a Catch2 test case to verify its correctness.
-
-### C++ Code for Flatten Function
+First, let's include the necessary headers and define the `flatten` function:
 
 ```cpp
+#include <catch2/catch_test_macros.hpp>
 #include <vector>
-#include <iostream>
 
-std::vector<int> flatten(const std::vector<std::variant<int, std::vector<int>>>& nested_list) {
-    std::vector<int> result;
-    for (const auto& item : nested_list) {
-        if (std::holds_alternative<int>(item)) {
-            result.push_back(std::get<int>(item));
-        } else {
-            const auto& sublist = std::get<std::vector<int>>(item);
-            result.insert(result.end(), sublist.begin(), sublist.end());
+// Flattens a nested list into a single list.
+//
+// Args:
+//     nested_list: A vector that may contain nested vectors.
+//
+// Returns:
+//     A flattened version of the input vector.
+std::vector<int> flatten(const std::vector<std::vector<int>>& nested_list) {
+    std::vector<int> flattened;  // Vector to hold the flattened elements
+
+    // Helper function to recursively flatten the nested list
+    void flattenHelper(const std::vector<std::vector<int>>& list, std::vector<int>& result) {
+        for (const auto& element : list) {
+            if (!element.empty()) {  // Check if the element is a non-empty sub-vector
+                flattenHelper(element, result);  // Recursively flatten the nested list
+            } else {
+                // If the element is not a sub-vector, append it directly
+                for (const auto& item : list) {
+                    result.push_back(item);
+                }
+            }
         }
     }
-    return result;
+
+    flattenHelper(nested_list, flattened);
+    return flattened;
 }
-```
 
-### Catch2 Test Case
+TEST_CASE("Flatten function works correctly") {
+    // Test cases to verify the correctness of the flatten function
 
-```cpp
-#define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
-#include "catch.hpp"
-
-#include <vector>
-#include <variant>
-
-// Forward declaration of the flatten function
-std::vector<int> flatten(const std::vector<std::variant<int, std::vector<int>>>& nested_list);
-
-TEST_CASE("Flatten Nested List", "[flatten]") {
-    SECTION("Empty List") {
-        std::vector<std::variant<int, std::vector<int>>> emptyList = {};
-        REQUIRE(flatten(emptyList).empty());
+    SECTION("Empty list") {
+        std::vector<std::vector<int>> nested_list = {};
+        std::vector<int> expected = {};
+        REQUIRE(flatten(nested_list) == expected);
     }
 
-    SECTION("Single Element") {
-        std::vector<std::variant<int, std::vector<int>>> singleElement = {42};
-        std::vector<int> expected = {42};
-        REQUIRE(flatten(singleElement) == expected);
+    SECTION("Single element list") {
+        std::vector<std::vector<int>> nested_list = {{1}};
+        std::vector<int> expected = {1};
+        REQUIRE(flatten(nested_list) == expected);
     }
 
-    SECTION("Nested List") {
-        std::vector<std::variant<int, std::vector<int>>> nestedList = {1, {2, 3}, 4, {5, {6, 7}}};
-        std::vector<int> expected = {1, 2, 3, 4, 5, 6, 7};
-        REQUIRE(flatten(nestedList) == expected);
-    }
-
-    SECTION("Mixed Types") {
-        std::vector<std::variant<int, std::vector<int>>> mixedTypes = {1, {2, 3}, 4, {"a", "b"}};
+    SECTION("Nested list with one level") {
+        std::vector<std::vector<int>> nested_list = {{1, 2}, {3, 4}};
         std::vector<int> expected = {1, 2, 3, 4};
-        REQUIRE(flatten(mixedTypes) == expected);
+        REQUIRE(flatten(nested_list) == expected);
+    }
+
+    SECTION("Nested list with multiple levels") {
+        std::vector<std::vector<int>> nested_list = {{1, 2, {3}}, 4, {{5, 6}, 7}};
+        std::vector<int> expected = {1, 2, 3, 4, 5, 6, 7};
+        REQUIRE(flatten(nested_list) == expected);
+    }
+
+    SECTION("Nested list with empty sublists") {
+        std::vector<std::vector<int>> nested_list = {{}, {}, {1, 2}, {}, {3}};
+        std::vector<int> expected = {1, 2, 3};
+        REQUIRE(flatten(nested_list) == expected);
     }
 }
 ```
 
-### Explanation
+### Explanation:
+1. **Header Inclusions**:
+   - Include the necessary Catch2 header (`catch2/catch_test_macros.hpp`) for testing.
+   - Include the `<vector>` header for using `std::vector`.
 
-1. **C++ Flatten Function**:
-   - The `flatten` function takes a vector of variants, where each variant can either be an integer or another vector of integers.
-   - It iterates through the list and checks the type of each element. If it's an integer, it adds it to the result vector. If it's a vector, it inserts all elements from the sublist into the result vector.
+2. **Function Definition**:
+   - The `flatten` function takes a nested list (a vector of vectors of integers) and returns a flattened version of it.
+   - The helper function `flattenHelper` is used to recursively flatten the nested list.
 
-2. **Catch2 Test Case**:
-   - We include the necessary headers and forward declare the `flatten` function.
-   - We define a test suite named "Flatten Nested List" with several sections to test different scenarios.
-   - Each section creates a test case with an input and an expected output, and uses `REQUIRE` to assert that the actual output matches the expected output.
+3. **Test Class**:
+   - The `TEST_CASE` macro defines a test case named "Flatten function works correctly".
+   - Each `SECTION` within the test case represents a specific scenario to test the `flatten` function.
+   - The `REQUIRE` macro is used to assert the expected results.
 
-To compile and run these tests, you need to have Catch2 installed and properly set up in your build system.
+4. **Test Cases**:
+   - **Empty list**: Tests an empty nested list.
+   - **Single element list**: Tests a nested list with a single element.
+   - **Nested list with one level**: Tests a nested list with one level of nesting.
+   - **Nested list with multiple levels**: Tests a nested list with multiple levels of nesting.
+   - **Nested list with empty sublists**: Tests a nested list with empty sublists.
+
+This conversion ensures that the functionality and logic of the tests are preserved while adapting to C++ and the Catch2 testing framework.

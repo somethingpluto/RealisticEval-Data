@@ -1,34 +1,122 @@
-Sure, here's how you can write the equivalent Jest test case in JavaScript:
+Certainly! Below is the equivalent JavaScript test class using Jest, which maintains the functionality and logic of the Python unittest test class. I will also document any necessary changes due to language differences.
+
+### Python Code
+```python
+import unittest
+from PIL import Image
+
+def convert_image_to_bits(image_path: str):
+    """
+    Converts an image to a binary representation. Converts the image to black and white mode,
+    that is, each pixel is represented by only 1 bit, with a white pixel value of 255 and a black pixel value of 0.
+
+    Args:
+        image_path (str): The file path of the image to convert.
+
+    Returns:
+        list: A list of bits representing the image, where 1 is for white pixels
+              and 0 is for black pixels.
+    """
+    image = Image.open(image_path)
+    image = image.convert('1')
+
+    pixel_data = image.load()
+
+    w, h = image.size
+
+    bits_array = []
+
+    for y in range(h):
+        for x in range(w):
+            pixel = pixel_data[x, y]
+            bit = 1 if pixel == 255 else 0
+            bits_array.append(bit)
+
+    return bits_array
+
+class TestConvertImageToBits(unittest.TestCase):
+
+    def test_convert_image_to_bits(self):
+        # Assuming 'test_image.png' is a valid image file
+        image_path = 'test_image.png'
+        expected_bits = [1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1]
+
+        result = convert_image_to_bits(image_path)
+        self.assertEqual(result, expected_bits)
+
+if __name__ == '__main__':
+    unittest.main()
+```
+
+### Equivalent JavaScript Test Class Using Jest
 
 ```javascript
-const { convertImageToBits } = require('./path-to-your-function'); // Adjust the import accordingly
+const Jimp = require('jimp');
+const convertImageToBits = require('./path/to/convertImageToBits'); // Import the function
 
-describe('convertImageToBits', () => {
-  it('should convert an image to a binary representation', async () => {
-    const imagePath = 'path/to/your/image.jpg'; // Replace with actual image path
-    const expectedResult = [0, 1, 0, 1]; // Replace with expected result based on your image
+/**
+ * Converts an image to a binary representation.
+ * Converts the image to black and white mode, that is, each pixel is represented by only 1 bit,
+ * with a white pixel value of 255 and a black pixel value of 0.
+ *
+ * @param {string} imagePath - The file path of the image to convert.
+ * @returns {Promise<Array<number>>} A promise that resolves to a list of bits representing the image,
+ *                                   where 1 is for white pixels and 0 is for black pixels.
+ */
+async function convertImageToBits(imagePath) {
+    try {
+        const image = await Jimp.read(imagePath);
+        image.color([{ apply: 'greyscale' }]);
+        image.color([{ apply: 'threshold', params: [128] }]);
 
-    const result = await convertImageToBits(imagePath);
+        const bitsArray = [];
 
-    expect(result).toEqual(expectedResult);
-  });
+        for (let y = 0; y < image.bitmap.height; y++) {
+            for (let x = 0; x < image.bitmap.width; x++) {
+                const pixel = image.getPixelColor(x, y);
+                const bit = (pixel & 0xFFFFFF) === 0xFFFFFF ? 1 : 0;
+                bitsArray.push(bit);
+            }
+        }
+
+        return bitsArray;
+    } catch (error) {
+        throw new Error(`Failed to convert image: ${error.message}`);
+    }
+}
+
+describe('Test Convert Image To Bits', () => {
+    it('should correctly convert the image to bits', async () => {
+        // Assuming 'test_image.png' is a valid image file
+        const imagePath = 'test_image.png';
+        const expectedBits = [1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1];
+
+        const result = await convertImageToBits(imagePath);
+        expect(result).toEqual(expectedBits);
+    });
 });
+
+// Example usage:
+// Run the tests using Jest CLI
+// npx jest
 ```
 
-Make sure you have `jest` installed in your project. If not, you can install it using npm or yarn:
+### Explanation:
+1. **Import Jimp**: Use `require('jimp')` to import the Jimp library.
+2. **Import Function**: Import the `convertImageToBits` function from the relevant module.
+3. **JSDoc Comments**: Add JSDoc comments to describe the function, arguments, and return values.
+4. **Async Function**: Mark the function as `async` since reading an image with Jimp returns a Promise.
+5. **Image Processing**:
+   - Read the image using `Jimp.read(imagePath)`.
+   - Convert the image to grayscale using `image.color([{ apply: 'greyscale' }])`.
+   - Apply a threshold filter to convert the image to black and white using `image.color([{ apply: 'threshold', params: [128] }])`.
+6. **Iterate Over Pixels**: Iterate over each pixel in the image using nested loops.
+7. **Extract Pixel Color**: Use `image.getPixelColor(x, y)` to get the color of the pixel at position `(x, y)`.
+8. **Check Pixel Color**: Determine if the pixel is white (fully opaque white) by checking if the color is `0xFFFFFF`.
+9. **Return Bits Array**: Return the `bitsArray` once all pixels have been processed.
+10. **Testing with Jest**:
+    - Use `describe` and `it` blocks to define the test cases.
+    - Use `expect` to make assertions on the results.
+    - Handle asynchronous operations using `async`/`await`.
 
-```bash
-npm install --save-dev jest
-# or
-yarn add --dev jest
-```
-
-Then, run your tests with:
-
-```bash
-npx jest
-# or
-yarn jest
-```
-
-This will execute the test case you've written. Adjust the `imagePath` and `expectedResult` according to your specific needs and the output of your function.
+This conversion ensures that the functionality and logic of the tests are preserved, and the structure is clear and well-documented.

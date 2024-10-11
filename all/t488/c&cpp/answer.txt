@@ -1,108 +1,155 @@
-To convert the given Python code to C/C++ code, we need to consider that C and C++ do not have built-in support for retrieving network interfaces in the same way Python does with `subprocess` and regular expressions. Instead, we can use system-specific libraries or APIs to achieve similar functionality.
+Certainly! Below is the equivalent C++ code that maintains the same functionality, logic, and structure as the provided Python code:
 
-Here's an example of how you might implement this in C using the Windows API:
-
-```c
+```cpp
+#include <iostream>
+#include <string>
+#include <vector>
+#include <regex>
+#include <filesystem>
+#include <optional>
 #include <windows.h>
-#include <iphlpapi.h>
-#include <stdio.h>
+#include <shlwapi.h>
 
-#pragma comment(lib, "Iphlpapi.lib")
+#pragma comment(lib, "shlwapi.lib")
 
-typedef struct _IP_ADAPTER_ADDRESSES {
-    ULONG            Length;
-    ULONG            Flags;
-    ULONGLONG        Next;
-    PUNICODE_STRING  Description;
-    PUNICODE_STRING  FriendlyName;
-    PUNICODE_STRING  PhysicalAddress;
-    ULONG            PhysicalAddressLength;
-    ULONG            AddressFamily;
-    union {
-        sockaddr_in  ipv4;
-        sockaddr_in6 ipv6;
-    };
-    ULONG            Mtu;
-    ULONG            IfType;
-    ULONG            OperStatus;
-    ULONG            Ipv6IfIndex;
-    ULONG            Ipv4IfIndex;
-} IP_ADAPTER_ADDRESSES, *PIP_ADAPTER_ADDRESSES;
+std::optional<std::string> get_local_ip(const std::string& interface = "Wi-Fi") {
+    /**
+     * Retrieve the local IP address of the specified network interface on Windows.
+     *
+     * Args:
+     * interface (std::string): The name of the network interface to check (default is "Wi-Fi").
+     *
+     * Returns:
+     * std::optional<std::string>: The local IP address if found, otherwise std::nullopt.
+     */
 
-DWORD GetLocalIp(const char* interfaceName, char* ipBuffer, size_t bufferSize) {
-    DWORD dwRetVal = 0;
-    ULONG ulOutBufLen = sizeof(IP_ADAPTER_ADDRESSES);
-    PIP_ADAPTER_ADDRESSES pAddresses = NULL;
+    try {
+        // Execute the 'ipconfig' command to get addresses for the specified interface
+        STARTUPINFOA si;
+        PROCESS_INFORMATION pi;
 
-    // Allocate memory for the adapter addresses structure
-    pAddresses = (IP_ADAPTER_ADDRESSES*)malloc(ulOutBufLen);
+        ZeroMemory(&si, sizeof(si));
+        si.cb = sizeof(si);
+        ZeroMemory(&pi, sizeof(pi));
 
-    if (pAddresses == NULL) {
-        printf("Error allocating memory.\n");
-        return 1;
-    }
+        if (!CreateProcessA(NULL, const_cast<char*>("ipconfig"), NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi)) {
+            std::cerr << "Failed to execute command: " << GetLastError() << std::endl;
+            return std::nullopt;
+        }
 
-    // Retrieve the adapter addresses
-    dwRetVal = GetAdaptersAddresses(AF_UNSPEC, GAA_FLAG_INCLUDE_PREFIX, NULL, pAddresses, &ulOutBufLen);
-    if (dwRetVal != ERROR_BUFFER_OVERFLOW) {
-        free(pAddresses);
-        printf("GetAdaptersAddresses failed with error: %d\n", dwRetVal);
-        return 1;
-    }
+        HANDLE hStdoutRead = pi.hStdout;
+        HANDLE hStdoutWrite = GetStdHandle(STD_OUTPUT_HANDLE);
 
-    // Reallocate memory to hold the actual data
-    pAddresses = (IP_ADAPTER_ADDRESSES*)realloc(pAddresses, ulOutBufLen);
-    if (pAddresses == NULL) {
-        printf("Error reallocating memory.\n");
-        return 1;
-    }
+        SECURITY_ATTRIBUTES sa;
+        sa.nLength = sizeof(SECURITY_ATTRIBUTES);
+        sa.bInheritHandle = TRUE;
+        sa.lpSecurityDescriptor = NULL;
 
-    // Retrieve the adapter addresses again
-    dwRetVal = GetAdaptersAddresses(AF_UNSPEC, GAA_FLAG_INCLUDE_PREFIX, NULL, pAddresses, &ulOutBufLen);
-    if (dwRetVal != NO_ERROR) {
-        free(pAddresses);
-        printf("GetAdaptersAddresses failed with error: %d\n", dwRetVal);
-        return 1;
-    }
+        HANDLE pipe[2];
+        if (!CreatePipe(&pipe[0], &pipe[1], &sa, 0)) {
+            std::cerr << "Failed to create pipe." << std::endl;
+            CloseHandle(hStdoutRead);
+            CloseHandle(hStdoutWrite);
+            CloseHandle(pi.hProcess);
+            CloseHandle(pi.hThread);
+            return std::nullopt;
+        }
 
-    // Iterate through the list of adapters
-    for (PIP_ADAPTER_ADDRESSES pCurrAddr = pAddresses; pCurrAddr != NULL; pCurrAddr = pCurrAddr->Next) {
-        if ((pCurrAddr->Flags & IP_ADAPTER_ADDRESS_DDNS_ENABLED) != 0 &&
-            (pCurrAddr->Flags & IP_ADAPTER_ADDRESS_DHCP_ENABLED) != 0 &&
-            (pCurrAddr->OperStatus == IfOperStatusUp)) {
+        if (!SetHandleInformation(pipe[0], HANDLE_FLAG_INHERIT, 0)) {
+            std::cerr << "Failed to set handle information." << std::endl;
+            CloseHandle(hStdoutRead);
+            CloseHandle(hStdoutWrite);
+            CloseHandle(pi.hProcess);
+            CloseHandle(pi.hThread);
+            return std::nullopt;
+        }
 
-            // Check if the adapter description matches the specified interface name
-            if (_stricmp(pCurrAddr->Description->Buffer, interfaceName) == 0) {
-                // Print the IPv4 address
-                if (pCurrAddr->FirstUnicastAddress != NULL && pCurrAddr->FirstUnicastAddress->Address.lpSockaddr->sa_family == AF_INET) {
-                    SOCKADDR_IN* pAddr = (SOCKADDR_IN*)pCurrAddr->FirstUnicastAddress->Address.lpSockaddr;
-                    sprintf(ipBuffer, "%s", inet_ntoa(pAddr->sin_addr));
-                    break;
-                }
+        if (!RedirectHandle(pi.hProcess, STD_OUTPUT_HANDLE, pipe[1], TRUE)) {
+            std::cerr << "Failed to redirect handle." << std::endl;
+            CloseHandle(hStdoutRead);
+            CloseHandle(hStdoutWrite);
+            CloseHandle(pi.hProcess);
+            CloseHandle(pi.hThread);
+            return std::nullopt;
+        }
+
+        CloseHandle(pipe[1]);
+
+        DWORD exitCode;
+        WaitForSingleObject(pi.hProcess, INFINITE);
+        GetExitCodeProcess(pi.hProcess, &exitCode);
+
+        CloseHandle(hStdoutRead);
+        CloseHandle(hStdoutWrite);
+        CloseHandle(pi.hProcess);
+        CloseHandle(pi.hThread);
+
+        // Read data from pipe
+        char buffer[4096];
+        DWORD bytesRead;
+        std::string output;
+
+        while (ReadFile(pipe[0], buffer, sizeof(buffer) - 1, &bytesRead, NULL) && bytesRead > 0) {
+            buffer[bytesRead] = '\0';
+            output += buffer;
+        }
+
+        CloseHandle(pipe[0]);
+
+        // Regular expression to match IPv4 addresses
+        std::regex ip_pattern(R"((\d+\.\d+\.\d+\.\d+))");
+
+        // Search for IP addresses in the command output
+        std::smatch matches;
+        std::string::const_iterator searchStart(output.cbegin());
+        std::vector<std::string> ips;
+
+        while (std::regex_search(searchStart, output.cend(), matches, ip_pattern)) {
+            ips.push_back(matches[0]);
+            searchStart = matches.suffix().first;
+        }
+
+        // Return the first local IP found
+        for (const auto& ip : ips) {
+            if (ip.find("192.168.") == 0) {
+                return ip;
             }
         }
+
+        return std::nullopt;  // Return std::nullopt if no suitable IP is found
+
+    } catch (const std::exception& e) {
+        std::cerr << "An unexpected error occurred: " << e.what() << std::endl;
+        return std::nullopt;
     }
-
-    // Free the allocated memory
-    free(pAddresses);
-
-    return dwRetVal;
 }
 
 int main() {
-    char ip[INET_ADDRSTRLEN];
-    DWORD result = GetLocalIp("Wi-Fi", ip, sizeof(ip));
-
-    if (result == NO_ERROR) {
-        printf("Local IP address: %s\n", ip);
+    auto ip = get_local_ip();
+    if (ip) {
+        std::cout << "Local IP address: " << *ip << std::endl;
     } else {
-        printf("Failed to retrieve local IP address.\n");
+        std::cout << "No suitable IP address found." << std::endl;
     }
 
     return 0;
 }
 ```
 
-This C code uses the Windows API to retrieve information about network adapters and their IP addresses. It iterates through the list of adapters, checks if the adapter description matches the specified interface name ("Wi-Fi" in this case), and prints the first IPv4 address it finds.
+### Explanation:
+1. **Imports**: 
+   - The necessary headers (`iostream`, `string`, `vector`, `regex`, `filesystem`, `optional`, `windows.h`, `shlwapi.h`) are included.
+   - The `shlwapi.lib` library is linked with `#pragma comment(lib, "shlwapi.lib")`.
 
-Note that this code requires linking against the `Iphlpapi.lib` library, which provides access to the `GetAdaptersAddresses` function. This function is available only on Windows systems. If you need cross-platform support, you would need to use platform-specific APIs or libraries for each target operating system.
+2. **Function Definition**:
+   - The `get_local_ip` function is defined with a default parameter value.
+   - It uses Windows API functions (`CreateProcessA`, `CreatePipe`, `SetHandleInformation`, `RedirectHandle`, etc.) to execute the `ipconfig` command and capture its output.
+
+3. **Regular Expression**:
+   - A regular expression is used to match IPv4 addresses in the command output.
+
+4. **Error Handling**:
+   - Exception handling is implemented to catch and report any unexpected errors.
+
+5. **Main Function**:
+   - The `main` function demonstrates how to call `get_local_ip` and handle the returned optional string.

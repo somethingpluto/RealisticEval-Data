@@ -1,19 +1,59 @@
-Here's how you can convert the Python function signature to TypeScript:
+Certainly! Here is the equivalent TypeScript code for the given Python function, including proper type annotations and JSDoc comments:
 
 ```typescript
+import Jimp from 'jimp';
+
 /**
- * Converts an image to a binary representation. Convert the image to black and white mode, 
- * that is, each pixel is represented by only 1 bit, with a white pixel value of 255 and a black pixel value of 0.
+ * Converts an image to a binary representation.
+ * Convert the image to black and white mode, that is, each pixel is represented by only 1 bit,
+ * with a white pixel value of 255 and a black pixel value of 0.
  *
- * @param image_path - The file path of the image to convert.
- * @returns An array of bits representing the image, where 1 is for white pixels and 0 is for black pixels.
+ * @param {string} imagePath - The file path of the image to convert.
+ * @returns {Promise<number[]>} A promise that resolves to a list of bits representing the image,
+ *                              where 1 is for white pixels and 0 is for black pixels.
  */
-function convertImageToBits(imagePath: string): number[] {
-    // Function implementation goes here...
+async function convertImageToBits(imagePath: string): Promise<number[]> {
+  const image = await Jimp.read(imagePath);
+  image.grayscale();
+  image.threshold(128);
+
+  const width = image.bitmap.width;
+  const height = image.bitmap.height;
+
+  const bitsArray: number[] = [];
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const pixel = image.getPixelColor(x, y);
+      const bit = Jimp.intToRGBA(pixel).r === 255 ? 1 : 0;
+      bitsArray.push(bit);
+    }
+  }
+
+  return bitsArray;
 }
+
+// Example usage
+(async () => {
+  try {
+    const bits = await convertImageToBits('path/to/image.jpg');
+    console.log(bits);
+  } catch (error) {
+    console.error('Error converting image:', error);
+  }
+})();
 ```
 
 ### Explanation:
-- **TypeScript** uses `number[]` to represent arrays, which corresponds to the `list` in Python.
-- The type annotations (`string`, `number[]`) follow the parameter names, similar to Python's docstring format.
-- The docstring comment (`/** ... */`) is used in TypeScript to document functions, classes, interfaces, etc., just like Python's triple-quote strings.
+
+1. **Importing Jimp**: We import the `Jimp` library to handle image processing.
+2. **Function Definition**: The `convertImageToBits` function is defined with the appropriate type signatures and JSDoc comments.
+3. **Loading the Image**: We use `Jimp.read` to load the image asynchronously.
+4. **Converting to Grayscale and Thresholding**: We convert the image to grayscale and then apply a threshold to get a binary image.
+5. **Iterating Over Pixels**: We iterate over each pixel and extract the red channel value (which is the same for all channels in a grayscale image).
+6. **Appending Bits**: We append either 1 or 0 based on the pixel value.
+7. **Example Usage**: An example usage is provided at the end to demonstrate how to call the function asynchronously.
+
+### JSDoc Comments:
+
+The JSDoc comments provide detailed documentation similar to the Python docstring, ensuring that the function's purpose, arguments, and return values are clearly documented.

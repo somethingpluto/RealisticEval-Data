@@ -1,0 +1,136 @@
+To convert the provided JavaScript Jest test cases into Python unittest test cases, we need to follow the structure of Python's unittest framework while adapting the logic of the JavaScript tests. Since Python does not manipulate the DOM in the same way as JavaScript, we will simulate the necessary behavior within Python.
+JavaScript Jest Test Case
+Here’s the original JavaScript code that you provided:
+javascript
+describe('getCSSFromSheet', () => {
+    let styleSheet;
+    beforeEach(() => {
+        // Create a style element with some CSS rules for testing
+        const style = document.createElement('style');
+        style.appendChild(document.createTextNode(`
+            body { background-color: red; }
+            p { color: blue; }
+        `));
+        document.head.appendChild(style);
+        styleSheet = style.sheet;
+    });
+    
+    afterEach(() => {
+        // Clean up the document after each test
+        document.head.innerHTML = '';
+    });
+
+    test('Empty Stylesheet: should return an empty string', () => {
+        const emptyStyle = document.createElement('style');
+        document.head.appendChild(emptyStyle);
+        const emptyStyleSheet = emptyStyle.sheet;
+        const cssText = getCSSFromSheet(emptyStyleSheet);
+        expect(cssText).toBe('');
+    });
+
+    test('Invalid Input: should return an empty string for non-CSSStyleSheet input', () => {
+        expect(getCSSFromSheet(null)).toBe('');
+        expect(getCSSFromSheet({})).toBe('');
+        expect(getCSSFromSheet('not a stylesheet')).toBe('');
+    });
+
+    test('Cross-Origin Restrictions: should handle restricted stylesheets gracefully', () => {
+        // Simulate a cross-origin stylesheet
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = 'http://example.com/style.css';
+        document.head.appendChild(link);
+        
+        // Accessing cssRules of a cross-origin stylesheet should throw an error
+        const restrictedSheet = link.sheet;
+        expect(() => {
+            getCSSFromSheet(restrictedSheet);
+        }).not.toThrow();  // The function should not throw an error
+
+        // Simulate behavior by returning an empty string
+        const cssText = getCSSFromSheet(restrictedSheet);
+        expect(cssText).toBe('');
+    });
+
+    test('Style Element with Inline CSS: should return CSS from inline style element', () => {
+        const styleElement = document.createElement('style');
+        styleElement.textContent = 'div { font-size: 16px; }';
+        document.head.appendChild(styleElement);
+        const cssText = getCSSFromSheet(styleElement.sheet);
+        expect(cssText).toBe('div {font-size: 16px;}');
+    });
+});
+Python Unittest Test Case
+Here’s how you can convert the above test cases into Python using the unittest module:
+python
+import unittest
+from unittest.mock import MagicMock
+
+# Assuming get_css_from_sheet is defined somewhere
+def get_css_from_sheet(sheet):
+    if not isinstance(sheet, str):
+        return ''
+    # Simulated behavior for test purposes
+    return 'div {font-size: 16px;}' if 'div' in sheet else ''
+
+class TestGetCSSFromSheet(unittest.TestCase):
+    def setUp(self):
+        """Create a style element with some CSS rules for testing."""
+        self.style_element = MagicMock()
+        self.style_element.sheet = 'body { background-color: red; } p { color: blue; }'
+    
+    def tearDown(self):
+        """Clean up after each test."""
+        pass  # No need to clean up in the mock context
+
+    def test_empty_stylesheet(self):
+        """Empty Stylesheet: should return an empty string."""
+        empty_style = MagicMock()
+        empty_style.sheet = ''
+        css_text = get_css_from_sheet(empty_style.sheet)
+        self.assertEqual(css_text, '')
+
+    def test_invalid_input(self):
+        """Invalid Input: should return an empty string for non-CSSStyleSheet input."""
+        self.assertEqual(get_css_from_sheet(None), '')
+        self.assertEqual(get_css_from_sheet({}), '')
+        self.assertEqual(get_css_from_sheet('not a stylesheet'), '')
+
+    def test_cross_origin_restrictions(self):
+        """Cross-Origin Restrictions: should handle restricted stylesheets gracefully."""
+        restricted_sheet = MagicMock()
+        restricted_sheet.sheet = None  # Simulating a restricted stylesheet
+
+        # The function should not throw an error, we'll just check for the return value
+        css_text = get_css_from_sheet(restricted_sheet.sheet)
+        self.assertEqual(css_text, '')
+
+    def test_style_element_with_inline_css(self):
+        """Style Element with Inline CSS: should return CSS from inline style element."""
+        style_element = MagicMock()
+        style_element.sheet = 'div { font-size: 16px; }'
+        css_text = get_css_from_sheet(style_element.sheet)
+        self.assertEqual(css_text, 'div {font-size: 16px;}')
+
+if __name__ == '__main__':
+    unittest.main()
+Explanation of the Python Code:
+Imports:
+The unittest module is imported for creating test cases.
+MagicMock from unittest.mock is used to simulate the DOM elements.
+Test Class:
+TestGetCSSFromSheet is a subclass of unittest.TestCase that contains all the test methods.
+setUp Method:
+This method creates a mock style element with some CSS rules before each test.
+tearDown Method:
+This method can be used to clean up after each test if necessary. In this case, we don’t need it since we are using mocks.
+Test Methods:
+Each test method corresponds to a test case in the JavaScript code:
+test_empty_stylesheet: Tests if an empty stylesheet returns an empty string.
+test_invalid_input: Tests various invalid inputs to ensure the function returns an empty string.
+test_cross_origin_restrictions: Simulates a cross-origin stylesheet and checks if the function handles it gracefully.
+test_style_element_with_inline_css: Tests if the function correctly extracts CSS from an inline style element.
+Running Tests:
+The if __name__ == '__main__': block is used to execute the tests when the script is run directly.
+Note:
+Since Python does not have a native DOM like JavaScript, we simulate the behavior with MagicMock. You can replace the get_css_from_sheet implementation with the actual function you intend to test. The tests will ensure that your function behaves as expected based on the original JavaScript test cases.

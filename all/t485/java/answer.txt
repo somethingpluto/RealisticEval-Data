@@ -1,83 +1,87 @@
-Sure, here's the equivalent Java code for your Python function:
+Certainly! Below is the equivalent Java code for the provided Python code, organized within the `org.real.temp` package and the `Answer` class. This includes handling of type declarations, method signatures, and other necessary adjustments:
 
 ```java
 package org.real.temp;
 
 import java.util.*;
+import java.util.regex.*;
 
 public class Answer {
-    
+
+    /**
+     * This method modifies a SQL query string containing named parameters
+     * (like $name, $age) into a format compatible with libraries that require
+     * positional parameters (like $1, $2, etc.), such as asyncpg. It returns
+     * a tuple containing the modified SQL string and a list of parameter values
+     * ordered according to their new positions in the query.
+     *
+     * @param sql The original SQL query string with named parameters.
+     * @param params A map mapping parameter names to their values.
+     * @return A tuple where the first element is the modified SQL query string
+     *         with positional parameters, and the second element is a list of
+     *         parameter values sorted according to the order of the positional parameters.
+     */
     public static Tuple<String, List<Object>> prepareQuery(String sql, Map<String, Object> params) {
-        // Create a map to hold the new position of each parameter
-        Map<String, Integer> paramPositions = new HashMap<>();
-        
-        // Create a list to hold the new parameters in order
-        List<Object> newParams = new ArrayList<>();
-        
-        // Regular expression to find named parameters
-        Pattern pattern = Pattern.compile("\\$(\\w+)");
+        // Find all occurrences of named parameters in the SQL string
+        Pattern pattern = Pattern.compile("\\$\\w+");
         Matcher matcher = pattern.matcher(sql);
-        
-        int pos = 1; // Position counter
-        
-        // Replace named parameters with placeholders and store their positions
-        StringBuffer sb = new StringBuffer();
+        Set<String> namedParams = new LinkedHashSet<>();
+
         while (matcher.find()) {
-            String paramName = matcher.group(1);
-            if (!paramPositions.containsKey(paramName)) {
-                paramPositions.put(paramName, pos++);
+            namedParams.add(matcher.group());
+        }
+
+        // Remove duplicates while preserving order
+        List<String> uniqueParams = new ArrayList<>(namedParams);
+
+        // Substitute each named parameter with its corresponding positional parameter
+        for (int index = 0; index < uniqueParams.size(); index++) {
+            String param = uniqueParams.get(index);
+            String positionalParam = "$" + (index + 1);
+            sql = sql.replace(param, positionalParam);
+        }
+
+        // Prepare the list of values corresponding to the order of the positional parameters
+        List<Object> values = new ArrayList<>();
+        for (String param : uniqueParams) {
+            if (params.containsKey(param.substring(1))) { // Removing the '$' prefix
+                values.add(params.get(param.substring(1)));
             }
-            matcher.appendReplacement(sb, "$" + paramPositions.get(paramName));
         }
-        matcher.appendTail(sb);
-        
-        // Sort the parameters based on their new positions
-        for (Map.Entry<String, Integer> entry : paramPositions.entrySet()) {
-            String paramName = entry.getKey();
-            int newPosition = entry.getValue();
-            newParams.add(params.get(paramName));
-        }
-        
-        return new Tuple<>(sb.toString(), newParams);
+
+        return new Tuple<>(sql, values);
     }
 
-    // Helper class to return a tuple of two elements
+    // A simple Tuple class to hold two values
     public static class Tuple<X, Y> {
-        private final X x;
-        private final Y y;
+        public final X first;
+        public final Y second;
 
-        public Tuple(X x, Y y) {
-            this.x = x;
-            this.y = y;
-        }
-
-        public X getX() {
-            return x;
-        }
-
-        public Y getY() {
-            return y;
+        public Tuple(X first, Y second) {
+            this.first = first;
+            this.second = second;
         }
     }
 
+    // Example usage
     public static void main(String[] args) {
-        String sql = "SELECT * FROM users WHERE id = $user_id AND status = $status";
+        String sql = "SELECT * FROM users WHERE name = $name AND age = $age";
         Map<String, Object> params = new HashMap<>();
-        params.put("user_id", 42);
-        params.put("status", "active");
+        params.put("name", "Alice");
+        params.put("age", 30);
 
         Tuple<String, List<Object>> result = prepareQuery(sql, params);
-        System.out.println(result.getX()); // Output: SELECT * FROM users WHERE id = $1 AND status = $2
-        System.out.println(result.getY()); // Output: [42, active]
+        System.out.println("Modified SQL: " + result.first);
+        System.out.println("Values: " + result.second);
     }
 }
 ```
 
 ### Explanation:
-1. **Regular Expression**: The `Pattern` and `Matcher` classes from the `java.util.regex` package are used to find named parameters (`$name`, `$age`) in the SQL string.
-2. **Parameter Positions**: A `HashMap` is used to keep track of the new positions of each parameter.
-3. **StringBuffer**: The `StringBuffer` class is used to construct the new SQL string with placeholders (`$1`, `$2`, etc.).
-4. **Sorting Parameters**: The parameters are added to a `List` in the order of their new positions.
-5. **Helper Class**: A simple `Tuple` class is created to return two values from the method.
+1. **Pattern and Matcher**: Used to find all named parameters in the SQL string.
+2. **LinkedHashSet**: Used to remove duplicates while preserving the order of named parameters.
+3. **Replacement Logic**: Replaces named parameters with positional parameters.
+4. **List of Values**: Constructs a list of values based on the order of positional parameters.
+5. **Tuple Class**: A simple class to hold two values, similar to Python's tuple.
 
-This Java code should achieve the same functionality as your Python function.
+This Java code maintains the functionality and logic of the original Python code while adapting to Java's syntax and conventions.

@@ -1,0 +1,80 @@
+To convert your JavaScript Jest test cases into Python unittest framework, we will follow these steps:
+Test Setup and Teardown: Instead of beforeEach in Jest, we will use setUp in unittest to clear the cookies before each test.
+Cookie Handling: Since document.cookie is specific to the browser, we'll simulate cookies using a string (for example, using a string with cookies separated by semicolons, similar to the way JavaScript handles them).
+Assertions: We will use self.assertEqual and self.assertIsNone for testing the function's behavior in Python.
+Python Code using unittest
+Here is the equivalent Python code for your Jest test cases:
+python
+import unittest
+
+def get_cookie(name: str, cookie_string: str) -> str:
+    """
+    Retrieve the value of a cookie by its name from a cookie string.
+
+    Args:
+        name (str): The name of the cookie to retrieve.
+        cookie_string (str): The string containing all cookies.
+
+    Returns:
+        str: The value of the cookie if found, otherwise None.
+    """
+    cookie_name = f"{name}="
+    cookies = cookie_string.split(';')  # Split the cookie string into individual cookies
+
+    for cookie in cookies:
+        cookie = cookie.strip()  # Trim whitespace
+        if cookie.startswith(cookie_name):
+            return cookie[len(cookie_name):]  # Return the value of the cookie
+
+    return None  # Return None if the cookie is not found
+
+
+class TestGetCookie(unittest.TestCase):
+    
+    def setUp(self):
+        """Clear cookies before each test"""
+        self.cookie_string = ''  # Start with no cookies
+
+    def test_returns_correct_cookie_value_for_existing_cookie(self):
+        """Test: Returns correct cookie value for existing cookie"""
+        self.cookie_string = "username=JohnDoe; expires=Thu, 18 Dec 2023 12:00:00 UTC; path=/"
+        result = get_cookie('username', self.cookie_string)
+        self.assertEqual(result, 'JohnDoe')
+
+    def test_returns_none_if_cookie_does_not_exist(self):
+        """Test: Returns None if cookie does not exist"""
+        self.cookie_string = "username=JohnDoe; expires=Thu, 18 Dec 2023 12:00:00 UTC; path=/"
+        result = get_cookie('user', self.cookie_string)
+        self.assertIsNone(result)
+
+    def test_returns_none_when_no_cookies_are_set(self):
+        """Test: Returns None when no cookies are set"""
+        result = get_cookie('username', self.cookie_string)
+        self.assertIsNone(result)
+
+    def test_handles_multiple_cookies_and_retrieves_correct_one(self):
+        """Test: Handles multiple cookies and retrieves the correct one"""
+        self.cookie_string = "user=JaneDoe; expires=Thu, 18 Dec 2023 12:00:00 UTC; path=/"
+        self.cookie_string += "; username=JohnDoe; expires=Thu, 18 Dec 2023 12:00:00 UTC; path=/"
+        result = get_cookie('username', self.cookie_string)
+        self.assertEqual(result, 'JohnDoe')
+
+
+if __name__ == '__main__':
+    unittest.main()
+Explanation
+Test Setup:
+setUp(self) is used to clear the cookies before each test. This is the equivalent of Jest's beforeEach.
+Test Cases:
+test_returns_correct_cookie_value_for_existing_cookie: This tests if the function returns the correct value for a cookie that exists.
+test_returns_none_if_cookie_does_not_exist: This tests if the function returns None when the specified cookie does not exist.
+test_returns_none_when_no_cookies_are_set: This tests if the function returns None when no cookies are set.
+test_handles_multiple_cookies_and_retrieves_correct_one: This tests if the function correctly handles multiple cookies and retrieves the correct one.
+Assertions:
+self.assertEqual(result, 'JohnDoe') is used to check if the result equals the expected value.
+self.assertIsNone(result) is used to check if the result is None (for cookies that don't exist).
+Running the Tests
+You can run the tests with the following command:
+bash
+python -m unittest test_filename.py
+Replace test_filename.py with the name of your Python test file. This will execute the test cases and show the results in the console.

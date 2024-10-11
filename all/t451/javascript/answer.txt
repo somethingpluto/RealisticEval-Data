@@ -1,58 +1,57 @@
-Here's the equivalent JavaScript function using the `fs` module to read the image file and the `sharp` library to process it:
+To convert the given Python code into JavaScript, we need to use a library or approach that can handle image manipulation similarly to Python's `PIL`. One common library for this purpose in JavaScript is `Jimp` (JavaScript Image Manipulation Program). 
+
+First, you'll need to install Jimp using npm:
+
+```bash
+npm install jimp
+```
+
+Here is the equivalent JavaScript code using Jimp:
 
 ```javascript
-const fs = require('fs');
-const sharp = require('sharp');
+const Jimp = require('jimp');
 
-function convertImageToBits(imagePath) {
-    return new Promise((resolve, reject) => {
-        sharp(imagePath)
-            .greyscale()
-            .raw()
-            .toBuffer((err, data, info) => {
-                if (err) {
-                    return reject(err);
-                }
+async function convertImageToBits(imagePath) {
+    /**
+     * Converts an image to a binary representation.
+     *
+     * @param {string} imagePath - The file path of the image to convert.
+     * @returns {Promise<Array<number>>} A promise that resolves to a list of bits representing the image,
+     *                                    where 1 is for white pixels and 0 is for black pixels.
+     */
+    const image = await Jimp.read(imagePath);
+    image.color([{apply: 'greyscale'}]);
+    image.color([{apply: 'threshold', params: [128]}]);
 
-                const bits = [];
-                for (let i = 0; i < data.length; i += 3) {
-                    // Convert RGB to grayscale
-                    const gray = Math.round(0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2]);
-                    
-                    // Convert grayscale to binary
-                    const binary = gray > 127 ? '1' : '0';
-                    bits.push(parseInt(binary));
-                }
+    const bitsArray = [];
 
-                resolve(bits);
-            });
-    });
+    for (let y = 0; y < image.bitmap.height; y++) {
+        for (let x = 0; x < image.bitmap.width; x++) {
+            const pixel = image.getPixelColor(x, y);
+            const bit = (pixel & 0xFFFFFF) === 0xFFFFFF ? 1 : 0;
+            bitsArray.push(bit);
+        }
+    }
+
+    return bitsArray;
 }
 
-// Usage example:
-convertImageToBits('path/to/your/image.jpg')
+// Example usage:
+convertImageToBits('path/to/image.jpg')
     .then(bits => console.log(bits))
-    .catch(err => console.error(err));
+    .catch(error => console.error('Error:', error));
 ```
 
 ### Explanation:
-1. **Reading the Image**: We use the `sharp` library to read the image file. Sharp is a powerful image processing library for Node.js.
-   
-2. **Grayscale Conversion**: The `.greyscale()` method converts the image to grayscale.
+1. **Import Jimp**: Use `require('jimp')` to import the Jimp library.
+2. **Async Function**: The `convertImageToBits` function is marked as `async` because reading an image with Jimp returns a Promise.
+3. **Image Processing**:
+   - Read the image using `Jimp.read(imagePath)`.
+   - Convert the image to grayscale using `image.color([{apply: 'greyscale'}])`.
+   - Apply a threshold filter to convert the image to black and white using `image.color([{apply: 'threshold', params: [128]}])`.
+4. **Iterate Over Pixels**: Iterate over each pixel in the image using nested loops.
+5. **Extract Pixel Color**: Use `image.getPixelColor(x, y)` to get the color of the pixel at position `(x, y)`.
+6. **Check Pixel Color**: Determine if the pixel is white (fully opaque white) by checking if the color is `0xFFFFFF`.
+7. **Return Bits Array**: Return the `bitsArray` once all pixels have been processed.
 
-3. **Raw Buffer**: The `.raw()` method ensures we get the raw pixel data without any metadata.
-
-4. **Processing Pixels**: 
-   - For each pixel, we calculate its grayscale value using the formula `Math.round(0.299 * R + 0.587 * G + 0.114 * B)`.
-   - We then convert the grayscale value to either '1' or '0' based on whether it is greater than 127.
-   - Finally, we push the binary value into the `bits` array.
-
-5. **Promise Handling**: The function returns a promise that resolves with the list of bits or rejects with an error.
-
-### Note:
-- Make sure you have installed the required packages using npm:
-  ```bash
-  npm install sharp
-  ```
-  
-This JavaScript code will give you the same functionality as your Python code, converting an image to a binary representation where each pixel is represented by one bit (1 for white, 0 for black).
+This code should provide similar functionality to the original Python code.

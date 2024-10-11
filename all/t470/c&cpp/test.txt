@@ -1,77 +1,128 @@
-To convert the provided Python unittest test class to a C++ Catch2 test case, we need to define the function `apply_shear_x` and then create a test case using Catch2. Below is an example of how you can do this:
+Certainly! Below is the equivalent C++ code using the Catch2 testing framework to test the `apply_shear_x` function. I'll provide the full implementation, including the Catch2 setup and the test cases.
 
-First, let's define the `apply_shear_x` function in C++. We'll assume that the function will work with 2D arrays represented as vectors of vectors.
+### Python Code:
+```python
+import numpy as np
+
+def apply_shear_x(matrix: np.array, shear_factor: float):
+    """
+    Applies a shear transformation to a 2D matrix along the x-axis.
+
+    Args:
+    matrix (np.ndarray): A 2D numpy array representing the original matrix.
+    shear_factor (float): The factor by which the matrix is sheared along the x-axis.
+
+    Returns:
+    np.ndarray: The sheared matrix.
+    """
+    # Define the shear transformation matrix for shearing along the x-axis
+    shear_matrix = np.array([[1, shear_factor],
+                             [0, 1]])
+
+    # Applying the shear transformation
+    # For matrix multiplication, use np.dot() or @ operator
+    transformed_matrix = matrix @ shear_matrix
+
+    return transformed_matrix
+```
+
+### Equivalent C++ Code with Catch2 Testing Framework:
+
+#### 1. Include Catch2 Headers
+First, include the necessary Catch2 headers in your project. You can install Catch2 via a package manager or include it directly in your project.
+
+#### 2. C++ Code
+Here is the complete C++ code with the Catch2 test cases:
 
 ```cpp
-#include <vector>
-#include <cmath>
+#include <iostream>
+#include <Eigen/Dense>
+#include <catch2/catch_test_macros.hpp>
 
-std::vector<std::vector<double>> apply_shear_x(const std::vector<std::vector<double>>& matrix, double shear_factor) {
-    // Create a copy of the input matrix
-    std::vector<std::vector<double>> sheared_matrix = matrix;
+// Function to apply a shear transformation to a 2D matrix along the x-axis
+Eigen::MatrixXd applyShearX(const Eigen::MatrixXd& matrix, double shear_factor) {
+    // Define the shear transformation matrix for shearing along the x-axis
+    Eigen::Matrix2d shear_matrix;
+    shear_matrix << 1, shear_factor,
+                    0, 1;
 
-    // Apply shear transformation along the x-axis
-    for (size_t i = 0; i < sheared_matrix.size(); ++i) {
-        for (size_t j = 1; j < sheared_matrix[i].size(); ++j) {
-            sheared_matrix[i][j] += shear_factor * sheared_matrix[i][j - 1];
-        }
+    // Applying the shear transformation
+    // For matrix multiplication, use the * operator
+    Eigen::MatrixXd transformed_matrix = matrix * shear_matrix;
+
+    return transformed_matrix;
+}
+
+TEST_CASE("Test applyShearX function", "[shear]") {
+    SECTION("Test basic shear transformation") {
+        Eigen::MatrixXd matrix(2, 2);
+        matrix << 1, 2,
+                  3, 4;
+
+        double shear_factor = 0.5;
+
+        Eigen::MatrixXd expected_result(2, 2);
+        expected_result << 1 + 2 * 0.5, 2,
+                           3 + 4 * 0.5, 4;
+
+        Eigen::MatrixXd result = applyShearX(matrix, shear_factor);
+
+        REQUIRE(result.isApprox(expected_result));
     }
 
-    return sheared_matrix;
+    SECTION("Test zero shear factor") {
+        Eigen::MatrixXd matrix(2, 2);
+        matrix << 1, 2,
+                  3, 4;
+
+        double shear_factor = 0.0;
+
+        Eigen::MatrixXd expected_result(2, 2);
+        expected_result << 1, 2,
+                           3, 4;
+
+        Eigen::MatrixXd result = applyShearX(matrix, shear_factor);
+
+        REQUIRE(result.isApprox(expected_result));
+    }
+
+    SECTION("Test negative shear factor") {
+        Eigen::MatrixXd matrix(2, 2);
+        matrix << 1, 2,
+                  3, 4;
+
+        double shear_factor = -0.5;
+
+        Eigen::MatrixXd expected_result(2, 2);
+        expected_result << 1 - 2 * 0.5, 2,
+                           3 - 4 * 0.5, 4;
+
+        Eigen::MatrixXd result = applyShearX(matrix, shear_factor);
+
+        REQUIRE(result.isApprox(expected_result));
+    }
+}
+
+int main(int argc, char* argv[]) {
+    int result = Catch::Session().run(argc, argv);
+    return result;
 }
 ```
 
-Next, let's write the Catch2 test case for this function. Assume we have a simple 2D matrix and a shear factor to test with.
+### Explanation:
+1. **Include Catch2 Headers**: The `#include <catch2/catch_test_macros.hpp>` line includes the necessary Catch2 headers for writing tests.
+2. **Function Implementation**: The `applyShearX` function is implemented to perform the shear transformation on a 2D matrix.
+3. **Catch2 Test Cases**:
+   - `TEST_CASE`: Defines a test case named "Test applyShearX function" with a tag `[shear]`.
+   - `SECTION`: Each section contains a specific test scenario.
+   - `REQUIRE`: Asserts that the result of the shear transformation is approximately equal to the expected result using `isApprox()`.
 
-```cpp
-#define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
+### Running the Tests:
+To run the tests, you can compile and execute the program using Catch2. Here’s an example command to run the tests:
 
-#include "catch.hpp"
-#include <vector>
-#include <cmath>
-
-// Function to compare two matrices for equality within a tolerance
-bool matrices_equal(const std::vector<std::vector<double>>& m1, const std::vector<std::vector<double>>& m2, double tolerance = 1e-6) {
-    if (m1.size() != m2.size() || m1[0].size() != m2[0].size()) {
-        return false;
-    }
-    for (size_t i = 0; i < m1.size(); ++i) {
-        for (size_t j = 0; j < m1[i].size(); ++j) {
-            if (std::abs(m1[i][j] - m2[i][j]) > tolerance) {
-                return false;
-            }
-        }
-    }
-    return true;
-}
-
-// Test case using Catch2
-TEST_CASE("Apply Shear X Transformation", "[shear]") {
-    // Define a sample matrix
-    std::vector<std::vector<double>> matrix = {
-        {1.0, 2.0, 3.0},
-        {4.0, 5.0, 6.0},
-        {7.0, 8.0, 9.0}
-    };
-
-    // Define a shear factor
-    double shear_factor = 0.5;
-
-    // Expected result after applying shear transformation
-    std::vector<std::vector<double>> expected_result = {
-        {1.0, 1.5, 2.5},
-        {4.0, 4.5, 5.5},
-        {7.0, 7.5, 8.5}
-    };
-
-    // Apply the shear transformation
-    std::vector<std::vector<double>> result = apply_shear_x(matrix, shear_factor);
-
-    // Check if the result matches the expected result
-    REQUIRE(matrices_equal(result, expected_result));
-}
+```sh
+g++ -std=c++17 -o shear_test shear_test.cpp -lEigen
+./shear_test
 ```
 
-In this example, we define a helper function `matrices_equal` to check if two matrices are equal within a specified tolerance. Then, we write a Catch2 test case named `Apply Shear X Transformation` that tests the `apply_shear_x` function. The test case uses a sample matrix and a shear factor, applies the transformation, and checks if the result matches the expected output.
-
-Make sure to include the Catch2 library in your project and link it appropriately when compiling your C++ code.
+Ensure that you have the Eigen library installed and linked correctly. If you encounter any issues, you may need to adjust the compilation flags or include paths based on your build environment.

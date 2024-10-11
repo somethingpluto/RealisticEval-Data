@@ -1,58 +1,168 @@
-To convert the provided Python unittest test class into a C++ Catch2 test case, we need to first define the function `get_local_ip` in C++. After that, we can create a Catch2 test case to verify its functionality. Below is an example of how you might do this:
+Certainly! Below is the equivalent C++ code using the Catch2 testing framework to test the `get_local_ip` function. This includes the conversion of the Python unittest class into a Catch2 test suite, along with appropriate assertions.
 
-### C++ Code
+### C++ Code with Catch2 Testing Framework
 
 ```cpp
+#include <catch2/catch_test_macros.hpp>
 #include <iostream>
 #include <string>
-#include <regex>
 #include <optional>
+#include <regex>
+#include <windows.h>
+#include <shlwapi.h>
 
+#pragma comment(lib, "shlwapi.lib")
+
+// Retrieve the local IP address of the specified network interface on Windows.
+//
+// Args:
+//     interface (std::string): The name of the network interface to check (default is "Wi-Fi").
+//
+// Returns:
+//     std::optional<std::string>: The local IP address if found, otherwise std::nullopt.
 std::optional<std::string> get_local_ip(const std::string& interface = "Wi-Fi") {
-    // Implement the logic to retrieve the local IP address here
-    // For demonstration purposes, let's assume we always return a fixed IP
-    return "192.168.1.1";
+    try {
+        // Execute the 'ipconfig' command to get addresses for the specified interface
+        STARTUPINFOA si;
+        PROCESS_INFORMATION pi;
+
+        ZeroMemory(&si, sizeof(si));
+        si.cb = sizeof(si);
+        ZeroMemory(&pi, sizeof(pi));
+
+        if (!CreateProcessA(NULL, const_cast<char*>("ipconfig"), NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi)) {
+            std::cerr << "Failed to execute command: " << GetLastError() << std::endl;
+            return std::nullopt;
+        }
+
+        HANDLE hStdoutRead = pi.hStdout;
+        HANDLE hStdoutWrite = GetStdHandle(STD_OUTPUT_HANDLE);
+
+        SECURITY_ATTRIBUTES sa;
+        sa.nLength = sizeof(SECURITY_ATTRIBUTES);
+        sa.bInheritHandle = TRUE;
+        sa.lpSecurityDescriptor = NULL;
+
+        HANDLE pipe[2];
+        if (!CreatePipe(&pipe[0], &pipe[1], &sa, 0)) {
+            std::cerr << "Failed to create pipe." << std::endl;
+            CloseHandle(hStdoutRead);
+            CloseHandle(hStdoutWrite);
+            CloseHandle(pi.hProcess);
+            CloseHandle(pi.hThread);
+            return std::nullopt;
+        }
+
+        if (!SetHandleInformation(pipe[0], HANDLE_FLAG_INHERIT, 0)) {
+            std::cerr << "Failed to set handle information." << std::endl;
+            CloseHandle(hStdoutRead);
+            CloseHandle(hStdoutWrite);
+            CloseHandle(pi.hProcess);
+            CloseHandle(pi.hThread);
+            return std::nullopt;
+        }
+
+        if (!RedirectHandle(pi.hProcess, STD_OUTPUT_HANDLE, pipe[1], TRUE)) {
+            std::cerr << "Failed to redirect handle." << std::endl;
+            CloseHandle(hStdoutRead);
+            CloseHandle(hStdoutWrite);
+            CloseHandle(pi.hProcess);
+            CloseHandle(pi.hThread);
+            return std::nullopt;
+        }
+
+        CloseHandle(pipe[1]);
+
+        DWORD exitCode;
+        WaitForSingleObject(pi.hProcess, INFINITE);
+        GetExitCodeProcess(pi.hProcess, &exitCode);
+
+        CloseHandle(hStdoutRead);
+        CloseHandle(hStdoutWrite);
+        CloseHandle(pi.hProcess);
+        CloseHandle(pi.hThread);
+
+        // Read data from pipe
+        char buffer[4096];
+        DWORD bytesRead;
+        std::string output;
+
+        while (ReadFile(pipe[0], buffer, sizeof(buffer) - 1, &bytesRead, NULL) && bytesRead > 0) {
+            buffer[bytesRead] = '\0';
+            output += buffer;
+        }
+
+        CloseHandle(pipe[0]);
+
+        // Regular expression to match IPv4 addresses
+        std::regex ip_pattern(R"((\d+\.\d+\.\d+\.\d+))");
+
+        // Search for IP addresses in the command output
+        std::smatch matches;
+        std::string::const_iterator searchStart(output.cbegin());
+        std::vector<std::string> ips;
+
+        while (std::regex_search(searchStart, output.cend(), matches, ip_pattern)) {
+            ips.push_back(matches[0]);
+            searchStart = matches.suffix().first;
+        }
+
+        // Return the first local IP found
+        for (const auto& ip : ips) {
+            if (ip.find("192.168.") == 0) {
+                return ip;
+            }
+        }
+
+        return std::nullopt;  // Return std::nullopt if no suitable IP is found
+
+    } catch (const std::exception& e) {
+        std::cerr << "An unexpected error occurred: " << e.what() << std::endl;
+        return std::nullopt;
+    }
 }
 
-// Catch2 test cases
-#define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
-#include "catch.hpp"
-
-TEST_CASE("Get Local IP", "[get_local_ip]") {
-    SECTION("Default Interface") {
+TEST_CASE("Test get_local_ip function", "[get_local_ip]") {
+    SECTION("Test with default interface") {
         auto ip = get_local_ip();
         REQUIRE(ip.has_value());
-        REQUIRE(ip.value() == "192.168.1.1");
+        REQUIRE(ip.value().find("192.168.") == 0);
     }
 
-    SECTION("Specific Interface") {
-        auto ip = get_local_ip("Ethernet");
+    SECTION("Test with specified interface") {
+        auto ip = get_local_ip("Wi-Fi");
         REQUIRE(ip.has_value());
-        REQUIRE(ip.value() == "192.168.1.1");  // Assuming Ethernet also returns the same IP for simplicity
+        REQUIRE(ip.value().find("192.168.") == 0);
     }
+
+    SECTION("Test with non-existent interface") {
+        auto ip = get_local_ip("NonExistentInterface");
+        REQUIRE(!ip.has_value());
+    }
+}
+
+int main(int argc, char* argv[]) {
+    int result = Catch::Session().run(argc, argv);
+    return result;
 }
 ```
 
-### Explanation
+### Explanation:
 
-1. **Function Implementation**:
-   - The `get_local_ip` function is implemented in C++. In this example, it simply returns a fixed IP address for demonstration purposes. You should replace this with actual logic to retrieve the local IP address based on the specified interface.
+1. **Imports**:
+   - The necessary headers (`catch2/catch_test_macros.hpp`, `iostream`, `string`, `optional`, `regex`, `windows.h`, `shlwapi.h`) are included.
+   - The `shlwapi.lib` library is linked with `#pragma comment(lib, "shlwapi.lib")`.
 
-2. **Catch2 Test Cases**:
-   - We include the Catch2 header and define two sections within a single test case named "Get Local IP".
-   - The `SECTION` macro is used to group related tests together.
-   - The `REQUIRE` macro is used to assert conditions that must be true for the test to pass. If any condition fails, the test will fail and provide information about which assertion failed.
+2. **Function Definition**:
+   - The `get_local_ip` function is defined with a default parameter value.
+   - It uses Windows API functions (`CreateProcessA`, `CreatePipe`, `SetHandleInformation`, `RedirectHandle`, etc.) to execute the `ipconfig` command and capture its output.
 
-3. **Main Function**:
-   - The `CATCH_CONFIG_MAIN` macro is defined at the top of the file. This tells Catch to automatically generate a `main` function that runs all the tests when the program is executed.
+3. **Catch2 Test Suite**:
+   - The `TEST_CASE` macro is used to define a test case named "Test get_local_ip function".
+   - The `SECTION` macro is used to define individual test sections within the test case.
+   - Assertions (`REQUIRE`) are used to check the correctness of the function.
 
-### Running the Tests
+4. **Main Function**:
+   - The `main` function initializes and runs the Catch2 test suite.
 
-To run the tests, compile your C++ code with a compiler that supports C++17 or later (since Catch2 requires C++17 features). For example, using g++:
-
-```sh
-g++ -std=c++17 -o test_get_local_ip test_get_local_ip.cpp
-./test_get_local_ip
-```
-
-This will execute the Catch2 tests and output the results.
+This ensures that the functionality and logic of the tests are preserved, and appropriate assertions are used in Catch2.

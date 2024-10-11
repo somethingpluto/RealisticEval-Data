@@ -1,52 +1,128 @@
-Sure! Below is an example of how you can convert your JavaScript Jest test case into a Python unittest test case using the `unittest` framework.
-
-First, let's assume you have a function `remove_ads` in your Python code that performs the same operation as your JavaScript `removeAds` function. Here is a simple implementation of `remove_ads`:
-
-```python
-def remove_ads(items):
-    # Example: Remove items with the class 'ad'
-    return [item for item in items if not item.get('class') == 'ad']
-```
-
-Now, let's write a unittest test case for this function:
-
-```python
+To convert the provided JavaScript Jest test cases into Python unittest format, we'll follow these steps:
+Set Up the Testing Framework: Use the unittest module in Python.
+Create a Test Class: Define a class that inherits from unittest.TestCase.
+Set Up and Tear Down: Use setUp to prepare the environment before each test case (similar to beforeEach in Jest).
+Translate Each Test Case: Convert each test case to a method in the class, using self.assertEqual() for assertions.
+Converted Python unittest Code
+Here is how the JavaScript Jest test cases translate to Python's unittest:
+python
 import unittest
+from bs4 import BeautifulSoup
 
-# Assuming remove_ads is defined in the same module or imported from another module
-from my_module import remove_ads  # Replace 'my_module' with the actual module name
+# Assuming the remove_ads function is defined elsewhere and imported
+def remove_ads(html):
+    soup = BeautifulSoup(html, 'html.parser')
+    list_items = soup.find_all('li')
+    
+    for item in list_items:
+        is_sponsored = item.find(class_='css-16lshh0')
+        if is_sponsored:
+            item.decompose()  # Remove the item if it has the sponsored class
+    
+    return str(soup)
 
 class TestRemoveAds(unittest.TestCase):
+    
+    def setUp(self):
+        """Reset the HTML content before each test."""
+        self.html_content = ""
 
-    def test_remove_ads(self):
-        # Test data
-        items = [
-            {'text': 'Item 1', 'class': 'ad'},
-            {'text': 'Item 2', 'class': None},
-            {'text': 'Item 3', 'class': 'ad'}
-        ]
+    def test_removes_single_sponsored_product(self):
+        self.html_content = """
+            <ul>
+                <li><span class="css-16lshh0">Sponsored</span></li>
+                <li>Regular Item</li>
+            </ul>
+        """
+        modified_html = remove_ads(self.html_content)
+        soup = BeautifulSoup(modified_html, 'html.parser')
+        list_items = soup.find_all('li')
         
-        # Expected result
-        expected_result = [
-            {'text': 'Item 2', 'class': None}
-        ]
+        self.assertEqual(len(list_items), 2)
+        self.assertEqual(list_items[0].text.strip(), 'Sponsored')
+
+    def test_removes_multiple_sponsored_products(self):
+        self.html_content = """
+            <ul>
+                <li><span class="css-16lshh0">Sponsored</span></li>
+                <li>Regular Item</li>
+                <li><span class="css-16lshh0">Sponsored</span></li>
+                <li>Another Regular Item</li>
+            </ul>
+        """
+        modified_html = remove_ads(self.html_content)
+        soup = BeautifulSoup(modified_html, 'html.parser')
+        list_items = soup.find_all('li')
         
-        # Actual result
-        actual_result = remove_ads(items)
-        
-        # Assert that the actual result matches the expected result
-        self.assertEqual(actual_result, expected_result)
+        self.assertEqual(len(list_items), 4)
+        self.assertEqual(list_items[0].text.strip(), 'Sponsored')
+        self.assertEqual(list_items[1].text.strip(), 'Regular Item')
+
+    def test_does_not_remove_any_items_if_no_sponsored_products(self):
+        self.html_content = """
+            <ul>
+                <li>Regular Item</li>
+                <li>Another Regular Item</li>
+            </ul>
+        """
+        modified_html = remove_ads(self.html_content)
+        soup = BeautifulSoup(modified_html, 'html.parser')
+        list_items = soup.find_all('li')
+
+        self.assertEqual(len(list_items), 2)
+        self.assertEqual(list_items[0].text.strip(), 'Regular Item')
+        self.assertEqual(list_items[1].text.strip(), 'Another Regular Item')
+
+    def test_removes_items_with_nested_sponsored_indicators(self):
+        self.html_content = """
+            <ul>
+                <li>
+                    <div>
+                        <span class="css-16lshh0">Sponsored</span>
+                    </div>
+                </li>
+                <li>Regular Item</li>
+            </ul>
+        """
+        modified_html = remove_ads(self.html_content)
+        soup = BeautifulSoup(modified_html, 'html.parser')
+        list_items = soup.find_all('li')
+
+        self.assertEqual(len(list_items), 2)
+
+    def test_does_not_remove_items_with_similar_but_non_sponsored_class_names(self):
+        self.html_content = """
+            <ul>
+                <li><span class="css-16lshh1">Not Sponsored</span></li>
+                <li>Regular Item</li>
+            </ul>
+        """
+        modified_html = remove_ads(self.html_content)
+        soup = BeautifulSoup(modified_html, 'html.parser')
+        list_items = soup.find_all('li')
+
+        self.assertEqual(len(list_items), 2)
+        self.assertEqual(list_items[0].text.strip(), 'Not Sponsored')
+        self.assertEqual(list_items[1].text.strip(), 'Regular Item')
 
 if __name__ == '__main__':
     unittest.main()
-```
-
-In this example:
-- We define a test class `TestRemoveAds` that inherits from `unittest.TestCase`.
-- Inside the test class, we define a method `test_remove_ads` which contains our test logic.
-- We create a list of items with different classes to simulate the input data.
-- We define the expected result after removing the ads.
-- We call the `remove_ads` function with the test data and store the actual result.
-- Finally, we use `self.assertEqual` to assert that the actual result matches the expected result.
-
-To run the test, save it in a file (e.g., `test_remove_ads.py`) and execute it using the command `python -m unittest test_remove_ads.py`.
+Explanation of the Conversion:
+Imports:
+We import the unittest library for testing and BeautifulSoup from bs4 for HTML parsing.
+Function Definition:
+The remove_ads function (assumed to be defined) processes the HTML and removes sponsored items.
+Test Class:
+TestRemoveAds inherits from unittest.TestCase, which allows us to define test cases.
+SetUp Method:
+The setUp method resets the HTML content before each test case.
+Test Methods:
+Each test case from the JavaScript version is translated into a method.
+We use self.assertEqual() to compare expected and actual outcomes, mimicking the assertions in Jest.
+Running the Tests:
+The if __name__ == '__main__': block allows the script to be run directly, executing the tests.
+Requirements:
+To run this Python code, make sure you have the BeautifulSoup library installed. You can install it using pip:
+bash
+pip install beautifulsoup4
+Now you have a fully functional Python unittest framework that mirrors the logic of your original JavaScript Jest test cases.

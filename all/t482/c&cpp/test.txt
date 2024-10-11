@@ -1,34 +1,105 @@
-Sure! Below is the equivalent C++ test case using Catch2 for the provided Python unittest function `extract_outermost_brackets`.
+Certainly! Below is the equivalent C++ code using the Catch2 testing framework to test the `extract_outermost_brackets` function. I'll include the necessary setup for Catch2 and provide the test cases to ensure the functionality is preserved.
+
+### C++ Code with Catch2 Testing Framework
+
+First, make sure you have the Catch2 library installed. You can download it from [here](https://github.com/catchorg/Catch2).
+
+### C++ Code
 
 ```cpp
-#include <catch2/catch.hpp>
+#include <iostream>
 #include <string>
+#include <stack>
+#include <unordered_map>
+#include <catch2/catch_test_macros.hpp>
 
+// Extracts the contents of the outermost brackets from the input string.
+// For example:
+//     input: Text [with [nested] brackets] and more text
+//     output: with [nested] brackets
+//
+// Args:
+//     s (const std::string&): The input string containing brackets.
+//
+// Returns:
+//     std::string: The contents within the outermost brackets, or an empty string if no brackets are found.
 std::string extract_outermost_brackets(const std::string& s) {
-    size_t start = s.find('[');
-    if (start == std::string::npos) return "";
+    std::stack<char> stack;
+    int start_index = -1;
+    std::string opening_brackets = "({[";
+    std::string closing_brackets = ")}]";
+    std::unordered_map<char, char> matching_bracket = {{')', '('}, {'}', '{'}, {']', '['}};
 
-    size_t end = s.find_last_of(']');
-    if (end == std::string::npos || end <= start) return "";
+    for (size_t i = 0; i < s.size(); ++i) {
+        char char_at_i = s[i];
+        if (opening_brackets.find(char_at_i) != std::string::npos) {  // Check for any opening bracket
+            if (stack.empty()) {  // If the stack is empty, we have found the outermost opening bracket
+                start_index = static_cast<int>(i);  // Remember the position of the first opening bracket
+            }
+            stack.push(char_at_i);
+        } else if (closing_brackets.find(char_at_i) != std::string::npos) {  // Check for any closing bracket
+            if (!stack.empty() && stack.top() == matching_bracket[char_at_i]) {  // Match with the latest opening bracket
+                stack.pop();
+                if (stack.empty()) {  // When stack is empty, we found the outermost closing bracket
+                    return s.substr(start_index + 1, i - start_index - 1);  // Extract contents between the brackets
+                }
+            }
+        }
+    }
 
-    return s.substr(start + 1, end - start - 1);
+    return "";  // Return an empty string if no outermost brackets were found
 }
 
-TEST_CASE("Extract Outermost Brackets", "[brackets]") {
-    REQUIRE(extract_outermost_brackets("Text [with [nested] brackets] and more text") == "with [nested] brackets");
-    REQUIRE(extract_outermost_brackets("[single] bracket") == "single");
-    REQUIRE(extract_outermost_brackets("no brackets here") == "");
-    REQUIRE(extract_outermost_brackets("unbalanced [bracket") == "");
-    REQUIRE(extract_outermost_brackets("bracket] unbalanced") == "");
-    REQUIRE(extract_outermost_brackets("[bracket][bracket]") == "bracket");
+TEST_CASE("Test extract_outermost_brackets", "[brackets]") {
+    SECTION("No brackets") {
+        std::string input = "No brackets here";
+        REQUIRE(extract_outermost_brackets(input) == "");
+    }
+
+    SECTION("Single pair of brackets") {
+        std::string input = "Text [with brackets] and more text";
+        REQUIRE(extract_outermost_brackets(input) == "with brackets");
+    }
+
+    SECTION("Nested brackets") {
+        std::string input = "Text [with [nested] brackets] and more text";
+        REQUIRE(extract_outermost_brackets(input) == "with [nested] brackets");
+    }
+
+    SECTION("Multiple pairs of brackets") {
+        std::string input = "Text [with] [multiple] [brackets]";
+        REQUIRE(extract_outermost_brackets(input) == "with");
+    }
+
+    SECTION("Mixed brackets") {
+        std::string input = "Text {with (mixed) [brackets]} and more text";
+        REQUIRE(extract_outermost_brackets(input) == "with (mixed) [brackets]");
+    }
+
+    SECTION("Empty string") {
+        std::string input = "";
+        REQUIRE(extract_outermost_brackets(input) == "");
+    }
+}
+
+int main(int argc, char* argv[]) {
+    return Catch::Session().run(argc, argv);
 }
 ```
 
 ### Explanation:
-1. **Function Definition**: The `extract_outermost_brackets` function in C++ does the same thing as the Python function. It finds the indices of the first `[` and last `]`, and then extracts the substring between them.
-2. **Catch2 Test Case**:
-   - `TEST_CASE` macro defines a test case named "Extract Outermost Brackets".
-   - `REQUIRE` macro is used to assert that the function's output matches the expected result.
-   - Several test cases are provided to cover different scenarios, including nested brackets, single brackets, no brackets, and unbalanced brackets.
+1. **Headers**: The necessary headers (`<iostream>`, `<string>`, `<stack>`, `<unordered_map>`, `<catch2/catch_test_macros.hpp>`) are included.
+2. **Function Documentation**: The Python docstring is converted into C++ comments using `/* */` for multi-line comments.
+3. **Function Definition**: `extract_outermost_brackets` takes a `const std::string& s` as its parameter and returns a `std::string`.
+4. **Data Structures**:
+   - `std::stack<char>` is used to keep track of the opening brackets.
+   - `std::unordered_map<char, char>` is used to match closing brackets with their corresponding opening brackets.
+5. **Loop and Conditions**:
+   - A loop iterates through each character of the string.
+   - Conditions check for opening and closing brackets, updating the stack and tracking the start index accordingly.
+   - If the stack becomes empty after popping a matching pair, the content between the outermost brackets is extracted using `substr`.
+6. **Testing Framework**: The Catch2 testing framework is used to define test cases.
+   - Each test case is defined using `SECTION` within a `TEST_CASE`.
+   - Assertions are made using `REQUIRE` to verify the expected behavior of the function.
 
-Make sure you have Catch2 installed and properly configured in your project to compile and run these tests.
+This C++ code preserves the functionality and structure of the original Python code, with appropriate assertions in Catch2.

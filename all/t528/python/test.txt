@@ -1,58 +1,86 @@
-Sure! Below is the equivalent Python unit test case using the `unittest` framework for your JavaScript Jest test case.
-
-```python
+To convert the provided JavaScript Jest test cases to Python unittest test cases, we will mock the necessary file system operations using the unittest.mock module. Below is the Python code equivalent to the JavaScript test cases you provided.
+Converted Python Test Code
+python
 import os
+import unittest
+from unittest.mock import patch
 
-def find_markdown_files(directory):
+def find_markdown_files(dir_path: str) -> list:
+    """Mock implementation of the function to be tested."""
     markdown_files = []
-    for root, dirs, files in os.walk(directory):
+    
+    for root, _, files in os.walk(dir_path):
         for file in files:
             if file.endswith('.md'):
                 markdown_files.append(os.path.join(root, file))
+
     return markdown_files
 
 class TestFindMarkdownFiles(unittest.TestCase):
 
-    def setUp(self):
-        # Create a temporary directory with some Markdown files for testing
-        self.test_dir = tempfile.mkdtemp()
-        self.markdown_file1 = os.path.join(self.test_dir, 'file1.md')
-        self.markdown_file2 = os.path.join(self.test_dir, 'subdir', 'file2.md')
-        open(self.markdown_file1, 'w').close()  # Create empty file
-        os.makedirs(os.path.dirname(self.markdown_file2), exist_ok=True)
-        open(self.markdown_file2, 'w').close()  # Create empty file
+    @patch('os.listdir')
+    @patch('os.path.isdir')
+    def test_empty_directory(self, mock_isdir, mock_listdir):
+        mock_listdir.return_value = []
+        mock_isdir.return_value = False
 
-    def tearDown(self):
-        # Clean up the temporary directory after tests
-        shutil.rmtree(self.test_dir)
+        result = find_markdown_files('emptyDir')
+        self.assertEqual(result, [])
 
-    def test_find_markdown_files(self):
-        result = find_markdown_files(self.test_dir)
-        expected_result = [self.markdown_file1, self.markdown_file2]
-        self.assertEqual(sorted(result), sorted(expected_result))
+    @patch('os.listdir')
+    @patch('os.path.isdir')
+    def test_one_markdown_file(self, mock_isdir, mock_listdir):
+        mock_listdir.return_value = ['file1.md']
+        mock_isdir.return_value = False
+
+        result = find_markdown_files('dir')
+        self.assertEqual(result, ['dir/file1.md'])
+
+    @patch('os.listdir')
+    @patch('os.path.isdir')
+    def test_multiple_markdown_files(self, mock_isdir, mock_listdir):
+        mock_listdir.return_value = ['file1.md', 'file2.md']
+        mock_isdir.return_value = False
+
+        result = find_markdown_files('dir')
+        self.assertEqual(result, ['dir/file1.md', 'dir/file2.md'])
+
+    @patch('os.listdir')
+    @patch('os.path.isdir')
+    def test_ignore_non_markdown_files(self, mock_isdir, mock_listdir):
+        mock_listdir.return_value = ['file1.txt', 'file2.md', 'file3.doc']
+        mock_isdir.return_value = False
+
+        result = find_markdown_files('dir')
+        self.assertEqual(result, ['dir/file2.md'])
+
+    @patch('os.listdir')
+    @patch('os.path.isdir')
+    def test_only_non_markdown_files(self, mock_isdir, mock_listdir):
+        mock_listdir.return_value = ['file1.txt', 'file2.doc']
+        mock_isdir.return_value = False
+
+        result = find_markdown_files('dir')
+        self.assertEqual(result, [])
 
 if __name__ == '__main__':
     unittest.main()
-```
-
-### Explanation:
-
-1. **Function Definition**: 
-   - The `find_markdown_files` function is defined to mimic the behavior of the JavaScript function. It walks through the directory tree and collects all `.md` files.
-
-2. **Test Class**:
-   - A `unittest.TestCase` class named `TestFindMarkdownFiles` is created to hold the test cases.
-
-3. **Setup Method (`setUp`)**:
-   - This method sets up a temporary directory for testing purposes. It creates two Markdown files inside the temporary directory.
-
-4. **Teardown Method (`tearDown`)**:
-   - This method cleans up the temporary directory after each test case has run.
-
-5. **Test Case (`test_find_markdown_files`)**:
-   - This method calls the `find_markdown_files` function with the temporary directory as the argument and checks if the returned list matches the expected list of Markdown file paths.
-
-6. **Running Tests**:
-   - The `unittest.main()` call runs the tests when the script is executed directly.
-
-This setup ensures that the Python test case is equivalent to your original JavaScript Jest test case.
+Explanation of the Python Code:
+Imports:
+We import os for file system operations and unittest for testing.
+The patch decorator from unittest.mock is used to mock os.listdir and os.path.isdir.
+Mock Implementation of find_markdown_files:
+A placeholder function find_markdown_files is provided as a mock implementation. You can replace this with the actual function from your code.
+Test Class:
+A class TestFindMarkdownFiles is defined, inheriting from unittest.TestCase.
+Test Methods:
+Each test case corresponds to a test in the JavaScript code. We use @patch to mock os.listdir and os.path.isdir.
+Each method sets the return value for the mocks to simulate different conditions (e.g., an empty directory, directories with markdown files, etc.).
+The self.assertEqual() method is used to check if the results match the expected outputs.
+Running the Tests:
+The if __name__ == '__main__': block ensures that the tests will run if the script is executed directly.
+Running the Tests
+To run the tests, save the code to a Python file (e.g., test_find_markdown.py) and execute it in the terminal:
+bash
+python test_find_markdown.py
+This will run all the defined test cases, and you will see the results in the terminal.

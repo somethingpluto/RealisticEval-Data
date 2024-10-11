@@ -1,60 +1,56 @@
-Here is how you could implement this function in C++:
+Here’s the equivalent C++ code for the provided Python function:
 
 ```cpp
+#include <iostream>
 #include <string>
 #include <stack>
+#include <unordered_map>
 
-std::string extract_outermost_brackets(const std::string &s) {
-    std::stack<int> stack;
-    int start = -1;
+std::string extract_outermost_brackets(const std::string& s) {
+    std::stack<char> stack;
+    int start_index = -1;
+    std::string opening_brackets = "({[";
+    std::string closing_brackets = ")}]";
+    std::unordered_map<char, char> matching_bracket = {{')', '('}, {'}', '{'}, {']', '['}};
 
-    for(int i=0; i<s.length(); ++i) {
-        if(s[i]=='[') {
-            if(stack.empty())
-                start = i+1;
-            stack.push(i);
-        } else if(s[i]==']') {
-            stack.pop();
-            if(stack.empty()) {
-                return s.substr(start, i-start+1);
+    for (size_t i = 0; i < s.size(); ++i) {
+        char char_at_i = s[i];
+        if (opening_brackets.find(char_at_i) != std::string::npos) {  // Check for any opening bracket
+            if (stack.empty()) {  // If the stack is empty, we have found the outermost opening bracket
+                start_index = static_cast<int>(i);  // Remember the position of the first opening bracket
+            }
+            stack.push(char_at_i);
+        } else if (closing_brackets.find(char_at_i) != std::string::npos) {  // Check for any closing bracket
+            if (!stack.empty() && stack.top() == matching_bracket[char_at_i]) {  // Match with the latest opening bracket
+                stack.pop();
+                if (stack.empty()) {  // When stack is empty, we found the outermost closing bracket
+                    return s.substr(start_index + 1, i - start_index - 1);  // Extract contents between the brackets
+                }
             }
         }
     }
 
-    return "";
+    return "";  // Return an empty string if no outermost brackets were found
+}
+
+int main() {
+    std::string test_string = "a[b{c}d]e";
+    std::string result = extract_outermost_brackets(test_string);
+    std::cout << "Extracted content: " << result << std::endl;
+
+    return 0;
 }
 ```
 
-And here is the equivalent code in C:
+### Explanation:
+- **Headers**: The necessary headers (`<iostream>`, `<string>`, `<stack>`, `<unordered_map>`) are included to use the required data structures and functions.
+- **Function Definition**: `extract_outermost_brackets` takes a `const std::string& s` as its parameter and returns a `std::string`.
+- **Data Structures**:
+  - `std::stack<char>` is used to keep track of the opening brackets.
+  - `std::unordered_map<char, char>` is used to match closing brackets with their corresponding opening brackets.
+- **Loop and Conditions**:
+  - A loop iterates through each character of the string.
+  - Conditions check for opening and closing brackets, updating the stack and tracking the start index accordingly.
+  - If the stack becomes empty after popping a matching pair, the content between the outermost brackets is extracted using `substr`.
 
-```c
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-char* extract_outermost_brackets(char *s) {
-    char *start = NULL;
-    int stack[256];
-    int top = -1;
-
-    for(int i=0; i<strlen(s); ++i) {
-        if(s[i]=='[') {
-            if(top == -1)
-                start = s+i+1;
-            stack[++top] = i;
-        } else if(s[i]==']') {
-            top--;
-            if(top == -1) {
-                char *result = malloc(strlen(start)+1);
-                strcpy(result, start);
-                result[strlen(start)] = '\0';
-                return result;
-            }
-        }
-    }
-
-    return "";
-}
-```
-
-Please note that these implementations assume that the input string does not contain any invalid characters (e.g., unbalanced brackets). Also, the C version dynamically allocates memory for the result string, which needs to be freed when it's no longer needed.
+This C++ code maintains the same functionality and logic as the original Python code.

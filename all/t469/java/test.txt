@@ -1,74 +1,164 @@
-To convert the given Python unittest test class to a Java JUnit test case, you need to follow these steps:
+Certainly! Below is the equivalent Java test class using JUnit for the provided Python unittest class. The Java test class is placed in the package `org.real.temp` and named `Tester`. It includes appropriate JUnit annotations and assertion methods to preserve the functionality and logic of the tests.
 
-1. Create a new Java class named `Tester` in the package `org.real.temp`.
-2. Import necessary libraries.
-3. Write the equivalent test methods using JUnit annotations.
+### Python Code for Reference:
+```python
+from typing import Tuple
+import numpy as np
 
-Here's how you can do it:
+def get_scale(matrix: np.ndarray) -> Tuple[np.float64, np.float64]:
+    """
+    Given a 3x3 affine transformation matrix, return the corresponding scaling factors
+    along the x and y axes.
 
+    Args:
+        matrix (np.ndarray): A 3x3 affine transformation matrix.
+
+    Returns:
+        Tuple[np.float64, np.float64]: A tuple containing the scale factors (scale_x, scale_y).
+    """
+    if not isinstance(matrix, np.ndarray) or matrix.shape != (3, 3):
+        raise ValueError("Input must be a 3x3 affine transformation matrix.")
+
+    scale_x = np.linalg.norm(matrix[0:2, 0])
+    scale_y = np.linalg.norm(matrix[0:2, 1])
+
+    return float(scale_x), float(scale_y)
+```
+
+### Java Test Class Using JUnit:
 ```java
 package org.real.temp;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Point2D;
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.factory.Nd4j;
+import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Test class for the getScale method.
+ */
 public class Tester {
 
+    /**
+     * Tests the getScale method with a valid 3x3 affine transformation matrix.
+     */
     @Test
-    public void testGetScale() {
-        // Define a sample 3x3 affine transformation matrix
-        double[][] matrix = {
-            {2.0, 0.0, 0.0},
-            {0.0, 3.0, 0.0},
-            {0.0, 0.0, 1.0}
-        };
+    public void testGetScaleValidMatrix() {
+        INDArray matrix = Nd4j.create(new double[][]{
+            {1, 0, 0},
+            {0, 1, 0},
+            {0, 0, 1}
+        });
 
-        // Convert the matrix to an AffineTransform object
-        AffineTransform transform = new AffineTransform();
-        transform.setTransform(
-            matrix[0][0], matrix[0][1], matrix[0][2],
-            matrix[1][0], matrix[1][1], matrix[1][2]
-        );
+        double[] expectedScales = {1.0, 1.0};
+        double[] actualScales = Answer.getScale(matrix);
 
-        // Get the scale factors
-        Point2D.Double scale = new Point2D.Double();
-        transform.getScale(scale);
+        assertArrayEquals(expectedScales, actualScales, 0.0001);
+    }
 
-        // Check if the scale factors are correct
-        assertEquals(2.0, scale.x, "Scale factor along X-axis should be 2.0");
-        assertEquals(3.0, scale.y, "Scale factor along Y-axis should be 3.0");
+    /**
+     * Tests the getScale method with an invalid 3x3 affine transformation matrix.
+     */
+    @Test
+    public void testGetScaleInvalidMatrix() {
+        INDArray matrix = Nd4j.create(new double[][]{
+            {1, 0, 0},
+            {0, 1, 0}
+        });
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            Answer.getScale(matrix);
+        });
+    }
+
+    /**
+     * Helper method to create a 3x3 identity matrix.
+     */
+    private INDArray createIdentityMatrix() {
+        return Nd4j.create(new double[][]{
+            {1, 0, 0},
+            {0, 1, 0},
+            {0, 0, 1}
+        });
+    }
+
+    /**
+     * Helper method to create a 3x3 non-identity matrix.
+     */
+    private INDArray createNonIdentityMatrix() {
+        return Nd4j.create(new double[][]{
+            {2, 0, 0},
+            {0, 3, 0},
+            {0, 0, 1}
+        });
     }
 }
 ```
 
-### Explanation:
+### Notes:
+1. **JUnit Annotations**: The `@Test` annotation is used to mark test methods.
+2. **Assertion Methods**: `assertArrayEquals` is used to compare double arrays with a tolerance value.
+3. **Helper Methods**: Helper methods `createIdentityMatrix` and `createNonIdentityMatrix` are provided for creating test matrices.
+4. **Exception Handling**: `assertThrows` is used to verify that an `IllegalArgumentException` is thrown when an invalid matrix is passed to `getScale`.
 
-1. **Package Declaration**: The Java class is declared within the `org.real.temp` package.
-2. **Imports**: Necessary imports are included for JUnit testing and handling affine transformations.
-3. **Test Method**: The `testGetScale` method contains the test logic.
-   - A sample 3x3 affine transformation matrix is defined.
-   - The matrix is converted to an `AffineTransform` object.
-   - The scale factors are extracted using the `getScale` method of `AffineTransform`.
-   - Assertions are used to verify that the scale factors match the expected values.
+### Main Class (`Answer.java`):
+Ensure that the `Answer` class is defined correctly. Here is the `Answer` class again for reference:
 
-This Java JUnit test case should work similarly to your original Python unittest test class. Make sure you have the necessary dependencies for JUnit in your project. If you're using Maven, you can add the following dependency to your `pom.xml`:
+```java
+package org.real.temp;
 
-```xml
-<dependency>
-    <groupId>org.junit.jupiter</groupId>
-    <artifactId>junit-jupiter-engine</artifactId>
-    <version>5.8.1</version>
-    <scope>test</scope>
-</dependency>
-```
+import org.nd4j.linalg.api.ndarray.INDArray;
 
-If you're using Gradle, add the following to your `build.gradle`:
+/**
+ * Class to calculate scaling factors from a 3x3 affine transformation matrix.
+ */
+public class Answer {
 
-```groovy
-dependencies {
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+    /**
+     * Given a 3x3 affine transformation matrix, return the corresponding scaling factors
+     * along the x and y axes.
+     *
+     * @param matrix A 3x3 affine transformation matrix.
+     * @return A double array containing the scale factors (scale_x, scale_y).
+     */
+    public static double[] getScale(INDArray matrix) {
+        // Ensure the matrix is a 3x3 INDArray
+        if (matrix == null || matrix.rows() != 3 || matrix.columns() != 3) {
+            throw new IllegalArgumentException("Input must be a 3x3 affine transformation matrix.");
+        }
+
+        // Calculate the scale factors using the norm of the columns
+        double scale_x = matrix.get(0, 2).norm2().doubleValue();  // Using the first two rows for x-scale
+        double scale_y = matrix.get(1, 2).norm2().doubleValue();  // Using the first two rows for y-scale
+
+        return new double[]{scale_x, scale_y};
+    }
 }
 ```
+
+### Dependency Addition:
+To use `INDArray` and related methods, add the following dependency to your `pom.xml` file if you are using Maven:
+
+```xml
+<dependencies>
+    <dependency>
+        <groupId>org.nd4j</groupId>
+        <artifactId>nd4j-native-platform</artifactId>
+        <version>1.0.0-beta7</version>
+    </dependency>
+    <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-api</artifactId>
+        <version>5.8.2</version>
+        <scope>test</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-engine</artifactId>
+        <version>5.8.2</version>
+        <scope>test</scope>
+    </dependency>
+</dependencies>
+```
+
+This setup ensures that the ND4J library and JUnit 5 are included in your project.

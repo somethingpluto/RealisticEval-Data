@@ -1,25 +1,54 @@
-Here is how you can convert the Python function to C++ using Eigen library:
+Here’s the equivalent C++ code for the provided Python function, ensuring it maintains the same functionality and logic:
 
-```C++
-#include <Eigen/Dense>
-#include <cmath>
+```cpp
+#include <iostream>
+#include <Eigen/Dense> // For handling matrices
+#include <cmath> // For trigonometric functions
 
-double get_rotation(Eigen::Matrix2d matrix) {
-    double cos_angle = (matrix(0,0) + matrix(1,1)) / 2;
-    if (cos_angle > 1)
-        cos_angle = 1; // Avoid acos domain error
-    else if (cos_angle < -1)
-        cos_angle = -1; // Avoid acos domain error
+// Function to calculate the rotation angle from a 3x3 affine transformation matrix
+double get_rotation(const Eigen::Matrix3d& matrix) {
+    // Check if the matrix is indeed a 3x3 matrix
+    if (matrix.rows() != 3 || matrix.cols() != 3) {
+        throw std::invalid_argument("Input must be a 3x3 affine transformation matrix.");
+    }
 
-    double angle = std::acos(cos_angle);
-    
-    if ((matrix(0,1) - matrix(1,0)) < 0) 
-        angle = -angle;
+    // Calculate the rotation angle using atan2
+    double rotation_angle = std::atan2(matrix(1, 0), matrix(0, 0));
 
-    return angle;
+    return rotation_angle;
+}
+
+int main() {
+    try {
+        // Example usage
+        Eigen::Matrix3d matrix;
+        matrix << 1, 2, 3,
+                  4, 5, 6,
+                  0, 0, 1;
+
+        double angle = get_rotation(matrix);
+        std::cout << "Rotation Angle: " << angle << " radians" << std::endl;
+    } catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+    }
+
+    return 0;
 }
 ```
 
-In this code, we use the `Eigen` library for matrix operations and `std::acos` function for calculating the arccosine of a number. The function takes a `2x2` matrix as input and returns the rotation angle in radians. 
+### Explanation:
+1. **Inclusion of Libraries**: 
+   - `#include <iostream>`: For basic input/output operations.
+   - `#include <Eigen/Dense>`: To handle matrices using the Eigen library, which is a popular C++ template library for linear algebra.
+   - `#include <cmath>`: For mathematical functions like `atan2`.
 
-Please note that the input matrix should be a `2x2` affine transformation matrix, otherwise the function may not work correctly. Also, make sure to include the necessary headers (`<Eigen/Dense>` and `<cmath>`) at the beginning of your program.
+2. **Function Definition**:
+   - `get_rotation` takes a `Eigen::Matrix3d` (a 3x3 matrix) as input and returns a `double` representing the rotation angle in radians.
+   - The function checks if the matrix is a 3x3 matrix and throws an exception if not.
+   - It calculates the rotation angle using `std::atan2` and returns the result.
+
+3. **Main Function**:
+   - Demonstrates how to use the `get_rotation` function with a sample 3x3 matrix.
+   - Catches and prints any exceptions thrown during execution.
+
+This translation ensures that the C++ code matches the functionality and logic of the original Python code, including error handling and type checking.

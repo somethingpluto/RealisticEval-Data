@@ -1,25 +1,158 @@
-Here is how you might convert your Python unittest test case into a Jest test case using JavaScript:
+Certainly! Below is the equivalent Jest test suite for the given Python unittest test class. I will provide the Jest test suite along with explanations of the necessary changes due to language differences between Python and JavaScript.
+
+### Python Unittest Code
+
+```python
+import unittest
+import numpy as np
+
+def create_rot_matrix(angle_deg: float, axis: str) -> np.ndarray:
+    """
+    Create a pose matrix representing a rotation about a given axis.
+
+    Args:
+        angle_deg (float): Rotation angle in degrees.
+        axis (str): Axis to rotate about, must be one of 'X', 'Y', or 'Z'.
+
+    Returns:
+        numpy.ndarray: 4x4 pose matrix representing the rotation.
+    """
+    angle_rad = np.deg2rad(angle_deg)
+    if axis.lower() == 'x':
+        rotation_matrix = np.array([
+            [1, 0, 0, 0],
+            [0, np.cos(angle_rad), -np.sin(angle_rad), 0],
+            [0, np.sin(angle_rad), np.cos(angle_rad), 0],
+            [0, 0, 0, 1]
+        ])
+    elif axis.lower() == 'y':
+        rotation_matrix = np.array([
+            [np.cos(angle_rad), 0, np.sin(angle_rad), 0],
+            [0, 1, 0, 0],
+            [-np.sin(angle_rad), 0, np.cos(angle_rad), 0],
+            [0, 0, 0, 1]
+        ])
+    elif axis.lower() == 'z':
+        rotation_matrix = np.array([
+            [np.cos(angle_rad), -np.sin(angle_rad), 0, 0],
+            [np.sin(angle_rad), np.cos(angle_rad), 0, 0],
+            [0, 0, 1, 0],
+            [0, 0, 0, 1]
+        ])
+    else:
+        raise ValueError("Invalid axis. Must be one of 'X', 'Y', or 'Z'.")
+    return rotation_matrix
+
+class TestCreateRotMatrix(unittest.TestCase):
+
+    def test_rotation_x_axis(self):
+        expected_matrix = np.array([
+            [1, 0, 0, 0],
+            [0, 0.70710678, -0.70710678, 0],
+            [0, 0.70710678, 0.70710678, 0],
+            [0, 0, 0, 1]
+        ])
+        result = create_rot_matrix(45, 'X')
+        np.testing.assert_array_almost_equal(result, expected_matrix)
+
+    def test_rotation_y_axis(self):
+        expected_matrix = np.array([
+            [0.70710678, 0, 0.70710678, 0],
+            [0, 1, 0, 0],
+            [-0.70710678, 0, 0.70710678, 0],
+            [0, 0, 0, 1]
+        ])
+        result = create_rot_matrix(45, 'Y')
+        np.testing.assert_array_almost_equal(result, expected_matrix)
+
+    def test_rotation_z_axis(self):
+        expected_matrix = np.array([
+            [0.70710678, -0.70710678, 0, 0],
+            [0.70710678, 0.70710678, 0, 0],
+            [0, 0, 1, 0],
+            [0, 0, 0, 1]
+        ])
+        result = create_rot_matrix(45, 'Z')
+        np.testing.assert_array_almost_equal(result, expected_matrix)
+
+    def test_invalid_axis(self):
+        with self.assertRaises(ValueError):
+            create_rot_matrix(45, 'A')
+
+if __name__ == '__main__':
+    unittest.main()
+```
+
+### Equivalent Jest Test Suite
 
 ```javascript
-const { createRotMatrix } = require('./path-to-your-module'); // Replace with the actual path to your module
+const { createRotMatrix } = require('./path/to/your/file');
 
-describe('createRotMatrix function', () => {
-    it('should return a 4x4 rotation matrix for a given angle and axis', () => {
-        const angleDeg = 90;
-        const axis = 'X';
+describe('createRotMatrix', () => {
+    describe('Rotation around X axis', () => {
+        it('should create the correct rotation matrix for X axis', () => {
+            const expectedMatrix = [
+                [1, 0, 0, 0],
+                [0, 0.70710678, -0.70710678, 0],
+                [0, 0.70710678, 0.70710678, 0],
+                [0, 0, 0, 1]
+            ];
+            const result = createRotMatrix(45, 'X');
+            expect(result).toEqual(expectedMatrix);
+        });
+    });
 
-        const result = createRotMatrix(angleDeg, axis);
+    describe('Rotation around Y axis', () => {
+        it('should create the correct rotation matrix for Y axis', () => {
+            const expectedMatrix = [
+                [0.70710678, 0, 0.70710678, 0],
+                [0, 1, 0, 0],
+                [-0.70710678, 0, 0.70710678, 0],
+                [0, 0, 0, 1]
+            ];
+            const result = createRotMatrix(45, 'Y');
+            expect(result).toEqual(expectedMatrix);
+        });
+    });
 
-        expect(result).toEqual([
-            [1, 0, 0, 0],
-            [0, 0, -1, 0],
-            [0, 1, 0, 0],
-            [0, 0, 0, 1]
-        ]);
+    describe('Rotation around Z axis', () => {
+        it('should create the correct rotation matrix for Z axis', () => {
+            const expectedMatrix = [
+                [0.70710678, -0.70710678, 0, 0],
+                [0.70710678, 0.70710678, 0, 0],
+                [0, 0, 1, 0],
+                [0, 0, 0, 1]
+            ];
+            const result = createRotMatrix(45, 'Z');
+            expect(result).toEqual(expectedMatrix);
+        });
+    });
+
+    describe('Invalid axis', () => {
+        it('should throw an error for invalid axis', () => {
+            expect(() => createRotMatrix(45, 'A')).toThrow('Invalid axis. Must be one of \'X\', \'Y\', or \'Z\'.');
+        });
     });
 });
 ```
 
-This assumes that your `createRotMatrix` function returns a 2D array instead of a `numpy.ndarray`. If it's not the case, you'll need to adjust the comparison accordingly. Also, replace `'./path-to-your-module'` with the actual path to the file where your `createRotMatrix` function is defined. 
+### Explanation:
 
-Also note that Jest uses `toEqual()` method to compare arrays. This will check if two arrays have the same values at each index. For nested arrays, it checks recursively.
+1. **Importing the Function**:
+   - In JavaScript, you need to import the `createRotMatrix` function from the file where it is defined.
+
+2. **Describe Blocks**:
+   - Jest uses `describe` blocks to group related tests. Each `it` block represents a specific test case.
+
+3. **Assertions**:
+   - In Jest, `expect` is used for assertions.
+   - `toEqual` is used to check deep equality of arrays.
+   - `toThrow` is used to check if a function throws an error with a specific message.
+
+4. **Test Cases**:
+   - Each test case is structured similarly to the Python unittest cases, ensuring that the functionality and logic are preserved.
+
+5. **Error Handling**:
+   - The `toThrow` assertion checks that the function throws the expected error message when an invalid axis is provided.
+
+By following these steps, the Jest test suite maintains the same functionality and structure as the original Python unittest class.

@@ -1,73 +1,187 @@
-To convert your Python unittest test class to a C++ test case using Catch2, you need to define a test case that includes setup and teardown if necessary, and then write individual test cases within that setup. Below is an example of how you might translate your Python unittest test class into a C++ Catch2 test case:
+Certainly! Below is the equivalent C++ code for the provided Python unittest test class, converted to use the Catch2 testing framework. This includes the definition of the `create_rot_matrix` function and a corresponding test suite using Catch2 assertions.
+
+### C++ Code with Catch2 Testing Framework
 
 ```cpp
-#include <catch2/catch.hpp>
-#include <Eigen/Dense>
+#include <iostream>
+#include <cmath>
+#include <cassert>
+#include <stdexcept>
+#include <catch2/catch_test_macros.hpp>
 
-using namespace Eigen;
+// Define a 4x4 matrix using a 2D array
+typedef double Matrix[4][4];
 
-// Define the function to create rotation matrices
-Matrix4d createRotMatrix(double angleDeg, char axis) {
-    double angleRad = angleDeg * M_PI / 180.0;
-    Matrix4d rotMat = Matrix4d::Identity();
-    
-    switch(axis) {
-        case 'X':
-            rotMat << 1, 0, 0, 0,
-                      0, cos(angleRad), -sin(angleRad), 0,
-                      0, sin(angleRad), cos(angleRad), 0,
-                      0, 0, 0, 1;
-            break;
-        case 'Y':
-            rotMat << cos(angleRad), 0, sin(angleRad), 0,
-                      0, 1, 0, 0,
-                      -sin(angleRad), 0, cos(angleRad), 0,
-                      0, 0, 0, 1;
-            break;
-        case 'Z':
-            rotMat << cos(angleRad), -sin(angleRad), 0, 0,
-                      sin(angleRad), cos(angleRad), 0, 0,
-                      0, 0, 1, 0,
-                      0, 0, 0, 1;
-            break;
-        default:
-            throw std::invalid_argument("Invalid axis specified");
+/**
+ * Create a pose matrix representing a rotation about a given axis.
+ *
+ * @param angle_deg The rotation angle in degrees.
+ * @param axis The axis to rotate about, must be one of 'X', 'Y', or 'Z'.
+ * @param rotation_matrix The resulting 4x4 pose matrix representing the rotation.
+ */
+void create_rot_matrix(double angle_deg, const char* axis, Matrix& rotation_matrix) {
+    // Convert angle from degrees to radians
+    double angle_rad = angle_deg * M_PI / 180.0;
+
+    // Initialize the rotation matrix with identity values
+    for (int i = 0; i < 4; ++i) {
+        for (int j = 0; j < 4; ++j) {
+            rotation_matrix[i][j] = (i == j) ? 1.0 : 0.0;
+        }
     }
-    
-    return rotMat;
+
+    // Define the rotation matrix based on the specified axis
+    if (axis[0] == 'x') {
+        rotation_matrix[1][1] = cos(angle_rad);
+        rotation_matrix[1][2] = -sin(angle_rad);
+        rotation_matrix[2][1] = sin(angle_rad);
+        rotation_matrix[2][2] = cos(angle_rad);
+    } else if (axis[0] == 'y') {
+        rotation_matrix[0][0] = cos(angle_rad);
+        rotation_matrix[0][2] = sin(angle_rad);
+        rotation_matrix[2][0] = -sin(angle_rad);
+        rotation_matrix[2][2] = cos(angle_rad);
+    } else if (axis[0] == 'z') {
+        rotation_matrix[0][0] = cos(angle_rad);
+        rotation_matrix[0][1] = -sin(angle_rad);
+        rotation_matrix[1][0] = sin(angle_rad);
+        rotation_matrix[1][1] = cos(angle_rad);
+    } else {
+        throw std::invalid_argument("Invalid axis. Must be one of 'X', 'Y', or 'Z'.");
+    }
 }
 
-TEST_CASE("Create Rotation Matrix", "[rotation]") {
-    // Test for X-axis rotation
-    auto xRotation = createRotMatrix(90.0, 'X');
-    REQUIRE(xRotation(1, 1) == Approx(cos(M_PI / 2)).margin(1e-6));
-    REQUIRE(xRotation(1, 2) == Approx(-sin(M_PI / 2)).margin(1e-6));
-    REQUIRE(xRotation(2, 1) == Approx(sin(M_PI / 2)).margin(1e-6));
-    REQUIRE(xRotation(2, 2) == Approx(cos(M_PI / 2)).margin(1e-6));
+TEST_CASE("Test create_rot_matrix function", "[create_rot_matrix]") {
+    SECTION("Test rotation around X axis") {
+        Matrix rotation_matrix;
+        double angle_deg = 90.0;
+        const char* axis = "x";
+        
+        create_rot_matrix(angle_deg, axis, rotation_matrix);
 
-    // Test for Y-axis rotation
-    auto yRotation = createRotMatrix(90.0, 'Y');
-    REQUIRE(yRotation(0, 0) == Approx(cos(M_PI / 2)).margin(1e-6));
-    REQUIRE(yRotation(0, 2) == Approx(sin(M_PI / 2)).margin(1e-6));
-    REQUIRE(yRotation(2, 0) == Approx(-sin(M_PI / 2)).margin(1e-6));
-    REQUIRE(yRotation(2, 2) == Approx(cos(M_PI / 2)).margin(1e-6));
+        // Expected rotation matrix for 90 degrees around X axis
+        Matrix expected_matrix = {
+            {1.0, 0.0, 0.0, 0.0},
+            {0.0, 0.0, -1.0, 0.0},
+            {0.0, 1.0, 0.0, 0.0},
+            {0.0, 0.0, 0.0, 1.0}
+        };
 
-    // Test for Z-axis rotation
-    auto zRotation = createRotMatrix(90.0, 'Z');
-    REQUIRE(zRotation(0, 0) == Approx(cos(M_PI / 2)).margin(1e-6));
-    REQUIRE(zRotation(0, 1) == Approx(-sin(M_PI / 2)).margin(1e-6));
-    REQUIRE(zRotation(1, 0) == Approx(sin(M_PI / 2)).margin(1e-6));
-    REQUIRE(zRotation(1, 1) == Approx(cos(M_PI / 2)).margin(1e-6));
+        REQUIRE(rotation_matrix[0][0] == expected_matrix[0][0]);
+        REQUIRE(rotation_matrix[0][1] == expected_matrix[0][1]);
+        REQUIRE(rotation_matrix[0][2] == expected_matrix[0][2]);
+        REQUIRE(rotation_matrix[0][3] == expected_matrix[0][3]);
+
+        REQUIRE(rotation_matrix[1][0] == expected_matrix[1][0]);
+        REQUIRE(rotation_matrix[1][1] == expected_matrix[1][1]);
+        REQUIRE(rotation_matrix[1][2] == expected_matrix[1][2]);
+        REQUIRE(rotation_matrix[1][3] == expected_matrix[1][3]);
+
+        REQUIRE(rotation_matrix[2][0] == expected_matrix[2][0]);
+        REQUIRE(rotation_matrix[2][1] == expected_matrix[2][1]);
+        REQUIRE(rotation_matrix[2][2] == expected_matrix[2][2]);
+        REQUIRE(rotation_matrix[2][3] == expected_matrix[2][3]);
+
+        REQUIRE(rotation_matrix[3][0] == expected_matrix[3][0]);
+        REQUIRE(rotation_matrix[3][1] == expected_matrix[3][1]);
+        REQUIRE(rotation_matrix[3][2] == expected_matrix[3][2]);
+        REQUIRE(rotation_matrix[3][3] == expected_matrix[3][3]);
+    }
+
+    SECTION("Test rotation around Y axis") {
+        Matrix rotation_matrix;
+        double angle_deg = 90.0;
+        const char* axis = "y";
+
+        create_rot_matrix(angle_deg, axis, rotation_matrix);
+
+        // Expected rotation matrix for 90 degrees around Y axis
+        Matrix expected_matrix = {
+            {0.0, 0.0, 1.0, 0.0},
+            {0.0, 1.0, 0.0, 0.0},
+            {-1.0, 0.0, 0.0, 0.0},
+            {0.0, 0.0, 0.0, 1.0}
+        };
+
+        REQUIRE(rotation_matrix[0][0] == expected_matrix[0][0]);
+        REQUIRE(rotation_matrix[0][1] == expected_matrix[0][1]);
+        REQUIRE(rotation_matrix[0][2] == expected_matrix[0][2]);
+        REQUIRE(rotation_matrix[0][3] == expected_matrix[0][3]);
+
+        REQUIRE(rotation_matrix[1][0] == expected_matrix[1][0]);
+        REQUIRE(rotation_matrix[1][1] == expected_matrix[1][1]);
+        REQUIRE(rotation_matrix[1][2] == expected_matrix[1][2]);
+        REQUIRE(rotation_matrix[1][3] == expected_matrix[1][3]);
+
+        REQUIRE(rotation_matrix[2][0] == expected_matrix[2][0]);
+        REQUIRE(rotation_matrix[2][1] == expected_matrix[2][1]);
+        REQUIRE(rotation_matrix[2][2] == expected_matrix[2][2]);
+        REQUIRE(rotation_matrix[2][3] == expected_matrix[2][3]);
+
+        REQUIRE(rotation_matrix[3][0] == expected_matrix[3][0]);
+        REQUIRE(rotation_matrix[3][1] == expected_matrix[3][1]);
+        REQUIRE(rotation_matrix[3][2] == expected_matrix[3][2]);
+        REQUIRE(rotation_matrix[3][3] == expected_matrix[3][3]);
+    }
+
+    SECTION("Test rotation around Z axis") {
+        Matrix rotation_matrix;
+        double angle_deg = 90.0;
+        const char* axis = "z";
+
+        create_rot_matrix(angle_deg, axis, rotation_matrix);
+
+        // Expected rotation matrix for 90 degrees around Z axis
+        Matrix expected_matrix = {
+            {0.0, -1.0, 0.0, 0.0},
+            {1.0, 0.0, 0.0, 0.0},
+            {0.0, 0.0, 1.0, 0.0},
+            {0.0, 0.0, 0.0, 1.0}
+        };
+
+        REQUIRE(rotation_matrix[0][0] == expected_matrix[0][0]);
+        REQUIRE(rotation_matrix[0][1] == expected_matrix[0][1]);
+        REQUIRE(rotation_matrix[0][2] == expected_matrix[0][2]);
+        REQUIRE(rotation_matrix[0][3] == expected_matrix[0][3]);
+
+        REQUIRE(rotation_matrix[1][0] == expected_matrix[1][0]);
+        REQUIRE(rotation_matrix[1][1] == expected_matrix[1][1]);
+        REQUIRE(rotation_matrix[1][2] == expected_matrix[1][2]);
+        REQUIRE(rotation_matrix[1][3] == expected_matrix[1][3]);
+
+        REQUIRE(rotation_matrix[2][0] == expected_matrix[2][0]);
+        REQUIRE(rotation_matrix[2][1] == expected_matrix[2][1]);
+        REQUIRE(rotation_matrix[2][2] == expected_matrix[2][2]);
+        REQUIRE(rotation_matrix[2][3] == expected_matrix[2][3]);
+
+        REQUIRE(rotation_matrix[3][0] == expected_matrix[3][0]);
+        REQUIRE(rotation_matrix[3][1] == expected_matrix[3][1]);
+        REQUIRE(rotation_matrix[3][2] == expected_matrix[3][2]);
+        REQUIRE(rotation_matrix[3][3] == expected_matrix[3][3]);
+    }
+
+    SECTION("Test invalid axis") {
+        Matrix rotation_matrix;
+        double angle_deg = 90.0;
+        const char* axis = "a"; // Invalid axis
+
+        REQUIRE_THROWS_AS(create_rot_matrix(angle_deg, axis, rotation_matrix), std::invalid_argument);
+    }
 }
 ```
 
 ### Explanation:
-1. **Include Necessary Headers**: We include the Catch2 header (`<catch2/catch.hpp>`) and the Eigen library for matrix operations (`<Eigen/Dense>`).
-  
-2. **Define the Function**: The `createRotMatrix` function is translated from Python to C++. It takes an angle in degrees and an axis character ('X', 'Y', or 'Z') and returns a 4x4 rotation matrix using Eigen's `Matrix4d`.
 
-3. **Test Case**: The `TEST_CASE` macro defines a new test case named "Create Rotation Matrix". Inside this test case, we perform three separate tests, each checking the correctness of the rotation matrix for the X, Y, and Z axes respectively.
+1. **Header Files**: Includes necessary header files (`<iostream>`, `<cmath>`, `<cassert>`, `<stdexcept>`, `<catch2/catch_test_macros.hpp>`).
+2. **Matrix Definition**: Defines a `Matrix` as a 2D array to represent a 4x4 matrix.
+3. **Function Documentation**: Uses `/** ... */` for multi-line comments to document the function.
+4. **Function Signature**: Translates the Python function signature into a C++ function signature, taking `double` for the angle and `const char*` for the axis.
+5. **Conversion**: Converts the angle from degrees to radians.
+6. **Initialization**: Initializes the rotation matrix with identity values.
+7. **Rotation Calculation**: Updates the matrix based on the specified axis.
+8. **Exception Handling**: Throws an exception if an invalid axis is provided.
+9. **Catch2 Test Suite**: Defines a test suite using Catch2 assertions to verify the correctness of the `create_rot_matrix` function.
+   - Tests rotations around the X, Y, and Z axes.
+   - Tests the case with an invalid axis, ensuring the function throws the correct exception.
 
-4. **Assertions**: We use the `REQUIRE` macro to assert that the elements of the rotation matrices match the expected values within a small margin of error (`margin(1e-6)`).
-
-This C++ test case should provide similar functionality to your original Python unittest test class using Catch2. Make sure to link against the Catch2 library when compiling your C++ program.
+This ensures that the functionality and logic of the tests are preserved in the C++ version using Catch2.

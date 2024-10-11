@@ -1,40 +1,132 @@
-Here's how you can convert your Python unittest test class into a TypeScript Jest test case:
+Certainly! Below is the equivalent TypeScript code for the provided Python function, along with a Jest test class to ensure the functionality is preserved. I'll include the necessary imports, type annotations, and Jest assertions.
 
+### TypeScript Code
+
+#### `getLocalIp.ts`
 ```typescript
-// Import necessary modules from Jest and other libraries
-import { expect } from '@jest/globals';
-import { execSync } from 'child_process';
+import { exec } from 'child_process';
+import { promisify } from 'util';
 
-// Define a function similar to your Python function
-function getLocalIP(interface: string = 'Wi-Fi'): string | null {
+// Promisify the exec function for async/await usage
+const execPromise = promisify(exec);
+
+/**
+ * Retrieve the local IP address of the specified network interface on Windows.
+ *
+ * @param interfaceName - The name of the network interface to check (default is 'Wi-Fi').
+ * @returns A Promise that resolves to the local IP address if found, otherwise null.
+ */
+async function getLocalIp(interfaceName: string = 'Wi-Fi'): Promise<string | null> {
     try {
-        // Execute the command to retrieve the IP address
-        const output = execSync(`ipconfig /all`).toString();
-        // Use regex to find the IP address associated with the given interface
-        const match = output.match(new RegExp(`${interface}\\s+IPv4 Address\\.\\.\\.\\.\\.\\.\\.\\.:\\s+(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})`));
-        return match ? match[1] : null;
+        // Execute the 'ipconfig' command to get addresses for the specified interface
+        const { stdout, stderr } = await execPromise('ipconfig');
+
+        // Regular expression to match IPv4 addresses
+        const ipPattern = /(\d+\.\d+\.\d+\.\d+)/g;
+
+        // Search for IP addresses in the command output
+        const matches = stdout.match(ipPattern);
+        if (!matches) {
+            return null;
+        }
+
+        const ips: string[] = matches;
+
+        // Return the first local IP found that starts with "192.168."
+        for (const ip of ips) {
+            if (ip.startsWith("192.168.")) {
+                return ip;
+            }
+        }
+
+        return null; // Return null if no suitable IP is found
+
     } catch (error) {
-        console.error('Error retrieving IP address:', error);
+        console.error(`Error executing command: ${error}`);
         return null;
     }
 }
 
-// Write a Jest test case for the getLocalIP function
-describe('getLocalIP', () => {
-    it('should return the correct IP address for the specified interface', () => {
-        const expectedIP = '192.168.1.1'; // Replace with actual expected IP address
-        const ip = getLocalIP();
+export default getLocalIp;
+```
 
-        expect(ip).toBe(expectedIP);
+### Jest Test Class
+
+#### `getLocalIp.test.ts`
+```typescript
+import { getLocalIp } from './getLocalIp';
+
+describe('getLocalIp', () => {
+    it('should return a valid IP address when available', async () => {
+        const ip = await getLocalIp();
+        expect(ip).not.toBeNull();
+        if (ip !== null) {
+            expect(ip.startsWith('192.168.')).toBe(true);
+        }
     });
 
-    it('should return null if the interface does not exist or cannot be accessed', () => {
-        const nonExistentInterface = 'NonExistentInterface';
-        const ip = getLocalIP(nonExistentInterface);
+    it('should handle errors gracefully', async () => {
+        // Mock the execPromise function to simulate an error
+        const originalExecPromise = global.execPromise;
+        global.execPromise = jest.fn().mockRejectedValue(new Error('Mocked error'));
 
+        try {
+            await getLocalIp();
+        } catch (error) {
+            expect(error).toBeInstanceOf(Error);
+            expect(error.message).toBe('Mocked error');
+        }
+
+        // Restore the original execPromise function
+        global.execPromise = originalExecPromise;
+    });
+
+    it('should return null when no suitable IP is found', async () => {
+        // Mock the execPromise function to simulate no matches
+        const originalExecPromise = global.execPromise;
+        global.execPromise = jest.fn().mockResolvedValue({ stdout: '', stderr: '' });
+
+        const ip = await getLocalIp();
         expect(ip).toBeNull();
+
+        // Restore the original execPromise function
+        global.execPromise = originalExecPromise;
     });
 });
 ```
 
-This TypeScript code uses the `@jest/globals` package to access Jest's global functions like `expect`, and the Node.js `child_process` module to execute system commands similar to what you would do in Python using `subprocess`. The `getLocalIP` function is implemented to fetch the IP address based on the provided interface, and Jest test cases are written to verify its functionality.
+### Explanation:
+
+1. **Imports**:
+   - Import `exec` and `promisify` from `child_process` and `util` respectively to run the `ipconfig` command asynchronously.
+   - Import `getLocalIp` from the module file.
+
+2. **Promisify Function**:
+   - `execPromise` is created to use `async/await` syntax for running the `ipconfig` command.
+
+3. **Function Definition**:
+   - `getLocalIp` is defined as an asynchronous function that returns a promise.
+   - It takes an optional parameter `interfaceName` which defaults to `'Wi-Fi'`.
+
+4. **Command Execution**:
+   - `execPromise` is used to execute the `ipconfig` command and capture its output in `stdout`.
+
+5. **Regex Matching**:
+   - The regular expression `ipPattern` is used to find all IPv4 addresses in the output.
+   - `stdout.match(ipPattern)` returns an array of matches.
+
+6. **IP Address Filtering**:
+   - Iterate through the matches and return the first IP address that starts with `"192.168."`.
+   - If no such IP is found, return `null`.
+
+7. **Error Handling**:
+   - Catch any errors during command execution or processing and log them.
+
+8. **Jest Test Class**:
+   - Use Jest's `describe` and `it` blocks to define test cases.
+   - Use Jest's `expect` assertions to validate the behavior of `getLocalIp`.
+
+9. **Mocking**:
+   - Use Jest's `jest.fn()` to mock the `execPromise` function to simulate different scenarios (errors and no matches).
+
+This TypeScript code preserves the original functionality and structure of the Python code while adapting it to TypeScript and Jest conventions and syntax.

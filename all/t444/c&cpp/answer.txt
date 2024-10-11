@@ -1,42 +1,86 @@
-Sure! Below is the equivalent C++ code for the given Python function `format_comment`.
-
+Here is the equivalent C++ code for the provided Python function:
 ```cpp
 #include <iostream>
 #include <string>
 #include <vector>
+#include <sstream>
 
-std::string formatComment(const std::string& input, int maxLength = 60) {
-    std::string result;
-    std::string currentLine;
+std::string format_comment(const std::string& string, int max_length = 60) {
+    /**
+     * Formats a string into a commented block with specified maximum line length.
+     *
+     * Args:
+     *      string (const std::string&): The input string to format.
+     *      max_length (int): Maximum length of each line in the output.
+     *
+     * Returns:
+     *      std::string: A formatted string with each line prefixed by '# ' and not exceeding the specified max_length.
+     */
 
-    for (char ch : input) {
-        if (currentLine.length() + 2 > maxLength) { // Add 2 for "# " prefix
-            result += "# " + currentLine + "\n";
-            currentLine.clear();
+    // Split the string into lines
+    std::istringstream iss(string);
+    std::vector<std::string> lines;
+    std::string line;
+    while (std::getline(iss, line, '\n')) {
+        lines.push_back(line);
+    }
+
+    // Initialize a vector to store the formatted lines
+    std::vector<std::string> formatted_lines;
+
+    // Iterate through the lines
+    for (const auto& current_line : lines) {
+        // Split the line into words
+        std::istringstream word_stream(current_line);
+        std::string word;
+        std::string current_formatted_line = "";
+
+        // Iterate through the words
+        while (word_stream >> word) {
+            // If the current formatted line plus the next word would be too long,
+            // append the current formatted line to the list of formatted lines and start a new line
+            if (current_formatted_line.length() + word.length() + 2 > max_length) {
+                formatted_lines.push_back(current_formatted_line);
+                current_formatted_line = "";
+            }
+
+            // If the current formatted line is empty, add the word to the line
+            // Otherwise, add a space and the word to the line
+            if (!current_formatted_line.empty()) {
+                current_formatted_line += " " + word;
+            } else {
+                current_formatted_line = word;
+            }
         }
-        currentLine += ch;
+
+        // Add the remaining line to the list of formatted lines
+        formatted_lines.push_back(current_formatted_line);
     }
 
-    if (!currentLine.empty()) {
-        result += "# " + currentLine + "\n";
+    // Return the formatted comment
+    std::ostringstream oss;
+    for (const auto& formatted_line : formatted_lines) {
+        oss << "# " << formatted_line << "\n";
     }
 
-    return result;
+    return oss.str();
 }
 
 int main() {
-    std::string input = "This is an example string that will be formatted into a commented block.";
-    int maxLength = 60;
-    std::string formatted = formatComment(input, maxLength);
-    std::cout << formatted;
+    std::string input = "This is a very long string that needs to be split into multiple lines.\n"
+                        "Each line should be prefixed with '# ' and should not exceed the specified maximum length.";
+
+    std::string formatted_comment = format_comment(input, 60);
+    std::cout << formatted_comment << std::endl;
+
     return 0;
 }
 ```
 
 ### Explanation:
-1. **Function Definition**: The `formatComment` function takes a `const std::string&` as input and an optional `int` parameter `maxLength` with a default value of 60.
-2. **String Processing**: The function iterates through each character of the input string. If adding another character would exceed the `maxLength`, it appends the current line to the result with a `# ` prefix and starts a new line.
-3. **Edge Case Handling**: After the loop, any remaining characters in `currentLine` are appended to the result.
-4. **Main Function**: The `main` function demonstrates how to use the `formatComment` function with a sample input string and prints the formatted result.
+1. **Splitting the Input String**: The C++ code uses `std::istringstream` to split the input string into lines and words.
+2. **Formatted Lines Storage**: It uses `std::vector<std::string>` to store the formatted lines.
+3. **String Manipulation**: The code checks the length of the current line and adds words accordingly to ensure the line does not exceed the specified maximum length.
+4. **Final Formatting**: It constructs the final formatted string using `std::ostringstream`.
 
-This C++ code should produce the same output as the provided Python function.
+This ensures the functionality and logic are preserved while adapting to C++ syntax and features.

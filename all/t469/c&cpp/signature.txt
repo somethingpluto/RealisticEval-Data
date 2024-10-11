@@ -1,23 +1,74 @@
-Here is your Python function translated into C++ code with appropriate comments:
+Certainly! I will convert the given Python function into its equivalent C++ version, including appropriate comments and documentation. Here's the translation:
 
 ```cpp
-#include <array>
-#include <cmath>
+#include <Eigen/Dense>
+#include <stdexcept>
+#include <utility>  // For std::pair
+
+using Eigen::MatrixXd;
+using std::pair;
+using std::runtime_error;
 
 /**
- * @brief Get the scaling factors for a 2D affine transformation.
+ * Given a 3x3 affine transformation matrix, return the corresponding scaling factors
+ * along the x and y axes.
  *
- * @param matrix The 3x3 affine transformation matrix.
- * @return std::pair<double, double> A pair containing the scale factors (scaleX, scaleY).
+ * @param matrix A 3x3 affine transformation matrix.
+ * @return A pair containing the scale factors (scale_x, scale_y).
  */
-std::pair<double, double> getScale(const std::array<std::array<double, 3>, 3>& matrix)
-{
-    // Extracting scale factors from the matrix
-    double scaleX = std::sqrt(matrix[0][0] * matrix[0][0] + matrix[1][0] * matrix[1][0]);
-    double scaleY = std::sqrt(matrix[0][1] * matrix[0][1] + matrix[1][1] * matrix[1][1]);
+pair<double, double> get_scale(const MatrixXd& matrix) {
+    // Ensure the matrix is a 3x3 matrix
+    if (matrix.rows() != 3 || matrix.cols() != 3) {
+        throw runtime_error("Input must be a 3x3 affine transformation matrix.");
+    }
 
-    return {scaleX, scaleY};
+    // Calculate the scale factors using the norm of the columns
+    double scale_x = matrix.block(0, 0, 2, 1).norm();  // Using the first two rows for x-scale
+    double scale_y = matrix.block(0, 1, 2, 1).norm();  // Using the first two rows for y-scale
+
+    return make_pair(scale_x, scale_y);
+}
+
+int main() {
+    // Example usage
+    MatrixXd matrix(3, 3);
+    matrix << 1.0, 2.0, 0.0,
+              0.0, 1.0, 0.0,
+              0.0, 0.0, 1.0;
+
+    try {
+        auto scales = get_scale(matrix);
+        std::cout << "Scale X: " << scales.first << ", Scale Y: " << scales.second << std::endl;
+    } catch (const runtime_error& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+    }
+
+    return 0;
 }
 ```
 
-This function takes a 3x3 affine transformation matrix in C++ format (using `std::array`) and returns the scale factors along the x and y axes as a `std::pair`. Note that C++ does not have built-in support for tuples like Python, so we use `std::pair` instead.
+### Explanation:
+1. **Include Directives**:
+   - `#include <Eigen/Dense>`: Includes the Eigen library for matrix operations.
+   - `#include <stdexcept>`: Includes the standard exception library for throwing exceptions.
+   - `#include <utility>`: Includes the utility library for using `std::pair`.
+
+2. **Using Directives**:
+   - `using Eigen::MatrixXd;`: Alias for `MatrixXd`.
+   - `using std::pair;`: Alias for `std::pair`.
+   - `using std::runtime_error;`: Alias for `std::runtime_error`.
+
+3. **Function Documentation**:
+   - Multi-line comments (`/* ... */`) are used to document the function, parameters, and return values.
+
+4. **Function Implementation**:
+   - The function `get_scale` takes a `const MatrixXd&` (a reference to a 3x3 matrix) as an argument.
+   - It checks if the matrix is 3x3 and throws a `runtime_error` if not.
+   - It calculates the scale factors using the Euclidean norm of the first two rows of the matrix columns.
+   - It returns a `std::pair<double, double>` containing the scale factors.
+
+5. **Example Usage**:
+   - In the `main` function, an example 3x3 matrix is created and passed to `get_scale`.
+   - The result is printed, and any exceptions are caught and handled.
+
+This code preserves the original purpose and structure of the Python code while adhering to C++ conventions and best practices.

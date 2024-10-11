@@ -1,23 +1,124 @@
-Here is how you can convert your Python unittest test class into Jest test cases:
+Certainly! Below is the equivalent JavaScript test class using Jest to test the `getRotation` function. I'll provide the Jest test suite and ensure that the functionality and logic of the tests are maintained.
+
+### Python Code
+```python
+import numpy as np
+
+def get_rotation(matrix: np.array) -> float:
+    """
+    Given an affine transformation matrix, return the corresponding rotation angle in radians.
+
+    Args:
+        matrix (np.array): A 2D affine transformation matrix.
+
+    Returns:
+        float: The rotation angle in radians, extracted from the affine matrix.
+    """
+    if not isinstance(matrix, np.ndarray) or matrix.shape != (3, 3):
+        raise ValueError("Input must be a 3x3 affine transformation matrix.")
+
+    rotation_angle = np.arctan2(matrix[1, 0], matrix[0, 0])
+    return float(rotation_angle)
+```
+
+### JavaScript Code with Jest Tests
+
+#### 1. Implement the `getRotation` function in JavaScript
 
 ```javascript
-const { describe, it, expect } = require('@jest/globals');
-const { getRotation } = require('./path_to_your_module'); // replace with your module path
-const np = require('numpy');
+function getRotation(matrix) {
+    // Ensure the matrix is a 2D array and has the correct shape
+    if (!Array.isArray(matrix) || matrix.length !== 3 || matrix.some(row => row.length !== 3)) {
+        throw new Error("Input must be a 3x3 affine transformation matrix.");
+    }
+
+    // Calculate the rotation angle using Math.atan2
+    const rotationAngle = Math.atan2(matrix[1][0], matrix[0][0]);
+
+    return rotationAngle;
+}
+```
+
+#### 2. Jest Test Suite
+
+Create a Jest test file to test the `getRotation` function:
+
+```javascript
+// getRotation.test.js
+
+const { getRotation } = require('./getRotation');
 
 describe('getRotation', () => {
-    it('should return correct rotation angle for identity matrix', () => {
-        const matrix = np.eye(2);
-        expect(getRotation(matrix)).toBeCloseTo(0);
+    it('should correctly calculate the rotation angle', () => {
+        // Define test cases
+        const testCases = [
+            {
+                matrix: [
+                    [1, 0, 0],
+                    [0, 1, 0],
+                    [0, 0, 1]
+                ],
+                expected: 0
+            },
+            {
+                matrix: [
+                    [0, -1, 0],
+                    [1, 0, 0],
+                    [0, 0, 1]
+                ],
+                expected: Math.PI / 2
+            },
+            {
+                matrix: [
+                    [-1, 0, 0],
+                    [0, -1, 0],
+                    [0, 0, 1]
+                ],
+                expected: Math.PI
+            },
+            {
+                matrix: [
+                    [0, 1, 0],
+                    [-1, 0, 0],
+                    [0, 0, 1]
+                ],
+                expected: -Math.PI / 2
+            }
+        ];
+
+        // Run each test case
+        testCases.forEach(({ matrix, expected }) => {
+            const result = getRotation(matrix);
+            expect(result).toBeCloseTo(expected, 6); // Use beCloseTo for floating-point comparisons
+        });
     });
 
-    it('should return correct rotation angle for rotation matrix', () => {
-        const matrix = np.array([[Math.cos(Math.PI / 4), -Math.sin(Math.PI / 4)], [Math.sin(Math.PI / 4), Math.cos(Math.PI / 4)]]);
-        expect(getRotation(matrix)).toBeCloseTo(Math.PI / 4);
+    it('should throw an error for invalid matrices', () => {
+        const invalidMatrices = [
+            [[1, 0, 0], [0, 1, 0]], // 2x3 matrix
+            [[1, 0, 0], [0, 1, 0], [0, 0, 1], [0, 0, 0]], // 4x3 matrix
+            [[1, 0, 0], [0, 1]], // 2x2 matrix
+            [[1, 0, 0], [0, 1, 0], [0, 0]] // 3x2 matrix
+        ];
+
+        // Run each test case
+        invalidMatrices.forEach(matrix => {
+            expect(() => getRotation(matrix)).toThrow(/Input must be a 3x3 affine transformation matrix/);
+        });
     });
 });
 ```
 
-Please note that `@jest/globals` is used to import `describe`, `it`, and `expect` functions. Also, please replace `'./path_to_your_module'` with the actual path of your JavaScript file where `getRotation` function is defined. And remember to install 'numpy' package using npm or yarn before running the tests.
+### Explanation:
+1. **Function Implementation**:
+   - The `getRotation` function is implemented in JavaScript, ensuring that it validates the input matrix and calculates the rotation angle using `Math.atan2`.
 
-Also, Jest's `toBeCloseTo()` matcher checks if the numbers are close enough to be considered equal within a certain precision. It is useful when dealing with floating point numbers.
+2. **Test Cases**:
+   - The Jest test suite includes multiple test cases to validate the correctness of the function.
+   - Each test case is defined with a specific matrix and an expected rotation angle.
+   - The `toBeCloseTo` matcher is used for floating-point comparisons to account for small rounding errors.
+
+3. **Error Handling**:
+   - The test suite also includes cases where the input matrix is invalid, and it expects the function to throw an error with a specific message.
+
+By following these steps, the functionality and logic of the Python unittest are preserved in the Jest test suite, ensuring comprehensive testing of the `getRotation` function.

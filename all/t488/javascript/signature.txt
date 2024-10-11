@@ -1,13 +1,70 @@
-Sure! Here's how you can convert the Python function signature to JavaScript:
+Certainly! Below is the equivalent JavaScript code with the function signature and comments rewritten to conform to JSDoc format:
 
 ```javascript
+const { exec } = require('child_process');
+const { promisify } = require('util');
+
+const execPromise = promisify(exec);
+
 /**
  * Retrieve the local IP address of the specified network interface on Windows.
- *
+ * 
  * @param {string} [interface='Wi-Fi'] - The name of the network interface to check (default is 'Wi-Fi').
- * @returns {Promise<string | null>} - A promise that resolves with the local IP address if found, otherwise null.
+ * @returns {Promise<string | null>} - The local IP address if found, otherwise null.
  */
-async function getLocalIP(interface = 'Wi-Fi') {
+async function getLocalIp(interface = 'Wi-Fi') {
+    try {
+        // Execute the 'ipconfig' command to get addresses for the specified interface
+        const { stdout, stderr } = await execPromise('ipconfig');
+
+        // Regular expression to match IPv4 addresses
+        const ipPattern = /\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/g;
+
+        // Search for IP addresses in the command output
+        const ips = stdout.match(ipPattern) || [];
+
+        // Return the first local IP found
+        for (const ip of ips) {
+            if (ip.startsWith("192.168.")) {
+                return ip;
+            }
+        }
+
+        return null;  // Return null if no suitable IP is found
+
+    } catch (error) {
+        console.error(`Error executing command: ${error.message}`);
+        return null;
+    }
+}
+
+// Example usage
+(async () => {
+    try {
+        const ip = await getLocalIp();
+        console.log(`Local IP: ${ip}`);
+    } catch (error) {
+        console.error(`An unexpected error occurred: ${error.message}`);
+    }
+})();
 ```
 
-This JavaScript version uses `async/await` and returns a promise instead of using optional return types directly in the function signature. This is because JavaScript doesn't support optional parameters or return types in the same way Python does.
+### Explanation:
+1. **Imports**:
+   - `child_process` is used to execute the `ipconfig` command.
+   - `util.promisify` is used to convert the `exec` function into a promise-based function for asynchronous execution.
+
+2. **Function Definition**:
+   - The `getLocalIp` function is defined as an asynchronous function to handle the asynchronous nature of the `exec` command.
+   - The JSDoc comment is added to describe the function, its parameters, and its return type.
+
+3. **Regular Expression**:
+   - A regular expression `ipPattern` is used to match IPv4 addresses in the command output.
+
+4. **Error Handling**:
+   - Error handling is included to catch any exceptions that may occur during the execution of the `ipconfig` command.
+
+5. **Example Usage**:
+   - An example usage is provided at the end of the script using an immediately invoked async function to demonstrate how to call the `getLocalIp` function and handle the results.
+
+This JavaScript code preserves the purpose and structure of the original Python code while adhering to JavaScript documentation standards using JSDoc.

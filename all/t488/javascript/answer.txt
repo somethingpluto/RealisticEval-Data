@@ -1,50 +1,67 @@
-Here's how you can convert the given Python code into JavaScript:
+Certainly! Below is the equivalent JavaScript code that maintains the same functionality, logic, and structure as the provided Python code:
 
 ```javascript
 const { exec } = require('child_process');
-const ipRegex = /inet\s+(\d+\.\d+\.\d+\.\d+)/;
+const { stdin, stdout, stderr } = require('process');
+const { promisify } = require('util');
 
-function getLocalIP(interfaceName = 'Wi-Fi') {
-    return new Promise((resolve, reject) => {
-        const command = `netsh interface ipv4 show config "${interfaceName}"`;
-        
-        exec(command, (error, stdout, stderr) => {
-            if (error) {
-                console.error(`Error executing command: ${error.message}`);
-                reject(error);
-                return;
+const execPromise = promisify(exec);
+
+async function getLocalIp(interface = 'Wi-Fi') {
+    /**
+     * Retrieve the local IP address of the specified network interface on Windows.
+     *
+     * @param {string} interface - The name of the network interface to check (default is 'Wi-Fi').
+     * @returns {Promise<string | null>} - The local IP address if found, otherwise null.
+     */
+
+    try {
+        // Execute the 'ipconfig' command to get addresses for the specified interface
+        const { stdout, stderr } = await execPromise('ipconfig');
+
+        // Regular expression to match IPv4 addresses
+        const ipPattern = /\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/g;
+
+        // Search for IP addresses in the command output
+        const ips = stdout.match(ipPattern) || [];
+
+        // Return the first local IP found
+        for (const ip of ips) {
+            if (ip.startsWith("192.168.")) {
+                return ip;
             }
+        }
 
-            const matches = ipRegex.exec(stdout);
+        return null;  // Return null if no suitable IP is found
 
-            if (!matches || matches.length < 2) {
-                resolve(null);
-            } else {
-                resolve(matches[1]);
-            }
-        });
-    });
+    } catch (error) {
+        console.error(`Error executing command: ${error.message}`);
+        return null;
+    }
 }
 
-// Usage example:
-getLocalIP().then(ip => {
-    console.log('Local IP:', ip);
-}).catch(error => {
-    console.error('Failed to retrieve local IP:', error);
-});
+// Example usage
+(async () => {
+    try {
+        const ip = await getLocalIp();
+        console.log(`Local IP: ${ip}`);
+    } catch (error) {
+        console.error(`An unexpected error occurred: ${error.message}`);
+    }
+})();
 ```
 
 ### Explanation:
-1. **Importing Required Modules**: In JavaScript, we use `require` to import modules. Here, we need the `child_process` module for executing shell commands and `Promise` for handling asynchronous operations.
+1. **Imports**: 
+   - `child_process` is used to execute the `ipconfig` command.
+   - `util.promisify` is used to convert the `exec` function into a promise-based function for asynchronous execution.
 
-2. **Regular Expression**: We define a regular expression (`ipRegex`) to match the IP address from the output of the `netsh` command.
+2. **Function Definition**:
+   - The `getLocalIp` function is defined as an asynchronous function to handle the asynchronous nature of the `exec` command.
+   - It uses regular expressions to find IPv4 addresses in the output of the `ipconfig` command.
+   - It filters the IP addresses to find one that starts with "192.168." and returns it.
 
-3. **Function Definition**: We define the `getLocalIP` function that returns a promise. This allows us to handle the asynchronous nature of the `exec` call.
+3. **Example Usage**:
+   - An example usage is provided at the end of the script using an immediately invoked async function to demonstrate how to call the `getLocalIp` function and handle the results.
 
-4. **Executing Shell Command**: We use the `exec` function to run the `netsh interface ipv4 show config "${interfaceName}"` command. This command retrieves the configuration details of the specified network interface.
-
-5. **Handling Output**: We parse the standard output using the regular expression to extract the IP address. If no match is found or an error occurs, we resolve the promise with `null`.
-
-6. **Usage Example**: Finally, we demonstrate how to use the `getLocalIP` function and handle its result.
-
-This JavaScript code should achieve the same functionality as your original Python script.
+This JavaScript code should provide the same functionality as the original Python code.

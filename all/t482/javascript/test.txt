@@ -1,51 +1,137 @@
-To convert the given Python unittest test class to JavaScript using Jest, you first need to define the `extractOutermostBrackets` function in JavaScript. Then, you can write a Jest test case for it. Below is how you can do it:
+Certainly! Below is the conversion of the Python unittest test class into an equivalent Jest test suite. I will ensure that the functionality and logic of the tests are maintained, and any necessary changes due to language differences between Python and JavaScript are documented.
 
-### Step 1: Define the Function
+### Python Code
 
-```javascript
-function extractOutermostBrackets(s) {
-    // Regular expression to find the outermost brackets
-    const regex = /\[(.*?)\]/;
-    const match = s.match(regex);
-    
-    return match ? match[1] : '';
-}
+```python
+import unittest
+
+def extract_outermost_brackets(s: str) -> str:
+    """
+    Extracts the contents of the outermost brackets from the input string.
+    For example:
+        input: Text [with [nested] brackets] and more text
+        output: with [nested] brackets
+    Args:
+        s (str): The input string containing brackets.
+
+    Returns:
+        str: The contents within the outermost brackets, or an empty string if no brackets are found.
+    """
+    stack = []
+    start_index = -1
+    opening_brackets = "({["
+    closing_brackets = ")}]"
+    matching_bracket = {')': '(', '}': '{', ']': '['}
+
+    for i, char in enumerate(s):
+        if char in opening_brackets:  # Check for any opening bracket
+            if not stack:  # If the stack is empty, we have found the outermost opening bracket
+                start_index = i  # Remember the position of the first opening bracket
+            stack.append(char)
+        elif char in closing_brackets:  # Check for any closing bracket
+            if stack and stack[-1] == matching_bracket[char]:  # Match with the latest opening bracket
+                stack.pop()
+                if not stack:  # When stack is empty, we found the outermost closing bracket
+                    return s[start_index + 1:i]  # Extract contents between the brackets
+
+    return ""  # Return an empty string if no outermost brackets were found
+
+
+class TestExtractOutermostBrackets(unittest.TestCase):
+
+    def test_no_brackets(self):
+        self.assertEqual(extract_outermost_brackets("No brackets"), "")
+
+    def test_single_bracket(self):
+        self.assertEqual(extract_outermost_brackets("[Single]"), "Single")
+
+    def test_nested_brackets(self):
+        self.assertEqual(extract_outermost_brackets("Text [with [nested] brackets] and more text"), "with [nested] brackets")
+
+    def test_multiple_brackets(self):
+        self.assertEqual(extract_outermost_brackets("Text [with] [another]"), "with")
+
+    def test_mismatched_brackets(self):
+        self.assertEqual(extract_outermost_brackets("Mismatched [brackets]"), "[brackets]")
+
+
+if __name__ == '__main__':
+    unittest.main()
 ```
 
-### Step 2: Write the Jest Test Case
+### JavaScript Code with Jest
+
+Here is the equivalent Jest test suite:
 
 ```javascript
-// Import the function to be tested
-const { extractOutermostBrackets } = require('./path-to-your-function');
+const extractOutermostBrackets = require('./extractOutermostBrackets');
 
-describe('extractOutermostBrackets', () => {
-    test('should extract the contents of the outermost brackets', () => {
-        expect(extractOutermostBrackets('Text [with [nested] brackets] and more text')).toBe('with [nested] brackets');
+/**
+ * Extracts the contents of the outermost brackets from the input string.
+ * For example:
+ *   input: "Text [with [nested] brackets] and more text"
+ *   output: "with [nested] brackets"
+ * 
+ * @param {string} s - The input string containing brackets.
+ * @returns {string} - The contents within the outermost brackets, or an empty string if no brackets are found.
+ */
+function extractOutermostBrackets(s) {
+    let stack = [];
+    let startIndex = -1;
+    const openingBrackets = "({[";
+    const closingBrackets = ")}]";
+    const matchingBracket = { ')': '(', '}': '{', ']': '[' };
+
+    for (let i = 0; i < s.length; i++) {
+        const char = s[i];
+        if (openingBrackets.includes(char)) {  // Check for any opening bracket
+            if (stack.length === 0) {  // If the stack is empty, we have found the outermost opening bracket
+                startIndex = i;  // Remember the position of the first opening bracket
+            }
+            stack.push(char);
+        } else if (closingBrackets.includes(char)) {  // Check for any closing bracket
+            if (stack.length > 0 && stack[stack.length - 1] === matchingBracket[char]) {  // Match with the latest opening bracket
+                stack.pop();
+                if (stack.length === 0) {  // When stack is empty, we found the outermost closing bracket
+                    return s.substring(startIndex + 1, i);  // Extract contents between the brackets
+                }
+            }
+        }
+    }
+
+    return "";  // Return an empty string if no outermost brackets were found
+}
+
+describe('Test extractOutermostBrackets', () => {
+    it('should handle strings with no brackets', () => {
+        expect(extractOutermostBrackets("No brackets")).toBe("");
     });
 
-    test('should return an empty string if no brackets are found', () => {
-        expect(extractOutermostBrackets('No brackets here')).toBe('');
+    it('should handle strings with a single bracket', () => {
+        expect(extractOutermostBrackets("[Single]")).toBe("Single");
     });
 
-    test('should handle nested brackets correctly', () => {
-        expect(extractOutermostBrackets('[Nested [brackets]]')).toBe('Nested [brackets]');
+    it('should handle strings with nested brackets', () => {
+        expect(extractOutermostBrackets("Text [with [nested] brackets] and more text")).toBe("with [nested] brackets");
     });
 
-    test('should ignore brackets not at the outermost level', () => {
-        expect(extractOutermostBrackets('Some [text] inside other [brackets]').toBe('text');
+    it('should handle strings with multiple brackets', () => {
+        expect(extractOutermostBrackets("Text [with] [another]")).toBe("with");
+    });
+
+    it('should handle strings with mismatched brackets', () => {
+        expect(extractOutermostBrackets("Mismatched [brackets]")).toBe("[brackets]");
     });
 });
+
+module.exports = extractOutermostBrackets;
 ```
 
-### Explanation:
+### Explanation
 
-1. **Function Definition**: The `extractOutermostBrackets` function uses a regular expression to find the outermost set of square brackets `[ ]`. If a match is found, it returns the content inside the brackets; otherwise, it returns an empty string.
+1. **Function Definition**: The `extract_outermost_brackets` function is defined in JavaScript with the same logic and structure.
+2. **Jest Test Suite**: The `unittest.TestCase` is replaced with a Jest `describe` block.
+3. **Test Cases**: Each `unittest.TestCase` method is replaced with a Jest `it` block, which uses `expect` for assertions.
+4. **File Structure**: The JavaScript file includes the `extractOutermostBrackets` function and the Jest test suite.
 
-2. **Jest Test Suite**:
-   - We use `describe` to group related tests together.
-   - Each `test` function contains a description of what the test should achieve and the assertion that checks whether the function behaves as expected.
-
-3. **Assertions**:
-   - `expect(...).toBe(...)`: This is used to check if the result of the function call matches the expected value.
-
-Make sure to replace `'./path-to-your-function'` with the actual path to your JavaScript file where the `extractOutermostBrackets` function is defined.
+This conversion ensures that the functionality and logic of the tests are preserved, and the structure is clear and follows Jest conventions.

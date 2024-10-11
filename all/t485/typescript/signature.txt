@@ -1,28 +1,70 @@
-Here's the TypeScript version of your Python code:
+Certainly! Below is the equivalent TypeScript code for the given Python function, including proper type annotations and JSDoc-style documentation comments:
 
 ```typescript
-import { match } from "assert";
-
 /**
  * This function modifies a SQL query string containing named parameters
  * (like $name, $age) into a format compatible with libraries that require
  * positional parameters (like $1, $2, etc.), such as asyncpg. It returns
  * a tuple containing the modified SQL string and a list of parameter values
  * ordered according to their new positions in the query.
+ * 
  * For example:
- *     input:
- *         sql: SELECT * FROM users WHERE id = $user_id AND status = $status
- *         params: {'user_id': 42,'status': 'active'}
- *     output:
- *         SELECT * FROM users WHERE id = $1 AND status = $2,[42, 'active']
- *
+ *   input:
+ *     sql: SELECT * FROM users WHERE id = $user_id AND status = $status
+ *     params: {'user_id': 42, 'status': 'active'}
+ *   output:
+ *     SELECT * FROM users WHERE id = $1 AND status = $2, [42, 'active']
+ * 
  * @param sql - The original SQL query string with named parameters.
  * @param params - A dictionary mapping parameter names to their values.
  * @returns A tuple where the first element is the modified SQL query string with positional parameters, and the second element is a list of parameter values sorted according to the order of the positional parameters.
  */
-function prepareQuery(sql: string, params: {[key: string]: any}): [string, any[]] {
-    // ...
+function prepareQuery(sql: string, params: Record<string, any>): [string, any[]] {
+    // Find all occurrences of named parameters in the SQL string
+    const namedParams = sql.match(/\$(\w+)/g)?.map((match) => match.substring(1)) || [];
+
+    // Remove duplicates while preserving order
+    const uniqueParams = Array.from(new Set(namedParams));
+
+    // Substitute each named parameter with its corresponding positional parameter
+    let modifiedSql = sql;
+    for (let index = 0; index < uniqueParams.length; index++) {
+        const param = uniqueParams[index];
+        modifiedSql = modifiedSql.replace(new RegExp(`\\$${param}`, 'g'), `$${index + 1}`);
+    }
+
+    // Prepare the list of values corresponding to the order of the positional parameters
+    const values = uniqueParams.map((param) => params[param]);
+
+    return [modifiedSql, values];
 }
+
+// Example usage
+const sql = "SELECT * FROM users WHERE id = $user_id AND status = $status";
+const params = { user_id: 42, status: 'active' };
+
+const [modifiedSql, values] = prepareQuery(sql, params);
+console.log(modifiedSql); // Output: SELECT * FROM users WHERE id = $1 AND status = $2
+console.log(values); // Output: [42, 'active']
 ```
 
-Please note that I've used `any` for the type of values in the `params` object since the exact types aren't specified in the original Python code. If you have specific types for these values, you can replace `any` with those types.
+### Explanation:
+1. **JSDoc Documentation Comments**:
+   - The JSDoc-style comments provide detailed documentation for the function, including examples and parameter descriptions.
+
+2. **Type Annotations**:
+   - `sql` is typed as `string`.
+   - `params` is typed as `Record<string, any>`, which represents a dictionary with string keys and any type of values.
+   - The function returns a tuple `[string, any[]]`.
+
+3. **Regular Expressions**:
+   - Used `match` to find all named parameters in the SQL string.
+   - Used `replace` with a global regex to substitute named parameters with positional parameters.
+
+4. **Removing Duplicates**:
+   - Used `Set` to remove duplicates while preserving the order.
+
+5. **Mapping Parameters**:
+   - Used `map` to create an array of parameter values.
+
+This TypeScript code preserves the functionality and structure of the original Python code while adhering to TypeScript's static type system and documentation standards.

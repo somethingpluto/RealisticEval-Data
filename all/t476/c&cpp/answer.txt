@@ -1,118 +1,80 @@
-Sure, here's how you can implement a topological sort using Depth-First Search (DFS) in C++. The implementation assumes that vertices are labeled from 0 to n-1.
+Sure! Below is the equivalent C++ code for the given Python code. The C++ version will maintain the same functionality, logic, and structure as the original Python code.
 
 ```cpp
 #include <iostream>
 #include <vector>
-#include <stack>
+#include <unordered_map>
+#include <unordered_set>
+#include <deque>
 
 using namespace std;
 
-class Graph {
-private:
-    int V; // Number of vertices
-    vector<int> *adj; // Adjacency lists
-
-public:
-    Graph(int V);
-    void addEdge(int v, int w);
-    bool dfsUtil(int v, stack<int>& Stack, vector<bool>& visited);
-    vector<int> topologicalSort();
-};
-
-Graph::Graph(int V) {
-    this->V = V;
-    adj = new vector<int>[V];
+// Function to perform depth-first search
+void dfs(int node, const unordered_map<int, vector<int>>& graph, unordered_set<int>& visited, deque<int>& result) {
+    if (visited.find(node) != visited.end()) {
+        return;
+    }
+    visited.insert(node);
+    for (int neighbor : graph.at(node)) {
+        if (visited.find(neighbor) == visited.end()) {
+            dfs(neighbor, graph, visited, result);
+        }
+    }
+    result.push_front(node);  // Add node to the front of the deque
 }
 
-void Graph::addEdge(int v, int w) {
-    adj[v].push_back(w); // Add w to v’s list.
-}
+// Function to perform topological sort using DFS
+vector<int> topological_sort_dfs(const vector<int>& vertices, const vector<pair<int, int>>& edges) {
+    unordered_map<int, vector<int>> graph;
+    unordered_set<int> visited;
+    deque<int> result;
 
-bool Graph::dfsUtil(int v, stack<int>& Stack, vector<bool>& visited) {
-    // Mark the current node as visited.
-    visited[v] = true;
+    // Build the graph
+    for (const auto& edge : edges) {
+        graph[edge.first].push_back(edge.second);
+    }
 
-    // Recur for all the vertices adjacent to this vertex.
-    for (int i = 0; i != adj[v].size(); ++i) {
-        if (!visited[adj[v][i]]) {
-            if (!dfsUtil(adj[v][i], Stack, visited)) return false;
+    // Traverse all nodes
+    for (int vertex : vertices) {
+        if (visited.find(vertex) == visited.end()) {
+            dfs(vertex, graph, visited, result);
         }
     }
 
-    // Push current vertex to stack which stores result
-    Stack.push(v);
-
-    return true;
+    return vector<int>(result.begin(), result.end());
 }
 
-vector<int> Graph::topologicalSort() {
-    stack<int> Stack;
-    vector<bool> visited(V, false);
-
-    // Call the recursive helper function to store Topological Sort starting from all vertices one by one
-    for (int i = 0; i < V; i++)
-        if (!visited[i])
-            if (!dfsUtil(i, Stack, visited))
-                return {}; // Cycle detected, no topological sort possible
-
-    vector<int> topoOrder;
-    while (!Stack.empty()) {
-        topoOrder.push_back(Stack.top());
-        Stack.pop();
-    }
-
-    return topoOrder;
-}
-
-// Example usage
 int main() {
-    int V = 6;
-    Graph g(V);
+    // Example usage
+    vector<int> vertices = {0, 1, 2, 3, 4};
+    vector<pair<int, int>> edges = {{0, 1}, {1, 2}, {2, 3}, {3, 4}};
 
-    g.addEdge(5, 2);
-    g.addEdge(5, 0);
-    g.addEdge(4, 0);
-    g.addEdge(4, 1);
-    g.addEdge(2, 3);
-    g.addEdge(3, 1);
+    vector<int> sorted_vertices = topological_sort_dfs(vertices, edges);
 
-    vector<int> topoOrder = g.topologicalSort();
-
-    if (topoOrder.empty())
-        cout << "Cycle detected, no topological sort possible." << endl;
-    else {
-        cout << "Topological Order: ";
-        for (int i : topoOrder)
-            cout << i << " ";
-        cout << endl;
+    // Print the result
+    for (int vertex : sorted_vertices) {
+        cout << vertex << " ";
     }
+    cout << endl;
 
     return 0;
 }
 ```
 
 ### Explanation:
+- **Data Structures**:
+  - `unordered_map` is used to represent the graph, similar to the `defaultdict(list)` in Python.
+  - `unordered_set` is used to track visited nodes, similar to the `set` in Python.
+  - `deque` is used to store the result, similar to the `deque` in Python.
 
-1. **Graph Class**:
-   - `V`: Number of vertices.
-   - `adj`: An array of vectors representing adjacency lists.
+- **DFS Function**:
+  - The `dfs` function performs a depth-first search recursively.
+  - It marks nodes as visited and adds them to the result deque in reverse order.
 
-2. **Constructor (`Graph::Graph`)**:
-   - Initializes the number of vertices and creates adjacency lists.
+- **Topological Sort Function**:
+  - The `topological_sort_dfs` function builds the graph and traverses all nodes using the `dfs` function.
+  - It returns the result as a vector of integers.
 
-3. **Add Edge (`Graph::addEdge`)**:
-   - Adds an edge from vertex `v` to vertex `w`.
-
-4. **DFS Util (`Graph::dfsUtil`)**:
-   - Helper function for DFS to visit nodes and push them onto the stack when all their descendants have been visited.
-   - Returns `false` if a cycle is detected.
-
-5. **Topological Sort (`Graph::topologicalSort`)**:
-   - Uses DFS to perform a topological sort.
-   - Returns an empty vector if a cycle is detected, otherwise returns the topological order.
-
-6. **Main Function**:
-   - Creates a graph and performs a topological sort.
-   - Prints the topological order or indicates if a cycle was detected.
-
-This code handles the same functionality as your Python implementation but in C++.
+- **Example Usage**:
+  - In the `main` function, an example graph is defined with vertices and edges.
+  - The `topological_sort_dfs` function is called with these inputs, and the sorted vertices are printed.

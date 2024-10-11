@@ -1,52 +1,116 @@
-Certainly! Below is the equivalent JavaScript test case using Jest for the given Python `safe_format` function:
+Certainly! Below is the equivalent Jest test class for the `safe_format` function. I'll convert the Python unittest test class into a Jest test suite, ensuring that the functionality and logic of the tests are maintained. Any necessary changes due to language differences will be documented.
+
+### Python unittest Test Class
+
+```python
+import unittest
+
+class TestSafeFormat(unittest.TestCase):
+
+    def test_safe_format_with_all_placeholders_replaced(self):
+        result = safe_format("Hello, {name}! Today is {day}.", name="Alice", day="Monday")
+        self.assertEqual(result, "Hello, Alice! Today is Monday.")
+
+    def test_safe_format_with_some_placeholders_replaced(self):
+        result = safe_format("Hello, {name}! Today is {day}.", name="Alice")
+        self.assertEqual(result, "Hello, Alice! Today is {day}.")
+
+    def test_safe_format_with_no_placeholders_replaced(self):
+        result = safe_format("Hello, {name}! Today is {day}.")
+        self.assertEqual(result, "Hello, {name}! Today is {day}.")
+
+    def test_safe_format_with_numeric_values(self):
+        result = safe_format("The answer is {answer}.", answer=42)
+        self.assertEqual(result, "The answer is 42.")
+
+if __name__ == '__main__':
+    unittest.main()
+```
+
+### Equivalent Jest Test Suite
+
+Here is the equivalent Jest test suite for the `safe_format` function:
 
 ```javascript
-const safeFormat = require('./path-to-your-safe-format-function'); // Adjust the path accordingly
+const safeFormat = require('./safeFormat'); // Assuming safeFormat is exported from another file
 
 describe('safeFormat', () => {
-  test('replaces placeholders with corresponding values', () => {
-    const template = 'Hello, {name}!';
-    const result = safeFormat(template, { name: 'Alice' });
-    expect(result).toBe('Hello, Alice!');
-  });
+    test('should replace all placeholders with provided values', () => {
+        const result = safeFormat("Hello, {name}! Today is {day}.", { name: "Alice", day: "Monday" });
+        expect(result).toBe("Hello, Alice! Today is Monday.");
+    });
 
-  test('leaves unmatching placeholders unchanged', () => {
-    const template = 'Hello, {name} and {age}';
-    const result = safeFormat(template, { name: 'Alice' });
-    expect(result).toBe('Hello, Alice and {age}');
-  });
+    test('should leave some placeholders unchanged when not provided', () => {
+        const result = safeFormat("Hello, {name}! Today is {day}.", { name: "Alice" });
+        expect(result).toBe("Hello, Alice! Today is {day}.");
+    });
 
-  test('handles empty template correctly', () => {
-    const template = '';
-    const result = safeFormat(template);
-    expect(result).toBe('');
-  });
+    test('should leave all placeholders unchanged when no values are provided', () => {
+        const result = safeFormat("Hello, {name}! Today is {day}.");
+        expect(result).toBe("Hello, {name}! Today is {day}.");
+    });
 
-  test('handles null or undefined inputs gracefully', () => {
-    const template = null;
-    const result = safeFormat(template);
-    expect(result).toBe(null);
-
-    const resultWithUndefined = safeFormat(undefined);
-    expect(resultWithUndefined).toBe(undefined);
-  });
-
-  test('works with nested objects', () => {
-    const template = 'Hello, {user.name}!';
-    const result = safeFormat(template, { user: { name: 'Alice' } });
-    expect(result).toBe('Hello, Alice!');
-  });
+    test('should handle numeric values correctly', () => {
+        const result = safeFormat("The answer is {answer}.", { answer: 42 });
+        expect(result).toBe("The answer is 42.");
+    });
 });
 ```
 
 ### Explanation:
-1. **Importing the Function**: Ensure you import your `safeFormat` function correctly at the top of your test file.
-2. **Describe Block**: The `describe` block groups related tests together under a common description.
-3. **Test Cases**:
-   - **Replace Placeholders**: Tests if placeholders are replaced with corresponding values.
-   - **Unmatched Placeholders**: Checks if placeholders without matching values remain unchanged.
-   - **Empty Template**: Ensures an empty template returns an empty string.
-   - **Null or Undefined Inputs**: Validates how the function handles `null` and `undefined` inputs.
-   - **Nested Objects**: Tests if the function can handle nested object structures within the template.
+1. **Import Statement**:
+   - `safeFormat` is imported from another file (assuming it is defined in `safeFormat.js`).
 
-Make sure to adjust the path to your `safeFormat` function in the `require` statement according to your project structure. This Jest test suite should cover various scenarios to ensure the `safeFormat` function works as expected.
+2. **Describe Block**:
+   - The `describe` block is used to group the tests related to the `safeFormat` function.
+
+3. **Test Cases**:
+   - Each `test` function corresponds to a specific test case.
+   - Assertions are made using `expect` and `toBe` to check the expected behavior of the `safeFormat` function.
+
+4. **Test Data**:
+   - The test data and expected results are the same as in the Python unittest class.
+
+5. **Assertions**:
+   - The `expect` function is used to assert the equality of the results.
+   - `toBe` is used to ensure exact string equality.
+
+### File Structure
+Assuming the `safeFormat` function is defined in a separate file `safeFormat.js`:
+
+```javascript
+// safeFormat.js
+
+/**
+ * Safely formats a template string by replacing placeholders with corresponding values
+ * from the provided keyword arguments. If a placeholder does not have a corresponding
+ * value in kwargs, it remains unchanged.
+ *
+ * @param {string} template - The string template containing placeholders in the form {key}.
+ * @param {Object} [kwargs] - Keyword arguments that map keys to their replacement values.
+ * @returns {string} The formatted string with placeholders replaced by values.
+ */
+function safeFormat(template, kwargs = {}) {
+    // Compile a regex pattern to match placeholders in the form {key}
+    const pattern = /\{(\w+)\}/g;
+
+    function replacer(match, key) {
+        /**
+         * Replacement function for the regex replace method.
+         *
+         * @param {string} match - The full matched placeholder.
+         * @param {string} key - The extracted placeholder key.
+         * @returns {string} The replacement value if the key exists in kwargs, otherwise the original placeholder.
+         */
+        // Return the corresponding value from kwargs, or the original placeholder if not found
+        return kwargs.hasOwnProperty(key) ? String(kwargs[key]) : match;
+    }
+
+    // Replace placeholders in the template using the replacer function
+    return template.replace(pattern, replacer);
+}
+
+module.exports = safeFormat;
+```
+
+This ensures that the Jest test suite accurately reflects the functionality and logic of the Python unittest test class.

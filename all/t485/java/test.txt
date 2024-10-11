@@ -1,64 +1,124 @@
-Sure! Below is the equivalent Java JUnit test case for your Python `unittest` test class. The package name is `org.real.temp`, and the class name is `Tester`.
+Certainly! Below is the equivalent Java test class using JUnit for the provided Python unittest test class. The Java test class is placed in the package `org.real.temp` and named `Tester`. It uses appropriate JUnit annotations and assertion methods to ensure that the functionality and logic of the tests are preserved.
+
+### Java Test Class
 
 ```java
 package org.real.temp;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import java.util.*;
 
-public class Tester {
+class Tester {
 
+    /**
+     * Tests the prepareQuery function with various inputs to ensure it correctly modifies the SQL query
+     * and returns the expected results.
+     */
     @Test
-    public void testPrepareQuery() {
-        // Test data
-        String sql = "SELECT * FROM users WHERE id = $user_id AND status = $status";
-        String[] expectedSql = {"SELECT * FROM users WHERE id = $1 AND status = $2"};
-        int[] expectedPositions = {1, 2};
-        Object[][] expectedParams = {{42}, {"active"}};
+    void testPrepareQuery() {
+        // Test case 1
+        String sql1 = "SELECT * FROM users WHERE id = $user_id AND status = $status";
+        Map<String, Object> params1 = new HashMap<>();
+        params1.put("user_id", 42);
+        params1.put("status", "active");
+        Tuple<String, List<Object>> result1 = Answer.prepareQuery(sql1, params1);
+        assertEquals("SELECT * FROM users WHERE id = $1 AND status = $2", result1.first);
+        assertEquals(Arrays.asList(42, "active"), result1.second);
 
-        // Call the method under test
-        Object[] result = prepareQuery(sql, new java.util.HashMap<String, Object>() {{
-            put("user_id", 42);
-            put("status", "active");
-        }});
+        // Test case 2
+        String sql2 = "SELECT * FROM products WHERE price > $price AND stock > $stock";
+        Map<String, Object> params2 = new HashMap<>();
+        params2.put("price", 100);
+        params2.put("stock", 50);
+        Tuple<String, List<Object>> result2 = Answer.prepareQuery(sql2, params2);
+        assertEquals("SELECT * FROM products WHERE price > $1 AND stock > $2", result2.first);
+        assertEquals(Arrays.asList(100, 50), result2.second);
 
-        // Verify the results
-        assertEquals(expectedSql[0], (String) result[0]);
-        assertArrayEquals(expectedPositions, (int[]) result[1]);
-        assertArrayEquals(expectedParams[0], (Object[]) result[2]);
+        // Test case 3
+        String sql3 = "UPDATE accounts SET balance = $balance WHERE account_id = $account_id";
+        Map<String, Object> params3 = new HashMap<>();
+        params3.put("balance", 1500);
+        params3.put("account_id", 12345);
+        Tuple<String, List<Object>> result3 = Answer.prepareQuery(sql3, params3);
+        assertEquals("UPDATE accounts SET balance = $1 WHERE account_id = $2", result3.first);
+        assertEquals(Arrays.asList(1500, 12345), result3.second);
+    }
+}
+
+// The Answer class containing the prepareQuery method
+class Answer {
+
+    /**
+     * Modifies a SQL query string containing named parameters (like $name, $age)
+     * into a format compatible with libraries that require positional parameters
+     * (like $1, $2, etc.), such as asyncpg. It returns a tuple containing the
+     * modified SQL string and a list of parameter values ordered according to
+     * their new positions in the query.
+     * 
+     * Example:
+     *     Input:
+     *         sql: SELECT * FROM users WHERE id = $user_id AND status = $status
+     *         params: {'user_id': 42, 'status': 'active'}
+     *     Output:
+     *         SELECT * FROM users WHERE id = $1 AND status = $2, [42, 'active']
+     * 
+     * @param sql The original SQL query string with named parameters.
+     * @param params A map mapping parameter names to their values.
+     * @return A tuple where the first element is the modified SQL query string with positional parameters,
+     *         and the second element is a list of parameter values sorted according to the order of the positional parameters.
+     */
+    public static Tuple<String, List<Object>> prepareQuery(String sql, Map<String, Object> params) {
+        // Find all occurrences of named parameters in the SQL string
+        Pattern pattern = Pattern.compile("\\$(\\w+)");
+        Matcher matcher = pattern.matcher(sql);
+        Set<String> namedParams = new LinkedHashSet<>();
+
+        while (matcher.find()) {
+            namedParams.add(matcher.group(1)); // Extracting the parameter name without the '$'
+        }
+
+        // Remove duplicates while preserving order
+        List<String> uniqueParams = new ArrayList<>(namedParams);
+
+        // Substitute each named parameter with its corresponding positional parameter
+        for (int index = 0; index < uniqueParams.size(); index++) {
+            String param = uniqueParams.get(index);
+            String positionalParam = "$" + (index + 1);
+            sql = sql.replace("$" + param, positionalParam);
+        }
+
+        // Prepare the list of values corresponding to the order of the positional parameters
+        List<Object> values = new ArrayList<>();
+        for (String param : uniqueParams) {
+            if (params.containsKey(param)) {
+                values.add(params.get(param));
+            }
+        }
+
+        return new Tuple<>(sql, values);
     }
 
-    private Object[] prepareQuery(String sql, java.util.Map<String, Object> params) {
-        StringBuilder newSql = new StringBuilder();
-        java.util.ArrayList<Object> paramList = new java.util.ArrayList<>();
-        int pos = 1;
+    // A simple Tuple class to hold two values
+    public static class Tuple<X, Y> {
+        public final X first;
+        public final Y second;
 
-        for (char c : sql.toCharArray()) {
-            if (c == '$') {
-                if (sql.charAt(pos) != '{' && sql.charAt(pos) != '}') {
-                    newSql.append('$').append(pos++);
-                    continue;
-                }
-            }
-            newSql.append(c);
+        public Tuple(X first, Y second) {
+            this.first = first;
+            this.second = second;
         }
-
-        for (String key : params.keySet()) {
-            paramList.add(params.get(key));
-        }
-
-        return new Object[]{newSql.toString(), pos - 1, paramList.toArray()};
     }
 }
 ```
 
 ### Explanation:
+1. **JUnit Annotations**: The `@Test` annotation is used to mark the test method.
+2. **JUnit Assertions**: The `assertEquals` method from JUnit is used to verify the correctness of the results.
+3. **Test Cases**: Multiple test cases are provided to cover different scenarios.
+4. **Tuple Class**: A simple `Tuple` class is defined to hold two values, similar to Python's tuple.
+5. **Pattern and Matcher**: Used to find all named parameters in the SQL string.
+6. **Replacement Logic**: Replaces named parameters with positional parameters.
+7. **List of Values**: Constructs a list of values based on the order of positional parameters.
 
-1. **Package Declaration**: The package declaration is at the top of the file.
-2. **Class Declaration**: The class `Tester` is declared within the package.
-3. **Test Method**: The `testPrepareQuery` method is annotated with `@Test` to indicate it is a JUnit test method.
-4. **Test Data**: Test data is defined including the SQL query, expected results, and the actual parameters.
-5. **Method Under Test**: The `prepareQuery` method is called with the test data.
-6. **Assertions**: Assertions are used to verify the correctness of the method's output.
-
-This Java code should be placed in a file named `Tester.java` within the appropriate directory structure under the `src/test/java/org/real/temp` directory.
+This Java test class ensures that the functionality and logic of the original Python unittest test class are preserved while adhering to Java's syntax and conventions.

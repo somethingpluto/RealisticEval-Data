@@ -1,57 +1,63 @@
-Here's how you could translate the Python function `convert_image_to_bits` into TypeScript:
+Sure! Here’s the equivalent TypeScript code, including the necessary package imports and type definitions:
 
-```typescript
-import * as fs from 'fs';
-import { createReadStream } from 'stream';
-import * as sharp from 'sharp';
+First, you'll need to install the `jimp` package, which is a popular library for image processing in Node.js, as there isn't a direct equivalent to `PIL` in TypeScript/JavaScript. You can install it using npm or yarn:
 
-async function convertImageToBits(imagePath: string): Promise<number[]> {
-    /*
-    Converts an image to a binary representation. Convert the image to black and white mode,
-    that is, each pixel is represented by only 1 bit, with a white pixel value of 255 and a black pixel value of 0
-
-    Args:
-        imagePath (string): The file path of the image to convert.
-
-    Returns:
-        number[]: A list of bits representing the image, where 1 is for white pixels
-              and 0 is for black pixels.
-    */
-
-    const stream = createReadStream(imagePath);
-    const buffer: Buffer[] = [];
-
-    return new Promise((resolve, reject) => {
-        stream.on('data', chunk => buffer.push(chunk));
-        stream.on('end', async () => {
-            try {
-                const imgData = await sharp(buffer[0]).greyscale().raw().toBuffer();
-                const width = Math.sqrt(imgData.length / 3); // Assuming RGB format
-                const bits: number[] = [];
-                
-                for (let i = 0; i < imgData.length; i += 3) {
-                    const r = imgData[i];
-                    const g = imgData[i + 1];
-                    const b = imgData[i + 2];
-
-                    // Calculate average brightness
-                    const avgBrightness = (r + g + b) / 3;
-
-                    if (avgBrightness > 127) {
-                        bits.push(1);
-                    } else {
-                        bits.push(0);
-                    }
-                }
-
-                resolve(bits);
-            } catch (error) {
-                reject(error);
-            }
-        });
-        stream.on('error', error => reject(error));
-    });
-}
+```sh
+npm install jimp
 ```
 
-Note: This code uses the `sharp` library to read and process images. Make sure to install it using npm (`npm install sharp`) before running the code. Also, the `createReadStream` method is used instead of directly reading the file, which is more efficient when dealing with large files.
+Now, here is the TypeScript code:
+
+```typescript
+import Jimp from 'jimp';
+
+/**
+ * Converts an image to a binary representation.
+ *
+ * @param {string} imagePath - The file path of the image to convert.
+ * @returns {Promise<number[]>} A promise that resolves to a list of bits representing the image,
+ *                              where 1 is for white pixels and 0 is for black pixels.
+ */
+async function convertImageToBits(imagePath: string): Promise<number[]> {
+  const image = await Jimp.read(imagePath);
+  image.grayscale();
+  image.threshold(128);
+
+  const width = image.bitmap.width;
+  const height = image.bitmap.height;
+
+  const bitsArray: number[] = [];
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const pixel = image.getPixelColor(x, y);
+      const bit = Jimp.intToRGBA(pixel).r === 255 ? 1 : 0;
+      bitsArray.push(bit);
+    }
+  }
+
+  return bitsArray;
+}
+
+// Example usage
+(async () => {
+  try {
+    const bits = await convertImageToBits('path/to/image.jpg');
+    console.log(bits);
+  } catch (error) {
+    console.error('Error converting image:', error);
+  }
+})();
+```
+
+### Explanation:
+
+1. **Importing Jimp**: We use the `Jimp` library for image manipulation.
+2. **Function Definition**: The `convertImageToBits` function is defined with the correct type signatures.
+3. **Loading the Image**: We use `Jimp.read` to load the image synchronously.
+4. **Converting to Grayscale and Thresholding**: We first convert the image to grayscale and then apply a threshold to get a binary image.
+5. **Iterating Over Pixels**: We iterate over each pixel and extract the red channel value (which is the same for all channels in a grayscale image).
+6. **Appending Bits**: We append either 1 or 0 based on the pixel value.
+7. **Example Usage**: An example usage is provided at the end to demonstrate how to call the function asynchronously.
+
+This TypeScript code maintains the same functionality as the original Python code but adapts it to work with TypeScript and the `Jimp` library.

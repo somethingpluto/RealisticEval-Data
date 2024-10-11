@@ -1,0 +1,91 @@
+To convert the provided JavaScript Jest test cases into Python test cases using the unittest framework, we will follow these steps:
+Setup: We will create a class to contain the tests and use setUp to initialize any necessary state before each test runs.
+Test Cases: Each JavaScript test will be translated into a corresponding method in the Python class. Assertions in Jest will be converted to assertions provided by unittest.
+Mocking the DOM: Since Python doesn't manipulate the DOM directly, we will create a mock to simulate the behavior of the document and style sheets.
+Converted Python Test Code
+Here’s how the JavaScript test cases can be rewritten in Python using unittest:
+python
+import unittest
+
+class MockStyleSheet:
+    def __init__(self):
+        self.rules = []
+
+    def insert_rule(self, rule, index):
+        self.rules.insert(index, rule)
+
+    @property
+    def css_rules(self):
+        return self.rules
+
+class MockDocument:
+    def __init__(self):
+        self.head = MockHead()
+        self.style_sheets = [MockStyleSheet()]
+
+class MockHead:
+    def __init__(self):
+        self.elements = []
+
+    def append_child(self, element):
+        self.elements.append(element)
+
+    def contains(self, element):
+        return element in self.elements
+
+class TestCSSHighlightAdd(unittest.TestCase):
+    def setUp(self):
+        # Create a mock document for testing
+        self.document = MockDocument()
+        self.css_rule_exists_for_highlight = False
+        self.style_element = '<style></style>'
+        self.document.head.append_child(self.style_element)
+
+    def check_css_highlight_and_add(self):
+        if not self.css_rule_exists_for_highlight:
+            # Create a new CSS rule
+            css_rule = ".highlight { background-color: yellow; color: black; }"
+            self.document.style_sheets[0].insert_rule(css_rule, 0)
+            self.css_rule_exists_for_highlight = True
+
+    def test_add_style_element_with_highlight_css_rule(self):
+        self.check_css_highlight_and_add()
+        # Check that the style element contains the correct CSS rule
+        self.assertIn("background-color: yellow;", self.document.style_sheets[0].css_rules[0])
+
+    def test_do_not_add_new_css_rule_if_exists(self):
+        # Manually add the rule to simulate existing condition
+        self.document.style_sheets[0].insert_rule(".highlight { background-color: yellow; }", 0)
+        self.check_css_highlight_and_add()
+        # Check that only one rule is present
+        self.assertEqual(len(self.document.style_sheets[0].css_rules), 1)
+
+    def test_add_only_one_rule_even_if_called_multiple_times(self):
+        self.check_css_highlight_and_add()
+        self.check_css_highlight_and_add()  # Call the function again
+        # Check that only one rule is present
+        self.assertEqual(len(self.document.style_sheets[0].css_rules), 1)
+
+    def test_correctly_append_style_element_to_head(self):
+        self.check_css_highlight_and_add()
+        # Check that the style element is indeed appended to the head
+        self.assertTrue(self.document.head.contains(self.style_element))
+
+if __name__ == '__main__':
+    unittest.main()
+Explanation of the Code:
+Mock Classes:
+MockStyleSheet: A class that simulates a stylesheet, allowing us to insert CSS rules and retrieve them.
+MockDocument: A class that simulates the document object containing a head and a style sheet.
+MockHead: A class that simulates the head of the document, where style elements would be appended.
+Test Class:
+TestCSSHighlightAdd: Inherits from unittest.TestCase, containing various test methods.
+setUp: Initializes the mock document and any necessary state before each test runs.
+Test Methods: Each method tests a specific functionality:
+Adding a new CSS rule: Tests that a new CSS rule is added when it does not exist.
+Not adding an existing rule: Tests that the function does not add a new rule if one already exists.
+Single rule for multiple calls: Ensures that multiple calls do not add duplicate rules.
+Style element in head: Checks if the style element is appended to the head of the document.
+Running the Tests:
+The last line (if __name__ == '__main__': unittest.main()) allows you to run the tests when the script is executed directly.
+This approach effectively simulates the behavior of the JavaScript code in a Python environment, leveraging Python's unit testing capabilities.

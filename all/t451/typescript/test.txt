@@ -1,44 +1,91 @@
-To convert the provided Python unittest test class to TypeScript using Jest, you first need to have the necessary dependencies installed. You can install `@types/jest` if it's not already included in your project:
+Certainly! Here is the equivalent TypeScript code for the provided Python function along with a Jest test suite to verify its correctness.
 
-```sh
-npm install --save-dev @types/jest
-```
+### TypeScript Function
 
-Below is an example of how you might write a corresponding Jest test case for the given Python function `convert_image_to_bits`. Note that I'll assume you have a JavaScript/TypeScript implementation of the same functionality since no actual implementation was provided in the original Python code snippet.
+First, let's define the TypeScript function `convertImageToBits`:
 
 ```typescript
-import { describe, expect, it } from '@jest/globals';
-import { convertImageToBits } from './path-to-your-module'; // Adjust the import according to your module structure
+import Jimp from 'jimp';
+
+/**
+ * Converts an image to a binary representation.
+ * Convert the image to black and white mode, that is, each pixel is represented by only 1 bit,
+ * with a white pixel value of 255 and a black pixel value of 0.
+ *
+ * @param {string} imagePath - The file path of the image to convert.
+ * @returns {Promise<number[]>} A promise that resolves to a list of bits representing the image,
+ *                              where 1 is for white pixels and 0 is for black pixels.
+ */
+async function convertImageToBits(imagePath: string): Promise<number[]> {
+  const image = await Jimp.read(imagePath);
+  image.grayscale();
+  image.threshold(128);
+
+  const width = image.bitmap.width;
+  const height = image.bitmap.height;
+
+  const bitsArray: number[] = [];
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const pixel = image.getPixelColor(x, y);
+      const bit = Jimp.intToRGBA(pixel).r === 255 ? 1 : 0;
+      bitsArray.push(bit);
+    }
+  }
+
+  return bitsArray;
+}
+
+export default convertImageToBits;
+```
+
+### Jest Test Suite
+
+Next, let's create a Jest test suite to verify the correctness of the `convertImageToBits` function. We will assume that you have a sample image file named `sample-image.jpg` for testing purposes.
+
+```typescript
+import convertImageToBits from './convertImageToBits'; // Import the function from the previous file
 
 describe('convertImageToBits', () => {
-  it('should convert a simple 2x2 black and white image to bits', () => {
-    const imagePath = 'path/to/test/black-and-white-image.png'; // Replace with a valid path to a black and white image
-    const expectedBits = [0, 0, 0, 0]; // Expected bits for a 2x2 black image
+  it('should convert an image to a binary representation', async () => {
+    const imagePath = 'path/to/sample-image.jpg';
+    const expectedBits = [1, 1, 1, 1, 1, 1, 1, 1]; // Example expected bits array
 
-    const result = convertImageToBits(imagePath);
+    const bits = await convertImageToBits(imagePath);
 
-    expect(result).toEqual(expectedBits);
+    expect(bits).toEqual(expectedBits); // Use Jest's toEqual assertion to compare arrays
   });
 
-  it('should convert a simple 2x2 image with one white and three black pixels to bits', () => {
-    const imagePath = 'path/to/test/one-white-three-black-image.png'; // Replace with a valid path to such an image
-    const expectedBits = [1, 0, 0, 0]; // Expected bits for a 2x2 image with one white pixel
+  it('should handle invalid image paths', async () => {
+    const invalidImagePath = 'path/to/nonexistent-image.jpg';
 
-    const result = convertImageToBits(imagePath);
-
-    expect(result).toEqual(expectedBits);
+    await expect(convertImageToBits(invalidImagePath)).rejects.toThrow();
   });
 });
+
+// Example usage
+(async () => {
+  try {
+    const bits = await convertImageToBits('path/to/sample-image.jpg');
+    console.log(bits);
+  } catch (error) {
+    console.error('Error converting image:', error);
+  }
+})();
 ```
 
 ### Explanation:
 
-1. **Import Statements**: We import the necessary functions (`describe`, `expect`, `it`) from Jest and the `convertImageToBits` function from your module.
+1. **Importing Jimp**: We import the `Jimp` library to handle image processing.
+2. **Function Definition**: The `convertImageToBits` function is defined with the appropriate type signatures and JSDoc comments.
+3. **Loading the Image**: We use `Jimp.read` to load the image asynchronously.
+4. **Converting to Grayscale and Thresholding**: We convert the image to grayscale and then apply a threshold to get a binary image.
+5. **Iterating Over Pixels**: We iterate over each pixel and extract the red channel value (which is the same for all channels in a grayscale image).
+6. **Appending Bits**: We append either 1 or 0 based on the pixel value.
+7. **Jest Test Suite**: We define a Jest test suite with two test cases:
+   - The first test case verifies that the function correctly converts an image to a binary representation.
+   - The second test case checks that the function handles invalid image paths gracefully by throwing an error.
+8. **Example Usage**: An example usage is provided at the end to demonstrate how to call the function asynchronously.
 
-2. **Describe Block**: We use `describe` to group related tests together. In this case, all tests are related to the `convertImageToBits` function.
-
-3. **It Blocks**: Each `it` block represents a single test case. The first test checks a simple 2x2 black image, and the second test checks a 2x2 image with one white and three black pixels.
-
-4. **Expectations**: Inside each `it` block, we call `convertImageToBits` with a specific image path and then use `expect` to assert that the returned bits match the expected values.
-
-Make sure to replace `'path/to/test/black-and-white-image.png'` and `'path/to/test/one-white-three-black-image.png'` with the actual paths to your test images. Additionally, ensure that the `convertImageToBits` function is correctly implemented in your TypeScript module.
+This setup ensures that the functionality and logic of the tests are preserved, and the necessary type annotations and Jest assertions are included.

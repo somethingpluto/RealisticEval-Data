@@ -1,24 +1,84 @@
-Here's how you can convert your Python code to TypeScript:
+Sure! Below is the equivalent TypeScript code for the provided Python script. We will use Node.js for this conversion since TypeScript is a superset of JavaScript and typically runs in a Node.js environment.
+
+Here's the TypeScript version:
 
 ```typescript
-import { execSync } from 'child_process';
+import { exec } from 'child_process';
+import { promisify } from 'util';
 import { match } from 'assert';
 
-function getLocalIP(interfaceName: string = 'Wi-Fi'): string | null {
-  try {
-    const output = execSync(`ipconfig /all`).toString();
-    const regex = new RegExp(`${interfaceName}\\s+.*?IPv4 Address\\s+: (.*?)\\r`, 'g');
-    let match;
-    while ((match = regex.exec(output)) !== null) {
-      return match[1];
+// Promisify the exec function for async/await usage
+const execPromise = promisify(exec);
+
+/**
+ * Retrieve the local IP address of the specified network interface on Windows.
+ *
+ * @param interfaceName - The name of the network interface to check (default is 'Wi-Fi').
+ * @returns A Promise that resolves to the local IP address if found, otherwise null.
+ */
+async function getLocalIp(interfaceName: string = 'Wi-Fi'): Promise<string | null> {
+    try {
+        // Execute the 'ipconfig' command to get addresses for the specified interface
+        const { stdout, stderr } = await execPromise('ipconfig');
+
+        // Regular expression to match IPv4 addresses
+        const ipPattern = /(\d+\.\d+\.\d+\.\d+)/g;
+
+        // Search for IP addresses in the command output
+        const matches = stdout.match(ipPattern);
+        if (!matches) {
+            return null;
+        }
+
+        const ips: string[] = matches;
+
+        // Return the first local IP found that starts with "192.168."
+        for (const ip of ips) {
+            if (ip.startsWith("192.168.")) {
+                return ip;
+            }
+        }
+
+        return null; // Return null if no suitable IP is found
+
+    } catch (error) {
+        console.error(`Error executing command: ${error}`);
+        return null;
     }
-  } catch (error) {
-    console.error(error);
-  }
-  return null;
 }
+
+// Example usage
+(async () => {
+    const ip = await getLocalIp();
+    console.log(ip);
+})();
 ```
 
-Note: This code uses `execSync` from Node.js' built-in `child_process` module to execute the `ipconfig /all` command in Windows. It then uses a regular expression to extract the IPv4 address associated with the specified interface. If no match is found or an error occurs during execution, it returns `null`. 
+### Explanation:
+1. **Imports**:
+   - `exec` and `promisify` from `child_process` and `util` respectively are used to run the `ipconfig` command asynchronously.
+   - `match` from `assert` is not directly needed here, but we're using regex matching directly.
 
-Please make sure that you have Node.js installed and running on your machine before executing this code.
+2. **Function Definition**:
+   - `getLocalIp` is defined as an asynchronous function that returns a promise.
+   - It takes an optional parameter `interfaceName` which defaults to `'Wi-Fi'`.
+
+3. **Command Execution**:
+   - `execPromise` is created to use `async/await` syntax for running the `ipconfig` command.
+   - The command's output is captured in `stdout`.
+
+4. **Regex Matching**:
+   - The regular expression `ipPattern` is used to find all IPv4 addresses in the output.
+   - `stdout.match(ipPattern)` returns an array of matches.
+
+5. **IP Address Filtering**:
+   - Iterate through the matches and return the first IP address that starts with `"192.168."`.
+   - If no such IP is found, return `null`.
+
+6. **Error Handling**:
+   - Catch any errors during command execution or processing and log them.
+
+7. **Example Usage**:
+   - An example usage block demonstrates how to call `getLocalIp` and log the result.
+
+This TypeScript code should provide the same functionality as the original Python script, taking advantage of TypeScript's static typing and Node.js's asynchronous capabilities.

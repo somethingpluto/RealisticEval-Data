@@ -1,26 +1,123 @@
-Sure! Below is the equivalent JavaScript test case using Jest for the provided Python unittest test class:
+Certainly! Below is the equivalent Jest test class for the given Python unittest test class. The goal is to maintain the functionality and logic of the tests while adapting them to Jest's syntax and conventions.
 
-```javascript
-const { prepareQuery } = require('./path-to-your-module'); // Adjust the path accordingly
+### Python unittest Code
 
-describe('prepareQuery', () => {
-    it('should modify a SQL query string with named parameters to use positional parameters', () => {
-        const sql = "SELECT * FROM users WHERE id = $user_id AND status = $status";
-        const params = { user_id: 42, status: 'active' };
+```python
+import re
+import unittest
 
-        const [modifiedSql, paramValues] = prepareQuery(sql, params);
+def prepare_query(sql: str, params: dict) -> tuple:
+    """
+    This function modifies a SQL query string containing named parameters
+    (like $name, $age) into a format compatible with libraries that require
+    positional parameters (like $1, $2, etc.), such as asyncpg. It returns
+    a tuple containing the modified SQL string and a list of parameter values
+    ordered according to their new positions in the query.
+    For example:
+        input:
+            sql: SELECT * FROM users WHERE id = $user_id AND status = $status
+            params: {'user_id': 42,'status': 'active'}
+        output:
+            SELECT * FROM users WHERE id = $1 AND status = $2,[42, 'active']
 
-        expect(modifiedSql).toBe("SELECT * FROM users WHERE id = $1 AND status = $2");
-        expect(paramValues).toEqual([42, 'active']);
-    });
-});
+    Args:
+        sql (str): The original SQL query string with named parameters.
+        params (dict): A dictionary mapping parameter names to their values.
+
+    Returns:
+        tuple: A tuple where the first element is the modified SQL query string with positional parameters, and the second element is a list of parameter values sorted according to the order of the positional parameters.
+    """
+    # Find all occurrences of named parameters in the SQL string
+    named_params = re.findall(r"\$(\w+)", sql)
+
+    # Remove duplicates while preserving order
+    unique_params = list(dict.fromkeys(named_params))
+
+    # Substitute each named parameter with its corresponding positional parameter
+    for index, param in enumerate(unique_params, start=1):
+        sql = sql.replace(f"${param}", f"${index}")
+
+    # Prepare the list of values corresponding to the order of the positional parameters
+    values = [params[param] for param in unique_params if param in params]
+
+    return sql, values
+
+class TestPrepareQuery(unittest.TestCase):
+
+    def test_prepare_query(self):
+        sql = "SELECT * FROM users WHERE id = $user_id AND status = $status"
+        params = {'user_id': 42, 'status': 'active'}
+        expected_sql = "SELECT * FROM users WHERE id = $1 AND status = $2"
+        expected_values = [42, 'active']
+
+        modified_sql, values = prepare_query(sql, params)
+        self.assertEqual(modified_sql, expected_sql)
+        self.assertListEqual(values, expected_values)
+
+if __name__ == '__main__':
+    unittest.main()
 ```
 
-In this JavaScript test case:
+### Equivalent Jest Test Class
 
-- We use `describe` to group related tests together.
-- Inside the `describe`, we use `it` to define individual tests.
-- We call the `prepareQuery` function and pass the SQL query and parameters.
-- We then use `expect` to assert that the returned `modifiedSql` matches the expected value and that the `paramValues` array contains the correct values.
+```javascript
+const re = require('re');
 
-Make sure to adjust the path to your module (`./path-to-your-module`) correctly so that Jest can find and load the `prepareQuery` function.
+// Function definition
+const prepareQuery = (sql, params) => {
+    // Find all occurrences of named parameters in the SQL string
+    const namedParams = sql.match(/\$(\w+)/g).map(match => match.slice(1));
+
+    // Remove duplicates while preserving order
+    const uniqueParams = [...new Set(namedParams)];
+
+    // Substitute each named parameter with its corresponding positional parameter
+    for (let index = 0; index < uniqueParams.length; index++) {
+        const param = uniqueParams[index];
+        sql = sql.replace(new RegExp(`\\$${param}`, 'g'), `$${index + 1}`);
+    }
+
+    // Prepare the list of values corresponding to the order of the positional parameters
+    const values = uniqueParams.map(param => params[param]).filter(value => value !== undefined);
+
+    return [sql, values];
+};
+
+// Jest test suite
+describe('prepareQuery', () => {
+    it('should modify the SQL query and return the correct parameters', () => {
+        const sql = "SELECT * FROM users WHERE id = $user_id AND status = $status";
+        const params = { user_id: 42, status: 'active' };
+        const expectedSql = "SELECT * FROM users WHERE id = $1 AND status = $2";
+        const expectedValues = [42, 'active'];
+
+        const [modifiedSql, values] = prepareQuery(sql, params);
+
+        expect(modifiedSql).toEqual(expectedSql);
+        expect(values).toEqual(expectedValues);
+    });
+});
+
+// Example usage
+if (require.main === module) {
+    console.log('Running Jest tests...');
+    require('jest').runCLI();
+}
+```
+
+### Explanation:
+1. **Function Definition**:
+   - The `prepareQuery` function is defined with the same logic as the Python version.
+   - The function uses `match` to find named parameters and `Set` to remove duplicates while preserving order.
+   - The `replace` method is used to substitute named parameters with positional parameters.
+   - The `map` and `filter` methods are used to create the list of values.
+
+2. **Jest Test Suite**:
+   - The `describe` block sets up the test suite for `prepareQuery`.
+   - The `it` block defines a specific test case.
+   - Assertions are made using `expect` to check the modified SQL string and the list of values.
+
+3. **Example Usage**:
+   - The conditional `if` statement at the end ensures that Jest tests are run when the script is executed directly.
+
+This conversion maintains the functionality and logic of the original Python unittest test class while adapting it to Jest's syntax and conventions.

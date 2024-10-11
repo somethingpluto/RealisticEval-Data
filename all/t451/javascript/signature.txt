@@ -1,62 +1,57 @@
-Sure! Below is the JavaScript equivalent of the Python function `convert_image_to_bits` with the same functionality and comments:
+Certainly! Below is the equivalent JavaScript code with JSDoc comments and function signature, preserving the purpose and structure of the Python code:
 
 ```javascript
+const Jimp = require('jimp');
+
 /**
- * Converts an image to a binary representation. Convert the image to black and white mode,
- * that is, each pixel is represented by only 1 bit, with a white pixel value of 255 and a black pixel value of 0.
+ * Converts an image to a binary representation.
+ * Converts the image to black and white mode, that is, each pixel is represented by only 1 bit,
+ * with a white pixel value of 255 and a black pixel value of 0.
  *
  * @param {string} imagePath - The file path of the image to convert.
- * @returns {Array<number>} - A list of bits representing the image, where 1 is for white pixels
- *                          and 0 is for black pixels.
+ * @returns {Promise<Array<number>>} A promise that resolves to a list of bits representing the image,
+ *                                   where 1 is for white pixels and 0 is for black pixels.
  */
 async function convertImageToBits(imagePath) {
-    // Load the image using the HTML Image element
-    const img = new Image();
-    return new Promise((resolve, reject) => {
-        img.onload = () => {
-            // Create a canvas element to draw the image on
-            const canvas = document.createElement('canvas');
-            canvas.width = img.width;
-            canvas.height = img.height;
+    try {
+        const image = await Jimp.read(imagePath);
+        image.color([{ apply: 'greyscale' }]);
+        image.color([{ apply: 'threshold', params: [128] }]);
 
-            // Get the drawing context of the canvas
-            const ctx = canvas.getContext('2d');
+        const bitsArray = [];
 
-            // Draw the image onto the canvas
-            ctx.drawImage(img, 0, 0);
-
-            // Get the image data from the canvas
-            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            const data = imageData.data;
-
-            // Initialize an array to store the bits
-            const bits = [];
-
-            // Iterate over each pixel in the image data
-            for (let i = 0; i < data.length; i += 4) {
-                // Extract the red component (since it's a grayscale image)
-                const r = data[i];
-
-                // Determine if the pixel is white or black
-                const bit = r === 255 ? 1 : 0;
-
-                // Add the bit to the bits array
-                bits.push(bit);
+        for (let y = 0; y < image.bitmap.height; y++) {
+            for (let x = 0; x < image.bitmap.width; x++) {
+                const pixel = image.getPixelColor(x, y);
+                const bit = (pixel & 0xFFFFFF) === 0xFFFFFF ? 1 : 0;
+                bitsArray.push(bit);
             }
+        }
 
-            // Resolve the promise with the bits array
-            resolve(bits);
-        };
-
-        img.onerror = (error) => {
-            // Reject the promise if there was an error loading the image
-            reject(error);
-        };
-
-        // Set the source of the image to the provided image path
-        img.src = imagePath;
-    });
+        return bitsArray;
+    } catch (error) {
+        throw new Error(`Failed to convert image: ${error.message}`);
+    }
 }
+
+// Example usage:
+convertImageToBits('path/to/image.jpg')
+    .then(bits => console.log(bits))
+    .catch(error => console.error('Error:', error));
 ```
 
-This JavaScript function uses the HTML `<img>` element and a `<canvas>` element to load and process the image. It converts the image to a black and white mode and returns a list of bits representing the image, where `1` represents white pixels and `0` represents black pixels. The function is asynchronous and returns a Promise.
+### Explanation:
+1. **Import Jimp**: Use `require('jimp')` to import the Jimp library.
+2. **JSDoc Comments**: Add JSDoc comments to describe the function, arguments, and return values.
+3. **Async Function**: Mark the function as `async` since reading an image with Jimp returns a Promise.
+4. **Image Processing**:
+   - Read the image using `Jimp.read(imagePath)`.
+   - Convert the image to grayscale using `image.color([{ apply: 'greyscale' }])`.
+   - Apply a threshold filter to convert the image to black and white using `image.color([{ apply: 'threshold', params: [128] }])`.
+5. **Iterate Over Pixels**: Iterate over each pixel in the image using nested loops.
+6. **Extract Pixel Color**: Use `image.getPixelColor(x, y)` to get the color of the pixel at position `(x, y)`.
+7. **Check Pixel Color**: Determine if the pixel is white (fully opaque white) by checking if the color is `0xFFFFFF`.
+8. **Return Bits Array**: Return the `bitsArray` once all pixels have been processed.
+9. **Error Handling**: Use a try-catch block to handle any errors that might occur during the process.
+
+This code should provide the same functionality as the original Python code, with proper documentation and error handling.

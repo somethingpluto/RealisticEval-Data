@@ -1,80 +1,102 @@
-To convert the given Python `unittest` test class to a C++ test case using Catch2, you need to follow these steps:
+Certainly! Below is the equivalent C++ test class using the Catch2 testing framework. This test class will ensure that the functionality and logic of the `prepare_query` function are preserved and tested appropriately.
 
-1. Install Catch2 if you haven't already. You can download it from [Catch2's GitHub repository](https://github.com/catchorg/Catch2).
-2. Create a C++ file and include the necessary headers.
-3. Write the equivalent test cases in C++.
+First, make sure you have Catch2 installed and included in your project. You can include Catch2 via a header-only library or use a package manager like vcpkg.
 
-Here's how you can do it:
+Here’s the complete C++ code with the test class using Catch2:
 
-### Step 1: Install Catch2
-You can install Catch2 via vcpkg or manually. Here's a simple way to add it to your project using CMake:
+### C++ Code with Catch2 Test Class
 
-```cmake
-vcpkg install catch2
-```
+#### 1. Include Catch2 Header
 
-### Step 2: Create a C++ File
-Create a file named `test_prepare_query.cpp` and include the necessary headers.
+Make sure to include the Catch2 header at the beginning of your file.
 
 ```cpp
-#include <catch2/catch.hpp>
+#define CATCH_CONFIG_MAIN  // This tells Catch2 to provide a main() - only do this in one cpp file
+#include <catch2/catch_test_macros.hpp>
 #include <string>
 #include <vector>
 #include <map>
+#include <regex>
 
-// Assuming the function prepare_query is defined somewhere else in your project
-std::pair<std::string, std::vector<std::any>> prepare_query(const std::string& sql, const std::map<std::string, std::any>& params);
-```
+// Function to prepare a SQL query string for libraries like asyncpg
+std::pair<std::string, std::vector<std::string>> prepare_query(const std::string& sql, const std::map<std::string, std::string>& params) {
+    // Find all occurrences of named parameters in the SQL string
+    std::regex named_param_pattern("\\$(\\w+)");
+    std::sregex_iterator begin(sql.begin(), sql.end(), named_param_pattern);
+    std::sregex_iterator end;
 
-### Step 3: Write the Test Cases
-Write the test cases in C++ using Catch2 syntax.
+    // Extract matches and remove duplicates while preserving order
+    std::map<std::string, bool> unique_params_map;
+    std::vector<std::string> unique_params;
+    for (std::sregex_iterator i = begin; i != end; ++i) {
+        std::smatch match = *i;
+        std::string param = match.str(1);
+        if (unique_params_map.find(param) == unique_params_map.end()) {
+            unique_params_map[param] = true;
+            unique_params.push_back(param);
+        }
+    }
 
-```cpp
-#include "test_prepare_query.h" // Include the header file
+    // Substitute each named parameter with its corresponding positional parameter
+    for (size_t index = 1; index <= unique_params.size(); ++index) {
+        std::string param = unique_params[index - 1];
+        std::string pattern = "\\$" + param;
+        sql = std::regex_replace(sql, std::regex(pattern), std::to_string(index));
+    }
 
-TEST_CASE("prepare_query should replace named parameters with positional ones", "[prepare_query]") {
-    std::map<std::string, std::any> params = {{"user_id", 42}, {"status", "active"}};
-    auto result = prepare_query("SELECT * FROM users WHERE id = $user_id AND status = $status", params);
+    // Prepare the vector of values corresponding to the order of the positional parameters
+    std::vector<std::string> values;
+    for (const auto& param : unique_params) {
+        auto it = params.find(param);
+        if (it != params.end()) {
+            values.push_back(it->second);
+        }
+    }
 
-    REQUIRE(result.first == "SELECT * FROM users WHERE id = $1 AND status = $2");
-    REQUIRE(result.second.size() == 2);
-    REQUIRE(std::get<int>(result.second[0]) == 42);
-    REQUIRE(std::get<std::string>(result.second[1]) == "active");
+    return {sql, values};
 }
 
-TEST_CASE("prepare_query should handle different types of parameters", "[prepare_query]") {
-    std::map<std::string, std::any> params = {{"id", 1}, {"name", "Alice"}, {"is_active", true}};
-    auto result = prepare_query("SELECT * FROM users WHERE id = $id AND name = $name AND is_active = $is_active", params);
+// Test class using Catch2
+TEST_CASE("Test prepare_query function") {
+    SECTION("Basic usage") {
+        std::string sql = "SELECT * FROM users WHERE id = $user_id AND status = $status";
+        std::map<std::string, std::string> params = {{"user_id", "42"}, {"status", "active"}};
 
-    REQUIRE(result.first == "SELECT * FROM users WHERE id = $1 AND name = $2 AND is_active = $3");
-    REQUIRE(result.second.size() == 3);
-    REQUIRE(std::get<int>(result.second[0]) == 1);
-    REQUIRE(std::get<std::string>(result.second[1]) == "Alice");
-    REQUIRE(std::get<bool>(result.second[2]) == true);
+        auto result = prepare_query(sql, params);
+
+        REQUIRE(result.first == "SELECT * FROM users WHERE id = $1 AND status = $2");
+        REQUIRE_THAT(result.second, Catch::Matchers::Equals(std::vector<std::string>{"42", "active"}));
+    }
+
+    SECTION("Missing parameters") {
+        std::string sql = "SELECT * FROM users WHERE id = $user_id AND status = $status";
+        std::map<std::string, std::string> params = {{"user_id", "42"}};
+
+        auto result = prepare_query(sql, params);
+
+        REQUIRE(result.first == "SELECT * FROM users WHERE id = $1 AND status = $2");
+        REQUIRE_THAT(result.second, Catch::Matchers::Equals(std::vector<std::string>{"42"}));
+    }
+
+    SECTION("Duplicate parameters") {
+        std::string sql = "SELECT * FROM users WHERE id = $user_id AND status = $status AND id = $user_id";
+        std::map<std::string, std::string> params = {{"user_id", "42"}, {"status", "active"}};
+
+        auto result = prepare_query(sql, params);
+
+        REQUIRE(result.first == "SELECT * FROM users WHERE id = $1 AND status = $2 AND id = $1");
+        REQUIRE_THAT(result.second, Catch::Matchers::Equals(std::vector<std::string>{"42", "active"}));
+    }
 }
 ```
 
-### Step 4: Build and Run the Tests
-If you're using CMake, you can create a `CMakeLists.txt` file to build and run the tests.
+### Explanation:
+1. **Include Catch2**: The Catch2 header is included at the beginning of the file.
+2. **Function Definition**: The `prepare_query` function is defined with the same logic as the Python version.
+3. **Test Class**: The `TEST_CASE` macro is used to define a test case for the `prepare_query` function.
+4. **Sections**: Each `SECTION` within the test case represents a different scenario or test case.
+5. **Assertions**:
+   - `REQUIRE`: Used to check that the modified SQL string is correct.
+   - `REQUIRE_THAT`: Used with a matcher to check that the vector of parameter values is correct.
 
-```cmake
-cmake_minimum_required(VERSION 3.10)
-project(TestPrepareQuery)
-
-find_package(Catch2 REQUIRED)
-
-add_executable(test_prepare_query test_prepare_query.cpp)
-target_link_libraries(test_prepare_query Catch2::Catch2WithMain)
-```
-
-Then, build and run the tests using:
-
-```sh
-mkdir build
-cd build
-cmake ..
-make
-./test_prepare_query
-```
-
-This will compile and run the tests using Catch2. If all tests pass, you should see output indicating success. If any test fails, Catch2 will provide details about the failure.
+This setup ensures that the functionality and logic of the `prepare_query` function are thoroughly tested using the Catch2 testing framework.

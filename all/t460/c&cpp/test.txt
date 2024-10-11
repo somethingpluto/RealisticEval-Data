@@ -1,58 +1,117 @@
-To convert the given Python `unittest` test class to a C++ test case using Catch2, you need to follow these steps:
+Certainly! Below is the equivalent C++ code using the Catch2 testing framework to test the `matrix_vector_multiplication` function. The code includes the necessary setup, assertions, and test cases.
 
-1. **Install Catch2**: Ensure that Catch2 is installed in your project. You can download it from [Catch2's GitHub repository](https://github.com/catchorg/Catch2) or install it via a package manager if available.
+### C++ Code with Catch2 Testing Framework
 
-2. **Include Catch2 Header**: Include the Catch2 header in your C++ source file.
+First, make sure you have the Catch2 library installed and included in your project. You can install Catch2 via vcpkg or download it directly from GitHub.
 
-3. **Write the Test Case**: Convert the Python test methods into C++ functions with appropriate assertions.
+#### CMake Setup (if needed):
 
-Here's an example of how you might write the test case for the `matrix_vector_multiplication` function using Catch2:
+If you are using CMake, add the following to your `CMakeLists.txt`:
+
+```cmake
+cmake_minimum_required(VERSION 3.10)
+project(MatrixVectorMultiplication)
+
+# Add Catch2
+include(FetchContent)
+FetchContent_Declare(
+    catch2
+    GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+    GIT_TAG v2.13.8
+)
+FetchContent_MakeAvailable(catch2)
+
+add_executable(matrix_vector_multiplication main.cpp test.cpp)
+target_link_libraries(matrix_vector_multiplication catch2)
+```
+
+#### Main Function (main.cpp):
 
 ```cpp
-#include <catch2/catch.hpp>
+#include <iostream>
 #include <vector>
+#include <stdexcept>
 
-// Assuming the function is defined somewhere in your codebase
-std::vector<double> matrix_vector_multiplication(const std::vector<std::vector<double>>& matrix, const std::vector<double>& vector);
-
-TEST_CASE("Matrix Vector Multiplication", "[math][linear-algebra]") {
-    // Test case 1: Valid multiplication
-    SECTION("Valid multiplication") {
-        std::vector<std::vector<double>> matrix = {{1, 2}, {3, 4}};
-        std::vector<double> vector = {5, 6};
-        std::vector<double> expected_result = {17, 39};
-
-        auto result = matrix_vector_multiplication(matrix, vector);
-        REQUIRE(result == Approx(expected_result).margin(0.001));
+// Function to perform matrix-vector multiplication
+std::vector<float> matrix_vector_multiplication(const std::vector<std::vector<float>>& matrix, const std::vector<float>& vector) {
+    // Ensure matrix dimensions are compatible with vector length
+    if (matrix[0].size() != vector.size()) {
+        throw std::invalid_argument("Matrix and vector dimensions are not compatible for multiplication");
     }
 
-    // Test case 2: Incompatible dimensions
-    SECTION("Incompatible dimensions") {
-        std::vector<std::vector<double>> matrix = {{1, 2}, {3, 4}};
-        std::vector<double> vector = {5}; // Incorrect size
+    // Initialize the result vector with zeros
+    std::vector<float> result(matrix.size(), 0.0f);
 
-        CHECK_THROWS_AS(matrix_vector_multiplication(matrix, vector), std::invalid_argument);
+    // Perform the matrix-vector multiplication
+    for (size_t i = 0; i < matrix.size(); ++i) {
+        for (size_t j = 0; j < vector.size(); ++j) {
+            result[i] += matrix[i][j] * vector[j];
+        }
+    }
+
+    return result;
+}
+
+int main() {
+    try {
+        // Example usage
+        std::vector<std::vector<float>> matrix = {{1.0f, 2.0f}, {3.0f, 4.0f}};
+        std::vector<float> vector = {5.0f, 6.0f};
+        std::vector<float> result = matrix_vector_multiplication(matrix, vector);
+
+        // Output the result
+        for (const auto& value : result) {
+            std::cout << value << " ";
+        }
+        std::cout << std::endl;
+    } catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+    }
+
+    return 0;
+}
+```
+
+#### Test Class (test.cpp):
+
+```cpp
+#define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
+#include "catch.hpp"
+
+TEST_CASE("Test matrix_vector_multiplication", "[matrix_vector_multiplication]") {
+    SECTION("Valid multiplication") {
+        std::vector<std::vector<float>> matrix = {{1.0f, 2.0f}, {3.0f, 4.0f}};
+        std::vector<float> vector = {5.0f, 6.0f};
+        std::vector<float> expected_result = {17.0f, 39.0f};
+
+        REQUIRE(matrix_vector_multiplication(matrix, vector) == expected_result);
+    }
+
+    SECTION("Invalid dimensions") {
+        std::vector<std::vector<float>> matrix = {{1.0f, 2.0f}, {3.0f, 4.0f}};
+        std::vector<float> vector = {5.0f};  // Incorrect dimension
+
+        REQUIRE_THROWS_AS(matrix_vector_multiplication(matrix, vector), std::invalid_argument);
+        REQUIRE_THROWS_WITH(matrix_vector_multiplication(matrix, vector), "Matrix and vector dimensions are not compatible for multiplication");
     }
 }
 ```
 
 ### Explanation:
 
-1. **Include Catch2 Header**: The `#include <catch2/catch.hpp>` directive includes the Catch2 framework in your C++ project.
+1. **Header Inclusions**:
+   - `#include "catch.hpp"`: Includes the Catch2 header file.
 
-2. **Function Definition**: The `matrix_vector_multiplication` function is assumed to be defined elsewhere in your codebase.
+2. **Main Function (`main.cpp`)**:
+   - Defines the `matrix_vector_multiplication` function, which performs matrix-vector multiplication.
+   - Includes error checking and result initialization.
+   - Demonstrates an example usage and outputs the result.
 
-3. **Test Cases**:
-   - **Valid Multiplication**: This section tests the function with a valid matrix and vector. It uses `REQUIRE` to check if the result matches the expected output within a small margin of error (`0.001`).
-   - **Incompatible Dimensions**: This section tests the function with incompatible dimensions (i.e., the number of columns in the matrix does not match the number of elements in the vector). It uses `CHECK_THROWS_AS` to verify that the function throws a `std::invalid_argument` exception.
+3. **Test Class (`test.cpp`)**:
+   - Uses the Catch2 testing framework to define test cases.
+   - The `TEST_CASE` macro defines a test case with a name and tags.
+   - The `SECTION` macro defines individual test sections within the test case.
+   - `REQUIRE` is used for assertions to check the correctness of the function.
+   - `REQUIRE_THROWS_AS` and `REQUIRE_THROWS_WITH` are used to verify that the function throws the correct exception with the expected message.
 
-### Running the Tests:
-
-To run the tests, compile your C++ source file with the Catch2 library linked. For example, using g++, you might compile it like this:
-
-```sh
-g++ -std=c++11 -I/path/to/catch2/include your_test_file.cpp -o your_test_executable
-./your_test_executable
-```
-
-This will execute the tests and provide output indicating whether each test passed or failed.
+This setup ensures that the functionality and logic of the tests are preserved, and the tests are executed using the Catch2 framework.

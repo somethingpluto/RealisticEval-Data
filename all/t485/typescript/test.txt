@@ -1,68 +1,150 @@
-Sure! Below is the equivalent TypeScript test case using Jest for the provided Python unittest test class:
+Certainly! Below is the equivalent TypeScript code using Jest for testing the `prepareQuery` function. The provided Python unittest test class will be converted into a Jest test suite, ensuring that the functionality and logic of the tests are preserved.
+
+### Python Code
+
+```python
+import re
+
+def prepare_query(sql: str, params: dict) -> tuple:
+    """
+    This function modifies a SQL query string containing named parameters
+    (like $name, $age) into a format compatible with libraries that require
+    positional parameters (like $1, $2, etc.), such as asyncpg. It returns
+    a tuple containing the modified SQL string and a list of parameter values
+    ordered according to their new positions in the query.
+    For example:
+        input:
+            sql: SELECT * FROM users WHERE id = $user_id AND status = $status
+            params: {'user_id': 42,'status': 'active'}
+        output:
+            SELECT * FROM users WHERE id = $1 AND status = $2,[42, 'active']
+
+    Args:
+        sql (str): The original SQL query string with named parameters.
+        params (dict): A dictionary mapping parameter names to their values.
+
+    Returns:
+        tuple: A tuple where the first element is the modified SQL query string with positional parameters, and the second element is a list of parameter values sorted according to the order of the positional parameters.
+    """
+
+    # Find all occurrences of named parameters in the SQL string
+    named_params = re.findall(r"\$(\w+)", sql)
+
+    # Remove duplicates while preserving order
+    unique_params = list(dict.fromkeys(named_params))
+
+    # Substitute each named parameter with its corresponding positional parameter
+    for index, param in enumerate(unique_params, start=1):
+        sql = sql.replace(f"${param}", f"${index}")
+
+    # Prepare the list of values corresponding to the order of the positional parameters
+    values = [params[param] for param in unique_params if param in params]
+
+    return sql, values
+```
+
+### TypeScript Code with Jest Testing
 
 ```typescript
-import { describe, it, expect } from '@jest/globals';
+import { replace, match } from 'lodash';
 
-// Assuming the function is defined in a file called prepareQuery.ts
-import { prepareQuery } from './prepareQuery';
+/**
+ * This function modifies a SQL query string containing named parameters
+ * (like $name, $age) into a format compatible with libraries that require
+ * positional parameters (like $1, $2, etc.), such as asyncpg. It returns
+ * a tuple containing the modified SQL string and a list of parameter values
+ * ordered according to their new positions in the query.
+ * 
+ * For example:
+ *   input:
+ *     sql: SELECT * FROM users WHERE id = $user_id AND status = $status
+ *     params: {'user_id': 42, 'status': 'active'}
+ *   output:
+ *     SELECT * FROM users WHERE id = $1 AND status = $2, [42, 'active']
+ * 
+ * @param sql - The original SQL query string with named parameters.
+ * @param params - A dictionary mapping parameter names to their values.
+ * @returns A tuple where the first element is the modified SQL query string with positional parameters, and the second element is a list of parameter values sorted according to the order of the positional parameters.
+ */
+function prepareQuery(sql: string, params: Record<string, any>): [string, any[]] {
+    // Find all occurrences of named parameters in the SQL string
+    const namedParams = sql.match(/\$(\w+)/g)?.map((match) => match.substring(1)) || [];
 
+    // Remove duplicates while preserving order
+    const uniqueParams = Array.from(new Set(namedParams));
+
+    // Substitute each named parameter with its corresponding positional parameter
+    let modifiedSql = sql;
+    for (let index = 0; index < uniqueParams.length; index++) {
+        const param = uniqueParams[index];
+        modifiedSql = modifiedSql.replace(new RegExp(`\\$${param}`, 'g'), `$${index + 1}`);
+    }
+
+    // Prepare the list of values corresponding to the order of the positional parameters
+    const values = uniqueParams.map((param) => params[param]);
+
+    return [modifiedSql, values];
+}
+
+// Jest Test Suite
 describe('prepareQuery', () => {
-    it('should convert named parameters to positional parameters', () => {
-        const sql = 'SELECT * FROM users WHERE id = $user_id AND status = $status';
+    it('should modify the SQL query and return the correct tuple', () => {
+        const sql = "SELECT * FROM users WHERE id = $user_id AND status = $status";
         const params = { user_id: 42, status: 'active' };
+        const [modifiedSql, values] = prepareQuery(sql, params);
 
-        const result = prepareQuery(sql, params);
-
-        expect(result).toEqual([
-            'SELECT * FROM users WHERE id = $1 AND status = $2',
-            [42, 'active']
-        ]);
+        expect(modifiedSql).toBe("SELECT * FROM users WHERE id = $1 AND status = $2");
+        expect(values).toEqual([42, 'active']);
     });
 
-    it('should handle multiple named parameters correctly', () => {
-        const sql = 'INSERT INTO users (id, name, age) VALUES ($user_id, $username, $user_age)';
-        const params = { user_id: 42, username: 'John Doe', user_age: 30 };
-
-        const result = prepareQuery(sql, params);
-
-        expect(result).toEqual([
-            'INSERT INTO users (id, name, age) VALUES ($1, $2, $3)',
-            [42, 'John Doe', 30]
-        ]);
-    });
-
-    it('should handle empty parameters correctly', () => {
-        const sql = 'SELECT * FROM users';
+    it('should handle empty SQL queries', () => {
+        const sql = "";
         const params = {};
+        const [modifiedSql, values] = prepareQuery(sql, params);
 
-        const result = prepareQuery(sql, params);
+        expect(modifiedSql).toBe("");
+        expect(values).toEqual([]);
+    });
 
-        expect(result).toEqual([
-            'SELECT * FROM users',
-            []
-        ]);
+    it('should handle queries without named parameters', () => {
+        const sql = "SELECT * FROM users WHERE id = 42";
+        const params = {};
+        const [modifiedSql, values] = prepareQuery(sql, params);
+
+        expect(modifiedSql).toBe("SELECT * FROM users WHERE id = 42");
+        expect(values).toEqual([]);
+    });
+
+    it('should handle queries with duplicate named parameters', () => {
+        const sql = "SELECT * FROM users WHERE id = $user_id AND status = $status AND id = $user_id";
+        const params = { user_id: 42, status: 'active' };
+        const [modifiedSql, values] = prepareQuery(sql, params);
+
+        expect(modifiedSql).toBe("SELECT * FROM users WHERE id = $1 AND status = $2 AND id = $1");
+        expect(values).toEqual([42, 'active']);
     });
 });
+
+// Example usage
+const sql = "SELECT * FROM users WHERE id = $user_id AND status = $status";
+const params = { user_id: 42, status: 'active' };
+
+const [modifiedSql, values] = prepareQuery(sql, params);
+console.log(modifiedSql); // Output: SELECT * FROM users WHERE id = $1 AND status = $2
+console.log(values); // Output: [42, 'active']
 ```
 
 ### Explanation:
-- **`describe`**: Groups related tests together.
-- **`it`**: Defines an individual test case.
-- **`expect`**: Used to assert that the actual value matches the expected value.
-- **`toEqual`**: Compares two objects or arrays deeply to check if they are equal.
+1. **Function Definition**:
+   - The `prepareQuery` function is defined with proper type annotations for inputs and outputs.
+   - Regular expressions are used to find and replace named parameters with positional parameters.
 
-Make sure you have Jest installed in your project. If not, you can install it using npm or yarn:
+2. **Jest Test Suite**:
+   - The `describe` block defines the test suite for `prepareQuery`.
+   - Each `it` block contains a test case with specific inputs and expected outputs.
+   - Jest assertions (`expect`) are used to verify the correctness of the function.
 
-```bash
-npm install --save-dev jest
-# or
-yarn add --dev jest
-```
+3. **Test Cases**:
+   - The test cases cover various scenarios, including typical use cases, empty queries, and queries with duplicate named parameters.
 
-Then, you can run your tests using:
-
-```bash
-npx jest
-# or
-yarn test
-```
+This TypeScript code preserves the functionality and logic of the original Python code while adapting it to Jest for testing.

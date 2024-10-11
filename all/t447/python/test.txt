@@ -1,57 +1,81 @@
-Sure! Here's how you can translate the JavaScript Jest test case into a Python test case using `unittest`:
-
-### JavaScript Jest Test Case Example:
-```javascript
-// calculateAge.test.js
-
-const calculateAge = require('./calculateAge');
-
-test('Calculate age for a specific birth date', () => {
-    const birthDateString = '2000-01-01';
-    const currentYear = new Date().getFullYear();
-    const expectedAge = currentYear - 2000;
-    
-    expect(calculateAge(birthDateString)).toBe(expectedAge);
-});
-```
-
-### Python Unittest Test Case Example:
-```python
-# calculate_age_test.py
-
+To convert the provided JavaScript Jest test cases into Python unit tests using the unittest framework, you can follow the structure and logic of the original tests while adhering to Python's syntax and conventions. Below is the equivalent Python code for the test cases:
+Python Code using unittest
+python
 import unittest
-from datetime import datetime
-from calculate_age import calculate_age  # Assuming the function is in a file named calculate_age.py
+from datetime import datetime, timedelta
+
+def calculate_age(birth_date_string: str) -> str | int:
+    """ 
+    Calculate age based on the birth date string entered by the user.
+    
+    Input birth_date_string format such as "2000-01-01".
+    
+    Args:
+        birth_date_string (str): The birth date in string format.
+    
+    Returns:
+        str | int: The age as an integer or an error message as a string 
+                    if the date format is invalid.
+    """
+    try:
+        # Parse the birth date string into a datetime object
+        birth_date = datetime.strptime(birth_date_string, "%Y-%m-%d")
+    except ValueError:
+        return "Invalid date format. Please enter a valid date."
+
+    # Get the current date
+    today = datetime.now()
+
+    # Calculate the age
+    age = today.year - birth_date.year
+    month_difference = today.month - birth_date.month
+
+    # Adjust age if the current month is before the birth month
+    # or if it's the birth month and the current date is before the birth date
+    if month_difference < 0 or (month_difference == 0 and today.day < birth_date.day):
+        age -= 1
+
+    return age
 
 class TestCalculateAge(unittest.TestCase):
-    def test_calculate_age(self):
-        birth_date_string = '2000-01-01'
-        current_year = datetime.now().year
-        expected_age = current_year - 2000
-        
-        self.assertEqual(calculate_age(birth_date_string), expected_age)
+    
+    def test_calculates_age_correctly_for_a_birth_date_in_the_past(self):
+        self.assertEqual(calculate_age('2000-01-01'), datetime.now().year - 2000)
+
+    def test_calculates_age_correctly_for_a_birth_date_in_the_long_past(self):
+        self.assertEqual(calculate_age('1000-01-01'), datetime.now().year - 1000)
+
+    def test_calculates_age_correctly_for_a_birth_date_today(self):
+        today = datetime.now().strftime('%Y-%m-%d')  # Get today's date in YYYY-MM-DD format
+        self.assertEqual(calculate_age(today), 0)
+
+    def test_calculates_age_correctly_for_a_person_born_yesterday(self):
+        yesterday = datetime.now() - timedelta(days=1)  # Set to yesterday
+        birth_date_string = yesterday.strftime('%Y-%m-%d')  # Format as YYYY-MM-DD
+        self.assertEqual(calculate_age(birth_date_string), 0)
 
 if __name__ == '__main__':
     unittest.main()
-```
-
-### Explanation:
-1. **Importing Modules**: 
-   - In JavaScript, we use `require` to import modules.
-   - In Python, we use `import`.
-
-2. **Test Function**:
-   - The Jest test function `test` is replaced with `def test_calculate_age(self)` in Python.
-
-3. **Current Year Calculation**:
-   - In JavaScript, `new Date().getFullYear()` is used to get the current year.
-   - In Python, `datetime.now().year` is used to get the current year.
-
-4. **Assertion**:
-   - The `expect(...).toBe(...)` assertion in Jest is replaced with `self.assertEqual(..., ...)` in Python.
-
-5. **Running Tests**:
-   - In JavaScript, tests are run using the command `npx jest`.
-   - In Python, tests are run using the command `python -m unittest calculate_age_test.py`.
-
-Make sure your `calculate_age.py` file contains the implementation of the `calculate_age` function. If it's not provided here, you'll need to add that functionality to your Python project.
+Explanation of the Python Code:
+Imports:
+unittest is imported to create unit tests.
+datetime and timedelta from the datetime module are used for date manipulations.
+calculate_age Function:
+This is the same function from the previous task. It calculates the age based on the birth date string.
+Test Class:
+TestCalculateAge inherits from unittest.TestCase, which is the base class for all test cases in the unittest module.
+Test Methods:
+Each method corresponds to a test case from the JavaScript Jest example:
+test_calculates_age_correctly_for_a_birth_date_in_the_past: Tests age calculation for a birth date in the past.
+test_calculates_age_correctly_for_a_birth_date_in_the_long_past: Tests age calculation for a very old birth date.
+test_calculates_age_correctly_for_a_birth_date_today: Tests age calculation for today's date.
+test_calculates_age_correctly_for_a_person_born_yesterday: Tests age calculation for someone born yesterday.
+Assertions:
+self.assertEqual() is used to check if the result of calculate_age matches the expected value.
+Main Block:
+The block if __name__ == '__main__': runs the tests when the script is executed directly.
+Running the Tests
+You can run the tests by saving the code to a Python file (e.g., test_calculate_age.py) and executing it in your terminal or command prompt:
+bash
+python test_calculate_age.py
+This will run all the test cases, and you'll see the results in the terminal, indicating whether each test passed or failed.
