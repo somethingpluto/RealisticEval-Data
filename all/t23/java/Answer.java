@@ -7,7 +7,6 @@ public class Answer {
         double y1 = seg1[0][1];
         double x2 = seg1[1][0];
         double y2 = seg1[1][1];
-
         double x3 = seg2[0][0];
         double y3 = seg2[0][1];
         double x4 = seg2[1][0];
@@ -15,7 +14,6 @@ public class Answer {
 
         // Calculate denominator for intersection calculation
         double denominator = (y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1);
-
         // Check if denominator is zero, which means lines are parallel or collinear
         if (denominator == 0) {
             return null; // Lines do not intersect

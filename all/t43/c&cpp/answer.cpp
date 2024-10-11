@@ -1,36 +1,31 @@
-#include <algorithm> // For std::max and std::min
-#include <tuple>     // For std::tuple
+#include <iostream>
+#include <algorithm>
 
-std::tuple<double, double, double> rgbToHsv(int r, int g, int b) {
-    // Normalize the RGB values by dividing by 255
-    double r_norm = r / 255.0;
-    double g_norm = g / 255.0;
-    double b_norm = b / 255.0;
+std::tuple<int, int, int> rgbToHsv(int r, int g, int b) {
+    // Normalize RGB values to [0, 1]
+    double maxVal = std::max({r / 255.0, g / 255.0, b / 255.0});
+    double minVal = std::min({r / 255.0, g / 255.0, b / 255.0});
+    double delta = maxVal - minVal;
 
-    // Find the minimum and maximum values among R, G, and B
-    double max_rgb = std::max({r_norm, g_norm, b_norm});
-    double min_rgb = std::min({r_norm, g_norm, b_norm});
-    double delta = max_rgb - min_rgb;
-
-    // Calculate H (Hue)
-    double h;
+    int h, s;
     if (delta == 0) {
-        h = 0;
-    } else if (max_rgb == r_norm) {
-        h = ((g_norm - b_norm) / delta);
-        if (h < 0) h += 6; // Ensure it stays non-negative
-    } else if (max_rgb == g_norm) {
-        h = ((b_norm - r_norm) / delta) + 2;
+        h = 0; // Undefined hue
+        s = 0;
     } else {
-        h = ((r_norm - g_norm) / delta) + 4;
+        s = static_cast<int>(delta * 100);
+
+        if (maxVal == r / 255.0)
+            h = static_cast<int>((60 * fmod((g / 255.0 - b / 255.0) / delta, 6)));
+        else if (maxVal == g / 255.0)
+            h = static_cast<int>((60 * ((b / 255.0 - r / 255.0) / delta + 2)));
+        else
+            h = static_cast<int>((60 * ((r / 255.0 - g / 255.0) / delta + 4)));
+
+        if (h < 0)
+            h += 360;
     }
-    h *= 60; // Convert to degrees on the color circle
 
-    // Calculate S (Saturation)
-    double s = (max_rgb == 0) ? 0 : (delta / max_rgb);
+    int v = static_cast<int>(maxVal * 100);
 
-    // V (Value) is equal to max_rgb
-    double v = max_rgb;
-
-    return std::make_tuple(h, s, v);
+    return {h, s, v};
 }

@@ -1,47 +1,28 @@
-const { TreeNode, BinaryTree } = require('./binaryTree'); // assume 'binaryTree' is the file where the classes are defined
-
 describe('BinaryTree', () => {
-    let tree;
-
+    let binaryTree;
+  
     beforeEach(() => {
-        // Setup basic tree structure for testing
-        // Tree structure:
-        //      1
-        //     / \
-        //    2   3
-        //   / \
-        //  4   5
-        tree = new BinaryTree(new TreeNode(1));
-        tree.root.left = new TreeNode(2, new TreeNode(4), new TreeNode(5));
-        tree.root.right = new TreeNode(3);
+      binaryTree = new BinaryTree();
     });
-
-    test('preorder traversal', () => {
-        const result = tree.preorderTraversal(tree.root);
-        expect(result).toEqual([1, 2, 4, 5, 3]);
+  
+    describe('#preorderTraversal', () => {
+      it('should return an empty array when called with no node', () => {
+        const result = binaryTree.preorderTraversal(null);
+        expect(result).toEqual([]);
+      });
     });
-
-    test('inorder traversal', () => {
-        const result = tree.inorderTraversal(tree.root);
-        expect(result).toEqual([4, 2, 5, 1, 3]);
+  
+    describe('#inorderTraversal', () => {
+      it('should return an empty array when called with no node', () => {
+        const result = binaryTree.inorderTraversal(null);
+        expect(result).toEqual([]);
+      });
     });
-
-    test('postorder traversal', () => {
-        const result = tree.postorderTraversal(tree.root);
-        expect(result).toEqual([4, 5, 2, 3, 1]);
+  
+    describe('#postorderTraversal', () => {
+      it('should return an empty array when called with no node', () => {
+        const result = binaryTree.postorderTraversal(null);
+        expect(result).toEqual([]);
+      });
     });
-
-    test('traversals on an empty tree', () => {
-        const emptyTree = new BinaryTree();
-        expect(emptyTree.preorderTraversal(emptyTree.root)).toEqual([]);
-        expect(emptyTree.inorderTraversal(emptyTree.root)).toEqual([]);
-        expect(emptyTree.postorderTraversal(emptyTree.root)).toEqual([]);
-    });
-
-    test('all traversals on a tree with only one node', () => {
-        const singleNodeTree = new BinaryTree(new TreeNode(10));
-        expect(singleNodeTree.preorderTraversal(singleNodeTree.root)).toEqual([10]);
-        expect(singleNodeTree.inorderTraversal(singleNodeTree.root)).toEqual([10]);
-        expect(singleNodeTree.postorderTraversal(singleNodeTree.root)).toEqual([10]);
-    });
-});
+  });

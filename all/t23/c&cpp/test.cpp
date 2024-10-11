@@ -1,4 +1,3 @@
-
 TEST_CASE("test_intersecting_lines") {
     auto result = get_line_segment_intersection({{1, 1}, {4, 4}}, {{1, 4}, {4, 1}});
     REQUIRE(result.has_value());
