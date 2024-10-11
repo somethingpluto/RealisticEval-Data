@@ -1,21 +1,42 @@
 package org.real.temp;
 
-import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
 
 public class Tester {
 
+    // Helper method for comparing floating-point numbers with a tolerance
+    private boolean approximatelyEqual(double a, double b, double epsilon) {
+        return Math.abs(a - b) < epsilon;
+    }
+
     @Test
-    public void testCalculateBearing() {
-        double lat1 = 51.5074;
-        double lon1 = -0.1278;
-        double lat2 = 40.7128;
-        double lon2 = -74.0060;
+    public void testNorthBearing() {
+        // From equator directly north
+        assertEquals(0, calculateBearing(0, 0, 10, 0), 1e-9);
+    }
 
-        double expectedBearing = 99.1; // Example expected bearing, adjust as necessary
+    @Test
+    public void testEastBearing() {
+        // From prime meridian directly east
+        assertEquals(90, calculateBearing(0, 0, 0, 10), 1e-9);
+    }
 
-        double actualBearing = GeoUtils.calculateBearing(lat1, lon1, lat2, lon2);
+    @Test
+    public void testSouthBearing() {
+        // From a point directly south
+        assertEquals(180, calculateBearing(10, 0, 0, 0), 1e-9);
+    }
 
-        assertEquals(expectedBearing, actualBearing, "The calculated bearing should match the expected value");
+    @Test
+    public void testWestBearing() {
+        // From a point directly west
+        assertEquals(270, calculateBearing(0, 10, 0, 0), 1e-9);
+    }
+
+    @Test
+    public void testAcrossPrimeMeridian() {
+        // From a point west of the prime meridian to a point east
+        assertEquals(90, calculateBearing(0, -1, 0, 1), 1e-9);
     }
 }

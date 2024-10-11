@@ -1,4 +1,4 @@
-Below is the Java equivalent of the provided Python code, organized within the package `org.real.temp` and the class `Answer`. This Java code aims to read a CSV file and convert it to a `List<Map<String, String>>` which represents the data from the CSV file similarly to how a pandas DataFrame does in Python.
+Below is the equivalent Java code for the given Python script, organized within the package `org.real.temp` and the class `Answer`. The Java code uses `BufferedReader` and `CSVReader` from the `opencsv` library to read the CSV file and convert it into a list of lists, which represents the DataFrame.
 
 ```java
 package org.real.temp;
@@ -10,47 +10,51 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 public class Answer {
 
     /**
-     * Reads a CSV file and converts it to a List of Maps representing the data.
-     * 
+     * Reads a CSV file and converts it to a List of Lists representing a DataFrame.
+     *
      * @param filePath The path to the CSV file.
-     * @return A List of Maps where each Map represents a row in the CSV file.
+     * @return List<List<String>>: List of Lists containing the data from the CSV file.
      */
-    public static List<Map<String, String>> readCsvToListOfMaps(String filePath) {
-        List<Map<String, String>> listOfMaps = new ArrayList<>();
+    public static List<List<String>> readCsvToDataFrame(String filePath) {
         try (CSVReader reader = new CSVReader(new FileReader(filePath))) {
-            List<String> headers = reader.readNext(); // Read headers
-            List<String[]> rows = reader.readAll(); // Read all rows
-            
-            listOfMaps = rows.stream()
-                    .map(row -> IntStream.range(0, headers.size())
-                            .boxed()
-                            .collect(Collectors.toMap(headers::get, row::get)))
-                    .collect(Collectors.toList());
-        } catch (IOException | CsvValidationException e) {
-            System.out.println("Error: Could not read the file or it doesn't exist.");
+            List<List<String>> dataframe = new ArrayList<>();
+            String[] nextLine;
+            while ((nextLine = reader.readNext()) != null) {
+                List<String> row = new ArrayList<>();
+                for (String cell : nextLine) {
+                    row.add(cell);
+                }
+                dataframe.add(row);
+            }
+            return dataframe;
+        } catch (IOException e) {
+            System.out.println("Error: The file '" + filePath + "' was not found.");
+        } catch (CsvValidationException e) {
+            System.out.println("Error: Could not parse the file.");
         } catch (Exception e) {
             System.out.println("An error occurred: " + e.getMessage());
         }
-        return listOfMaps;
+        return null;
     }
 
     public static void main(String[] args) {
         String filePath = "path/to/your/file.csv";
-        List<Map<String, String>> data = readCsvToListOfMaps(filePath);
-        data.forEach(System.out::println);
+        List<List<String>> dataframe = readCsvToDataFrame(filePath);
+        if (dataframe != null) {
+            for (List<String> row : dataframe) {
+                System.out.println(row);
+            }
+        }
     }
 }
 ```
 
 ### Notes:
-1. **Dependencies**: To use CSV parsing, you need to add the OpenCSV library to your project. You can do this via Maven or Gradle.
-2. **Structure**: The Java code uses a `List<Map<String, String>>` to represent the CSV data, which is similar to a pandas DataFrame but uses Java's collections.
-3. **Error Handling**: The Java code includes basic error handling for file operations and generic exceptions.
-4. **Main Method**: A simple `main` method is included to demonstrate how to call the `readCsvToListOfMaps` method and print the resulting list.
+1. **Dependencies**: The `CSVReader` class is part of the `opencsv` library. You need to add this library to your project's dependencies.
+2. **Handling Exceptions**: The Java code handles various exceptions similar to how the Python code does, including file not found, parsing errors, and general exceptions.
+3. **Return Type**: Instead of returning a DataFrame like in pandas, the Java version returns a `List<List<String>>`, which represents a table structure similar to a DataFrame.
+4. **Main Method**: A simple `main` method is included to demonstrate reading a CSV file and printing its contents. Adjust the `filePath` variable according to your needs.

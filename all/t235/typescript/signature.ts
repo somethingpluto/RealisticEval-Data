@@ -9,6 +9,4 @@
  * @param {number} lon2 - Longitude of the ending point in decimal degrees.
  * @returns {number} - Bearing in degrees from the starting point to the ending point, ranging from 0 to 360.
  */
-function calculateBearing(lat1: number, lon1: number, lat2: number, lon2: number): number {
-    // Function implementation goes here
-}
+function calculateBearing(lat1: number, lon1: number, lat2: number, lon2: number): number {}

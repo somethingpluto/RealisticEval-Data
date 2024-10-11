@@ -1,27 +1,28 @@
-describe('calculateBearing', () => {
-    it('should calculate the bearing correctly', () => {
-        const lat1 = 48.8566; // Paris, France
-        const lon1 = 2.3522;
-        const lat2 = 51.5074; // London, UK
-        const lon2 = -0.1278;
+const approximatelyEqual = (a, b, epsilon = 1e-9) => Math.abs(a - b) < epsilon;
 
-        const expectedBearing = 90.0; // Approximate bearing from Paris to London
-
-        const result = calculateBearing(lat1, lon1, lat2, lon2);
-
-        expect(result).toBeCloseTo(expectedBearing, 2); // Allowing for a small margin of error
+describe('Calculate Bearing Tests', () => {
+    test('North Bearing', () => {
+        // From equator directly north
+        expect(calculateBearing(0, 0, 10, 0)).toBeCloseTo(0, 9);
     });
 
-    it('should handle edge cases', () => {
-        const lat1 = 0; // North Pole
-        const lon1 = 0;
-        const lat2 = 0; // North Pole
-        const lon2 = 180; // South Pole
+    test('East Bearing', () => {
+        // From prime meridian directly east
+        expect(calculateBearing(0, 0, 0, 10)).toBeCloseTo(90, 9);
+    });
 
-        const expectedBearing = 180.0; // Bearing from North Pole to South Pole
+    test('South Bearing', () => {
+        // From a point directly south
+        expect(calculateBearing(10, 0, 0, 0)).toBeCloseTo(180, 9);
+    });
 
-        const result = calculateBearing(lat1, lon1, lat2, lon2);
+    test('West Bearing', () => {
+        // From a point directly west
+        expect(calculateBearing(0, 10, 0, 0)).toBeCloseTo(270, 9);
+    });
 
-        expect(result).toBeCloseTo(expectedBearing, 2);
+    test('Across Prime Meridian', () => {
+        // From a point west of the prime meridian to a point east
+        expect(calculateBearing(0, -1, 0, 1)).toBeCloseTo(90, 9);
     });
 });

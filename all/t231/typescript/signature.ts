@@ -7,6 +7,4 @@
  *          - trainLossList: An array of training loss values extracted from the log.
  *          - testAcc1List: An array of test accuracy values extracted from the log.
  */
-function readLog(logFilePath: string): [number[], number[]] {
-
-}
+function readLog(logFilePath: string): [number[], number[]] {}

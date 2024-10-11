@@ -7,6 +7,4 @@
  * @param string The input string containing potential comments.
  * @return The string with all comments removed.
  */
-public static String removeComments(String string) {
-
-}
+public static String removeComments(String string) {}

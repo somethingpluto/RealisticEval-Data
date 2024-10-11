@@ -6,7 +6,4 @@
  * @param {string} inputString - The input string containing potential comments.
  * @returns {string} - The string with all comments removed.
  */
-// @ts-ignore
-function removeComments(inputString: string): string {
-
-}
+function removeComments(inputString: string): string {}

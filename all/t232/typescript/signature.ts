@@ -8,7 +8,4 @@
  * @param {string} timeStr - A string representing the time duration, e.g., '1h20min30s'.
  * @returns {number | null} - The equivalent duration in milliseconds, or null if the input is invalid.
  */
-// @ts-ignore
-function convertHmsToMilliseconds(timeStr: string): number | null {
-
-}
+function convertHmsToMilliseconds(timeStr: string): number | null {}

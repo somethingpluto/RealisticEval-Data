@@ -7,6 +7,4 @@
  * @param timeStr The string representing the time duration, e.g., '1h20min30s'.
  * @return The equivalent duration in milliseconds, or null if the input is invalid.
  */
-public static Integer convertHmsToMilliseconds(String timeStr) {
-
-}
+public static Integer convertHmsToMilliseconds(String timeStr) {}

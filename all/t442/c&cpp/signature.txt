@@ -1,127 +1,109 @@
-Sure, here’s the C++ version of the provided Python function, including comments and type conversions:
+Sure! Here’s the equivalent C++ code for the given Python function, including the necessary imports, function signature, and comments:
 
 ```cpp
-#include <string>
+#include <iostream>
 #include <vector>
-#include <unordered_map>
+#include <map>
+#include <string>
+#include <variant>
+#include <sstream>
 
-// Convert strings in nested structures (e.g., dictionaries, arrays) to numbers (integers or floating-point numbers) as much as possible.
-// 
-// Args:
-//     data: The input data which can be a dictionary or a list.
-//
-// Returns:
-//     The converted data which can be a dictionary or a list.
-
-union DataValue {
-    int intValue;
-    double doubleValue;
-    std::string stringValue;
-
-    DataValue() {}
-    DataValue(int val) : intValue(val) {}
-    DataValue(double val) : doubleValue(val) {}
-    DataValue(const std::string& val) : stringValue(val) {}
-
-    bool isInt() const { return typeid(*this) == typeid(intValue); }
-    bool isDouble() const { return typeid(*this) == typeid(doubleValue); }
-    bool isString() const { return typeid(*this) == typeid(stringValue); }
-
-    operator int() const { return intValue; }
-    operator double() const { return doubleValue; }
-    operator std::string() const { return stringValue; }
-};
-
-using DataList = std::vector<DataValue>;
-using DataDict = std::unordered_map<std::string, DataValue>;
-
-DataDict convertStringToNumberInDict(const DataDict& dict);
-DataList convertStringToNumberInList(const DataList& list);
-
-DataDict convertStringToNumberInDict(const DataDict& dict) {
-    DataDict newDict;
-    for (const auto& pair : dict) {
-        if (pair.second.isString()) {
-            const std::string& str = pair.second;
-            try {
-                size_t pos;
-                int intVal = std::stoi(str, &pos);
-                if (pos == str.size()) {
-                    newDict[pair.first] = intVal;
-                } else {
-                    double doubleVal = std::stod(str, &pos);
-                    if (pos == str.size()) {
-                        newDict[pair.first] = doubleVal;
-                    } else {
-                        newDict[pair.first] = str;
-                    }
-                }
-            } catch (std::invalid_argument& e) {
-                newDict[pair.first] = str;
-            } catch (std::out_of_range& e) {
-                newDict[pair.first] = str;
-            }
-        } else {
-            newDict[pair.first] = pair.second;
-        }
-    }
-    return newDict;
+// Helper function to check if a string contains a dot
+bool containsDot(const std::string& str) {
+    return str.find('.') != std::string::npos;
 }
 
-DataList convertStringToNumberInList(const DataList& list) {
-    DataList newList;
-    for (const auto& item : list) {
-        if (item.isString()) {
-            const std::string& str = item;
-            try {
-                size_t pos;
-                int intVal = std::stoi(str, &pos);
-                if (pos == str.size()) {
-                    newList.push_back(intVal);
-                } else {
-                    double doubleVal = std::stod(str, &pos);
-                    if (pos == str.size()) {
-                        newList.push_back(doubleVal);
-                    } else {
-                        newList.push_back(str);
-                    }
-                }
-            } catch (std::invalid_argument& e) {
-                newList.push_back(str);
-            } catch (std::out_of_range& e) {
-                newList.push_back(str);
-            }
-        } else {
-            newList.push_back(item);
-        }
+// Function to attempt conversion of a string to a number
+template<typename T>
+T stringToNumber(const std::string& str) {
+    std::istringstream iss(str);
+    T number;
+    iss >> number;
+    if (iss.fail() || !iss.eof()) {
+        throw std::invalid_argument("Conversion failed");
     }
-    return newList;
+    return number;
 }
 
-union DataUnion {
-    DataDict dict;
-    DataList list;
-
-    DataUnion() {}
-    DataUnion(DataDict d) : dict(d) {}
-    DataUnion(DataList l) : list(l) {}
-
-    bool isDict() const { return typeid(*this) == typeid(dict); }
-    bool isList() const { return typeid(*this) == typeid(list); }
-
-    operator DataDict() const { return dict; }
-    operator DataList() const { return list; }
-};
-
-DataUnion convert_strings_to_numbers(DataUnion data) {
-    if (data.isDict()) {
-        return convertStringToNumberInDict(data.dict);
-    } else if (data.isList()) {
-        return convertStringToNumberInList(data.list);
+/**
+ * Convert strings in nested structures (e.g., dictionaries, arrays) to numbers (integers or floating-point numbers) as much as possible.
+ *
+ * @param data A dictionary or list containing nested structures.
+ * @return A dictionary or list with strings converted to numbers where possible.
+ */
+std::variant<std::map<std::string, std::variant<std::string, int, double>>, std::vector<std::variant<std::string, int, double>>> convertStringsToNumbers(
+    const std::variant<std::map<std::string, std::variant<std::string, int, double>>, std::vector<std::variant<std::string, int, double>>>& data
+) {
+    if (std::holds_alternative<std::map<std::string, std::variant<std::string, int, double>>>(data)) {
+        auto map = std::get<std::map<std::string, std::variant<std::string, int, double>>>(data);
+        std::map<std::string, std::variant<std::string, int, double>> newMap;
+        for (const auto& [key, value] : map) {
+            newMap[key] = convertStringsToNumbers(value);
+        }
+        return newMap;
+    } else if (std::holds_alternative<std::vector<std::variant<std::string, int, double>>>(data)) {
+        auto vec = std::get<std::vector<std::variant<std::string, int, double>>>(data);
+        std::vector<std::variant<std::string, int, double>> newVec;
+        for (const auto& item : vec) {
+            newVec.push_back(convertStringsToNumbers(item));
+        }
+        return newVec;
+    } else if (std::holds_alternative<std::string>(data)) {
+        std::string str = std::get<std::string>(data);
+        try {
+            if (containsDot(str)) {
+                return stringToNumber<double>(str);
+            } else {
+                return stringToNumber<int>(str);
+            }
+        } catch (const std::invalid_argument&) {
+            return str; // Return original string if conversion fails
+        }
     } else {
-        throw std::runtime_error("Invalid data type");
+        return data; // Return data unchanged if it's not a string
     }
+}
+
+int main() {
+    // Example usage
+    std::map<std::string, std::variant<std::string, int, double>> exampleData = {
+        {"a", "123"},
+        {"b", "456.789"},
+        {"c", "not_a_number"}
+    };
+
+    auto convertedData = convertStringsToNumbers(exampleData);
+
+    // Print the result
+    if (std::holds_alternative<std::map<std::string, std::variant<std::string, int, double>>>(convertedData)) {
+        auto map = std::get<std::map<std::string, std::variant<std::string, int, double>>>(convertedData);
+        for (const auto& [key, value] : map) {
+            std::cout << key << ": ";
+            if (std::holds_alternative<int>(value)) {
+                std::cout << std::get<int>(value);
+            } else if (std::holds_alternative<double>(value)) {
+                std::cout << std::get<double>(value);
+            } else if (std::holds_alternative<std::string>(value)) {
+                std::cout << std::get<std::string>(value);
+            }
+            std::cout << std::endl;
+        }
+    }
+
+    return 0;
 }
 ```
 
-This C++ code includes the necessary types and functions to handle the conversion of strings to numbers within nested structures like dictionaries and lists. It uses unions to represent the union types and includes helper functions to perform the conversion.
+### Explanation:
+1. **Imports**: The necessary headers (`<iostream>`, `<vector>`, `<map>`, `<string>`, `<variant>`, `<sstream>`) are included to support the required functionalities.
+2. **Helper Functions**:
+   - `containsDot`: Checks if a string contains a dot.
+   - `stringToNumber`: Attempts to convert a string to a number, throwing an exception if the conversion fails.
+3. **Function Documentation**:
+   - The `convertStringsToNumbers` function is documented with a multi-line comment block (`/* ... */`) that explains its purpose, arguments, and return value.
+4. **Function Implementation**:
+   - The function handles nested structures (`std::map` and `std::vector`) and individual strings, converting strings to numbers where possible.
+5. **Example Usage**:
+   - The `main` function demonstrates how to use the `convertStringsToNumbers` function with an example map and prints the result.
+
+This translation preserves the original functionality and structure of the Python code while adapting it to C++ conventions and syntax.

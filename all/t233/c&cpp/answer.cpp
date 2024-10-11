@@ -1,7 +1,7 @@
 #include <iostream>
 #include <string>
 
-std::string removeComments(const std::string &input) {
+std::string remove_comments(const std::string &input) {
     std::string result;
     bool inComment = false;
 

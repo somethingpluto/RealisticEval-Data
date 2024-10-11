@@ -7,6 +7,4 @@
  *         - trainLossList: A list of training loss values extracted from the log.
  *         - testAcc1List: A list of test accuracy values extracted from the log.
  */
-public static Tuple<List<Double>, List<Double>> readLog(String logFilePath) throws IOException {
-
-}
+public static Tuple<List<Double>, List<Double>> readLog(String logFilePath) throws IOException {}

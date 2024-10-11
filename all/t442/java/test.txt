@@ -1,118 +1,141 @@
-Sure! Below is the equivalent Java code using JUnit for testing the `convert_strings_to_numbers` method. First, let's define the method itself, and then we'll write the test class.
+Certainly! Below is the equivalent Java test class using JUnit for the provided Python unittest class. The Java test class will be placed in the package `org.real.temp` and named `Tester`. The functionality and logic of the tests will be preserved, and appropriate JUnit annotations and assertion methods will be used.
 
-### Method Implementation in Java
+### Python Code:
+```python
+from typing import List, Dict, Union
 
-```java
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
+def convert_strings_to_numbers(data: Union[Dict, List]) -> Union[Dict, List]:
+    """
+    Convert strings in nested structures (e.g. dictionaries, arrays) to numbers (integers or floating point numbers) as much as possible
 
-public class DataConverter {
+    Args:
+        data (Union[Dict,List]): before convert data
 
-    /**
-     * Convert strings in nested structures (e.g. maps, lists) to numbers (integers or floating point numbers) as much as possible.
-     *
-     * @param data the input data, which can be a map or a list
-     * @return the converted data, which can be a map or a list
-     */
-    public static Object convertStringsToNumbers(Object data) {
-        if (data instanceof Map) {
-            return convertMap((Map<?, ?>) data);
-        } else if (data instanceof List) {
-            return convertList((List<?>) data);
-        } else {
-            throw new IllegalArgumentException("Unsupported data type");
-        }
-    }
-
-    private static Map<String, Object> convertMap(Map<?, ?> map) {
-        Map<String, Object> result = new HashMap<>();
-        for (Map.Entry<?, ?> entry : map.entrySet()) {
-            String key = entry.getKey().toString();
-            Object value = entry.getValue();
-            result.put(key, convertValue(value));
-        }
-        return result;
-    }
-
-    private static List<Object> convertList(List<?> list) {
-        List<Object> result = new ArrayList<>();
-        for (Object item : list) {
-            result.add(convertValue(item));
-        }
-        return result;
-    }
-
-    private static Object convertValue(Object value) {
-        if (value instanceof String) {
-            String str = (String) value;
-            try {
-                if (str.contains(".")) {
-                    return Double.parseDouble(str);
-                } else {
-                    return Integer.parseInt(str);
-                }
-            } catch (NumberFormatException e) {
-                // If conversion fails, return the original string
-                return str;
-            }
-        } else if (value instanceof Map) {
-            return convertMap((Map<?, ?>) value);
-        } else if (value instanceof List) {
-            return convertList((List<?>) value);
-        } else {
-            return value;
-        }
-    }
-}
+    Returns:
+        Union[Dict,List]: after convert data
+    """
+    if isinstance(data, dict):
+        return {key: convert_strings_to_numbers(value) for key, value in data.items()}
+    elif isinstance(data, list):
+        return [convert_strings_to_numbers(item) for item in data]
+    elif isinstance(data, str):
+        try:
+            # Try converting to float first, then to int if possible
+            if '.' in data:
+                return float(data)
+            else:
+                return int(data)
+        except ValueError:
+            return data  # Return original string if conversion fails
+    else:
+        return data  # Return data unchanged if it's not a string
 ```
 
-### Test Class Using JUnit
-
+### Java Test Class:
 ```java
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
-import static org.junit.Assert.assertEquals;
+package org.real.temp;
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@RunWith(JUnit4.class)
 public class Tester {
 
-    private static final DataConverter converter = new DataConverter();
-
+    /**
+     * Test the conversion of strings in nested structures to numbers.
+     */
     @Test
     public void testConvertStringsToNumbers() {
-        Map<String, Object> inputMap = new HashMap<>();
-        inputMap.put("a", "100");
-        inputMap.put("b", "200.5");
-        Map<String, Object> nestedMap = new HashMap<>();
-        nestedMap.put("c", "300");
-        inputMap.put("d", nestedMap);
+        // Test with a dictionary
+        Map<String, Object> dataDict = new HashMap<>();
+        dataDict.put("a", "123");
+        dataDict.put("b", Arrays.asList("456", "789.0"));
+        dataDict.put("c", "not_a_number");
 
-        Map<String, Object> expectedOutputMap = new HashMap<>();
-        expectedOutputMap.put("a", 100);
-        expectedOutputMap.put("b", 200.5);
-        Map<String, Object> expectedNestedMap = new HashMap<>();
-        expectedNestedMap.put("c", 300);
-        expectedOutputMap.put("d", expectedNestedMap);
+        Map<String, Object> expectedDict = new HashMap<>();
+        expectedDict.put("a", 123);
+        expectedDict.put("b", Arrays.asList(456, 789.0f));
+        expectedDict.put("c", "not_a_number");
 
-        assertEquals(expectedOutputMap, converter.convertStringsToNumbers(inputMap));
+        assertEquals(expectedDict, convertStringsToNumbers(dataDict));
 
-        List<Object> inputList = Arrays.asList("100", "200.5", "not_a_number", new HashMap<String, Object>() {{
-            put("nested", "300");
-        }});
+        // Test with a list
+        List<Object> dataList = Arrays.asList("123", "456.7", "not_a_number");
 
-        List<Object> expectedOutputList = Arrays.asList(100, 200.5, "not_a_number", new HashMap<String, Object>() {{
-            put("nested", 300);
-        }});
+        List<Object> expectedList = Arrays.asList(123, 456.7f, "not_a_number");
 
-        assertEquals(expectedOutputList, converter.convertStringsToNumbers(inputList));
+        assertEquals(expectedList, convertStringsToNumbers(dataList));
+
+        // Test with a string
+        String dataStr = "123";
+        assertEquals(123, convertStringsToNumbers(dataStr));
+
+        dataStr = "456.7";
+        assertEquals(456.7f, convertStringsToNumbers(dataStr));
+
+        dataStr = "not_a_number";
+        assertEquals("not_a_number", convertStringsToNumbers(dataStr));
+    }
+
+    private Object convertStringsToNumbers(Object data) {
+        if (data instanceof Map) {
+            @SuppressWarnings("unchecked")
+            Map<Object, Object> map = (Map<Object, Object>) data;
+            Map<Object, Object> convertedMap = new HashMap<>();
+            for (Map.Entry<Object, Object> entry : map.entrySet()) {
+                convertedMap.put(entry.getKey(), convertStringsToNumbers(entry.getValue()));
+            }
+            return convertedMap;
+        } else if (data instanceof List) {
+            @SuppressWarnings("unchecked")
+            List<Object> list = (List<Object>) data;
+            List<Object> convertedList = new ArrayList<>();
+            for (Object item : list) {
+                convertedList.add(convertStringsToNumbers(item));
+            }
+            return convertedList;
+        } else if (data instanceof String) {
+            String str = (String) data;
+            try {
+                // Try converting to float first, then to int if possible
+                if (str.contains(".")) {
+                    return Float.parseFloat(str);
+                } else {
+                    return Integer.parseInt(str);
+                }
+            } catch (NumberFormatException e) {
+                return data; // Return original string if conversion fails
+            }
+        } else {
+            return data; // Return data unchanged if it's not a string
+        }
     }
 }
 ```
 
-In this example, the `DataConverter` class contains the method `convertStringsToNumbers`, and the `Tester` class uses JUnit to test this method with different inputs and asserts the expected outputs.
+### Explanation:
+1. **Package and Class Declaration**: The test class is placed in the package `org.real.temp` and named `Tester`.
+
+2. **JUnit Annotations**:
+   - The `@Test` annotation is used to mark the test method.
+
+3. **Assertions**:
+   - The `assertEquals` method is used to verify the expected results against the actual results.
+
+4. **Test Cases**:
+   - **Dictionary Test**: Tests the conversion of a dictionary containing mixed types.
+   - **List Test**: Tests the conversion of a list containing mixed types.
+   - **String Test**: Tests the conversion of individual strings.
+
+5. **Helper Method**:
+   - The `convertStringsToNumbers` method is defined within the test class to handle the conversion logic.
+
+6. **Type Checking and Conversion**:
+   - The method checks if the input `data` is a `Map`, `List`, or `String` and performs the appropriate conversions.
+
+This Java test class preserves the original functionality and logic of the Python unittest class, adhering to Java's syntax and conventions, and using JUnit annotations and assertions effectively.

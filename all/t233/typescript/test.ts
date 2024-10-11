@@ -1,27 +1,27 @@
 describe('removeComments', () => {
-  it('should remove comments starting with "#" and ending at the newline', () => {
-    const input = "Hello, world! # This is a comment";
-    const expectedOutput = "Hello, world!";
-    expect(removeComments(input)).toBe(expectedOutput);
+
+  test('single line comment', () => {
+      const inputString = "Hello, world!# This is a comment";
+      const expectedOutput = "Hello, world!";
+      expect(removeComments(inputString)).toBe(expectedOutput);
   });
 
-  it('should handle multiple lines with comments', () => {
-    const input = `
-      Line1 # Comment1
-      Line2 # Comment2
-      Line3 # Comment3
-    `;
-    const expectedOutput = `
-      Line1 
-      Line2 
-      Line3 
-    `;
-    expect(removeComments(input)).toBe(expectedOutput);
+  test('no comments', () => {
+      const inputString = "Hello, world!\nPython is fun!";
+      const expectedOutput = "Hello, world!\nPython is fun!";
+      expect(removeComments(inputString)).toBe(expectedOutput);
   });
 
-  it('should not remove non-comment text', () => {
-    const input = "Hello, world! This is not a comment.";
-    const expectedOutput = "Hello, world! This is not a comment.";
-    expect(removeComments(input)).toBe(expectedOutput);
+  test('empty string', () => {
+      const inputString = "";
+      const expectedOutput = "";
+      expect(removeComments(inputString)).toBe(expectedOutput);
   });
+
+  test('comments only', () => {
+      const inputString = "# comment only line\n#another comment line";
+      const expectedOutput = ""; // No actual content, should return an empty string
+      expect(removeComments(inputString)).toBe(expectedOutput);
+  });
+
 });

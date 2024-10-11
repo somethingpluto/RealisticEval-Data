@@ -1,15 +1,14 @@
-Certainly! Below is the TypeScript code that replicates the functionality of the provided Python function:
+Certainly! Below is the TypeScript code that matches the functionality of the provided Python code:
 
 ```typescript
 function convertStringsToNumbers(data: any): any {
-    if (typeof data === 'object' && data !== null) {
-        if (Array.isArray(data)) {
-            return data.map(item => convertStringsToNumbers(item));
-        } else {
-            return Object.fromEntries(
-                Object.entries(data).map(([key, value]) => [key, convertStringsToNumbers(value)])
-            );
-        }
+    if (typeof data === 'object' && !Array.isArray(data) && data !== null) {
+        return Object.entries(data).reduce((acc, [key, value]) => {
+            acc[key] = convertStringsToNumbers(value);
+            return acc;
+        }, {} as Record<string, any>);
+    } else if (Array.isArray(data)) {
+        return data.map(item => convertStringsToNumbers(item));
     } else if (typeof data === 'string') {
         try {
             // Try converting to float first, then to int if possible
@@ -25,28 +24,40 @@ function convertStringsToNumbers(data: any): any {
             // Ignore error
         }
     }
-    return data;  // Return original data if conversion fails or is not a string
+    return data; // Return data unchanged if it's not a string
 }
 
 // Example usage
-const data = {
-    name: "John Doe",
+const exampleData = {
+    name: "John",
     age: "30",
     height: "5.9",
     children: ["Alice", "Bob"],
-    details: {
-        address: "123 Main St",
-        salary: "50000"
+    nested: {
+        inner: "42"
     }
 };
 
-console.log(convertStringsToNumbers(data));
+console.log(convertStringsToNumbers(exampleData));
 ```
 
 ### Explanation:
-1. **Type Checking**: The TypeScript code uses `typeof` to check if the data is an object or a string.
-2. **Dictionary Handling**: For dictionaries (`object`), it uses `Object.entries()` to iterate over key-value pairs and recursively applies the function.
-3. **List Handling**: For lists (`array`), it uses `Array.map()` to apply the function to each element.
-4. **String Conversion**: For strings, it attempts to parse the string as a number. If the string contains a dot (`.`), it converts it to a float; otherwise, it tries to convert it to an integer.
+1. **Type Checking**:
+   - `typeof data === 'object' && !Array.isArray(data) && data !== null`: Checks if `data` is an object but not an array.
+   - `Array.isArray(data)`: Checks if `data` is an array.
+   - `typeof data === 'string'`: Checks if `data` is a string.
 
-This approach ensures that the TypeScript code closely mirrors the behavior of the Python function.
+2. **Recursive Conversion**:
+   - For objects, we use `Object.entries` to iterate over the keys and values, applying the function recursively.
+   - For arrays, we use `.map` to apply the function to each element.
+   - For strings, we attempt to parse them as numbers and handle the conversion accordingly.
+
+3. **Number Conversion**:
+   - We use `parseFloat` to convert the string to a floating-point number.
+   - If the string contains a dot (`.`), it is considered a floating-point number.
+   - Otherwise, it is converted to an integer using `parseInt`.
+
+4. **Error Handling**:
+   - If the conversion fails, the original string is returned unchanged.
+
+This TypeScript function preserves the same logic and structure as the Python code while adapting to TypeScript's syntax and type system.

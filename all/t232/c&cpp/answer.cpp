@@ -2,7 +2,7 @@
 #include <string>
 #include <regex>
 
-int convertHmsToMilliseconds(const std::string& timeStr) {
+int convert_hms_to_milliseconds(const std::string& timeStr) {
     std::smatch match;
     std::regex pattern("(\\d+)h(\\d+)min(\\d+)s");
 

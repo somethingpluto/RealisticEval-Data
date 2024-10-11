@@ -1,61 +1,93 @@
-Here is the equivalent C++ code for the provided Python function, including the translation of comments and docstring into C++ comments:
+Certainly! Below is the equivalent C++ code for the provided Python function, including proper comments and documentation:
 
 ```cpp
+#include <iostream>
 #include <fstream>
-#include <sstream>
 #include <string>
 #include <vector>
-
-// A simple structure to mimic a DataFrame
-struct DataFrame {
-    std::vector<std::vector<std::string>> data;
-    std::vector<std::string> columns;
-
-    // Constructor to initialize the DataFrame with column names and data
-    DataFrame(const std::vector<std::string>& cols, const std::vector<std::vector<std::string>>& dat)
-        : columns(cols), data(dat) {}
-};
+#include <csv.h> // Assuming you have installed the cppcsv library
 
 /**
- * Reads a CSV file and converts it to a DataFrame-like structure.
+ * Reads a CSV file and converts it to a structured format.
  *
  * @param file_path The path to the CSV file.
- * @return DataFrame containing the data from the CSV file.
+ * @return A vector of vectors representing the CSV data.
  */
-DataFrame read_csv_to_dataframe(const std::string& file_path) {
-    std::ifstream file(file_path);
-    if (!file.is_open()) {
-        throw std::runtime_error("Could not open file: " + file_path);
-    }
+std::vector<std::vector<std::string>> read_csv_to_data_structure(const std::string& file_path) {
+    try {
+        csv::Parser file = csv::Parser(file_path);
 
-    std::string line;
-    std::vector<std::string> headers;
-    std::vector<std::vector<std::string>> data;
-    bool header_read = false;
+        if (file.is_open()) {
+            std::vector<std::vector<std::string>> data;
 
-    while (std::getline(file, line)) {
-        std::stringstream ss(line);
-        std::string cell;
-        std::vector<std::string> row;
-        while (std::getline(ss, cell, ',')) {
-            row.push_back(cell);
-        }
-        if (!header_read) {
-            headers = row;
-            header_read = true;
+            // Store headers
+            std::vector<std::string> headers;
+            for (const auto& header : file.headers()) {
+                headers.push_back(header);
+            }
+            data.push_back(headers);
+
+            // Store rows
+            for (const auto& row : file) {
+                std::vector<std::string> current_row;
+                for (const auto& cell : row) {
+                    current_row.push_back(cell);
+                }
+                data.push_back(current_row);
+            }
+
+            return data;
         } else {
-            data.push_back(row);
+            std::cout << "Error: The file '" << file_path << "' could not be opened.\n";
         }
+    } catch (const std::exception& e) {
+        std::cout << "An error occurred: " << e.what() << "\n";
     }
 
-    file.close();
-    return DataFrame(headers, data);
+    return {};
+}
+
+int main() {
+    std::string file_path = "path/to/your/file.csv";
+    std::vector<std::vector<std::string>> data = read_csv_to_data_structure(file_path);
+
+    if (!data.empty()) {
+        // Print headers
+        for (const auto& header : data.front()) {
+            std::cout << header << " ";
+        }
+        std::cout << "\n";
+
+        // Print rows
+        for (const auto& row : data) {
+            for (const auto& cell : row) {
+                std::cout << cell << " ";
+            }
+            std::cout << "\n";
+        }
+    } else {
+        std::cout << "No data was read from the file.\n";
+    }
+
+    return 0;
 }
 ```
 
 ### Explanation:
-1. **Imports**: In C++, we use `#include` directives to include necessary libraries. Here, we include `<fstream>` for file handling, `<sstream>` for string stream operations, and `<string>` and `<vector>` for basic data structures.
-2. **DataFrame Structure**: Since C++ does not have an exact equivalent to pandas DataFrame, we create a simple `struct` named `DataFrame` which holds a vector of vectors to represent the data and a vector of strings to represent the column names.
-3. **Function Definition**: The function `read_csv_to_dataframe` reads the CSV file and constructs a `DataFrame` object. It uses `std::ifstream` to open the file, `std::getline` to read lines, and `std::stringstream` to split each line into cells based on commas.
-4. **Comments and Documentation**: The Python docstring is converted into a C++ style multi-line comment using `/** */`, and the arguments and return types are documented appropriately.
-5. **Error Handling**: If the file cannot be opened, a `std::runtime_error` is thrown with a descriptive message.
+1. **Header Files**: Include necessary headers like `<iostream>`, `<fstream>`, `<string>`, `<vector>`, and `<csv.h>` (assuming the `cppcsv` library is installed).
+
+2. **Function Definition**: Define the function `read_csv_to_data_structure` which takes the file path as input and returns a `std::vector<std::vector<std::string>>` representing the CSV data.
+
+3. **Documentation Comments**:
+   - Multi-line comments are used for the function documentation.
+   - Single-line comments (`//`) are used for inline comments.
+
+4. **CSV Parsing**:
+   - Use the `csv::Parser` class from the `cppcsv` library to parse the CSV file.
+   - Check if the file is successfully opened and store the headers and rows in a `std::vector<std::vector<std::string>>`.
+
+5. **Exception Handling**: Catch any exceptions thrown during the parsing process and print an appropriate error message.
+
+6. **Main Function**: In the `main` function, call `read_csv_to_data_structure` with the desired file path and print the headers and rows if the data is not empty.
+
+This C++ code preserves the original purpose and structure of the Python code while adapting it to C++ syntax and conventions.

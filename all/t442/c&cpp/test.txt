@@ -1,103 +1,137 @@
-To convert the provided Python unittest test class into an equivalent test class using Catch2 in C++, we need to create a similar test structure and use appropriate assertions in Catch2. Below is the C++ code with the equivalent test class using Catch2.
+Certainly! Below is the equivalent C++ code using the Catch2 testing framework. This includes the implementation of the `convert_strings_to_numbers` function and the corresponding test cases.
+
+### C++ Code with Catch2 Testing Framework
 
 ```cpp
-#include <catch2/catch_test_macros.hpp>
-#include <catch2/matchers/catch_matchers_map_string.hpp>
-#include <catch2/generators/catch_generators_all.hpp>
-
-#include <string>
+#include <iostream>
 #include <vector>
 #include <map>
-#include <cassert>
+#include <string>
 #include <variant>
+#include <sstream>
+#include <catch2/catch_test_macros.hpp>
 
-// Function to convert strings to numbers
-std::variant<int, double> string_to_number(const std::string& str) {
-    try {
-        return std::stoi(str);
-    } catch (const std::invalid_argument&) {
-        // If stoi fails, try stod
-        return std::stod(str);
-    }
+// Helper function to check if a string contains a dot
+bool containsDot(const std::string& str) {
+    return str.find('.') != std::string::npos;
 }
 
-// Recursive function to convert strings to numbers in nested structures
-void convert_strings_to_numbers_helper(const std::variant<std::map<std::string, std::variant<int, double>>, std::vector<std::variant<int, double>>>& input,
-                                       std::variant<std::map<std::string, std::variant<int, double>>, std::vector<std::variant<int, double>>>& output) {
-    if (auto* map = std::get_if<std::map<std::string, std::variant<int, double>>>(&input)) {
-        auto& outputMap = std::get<std::map<std::string, std::variant<int, double>>>(output);
-        for (auto& [key, value] : *map) {
-            if (std::holds_alternative<std::string>(value)) {
-                const std::string& strValue = std::get<std::string>(value);
-                outputMap[key] = string_to_number(strValue);
+// Function to attempt conversion of a string to a number
+template<typename T>
+T stringToNumber(const std::string& str) {
+    std::istringstream iss(str);
+    T number;
+    iss >> number;
+    if (iss.fail() || !iss.eof()) {
+        throw std::invalid_argument("Conversion failed");
+    }
+    return number;
+}
+
+/**
+ * Convert strings in nested structures (e.g., dictionaries, arrays) to numbers (integers or floating-point numbers) as much as possible.
+ *
+ * @param data A dictionary or list containing nested structures.
+ * @return A dictionary or list with strings converted to numbers where possible.
+ */
+std::variant<std::map<std::string, std::variant<std::string, int, double>>, std::vector<std::variant<std::string, int, double>>> convertStringsToNumbers(
+    const std::variant<std::map<std::string, std::variant<std::string, int, double>>, std::vector<std::variant<std::string, int, double>>>& data
+) {
+    if (std::holds_alternative<std::map<std::string, std::variant<std::string, int, double>>>(data)) {
+        auto map = std::get<std::map<std::string, std::variant<std::string, int, double>>>(data);
+        std::map<std::string, std::variant<std::string, int, double>> newMap;
+        for (const auto& [key, value] : map) {
+            newMap[key] = convertStringsToNumbers(value);
+        }
+        return newMap;
+    } else if (std::holds_alternative<std::vector<std::variant<std::string, int, double>>>(data)) {
+        auto vec = std::get<std::vector<std::variant<std::string, int, double>>>(data);
+        std::vector<std::variant<std::string, int, double>> newVec;
+        for (const auto& item : vec) {
+            newVec.push_back(convertStringsToNumbers(item));
+        }
+        return newVec;
+    } else if (std::holds_alternative<std::string>(data)) {
+        std::string str = std::get<std::string>(data);
+        try {
+            if (containsDot(str)) {
+                return stringToNumber<double>(str);
             } else {
-                outputMap[key] = value;
+                return stringToNumber<int>(str);
             }
+        } catch (const std::invalid_argument&) {
+            return str; // Return original string if conversion fails
         }
-    } else if (auto* vec = std::get_if<std::vector<std::variant<int, double>>>(&input)) {
-        auto& outputVec = std::get<std::vector<std::variant<int, double>>>(output);
-        for (const auto& item : *vec) {
-            if (std::holds_alternative<std::string>(item)) {
-                const std::string& strItem = std::get<std::string>(item);
-                outputVec.push_back(string_to_number(strItem));
-            } else {
-                outputVec.push_back(item);
-            }
-        }
+    } else {
+        return data; // Return data unchanged if it's not a string
     }
 }
 
-std::variant<std::map<std::string, std::variant<int, double>>, std::vector<std::variant<int, double>>> convert_strings_to_numbers(
-    const std::variant<std::map<std::string, std::string>, std::vector<std::string>>& data) {
-    std::variant<std::map<std::string, std::variant<int, double>>, std::vector<std::variant<int, double>>> output;
+TEST_CASE("Test convert_strings_to_numbers") {
+    SECTION("Convert dictionary") {
+        std::map<std::string, std::variant<std::string, int, double>> input = {
+            {"a", "123"},
+            {"b", "456.789"},
+            {"c", "not_a_number"}
+        };
+        auto output = convertStringsToNumbers(input);
+        REQUIRE(std::holds_alternative<std::map<std::string, std::variant<std::string, int, double>>>(output));
 
-    if (auto* map = std::get_if<std::map<std::string, std::string>>(&data)) {
-        auto& outputMap = std::get<std::map<std::string, std::variant<int, double>>>(output);
-        for (const auto& [key, value] : *map) {
-            outputMap[key] = string_to_number(value);
-        }
-    } else if (auto* vec = std::get_if<std::vector<std::string>>(&data)) {
-        auto& outputVec = std::get<std::vector<std::variant<int, double>>>(output);
-        for (const auto& item : *vec) {
-            outputVec.push_back(string_to_number(item));
-        }
+        auto convertedMap = std::get<std::map<std::string, std::variant<std::string, int, double>>>(output);
+        REQUIRE(convertedMap.size() == 3);
+
+        REQUIRE(std::holds_alternative<int>(convertedMap.at("a")));
+        REQUIRE(std::get<int>(convertedMap.at("a")) == 123);
+
+        REQUIRE(std::holds_alternative<double>(convertedMap.at("b")));
+        REQUIRE(std::get<double>(convertedMap.at("b")) == 456.789);
+
+        REQUIRE(std::holds_alternative<std::string>(convertedMap.at("c")));
+        REQUIRE(std::get<std::string>(convertedMap.at("c")) == "not_a_number");
     }
 
-    convert_strings_to_numbers_helper(data, output);
-    return output;
+    SECTION("Convert list") {
+        std::vector<std::variant<std::string, int, double>> input = {
+            "123",
+            "456.789",
+            "not_a_number"
+        };
+        auto output = convertStringsToNumbers(input);
+        REQUIRE(std::holds_alternative<std::vector<std::variant<std::string, int, double>>>(output));
+
+        auto convertedVec = std::get<std::vector<std::variant<std::string, int, double>>>(output);
+        REQUIRE(convertedVec.size() == 3);
+
+        REQUIRE(std::holds_alternative<int>(convertedVec[0]));
+        REQUIRE(std::get<int>(convertedVec[0]) == 123);
+
+        REQUIRE(std::holds_alternative<double>(convertedVec[1]));
+        REQUIRE(std::get<double>(convertedVec[1]) == 456.789);
+
+        REQUIRE(std::holds_alternative<std::string>(convertedVec[2]));
+        REQUIRE(std::get<std::string>(convertedVec[2]) == "not_a_number");
+    }
 }
 
-TEST_CASE("convert_strings_to_numbers") {
-    SECTION("Convert dictionary with string values") {
-        std::map<std::string, std::string> inputDict = {{"a", "1"}, {"b", "2.5"}, {"c", "hello"}};
-        auto result = convert_strings_to_numbers(inputDict);
-        REQUIRE(std::holds_alternative<std::map<std::string, std::variant<int, double>>>(result));
-
-        auto& resultMap = std::get<std::map<std::string, std::variant<int, double>>>(result);
-        REQUIRE(resultMap.size() == 3);
-        REQUIRE(resultMap["a"] == 1);
-        REQUIRE(resultMap["b"] == Approx(2.5));
-        REQUIRE(std::holds_alternative<std::string>(resultMap["c"]));
-        REQUIRE(std::get<std::string>(resultMap["c"]) == "hello");
-    }
-
-    SECTION("Convert list with string values") {
-        std::vector<std::string> inputList = {"1", "2.5", "hello"};
-        auto result = convert_strings_to_numbers(inputList);
-        REQUIRE(std::holds_alternative<std::vector<std::variant<int, double>>>(result));
-
-        auto& resultList = std::get<std::vector<std::variant<int, double>>>(result);
-        REQUIRE(resultList.size() == 3);
-        REQUIRE(resultList[0] == 1);
-        REQUIRE(resultList[1] == Approx(2.5));
-        REQUIRE(std::holds_alternative<std::string>(resultList[2]));
-        REQUIRE(std::get<std::string>(resultList[2]) == "hello");
-    }
+int main(int argc, char* argv[]) {
+    return Catch::Session().run(argc, argv);
 }
 ```
 
 ### Explanation:
-1. **string_to_number**: This function attempts to convert a string to either an integer or a floating-point number.
-2. **convert_strings_to_numbers_helper**: This helper function recursively processes nested structures (maps and vectors) and applies `string_to_number` to string values.
-3. **convert_strings_to_numbers**: This function takes a variant of a map or vector containing strings and converts them to numbers using the helper function.
-4. **TEST_CASE**: The test case includes two sections, one for converting a dictionary and another for converting a list. Each section checks the correctness of the conversion using Catch2 assertions.
+1. **Imports**: The necessary headers (`<iostream>`, `<vector>`, `<map>`, `<string>`, `<variant>`, `<sstream>`, `<catch2/catch_test_macros.hpp>`) are included to support the required functionalities and the Catch2 testing framework.
+2. **Helper Functions**:
+   - `containsDot`: Checks if a string contains a dot.
+   - `stringToNumber`: Attempts to convert a string to a number, throwing an exception if the conversion fails.
+3. **Function Documentation**:
+   - The `convertStringsToNumbers` function is documented with a multi-line comment block (`/** ... */`) that explains its purpose, arguments, and return value.
+4. **Function Implementation**:
+   - The function handles nested structures (`std::map` and `std::vector`) and individual strings, converting strings to numbers where possible.
+5. **Test Cases**:
+   - The `TEST_CASE` macro defines the overall test case.
+   - The `SECTION` macros define individual sections of the test case.
+   - Assertions using `REQUIRE` verify the correctness of the function's behavior.
+6. **Main Function**:
+   - The `main` function runs the Catch2 test suite.
+
+This translation ensures that the functionality and logic of the tests are preserved, using appropriate assertions in Catch2.
