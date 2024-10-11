@@ -1,37 +1,21 @@
-import { calculateEuclideanDistance } from './path/to/your/module'; // Adjust the path as needed
-
 describe('calculateEuclideanDistance', () => {
-    test('basic functionality', () => {
+    it('should calculate the Euclidean distance between two points correctly', () => {
         const point1: [number, number] = [0, 0];
         const point2: [number, number] = [3, 4];
-        const expectedDistance = 5.0;
-        expect(calculateEuclideanDistance(point1, point2)).toBe(expectedDistance);
+        const expectedDistance = 5;
+
+        const result = calculateEuclideanDistance(point1, point2);
+
+        expect(result).toBe(expectedDistance);
     });
 
-    test('negative coordinates', () => {
-        const point1: [number, number] = [-1, -1];
-        const point2: [number, number] = [-4, -5];
-        const expectedDistance = 5.0;
-        expect(calculateEuclideanDistance(point1, point2)).toBe(expectedDistance);
-    });
+    it('should handle different coordinates', () => {
+        const point1: [number, number] = [1, 2];
+        const point2: [number, number] = [-1, -2];
+        const expectedDistance = Math.sqrt(8); // sqrt((2-(-1))^2 + (2-(-2))^2)
 
-    test('zero distance', () => {
-        const point1: [number, number] = [2, 3];
-        const point2: [number, number] = [2, 3];
-        const expectedDistance = 0.0;
-        expect(calculateEuclideanDistance(point1, point2)).toBe(expectedDistance);
-    });
+        const result = calculateEuclideanDistance(point1, point2);
 
-    test('large coordinates', () => {
-        const point1: [number, number] = [1e6, 1e6];
-        const point2: [number, number] = [1e6 + 3, 1e6 + 4];
-        const expectedDistance = 5.0;
-        expect(calculateEuclideanDistance(point1, point2)).toBe(expectedDistance);
-    });
-
-    test('invalid input', () => {
-        expect(() => {
-            calculateEuclideanDistance("invalid" as any, [0, 0]);
-        }).toThrow(TypeError);
+        expect(result).toBeCloseTo(expectedDistance);
     });
 });

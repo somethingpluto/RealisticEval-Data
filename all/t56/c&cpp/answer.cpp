@@ -1,64 +1,59 @@
 #include <iostream>
 #include <vector>
 #include <string>
-#include <iconv.h>
+#include <codecvt>
+#include <locale>
 
-std::vector<char32_t> find_shiftjis_not_gbk() {
-    std::vector<char32_t> unique_to_shiftjis;
+std::vector<char> findShiftJisNotGbk() {
+    std::set<char> shiftJisChars;
+    std::set<char> gbkChars;
 
-    // Create iconv conversion descriptors
-    iconv_t cd_shiftjis = iconv_open("SHIFT-JIS", "UTF-32LE");
-    iconv_t cd_gbk = iconv_open("GBK", "UTF-32LE");
+    // Load Shift-JIS locale
+    std::locale shiftJisLocale("ja_JP.Shift_JIS");
+    std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> converter;
 
-    if (cd_shiftjis == (iconv_t)-1 || cd_gbk == (iconv_t)-1) {
-        std::cerr << "Error initializing iconv." << std::endl;
-        return unique_to_shiftjis;
-    }
-
-    for (char32_t codepoint = 0; codepoint <= 0xFFFF; ++codepoint) {
-        char32_t character = codepoint;
-        char inbuf[4];
-        char outbuf_shiftjis[10];
-        char outbuf_gbk[10];
-        size_t inbytesleft = 4, outbytesleft_shiftjis = 10, outbytesleft_gbk = 10;
-
-        // Copy character to input buffer
-        memcpy(inbuf, &character, 4);
-
-        // Convert character to Shift-JIS
-        char *inbuf_ptr = inbuf;
-        char *outbuf_ptr_shiftjis = outbuf_shiftjis;
-        size_t res_shiftjis = iconv(cd_shiftjis, &inbuf_ptr, &inbytesleft, &outbuf_ptr_shiftjis, &outbytesleft_shiftjis);
-
-        if (res_shiftjis == (size_t)-1) {
-            continue; // Character cannot be represented in Shift-JIS
-        }
-
-        // Reset buffers and states for GBK conversion
-        inbuf_ptr = inbuf;
-        inbytesleft = 4;
-
-        char *outbuf_ptr_gbk = outbuf_gbk;
-        outbytesleft_gbk = 10;
-        size_t res_gbk = iconv(cd_gbk, &inbuf_ptr, &inbytesleft, &outbuf_ptr_gbk, &outbytesleft_gbk);
-
-        if (res_gbk == (size_t)-1) {
-            unique_to_shiftjis.push_back(character); // Character cannot be represented in GBK but is in Shift-JIS
+    // Populate shiftJisChars with characters encodable in Shift-JIS
+    for (int i = 0; i <= 255; ++i) {
+        char ch = static_cast<char>(i);
+        try {
+            std::wstring wideStr = converter.from_bytes(&ch, &ch + 1);
+            if (!wideStr.empty()) {
+                std::string encodedStr = converter.to_bytes(wideStr);
+                if (encodedStr.size() == 1 && encodedStr[0] == ch) {
+                    shiftJisChars.insert(ch);
+                }
+            }
+        } catch (...) {
+            // Ignore exceptions
         }
     }
 
-    // Close iconv descriptors
-    iconv_close(cd_shiftjis);
-    iconv_close(cd_gbk);
+    // Load GBK locale
+    std::locale gbkLocale("zh_CN.GBK");
 
-    return unique_to_shiftjis;
-}
-
-int main() {
-    std::vector<char32_t> result = find_shiftjis_not_gbk();
-    for (char32_t ch : result) {
-        std::wcout << static_cast<wchar_t>(ch) << " ";
+    // Populate gbkChars with characters encodable in GBK
+    for (int i = 0; i <= 255; ++i) {
+        char ch = static_cast<char>(i);
+        try {
+            std::wstring wideStr = converter.from_bytes(&ch, &ch + 1);
+            if (!wideStr.empty()) {
+                std::string encodedStr = converter.to_bytes(wideStr);
+                if (encodedStr.size() == 1 && encodedStr[0] == ch) {
+                    gbkChars.insert(ch);
+                }
+            }
+        } catch (...) {
+            // Ignore exceptions
+        }
     }
-    std::wcout << std::endl;
-    return 0;
+
+    // Find characters unique to Shift-JIS
+    std::vector<char> result;
+    for (const auto& ch : shiftJisChars) {
+        if (gbkChars.find(ch) == gbkChars.end()) {
+            result.push_back(ch);
+        }
+    }
+
+    return result;
 }

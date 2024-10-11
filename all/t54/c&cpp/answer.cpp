@@ -1,12 +1,27 @@
-#include <iostream>
 #include <vector>
 #include <string>
-#include <algorithm>
+using namespace std;
 
-// Function to process a list of strings, removing all occurrences of three consecutive backticks from each string
-std::vector<std::string> removeTripleBackticks(const std::vector<std::string>& stringList) {
-    std::vector<std::string> processedList;
+vector<string> remove_triple_backticks(vector<string>& string_list) {
+    vector<string> result;
 
-    for (const auto& s : stringList) {
-        std::string processedString = s;
-        // Replace occurrences of '
+    for(auto str : string_list) {
+        string temp = "";
+
+        for(size_t i=0; i<str.size()-2; i++){
+            if(str[i]!='`' || str[i+1]!='`' || str[i+2]!='`') {
+                temp += str[i];
+            } else {
+                i += 2;
+            }
+        }
+
+        // Append remaining characters
+        if(str.size()>2){
+            temp += str.substr(str.size()-2);
+        }
+        result.push_back(temp);
+    }
+
+    return result;
+}

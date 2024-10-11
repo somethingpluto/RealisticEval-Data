@@ -1,12 +1,16 @@
-from typing import List
+#include <iostream>
+#include <vector>
+#include <algorithm>
 
-
-def min_removals_to_make_unique(nums: List[int]) -> int:
-    numbers = []
-    minimum_distinct = 0
-    for number in nums:
-        if number in numbers:
-            minimum_distinct += 1
-            numbers.remove(number)
-        numbers.append(number)
-    return minimum_distinct
+int minRemovalsToMakeUnique(std::vector<int> nums) {
+    std::sort(nums.begin(), nums.end());
+    int count = 0;
+    for(int i = 1; i < nums.size(); ++i){
+        if(nums[i] <= nums[i-1]){
+            int diff = nums[i-1] - nums[i];
+            nums[i] += diff + 1;
+            count += diff + 1;
+        }
+    }
+    return count;
+}

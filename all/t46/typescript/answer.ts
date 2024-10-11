@@ -1,24 +1,19 @@
-class TreeNode {
+interface TreeNode {
     value: number;
-    left: TreeNode | null;
-    right: TreeNode | null;
-
-    constructor(value = 0, left: TreeNode | null = null, right: TreeNode | null = null) {
-        this.value = value;
-        this.left = left;
-        this.right = right;
-    }
+    left?: TreeNode;
+    right?: TreeNode;
 }
 
+// Define the BinaryTree class
 class BinaryTree {
-    root: TreeNode | null;
+    private root?: TreeNode;
 
-    constructor(root: TreeNode | null = null) {
+    constructor(root?: TreeNode) {
         this.root = root;
     }
 
-    preorderTraversal(node: TreeNode | null, result: number[] = []): number[] {
-        /** Recursive Preorder Traversal */
+    // Pre-order traversal method
+    public preorderTraversal(node: TreeNode | undefined, result: number[] = []): number[] {
         if (node) {
             result.push(node.value);
             this.preorderTraversal(node.left, result);
@@ -27,8 +22,8 @@ class BinaryTree {
         return result;
     }
 
-    inorderTraversal(node: TreeNode | null, result: number[] = []): number[] {
-        /** Recursive Inorder Traversal */
+    // In-order traversal method
+    public inorderTraversal(node: TreeNode | undefined, result: number[] = []): number[] {
         if (node) {
             this.inorderTraversal(node.left, result);
             result.push(node.value);
@@ -37,76 +32,13 @@ class BinaryTree {
         return result;
     }
 
-    postorderTraversal(node: TreeNode | null, result: number[] = []): number[] {
-        /** Recursive Postorder Traversal */
+    // Post-order traversal method
+    public postorderTraversal(node: TreeNode | undefined, result: number[] = []): number[] {
         if (node) {
             this.postorderTraversal(node.left, result);
             this.postorderTraversal(node.right, result);
             result.push(node.value);
         }
-        return result;
-    }
-
-    iterativePreorder(): number[] {
-        /** Iterative Preorder Traversal */
-        if (!this.root) {
-            return [];
-        }
-        
-        const stack: (TreeNode | null)[] = [this.root];
-        const result: number[] = [];
-        
-        while (stack.length) {
-            const node = stack.pop()!;
-            if (node) {
-                result.push(node.value);
-                stack.push(node.right);
-                stack.push(node.left);
-            }
-        }
-        
-        return result;
-    }
-
-    iterativeInorder(): number[] {
-        /** Iterative Inorder Traversal */
-        const stack: TreeNode[] = [];
-        const result: number[] = [];
-        let current: TreeNode | null = this.root;
-
-        while (stack.length || current) {
-            while (current) {
-                stack.push(current);
-                current = current.left;
-            }
-            current = stack.pop()!;
-            result.push(current.value);
-            current = current.right;
-        }
-
-        return result;
-    }
-
-    iterativePostorder(): number[] {
-        /** Iterative Postorder Traversal */
-        if (!this.root) {
-            return [];
-        }
-        
-        const stack: TreeNode[] = [this.root];
-        const result: number[] = [];
-        
-        while (stack.length) {
-            const node = stack.pop()!;
-            result.unshift(node.value);
-            if (node.left) {
-                stack.push(node.left);
-            }
-            if (node.right) {
-                stack.push(node.right);
-            }
-        }
-        
         return result;
     }
 }

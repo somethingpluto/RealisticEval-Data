@@ -40,4 +40,3 @@ optional<Point> get_line_segment_intersection(const Segment &seg1, const Segment
     }
 
     return nullopt;
-}
