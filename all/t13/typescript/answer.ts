@@ -1,14 +1,4 @@
 function parseMarkdownTable(mdTable: string): Array<[string, ...string[]]> {
-    /**
-     * Parses a Markdown formatted table into a list of tuples, each tuple representing a row.
-     *
-     * Args:
-     *     mdTable (string): A string representing a Markdown table.
-     *
-     * Returns:
-     *     Array of tuples: An array where each tuple represents a row in the table.
-     */
-
     // Split the input string into lines and strip whitespace
     const lines = mdTable.trim().split('\n');
 

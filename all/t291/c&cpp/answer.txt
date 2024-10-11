@@ -1,59 +1,62 @@
-Sure! Below is the equivalent C++ code for the Python function `prepend_to_each_line`. This function reads the contents of a file, prepends a specified prefix to each line, and then writes the modified content back to the file.
+Certainly! Below is the equivalent C++ code for the given Python function. This code appends the specified string to the beginning of each line in a file:
 
 ```cpp
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <filesystem>
 
-void prependToEachLine(const std::string& filePath, const std::string& prefix) {
-    // Open the input file
-    std::ifstream inFile(filePath);
-    if (!inFile.is_open()) {
-        std::cerr << "Error opening file: " << filePath << std::endl;
+namespace fs = std::filesystem;
+
+void prepend_to_each_line(const std::string& file_path, const std::string& prefix) {
+    /**
+     * Appends the specified string to the beginning of each line of the file.
+     *
+     * Args:
+     * file_path (std::string): Path to the file whose lines will be modified.
+     * prefix (std::string): String to append to the beginning of each line.
+     */
+    std::string temp_file_path = file_path + ".tmp";
+
+    std::ifstream file(file_path);
+    std::ofstream temp_file(temp_file_path);
+
+    if (!file.is_open() || !temp_file.is_open()) {
+        std::cerr << "Error opening files." << std::endl;
         return;
     }
 
-    // Read the entire content of the file into a string
-    std::string content((std::istreambuf_iterator<char>(inFile)), std::istreambuf_iterator<char>());
-    inFile.close();
-
-    // Prepend the prefix to each line
-    size_t pos = 0;
-    while ((pos = content.find('\n', pos)) != std::string::npos) {
-        content.insert(pos, prefix);
-        pos += prefix.length() + 1; // Move past the newline character
+    std::string line;
+    while (std::getline(file, line)) {
+        temp_file << prefix << line << std::endl;
     }
 
-    // Open the output file in write mode
-    std::ofstream outFile(filePath);
-    if (!outFile.is_open()) {
-        std::cerr << "Error opening file for writing: " << filePath << std::endl;
-        return;
-    }
+    file.close();
+    temp_file.close();
 
-    // Write the modified content back to the file
-    outFile << content;
-    outFile.close();
+    // Replace the original file with the modified file
+    fs::replace(temp_file_path, file_path);
+
+    // Remove the temporary file if the replacement fails
+    if (fs::exists(temp_file_path)) {
+        fs::remove(temp_file_path);
+    }
 }
 
 int main() {
-    std::string filePath = "example.txt"; // Replace with your file path
-    std::string prefix = "Prefix_"; // Replace with your prefix
-
-    prependToEachLine(filePath, prefix);
-
+    std::string file_path = "example.txt";
+    std::string prefix = "Prefix: ";
+    prepend_to_each_line(file_path, prefix);
     return 0;
 }
 ```
 
 ### Explanation:
-1. **Reading the File**: The content of the file is read into a single string using an `ifstream`.
-2. **Prepending Prefix**: A loop iterates through the string to find each newline character (`\n`) and inserts the prefix before it.
-3. **Writing Back to File**: The modified string is written back to the same file using an `ofstream`.
+1. **File Handling**: The code uses `std::ifstream` and `std::ofstream` to read from and write to files, respectively.
+2. **Temporary File**: A temporary file is created by appending `.tmp` to the original file path.
+3. **Reading Lines**: Each line is read using `std::getline`.
+4. **Writing Lines**: Each line is written to the temporary file with the prefix added at the beginning.
+5. **File Replacement**: The `std::filesystem::replace` function is used to replace the original file with the temporary file.
+6. **Error Handling**: Error handling checks if files are opened successfully and removes the temporary file if the replacement fails.
 
-### Notes:
-- Ensure that the file exists at the specified path before running the program.
-- The file is opened twice: once for reading and once for writing.
-- Error handling is included to check if the files open successfully.
-
-This C++ code should work similarly to the original Python function, appending the specified prefix to each line of the file.
+This code ensures that the functionality, logic, and structure remain consistent with the original Python code while adapting to C++ syntax and features.

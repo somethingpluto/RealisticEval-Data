@@ -1,42 +1,70 @@
-Here's how you could write that Python function in C and C++. The C version assumes that the input shape array has been allocated with enough space beforehand:
-
-```c
-#include <stdio.h>
-#include <stdlib.h>
-
-void decompose(int n, int *shape, int ndim, int *result) {
-    if (n < 0 || n >= 1) { // Assuming the upper bound is 1 for simplicity.
-        printf("Error: Index out of bounds.\n");
-        exit(1);
-    }
-    
-    int size = 1;
-    for (int i = 0; i < ndim; ++i) {
-        result[i] = n / size % shape[i];
-        size *= shape[i];
-    }
-}
-```
-
-And here is an equivalent C++ function:
+Certainly! Below is the equivalent C++ code for the provided Python function. The code maintains the same functionality, including error handling and the decomposition of a flat index into a multidimensional index based on the given shape.
 
 ```cpp
 #include <iostream>
 #include <vector>
+#include <stdexcept>
 
+// Function to decompose a flat index into a multidimensional index based on the given shape
 std::vector<int> decompose(int n, const std::vector<int>& shape) {
-    if (n < 0 || n >= 1) { // Assuming the upper bound is 1 for simplicity.
-        std::cerr << "Error: Index out of bounds." << std::endl;
-        exit(1);
+    // Calculate the total size of the array
+    int size = 1;
+    for (int dim : shape) {
+        size *= dim;
     }
 
-    std::vector<int> result(shape.size());
-    int size = 1;
-    for (size_t i = 0; i < shape.size(); ++i) {
-        result[i] = n / size % shape[i];
-        size *= shape[i];
+    // Check if the index is within bounds
+    if (n < 0 || n >= size) {
+        throw std::out_of_range("Index out of bounds");
     }
+
+    // Decompose the index
+    std::vector<int> result;
+    for (auto it = shape.rbegin(); it != shape.rend(); ++it) {
+        result.push_back(n % *it);
+        n /= *it;  // Update n by integer division
+    }
+
+    // Reverse the result to match the original shape order
+    std::reverse(result.begin(), result.end());
+
     return result;
 }
+
+// Function to print the vector
+void printVector(const std::vector<int>& vec) {
+    std::cout << "(";
+    for (size_t i = 0; i < vec.size(); ++i) {
+        std::cout << vec[i];
+        if (i < vec.size() - 1) {
+            std::cout << ", ";
+        }
+    }
+    std::cout << ")" << std::endl;
+}
+
+// Main function to test the decompose function
+int main() {
+    try {
+        std::vector<int> shape = {3, 4, 2};
+        int n = 15;
+        auto result = decompose(n, shape);
+        printVector(result);  // Output should be (2, 1, 1)
+    } catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+    }
+
+    return 0;
+}
 ```
-In both versions, we're assuming that the upper bound for the flat index `n` is 1 for simplicity. You should replace these values with your actual upper bound. Also, error handling is quite basic in these examples, but it can be made more robust depending on your needs.
+
+### Explanation:
+1. **Function Definition**: The `decompose` function takes an integer `n` and a `std::vector<int>` `shape` as input parameters.
+2. **Calculate Total Size**: The total size of the array is calculated by multiplying all dimensions in the `shape` vector.
+3. **Check Bounds**: The function checks if the index `n` is within the bounds of the array defined by `shape`. If not, it throws a `std::out_of_range` exception.
+4. **Decomposition**: The index is decomposed using modulo and integer division operations, storing the results in a `std::vector<int>`.
+5. **Reverse Result**: The resulting vector is reversed to match the original shape order.
+6. **Print Function**: A helper function `printVector` is used to print the result in a readable format.
+7. **Main Function**: The `main` function demonstrates how to call the `decompose` function and handle any exceptions that may occur.
+
+This C++ code provides the same functionality as the Python code but adapts to C++ syntax and standard library features.

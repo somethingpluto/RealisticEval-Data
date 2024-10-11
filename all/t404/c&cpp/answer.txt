@@ -1,89 +1,94 @@
-Here's how you can translate your Python code into C and C++:
-
-C Code:
-
-```c
-#include <stdio.h>
-#define SIZE 100
-
-void multiply(int res[SIZE][SIZE], int mat[SIZE][SIZE]) {
-    int i, j, k;
-    int temp[SIZE][SIZE] = {0};
-
-    for(i=0; i<SIZE; i++) {
-        for(j=0; j<SIZE; j++) {
-            for(k=0; k<SIZE; k++) {
-                temp[i][j] += res[i][k]*mat[k][j];
-            }
-        }
-    }
-
-    for(i=0; i<SIZE; i++) {
-        for(j=0; j<SIZE; j++) {
-            res[i][j] = temp[i][j];
-        }
-    }
-}
-
-void power(int mat[SIZE][SIZE], int n, int res[SIZE][SIZE]) {
-    if(n == 0) {
-        // Identity matrix
-        for(int i=0; i<SIZE; i++) {
-            for(int j=0; j<SIZE; j++) {
-                res[i][j] = (i==j);
-            }
-        }
-    } else if(n % 2 == 0) {
-        // For even powers
-        power(mat, n/2, res);
-        multiply(res, res);
-    } else {
-        // For odd powers
-        power(mat, n-1, res);
-        multiply(res, mat);
-    }
-}
-```
-
-C++ Code:
+Here is the equivalent C++ code for the provided Python code:
 
 ```cpp
+#include <iostream>
+#include <vector>
+#include <stdexcept>
+
 using namespace std;
 
-const int SIZE = 100;
+vector<vector<int>> multiply_matrices(const vector<vector<int>>& A, const vector<vector<int>>& B) {
+    int rowsA = A.size();
+    int colsA = A[0].size();
+    int colsB = B[0].size();
 
-void multiply(vector<vector<int>>& res, const vector<vector<int>>& mat) {
-    vector<vector<int>> temp(SIZE, vector<int>(SIZE));
+    vector<vector<int>> result(rowsA, vector<int>(colsB, 0));
 
-    for(int i=0; i<SIZE; i++) {
-        for(int j=0; j<SIZE; j++) {
-            for(int k=0; k<SIZE; k++) {
-                temp[i][j] += res[i][k]*mat[k][j];
+    for (int i = 0; i < rowsA; ++i) {
+        for (int j = 0; j < colsB; ++j) {
+            for (int k = 0; k < colsA; ++k) {
+                result[i][j] += A[i][k] * B[k][j];
             }
         }
     }
 
-    res = temp;
+    return result;
 }
 
-void power(const vector<vector<int>>& mat, int n, vector<vector<int>>& res) {
-    if(n == 0) {
-        // Identity matrix
-        for(int i=0; i<SIZE; i++) {
-            for(int j=0; j<SIZE; j++) {
-                res[i][j] = (i==j);
-            }
-        }
-    } else if(n % 2 == 0) {
-        // For even powers
-        power(mat, n/2, res);
-        multiply(res, res);
-    } else {
-        // For odd powers
-        power(mat, n-1, res);
-        multiply(res, mat);
+vector<vector<int>> power(const vector<vector<int>>& matrix, int n) {
+    if (n < 0) {
+        throw invalid_argument("The exponent n must be a non-negative integer.");
     }
+
+    int size = matrix.size();
+
+    // Identity matrix of the same size as the input matrix
+    vector<vector<int>> result(size, vector<int>(size, 0));
+    for (int i = 0; i < size; ++i) {
+        result[i][i] = 1;
+    }
+
+    vector<vector<int>> base = matrix;
+
+    while (n > 0) {
+        if (n % 2 == 1) {
+            result = multiply_matrices(result, base);
+        }
+        base = multiply_matrices(base, base);
+        n /= 2;
+    }
+
+    return result;
+}
+
+int main() {
+    // Example usage
+    vector<vector<int>> matrix = {{1, 2}, {3, 4}};
+    int n = 2;
+
+    try {
+        vector<vector<int>> result = power(matrix, n);
+        for (const auto& row : result) {
+            for (int val : row) {
+                cout << val << " ";
+            }
+            cout << endl;
+        }
+    } catch (const exception& e) {
+        cerr << "Error: " << e.what() << endl;
+    }
+
+    return 0;
 }
 ```
 
-Note that both codes assume that the input matrix `mat` and the result matrix `res` have dimensions `SIZE x SIZE`. Adjust the `SIZE` constant according to your needs. Also note that in C++, we use `vector<vector<int>>` instead of `List[List[int]]`.
+### Explanation:
+1. **Function Definitions**:
+   - `multiply_matrices`: This function multiplies two matrices `A` and `B` and returns the result.
+   - `power`: This function computes the `n`-th power of a matrix using the fast exponentiation method.
+
+2. **Error Handling**:
+   - In the `power` function, if `n` is negative, it throws a `std::invalid_argument`.
+   - No specific check is needed for the type of `n` since it is always an `int` in C++.
+
+3. **Identity Matrix Creation**:
+   - An identity matrix of the same size as the input matrix is created using nested loops.
+
+4. **Fast Exponentiation**:
+   - The fast exponentiation algorithm is implemented using a loop that repeatedly squares the base matrix and multiplies it with the result matrix when `n` is odd.
+
+5. **Example Usage**:
+   - In the `main` function, an example matrix and exponent are used to demonstrate the functionality of the `power` function.
+   - Error handling is included to catch and print any exceptions thrown during execution.
+
+This code maintains the functionality and logic of the original Python code while adhering to C++ syntax and features.

@@ -41,19 +41,3 @@ optional<Point> get_line_segment_intersection(const Segment &seg1, const Segment
 
     return nullopt;
 }
-
-int main() {
-    Segment seg1 = {{0.0, 0.0}, {1.0, 1.0}};
-    Segment seg2 = {{0.0, 1.0}, {1.0, 0.0}};
-
-    auto intersection = get_line_segment_intersection(seg1, seg2);
-
-    if (intersection.has_value()) {
-        auto [x, y] = intersection.value();
-        cout << "Intersection Point: (" << x << ", " << y << ")" << endl;
-    } else {
-        cout << "No intersection." << endl;
-    }
-
-    return 0;
-}

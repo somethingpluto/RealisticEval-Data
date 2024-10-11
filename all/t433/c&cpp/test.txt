@@ -1,90 +1,98 @@
-To convert the Python unittest test class to a C++ Catch2 test case, you first need to define the function `extract_paragraphs_and_lines` in C++. Then, you can create a Catch2 test case to verify its functionality. Below is an example of how you might do this:
+To convert the provided Python function into a C++ test class using Catch2, we need to first define the function `extract_paragraphs_and_lines` in C++. Then, we can write the test cases using Catch2 assertions. Here’s how you can do it:
 
-### Step 1: Define the Function in C++
+1. Define the function `extract_paragraphs_and_lines` in C++.
+2. Write the test cases using Catch2.
 
-First, let's define the `extract_paragraphs_and_lines` function in C++. We'll assume it returns a `std::map<std::string, std::vector<std::string>>`.
+Here’s the complete C++ code using Catch2:
 
 ```cpp
-#include <iostream>
-#include <sstream>
+#include <catch2/catch_test_macros.hpp>
+#include <string>
 #include <vector>
 #include <map>
-#include <string>
 
+// Function to extract paragraphs and lines from the given text.
 std::map<std::string, std::vector<std::string>> extract_paragraphs_and_lines(const std::string& text) {
     std::map<std::string, std::vector<std::string>> result;
+    std::vector<std::string> paragraphs;
+    std::vector<std::string> lines;
+
     std::istringstream iss(text);
     std::string line;
-
-    std::string currentParagraph;
-    while (std::getline(iss, line)) {
-        if (!line.empty()) {
-            currentParagraph += line + "\n";
-        } else {
-            if (!currentParagraph.empty()) {
-                result["paragraphs"].push_back(currentParagraph);
-                result["lines"].insert(result["lines"].end(), 
-                                      currentParagraph.begin(),
-                                      currentParagraph.end() - 1); // Exclude the last newline character
-                currentParagraph.clear();
+    std::string paragraph;
+    while (getline(iss, line)) {
+        if (line.empty()) {
+            // End of a paragraph
+            if (!paragraph.empty()) {
+                paragraphs.push_back(paragraph);
+                paragraph.clear();
             }
+        } else {
+            if (paragraph.empty()) {
+                paragraph = line;
+            } else {
+                paragraph += "\n" + line;
+            }
+            lines.push_back(line);
         }
     }
-
-    if (!currentParagraph.empty()) {
-        result["paragraphs"].push_back(currentParagraph);
-        result["lines"].insert(result["lines"].end(), 
-                              currentParagraph.begin(),
-                              currentParagraph.end() - 1); // Exclude the last newline character
+    if (!paragraph.empty()) {
+        paragraphs.push_back(paragraph);
     }
 
+    result["paragraphs"] = paragraphs;
+    result["lines"] = lines;
     return result;
 }
+
+TEST_CASE("Test extract_paragraphs_and_lines") {
+    SECTION("Empty text") {
+        auto result = extract_paragraphs_and_lines("");
+        REQUIRE(result["paragraphs"].empty());
+        REQUIRE(result["lines"].empty());
+    }
+
+    SECTION("Single paragraph and single line") {
+        auto result = extract_paragraphs_and_lines("First paragraph.");
+        REQUIRE(result["paragraphs"].size() == 1);
+        REQUIRE(result["paragraphs"][0] == "First paragraph.");
+        REQUIRE(result["lines"].size() == 1);
+        REQUIRE(result["lines"][0] == "First paragraph.");
+    }
+
+    SECTION("Multiple paragraphs and multiple lines") {
+        auto result = extract_paragraphs_and_lines("First paragraph.\nThis is the second line.\n\nSecond paragraph.\nAnother line.");
+        REQUIRE(result["paragraphs"].size() == 2);
+        REQUIRE(result["paragraphs"][0] == "First paragraph.\nThis is the second line.");
+        REQUIRE(result["paragraphs"][1] == "Second paragraph.\nAnother line.");
+        REQUIRE(result["lines"].size() == 4);
+        REQUIRE(result["lines"][0] == "First paragraph.");
+        REQUIRE(result["lines"][1] == "This is the second line.");
+        REQUIRE(result["lines"][2] == "Second paragraph.");
+        REQUIRE(result["lines"][3] == "Another line.");
+    }
+
+    SECTION("Single empty paragraph") {
+        auto result = extract_paragraphs_and_lines("\n");
+        REQUIRE(result["paragraphs"].empty());
+        REQUIRE(result["lines"].size() == 0);
+    }
+
+    SECTION("Multiple empty paragraphs") {
+        auto result = extract_paragraphs_and_lines("\n\n\n");
+        REQUIRE(result["paragraphs"].empty());
+        REQUIRE(result["lines"].empty());
+    }
+}
 ```
 
-### Step 2: Create a Catch2 Test Case
+### Explanation:
+1. **Function Definition**: The `extract_paragraphs_and_lines` function takes a string as input and returns a map containing two vectors: one for paragraphs and one for lines.
+2. **Test Cases**:
+   - **Empty Text**: Tests the function with an empty string.
+   - **Single Paragraph and Single Line**: Tests the function with a single paragraph and a single line.
+   - **Multiple Paragraphs and Multiple Lines**: Tests the function with multiple paragraphs and multiple lines.
+   - **Single Empty Paragraph**: Tests the function with a single empty paragraph.
+   - **Multiple Empty Paragraphs**: Tests the function with multiple empty paragraphs.
 
-Next, we'll create a Catch2 test case to verify the functionality of the `extract_paragraphs_and_lines` function.
-
-```cpp
-#define CATCH_CONFIG_MAIN
-#include "catch.hpp"
-
-TEST_CASE("Extract Paragraphs and Lines", "[extract]") {
-    std::map<std::string, std::vector<std::string>> result = extract_paragraphs_and_lines(
-        "First paragraph.\n"
-        "This is the second line.\n\n"
-        "Second paragraph.\n"
-        "Another line."
-    );
-
-    REQUIRE(result["paragraphs"].size() == 2);
-    REQUIRE(result["paragraphs"][0] == "First paragraph.\nThis is the second line.\n");
-    REQUIRE(result["paragraphs"][1] == "Second paragraph.\nAnother line.\n");
-
-    REQUIRE(result["lines"].size() == 7);
-    REQUIRE(result["lines"][0] == 'F');
-    REQUIRE(result["lines"][1] == 'i');
-    REQUIRE(result["lines"][2] == 'r');
-    REQUIRE(result["lines"][3] == 's');
-    REQUIRE(result["lines"][4] == 't');
-    REQUIRE(result["lines"][5] == ' ');
-    REQUIRE(result["lines"][6] == 'p');
-}
-
-int main(int argc, char *argv[]) {
-    return Catch::Session().run(argc, argv);
-}
-```
-
-### Explanation
-
-1. **Function Definition**: The `extract_paragraphs_and_lines` function reads the input string line by line and constructs paragraphs based on empty lines. It stores the paragraphs and lines in a `std::map`.
-
-2. **Catch2 Test Case**:
-   - `TEST_CASE`: Defines a test case named "Extract Paragraphs and Lines".
-   - `REQUIRE`: Checks that the conditions are met. If any condition fails, the test case will fail.
-
-3. **Main Function**: The `main` function initializes the Catch2 session and runs the tests.
-
-This setup ensures that your C++ code behaves similarly to the original Python unittest code using Catch2 for testing.
+This conversion preserves the functionality and logic of the original Python test cases using Catch2 assertions.

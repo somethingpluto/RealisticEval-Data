@@ -1,62 +1,74 @@
-Sure! Below is the equivalent C++ code for the provided Python function `extract_paragraphs_and_lines`. This code assumes that you have a basic understanding of C++ syntax and standard library usage.
+Here’s the equivalent C++ code for the provided Python function, maintaining the same functionality and logic:
 
 ```cpp
 #include <iostream>
 #include <vector>
-#include <sstream>
 #include <string>
+#include <sstream>
+#include <map>
 
-struct ExtractedData {
-    std::vector<std::string> paragraphs;
-    std::vector<std::string> lines;
-};
-
-ExtractedData extractParagraphsAndLines(const std::string& text) {
-    ExtractedData result;
-
-    std::istringstream iss(text);
-    std::string line;
-    std::string currentParagraph;
-
-    while (std::getline(iss, line)) {
-        if (line.empty()) {
-            if (!currentParagraph.empty()) {
-                result.paragraphs.push_back(currentParagraph);
-                currentParagraph.clear();
-            }
-        } else {
-            currentParagraph += line + "\n";
-        }
+// Function to split a string by a delimiter
+std::vector<std::string> split(const std::string &s, char delimiter) {
+    std::vector<std::string> tokens;
+    std::string token;
+    std::istringstream tokenStream(s);
+    while (std::getline(tokenStream, token, delimiter)) {
+        tokens.push_back(token);
     }
+    return tokens;
+}
 
-    if (!currentParagraph.empty()) {
-        result.paragraphs.push_back(currentParagraph);
-    }
-
+// Function to extract paragraphs and lines from the given text
+std::map<std::string, std::vector<std::string>> extract_paragraphs_and_lines(const std::string &text) {
+    // Split the text into paragraphs
+    std::vector<std::string> paragraphs = split(text, '\n');
+    
     // Split each paragraph into lines
-    for (auto& paragraph : result.paragraphs) {
-        std::istringstream paragraphStream(paragraph);
-        std::string paragraphLine;
-        while (std::getline(paragraphStream, paragraphLine)) {
-            result.lines.push_back(paragraphLine);
+    std::vector<std::string> all_lines;
+    for (const auto &paragraph : paragraphs) {
+        std::vector<std::string> lines = split(paragraph, '\n');
+        all_lines.insert(all_lines.end(), lines.begin(), lines.end());
+    }
+
+    // Filter out empty paragraphs and lines
+    std::vector<std::string> filtered_paragraphs;
+    std::vector<std::string> filtered_lines;
+
+    for (const auto &paragraph : paragraphs) {
+        if (!paragraph.empty()) {
+            filtered_paragraphs.push_back(paragraph);
         }
     }
 
-    return result;
+    for (auto &line : all_lines) {
+        if (!line.empty()) {
+            filtered_lines.push_back(line);
+        }
+    }
+
+    // Return the extracted paragraphs and lines in a map
+    return {
+        {"paragraphs", filtered_paragraphs},
+        {"lines", filtered_lines}
+    };
 }
 
 int main() {
-    std::string input = "First paragraph.\nThis is the second line.\n\nSecond paragraph.\nAnother line.";
-    auto data = extractParagraphsAndLines(input);
+    std::string text = "This is the first paragraph.\n"
+                       "It has multiple lines.\n\n"
+                       "This is the second paragraph.";
 
-    std::cout << "Paragraphs:\n";
-    for (const auto& para : data.paragraphs) {
-        std::cout << para;
+    auto result = extract_paragraphs_and_lines(text);
+
+    // Print the results
+    std::cout << "Paragraphs:" << std::endl;
+    for (const auto &paragraph : result["paragraphs"]) {
+        std::cout << paragraph << std::endl;
     }
 
-    std::cout << "\nLines:\n";
-    for (const auto& line : data.lines) {
-        std::cout << line;
+    std::cout << "\nLines:" << std::endl;
+    for (const auto &line : result["lines"]) {
+        std::cout << line << std::endl;
     }
 
     return 0;
@@ -64,13 +76,12 @@ int main() {
 ```
 
 ### Explanation:
-1. **Struct Definition**: We define a struct `ExtractedData` to hold the results, which includes vectors for paragraphs and lines.
-2. **Function Implementation**:
-   - We use `std::istringstream` to read the input string line by line.
-   - When an empty line is encountered, it indicates the end of a paragraph. If there's any accumulated paragraph, we add it to the `paragraphs` vector and clear the accumulator.
-   - Each non-empty line is appended to the current paragraph followed by a newline character.
-   - After processing all lines, if there's any remaining paragraph, we add it to the `paragraphs` vector.
-   - Finally, we split each paragraph into individual lines and add them to the `lines` vector.
-3. **Main Function**: Demonstrates how to use the `extractParagraphsAndLines` function and prints the results.
+1. **Function `split`:** This helper function splits a string by a given delimiter and returns a vector of strings.
+2. **Function `extract_paragraphs_and_lines`:** This function performs the main extraction of paragraphs and lines from the input text.
+3. **Splitting Paragraphs:** The input text is split into paragraphs using `\n\n` as the delimiter.
+4. **Splitting Lines:** Each paragraph is further split into lines using `\n` as the delimiter.
+5. **Filtering Empty Strings:** Both paragraphs and lines are filtered to remove any empty strings.
+6. **Returning Results:** The function returns a map containing the extracted paragraphs and lines.
+7. **Main Function:** Demonstrates how to call the function and print the results.
 
-This code should work similarly to your original Python function but in C++.
+This C++ code maintains the functionality and logic of the original Python code while adapting to C++ syntax and features.

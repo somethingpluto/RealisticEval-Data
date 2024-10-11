@@ -1,60 +1,100 @@
-Here is a basic implementation in C++ that uses the `fstream` library to read the file and parse its contents:
+Sure! Here’s the equivalent C++ code for the provided Python script. This version includes error handling, file I/O, and regular expression matching using the C++ standard library.
 
-```c++
+```cpp
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <string>
 #include <vector>
+#include <map>
+#include <regex>
 
-using namespace std;
+// Function to extract the title, author, and year from a BibTeX file.
+std::vector<std::map<std::string, std::string>> extract_bib_info(const std::string& bib_file) {
+    std::vector<std::map<std::string, std::string>> articles;
 
-struct Article {
-    string title;
-    vector<string> authors;
-    int year;
-};
+    // Regular expressions to match title, author, and year
+    std::regex title_pattern(R"(title\s*=\s*{([^}]*)})", std::regex_constants::icase);
+    std::regex author_pattern(R"(author\s*=\s*{([^}]*)})", std::regex_constants::icase);
+    std::regex year_pattern(R"(year\s*=\s*{([^}]*)})", std::regex_constants::icase);
 
-Article extractBibInfo(string bibFile) {
-    ifstream file(bibFile);
-    if (!file.is_open()) {
-        cerr << "Unable to open file";
-        exit(1); 
+    try {
+        std::ifstream file(bib_file);
+        if (!file.is_open()) {
+            throw std::runtime_error("The file '" + bib_file + "' was not found.");
+        }
+
+        std::stringstream buffer;
+        buffer << file.rdbuf();
+        std::string content = buffer.str();
+
+        // Split the content into individual entries based on '@'
+        std::istringstream iss(content);
+        std::string line;
+        std::string entry;
+        while (std::getline(iss, line)) {
+            if (line.find('@') != std::string::npos) {
+                if (!entry.empty()) {
+                    articles.push_back(process_entry(entry));
+                }
+                entry.clear();
+            }
+            entry += line + " ";
+        }
+        if (!entry.empty()) {
+            articles.push_back(process_entry(entry));
+        }
+
+    } catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
     }
 
-    string line;
-    Article article;
-    while (getline(file, line)) {
-        if (line.find("@article") != string::npos) {
-            stringstream ss(line);
-            string token;
-            getline(ss, token, '{');
-            getline(ss, token, '}');
-            article.title = token;
-        }
-        else if (line.find("author") != string::npos) {
-            stringstream ss(line);
-            string token;
-            getline(ss, token, '=');
-            getline(ss, token, ','); // This assumes there's only one author
-            article.authors.push_back(token.substr(1)); // Remove leading space
-        }
-        else if (line.find("year") != string::npos) {
-            stringstream ss(line);
-            string token;
-            getline(ss, token, '=');
-            getline(ss, token, '}');
-            article.year = stoi(token);
-        }
+    return articles;
+}
+
+std::map<std::string, std::string> process_entry(const std::string& entry) {
+    std::map<std::string, std::string> article;
+    std::smatch match;
+
+    if (std::regex_search(entry, match, title_pattern)) {
+        article["title"] = match[1];
+    } else {
+        article["title"] = "";
     }
+
+    if (std::regex_search(entry, match, author_pattern)) {
+        article["author"] = match[1];
+    } else {
+        article["author"] = "";
+    }
+
+    if (std::regex_search(entry, match, year_pattern)) {
+        article["year"] = match[1];
+    } else {
+        article["year"] = "";
+    }
+
     return article;
+}
+
+int main() {
+    std::string bib_file = "example.bib";
+    auto articles = extract_bib_info(bib_file);
+
+    for (const auto& article : articles) {
+        std::cout << "Title: " << article.at("title") << std::endl;
+        std::cout << "Author: " << article.at("author") << std::endl;
+        std::cout << "Year: " << article.at("year") << std::endl;
+        std::cout << "---------------------" << std::endl;
+    }
+
+    return 0;
 }
 ```
 
-This function reads a single `.bib` file at a time and returns an `Article` struct which contains the parsed information about the article. 
+### Explanation:
 
-Please note that this is a very simple implementation and doesn't handle all possible cases of a `.bib` file. It also doesn't check if the input file exists or if it's a valid `.bib` file before trying to open it. You might want to add these checks in your actual program.
-
-Also, C++ does not have built-in support for JSON or dictionary data types like Python, so you would need to implement those yourself or use an external library.
-
-For a more advanced version, consider using a parser generator like Bison/Flex or ANTLR to generate a parser for the BibTeX language. This would allow you to accurately parse complex `.bib` files and represent them as structured data in your program.
+1. **Regular Expressions**: The C++ code uses `std::regex` for pattern matching.
+2. **File I/O**: The C++ code uses `std::ifstream` to read the file and `std::stringstream` to store the file content.
+3. **Error Handling**: The code handles exceptions when opening the file.
+4. **Processing Entries**: The `process_entry` function extracts the title, author, and year from each entry.
+5. **Main Function**: The `main` function demonstrates how to use the `extract_bib_info` function and prints out the extracted information.

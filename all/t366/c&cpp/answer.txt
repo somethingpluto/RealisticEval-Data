@@ -1,149 +1,71 @@
-Sure, I can help you translate the Python code to C++ using the `libzip` library for handling `.docx` files and extracting their contents. Below is an example of how you might implement the `extract_text_from_word` function in C++:
+Certainly! Below is the equivalent C++ code for extracting text content from a Word document (.docx). To achieve this, we will use the `docx` library for C++, which can be installed via vcpkg or another package manager. We'll also include error handling and string manipulation similar to the Python version.
 
-### Prerequisites:
-1. Install `libzip` and `libxml2`.
-2. Ensure your development environment supports these libraries.
+First, make sure you have the necessary dependencies installed. For this example, we will assume you have the `docx` library available.
 
-### Example Code:
+Here's the C++ code:
 
 ```cpp
 #include <iostream>
 #include <fstream>
-#include <string>
+#include <sstream>
 #include <vector>
-#include <zlib.h>
-#include <libxml/parser.h>
+#include <string>
+#include <docx/Document.h> // Include the docx library
 
-std::string read_zip_entry(const std::string& zip_path, const std::string& entry_name) {
-    FILE* zip_file = fopen(zip_path.c_str(), "rb");
-    if (!zip_file) {
-        throw std::runtime_error("Failed to open zip file.");
-    }
-
-    // Seek to the start of the central directory
-    fseek(zip_file, -22, SEEK_END);
-    char end_of_central_dir[4];
-    fread(end_of_central_dir, 1, 4, zip_file);
-
-    uint16_t num_entries = ((uint16_t)end_of_central_dir[10] << 8) | end_of_central_dir[11];
-
-    for (int i = 0; i < num_entries; ++i) {
-        fseek(zip_file, -22 - i * 30, SEEK_END);
-        char local_header[30];
-        fread(local_header, 1, 30, zip_file);
-
-        uint16_t filename_length = ((uint16_t)local_header[26] << 8) | local_header[27];
-        uint32_t compressed_size = ((uint32_t)local_header[28] << 24) | ((uint32_t)local_header[29] << 16) |
-                                   ((uint32_t)local_header[30] << 8) | local_header[31];
-
-        char filename[filename_length + 1];
-        fread(filename, 1, filename_length, zip_file);
-        filename[filename_length] = '\0';
-
-        if (strcmp(filename, entry_name.c_str()) == 0) {
-            fseek(zip_file, 30 + filename_length, SEEK_CUR);
-
-            char compressed_data[compressed_size];
-            fread(compressed_data, 1, compressed_size, zip_file);
-
-            z_stream stream;
-            stream.zalloc = Z_NULL;
-            stream.zfree = Z_NULL;
-            stream.opaque = Z_NULL;
-            stream.avail_in = compressed_size;
-            stream.next_in = reinterpret_cast<Bytef*>(compressed_data);
-
-            if (inflateInit(&stream) != Z_OK) {
-                fclose(zip_file);
-                throw std::runtime_error("Failed to initialize zlib inflate.");
-            }
-
-            std::vector<char> decompressed_data(stream.total_out);
-            do {
-                stream.avail_out = decompressed_data.size();
-                stream.next_out = reinterpret_cast<Bytef*>(decompressed_data.data() + stream.total_out);
-                int ret = inflate(&stream, Z_FINISH);
-                if (ret != Z_STREAM_END && ret != Z_OK) {
-                    inflateEnd(&stream);
-                    fclose(zip_file);
-                    throw std::runtime_error("Failed to decompress data.");
-                }
-            } while (stream.avail_out == 0);
-
-            inflateEnd(&stream);
-            fclose(zip_file);
-
-            return std::string(decompressed_data.begin(), decompressed_data.end());
-        }
-    }
-
-    fclose(zip_file);
-    throw std::runtime_error("Entry not found in zip file.");
-}
-
-std::string extract_text_from_word(const std.xml::string& docx_file_path) {
+std::string extract_text_from_word(const std::string& docx_file_path) {
+    /**
+     * Extracts text content from a given Word file (.docx).
+     *
+     * Args:
+     *     docx_file_path (const std::string&): The path to the Word file.
+     *
+     * Returns:
+     *     std::string: The extracted text content.
+     */
     try {
-        xmlTextReaderPtr reader = xmlReaderForFile(docx_file_path.c_str(), NULL, XML_PARSE_NOENT);
-        if (!reader) {
-            throw std::runtime_error("Failed to create XML reader.");
+        // Open the Word document
+        docx::Document doc(docx_file_path);
+        
+        // Extract text from each paragraph in the document
+        std::vector<std::string> text_content;
+        for (const auto& para : doc.paragraphs()) {
+            text_content.push_back(para.text());
         }
 
-        bool found_body = false;
-        std::string text_content;
-
-        while (xmlTextReaderRead(reader)) {
-            int type = xmlTextReaderNodeType(reader);
-            if (type == XML_READER_TYPE_ELEMENT) {
-                const xmlChar* name = xmlTextReaderConstName(reader);
-                if (name && strcmp((const char*)name, "body") == 0) {
-                    found_body = true;
-                }
-            } else if (type == XML_READER_TYPE_TEXT) {
-                if (found_body) {
-                    const xmlChar* text = xmlTextReaderConstValue(reader);
-                    if (text) {
-                        text_content += std::string((const char*)text);
-                    }
-                }
+        // Join the paragraphs with newlines
+        std::ostringstream oss;
+        for (size_t i = 0; i < text_content.size(); ++i) {
+            if (i > 0) {
+                oss << '\n';
             }
+            oss << text_content[i];
         }
 
-        xmlFreeTextReader(reader);
-        return text_content;
+        return oss.str();
+
     } catch (const std::exception& e) {
-        std::cerr << "Error: " << e.what() << std::endl;
+        std::cerr << "An error occurred: " << e.what() << std::endl;
         return "";
     }
 }
 
-int main(int argc, char** argv) {
-    if (argc != 2) {
-        std::cerr << "Usage: " << argv[0] << " <path_to_docx_file>" << std::endl;
-        return 1;
+int main() {
+    std::string docx_file_path = "example.docx"; // Replace with your file path
+    std::string text = extract_text_from_word(docx_file_path);
+    if (!text.empty()) {
+        std::cout << text << std::endl;
     }
-
-    std::string docx_file_path = argv[1];
-    std::string text_content = extract_text_from_word(docx_file_path);
-
-    std::cout << "Extracted Text:" << std::endl;
-    std::cout << text_content << std::endl;
-
     return 0;
 }
 ```
 
 ### Explanation:
-1. **read_zip_entry**: This function reads a specific entry from a ZIP file and decompresses it using zlib.
-2. **extract_text_from_word**: This function extracts text content from a `.docx` file by reading the `word/document.xml` entry and parsing its content using libxml2.
-3. **main**: The main function handles command-line arguments and calls the extraction function.
+1. **Includes**: The required headers are included, including `<docx/Document.h>` for working with Word documents.
+2. **Function Definition**: The function `extract_text_from_word` takes a `std::string` parameter representing the file path.
+3. **Error Handling**: A `try-catch` block is used to handle exceptions.
+4. **Reading the Document**: The `docx::Document` class is used to open and read the Word document.
+5. **Extracting Text**: Each paragraph's text is extracted and stored in a `std::vector<std::string>`.
+6. **Joining Text**: An `std::ostringstream` is used to concatenate the paragraphs with newline characters.
+7. **Main Function**: Demonstrates calling the function and printing the result.
 
-### Compilation:
-To compile this code, you need to link against `libzip`, `libxml2`, and `zlib`. Here’s an example command using g++:
-
-```sh
-g++ -o extract_text_from_word extract_text_from_word.cpp -lzip -lxml2 -lz
-```
-
-Make sure to replace `extract_text_from_word.cpp` with the actual path to your source file.
-
-This should give you a basic implementation in C++. Note that error handling and edge cases may require further refinement based on your specific requirements.
+Make sure you have the `docx` library installed and properly linked in your project to compile and run this code successfully.

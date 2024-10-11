@@ -1,46 +1,84 @@
-Here is a possible implementation in C++:
+To convert the provided Python code into equivalent C++ code, we will need to handle file I/O, string manipulation, and vector usage. Below is the C++ version of the code:
 
-```c++
-#include <fstream>
+```cpp
 #include <iostream>
-#include <unordered_map>
+#include <fstream>
+#include <vector>
 #include <string>
+#include <map>
+#include <sstream>
 
-bool is_munodi_sequence(int n)
-{
-    while(n != 1)
-    {
-        if(n % 2 == 0)
-            n /= 2;
-        else
-            n = 3 * n + 1;
-    }
-    return true;
-}
-
-std::unordered_map<std::string, bool> check_sequences(const std::string &filename)
-{
+// Function to read sequences from a file and return them as a vector of vectors.
+std::vector<std::vector<int>> read_sequences_from_file(const std::string& filename) {
+    std::vector<std::vector<int>> sequences;
     std::ifstream file(filename);
-    std::unordered_map<std::string, bool> result;
-
-    if(!file.is_open())
-    {
-        std::cerr << "Error opening file" << std::endl;
-        return result;
+    if (!file.is_open()) {
+        std::cerr << "Error opening file: " << filename << std::endl;
+        return sequences;
     }
 
     std::string line;
-    while(std::getline(file, line))
-    {
-        int n = std::stoi(line);
-        result[line] = is_munodi_sequence(n);
+    while (std::getline(file, line)) {
+        std::istringstream iss(line);
+        std::vector<int> seq;
+        std::string number;
+        while (std::getline(iss, number, ',')) {
+            seq.push_back(std::stoi(number));
+        }
+        sequences.push_back(seq);
+    }
+    file.close();
+    return sequences;
+}
+
+// Function to check if the given sequence is a Munodi sequence.
+bool is_munodi_sequence(const std::vector<int>& sequence) {
+    if (sequence.size() < 2) {
+        return false;  // A sequence with less than 2 elements cannot be a Munodi sequence
     }
 
-    file.close();
-    return result;
+    int common_difference = sequence[1] - sequence[0];
+    for (size_t i = 2; i < sequence.size(); ++i) {
+        if (sequence[i] - sequence[i - 1] != common_difference) {
+            return false;  // Found a different difference, not a Munodi sequence
+        }
+    }
+    return true;  // All differences are the same
+}
+
+// Function to read sequences from a file and determine if each is a Munodi sequence.
+std::map<std::vector<int>, bool> check_sequences(const std::string& filename) {
+    std::vector<std::vector<int>> sequences = read_sequences_from_file(filename);
+    std::map<std::vector<int>, bool> results;
+    for (const auto& seq : sequences) {
+        results[seq] = is_munodi_sequence(seq);
+    }
+    return results;
+}
+
+int main() {
+    std::string filename = "sequences.txt";  // Example filename
+    auto results = check_sequences(filename);
+
+    for (const auto& result : results) {
+        std::cout << "Sequence: ";
+        for (int num : result.first) {
+            std::cout << num << " ";
+        }
+        std::cout << "is Munodi: " << (result.second ? "True" : "False") << std::endl;
+    }
+
+    return 0;
 }
 ```
 
-This C++ function reads the contents of the given file line by line, converting each line into an integer `n` and checking whether `n` is a Munodi sequence using the helper function `is_munodi_sequence`. It then stores the results in an unordered map, where the keys are the original lines from the file and the values are booleans indicating whether each sequence is a Munodi sequence.
+### Explanation:
+1. **File Handling**: The `read_sequences_from_file` function uses an `ifstream` to open and read the file line by line. Each line is split using a `std::istringstream`, which helps in parsing comma-separated values into integers.
 
-Note: This implementation assumes that all lines in the input file contain valid integers. If there might be non-integer lines, additional error handling would be required. Also, this implementation does not handle very large integers; if you need to handle larger integers, consider using a library like GMP or Boost.Multiprecision.
+2. **Munodi Sequence Check**: The `is_munodi_sequence` function checks if the sequence has at least two elements and then verifies if the differences between consecutive elements are constant.
+
+3. **Sequence Verification**: The `check_sequences` function reads the sequences from the file, calls `is_munodi_sequence` for each sequence, and stores the results in a map.
+
+4. **Main Function**: The `main` function demonstrates how to use these functions and prints the results for each sequence.
+
+This C++ code preserves the functionality and logic of the original Python code while adapting to the syntax and features of C++.

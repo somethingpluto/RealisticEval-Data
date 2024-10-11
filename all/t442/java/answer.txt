@@ -1,4 +1,4 @@
-Here's how you can translate your Python code into Java:
+Here's the equivalent Java code organized within the package `org.real.temp` and the class `Answer`, maintaining the functionality of the provided Python code:
 
 ```java
 package org.real.temp;
@@ -6,35 +6,64 @@ package org.real.temp;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class Answer {
 
     public static Object convertStringsToNumbers(Object data) {
-        if (data instanceof Map<?, ?>) {
-            return ((Map<?, ?>) data).entrySet().stream()
-                    .collect(Collectors.toMap(
-                            Map.Entry::getKey,
-                            entry -> convertStringsToNumbers(entry.getValue())
-                    ));
-        } else if (data instanceof List<?>) {
-            return ((List<?>) data).stream()
-                    .map(Answer::convertStringsToNumbers)
-                    .collect(Collectors.toList());
-        } else if (data instanceof String && ((String) data).matches("-?\\d+(\\.\\d+)?")) {
+        if (data instanceof Map) {
+            Map<?, ?> map = (Map<?, ?>) data;
+            Map<Object, Object> convertedMap = new HashMap<>();
+            for (Map.Entry<?, ?> entry : map.entrySet()) {
+                convertedMap.put(entry.getKey(), convertStringsToNumbers(entry.getValue()));
+            }
+            return convertedMap;
+        } else if (data instanceof List) {
+            List<?> list = (List<?>) data;
+            List<Object> convertedList = new ArrayList<>();
+            for (Object item : list) {
+                convertedList.add(convertStringsToNumbers(item));
+            }
+            return convertedList;
+        } else if (data instanceof String) {
+            String str = (String) data;
             try {
-                return Double.parseDouble((String) data);
+                // Try converting to float first, then to int if possible
+                if (str.contains(".")) {
+                    return Float.parseFloat(str);
+                } else {
+                    return Integer.parseInt(str);
+                }
             } catch (NumberFormatException e) {
-                return Integer.parseInt((String) data);
+                return str;  // Return original string if conversion fails
             }
         } else {
-            return data;
+            return data;  // Return data unchanged if it's not a string
         }
     }
 
+    public static void main(String[] args) {
+        // Example usage
+        Map<String, Object> data = new HashMap<>();
+        data.put("a", "100");
+        data.put("b", "200.5");
+        data.put("c", "not_a_number");
+        List<Object> list = new ArrayList<>();
+        list.add("300");
+        list.add("400.75");
+        list.add("still_not_a_number");
+        data.put("d", list);
+
+        System.out.println(convertStringsToNumbers(data));
+    }
 }
 ```
 
-This Java code does essentially the same thing as your Python function. It recursively traverses through the input `data` object, converting any string that represents a number to an appropriate numeric type (Integer or Double), and leaving other types unchanged.
+### Key Points:
+1. **Package Declaration**: The Java code starts with the package declaration `package org.real.temp;`.
+2. **Class Definition**: The class `Answer` contains the `convertStringsToNumbers` method.
+3. **Type Checking and Casting**: Java uses explicit type checking with `instanceof` followed by casting.
+4. **Handling Maps and Lists**: The method recursively processes maps and lists.
+5. **String Conversion**: Attempts to parse strings as `float` or `int`, falling back to the original string if parsing fails.
+6. **Example Usage**: A `main` method is included to demonstrate how to use the `convertStringsToNumbers` method.
 
-Please note that Java doesn't have a direct equivalent for Python's dynamic typing, so we use the `Object` type to represent any kind of value, and then check its actual type at runtime using `instanceof`. Also, because Java doesn't support dictionary comprehensions like Python, we use streams to achieve similar functionality.
+This Java code maintains the core functionality of the Python code while adhering to Java's syntax and best practices.

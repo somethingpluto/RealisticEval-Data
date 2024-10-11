@@ -1,73 +1,75 @@
-To convert the given Python unittest test class to a C++ test case using Catch2, we need to follow these steps:
-
-1. Install Catch2: You can install Catch2 via your package manager or download it from its GitHub repository.
-2. Write the equivalent C++ test case using Catch2 syntax.
-
-Here's how you can do it:
-
-### Step 1: Install Catch2
-
-If you're using `vcpkg`, you can install Catch2 with the following command:
-
-```sh
-vcpkg install catch2
-```
-
-If you prefer to download it manually, you can clone the repository and include it in your project.
-
-### Step 2: Write the C++ Test Case Using Catch2
-
-Below is an example of how you might write the test case for the `eight_queens` function using Catch2:
+To convert the provided Python unittest test class into an equivalent test class using Catch2 in C++, we need to create a similar setup for solving the Eight Queens problem and then write tests to verify its correctness. Below is the equivalent C++ code using the Catch2 testing framework.
 
 ```cpp
-#include <catch2/catch.hpp>
-#include <iostream>
+#include <catch2/catch_test_macros.hpp>
 #include <vector>
+#include <iostream>
 
-// Function to solve the Eight Queens problem
-void eight_queens() {
-    // Implementation goes here
+// Define the function to solve the Eight Queens problem
+bool isSafe(const std::vector<int>& board, int row, int col) {
+    // Check this row on left side
+    for (int i = 0; i < col; ++i)
+        if (board[i] == row || board[i] - i == row - col || board[i] + i == row + col)
+            return false;
+    return true;
 }
 
-TEST_CASE("Eight Queens Problem", "[eightQueens]") {
-    // Call the function to solve the Eight Queens problem
-    eight_queens();
+bool solveNQueens(std::vector<int>& board, int col) {
+    if (col >= 8) {
+        // A solution is found, print the configuration
+        for (int i = 0; i < 8; ++i) {
+            for (int j = 0; j < 8; ++j)
+                std::cout << (board[j] == i ? "Q " : ". ");
+            std::cout << "\n";
+        }
+        std::cout << "\n";
+        return true;
+    }
 
-    // Add assertions to check the expected behavior
-    // For example, if the function prints the board, you can capture the output
-    std::ostringstream oss;
-    std::streambuf* oldCout = std::cout.rdbuf(oss.rdbuf());
+    bool res = false;
+    for (int i = 0; i < 8; ++i) {
+        if (isSafe(board, i, col)) {
+            board[col] = i;
+            res = solveNQueens(board, col + 1) || res;
+        }
+    }
+    return res;
+}
 
-    // Call the function again to capture the output
-    eight_queens();
+void eightQueens() {
+    std::vector<int> board(8);
+    if (!solveNQueens(board, 0))
+        std::cout << "No solution\n";
+}
 
-    std::string output = oss.str();
-    std::cout.rdbuf(oldCout);
+TEST_CASE("Eight Queens Problem") {
+    SECTION("Solution Exists") {
+        std::ostringstream oss;
+        std::streambuf* prevcoutbuf = std::cout.rdbuf(oss.rdbuf());
+        
+        eightQueens();
+        
+        std::cout.rdbuf(prevcoutbuf); // Restore cout
+        
+        REQUIRE(oss.str().find("No solution") == std::string::npos);
+        // Additional checks can be added here to verify the printed solution
+    }
 
-    // Check if the output contains the expected board configuration
-    REQUIRE(output.find(". . Q . . . . .") != std::string::npos);
-    REQUIRE(output.find(". . . . Q . . .") != std::string::npos);
-    REQUIRE(output.find(". Q . . . . . .") != std::string::npos);
-    REQUIRE(output.find(". . . . . . . Q") != std::string::npos);
-    REQUIRE(output.find(". . . . . Q . .") != std::string::npos);
-    REQUIRE(output.find(". . . Q . . . .") != std::string::npos);
-    REQUIRE(output.find(". . . . . . Q .") != std::string::npos);
-    REQUIRE(output.find("Q . . . . . . .") != std::string::npos);
+    SECTION("No Solution for Invalid Configuration") {
+        // This section is not applicable since the eightQueens function always finds a valid solution
+        // or prints "No solution" if none exists. There's no invalid configuration check needed.
+    }
 }
 ```
 
-### Explanation
+### Explanation:
+1. **Function Definitions**:
+   - `isSafe`: Checks if placing a queen at a given position is safe.
+   - `solveNQueens`: Recursively solves the N-Queens problem.
+   - `eightQueens`: Calls `solveNQueens` and prints the solution or "No solution".
 
-1. **Include Catch2 Header**: The `#include <catch2/catch.hpp>` directive includes the Catch2 library.
-2. **Function Definition**: The `eight_queens` function is defined but left empty for now. You should implement the actual logic inside this function.
-3. **Test Case**: The `TEST_CASE` macro defines a test case named "Eight Queens Problem".
-4. **Capture Output**: We use `std::ostringstream` to capture the output that would normally go to `std::cout`. This allows us to check if the correct board configuration is printed.
-5. **Assertions**: The `REQUIRE` macro checks if the captured output contains specific strings representing parts of the board configuration.
+2. **Test Sections**:
+   - `Solution Exists`: Verifies that a solution is found by checking that "No solution" is not printed.
+   - `No Solution for Invalid Configuration`: This section is not directly applicable since the `eightQueens` function always finds a valid solution or prints "No solution". However, you can add additional checks if needed.
 
-Make sure to link against the Catch2 library when compiling your C++ code. If you're using `g++`, you can compile the test file like this:
-
-```sh
-g++ -std=c++17 -o test_eight_queens test_eight_queens.cpp -lcatch2
-```
-
-This will create an executable named `test_eight_queens` that you can run to execute the test case.
+This conversion ensures that the functionality and logic of the original Python test are preserved in C++ using Catch2.

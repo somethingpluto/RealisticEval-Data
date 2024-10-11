@@ -20,11 +20,3 @@ function calculateDistance(agent1, agent2, observations) {
     
     return distance;
 }
-
-// Example usage
-const observations = {
-    agent1: { x: 1, y: 2 },
-    agent2: { x: 4, y: 6 }
-};
-
-console.log(calculateDistance('agent1', 'agent2', observations)); // Output: 5

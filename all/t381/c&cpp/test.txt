@@ -1,36 +1,63 @@
-Certainly! Below is the equivalent C++ test case using Catch2 for the given Python `unittest` test class.
+To convert the provided Python function into a C++ test class using Catch2, we first need to define the function `extract_email_details` in C++. After that, we can write the corresponding test cases using Catch2's assertion mechanisms.
 
-```cpp
-#include <catch2/catch.hpp>
-#include <string>
+Here’s how you can do it:
 
-// Function to be tested
-std::pair<std::string, std::string> extract_email_details(const std::string& email) {
-    size_t at_pos = email.find('@');
-    if (at_pos != std::string::npos) {
-        return {email.substr(0, at_pos), email.substr(at_pos + 1)};
-    }
-    return {"", ""};
-}
+1. **Define the Function**:
+   ```cpp
+   #include <string>
+   #include <utility> // For std::pair
 
-TEST_CASE("Extract Email Details", "[extract_email_details]") {
-    // Test cases
-    REQUIRE(extract_email_details("xxx@gmail.com") == std::make_pair("xxx", "gmail.com"));
-    REQUIRE(extract_email_details("user@domain.co.uk") == std::make_pair("user", "domain.co.uk"));
-    REQUIRE(extract_email_details("noatsign.com") == std::make_pair("", ""));
-    REQUIRE(extract_email_details("@nodomain") == std::make_pair("", ""));
-    REQUIRE(extract_email_details("") == std::make_pair("", ""));
-}
-```
+   std::pair<std::string, std::string> extract_email_details(const std::string& email) {
+       size_t at_pos = email.find('@');
+       if (at_pos == std::string::npos) {
+           return std::make_pair("", "");
+       }
+       std::string username = email.substr(0, at_pos);
+       std::string domain = email.substr(at_pos + 1);
+       return std::make_pair(username, domain);
+   }
+   ```
+
+2. **Write the Test Class Using Catch2**:
+   ```cpp
+   #include "catch.hpp"
+
+   TEST_CASE("Extract Email Details", "[email]") {
+       SECTION("Valid email") {
+           auto result = extract_email_details("xxx@gmail.com");
+           REQUIRE(result.first == "xxx");
+           REQUIRE(result.second == "gmail.com");
+       }
+
+       SECTION("Email without @") {
+           auto result = extract_email_details("invalidemail");
+           REQUIRE(result.first.empty());
+           REQUIRE(result.second.empty());
+       }
+
+       SECTION("Email with multiple @") {
+           auto result = extract_email_details("xxx@invalid@.com");
+           REQUIRE(result.first == "xxx");
+           REQUIRE(result.second == "invalid@.com");
+       }
+
+       SECTION("Empty email") {
+           auto result = extract_email_details("");
+           REQUIRE(result.first.empty());
+           REQUIRE(result.second.empty());
+       }
+
+       SECTION("Email with leading/trailing spaces") {
+           auto result = extract_email_details(" xxx @ gmail . com ");
+           REQUIRE(result.first == "xxx");
+           REQUIRE(result.second == "gmail.com");
+       }
+   }
+   ```
 
 ### Explanation:
+- **Function Definition**: The function `extract_email_details` takes a string representing an email and uses `std::string::find` to locate the '@' character. It then extracts the username and domain parts accordingly.
+- **Test Class**: The `TEST_CASE` macro is used to define a test case named "Extract Email Details". Each `SECTION` represents a different scenario or condition to test the function against.
+- **Assertions**: `REQUIRE` is used to assert the expected outcomes of each section. If any of the assertions fail, the test will report the failure.
 
-- **Catch2 Setup**: Ensure you have Catch2 installed in your project. If not, you can download it from [Catch2 GitHub](https://github.com/catchorg/Catch2).
-  
-- **Function Definition**: The function `extract_email_details` is defined in C++. It takes a string `email` and returns a pair of strings containing the username and domain.
-
-- **Test Cases**:
-  - `REQUIRE`: This macro is used to assert that the function's output matches the expected result.
-  - Several test cases are provided to cover different scenarios, including valid email addresses, invalid email addresses, and edge cases like empty strings or missing '@' symbols.
-
-Make sure to include the Catch2 header file (`#include <catch2/catch.hpp>`) and link against the Catch2 library when compiling your test program.
+This setup ensures that the functionality and logic of the original Python unittest are preserved in the C++ version using Catch2.

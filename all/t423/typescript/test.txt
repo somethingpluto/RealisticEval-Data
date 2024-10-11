@@ -1,123 +1,65 @@
-Sure! Below is an example of how you can convert the given Python unittest test class to a TypeScript Jest test case:
-
-### Python Unittest Test Class
-
-```python
-import unittest
-
-def write_unique_line_to_file(filename: str, line_content: str):
-    """
-    Writes a line to a text file only if the line with the same content does not already exist.
-
-    Args:
-        filename (str): The name of the file to write to.
-        line_content (str): The content of the line to write.
-
-    Returns:
-        None
-    """
-    try:
-        with open(filename, 'r') as file:
-            lines = file.readlines()
-            if line_content in lines:
-                return
-    except FileNotFoundError:
-        pass
-    
-    with open(filename, 'a') as file:
-        file.write(line_content + '\n')
-
-class TestWriteUniqueLineToFile(unittest.TestCase):
-    def setUp(self):
-        self.filename = 'test.txt'
-    
-    def tearDown(self):
-        import os
-        try:
-            os.remove(self.filename)
-        except OSError:
-            pass
-    
-    def test_write_unique_line(self):
-        write_unique_line_to_file(self.filename, 'Hello, World!')
-        with open(self.filename, 'r') as file:
-            lines = file.readlines()
-            self.assertEqual(len(lines), 1)
-            self.assertEqual(lines[0].strip(), 'Hello, World!')
-
-    def test_do_not_write_duplicate_line(self):
-        write_unique_line_to_file(self.filename, 'Hello, World!')
-        write_unique_line_to_file(self.filename, 'Hello, World!')
-        with open(self.filename, 'r') as file:
-            lines = file.readlines()
-            self.assertEqual(len(lines), 1)
-            self.assertEqual(lines[0].strip(), 'Hello, World!')
-
-if __name__ == '__main__':
-    unittest.main()
-```
-
-### Equivalent TypeScript Jest Test Case
+Below is the equivalent TypeScript code using Jest for testing:
 
 ```typescript
-import { writeFile, readFile } from 'fs/promises';
-import * as path from 'path';
+import fs from 'fs';
+import { resolve } from 'path';
 
-async function writeUniqueLineToFile(filename: string, lineContent: string) {
-    try {
-        const data = await readFile(filename, 'utf8');
-        const lines = data.split('\n').filter(line => line.trim() !== '');
-        if (lines.includes(lineContent)) {
-            return;
-        }
-    } catch (error) {
-        if (error.code !== 'ENOENT') {
-            throw error;
-        }
-    }
+let filename: string = resolve('temp.txt');
 
-    await writeFile(filename, `${lineContent}\n`, { flag: 'a' });
+function writeUniqueLineToFile(filename: string, lineContent: string): void {
+    /**
+     * Writes a line to a text file only if the line with the same content does not already exist.
+     *
+     * @param {string} filename - The name of the file to write to.
+     * @param {string} lineContent - The content of the line to write.
+     */
+    fs.readFile(filename, 'utf8', (err, data) => {
+        if (err && err.code === 'ENOENT') {
+            // File doesn't exist, write the line directly
+            fs.writeFile(filename, lineContent + '\n', (err) => {
+                if (err) throw err;
+            });
+        } else {
+            const lines = data.split('\n');
+            if (!lines.includes(lineContent)) {
+                fs.appendFile(filename, lineContent + '\n', (err) => {
+                    if (err) throw err;
+                });
+            }
+        }
+    });
 }
 
 describe('writeUniqueLineToFile', () => {
-    let tempFilePath: string;
-
-    beforeEach(async () => {
-        tempFilePath = path.join(__dirname, 'temp_test.txt');
+    beforeAll(() => {
+        // Create a temporary file for testing
+        fs.writeFileSync(filename, '');
     });
 
-    afterEach(async () => {
-        try {
-            await unlink(tempFilePath);
-        } catch (error) {
-            // Do nothing if file doesn't exist
-        }
+    afterAll(() => {
+        // Clean up the temporary file
+        fs.unlinkSync(filename);
     });
 
-    it('should write unique line to file', async () => {
-        await writeUniqueLineToFile(tempFilePath, 'Hello, World!');
-        const data = await readFile(tempFilePath, 'utf8');
-        expect(data.trim()).toBe('Hello, World!');
+    it('should write a new unique line to the file', () => {
+        writeUniqueLineToFile(filename, 'Hello, world!');
+        const fileContent = fs.readFileSync(filename, 'utf8');
+        expect(fileContent.trim()).toBe('Hello, world!');
     });
 
-    it('should not write duplicate line to file', async () => {
-        await writeUniqueLineToFile(tempFilePath, 'Hello, World!');
-        await writeUniqueLineToFile(tempFilePath, 'Hello, World!');
-        const data = await readFile(tempFilePath, 'utf8');
-        expect(data.trim()).toBe('Hello, World!');
+    it('should not write a duplicate line to the file', () => {
+        writeUniqueLineToFile(filename, 'Hello, world!');
+        writeUniqueLineToFile(filename, 'Another line');
+        const fileContent = fs.readFileSync(filename, 'utf8');
+        expect(fileContent.trim()).toBe('Hello, world!\nAnother line');
+    });
+
+    it('should append multiple unique lines to the file', () => {
+        writeUniqueLineToFile(filename, 'Yet another line');
+        const fileContent = fs.readFileSync(filename, 'utf8');
+        expect(fileContent.trim()).toBe('Hello, world!\nAnother line\nYet another line');
     });
 });
 ```
 
-### Explanation:
-
-1. **Imports**: Import necessary modules (`fs/promises` for file operations and `path` for file paths).
-2. **Function**: Define the `writeUniqueLineToFile` function similarly to the Python version.
-3. **Test Suite**:
-   - Use `beforeEach` to set up a temporary file path before each test.
-   - Use `afterEach` to clean up the temporary file after each test.
-   - Write two tests using `it` blocks:
-     - One to check that a unique line is written to the file.
-     - Another to ensure that a duplicate line is not written again.
-
-This TypeScript Jest test case should cover the same functionality as your original Python unittest test class.
+In this code snippet, we have created a function `writeUniqueLineToFile` which checks if the line already exists in the file before writing it. We also have Jest test cases that set up and tear down a temporary file for testing purposes. Each test case then verifies the expected behavior of the function by checking the contents of the file after calling `writeUniqueLineToFile`.

@@ -1,38 +1,73 @@
-Here is how you can convert your Python function into TypeScript:
+Certainly! Below is the equivalent TypeScript code for the given Python functions:
 
 ```typescript
-function getMinDistance(filePath: string, word1: string, word2: string): {distance: number, line: number} {
-    let fs = require('fs');
-    let readline = require('readline');
+function readFileAsSequences(filePath: string): string[][] {
+    const fs = require('fs');
+    const lines = fs.readFileSync(filePath, 'utf-8').split('\n');
+    return lines.map(line => line.trim().split(' ').filter(word => word !== ''));
+}
 
-    let rl = readline.createInterface({
-        input: fs.createReadStream(filePath),
-        crlfDelay: Infinity
-    });
+function findClosestWordIndices(sequence: string[], word1: string, word2: string): number {
+    let word1Indices: number[] = [];
+    let word2Indices: number[] = [];
+    let minDistance: number = Infinity;
 
-    let minDist = Number.MAX_SAFE_INTEGER;
-    let lineNum = 0;
-
-    rl.on('line', (line: string) => {
-        let words = line.split(/\s+/);
-        for(let i=0; i<words.length; i++) {
-            if(words[i] === word1 || words[i] === word2) {
-                for(let j=i+1; j<words.length; j++) {
-                    if((words[j] === word1 && words[i] === word2) || (words[j] === word2 && words[i] === word1)) {
-                        let dist = Math.abs(j-i);
-                        if(dist < minDist) {
-                            minDist = dist;
-                            lineNum = rl.count;
-                        }
-                    }
-                }
-            }
+    // Gather indices for both words
+    sequence.forEach((word, index) => {
+        if (word === word1) {
+            word1Indices.push(index);
+        } else if (word === word2) {
+            word2Indices.push(index);
         }
     });
 
-    return {distance: minDist, line: lineNum};
+    // Calculate the minimum distance between all pairs of indices
+    word1Indices.forEach(index1 => {
+        word2Indices.forEach(index2 => {
+            const distance = Math.abs(index1 - index2);
+            if (distance < minDistance) {
+                minDistance = distance;
+            }
+        });
+    });
+
+    return minDistance;
+}
+
+function getMinDistance(filePath: string, word1: string, word2: string): [number | null, number | null] {
+    const sequences = readFileAsSequences(filePath);
+    let minDistance: number = Infinity;
+    let minSeqNum: number | null = null;
+
+    sequences.forEach((seq, i) => {
+        const distance = findClosestWordIndices(seq, word1, word2);
+        if (distance < minDistance) {
+            minDistance = distance;
+            minSeqNum = i;
+        }
+    });
+
+    if (minDistance === Infinity) {
+        return [null, null];
+    }
+
+    return [minSeqNum, minDistance];
 }
 ```
-This TypeScript function does the same thing as your Python function. It reads a file line by line, splits each line into words, then checks for the presence of `word1` and `word2`. If both words are found in consecutive positions, it calculates the distance between them and updates the minimum distance and line number if the current distance is smaller.
 
-Please note that the TypeScript version uses Node.js's built-in modules (`fs` and `readline`) to read files and process lines, respectively. Make sure you have Node.js installed on your system before running this script.
+### Explanation:
+1. **`readFileAsSequences` Function**:
+   - Uses `fs.readFileSync` to read the file synchronously.
+   - Splits the content by newline characters and then each line by spaces.
+   - Filters out empty strings.
+
+2. **`findClosestWordIndices` Function**:
+   - Iterates over the sequence to collect indices of `word1` and `word2`.
+   - Calculates the minimum distance between the indices of `word1` and `word2`.
+
+3. **`getMinDistance` Function**:
+   - Calls `readFileAsSequences` to get the sequences from the file.
+   - Iterates over each sequence to find the minimum distance between `word1` and `word2`.
+   - Returns the index and distance of the closest occurrence or `[null, null]` if no such pair is found.
+
+This TypeScript code preserves the functionality and logic of the original Python code while adapting it to TypeScript's syntax and static typing.

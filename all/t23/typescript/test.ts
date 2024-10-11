@@ -1,5 +1,3 @@
-import { getLineSegmentIntersection } from './path_to_your_function'; // Adjust the import path as necessary
-
 describe('getLineSegmentIntersection', () => {
     test('intersecting lines', () => {
         expect(getLineSegmentIntersection([[1, 1], [4, 4]], [[1, 4], [4, 1]])).toEqual([2.5, 2.5]);

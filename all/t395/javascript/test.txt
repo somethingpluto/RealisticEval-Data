@@ -1,32 +1,50 @@
-To convert the given Python unittest test class to a JavaScript test case using Jest, we need to follow these steps:
-
-1. Define the `sum_calibration_values` function in JavaScript.
-2. Write Jest test cases to verify the functionality of the `sum_calibration_values` function.
+Sure, let's start by converting the Python `unittest` test class to a Jest test suite in JavaScript. First, we need to define the function `sum_calibration_values` in JavaScript and then write the corresponding Jest tests for it.
 
 Here's how you can do it:
 
-### Step 1: Define the `sum_calibration_values` Function
+1. **Define the Function in JavaScript:**
+   - Translate the Python function `sum_calibration_values` to JavaScript.
+   - Ensure the function logic remains the same.
+
+2. **Write Jest Tests:**
+   - Convert the Python test cases to Jest test cases.
+   - Use Jest's assertion methods to check the correctness of the function.
+
+### Step 1: Define the Function
 
 ```javascript
-function sum_calibration_values(calibrationDocument) {
+function sumCalibrationValues(calibrationDocument) {
     /**
      * Sums up calibration values extracted from the document.
      * Each calibration value is formed by combining the first and last digits of numbers found in each line
      * into a two-digit number.
      *
-     * @param {string[]} calibrationDocument - An array of strings, each representing a line of text.
+     * @param {Array} calibrationDocument - An array of strings, each representing a line of text.
      * @returns {number} - The total sum of all calibration values.
      */
+    const digitPattern = /\d/;
     let totalSum = 0;
 
     calibrationDocument.forEach(line => {
-        const matches = line.match(/\d+/g);
-        if (matches && matches.length > 0) {
-            matches.forEach(match => {
-                const firstDigit = parseInt(match[0], 10);
-                const lastDigit = parseInt(match[match.length - 1], 10);
-                totalSum += firstDigit * 10 + lastDigit;
-            });
+        let firstDigit = null;
+        let lastDigit = null;
+
+        for (let i = 0; i < line.length; i++) {
+            if (digitPattern.test(line[i])) {
+                firstDigit = parseInt(line[i], 10);
+                break;
+            }
+        }
+
+        for (let i = line.length - 1; i >= 0; i--) {
+            if (digitPattern.test(line[i])) {
+                lastDigit = parseInt(line[i], 10);
+                break;
+            }
+        }
+
+        if (firstDigit !== null && lastDigit !== null) {
+            totalSum += parseInt(`${firstDigit}${lastDigit}`, 10);
         }
     });
 
@@ -34,53 +52,46 @@ function sum_calibration_values(calibrationDocument) {
 }
 ```
 
-### Step 2: Write Jest Test Cases
+### Step 2: Write Jest Tests
+
+Now, let's write the Jest test suite for this function. We'll use `describe` blocks and `it` blocks to structure our tests.
 
 ```javascript
-const sum_calibration_values = require('./path/to/your/function'); // Adjust the path accordingly
+const sumCalibrationValues = require('./path/to/sumCalibrationValues'); // Adjust the path as needed
 
-describe('sum_calibration_values', () => {
-    test('should sum up calibration values correctly', () => {
-        const calibrationDocument = [
-            "1abc2",
-            "pqr3stu4",
-            "abcd56efgh78"
-        ];
-        expect(sum_calibration_values(calibrationDocument)).toBe(12 + 34 + 57);
+describe('sumCalibrationValues', () => {
+    it('should handle empty input', () => {
+        expect(sumCalibrationValues([])).toBe(0);
     });
 
-    test('should handle lines with no numbers', () => {
-        const calibrationDocument = [
-            "no numbers here",
-            "another line without numbers"
-        ];
-        expect(sum_calibration_values(calibrationDocument)).toBe(0);
+    it('should handle single digit numbers', () => {
+        expect(sumCalibrationValues(['5'])).toBe(55); // '5' becomes 55
+        expect(sumCalibrationValues(['9'])).toBe(99); // '9' becomes 99
     });
 
-    test('should handle lines with multiple numbers', () => {
-        const calibrationDocument = [
-            "123abc456",
-            "789def012"
-        ];
-        expect(sum_calibration_values(calibrationDocument)).toBe(16 + 72);
+    it('should handle multi-digit numbers with leading zeros', () => {
+        expect(sumCalibrationValues(['0001'])).toBe(11); // '0001' becomes 11
+        expect(sumCalibrationValues(['0090'])).toBe(90); // '0090' becomes 90
     });
 
-    test('should handle empty lines', () => {
-        const calibrationDocument = [
-            "",
-            ""
-        ];
-        expect(sum_calibration_values(calibrationDocument)).toBe(0);
+    it('should handle multiple lines', () => {
+        expect(sumCalibrationValues(['1234', '5678'])).toBe(1458); // '1234' becomes 14, '5678' becomes 58
+        expect(sumCalibrationValues(['0001', '0009'])).toBe(1199); // '0001' becomes 11, '0009' becomes 99
+    });
+
+    it('should handle mixed cases', () => {
+        expect(sumCalibrationValues(['0001', '0090', '5678'])).toBe(119058); // '0001' becomes 11, '0090' becomes 90, '5678' becomes 58
     });
 });
 ```
 
-### Explanation
+### Explanation:
+- **Function Definition:** The JavaScript function `sumCalibrationValues` closely mirrors the Python function `sum_calibration_values`.
+- **Test Cases:**
+  - `it('should handle empty input')`: Checks if the function returns 0 for an empty input.
+  - `it('should handle single digit numbers')`: Checks if the function correctly processes single-digit numbers.
+  - `it('should handle multi-digit numbers with leading zeros')`: Checks if the function handles multi-digit numbers with leading zeros correctly.
+  - `it('should handle multiple lines')`: Checks if the function works correctly with multiple lines of input.
+  - `it('should handle mixed cases')`: Checks a combination of different types of inputs.
 
-1. **Function Definition**: The `sum_calibration_values` function is defined in JavaScript to match the behavior of the original Python function.
-2. **Jest Test Suite**:
-   - `describe` block groups related tests together.
-   - `test` blocks contain individual test cases.
-   - `expect` assertions are used to check the output of the function against expected results.
-
-Make sure to adjust the import path for the `sum_calibration_values` function according to your project structure. This setup should help you effectively test the functionality in JavaScript using Jest.
+This setup ensures that the function is thoroughly tested for various scenarios.

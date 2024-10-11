@@ -1,5 +1,3 @@
-const { containsPhoneNumber } = require('./path/to/your/module'); // Adjust this path to where your function is defined
-
 describe("PhoneNumberDetection", () => {
     test("should detect international prefix", () => {
         expect(containsPhoneNumber("+1-800-555-1234")).toBe(true);

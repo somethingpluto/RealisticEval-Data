@@ -1,8 +1,5 @@
-import { parseMarkdownTable } from './your-module';
-import { describe, it, expect } from '@jest/globals';
-
 describe('parseMarkdownTable', () => {
-    it('should parse a standard table', () => {
+    test('should parse a standard table', () => {
         const mdTable = `
         | Header 1 | Header 2 | Header 3 |
         |----------|----------|----------|
@@ -18,7 +15,7 @@ describe('parseMarkdownTable', () => {
         expect(result).toEqual(expected);
     });
 
-    it('should handle inconsistent columns', () => {
+    test('should handle inconsistent columns', () => {
         const mdTable = `
         | Header 1 | Header 2 |
         |----------|----------|
@@ -34,7 +31,7 @@ describe('parseMarkdownTable', () => {
         expect(result).toEqual(expected);
     });
 
-    it('should handle empty cells', () => {
+    test('should handle empty cells', () => {
         const mdTable = `
         | Header 1 | Header 2 | Header 3 |
         |----------|----------|----------|
@@ -50,7 +47,7 @@ describe('parseMarkdownTable', () => {
         expect(result).toEqual(expected);
     });
 
-    it('should handle all empty rows', () => {
+    test('should handle all empty rows', () => {
         const mdTable = `
         | Header 1 | Header 2 | Header 3 |
         |----------|----------|----------|
@@ -66,7 +63,7 @@ describe('parseMarkdownTable', () => {
         expect(result).toEqual(expected);
     });
 
-    it('should handle excessive whitespace', () => {
+    test('should handle excessive whitespace', () => {
         const mdTable = `
         |  Header 1  |  Header 2  |  Header 3  |
         |------------|------------|------------|

@@ -1,4 +1,4 @@
-Here's how you can convert your Python code into Java:
+Certainly! Below is the equivalent Java code for the provided Python script, organized within the package `org.real.temp` and the class `Answer`. The Java code includes appropriate handling of types, method signatures, and object-oriented principles.
 
 ```java
 package org.real.temp;
@@ -7,62 +7,110 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Answer {
-    public List<Map<String, String>> extractBibInfo(String bibFile) throws IOException {
-        List<Map<String, String>> results = new ArrayList<>();
-        
-        try (BufferedReader br = new BufferedReader(new FileReader(bibFile))) {
-            StringBuilder sb = new StringBuilder();
+
+    /**
+     * Extracts the title, author, and year from a BibTeX file.
+     *
+     * @param bibFile The path to the BibTeX file.
+     * @return A list containing dictionaries with title, author, and year for each article.
+     */
+    public static ArrayList<Article> extractBibInfo(String bibFile) {
+        ArrayList<Article> articles = new ArrayList<>();
+
+        // Regular expressions to match title, author, and year
+        Pattern titlePattern = Pattern.compile("title\\s*=\\s*{([^}]*)}", Pattern.CASE_INSENSITIVE);
+        Pattern authorPattern = Pattern.compile("author\\s*=\\s*{([^}]*)}", Pattern.CASE_INSENSITIVE);
+        Pattern yearPattern = Pattern.compile("year\\s*=\\s*{([^}]*)}", Pattern.CASE_INSENSITIVE);
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(bibFile))) {
+            StringBuilder contentBuilder = new StringBuilder();
             String line;
-            
-            while ((line = br.readLine()) != null) {
-                if (!line.trim().startsWith("@")) {
-                    sb.append(line).append("\n");
-                } else {
-                    Map<String, String> infoMap = parseEntry(sb.toString());
-                    if (infoMap != null) {
-                        results.add(infoMap);
-                    }
-                    sb.setLength(0); // clear stringbuilder
-                    sb.append(line).append("\n"); // start new entry
-                }
+
+            while ((line = reader.readLine()) != null) {
+                contentBuilder.append(line).append("\n");
             }
 
-            // add last entry if there is one
-            if (sb.length() > 0) {
-                Map<String, String> infoMap = parseEntry(sb.toString());
-                if (infoMap != null) {
-                    results.add(infoMap);
-                }
+            String content = contentBuilder.toString();
+
+            // Split the content into individual entries based on '@'
+            String[] entries = content.split("@");
+
+            for (int i = 1; i < entries.length; i++) { // Skip the first split, which is empty
+                String entry = entries[i];
+
+                Matcher titleMatcher = titlePattern.matcher(entry);
+                Matcher authorMatcher = authorPattern.matcher(entry);
+                Matcher yearMatcher = yearPattern.matcher(entry);
+
+                String title = titleMatcher.find() ? titleMatcher.group(1) : null;
+                String author = authorMatcher.find() ? authorMatcher.group(1) : null;
+                String year = yearMatcher.find() ? yearMatcher.group(1) : null;
+
+                Article article = new Article(title, author, year);
+                articles.add(article);
             }
+
+        } catch (IOException e) {
+            System.out.println("Error: The file '" + bibFile + "' was not found.");
         }
 
-        return results;
+        return articles;
     }
 
-    private Map<String, String> parseEntry(String entry) {
-        Map<String, String> infoMap = new HashMap<>();
+    public static void main(String[] args) {
+        String bibFile = "path/to/bibtexfile.bib";
+        ArrayList<Article> extractedArticles = extractBibInfo(bibFile);
+        for (Article article : extractedArticles) {
+            System.out.println(article);
+        }
+    }
 
-        String[] parts = entry.split(",");
-        for (String part : parts) {
-            part = part.trim();
-            if (part.startsWith("author") || part.startsWith("title") || part.startsWith("year")) {
-                String key = part.substring(0, part.indexOf("=")).trim();
-                String value = part.substring(part.indexOf("=") + 1, part.indexOf(",")).trim();
-                value = value.replace("{", "").replace("}", "").replace("\"", ""); // clean up value
-                infoMap.put(key, value);
-            }
+    static class Article {
+        private String title;
+        private String author;
+        private String year;
+
+        public Article(String title, String author, String year) {
+            this.title = title;
+            this.author = author;
+            this.year = year;
         }
 
-        return !infoMap.isEmpty() ? infoMap : null;
+        @Override
+        public String toString() {
+            return "Title: " + title + ", Author: " + author + ", Year: " + year;
+        }
     }
 }
 ```
 
-This Java code does the same thing as your Python function. It reads a BibTeX file, extracts the title, author, and year from each entry, and returns them in a list of maps. 
+### Explanation:
 
-Please note that this code assumes that the BibTeX entries are well-formed and do not contain any syntax errors. If you expect malformed input, additional error handling should be added.
+1. **Package and Class Definition**:
+   - The Java code is defined within the package `org.real.temp`.
+   - The class `Answer` contains the method `extractBibInfo` which performs the extraction.
+
+2. **Regular Expressions**:
+   - Regular expressions are compiled using `Pattern.compile` and used with `Matcher` to find matches.
+
+3. **Reading the File**:
+   - The file is read using a `BufferedReader` to ensure proper resource management with a try-with-resources statement.
+
+4. **Splitting the Content**:
+   - The content is split into individual entries based on the '@' character.
+
+5. **Extracting Information**:
+   - For each entry, the title, author, and year are extracted using regular expression matching.
+   - If a match is found, the corresponding group is extracted; otherwise, `null` is assigned.
+
+6. **Article Class**:
+   - An inner class `Article` is defined to store the extracted information in a structured manner.
+
+7. **Main Method**:
+   - The `main` method demonstrates how to call `extractBibInfo` and print the results.
+
+This approach ensures that the functionality remains consistent while adhering to Java's syntax and best practices.

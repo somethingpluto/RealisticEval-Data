@@ -1,28 +1,116 @@
-Here is how you can convert your Python unittest test class into a TypeScript Jest test case:
+Sure, let's convert the Python code to TypeScript and then create the corresponding test class using Jest.
+
+First, we need to define the `bresenham_line` function in TypeScript. Then, we will write the Jest test suite to verify its correctness.
+
+### TypeScript Function
 
 ```typescript
-import { expect } from '@jest/globals';
-
 function bresenhamLine(x1: number, y1: number, x2: number, y2: number): [number, number][] {
-    // Your function implementation here...
+    const linePoints: [number, number][] = [];
+
+    function swapPoints(x1: number, y1: number, x2: number, y2: number): [number, number, number, number] {
+        if (x1 > x2) return [x2, y2, x1, y1];
+        return [x1, y1, x2, y2];
+    }
+
+    function getLinePoints(x1: number, y1: number, x2: number, y2: number): [number, number][] {
+        let dx = Math.abs(x2 - x1);
+        let dy = Math.abs(y2 - y1);
+        let sx = (x1 < x2) ? 1 : -1;
+        let sy = (y1 < y2) ? 1 : -1;
+        let err = dx - dy;
+
+        while (true) {
+            linePoints.push([x1, y1]);
+            if (x1 === x2 && y1 === y2) break;
+            let e2 = 2 * err;
+            if (e2 > -dy) {
+                err -= dy;
+                x1 += sx;
+            }
+            if (e2 < dx) {
+                err += dx;
+                y1 += sy;
+            }
+        }
+
+        return linePoints;
+    }
+
+    // Ensure the start point is always the lower one
+    [x1, y1, x2, y2] = swapPoints(x1, y1, x2, y2);
+
+    return getLinePoints(x1, y1, x2, y2);
 }
 
+export default bresenhamLine;
+```
+
+### Jest Test Suite
+
+Now, let's write the Jest test suite for this function:
+
+```typescript
+import bresenhamLine from './path/to/bresenhamLine';
+
 describe('bresenhamLine', () => {
-    it('should return an array of points for a vertical line', () => {
-        const result = bresenhamLine(0, 0, 0, 3);
-        expect(result).toEqual([[0, 0], [0, 1], [0, 2], [0, 3]]);
+    it('should generate correct line points for a horizontal line', () => {
+        const expected = [
+            [0, 0],
+            [1, 0],
+            [2, 0],
+            [3, 0]
+        ];
+        expect(bresenhamLine(0, 0, 3, 0)).toEqual(expected);
     });
 
-    it('should return an array of points for a horizontal line', () => {
-        const result = bresenhamLine(0, 0, 3, 0);
-        expect(result).toEqual([[0, 0], [1, 0], [2, 0], [3, 0]]);
+    it('should generate correct line points for a vertical line', () => {
+        const expected = [
+            [0, 0],
+            [0, 1],
+            [0, 2],
+            [0, 3]
+        ];
+        expect(bresenhamLine(0, 0, 0, 3)).toEqual(expected);
     });
 
-    it('should return an array of points for a diagonal line', () => {
-        const result = bresenhamLine(0, 0, 3, 3);
-        expect(result).toEqual([[0, 0], [1, 1], [2, 2], [3, 3]]);
+    it('should generate correct line points for a diagonal line', () => {
+        const expected = [
+            [0, 0],
+            [1, 1],
+            [2, 2],
+            [3, 3]
+        ];
+        expect(bresenhamLine(0, 0, 3, 3)).toEqual(expected);
+    });
+
+    it('should generate correct line points for a reverse diagonal line', () => {
+        const expected = [
+            [3, 3],
+            [2, 2],
+            [1, 1],
+            [0, 0]
+        ];
+        expect(bresenhamLine(3, 3, 0, 0)).toEqual(expected);
+    });
+
+    it('should handle lines with negative coordinates', () => {
+        const expected = [
+            [-2, -2],
+            [-1, -1],
+            [0, 0],
+            [1, 1]
+        ];
+        expect(bresenhamLine(-2, -2, 1, 1)).toEqual(expected);
     });
 });
 ```
 
-This TypeScript code uses Jest's `expect` function to assert that the output of the `bresenhamLine` function matches the expected results. The `describe` function groups related tests together, while the `it` function defines individual test cases.
+### Explanation
+
+1. **Function Definition**: The `bresenhamLine` function takes four integers as input and returns an array of tuples representing the points on the line.
+2. **Helper Function**: The `swapPoints` function ensures that the start point is always the lower one.
+3. **Line Generation**: The `getLinePoints` function generates the points on the line using the Bresenham algorithm.
+4. **Test Cases**: The Jest test suite includes several test cases to verify the correctness of the `bresenhamLine` function for different scenarios (horizontal, vertical, diagonal, reverse diagonal, and lines with negative coordinates).
+
+This setup should provide a comprehensive test suite to ensure the function works correctly.

@@ -1,49 +1,64 @@
-Here's the equivalent TypeScript code:
+Certainly! Below is the equivalent TypeScript code that matches the functionality and logic of the provided Python code:
 
 ```typescript
-import { isString } from 'lodash';
+import * as ast from 'python-abstract-syntax-tree'; // Assuming a fictional package for Python AST parsing
 
 function parseTypeHint(typeHintString: string): string[] {
-  /**
-   * Parses a TypeScript type hint string and returns the individual types as an array of strings.
-   *
-   * @param typeHintString - The type hint string to parse.
-   * @returns An array containing the individual types parsed from the type hint string.
-   */
-  
-  const types: string[] = [];
-  let currentType = '';
-  let inBrackets = false;
-  let inQuotes = false;
+    /**
+     * Parses a Python type hint string and returns the individual types as a list of strings.
+     *
+     * @param typeHintString - The type hint string to parse.
+     * @returns The individual types parsed from the type hint string.
+     *
+     * Example:
+     * const typeHint = "Union[typing.List[str], typing.Dict[str, int], Tuple[int, str], Optional[int]]";
+     * const parsedTypes = parseTypeHint(typeHint);
+     * console.log(parsedTypes);
+     * // Output: ['Union', 'typing.List', 'str', 'typing.Dict', 'str', 'int', 'Tuple', 'int', 'str', 'Optional', 'int']
+     */
+    const source = `def f() -> ${typeHintString}: pass`;
+    const tree = ast.parse(source);
 
-  for (let i = 0; i < typeHintString.length; i++) {
-    const char = typeHintString[i];
+    const typeStrings: string[] = [];
 
-    if (char === '[' || char === '(') {
-      inBrackets = true;
-    } else if (char === ']' || char === ')') {
-      inBrackets = false;
-    } else if (char === '"' || char === "'") {
-      inQuotes = !inQuotes;
+    function processNode(node: ast.AST, qualNames?: string[]): void {
+        qualNames = qualNames || [];
+
+        if (node.type === 'Name') {
+            // Add simple type names (e.g., str, int)
+            typeStrings.push(qualNames.concat([node.id]).reverse().join('.'));
+        } else if (node.type === 'Subscript') {
+            // Process the value and slice of a subscript (e.g., List[str])
+            processNode(node.value, qualNames);
+            processNode(node.slice, qualNames);
+        } else if (node.type === 'Attribute') {
+            // Process attributes (e.g., typing.List)
+            processNode(node.value, qualNames.concat([node.attr]));
+        } else if (node.type === 'Tuple') {
+            // Process each element in a tuple type hint
+            for (const elt of node.elts) {
+                processNode(elt, qualNames);
+            }
+        }
     }
 
-    if (!inQuotes && !inBrackets) {
-      if (char === ',') {
-        types.push(currentType.trim());
-        currentType = '';
-      } else if (isString(char)) {
-        currentType += char;
-      }
-    }
-  }
+    // Extract the return annotation from the parsed tree
+    const returnsAnnotation = tree.body[0].returns;
+    // Process the return annotation to fill typeStrings
+    processNode(returnsAnnotation);
 
-  // Push last type
-  if (currentType !== '') {
-    types.push(currentType.trim());
-  }
-
-  return types;
+    return typeStrings;
 }
+
+// Example usage
+const typeHint = "Union[typing.List[str], typing.Dict[str, int], Tuple[int, str], Optional[int]]";
+const parsedTypes = parseTypeHint(typeHint);
+console.log(parsedTypes);
 ```
 
-This function works similarly to the Python version. It iterates over each character in the input string, keeping track of whether it is inside brackets or quotes, and adds each type to the `types` array when a comma is encountered outside of brackets or quotes. Note that this implementation assumes that the input string is well-formed and does not handle edge cases such as nested brackets or quoted commas within types.
+### Notes:
+1. **Python AST Parsing**: Since TypeScript does not have native support for Python's AST, we assume the existence of a fictional package named `python-abstract-syntax-tree` for parsing Python ASTs. In practice, you would need a suitable library or implement the parsing logic yourself.
+2. **Type Annotations**: TypeScript uses different syntax and conventions for type annotations compared to Python. This example assumes a basic conversion to illustrate the logic.
+3. **Function Definitions**: The function definitions and logic have been adjusted to fit TypeScript's syntax and conventions.
+
+This TypeScript code maintains the core functionality of parsing Python type hints and extracting individual type strings.

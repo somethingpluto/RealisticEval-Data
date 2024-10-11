@@ -1,126 +1,110 @@
-Sure, I can help you convert the given Python unittest test class to TypeScript using Jest. Below is an example of how you might structure your TypeScript test case for the `handle_nested_data` function.
+Sure! Below is the equivalent TypeScript code using Jest for testing the `handle_nested_data` function. I'll include the function definition as well as the Jest test cases.
 
-First, ensure you have Jest installed in your project. If not, you can install it using npm:
-
-```sh
-npm install --save-dev jest
-```
-
-Next, create a TypeScript file for your tests, e.g., `handleNestedData.test.ts`. Here's how you can write the test cases:
+First, let's define the function and its expected behavior:
 
 ```typescript
-import { describe, expect, test } from '@jest/globals';
-import { handle_nested_data } from './path-to-your-module'; // Adjust the path accordingly
+import { deepStrictEqual } from 'assert';
 
-describe('handle_nested_data', () => {
-  test('should handle nested dictionaries correctly', () => {
-    const input = {
-      key1: 'value1',
-      key2: {
-        subKey1: 'subValue1',
-        subKey2: 123,
-      },
+type Question = {
+  [key: string]: any;
+};
+
+function handleNestedData(data: Question): Question {
+  if (typeof data === 'object' && data !== null) {
+    if (Array.isArray(data)) {
+      return data.map((item) => handleNestedData(item));
+    }
+    const result: Question = {};
+    for (const key in data) {
+      if (data.hasOwnProperty(key)) {
+        result[key] = handleNestedData(data[key]);
+      }
+    }
+    return result;
+  } else if (typeof data === 'string' && data.startsWith('b\'') && data.endsWith('\'')) {
+    // Decode bytes to UTF8-string
+    return data.slice(2, -1);
+  } else if (typeof data === 'number') {
+    // Convert number to integer or floating point number
+    return Math.floor(data) === data ? Math.floor(data) : data;
+  }
+  return data;
+}
+
+// Example usage
+const exampleData: Question = {
+  key1: "value1",
+  key2: [1, 2, "b'bytes'", { key3: "value3", key4: 3.14 }],
+  key5: { key6: "b'another bytes'" },
+};
+
+console.log(handleNestedData(exampleData));
+```
+
+Now, let's write the Jest test cases:
+
+```typescript
+import { deepStrictEqual } from 'assert';
+
+describe('handleNestedData', () => {
+  it('should correctly handle nested data', () => {
+    const input: Question = {
+      key1: "value1",
+      key2: [1, 2, "b'bytes'", { key3: "value3", key4: 3.14 }],
+      key5: { key6: "b'another bytes'" },
     };
 
-    const expectedOutput = {
-      key1: 'value1',
-      key2: {
-        subKey1: 'subValue1',
-        subKey2: 123,
-      },
+    const expectedOutput: Question = {
+      key1: "value1",
+      key2: [1, 2, "bytes", { key3: "value3", key4: 3.14 }],
+      key5: { key6: "another bytes" },
     };
 
-    expect(handle_nested_data(input)).toEqual(expectedOutput);
+    const output = handleNestedData(input);
+    expect(output).toEqual(expectedOutput);
   });
 
-  test('should handle nested lists correctly', () => {
-    const input = {
-      key1: 'value1',
-      key2: [
-        {
-          subKey1: 'subValue1',
-          subKey2: 123,
-        },
-        {
-          subKey1: 'subValue2',
-          subKey2: 456,
-        },
-      ],
+  it('should correctly handle simple data types', () => {
+    const input: Question = {
+      key1: "value1",
+      key2: 3.14,
+      key3: "b'bytes'",
     };
 
-    const expectedOutput = {
-      key1: 'value1',
-      key2: [
-        {
-          subKey1: 'subValue1',
-          subKey2: 123,
-        },
-        {
-          subKey1: 'subValue2',
-          subKey2: 456,
-        },
-      ],
+    const expectedOutput: Question = {
+      key1: "value1",
+      key2: 3.14,
+      key3: "bytes",
     };
 
-    expect(handle_nested_data(input)).toEqual(expectedOutput);
+    const output = handleNestedData(input);
+    expect(output).toEqual(expectedOutput);
   });
 
-  test('should handle nested enumerations correctly', () => {
-    const input = {
-      key1: 'value1',
-      key2: ['item1', 'item2'],
-    };
+  it('should correctly handle arrays', () => {
+    const input: Question[] = [
+      "value1",
+      3.14,
+      "b'bytes'",
+      ["b'inner bytes'", 2],
+    ];
 
-    const expectedOutput = {
-      key1: 'value1',
-      key2: ['item1', 'item2'],
-    };
+    const expectedOutput: Question[] = [
+      "value1",
+      3.14,
+      "bytes",
+      ["inner bytes", 2],
+    ];
 
-    expect(handle_nested_data(input)).toEqual(expectedOutput);
-  });
-
-  test('should decode bytes to UTF-8 strings', () => {
-    const input = {
-      key1: Buffer.from('value1').toString('utf-8'),
-      key2: {
-        subKey1: Buffer.from('subValue1').toString('utf-8'),
-        subKey2: 123,
-      },
-    };
-
-    const expectedOutput = {
-      key1: 'value1',
-      key2: {
-        subKey1: 'subValue1',
-        subKey2: 123,
-      },
-    };
-
-    expect(handle_nested_data(input)).toEqual(expectedOutput);
-  });
-
-  test('should convert numbers to integers or floating point numbers', () => {
-    const input = {
-      key1: 'value1',
-      key2: {
-        subKey1: '123',
-        subKey2: '456.78',
-      },
-    };
-
-    const expectedOutput = {
-      key1: 'value1',
-      key2: {
-        subKey1: 123,
-        subKey2: 456.78,
-      },
-    };
-
-    expect(handle_nested_data(input)).toEqual(expectedOutput);
+    const output = handleNestedData(input);
+    expect(output).toEqual(expectedOutput);
   });
 });
 ```
 
-In this example, we're using Jest's `describe`, `test`, and `expect` functions to write our test cases. The `handle_nested_data` function is imported from the specified module, and we're testing various scenarios to ensure it behaves as expected.
+In this conversion:
+- The `handleNestedData` function is defined with the expected behavior.
+- The Jest test cases use `expect` and `toEqual` to verify the correctness of the function.
+- The test cases cover handling nested data, simple data types, and arrays.
 
-Make sure to adjust the path to your actual module where the `handle_nested_data` function is defined. This should give you a good starting point for writing your TypeScript test cases using Jest.
+This should provide a complete and equivalent conversion from the Python unittest to Jest in TypeScript.

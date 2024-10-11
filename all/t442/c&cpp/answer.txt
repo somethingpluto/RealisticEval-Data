@@ -1,43 +1,99 @@
-Here is an equivalent C++ code using the boost::variant library:
+Certainly! Below is the equivalent C++ code for the given Python function. The C++ code will handle dictionaries (represented as `std::map<std::string, T>`), lists (represented as `std::vector<T>`), and strings (represented as `std::string`). It also includes exception handling for converting strings to numbers.
 
-```c++
-#include <boost/variant.hpp>
+```cpp
+#include <iostream>
 #include <string>
-#include <map>
 #include <vector>
+#include <map>
+#include <stdexcept>
 
-using namespace std;
-using namespace boost;
+// Helper function to check if a string contains a dot.
+bool containsDot(const std::string& str) {
+    return str.find('.') != std::string::npos;
+}
 
-typedef variant<int, float, string, map<string, variant<int, float, string>>, vector<variant<int, float, string>>> VarType;
+// Function to convert strings to numbers.
+template<typename T>
+T convert_strings_to_numbers(const T& data);
 
-VarType convert_strings_to_numbers(VarType data){
-    apply_visitor([](auto&& arg)->VarType{
-        using T = decay_t<decltype(arg)>;
+template<>
+std::map<std::string, std::string> convert_strings_to_numbers(const std::map<std::string, std::string>& data) {
+    std::map<std::string, std::string> result;
+    for (const auto& pair : data) {
+        result[pair.first] = convert_strings_to_numbers(pair.second);
+    }
+    return result;
+}
 
-        if constexpr(is_same_v<T, int> || is_same_v<T, float>)
-            return arg;
-        else if constexpr(is_same_v<T, string>)
-            try {
-                // Try to convert string to integer
-                int val = stoi(arg);
-                return val;
-            } catch (...) {
-                // If it fails, try to convert string to float
-                float val = stof(arg);
-                return val;
-            }
-        else if constexpr(is_same_v<T, map<string, VarType>>)
-            for(auto &p : arg)
-                p.second = convert_strings_to_numbers(p.second);
-        else if constexpr(is_same_v<T, vector<VarType>>)
-            for(size_t i = 0; i < arg.size(); ++i)
-                arg[i] = convert_strings_to_numbers(arg[i]);
-        
-        return arg;
-    }, data);
+template<>
+std::vector<std::string> convert_strings_to_numbers(const std::vector<std::string>& data) {
+    std::vector<std::string> result;
+    for (const auto& item : data) {
+        result.push_back(convert_strings_to_numbers(item));
+    }
+    return result;
+}
+
+template<>
+std::string convert_strings_to_numbers(const std::string& data) {
+    try {
+        if (containsDot(data)) {
+            return std::to_string(std::stof(data));
+        } else {
+            return std::to_string(std::stoi(data));
+        }
+    } catch (const std::invalid_argument& ia) {
+        // Conversion failed, return the original string.
+        return data;
+    } catch (const std::out_of_range& oor) {
+        // Conversion failed, return the original string.
+        return data;
+    }
+}
+
+template<typename T>
+T convert_strings_to_numbers(const T& data) {
+    return data; // Return data unchanged if it's not a string
+}
+
+int main() {
+    // Example usage:
+    std::map<std::string, std::string> dataMap = {
+        {"a", "10"},
+        {"b", "20.5"}
+    };
+
+    std::vector<std::string> dataList = {"30", "40.6"};
+
+    auto convertedMap = convert_strings_to_numbers(dataMap);
+    auto convertedList = convert_strings_to_numbers(dataList);
+
+    // Output the results
+    for (const auto& pair : convertedMap) {
+        std::cout << pair.first << ": " << pair.second << std::endl;
+    }
+
+    for (const auto& item : convertedList) {
+        std::cout << item << std::endl;
+    }
+
+    return 0;
 }
 ```
-This function uses Boost.Variant to handle different types of values (int, float, string, dict, list). It recursively traverses through each element in the input and tries to convert it to a number if it's a string.
 
-Note: This code assumes that the string can always be converted into either an integer or a float. If this might not be the case, you may need to add error handling for those cases. Also, make sure to install the Boost library on your system before compiling this code.
+### Explanation:
+1. **Helper Function**:
+   - `containsDot`: Checks if a string contains a dot to determine if it should be treated as a floating-point number.
+
+2. **Template Specializations**:
+   - For `std::map<std::string, std::string>`: Recursively converts each value in the map.
+   - For `std::vector<std::string>`: Recursively converts each element in the vector.
+   - For `std::string`: Attempts to convert the string to a number using `std::stoi` and `std::stof`. If the conversion fails, it returns the original string.
+
+3. **General Template**:
+   - For other types, it simply returns the input unchanged.
+
+4. **Main Function**:
+   - Demonstrates the usage of the `convert_strings_to_numbers` function with example data.
+
+This approach ensures that the functionality remains consistent with the Python version while adhering to C++ syntax and best practices.

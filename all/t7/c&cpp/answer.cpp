@@ -39,14 +39,3 @@ private:
         return std::string(buf);
     }
 };
-
-int main() {
-    Logger logger("MyLogger", DEBUG);
-    logger.log(DEBUG, "This is a debug message.");
-    logger.log(INFO, "This is an info message.");
-    logger.log(WARNING, "This is a warning message.");
-    logger.log(ERROR, "This is an error message.");
-    logger.log(CRITICAL, "This is a critical message.");
-
-    return 0;
-}

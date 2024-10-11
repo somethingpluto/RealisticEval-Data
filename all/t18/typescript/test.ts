@@ -1,6 +1,3 @@
-// Import the function to be tested
-import { floatToRgb } from './floatToRgb'; // Adjust the import according to where your function is located
-
 describe('floatToRgb', () => {
     test('pure red', () => {
         // Value at the lower boundary (0.0) should return pure red

@@ -1,88 +1,103 @@
-To convert your Python `unittest` test class into a C++ test case using Catch2, you need to follow these steps:
-
-1. Install Catch2.
-2. Write the equivalent C++ code for your function.
-3. Write the corresponding test cases.
-
-Here's how you can do it:
-
-### Step 1: Install Catch2
-
-First, you need to install Catch2. You can download it from its [GitHub repository](https://github.com/catchorg/Catch2). For simplicity, let's assume you've downloaded and placed the Catch2 header file in your project directory.
-
-### Step 2: Write the Equivalent C++ Code
-
-Let's write the equivalent C++ code for your function. We'll assume that the function is named `convertStringsToNumbers`.
+To convert the provided Python unittest test class into an equivalent test class using Catch2 in C++, we need to create a similar test structure and use appropriate assertions in Catch2. Below is the C++ code with the equivalent test class using Catch2.
 
 ```cpp
-#include <iostream>
-#include <variant>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_map_string.hpp>
+#include <catch2/generators/catch_generators_all.hpp>
+
+#include <string>
 #include <vector>
 #include <map>
-#include <string>
+#include <cassert>
+#include <variant>
 
-using namespace std;
-
-// Define a variant type to represent either a dictionary or a list
-using VariantType = variant<map<string, VariantType>, vector<VariantType>>;
-
-// Function to convert strings to numbers in nested structures
-VariantType convertStringsToNumbers(const VariantType& data) {
-    if (holds_alternative<map<string, VariantType>>(data)) {
-        map<string, VariantType> dict = get<map<string, VariantType>>(data);
-        for (auto& pair : dict) {
-            try {
-                pair.second = stoi(pair.second.index() == 0 ? get<string>(pair.second) : to_string(get<double>(pair.second)));
-            } catch (...) {}
-        }
-        return dict;
-    } else if (holds_alternative<vector<VariantType>>(data)) {
-        vector<VariantType> vec = get<vector<VariantType>>(data);
-        for (size_t i = 0; i < vec.size(); ++i) {
-            try {
-                vec[i] = stoi(vec[i].index() == 0 ? get<string>(vec[i]) : to_string(get<double>(vec[i])));
-            } catch (...) {}
-        }
-        return vec;
+// Function to convert strings to numbers
+std::variant<int, double> string_to_number(const std::string& str) {
+    try {
+        return std::stoi(str);
+    } catch (const std::invalid_argument&) {
+        // If stoi fails, try stod
+        return std::stod(str);
     }
-    return data;
+}
+
+// Recursive function to convert strings to numbers in nested structures
+void convert_strings_to_numbers_helper(const std::variant<std::map<std::string, std::variant<int, double>>, std::vector<std::variant<int, double>>>& input,
+                                       std::variant<std::map<std::string, std::variant<int, double>>, std::vector<std::variant<int, double>>>& output) {
+    if (auto* map = std::get_if<std::map<std::string, std::variant<int, double>>>(&input)) {
+        auto& outputMap = std::get<std::map<std::string, std::variant<int, double>>>(output);
+        for (auto& [key, value] : *map) {
+            if (std::holds_alternative<std::string>(value)) {
+                const std::string& strValue = std::get<std::string>(value);
+                outputMap[key] = string_to_number(strValue);
+            } else {
+                outputMap[key] = value;
+            }
+        }
+    } else if (auto* vec = std::get_if<std::vector<std::variant<int, double>>>(&input)) {
+        auto& outputVec = std::get<std::vector<std::variant<int, double>>>(output);
+        for (const auto& item : *vec) {
+            if (std::holds_alternative<std::string>(item)) {
+                const std::string& strItem = std::get<std::string>(item);
+                outputVec.push_back(string_to_number(strItem));
+            } else {
+                outputVec.push_back(item);
+            }
+        }
+    }
+}
+
+std::variant<std::map<std::string, std::variant<int, double>>, std::vector<std::variant<int, double>>> convert_strings_to_numbers(
+    const std::variant<std::map<std::string, std::string>, std::vector<std::string>>& data) {
+    std::variant<std::map<std::string, std::variant<int, double>>, std::vector<std::variant<int, double>>> output;
+
+    if (auto* map = std::get_if<std::map<std::string, std::string>>(&data)) {
+        auto& outputMap = std::get<std::map<std::string, std::variant<int, double>>>(output);
+        for (const auto& [key, value] : *map) {
+            outputMap[key] = string_to_number(value);
+        }
+    } else if (auto* vec = std::get_if<std::vector<std::string>>(&data)) {
+        auto& outputVec = std::get<std::vector<std::variant<int, double>>>(output);
+        for (const auto& item : *vec) {
+            outputVec.push_back(string_to_number(item));
+        }
+    }
+
+    convert_strings_to_numbers_helper(data, output);
+    return output;
+}
+
+TEST_CASE("convert_strings_to_numbers") {
+    SECTION("Convert dictionary with string values") {
+        std::map<std::string, std::string> inputDict = {{"a", "1"}, {"b", "2.5"}, {"c", "hello"}};
+        auto result = convert_strings_to_numbers(inputDict);
+        REQUIRE(std::holds_alternative<std::map<std::string, std::variant<int, double>>>(result));
+
+        auto& resultMap = std::get<std::map<std::string, std::variant<int, double>>>(result);
+        REQUIRE(resultMap.size() == 3);
+        REQUIRE(resultMap["a"] == 1);
+        REQUIRE(resultMap["b"] == Approx(2.5));
+        REQUIRE(std::holds_alternative<std::string>(resultMap["c"]));
+        REQUIRE(std::get<std::string>(resultMap["c"]) == "hello");
+    }
+
+    SECTION("Convert list with string values") {
+        std::vector<std::string> inputList = {"1", "2.5", "hello"};
+        auto result = convert_strings_to_numbers(inputList);
+        REQUIRE(std::holds_alternative<std::vector<std::variant<int, double>>>(result));
+
+        auto& resultList = std::get<std::vector<std::variant<int, double>>>(result);
+        REQUIRE(resultList.size() == 3);
+        REQUIRE(resultList[0] == 1);
+        REQUIRE(resultList[1] == Approx(2.5));
+        REQUIRE(std::holds_alternative<std::string>(resultList[2]));
+        REQUIRE(std::get<std::string>(resultList[2]) == "hello");
+    }
 }
 ```
 
-### Step 3: Write the Corresponding Test Cases Using Catch2
-
-Now, let's write the test cases using Catch2. Create a new file named `test_convert_strings_to_numbers.cpp` and add the following code:
-
-```cpp
-#define CATCH_CONFIG_MAIN
-#include "catch.hpp"
-
-// Include the header where convertStringsToNumbers is defined
-#include "convert_strings_to_numbers.h"
-
-TEST_CASE("Convert strings to numbers in dictionaries", "[convert_strings]") {
-    map<string, VariantType> input = {{"a", "1"}, {"b", "2.5"}, {"c", "hello"}};
-    map<string, VariantType> expected = {{"a", 1}, {"b", 2.5}, {"c", "hello"}};
-
-    auto result = convertStringsToNumbers(input);
-
-    REQUIRE(result == expected);
-}
-
-TEST_CASE("Convert strings to numbers in lists", "[convert_strings]") {
-    vector<VariantType> input = {"1", "2.5", "hello"};
-    vector<VariantType> expected = {1, 2.5, "hello"};
-
-    auto result = convertStringsToNumbers(input);
-
-    REQUIRE(result == expected);
-}
-```
-
-### Explanation
-
-- **Catch2 Macros**: The `TEST_CASE` macro defines a test case with a name and tags. The `REQUIRE` macro asserts that the condition is true, and if not, it fails the test.
-- **Variant Type**: We use `std::variant` to handle both dictionaries (maps) and lists (vectors).
-- **Conversion Logic**: The `convertStringsToNumbers` function attempts to convert string values to integers or doubles wherever possible.
-
-This should give you a good starting point for converting your Python `unittest` test class to a C++ test case using Catch2. Make sure to adjust the paths and include directories according to your project setup.
+### Explanation:
+1. **string_to_number**: This function attempts to convert a string to either an integer or a floating-point number.
+2. **convert_strings_to_numbers_helper**: This helper function recursively processes nested structures (maps and vectors) and applies `string_to_number` to string values.
+3. **convert_strings_to_numbers**: This function takes a variant of a map or vector containing strings and converts them to numbers using the helper function.
+4. **TEST_CASE**: The test case includes two sections, one for converting a dictionary and another for converting a list. Each section checks the correctness of the conversion using Catch2 assertions.

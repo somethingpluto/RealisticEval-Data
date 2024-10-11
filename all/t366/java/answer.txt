@@ -1,38 +1,65 @@
-Here is your Python function translated into Java:
+Sure, here is the equivalent Java code organized within the `org.real.temp` package and the `Answer` class:
 
 ```java
-import org.apache.poi.xwpf.usermodel.XWPFDocument;
-import org.apache.poi.xwpf.usermodel.XWPFParagraph;
+package org.real.temp;
+
+import org.docx4j.Docx4J;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.wml.P;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.List;
 
 public class Answer {
-    
-    public static String extractTextFromWord(String docxFilePath) throws IOException {
-        FileInputStream fis = new FileInputStream(new File(docxFilePath));
-        XWPFDocument document = new XWPFDocument(fis);
-        
-        StringBuilder stringBuilder = new StringBuilder();
-        for(XWPFParagraph paragraph : document.getParagraphs()) {
-            stringBuilder.append(paragraph.getText());
+
+    /**
+     * Extracts text content from a given Word file (.docx).
+     *
+     * @param docxFilePath The path to the Word file.
+     * @return The extracted text content or null if an error occurs.
+     */
+    public static String extractTextFromWord(String docxFilePath) {
+        try {
+            // Open the Word document
+            WordprocessingMLPackage wordMLPackage = Docx4J.load(new File(docxFilePath));
+            List<Object> paragraphs = wordMLPackage.getMainDocumentPart().getContent();
+
+            // Extract text from each paragraph in the document
+            StringBuilder textContent = new StringBuilder();
+            for (Object paragraph : paragraphs) {
+                if (paragraph instanceof P) {
+                    String paragraphText = Docx4J.getText((P) paragraph);
+                    textContent.append(paragraphText).append("\n");
+                }
+            }
+
+            return textContent.toString();
+
+        } catch (Docx4JException | IOException e) {
+            System.out.println("An error occurred: " + e.getMessage());
+            return null;
         }
-        
-        fis.close();
-        return stringBuilder.toString();
     }
 
+    public static void main(String[] args) {
+        String docxFilePath = "path/to/your/docx/file.docx";
+        String textContent = extractTextFromWord(docxFilePath);
+        if (textContent != null) {
+            System.out.println(textContent);
+        }
+    }
 }
 ```
 
-Please note that in order to run this Java code you will need to include Apache POI library to your project. If you are using Maven, you can add it to your `pom.xml` like this:
+### Explanation:
+1. **Imports**: Added necessary imports for handling `.docx` files using `docx4j`.
+2. **Method Signature**: Defined a static method `extractTextFromWord` with a string parameter `docxFilePath` and returns a string.
+3. **Error Handling**: Wrapped the code inside a try-catch block to handle exceptions related to reading the `.docx` file.
+4. **Reading the Document**: Used `Docx4J.load` to load the `.docx` file and retrieve its content.
+5. **Extracting Text**: Iterated through the paragraphs of the document, extracting text from each paragraph and appending it to a `StringBuilder`.
+6. **Returning the Result**: Returned the concatenated text content as a string.
+7. **Main Method**: Provided a simple example of how to use the method by passing a file path and printing the extracted text.
 
-```xml
-<dependency>
-  <groupId>org.apache.poi</groupId>
-  <artifactId>poi-ooxml</artifactId>
-  <version>5.2.3</version>
-</dependency>
-```
-Also, this Java method assumes that the input file is not null or empty and it does not handle exceptions other than `IOException`.
+This Java code closely mirrors the functionality of the Python code while adhering to Java's syntax and conventions.

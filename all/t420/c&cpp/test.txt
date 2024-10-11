@@ -1,78 +1,81 @@
-To convert the given Python `unittest` test class to a C++ test case using Catch2, you need to follow these steps:
+To convert the provided Python function into a C++ test class using Catch2, we need to first define the function `get_min_distance` and then write the corresponding tests. Below is the C++ code with the necessary setup for the function and tests using Catch2.
 
-1. **Define the function**: Ensure that your function is defined correctly.
-2. **Create the test case**: Use Catch2 macros to create the test cases.
-
-Here's how you can do it:
-
-### Python Function
-```python
-def get_min_distance(file_path, word1, word2):
-    """
-    Find the minimum distance between two specified words (word1 and word2) from the file and return in which line the distance occurred
-
-    Args:
-        file_path (str):
-        word1 (str):
-        word2 (str):
-
-    Returns:
-
-    """
-    # Implementation of the function goes here
-    pass
-```
-
-### C++ Test Case Using Catch2
-First, ensure you have Catch2 installed. You can download it from [Catch2 GitHub repository](https://github.com/catchorg/Catch2).
-
-Then, create a C++ file (e.g., `test_get_min_distance.cpp`) with the following content:
+### C++ Code with Catch2
 
 ```cpp
-#define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
-#include "catch.hpp"
+#include <catch2/catch_test_macros.hpp>
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
-// Include the header file where get_min_distance is declared
-#include "get_min_distance.h"  // Assuming the function is in a separate file named get_min_distance.h
+// Define the function to find the minimum distance between two words in a file
+std::pair<int, int> get_min_distance(const std::string& file_path, const std::string& word1, const std::string& word2) {
+    std::ifstream file(file_path);
+    if (!file.is_open()) {
+        throw std::runtime_error("Failed to open file");
+    }
 
-TEST_CASE("Test get_min_distance", "[get_min_distance]") {
-    // Mocking the file reading functionality for testing purposes
-    std::istringstream mock_file_content(
-        "line1 word1 word2\n"
-        "line2 word2 word1\n"
-        "line3 word1 word1\n"
-        "line4 word2 word2"
-    );
+    std::unordered_map<std::string, std::vector<int>> word_positions;
+    std::string line;
+    int line_number = 0;
 
-    // Redirect cin to our mock file content
-    auto cin_backup = std::cin.rdbuf(mock_file_content.rdbuf());
+    while (std::getline(file, line)) {
+        ++line_number;
+        std::istringstream iss(line);
+        std::string word;
+        while (iss >> word) {
+            word_positions[word].push_back(line_number);
+        }
+    }
+
+    file.close();
+
+    // Find the minimum distance between word1 and word2
+    int min_distance = INT_MAX;
+    int line_of_min_distance = -1;
+
+    for (const auto& pos1 : word_positions[word1]) {
+        for (const auto& pos2 : word_positions[word2]) {
+            int distance = std::abs(pos1 - pos2);
+            if (distance < min_distance) {
+                min_distance = distance;
+                line_of_min_distance = pos1; // Assuming pos1 is the reference position
+            }
+        }
+    }
+
+    return {min_distance, line_of_min_distance};
+}
+
+TEST_CASE("Test get_min_distance") {
+    // Test data setup (create a temporary file for testing)
+    const std::string temp_file_path = "temp.txt";
+    std::ofstream temp_file(temp_file_path);
+    temp_file << "word1 word2 word3\n" << "word4 word5 word6\n" << "word1 word2\n";
+    temp_file.close();
 
     SECTION("Test with valid input") {
-        int result = get_min_distance("", "word1", "word2");
-        REQUIRE(result == 0);  // Assuming the function returns the line number where the minimum distance occurs
+        auto [min_distance, line] = get_min_distance(temp_file_path, "word1", "word2");
+        REQUIRE(min_distance == 1);
+        REQUIRE(line == 3);
     }
 
-    SECTION("Test with invalid input") {
-        int result = get_min_distance("", "word1", "nonexistent_word");
-        REQUIRE(result == -1);  // Assuming the function returns -1 if word2 is not found
+    SECTION("Test with no common lines") {
+        auto [min_distance, line] = get_min_distance(temp_file_path, "word1", "word4");
+        REQUIRE(min_distance == INT_MAX);
+        REQUIRE(line == -1);
     }
 
-    // Restore cin buffer
-    std::cin.rdbuf(cin_backup);
+    // Clean up the temporary file
+    std::remove(temp_file_path.c_str());
 }
 ```
 
-### Explanation
-1. **Include Catch2 Header**: The `#define CATCH_CONFIG_MAIN` directive tells Catch to generate a `main()` function for you. The `#include "catch.hpp"` includes the Catch2 library.
-2. **Mock File Reading**: For testing purposes, we use an `std::istringstream` to simulate the file content. We then redirect `std::cin` to this stream to read from the mocked data.
-3. **Test Cases**: We define two sections (`SECTION`) within the `TEST_CASE`. Each section contains assertions to validate the behavior of the `get_min_distance` function.
-4. **Restore Input Buffer**: After running the tests, we restore the original input buffer.
+### Explanation:
+1. **Function Definition**: The `get_min_distance` function reads a file and finds the minimum distance between two specified words (`word1` and `word2`). It returns the minimum distance and the line number where this distance occurred.
+2. **Catch2 Test Class**: The `TEST_CASE` macro defines the test suite, and each `SECTION` within it defines individual test cases.
+3. **Temporary File Setup**: A temporary file is created for testing purposes, and it is cleaned up after the tests are run.
 
-Make sure to compile and run your test case using a C++ compiler that supports C++11 or later, and link against the Catch2 library. For example, using g++, you might compile and run like this:
-
-```sh
-g++ -std=c++11 -I/path/to/catch2/include -o test_get_min_distance test_get_min_distance.cpp
-./test_get_min_distance
-```
-
-Replace `/path/to/catch2/include` with the actual path to the Catch2 include directory on your system.
+This approach ensures that the functionality and logic of the original Python test class are preserved in the C++ version using Catch2.

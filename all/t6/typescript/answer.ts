@@ -22,8 +22,3 @@ function simplifyWindowsPath(path: string): string {
 
     return finalPath;
 }
-
-// Example Usage
-const originalPath = "D:\\some\\path\\to\\file\\";
-const simplifiedPath = simplifyWindowsPath(originalPath);
-console.log(simplifiedPath);

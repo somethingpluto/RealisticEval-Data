@@ -16,6 +16,3 @@ function simplifyWindowsPath(inputPath) {
 
     return finalPath;
 }
-
-// Example usage:
-console.log(simplifyWindowsPath('D:\\example\\path\\file.txt')); // Output: 'D_example_path_file.txt'

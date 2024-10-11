@@ -1,37 +1,51 @@
-Sure! Below is the equivalent JavaScript code for the given Python function:
+Sure! Below is the equivalent JavaScript code that maintains the same functionality, logic, and structure as the provided Python code:
 
 ```javascript
-function prependToEachLine(filePath, prefix) {
+const fs = require('fs').promises;
+const os = require('os');
+
+async function prependToEachLine(file_path, prefix) {
     /**
-     * Prepends the specified string to the beginning of each line of the file.
+     * Appends the specified string to the beginning of each line of the file.
      *
-     * @param {string} filePath - Path to the file whose lines will be modified.
-     * @param {string} prefix - String to prepend to the beginning of each line.
+     * @param {string} file_path - Path to the file whose lines will be modified.
+     * @param {string} prefix - String to append to the beginning of each line.
      */
+    const tempFilePath = file_path + ".tmp";
 
-    // Read the file content
-    const fs = require('fs');
-    let data = fs.readFileSync(filePath, 'utf8');
+    // Read the original file
+    const fileContent = await fs.readFile(file_path, 'utf8');
+    const lines = fileContent.split(os.EOL);
 
-    // Split the data into lines
-    let lines = data.split('\n');
+    // Write the modified content to a temporary file
+    let modifiedContent = '';
+    for (let line of lines) {
+        modifiedContent += prefix + line + os.EOL;
+    }
 
-    // Prepend the prefix to each line
-    lines = lines.map(line => prefix + line);
+    await fs.writeFile(tempFilePath, modifiedContent);
 
-    // Join the lines back together
-    data = lines.join('\n');
-
-    // Write the modified content back to the file
-    fs.writeFileSync(filePath, data, 'utf8');
+    // Replace the original file with the modified file
+    await fs.rename(tempFilePath, file_path);
 }
+
+// Example usage
+(async () => {
+    try {
+        await prependToEachLine('example.txt', '>>> ');
+        console.log('File has been modified successfully.');
+    } catch (error) {
+        console.error('An error occurred:', error);
+    }
+})();
 ```
 
 ### Explanation:
-1. **Reading the File**: The `fs.readFileSync` method is used to read the entire contents of the file synchronously.
-2. **Splitting Lines**: The `split('\n')` method splits the file content into an array of lines.
-3. **Prepending Prefix**: The `map` function is used to iterate over each line and prepend the specified prefix to it.
-4. **Joining Lines**: The `join('\n')` method joins the modified lines back into a single string with newline characters.
-5. **Writing Back to File**: The `fs.writeFileSync` method writes the modified content back to the file synchronously.
+1. **Imports**: The `fs.promises` and `os` modules are imported to handle file system operations and operating system-specific newline characters.
+2. **Function Definition**: The `prependToEachLine` function is defined with the same docstring and parameters as the Python version.
+3. **Reading the File**: The file content is read using `fs.readFile` and split into lines using the operating system's newline character (`os.EOL`).
+4. **Modifying the Content**: A loop iterates over each line, prepending the specified prefix and constructing the modified content.
+5. **Writing to Temporary File**: The modified content is written to a temporary file using `fs.writeFile`.
+6. **Replacing the Original File**: The temporary file is renamed to replace the original file using `fs.rename`.
 
-Make sure you have Node.js installed to run this JavaScript code, as it uses the built-in `fs` module for file operations.
+This JavaScript code performs the same operation as the Python code, appending the specified prefix to the beginning of each line in the file.

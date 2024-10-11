@@ -1,35 +1,93 @@
-To convert your Python unittest test class to a C++ test case using Catch2, you'll need to follow these steps:
+To convert the given Python function into a C++ equivalent and write tests for it using Catch2, we need to follow these steps:
 
-1. Install Catch2 in your project. If you're using CMake, you can add it as a subdirectory or find it via a package manager like vcpkg.
-2. Write your C++ test cases using the Catch2 framework.
-3. Ensure that any dependencies like pandas in Python are replaced with appropriate libraries in C++. For CSV reading, you might use `std::ifstream` and other standard library components.
+1. **Implement the `read_csv_to_dataframe` function in C++**.
+2. **Write tests for this function using Catch2**.
 
-Here's an example of how you might write a similar test case in C++ using Catch2:
+### Step 1: Implement the Function
+
+First, let's implement the function in C++. For simplicity, we'll use the `fstream` library to read the CSV file and store the data in a simple structure like a `std::vector<std::vector<std::string>>`.
 
 ```cpp
-#include <catch2/catch.hpp>
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <vector>
 
-// Assuming you have a function that reads a CSV into a vector of strings for demonstration purposes
-std::vector<std::string> readCsv(const std::string& filePath) {
-    // Implementation goes here
-}
+// Represents a row in the CSV file.
+using Row = std::vector<std::string>;
+// Represents the entire CSV file.
+using DataFrame = std::vector<Row>;
 
-TEST_CASE("Read CSV to Dataframe", "[read_csv]") {
-    std::string filePath = "path/to/your/file.csv";
-    
-    // Call the function to be tested
-    auto result = readCsv(filePath);
+// Reads a CSV file and converts it to a vector of vectors.
+DataFrame read_csv_to_dataframe(const std::string& file_path) {
+    DataFrame data;
+    std::ifstream file(file_path);
+    if (!file.is_open()) {
+        throw std::runtime_error("Failed to open file: " + file_path);
+    }
 
-    // Assert that the result is not empty
-    REQUIRE(!result.empty());
+    std::string line;
+    while (std::getline(file, line)) {
+        std::istringstream ss(line);
+        Row row;
+        std::string cell;
+        while (std::getline(ss, cell, ',')) {
+            row.push_back(cell);
+        }
+        data.push_back(row);
+    }
 
-    // Add more assertions based on the expected output
+    file.close();
+    return data;
 }
 ```
 
-In this example, `readCsv` is a placeholder function that should be implemented to read a CSV file and return its contents as a vector of strings. You would replace this with actual implementation logic similar to what you would do in Python using pandas.
+### Step 2: Write Tests Using Catch2
 
-Remember to include the necessary headers and link against the Catch2 library when compiling your C++ code.
+Now, let's write tests for the `read_csv_to_dataframe` function using Catch2. We'll assume that you have already set up the Catch2 environment in your project.
+
+Here is the test suite using Catch2:
+
+```cpp
+#include "catch2/catch_test_macros.hpp"
+
+// Include the implementation of the function.
+#include "path/to/your/implementation.h" // Replace with actual path
+
+TEST_CASE("read_csv_to_dataframe reads the CSV file correctly", "[read_csv]") {
+    const std::string test_file_path = "path/to/test.csv"; // Replace with actual path
+
+    SECTION("Reads a valid CSV file") {
+        DataFrame expected_data = {
+            {"header1", "header2"},
+            {"value1", "value2"},
+            {"value3", "value4"}
+        };
+
+        DataFrame actual_data = read_csv_to_dataframe(test_file_path);
+
+        REQUIRE(actual_data.size() == expected_data.size());
+        for (size_t i = 0; i < actual_data.size(); ++i) {
+            REQUIRE(actual_data[i].size() == expected_data[i].size());
+            for (size_t j = 0; j < actual_data[i].size(); ++j) {
+                REQUIRE(actual_data[i][j] == expected_data[i][j]);
+            }
+        }
+    }
+
+    SECTION("Throws an error when the file does not exist") {
+        const std::string non_existent_file_path = "nonexistent.csv";
+        REQUIRE_THROWS_AS(read_csv_to_dataframe(non_existent_file_path), std::runtime_error);
+    }
+}
+```
+
+### Explanation
+
+- **Implementation**: The `read_csv_to_dataframe` function reads the CSV file and stores the data in a `std::vector<std::vector<std::string>>`.
+- **Test Suite**: 
+  - The `SECTION` blocks are used to separate different scenarios or cases within the test.
+  - The first section checks if the function correctly reads a valid CSV file and compares the output with the expected data.
+  - The second section verifies that the function throws a `std::runtime_error` when the specified file does not exist.
+
+Make sure to replace `"path/to/test.csv"` and `"path/to/your/implementation.h"` with the actual paths in your project. This setup ensures that the functionality and logic of the tests are preserved and appropriately translated from Python's unittest to C++'s Catch2.

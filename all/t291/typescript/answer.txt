@@ -1,14 +1,58 @@
-Here is how you can convert your Python function into TypeScript:
+Sure! Here’s the equivalent TypeScript code for the provided Python function, including proper type definitions and adjustments for TypeScript:
 
 ```typescript
-function prependToEachLine(filePath: string, prefix: string) {
+import fs from 'fs';
+import path from 'path';
+
+function prependToEachLine(filePath: string, prefix: string): void {
     /**
-     * Prepends the specified string to the beginning of each line of the file.
+     * Appends the specified string to the beginning of each line of the file.
      *
      * @param filePath - Path to the file whose lines will be modified.
-     * @param prefix - String to prepend to the beginning of each line.
+     * @param prefix - String to append to the beginning of each line.
      */
+    const tempFilePath = filePath + ".tmp";
+
+    const readStream = fs.createReadStream(filePath, { encoding: 'utf8' });
+    const writeStream = fs.createWriteStream(tempFilePath, { encoding: 'utf8' });
+
+    readStream.on('data', (chunk: string) => {
+        const lines = chunk.split('\n');
+        lines.forEach((line, index) => {
+            if (index > 0) {
+                writeStream.write('\n');
+            }
+            writeStream.write(prefix + line);
+        });
+    });
+
+    readStream.on('end', () => {
+        writeStream.end();
+        fs.rename(tempFilePath, filePath, (err) => {
+            if (err) throw err;
+        });
+    });
+
+    readStream.on('error', (err) => {
+        throw err;
+    });
+
+    writeStream.on('error', (err) => {
+        throw err;
+    });
 }
+
+// Example usage
+prependToEachLine('/path/to/your/file.txt', 'prefix: ');
 ```
 
-In TypeScript, we use `function` keyword instead of `def`, and we don't need to specify types in the function parameters because TypeScript infers them from the context. However, it's good practice to include types for clarity. The type of `filePath` and `prefix` are both `string`.
+### Explanation:
+1. **Imports**: We use `fs` and `path` modules from Node.js to handle file system operations.
+2. **Function Definition**: The function `prependToEachLine` takes two parameters, `filePath` and `prefix`, both of which are strings.
+3. **Temporary File Path**: A temporary file path is created by appending `.tmp` to the original file path.
+4. **File Streams**: We use `createReadStream` and `createWriteStream` to read and write the file content, respectively.
+5. **Data Event**: When data is read from the file, it is split into lines, and each line is prefixed with the specified `prefix`.
+6. **End Event**: Once all data is read, the temporary file is renamed to replace the original file.
+7. **Error Handling**: Errors during reading or writing are handled by throwing exceptions.
+
+This TypeScript code maintains the same functionality and logic as the Python code, but it uses asynchronous file operations and stream handling which are idiomatic in Node.js.

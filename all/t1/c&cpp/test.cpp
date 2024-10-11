@@ -1,10 +1,21 @@
-TEST_CASE("Test numerical_str_convert function", "[numerical_str_convert]") {
-    // Test case 1: Input is an integer
-    REQUIRE(numerical_str_convert("42") == 42);
+TEST_CASE("numerical_str_convert") {
+    SECTION("Convert valid integer strings") {
+        REQUIRE(std::get<int>(numerical_str_convert("42")) == 42);
+        REQUIRE(std::get<int>(numerical_str_convert("-42")) == -42);
+    }
 
-    // Test case 2: Input is a floating-point number
-    REQUIRE(numerical_str_convert("3.14") == 3.14);
+    SECTION("Convert valid float strings") {
+        REQUIRE(std::get<float>(numerical_str_convert("3.14")) == Approx(3.14f));
+        REQUIRE(std::get<float>(numerical_str_convert("-3.14")) == Approx(-3.14f));
+        REQUIRE(std::get<float>(numerical_str_convert("0.001")) == Approx(0.001f));
+    }
 
-    // Test case 3: Input is a non-numeric string
-    REQUIRE(numerical_str_convert("abc") == "abc");
+    SECTION("Return original string for invalid inputs") {
+        REQUIRE(std::get<std::string>(numerical_str_convert("abc")) == "abc");
+        REQUIRE(std::get<std::string>(numerical_str_convert("3.14abc")) == "3.14abc");
+    }
+
+    SECTION("Return original string for empty input") {
+        REQUIRE(std::get<std::string>(numerical_str_convert("")) == "");
+    }
 }

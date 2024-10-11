@@ -1,5 +1,3 @@
-import { performPolynomialDecryption } from './yourModule'; // Adjust the import path accordingly
-
 describe('performPolynomialDecryption', () => {
     test('basic functionality', () => {
         expect(performPolynomialDecryption(4, 5, [1, 2, 3, 4], [5, 6, 7, 8])).toEqual([4, 4, 4, 4]);

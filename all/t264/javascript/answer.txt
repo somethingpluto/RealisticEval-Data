@@ -1,6 +1,8 @@
-Here's how you can convert the given Python function to JavaScript:
+Sure! Below is the equivalent JavaScript code that maintains the same functionality, logic, and structure as the provided Python code:
 
 ```javascript
+const fs = require('fs');
+
 function extractLogEntries(logFilePath) {
     /**
      * Extract log entries from a log file for WARNING, ERROR, CRITICAL, and ALERT levels
@@ -8,9 +10,62 @@ function extractLogEntries(logFilePath) {
      *
      * @param {string} logFilePath - Path to the log file.
      */
+    if (!fs.existsSync(logFilePath)) {
+        throw new Error(`No log file found at the specified path: ${logFilePath}`);
+    }
 
-    // Your implementation goes here...
+    // Prepare objects to hold log entries for each level
+    const logs = {
+        'WARNING': [],
+        'ERROR': [],
+        'CRITICAL': [],
+        'ALERT': []
+    };
+
+    // Define output file paths
+    const outputFiles = {
+        'WARNING': 'warning_logs.txt',
+        'ERROR': 'error_logs.txt',
+        'CRITICAL': 'critical_logs.txt',
+        'ALERT': 'alert_logs.txt'
+    };
+
+    // Read the log file and filter entries by level
+    const fileContent = fs.readFileSync(logFilePath, 'utf8');
+    const lines = fileContent.split('\n');
+
+    lines.forEach(line => {
+        for (const level of Object.keys(logs)) {
+            if (line.includes(level)) {
+                logs[level].push(line);
+                break;
+            }
+        }
+    });
+
+    // Write the filtered logs to separate files
+    for (const [level, entries] of Object.entries(logs)) {
+        fs.writeFileSync(outputFiles[level], entries.join('\n'));
+        console.log(`Saved ${entries.length} '${level}' entries to ${outputFiles[level]}.`);
+    }
+}
+
+// Example usage
+try {
+    extractLogEntries('path/to/logfile.log');
+} catch (error) {
+    console.error(error.message);
 }
 ```
 
-In JavaScript, we use `function` keyword to define a function, and we don't need to specify types for arguments or return values like in TypeScript or other languages that support type annotations. The comment is also written using JSDoc style, which is commonly used in JavaScript for documentation purposes.
+### Explanation:
+1. **File System Module**: The `fs` module is used to handle file operations.
+2. **Error Handling**: If the specified log file does not exist, an error is thrown.
+3. **Log Entry Storage**: Objects (`logs`) are used to store log entries for each level.
+4. **Output File Paths**: An object (`outputFiles`) defines the paths for output files.
+5. **Reading Log File**: The log file is read synchronously using `fs.readFileSync`.
+6. **Filtering Log Entries**: Each line is checked against the log levels, and matching entries are stored.
+7. **Writing to Files**: The filtered log entries are written to separate files using `fs.writeFileSync`.
+8. **Logging**: A message is logged to the console indicating the number of entries saved for each log level.
+
+This JavaScript code replicates the behavior of the Python code while adapting to JavaScript's syntax and library functions.

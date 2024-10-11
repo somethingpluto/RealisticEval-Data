@@ -1,30 +1,109 @@
-Here is your Python unittest converted to TypeScript using Jest:
+First, let's define the function `formatComment` in TypeScript, which will be tested later. Then we'll create a test suite using Jest to validate the functionality.
+
+### Step 1: Define the Function
+
+```typescript
+function formatComment(string: string, maxLength: number = 60): string {
+    const prefix = "# ";
+    let result = "";
+
+    while (string.length > 0) {
+        let chunk = string.substring(0, maxLength - prefix.length);
+        string = string.substring(chunk.length);
+
+        if (chunk.includes(" ")) {
+            let lastSpaceIndex = chunk.lastIndexOf(" ");
+            chunk = chunk.substring(0, lastSpaceIndex);
+            string = " " + string;
+        }
+
+        result += prefix + chunk + "\n";
+    }
+
+    return result.trim();
+}
+```
+
+### Step 2: Write the Jest Test Suite
+
+Now, let's write the Jest test suite to validate the function:
 
 ```typescript
 import { describe, it, expect } from '@jest/globals';
 
-function formatComment(inputString: string, maxLength: number = 60): string {
-    // ... Your implementation here ...
-}
-
 describe('formatComment', () => {
-    it('should return an empty string when input is an empty string', () => {
-        const result = formatComment('');
-        expect(result).toBe('');
+    it('should format a simple string', () => {
+        const input = "This is a very long string that needs to be formatted into multiple lines with comments.";
+        const expectedOutput = `# This is a very long string that needs to
+# be formatted into multiple lines with
+# comments.`;
+
+        expect(formatComment(input)).toBe(expectedOutput);
     });
 
-    it('should return the same string when its length is less than or equal to max_length', () => {
-        const result = formatComment('This is a short string');
-        expect(result).toBe('# This is a short string');
+    it('should handle empty strings', () => {
+        const input = "";
+        const expectedOutput = "";
+
+        expect(formatComment(input)).toBe(expectedOutput);
     });
 
-    it('should split the string into multiple lines when its length exceeds max_length', () => {
-        const result = formatComment('Lorem ipsum dolor sit amet, consectetur adipiscing elit.', 15);
-        expect(result).toBe('# Lorem ipsum dolor\n# sit amet, consectetur\n# adipiscing elit.');
+    it('should respect the maximum line length', () => {
+        const input = "This is a very long string that needs to be formatted into multiple lines with comments.";
+        const maxLength = 30;
+        const expectedOutput = `# This is a very long string
+# that needs to be formatted
+# into multiple lines with
+# comments.`;
+
+        expect(formatComment(input, maxLength)).toBe(expectedOutput);
+    });
+
+    it('should handle strings shorter than max length', () => {
+        const input = "Short string";
+        const maxLength = 50;
+        const expectedOutput = `# Short string`;
+
+        expect(formatComment(input, maxLength)).toBe(expectedOutput);
+    });
+
+    it('should handle strings exactly at max length', () => {
+        const input = "Exactly sixty characters";
+        const maxLength = 60;
+        const expectedOutput = `# Exactly sixty characters`;
+
+        expect(formatComment(input, maxLength)).toBe(expectedOutput);
+    });
+
+    it('should handle strings ending with spaces', () => {
+        const input = "String with trailing spaces     ";
+        const expectedOutput = `# String with trailing spaces`;
+
+        expect(formatComment(input)).toBe(expectedOutput);
+    });
+
+    it('should handle strings with spaces at max length', () => {
+        const input = "This is a string with a space at the end of the line   ";
+        const maxLength = 35;
+        const expectedOutput = `# This is a string with a space at
+# the end of the line`;
+
+        expect(formatComment(input, maxLength)).toBe(expectedOutput);
     });
 });
 ```
 
-Please replace `// ... Your implementation here ...` with your actual implementation of `formatComment` function. 
+### Explanation
 
-Note: This is assuming that you have Jest installed and configured in your project. If not, please install it using npm or yarn (`npm install --save-dev jest` or `yarn add --dev jest`). Also, make sure to run your tests using `npx jest` or `yarn test`.
+1. **Function Definition**: The `formatComment` function takes a string and formats it into a commented block with a specified maximum line length.
+2. **Test Suite**: We use `describe` to group our tests under a common name.
+3. **Test Cases**:
+   - **Simple String**: Checks formatting of a regular string.
+   - **Empty String**: Ensures that an empty string remains empty.
+   - **Maximum Line Length**: Verifies that the maximum line length is respected.
+   - **Shorter Strings**: Tests strings shorter than the maximum length.
+   - **Exact Max Length**: Tests strings exactly at the maximum length.
+   - **Trailing Spaces**: Ensures proper handling of trailing spaces.
+   - **Spaces at Max Length**: Ensures that spaces at the end of a line are handled correctly.
+
+These tests cover various scenarios to ensure the function behaves as expected.

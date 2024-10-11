@@ -1,59 +1,68 @@
-Sure! Here's how you can convert your Python function to TypeScript using the `pandas` library for TypeScript, which is provided by `@pnp/pandas`. Note that TypeScript doesn't have direct support for reading CSV files like Python does with `pandas`, so we'll use the `fetch` API to read the file content and then parse it using `pandas`.
+Certainly! Below is the equivalent TypeScript code for the provided Python script. This code will use `papaparse` for parsing CSV files and `fs` for file system operations:
 
-First, make sure you have the necessary packages installed:
+1. First, you need to install the required dependencies:
+   ```bash
+   npm install papaparse
+   ```
 
-```bash
-npm install @pnp/pandas
-```
-
-Here's the equivalent TypeScript code:
+2. Here is the TypeScript code:
 
 ```typescript
-import { DataFrame } from '@pnp/pandas';
+import fs from 'fs';
+import Papa from 'papaparse';
 
-async function readCsvToDataFrame(filePath: string): Promise<DataFrame> {
-    /**
-     * Reads a CSV file and converts it to a pandas DataFrame.
-     *
-     * @param filePath - The path to the CSV file.
-     * @returns A promise resolving to a DataFrame containing the data from the CSV file.
-     */
-    
-    try {
-        // Fetch the CSV file content
-        const response = await fetch(filePath);
-        if (!response.ok) {
-            throw new Error(`Failed to load CSV file: ${filePath}`);
-        }
-        
-        // Read the text content of the file
-        const csvText = await response.text();
-        
-        // Parse the CSV text into a DataFrame
-        const df = new DataFrame(csvText);
-        
-        return df;
-    } catch (error) {
-        console.error('Error reading CSV file:', error);
-        throw error;
+interface DataFrameRow {
+  [key: string]: string | number;
+}
+
+type DataFrame = DataFrameRow[];
+
+function readCsvToDataFrame(filePath: string): DataFrame | null {
+  try {
+    const fileContent = fs.readFileSync(filePath, 'utf-8');
+    const results = Papa.parse(fileContent, { header: true });
+    if (results.errors.length > 0) {
+      console.error("Error: Could not parse the file.");
+      return null;
     }
+    return results.data as DataFrame;
+  } catch (error) {
+    if (error instanceof Error) {
+      if (error.code === 'ENOENT') {
+        console.error(`Error: The file '${filePath}' was not found.`);
+      } else {
+        console.error(`An error occurred: ${error.message}`);
+      }
+    }
+    return null;
+  }
 }
 
 // Example usage:
-(async () => {
-    try {
-        const filePath = 'path/to/your/file.csv';
-        const dataframe = await readCsvToDataFrame(filePath);
-        console.log(dataframe);
-    } catch (error) {
-        console.error('An error occurred:', error);
-    }
-})();
+const filePath = './example.csv';
+const dataframe = readCsvToDataFrame(filePath);
+if (dataframe) {
+  console.log(dataframe);
+} else {
+  console.log('Failed to load the CSV file.');
+}
 ```
 
-In this TypeScript code:
-- We use the `fetch` API to asynchronously read the CSV file content.
-- We then parse the CSV text into a `DataFrame` using the `@pnp/pandas` library.
-- The function returns a `Promise` that resolves to the `DataFrame`.
+### Explanation:
+1. **Dependencies**: 
+   - `fs` is used for reading the file content.
+   - `papaparse` is used for parsing the CSV content into a structured format.
 
-Make sure to replace `'path/to/your/file.csv'` with the actual path to your CSV file when calling the `readCsvToDataFrame` function.
+2. **Types**:
+   - `DataFrameRow` interface defines the structure of each row in the DataFrame.
+   - `DataFrame` type represents the entire DataFrame as an array of rows.
+
+3. **Function `readCsvToDataFrame`**:
+   - Reads the CSV file using `fs.readFileSync`.
+   - Parses the CSV content using `Papa.parse`.
+   - Handles various errors including file not found, empty file, and parsing errors.
+
+4. **Error Handling**:
+   - Checks for specific error codes and messages to provide meaningful error messages.
+
+This TypeScript code closely mirrors the functionality of the original Python code while adapting to TypeScript's static type system and idiomatic practices.

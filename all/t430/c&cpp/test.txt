@@ -1,83 +1,43 @@
-To convert the given Python unittest test class to a C++ Catch2 test case, you'll need to follow these steps:
-
-1. Define the function `intersect_vertically` in C++.
-2. Write a Catch2 test case to verify its functionality.
-
-Here's how you can do it:
-
-### Step 1: Define the Function `intersect_vertically` in C++
-
-First, create a header file (`rectangle.h`) for your function:
+To create an equivalent test class using Catch2 in C++, we need to define the function `intersect_vertically` and write tests for it. Below is the C++ code using Catch2 that replicates the functionality of the Python code:
 
 ```cpp
-// rectangle.h
-#ifndef RECTANGLE_H
-#define RECTANGLE_H
-
-#include <utility> // For std::pair
-
-bool intersect_vertically(const std::pair<int, int>& rect1_bottom_left,
-                          const std::pair<int, int>& rect1_top_right,
-                          const std::pair<int, int>& rect2_bottom_left,
-                          const std::pair<int, int>& rect2_top_right);
-
-#endif // RECTANGLE_H
-```
-
-Now, implement the function in a source file (`rectangle.cpp`):
-
-```cpp
-// rectangle.cpp
-#include "rectangle.h"
-
-bool intersect_vertically(const std::pair<int, int>& rect1_bottom_left,
-                          const std::pair<int, int>& rect1_top_right,
-                          const std::pair<int, int>& rect2_bottom_left,
-                          const std::pair<int, int>& rect2_top_right) {
-    int rect1_min_y = rect1_bottom_left.second;
-    int rect1_max_y = rect1_top_right.second;
-
-    int rect2_min_y = rect2_bottom_left.second;
-    int rect2_max_y = rect2_top_right.second;
-
-    return !(rect1_max_y <= rect2_min_y || rect2_max_y <= rect1_min_y);
-}
-```
-
-### Step 2: Write a Catch2 Test Case
-
-Create a new file named `test_rectangle.cpp` and write the test cases using Catch2:
-
-```cpp
-// test_rectangle.cpp
-#define CATCH_CONFIG_MAIN
 #include <catch2/catch.hpp>
-#include "rectangle.h"
+#include <tuple>
 
-TEST_CASE("Intersect Vertically", "[intersect_vertically]") {
-    SECTION("Rectangles Intersect Vertically") {
-        auto rect1 = std::make_pair(std::make_pair(0, 0), std::make_pair(5, 3));
-        auto rect2 = std::make_pair(std::make_pair(4, 1), std::make_pair(8, 4));
+// Function to check if two rectangles intersect vertically
+bool intersect_vertically(const std::tuple<int, int, int, int>& rect1,
+                          const std::tuple<int, int, int, int>& rect2) {
+    int y1_rect1 = std::get<1>(rect1);
+    int y2_rect1 = std::get<3>(rect1);
+    int y1_rect2 = std::get<1>(rect2);
+    int y2_rect2 = std::get<3>(rect2);
 
-        REQUIRE(intersect_vertically(rect1.first, rect1.second, rect2.first, rect2.second));
+    // Check if there is no overlap vertically
+    if (y2_rect1 < y1_rect2 || y2_rect2 < y1_rect1) {
+        return false;
+    }
+    return true;
+}
+
+TEST_CASE("Test intersect_vertically") {
+    SECTION("Rectangles do not intersect vertically") {
+        auto rect1 = std::make_tuple(0, 0, 10, 5);
+        auto rect2 = std::make_tuple(0, 10, 10, 15);
+        REQUIRE(!intersect_vertically(rect1, rect2));
     }
 
-    SECTION("Rectangles Do Not Intersect Vertically") {
-        auto rect1 = std::make_pair(std::make_pair(0, 0), std::make_pair(5, 3));
-        auto rect2 = std::make_pair(std::make_pair(6, 1), std::make_pair(10, 4));
-
-        REQUIRE_FALSE(intersect_vertically(rect1.first, rect1.second, rect2.first, rect2.second));
+    SECTION("Rectangles intersect vertically") {
+        auto rect1 = std::make_tuple(0, 0, 10, 10);
+        auto rect2 = std::make_tuple(0, 5, 10, 15);
+        REQUIRE(intersect_vertically(rect1, rect2));
     }
 }
 ```
 
-### Compilation and Running the Tests
+### Explanation:
+1. **Function Definition**: The `intersect_vertically` function checks if two rectangles intersect vertically based on their y-coordinates.
+2. **Test Class**: We use Catch2's `TEST_CASE` macro to define a test case named "Test intersect_vertically".
+3. **Sections**: Within the test case, we use `SECTION` macros to define different test scenarios.
+4. **Assertions**: We use `REQUIRE` to assert the expected behavior of the `intersect_vertically` function.
 
-To compile and run the tests, you need to link against the Catch2 library. Here’s an example using g++:
-
-```sh
-g++ -std=c++17 -o test_intersect test_rectangle.cpp rectangle.cpp -lcatch
-./test_intersect
-```
-
-This will compile the test cases and execute them. Catch2 will provide output indicating which tests passed or failed.
+This setup ensures that the functionality and logic of the tests are preserved while adapting to the syntax and features of C++ and Catch2.

@@ -1,37 +1,80 @@
-Here's how you can write a Jest test case for your Python function in TypeScript:
+First, let's define the `power` function in TypeScript. We'll need to translate the Python function into a TypeScript function and then write the Jest tests for it.
+
+Here's the TypeScript version of the `power` function:
 
 ```typescript
-import { describe, it, expect } from '@jest/globals';
+import { deepStrictEqual } from "assert";
 
-describe('power', () => {
-  it('should return the correct result for positive exponents', () => {
-    const matrix = [
-      [1, 2],
-      [3, 4]
-    ];
-    const n = 2;
-    const expected = [
-      [7, 10],
-      [15, 22]
-    ];
+function power(matrix: number[][], n: number): number[][] {
+  if (n < 0) throw new Error("Exponent must be non-negative.");
+  if (!Array.isArray(matrix) || !matrix.every(row => Array.isArray(row))) throw new TypeError("Matrix must be a list of lists.");
+  if (!Number.isInteger(n)) throw new TypeError("Exponent must be an integer.");
 
-    // Assuming you have implemented the 'power' function in TypeScript
-    const result = power(matrix, n);
+  const multiplyMatrices = (a: number[][], b: number[][]): number[][] => {
+    const result: number[][] = Array.from({ length: a.length }, () => new Array(a[0].length).fill(0));
+    for (let i = 0; i < a.length; i++) {
+      for (let j = 0; j < b[0].length; j++) {
+        for (let k = 0; k < b.length; k++) {
+          result[i][j] += a[i][k] * b[k][j];
+        }
+      }
+    }
+    return result;
+  };
 
-    expect(result).toEqual(expected);
+  const identityMatrix: number[][] = matrix.map((_, idx) => {
+    return matrix.map((_, idx2) => (idx === idx2 ? 1 : 0));
   });
 
-  it('should throw error for negative exponents', () => {
-    const matrix = [
-      [1, 2],
-      [3, 4]
-    ];
-    const n = -1;
+  let result = identityMatrix;
 
-    // Assuming you have implemented the 'power' function in TypeScript
-    expect(() => power(matrix, n)).toThrowError('n must be a non-negative integer');
+  while (n > 0) {
+    if (n % 2 === 1) {
+      result = multiplyMatrices(result, matrix);
+    }
+    matrix = multiplyMatrices(matrix, matrix);
+    n = Math.floor(n / 2);
+  }
+
+  return result;
+}
+
+export { power };
+```
+
+Now, let's write the Jest tests for this function:
+
+```typescript
+import { power } from './path-to-power-function';
+
+describe('power', () => {
+  it('should handle basic cases', () => {
+    expect(power([[2]], 3)).toEqual([[8]]);
+    expect(power([[1, 2], [3, 4]], 2)).toEqual([[7, 10], [15, 22]]);
+  });
+
+  it('should handle larger matrices', () => {
+    expect(power([[1, 2], [3, 4]], 3)).toEqual([[37, 54], [81, 118]]);
+    expect(power([[0, 1], [1, 1]], 5)).toEqual([[5, 8], [8, 13]]);
+  });
+
+  it('should handle edge cases', () => {
+    expect(power([[1, 0], [0, 1]], 0)).toEqual([[1, 0], [0, 1]]);
+    expect(power([[2, 0], [0, 2]], 1)).toEqual([[2, 0], [0, 2]]);
+  });
+
+  it('should throw errors for invalid inputs', () => {
+    expect(() => power([[1, 2], [3, 4]], -1)).toThrow('Exponent must be non-negative.');
+    expect(() => power([1, 2, 3] as any, 2)).toThrow('Matrix must be a list of lists.');
+    expect(() => power([[1, 2], [3, 4]], 2.5)).toThrow('Exponent must be an integer.');
   });
 });
 ```
 
-In the above code, we're using `@jest/globals` to access the Jest testing functions like `describe`, `it`, and `expect`. We're also assuming that you have implemented the `power` function in TypeScript. This code tests both the functionality of the function with a positive exponent and its error handling when given a negative exponent.
+In this Jest test suite, we have the following test cases:
+- Basic cases with simple matrices and small exponents.
+- Larger matrices with higher exponents.
+- Edge cases such as the identity matrix and the exponent being zero.
+- Error handling for invalid inputs, including negative exponents, non-list inputs, and non-integer exponents.
+
+Make sure to adjust the import path in `import { power } from './path-to-power-function';` to the correct path where your `power` function is defined.

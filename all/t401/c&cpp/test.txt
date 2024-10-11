@@ -1,84 +1,58 @@
-To convert your Python unittest test class to a C++ test case using Catch2, you first need to provide the implementation for the `find_placeholders` function and then write the corresponding test cases in C++. Below is an example of how you can achieve this:
-
-### Step 1: Implement the `find_placeholders` Function in C++
-
-First, let's implement the `find_placeholders` function in C++.
+Below is the equivalent C++ code using Catch2 for the provided Python unittest code:
 
 ```cpp
+#include <catch2/catch_test_macros.hpp>
 #include <string>
 #include <vector>
 #include <regex>
 
+// Function to find placeholders in the given text
 std::vector<std::string> find_placeholders(const std::string& text) {
     std::vector<std::string> placeholders;
-    std::regex pattern(R"(\{\{ ([^}]+) \}\})");
-    auto words_begin = std::sregex_iterator(text.begin(), text.end(), pattern);
-    auto words_end = std::sregex_iterator();
+    std::regex pattern(R"(\{\{ (\w+) \}\})");
+    std::smatch matches;
 
-    for (std::sregex_iterator i = words_begin; i != words_end; ++i) {
-        std::smatch match = *i;
-        placeholders.push_back(match.str(1));
+    std::string::const_iterator searchStart(text.cbegin());
+    while (std::regex_search(searchStart, text.cend(), matches, pattern)) {
+        placeholders.push_back(matches[0]);
+        searchStart = matches.suffix().first;
     }
 
     return placeholders;
 }
-```
 
-### Step 2: Write Test Cases Using Catch2
-
-Next, let's write the test cases using Catch2. Assume you have a file named `test_find_placeholders.cpp`.
-
-```cpp
-#define CATCH_CONFIG_MAIN
-#include "catch.hpp"
-
-#include "find_placeholders.h"
-
-TEST_CASE("Find Placeholders", "[find_placeholders]") {
-    SECTION("Empty String") {
-        std::string text = "";
-        std::vector<std::string> expected = {};
-        REQUIRE(find_placeholders(text) == expected);
+// Test fixture for find_placeholders function
+TEST_CASE("find_placeholders") {
+    // Test case 1: Empty string
+    SECTION("Empty string should return empty vector") {
+        auto result = find_placeholders("");
+        REQUIRE(result.empty());
     }
 
-    SECTION("No Placeholders") {
-        std::string text = "This is a normal sentence.";
-        std::vector<std::string> expected = {};
-        REQUIRE(find_placeholders(text) == expected);
+    // Test case 2: String with no placeholders
+    SECTION("String without placeholders should return empty vector") {
+        auto result = find_placeholders("This is a test string.");
+        REQUIRE(result.empty());
     }
 
-    SECTION("Single Placeholder") {
-        std::string text = "{{ user_name }}";
-        std::vector<std::string> expected = {"user_name"};
-        REQUIRE(find_placeholders(text) == expected);
-    }
-
-    SECTION("Multiple Placeholders") {
-        std::string text = "{{ user_name }} and {{ age }} years old.";
-        std::vector<std::string> expected = {"user_name", "age"};
-        REQUIRE(find_placeholders(text) == expected);
-    }
-
-    SECTION("Placeholders with Spaces") {
-        std::string text = "{{ full name }}";
-        std::vector<std::string> expected = {"full name"};
-        REQUIRE(find_placeholders(text) == expected);
+    // Test case 3: String with placeholders
+    SECTION("String with placeholders should return them") {
+        auto result = find_placeholders("Hello {{ world }}, how are you {{ doing }}?");
+        REQUIRE(result == std::vector<std::string>({"{{ world }}", "{{ doing }}"}));
     }
 }
 ```
 
-### Explanation
+### Explanation:
+1. **Function Definition**: The `find_placeholders` function takes a string as input and returns a vector of strings containing all the placeholders found in the format `{{ placeholder }}`.
 
-1. **Implementation**:
-   - The `find_placeholders` function uses regular expressions to find placeholders in the input string.
-   - It returns a vector of strings containing all the found placeholders.
+2. **Regular Expression Pattern**: The regular expression pattern `\{\{ (\w+) \}\}` is used to match the placeholders in the format `{{ placeholder }}`. The parentheses capture the actual placeholder name.
 
-2. **Test Cases**:
-   - Each `SECTION` represents a different scenario or test case.
-   - The `REQUIRE` macro is used to assert that the actual result matches the expected result.
+3. **Regex Search Loop**: The loop continues searching for matches until no more matches are found. Each match is added to the `placeholders` vector.
 
-3. **Catch2 Configuration**:
-   - `#define CATCH_CONFIG_MAIN` tells Catch2 to define the main function.
-   - `#include "catch.hpp"` includes the Catch2 header file.
+4. **Test Cases**:
+   - **Empty String**: Tests if an empty string returns an empty vector.
+   - **No Placeholders**: Tests if a string with no placeholders returns an empty vector.
+   - **With Placeholders**: Tests if a string with placeholders returns the correct vector of placeholders.
 
-Make sure you have Catch2 installed and properly set up in your development environment. If you're using a build system like CMake, you can add Catch2 as a subdirectory or link it to your project accordingly.
+5. **Assertions**: `REQUIRE` is used to assert the expected results for each test case.

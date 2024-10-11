@@ -1,85 +1,99 @@
-Sure! Below is the equivalent C++ test case using Catch2 for the provided Python unittest test class:
+Sure! Let's convert the given Python code snippet into a C++ test class using Catch2. Since the actual implementation of `dijkstra` is not provided, I'll focus on creating the test class structure and the necessary setup for the tests.
+
+First, let's assume we have the following C++ implementation of the `dijkstra` function:
 
 ```cpp
-#include <catch2/catch.hpp>
 #include <iostream>
 #include <unordered_map>
 #include <vector>
 #include <queue>
+#include <climits>
 
 using namespace std;
 
-struct Node {
-    string name;
-    int weight;
-};
+// Represents a graph as an adjacency list
+using Graph = unordered_map<string, vector<pair<string, int>>>;
 
-struct CompareNode {
-    bool operator()(const Node& n1, const Node& n2) {
-        return n1.weight > n2.weight;
-    }
-};
-
-unordered_map<string, vector<pair<string, int>>> graph = {
-    {"A", {{"B", 1}, {"C", 4}}},
-    {"B", {{"A", 1}, {"C", 2}, {"D", 5}}},
-    {"C", {{"A", 4}, {"B", 2}, {"D", 1}}},
-    {"D", {{"B", 5}, {"C", 1}}}
-};
-
-unordered_map<string, int> dijkstra(const unordered_map<string, vector<pair<string, int>>>& graph, const string& start) {
+unordered_map<string, int> dijkstra(const Graph& graph, const string& start) {
+    // Implement Dijkstra's algorithm here
     unordered_map<string, int> distances;
-    priority_queue<Node, vector<Node>, CompareNode> pq;
+    priority_queue<pair<int, string>, vector<pair<int, string>>, greater<pair<int, string>>> pq;
 
-    for (auto& entry : graph) {
-        if (entry.first == start) {
-            distances[entry.first] = 0;
-            pq.push({entry.first, 0});
-        } else {
-            distances[entry.first] = INT_MAX;
-        }
+    // Initialize distances to infinity and add the start node with distance 0
+    for (const auto& node : graph) {
+        distances[node.first] = INT_MAX;
     }
+    distances[start] = 0;
+    pq.push({0, start});
 
     while (!pq.empty()) {
-        Node current = pq.top();
+        string current = pq.top().second;
         pq.pop();
 
-        for (auto neighbor : graph.at(current.name)) {
-            int new_distance = current.weight + neighbor.second;
+        if (distances[current] == INT_MAX) {
+            continue;  // Already processed this node
+        }
 
-            if (new_distance < distances[neighbor.first]) {
-                distances[neighbor.first] = new_distance;
-                pq.push({neighbor.first, new_distance});
+        for (const auto& neighbor : graph.at(current)) {
+            string next = neighbor.first;
+            int weight = neighbor.second;
+
+            if (distances[current] + weight < distances[next]) {
+                distances[next] = distances[current] + weight;
+                pq.push({distances[next], next});
             }
         }
     }
 
     return distances;
 }
+```
 
-TEST_CASE("Dijkstra's Algorithm Test") {
-    auto result = dijkstra(graph, "A");
+Now, let's create the Catch2 test class:
 
-    REQUIRE(result["A"] == 0);
-    REQUIRE(result["B"] == 1);
-    REQUIRE(result["C"] == 3);
-    REQUIRE(result["D"] == 4);
+```cpp
+#include "catch.hpp"
+#include <unordered_map>
+#include <vector>
+#include <string>
 
-    // Add more test cases as needed
+using Graph = unordered_map<string, vector<pair<string, int>>>;
+using Distances = unordered_map<string, int>;
+
+TEST_CASE("Dijkstra's algorithm works correctly", "[dijkstra]") {
+    SECTION("Empty graph") {
+        Graph emptyGraph;
+        REQUIRE(dijkstra(emptyGraph, "A").empty());
+    }
+
+    SECTION("Single node graph") {
+        Graph singleNodeGraph{{"A", {}}};
+        Distances expectedDistances{{"A", 0}};
+        REQUIRE(dijkstra(singleNodeGraph, "A") == expectedDistances);
+    }
+
+    SECTION("Simple graph") {
+        Graph simpleGraph{
+            {"A", {{"B", 1}, {"C", 4}}},
+            {"B", {{"A", 1}, {"C", 2}, {"D", 5}}},
+            {"C", {{"A", 4}, {"B", 2}, {"D", 1}}},
+            {"D", {{"B", 5}, {"C", 1}}}
+        };
+        Distances expectedDistances{
+            {"A", 0},
+            {"B", 1},
+            {"C", 3},
+            {"D", 4}
+        };
+        REQUIRE(dijkstra(simpleGraph, "A") == expectedDistances);
+    }
 }
 ```
 
-### Explanation:
-1. **Graph Representation**: The `graph` variable represents the adjacency list of the graph. Each key is a node, and the value is a list of pairs (neighbor, weight).
+In this test class, we define three test cases:
 
-2. **dijkstra Function**:
-   - Initializes the `distances` map where each node is initially set to `INT_MAX` except for the start node which is set to 0.
-   - Uses a priority queue (`pq`) to always process the node with the smallest distance first.
-   - Iterates through the neighbors of the current node and updates their distances if a shorter path is found.
+1. **Empty graph**: Verifies that the function returns an empty map when the input graph is empty.
+2. **Single node graph**: Verifies that the function correctly sets the distance of the single node to zero.
+3. **Simple graph**: Verifies that the function correctly calculates the shortest paths in a more complex graph.
 
-3. **Catch2 Test Case**:
-   - Defines a test case named "Dijkstra's Algorithm Test".
-   - Calls the `dijkstra` function with the sample graph and start node "A".
-   - Checks that the calculated distances match the expected results using `REQUIRE`.
-
-This should give you a good starting point for testing Dijkstra's algorithm in C++ using Catch2. You can add more test cases as needed to cover different scenarios.
+Make sure you include the Catch2 library in your project and compile with the appropriate flags to enable Catch2. You can run these tests using a command like `./your_test_executable --run-test=Dijkstra's\ algorithm\ works\ correctly`.

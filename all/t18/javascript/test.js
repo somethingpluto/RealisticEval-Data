@@ -1,5 +1,3 @@
-const { floatToRgb } = require('./yourModule'); // Adjust the import as needed
-
 describe('floatToRgb', () => {
     test('pure red', () => {
         // Value at the lower boundary (0.0) should return pure red

@@ -1,5 +1,3 @@
-const matrixMultiply = require('./matrixMultiply'); // Adjust the path as needed
-
 describe('Matrix Multiplication', () => {
     test('Standard matrices', () => {
         const mat1 = [[1, 2], [3, 4]];

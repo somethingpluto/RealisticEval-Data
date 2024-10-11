@@ -1,38 +1,65 @@
-Here's how you could translate your Python function into TypeScript:
+Sure! Here is the equivalent TypeScript code for the provided Python functions:
 
 ```typescript
-interface SequenceResult {
-    [key: string]: boolean;
-}
+function readSequencesFromFile(filename: string): number[][] {
+    const sequences: number[][] = [];
+    const fileContent = require('fs').readFileSync(filename, 'utf8');
+    const lines = fileContent.split('\n');
 
-function checkSequences(filename: string): SequenceResult {
-    // Your logic here
-}
-```
-
-This will create an interface `SequenceResult` with key-value pairs where keys are strings and values are booleans. This matches the return type of your Python function.
-
-However, note that reading files in TypeScript requires using Node.js' built-in 'fs' module or similar libraries which aren't available in browser-based JavaScript environments. Here's an example of how you might read a file asynchronously:
-
-```typescript
-import * as fs from 'fs';
-import * as path from 'path';
-
-interface SequenceResult {
-    [key: string]: boolean;
-}
-
-async function checkSequences(filename: string): Promise<SequenceResult> {
-    const filePath = path.resolve(__dirname, filename);
-    try {
-        const data = await fs.promises.readFile(filePath, 'utf8');
-        // Process data here...
-        return {};
-    } catch (error) {
-        console.error('Error reading file:', error);
-        return {};
+    for (const line of lines) {
+        // Assuming sequences are comma-separated in the file
+        const seq = line.trim().split(',').map((num) => parseInt(num, 10));
+        sequences.push(seq);
     }
+
+    return sequences;
+}
+
+function isMunodiSequence(sequence: number[]): boolean {
+    if (sequence.length < 2) {
+        return false;  // A sequence with less than 2 elements cannot be a Munodi sequence
+    }
+
+    const commonDifference = sequence[1] - sequence[0];
+    for (let i = 2; i < sequence.length; i++) {
+        if (sequence[i] - sequence[i - 1] !== commonDifference) {
+            return false;  // Found a different difference, not a Munodi sequence
+        }
+    }
+
+    return true;  // All differences are the same
+}
+
+function checkSequences(filename: string): { [key: string]: boolean } {
+    const sequences = readSequencesFromFile(filename);
+    const results: { [key: string]: boolean } = {};
+
+    for (const seq of sequences) {
+        const key = JSON.stringify(seq);
+        results[key] = isMunodiSequence(seq);
+    }
+
+    return results;
 }
 ```
 
-In this version of the function, we're returning a promise because reading a file is an asynchronous operation. We use the `fs.promises.readFile()` method to read the file, which returns a promise that resolves with the contents of the file. If there's an error while reading the file, we catch it and log it to the console before returning an empty object.
+### Explanation:
+
+1. **Type Definitions**:
+   - `readSequencesFromFile` returns a list of lists (`number[][]`).
+   - `isMunodiSequence` takes a list of numbers (`number[]`) and returns a boolean.
+   - `checkSequences` returns an object with keys as strings (JSON representations of sequences) and values as booleans.
+
+2. **File Reading**:
+   - In TypeScript, we use Node.js's `fs` module to read the file synchronously. The file content is read using `readFileSync`.
+
+3. **Sequence Parsing**:
+   - Each line is split by commas, and each element is converted to an integer using `parseInt`.
+
+4. **Munodi Sequence Check**:
+   - The function checks if the sequence has at least two elements and then verifies if it is an arithmetic sequence.
+
+5. **Result Mapping**:
+   - The sequences are checked one by one, and the results are stored in an object using `JSON.stringify` to create unique keys for each sequence.
+
+This TypeScript code maintains the functionality and logic of the original Python code while adapting to TypeScript's syntax and static type system.

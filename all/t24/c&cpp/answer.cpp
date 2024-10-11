@@ -25,17 +25,3 @@ void convertYamlToJson(const std::string& yamlFile, const std::string& jsonFile)
         std::cerr << "Error: " << e.what() << std::endl;
     }
 }
-
-int main(int argc, char* argv[]) {
-    if (argc != 3) {
-        std::cerr << "Usage: " << argv[0] << " <yaml_file> <json_file>" << std::endl;
-        return 1;
-    }
-
-    std::string yamlFile = argv[1];
-    std::string jsonFile = argv[2];
-    
-    convertYamlToJson(yamlFile, jsonFile);
-
-    return 0;
-}

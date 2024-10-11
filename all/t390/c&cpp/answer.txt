@@ -1,31 +1,52 @@
-Here is an example of how you might convert the Python function `split_into_sentences` into C++:
+Sure! Below is the equivalent C++ code for the given Python function. This code will split the input text into sentences based on the same criteria used in the Python code:
 
-```c++
+```cpp
+#include <iostream>
 #include <string>
 #include <vector>
+#include <regex>
 
-std::vector<std::string> split_into_sentences(const std::string &text) {
+std::vector<std::string> split_into_sentences(const std::string& text) {
+    // Check if the input is a valid string (in C++, this check is implicit since the function parameter is already a string)
+    
+    // Regular expression to split the text where there is a punctuation followed by space or end of string
+    // This handles situations where punctuation might be followed by a quotation mark or other punctuation
+    std::regex sentence_delimiters(R"((?<=[.!?])\s+(?=[A-Z])|(?<=[.!?]["”’])\s+(?=[A-Z]))");
+
+    // Split the text using the defined regular expression
+    std::sregex_token_iterator iter(text.begin(), text.end(), sentence_delimiters, -1);
+    std::sregex_token_iterator end;
+
     std::vector<std::string> sentences;
-    size_t start = 0;
-    while(start < text.size()) {
-        size_t end = text.find_first_of(".!?;", start);
-        if(end == std::string::npos) {
-            end = text.size();
+    for (; iter != end; ++iter) {
+        std::string sentence = *iter;
+        // Remove any leading or trailing whitespace from each sentence
+        auto start = sentence.find_first_not_of(" \t\n\r\f\v");
+        auto end = sentence.find_last_not_of(" \t\n\r\f\v");
+        if (start != std::string::npos) {
+            sentence = sentence.substr(start, (end - start + 1));
+            sentences.push_back(sentence);
         }
-        std::string sentence = text.substr(start, end - start + 1);
-        sentence.erase(sentence.begin(), std::find_if(sentence.begin(), sentence.end(),
-            [](unsigned char ch){ return !isspace(ch); }));
-        sentence.erase(std::find_if(sentence.rbegin(), sentence.rend(),
-            [](unsigned char ch){ return !isspace(ch); }).base(), sentence.end());
-        sentences.push_back(sentence);
-        start = end + 2;
     }
+
+    // Return the cleaned list of sentences
     return sentences;
+}
+
+int main() {
+    std::string text = "Hello World. This is a test! Isn't it great? Yes, it is.";
+    std::vector<std::string> sentences = split_into_sentences(text);
+
+    for (const auto& sentence : sentences) {
+        std::cout << sentence << std::endl;
+    }
+
+    return 0;
 }
 ```
 
-This function splits the given string into sentences based on punctuation marks (`.` , `,`, `!`, `?`, `;`). It also trims any leading or trailing white spaces from each sentence before adding it to the result vector.
-
-Please note that this is a simplified version and does not handle all edge cases like consecutive punctuation marks, quotation marks inside sentences etc. You may need to adjust it according to your specific requirements. 
-
-Also, make sure to include the necessary header files in your actual implementation file and link against the standard library when compiling your C++ program.
+### Explanation:
+1. **Regular Expression**: The regex pattern `R"((?<=[.!?])\s+(?=[A-Z])|(?<=[.!?]["”’])\s+(?=[A-Z]))"` is used to identify sentence delimiters.
+2. **Splitting Text**: `std::sregex_token_iterator` is used to split the input text using the regex pattern.
+3. **Removing Whitespace**: Each sentence is trimmed of leading and trailing whitespace before being added to the result vector.
+4. **Main Function**: Demonstrates how to call the `split_into_sentences` function and print the resulting sentences.

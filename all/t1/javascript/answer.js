@@ -1,16 +1,18 @@
 function numericalStrConvert(value) {
-  // check if value is an integer
-  const intValue = parseInt(value);
-  if (!isNaN(intValue)) {
-    return intValue;
-  }
 
-  // check if value is a floating point number
-  const floatValue = parseFloat(value);
-  if (!isNaN(floatValue)) {
-    return floatValue;
-  }
 
-  // if neither, return the original string
-  return value;
+    // Check if the value is an integer
+    const intValue = parseInt(value, 10);
+    if (!isNaN(intValue) && intValue.toString() === value) {
+        return intValue;
+    }
+
+    // Check if the value is a float
+    const floatValue = parseFloat(value);
+    if (!isNaN(floatValue) && floatValue.toString() === value) {
+        return floatValue;
+    }
+
+    // Return the original string if neither
+    return value;
 }

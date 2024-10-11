@@ -1,99 +1,113 @@
-Certainly! Below is the equivalent JavaScript test case using Jest for the provided Python `unittest` test class. This example assumes you have a function `writeUniqueLineToFile` that behaves similarly to the Python function you described.
+Sure, let's convert the provided Python function into a JavaScript function and then create a Jest test suite for it. First, we'll define the JavaScript function equivalent to `write_unique_line_to_file`.
 
-First, let's define the function in JavaScript:
+### JavaScript Function Equivalent
 
 ```javascript
-// write-unique-line-to-file.js
-
 function writeUniqueLineToFile(filename, lineContent) {
+    // Check if the file exists
     const fs = require('fs');
     const path = require('path');
 
-    const filePath = path.join(__dirname, filename);
+    if (!fs.existsSync(filename)) {
+        fs.writeFileSync(filename, lineContent + '\n', 'utf8');
+        return;
+    }
 
-    try {
-        // Read the existing file content
-        let data = fs.readFileSync(filePath, 'utf8');
-        const lines = data.split('\n').filter(line => line.trim() !== '');
+    // Read the existing lines
+    const existingLines = fs.readFileSync(filename, 'utf8').split('\n');
 
-        // Check if the line already exists
-        if (!lines.includes(lineContent)) {
-            // Append the new line to the file
-            fs.appendFileSync(filePath, `\n${lineContent}`);
-        }
-    } catch (error) {
-        if (error.code === 'ENOENT') {
-            // File does not exist, create it and write the line
-            fs.writeFileSync(filePath, lineContent);
-        } else {
-            throw error;
-        }
+    // Check if the line already exists
+    const lineExists = existingLines.includes(lineContent);
+    if (!lineExists) {
+        // Append the new line
+        fs.appendFileSync(filename, lineContent + '\n', 'utf8');
     }
 }
-
-module.exports = { writeUniqueLineToFile };
 ```
 
-Next, let's write the Jest test cases:
+### Jest Test Suite
+
+Now, let's create the Jest test suite to verify the functionality of `writeUniqueLineToFile`. We will use Jest's `beforeEach` hook to set up the environment and mock the file system for each test case.
 
 ```javascript
-// write-unique-line-to-file.test.js
-
-const { writeUniqueLineToFile } = require('./write-unique-line-to-file');
-const fs = require('fs');
-const path = require('path');
+const { writeUniqueLineToFile } = require('./writeUniqueLineToFile');
+const { tmpdir } = require('os');
+const { join } = require('path');
+const { mkdirSync, writeFileSync, readFileSync, existsSync } = require('fs');
 
 describe('writeUniqueLineToFile', () => {
-    const testFilePath = path.join(__dirname, 'test.txt');
+    const tempDir = tmpdir();
+    const testFile = join(tempDir, 'testfile.txt');
 
     beforeEach(() => {
-        // Clear the test file before each test
-        if (fs.existsSync(testFilePath)) {
-            fs.unlinkSync(testFilePath);
+        // Clean up the test file before each test
+        if (existsSync(testFile)) {
+            writeFileSync(testFile, '');
+        } else {
+            mkdirSync(tempDir, { recursive: true });
+            writeFileSync(testFile, '');
         }
     });
 
-    afterEach(() => {
-        // Clean up after each test
-        if (fs.existsSync(testFilePath)) {
-            fs.unlinkSync(testFilePath);
-        }
+    it('should write a unique line to the file', () => {
+        const line1 = 'Hello, world!';
+        const line2 = 'Goodbye, world!';
+        const line3 = 'Hello, world!';  // Duplicate line
+
+        writeUniqueLineToFile(testFile, line1);
+        writeUniqueLineToFile(testFile, line2);
+        writeUniqueLineToFile(testFile, line3);
+
+        const content = readFileSync(testFile, 'utf8');
+        const lines = content.split('\n');
+
+        expect(lines).toContain(line1);
+        expect(lines).toContain(line2);
+        expect(lines).not.toContain(line3);
     });
 
-    test('writes a unique line to an empty file', async () => {
-        await writeUniqueLineToFile(testFilePath, 'Hello, World!');
-        const data = fs.readFileSync(testFilePath, 'utf8');
-        expect(data).toBe('Hello, World!\n');
+    it('should not write duplicate lines to the file', () => {
+        const line1 = 'Hello, world!';
+        const line2 = 'Goodbye, world!';
+        const line3 = 'Hello, world!';  // Duplicate line
+
+        writeUniqueLineToFile(testFile, line1);
+        writeUniqueLineToFile(testFile, line2);
+        writeUniqueLineToFile(testFile, line3);
+
+        const content = readFileSync(testFile, 'utf8');
+        const lines = content.split('\n');
+
+        expect(lines).toContain(line1);
+        expect(lines).toContain(line2);
+        expect(lines).not.toContain(line3);
     });
 
-    test('does not write a duplicate line to the file', async () => {
-        await writeUniqueLineToFile(testFilePath, 'Hello, World!');
-        await writeUniqueLineToFile(testFilePath, 'Hello, World!');
-        const data = fs.readFileSync(testFilePath, 'utf8');
-        expect(data).toBe('Hello, World!\n');
-    });
+    it('should create the file if it does not exist', () => {
+        const line1 = 'Hello, world!';
+        const line2 = 'Goodbye, world!';
 
-    test('appends a new line to an existing file', async () => {
-        fs.writeFileSync(testFilePath, 'Existing Line\n');
-        await writeUniqueLineToFile(testFilePath, 'New Line');
-        const data = fs.readFileSync(testFilePath, 'utf8');
-        expect(data).toBe('Existing Line\nNew Line\n');
+        writeUniqueLineToFile(testFile, line1);
+        writeUniqueLineToFile(testFile, line2);
+
+        const content = readFileSync(testFile, 'utf8');
+        const lines = content.split('\n');
+
+        expect(lines).toContain(line1);
+        expect(lines).toContain(line2);
     });
 });
 ```
 
-In this JavaScript code:
-- We import the `writeUniqueLineToFile` function from the `write-unique-line-to-file.js` file.
-- We use Jest's `beforeEach` and `afterEach` hooks to clean up the test file before and after each test.
-- We write three tests to ensure that the function behaves as expected:
-  1. Writing a unique line to an empty file.
-  2. Not writing a duplicate line to the file.
-  3. Appending a new line to an existing file.
+### Explanation
 
-To run the tests, make sure you have Jest installed and then execute the following command in your terminal:
+1. **Setup**: 
+   - The `beforeEach` hook ensures that the test file is cleaned up or created before each test case.
+   - We use `mkdirSync` and `writeFileSync` to create and initialize the test file.
 
-```sh
-npx jest write-unique-line-to-file.test.js
-```
+2. **Test Cases**:
+   - **Test 1**: Verifies that a unique line is written to the file and duplicate lines are not written.
+   - **Test 2**: Repeats the first test case to ensure consistency.
+   - **Test 3**: Checks that the file is created and lines are written when the file initially does not exist.
 
-This will run the Jest test suite and provide you with the results.
+This setup maintains the functionality and logic of the original Python test cases while adapting them to Jest.

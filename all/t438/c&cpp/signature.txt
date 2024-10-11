@@ -1,60 +1,61 @@
-Here is your Python function converted to C++ code:
+Here is the equivalent C++ code for the provided Python function, including the translation of comments and docstring into C++ comments:
 
 ```cpp
 #include <fstream>
 #include <sstream>
-#include <vector>
 #include <string>
+#include <vector>
 
-// Define a structure for DataFrame row
-struct Row {
-    std::vector<std::string> values;
-};
+// A simple structure to mimic a DataFrame
+struct DataFrame {
+    std::vector<std::vector<std::string>> data;
+    std::vector<std::string> columns;
 
-// Define a class for DataFrame
-class DataFrame {
-public:
-    // Method to add a row to the DataFrame
-    void AddRow(const Row& row) {
-        rows.push_back(row);
-    }
-
-    // Method to get the number of rows in the DataFrame
-    size_t GetRowCount() const {
-        return rows.size();
-    }
-
-private:
-    std::vector<Row> rows;
+    // Constructor to initialize the DataFrame with column names and data
+    DataFrame(const std::vector<std::string>& cols, const std::vector<std::vector<std::string>>& dat)
+        : columns(cols), data(dat) {}
 };
 
 /**
- * @brief Reads a CSV file and converts it to a DataFrame.
+ * Reads a CSV file and converts it to a DataFrame-like structure.
  *
  * @param file_path The path to the CSV file.
- * @return DataFrame A DataFrame containing the data from the CSV file.
+ * @return DataFrame containing the data from the CSV file.
  */
-DataFrame ReadCSVToDataFrame(const std::string& file_path) {
-    DataFrame df;
-
+DataFrame read_csv_to_dataframe(const std::string& file_path) {
     std::ifstream file(file_path);
     if (!file.is_open()) {
-        throw std::runtime_error("Could not open file");
+        throw std::runtime_error("Could not open file: " + file_path);
     }
 
     std::string line;
+    std::vector<std::string> headers;
+    std::vector<std::vector<std::string>> data;
+    bool header_read = false;
+
     while (std::getline(file, line)) {
-        Row row;
         std::stringstream ss(line);
-        std::string value;
-        while (std::getline(ss, value, ',')) {
-            row.values.push_back(value);
+        std::string cell;
+        std::vector<std::string> row;
+        while (std::getline(ss, cell, ',')) {
+            row.push_back(cell);
         }
-        df.AddRow(row);
+        if (!header_read) {
+            headers = row;
+            header_read = true;
+        } else {
+            data.push_back(row);
+        }
     }
 
-    return df;
+    file.close();
+    return DataFrame(headers, data);
 }
 ```
 
-This C++ code reads a CSV file and converts it into a `DataFrame` object. It defines a `Row` struct to represent each row of the DataFrame and a `DataFrame` class to store multiple rows. The `ReadCSVToDataFrame` function opens the specified CSV file, reads its contents line by line, splits each line into individual values using commas as delimiters, creates a `Row` object with these values, and adds it to the `DataFrame`. Finally, it returns the `DataFrame` object containing all the data from the CSV file.
+### Explanation:
+1. **Imports**: In C++, we use `#include` directives to include necessary libraries. Here, we include `<fstream>` for file handling, `<sstream>` for string stream operations, and `<string>` and `<vector>` for basic data structures.
+2. **DataFrame Structure**: Since C++ does not have an exact equivalent to pandas DataFrame, we create a simple `struct` named `DataFrame` which holds a vector of vectors to represent the data and a vector of strings to represent the column names.
+3. **Function Definition**: The function `read_csv_to_dataframe` reads the CSV file and constructs a `DataFrame` object. It uses `std::ifstream` to open the file, `std::getline` to read lines, and `std::stringstream` to split each line into cells based on commas.
+4. **Comments and Documentation**: The Python docstring is converted into a C++ style multi-line comment using `/** */`, and the arguments and return types are documented appropriately.
+5. **Error Handling**: If the file cannot be opened, a `std::runtime_error` is thrown with a descriptive message.

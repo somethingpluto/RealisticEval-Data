@@ -1,5 +1,3 @@
-const { getLineSegmentIntersection } = require('./path/to/your/code'); // Adjust the import based on your file structure
-
 describe('TestLineSegmentIntersection', () => {
 
     test('intersecting_lines', () => {

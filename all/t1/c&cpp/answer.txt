@@ -1,153 +1,67 @@
-Sure! Here's how you can translate your Python function into C and C++:
-
-### C Code
-
-```c
-#include <stdio.h>
-#include <stdlib.h>
-#include <ctype.h>
-#include <string.h>
-
-int is_integer(const char *str) {
-    int i = 0;
-    while (isspace(str[i])) i++;
-    if (str[i] == '-' || str[i] == '+') i++;
-    for (; str[i]; i++) {
-        if (!isdigit(str[i])) return 0;
-    }
-    return 1;
-}
-
-double is_float(const char *str) {
-    int i = 0;
-    while (isspace(str[i])) i++;
-    if (str[i] == '-' || str[i] == '+') i++;
-    int dot_count = 0;
-    for (; str[i]; i++) {
-        if (str[i] == '.') {
-            dot_count++;
-            if (dot_count > 1) return NAN; // More than one dot is not allowed in a valid float
-        } else if (!isdigit(str[i])) return NAN;
-    }
-    return atof(str);
-}
-
-union ConvertResult {
-    int integer;
-    double floating_point;
-    char *original_string;
-};
-
-union ConvertResult numerical_str_convert(const char *value) {
-    union ConvertResult result;
-
-    if (is_integer(value)) {
-        result.integer = atoi(value);
-        result.original_string = NULL;
-        return result;
-    }
-
-    double float_value = is_float(value);
-    if (!isnan(float_value)) {
-        result.floating_point = float_value;
-        result.original_string = NULL;
-        return result;
-    }
-
-    result.original_string = strdup(value); // Duplicate the string because we're returning a pointer to it
-    result.integer = 0;
-    result.floating_point = 0.0;
-    return result;
-}
-
-int main() {
-    const char *test_values[] = {"123", "456.789", "abc", "123.45a"};
-    for (const char *value : test_values) {
-        union ConvertResult result = numerical_str_convert(value);
-        if (result.original_string != NULL) {
-            printf("Original String: %s\n", result.original_string);
-            free(result.original_string); // Don't forget to free the duplicated string
-        } else if (result.integer != 0) {
-            printf("Integer: %d\n", result.integer);
-        } else {
-            printf("Floating Point: %.3f\n", result.floating_point);
-        }
-    }
-    return 0;
-}
-```
-
-### C++ Code
+Here’s how you can translate the provided Python code into C++:
 
 ```cpp
 #include <iostream>
 #include <string>
 #include <sstream>
-#include <cmath>
+#include <variant>
 
-bool is_integer(const std::string &str) {
-    size_t pos;
-    std::stoll(str, &pos);
-    return pos == str.length();
-}
-
-double is_float(const std::string &str) {
+std::variant<int, float, std::string> numericalStrConvert(const std::string& value) {
+    // Try to convert to an integer
     try {
-        size_t pos;
-        double val = std::stod(str, &pos);
-        if (pos == str.length()) return val;
-    } catch (...) {}
-    return NAN;
-}
-
-struct ConvertResult {
-    union {
-        int integer;
-        double floating_point;
-        std::string original_string;
-    };
-    bool is_original_string;
-
-    ConvertResult(int val) : integer(val), is_original_string(false) {}
-    ConvertResult(double val) : floating_point(val), is_original_string(false) {}
-    ConvertResult(std::string str) : original_string(str), is_original_string(true) {}
-
-    ~ConvertResult() {
-        if (is_original_string) {
-            original_string.~basic_string<char>();
+        size_t idx;
+        int intValue = std::stoi(value, &idx);
+        // Ensure the entire string was consumed
+        if (idx == value.length()) {
+            return intValue;
         }
-    }
-};
-
-ConvertResult numerical_str_convert(const std::string &value) {
-    if (is_integer(value)) {
-        return ConvertResult(std::stoi(value));
+    } catch (const std::invalid_argument&) {
+        // Not an integer
+    } catch (const std::out_of_range&) {
+        // Integer out of range
     }
 
-    double float_value = is_float(value);
-    if (!std::isnan(float_value)) {
-        return ConvertResult(float_value);
+    // Try to convert to a float
+    try {
+        size_t idx;
+        float floatValue = std::stof(value, &idx);
+        // Ensure the entire string was consumed
+        if (idx == value.length()) {
+            return floatValue;
+        }
+    } catch (const std::invalid_argument&) {
+        // Not a float
+    } catch (const std::out_of_range&) {
+        // Float out of range
     }
 
-    return ConvertResult(value);
+    // Return the original string if neither conversion succeeded
+    return value;
 }
 
 int main() {
-    std::vector<std::string> test_values = {"123", "456.789", "abc", "123.45a"};
-    for (const auto &value : test_values) {
-        ConvertResult result = numerical_str_convert(value);
-        if (result.is_original_string) {
-            std::cout << "Original String: " << result.original_string << std::endl;
-        } else if (result.integer != 0) {
-            std::cout << "Integer: " << result.integer << std::endl;
-        } else {
-            std::cout << "Floating Point: " << result.floating_point << std::endl;
-        }
+    std::string input;
+    std::cout << "Enter a value: ";
+    std::cin >> input;
+
+    auto result = numericalStrConvert(input);
+
+    // Check the type of the result and print it
+    if (std::holds_alternative<int>(result)) {
+        std::cout << "Converted to int: " << std::get<int>(result) << std::endl;
+    } else if (std::holds_alternative<float>(result)) {
+        std::cout << "Converted to float: " << std::get<float>(result) << std::endl;
+    } else {
+        std::cout << "Original string: " << std::get<std::string>(result) << std::endl;
     }
+
     return 0;
 }
 ```
 
-These codes provide the equivalent functionality of your Python function in both C and C++. The `numerical_str_convert` function attempts to convert the input string to an integer or a floating-point number, and if neither conversion is successful, it returns the original string. The results are stored in a union to handle different data types.
+### Explanation:
+1. **Function Signature**: In C++, we use `std::variant` to return multiple types (int, float, or string).
+2. **String to Number Conversion**: We use `std::stoi` and `std::stof` for converting strings to integers and floats, respectively, along with error handling.
+3. **Main Function**: It reads input from the user, calls the conversion function, and prints the result based on its type.
 
-In the C++ version, I've used a struct with a union to store the result and added a destructor to properly manage the memory when the original string is returned.
+Make sure to include the necessary headers and to compile with a C++17 or later standard due to the use of `std::variant`.

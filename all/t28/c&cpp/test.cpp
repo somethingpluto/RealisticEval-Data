@@ -1,90 +1,53 @@
-#define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
-#include "catch.hpp"
-#include <iostream>
-#include <sstream>
-#include <vector>
-#include <cstdint>
-
-void print_memory_bits(const std::vector<uint8_t>& memory_section) {
-    for (size_t byte_index = 0; byte_index < memory_section.size(); ++byte_index) {
-        std::cout << "Byte " << byte_index << ": ";
-        uint8_t byte = memory_section[byte_index];
-        
-        for (int bit_index = 7; bit_index >= 0; --bit_index) {
-            // Shift the bit to the right and check the least significant bit
-            int bit_status = (byte >> bit_index) & 1;
-            std::cout << bit_status << " ";
-        }
-        std::cout << std::endl;  // Newline after each byte
+class OutputCapture {
+public:
+    OutputCapture() {
+        // Redirect stdout to a stringstream
+        old_buf = std::cout.rdbuf(buffer.rdbuf());
     }
-}
 
-TEST_CASE("Single byte is printed correctly", "[print_memory_bits]") {
-    std::vector<uint8_t> memory_section = {0b10101010};
-    
-    std::ostringstream buffer;
-    std::streambuf* prevcoutbuf = std::cout.rdbuf(buffer.rdbuf());  // Redirect cout to buffer
-    
-    print_memory_bits(memory_section);
-    
-    std::string output = buffer.str();
-    std::cout.rdbuf(prevcoutbuf);  // Restore original stream buffer
-    std::string expected_output = "Byte 0: 1 0 1 0 1 0 1 0 \n";
-    REQUIRE(output == expected_output);
-}
+    ~OutputCapture() {
+        // Restore stdout
+        std::cout.rdbuf(old_buf);
+    }
 
-TEST_CASE("Multiple bytes are printed correctly", "[print_memory_bits]") {
-    std::vector<uint8_t> memory_section = {0b11001100, 0b11110000};
-    
-    std::ostringstream buffer;
-    std::streambuf* prevcoutbuf = std::cout.rdbuf(buffer.rdbuf());  // Redirect cout to buffer
-    
-    print_memory_bits(memory_section);
-    
-    std::string output = buffer.str();
-    std::cout.rdbuf(prevcoutbuf);  // Restore original stream buffer
-    std::string expected_output = "Byte 0: 1 1 0 0 1 1 0 0 \nByte 1: 1 1 1 1 0 0 0 0 \n";
-    REQUIRE(output == expected_output);
-}
+    std::string str() const {
+        return buffer.str();
+    }
 
-TEST_CASE("All zeros byte is printed correctly", "[print_memory_bits]") {
-    std::vector<uint8_t> memory_section = {0b00000000};
-    
-    std::ostringstream buffer;
-    std::streambuf* prevcoutbuf = std::cout.rdbuf(buffer.rdbuf());  // Redirect cout to buffer
-    
-    print_memory_bits(memory_section);
-    
-    std::string output = buffer.str();
-    std::cout.rdbuf(prevcoutbuf);  // Restore original stream buffer
-    std::string expected_output = "Byte 0: 0 0 0 0 0 0 0 0 \n";
-    REQUIRE(output == expected_output);
-}
+private:
+    std::stringstream buffer;
+    std::streambuf* old_buf;
+};
+TEST_CASE("Test print_memory_bits function") {
+    // Test case for a single byte
+    SECTION("Single byte") {
+        OutputCapture capture;
+        std::vector<unsigned char> memory_section = {0b10101010};
+        print_memory_bits(memory_section);
+        REQUIRE(capture.str() == "10101010\n");
+    }
 
-TEST_CASE("All ones byte is printed correctly", "[print_memory_bits]") {
-    std::vector<uint8_t> memory_section = {0b11111111};
-    
-    std::ostringstream buffer;
-    std::streambuf* prevcoutbuf = std::cout.rdbuf(buffer.rdbuf());  // Redirect cout to buffer
-    
-    print_memory_bits(memory_section);
-    
-    std::string output = buffer.str();
-    std::cout.rdbuf(prevcoutbuf);  // Restore original stream buffer
-    std::string expected_output = "Byte 0: 1 1 1 1 1 1 1 1 \n";
-    REQUIRE(output == expected_output);
-}
+    // Test case for multiple bytes
+    SECTION("Multiple bytes") {
+        OutputCapture capture;
+        std::vector<unsigned char> memory_section = {0b11001100, 0b11110000};
+        print_memory_bits(memory_section);
+        REQUIRE(capture.str() == "11001100\n11110000\n");
+    }
 
-TEST_CASE("Mixed bytes are printed correctly", "[print_memory_bits]") {
-    std::vector<uint8_t> memory_section = {0b01010101, 0b10000001};
-    
-    std::ostringstream buffer;
-    std::streambuf* prevcoutbuf = std::cout.rdbuf(buffer.rdbuf());  // Redirect cout to buffer
-    
-    print_memory_bits(memory_section);
-    
-    std::string output = buffer.str();
-    std::cout.rdbuf(prevcoutbuf);  // Restore original stream buffer
-    std::string expected_output = "Byte 0: 0 1 0 1 0 1 0 1 \nByte 1: 1 0 0 0 0 0 0 1 \n";
-    REQUIRE(output == expected_output);
+    // Test case for all zeros
+    SECTION("All zeros") {
+        OutputCapture capture;
+        std::vector<unsigned char> memory_section = {0b00000000};
+        print_memory_bits(memory_section);
+        REQUIRE(capture.str() == "00000000\n");
+    }
+
+    // Test case for all ones
+    SECTION("All ones") {
+        OutputCapture capture;
+        std::vector<unsigned char> memory_section = {0b11111111};
+        print_memory_bits(memory_section);
+        REQUIRE(capture.str() == "11111111\n");
+    }
 }

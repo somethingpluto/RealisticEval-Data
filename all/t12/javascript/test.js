@@ -1,5 +1,3 @@
-const calculateDistance = require('./path/to/your/module'); // Adjust the import as necessary
-
 describe('calculateDistance', () => {
     test('agents are at the same point', () => {
         const observations = {

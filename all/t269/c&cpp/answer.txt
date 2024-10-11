@@ -1,52 +1,62 @@
-Sure! Below is the equivalent C++ code for the given Python function `is_compliant_ip`. This function checks whether an IP address is a valid IPv4 address.
+Certainly! Below is the equivalent C++ code for the provided Python function. This code checks if the given IP address is compliant based on predefined criteria (in this case, whether the IP address is private).
 
 ```cpp
 #include <iostream>
 #include <string>
-#include <sstream>
-#include <vector>
+#include <boost/asio.hpp>
 
-bool isCompliantIP(const std::string& ip) {
-    // Split the IP address by '.'
-    std::istringstream iss(ip);
-    std::vector<int> parts;
-    std::string part;
+// Function to check if the given IP address is compliant based on predefined criteria.
+bool is_compliant_ip(const std::string& ip) {
+    try {
+        // Convert the input string to an IP address object
+        boost::asio::ip::address ip_obj = boost::asio::ip::address::from_string(ip);
 
-    while (std::getline(iss, part, '.')) {
-        if (part.empty()) return false;  // Empty segment
-
-        // Convert part to integer
-        int num = std::stoi(part);
-
-        // Check if the number is within the valid range [0, 255]
-        if (num < 0 || num > 255) return false;
-
-        parts.push_back(num);
+        // Check compliance criteria: for example, whether the IP is private
+        // Note: In Boost.Asio, there's no direct method like `is_private` available,
+        // so we need to check if the IP falls within the private ranges.
+        if (ip_obj.is_v4()) {
+            boost::asio::ip::address_v4 v4_addr = ip_obj.to_v4();
+            return (v4_addr.is_in_range("10.0.0.0", "10.255.255.255") ||
+                    v4_addr.is_in_range("172.16.0.0", "172.31.255.255") ||
+                    v4_addr.is_in_range("192.168.0.0", "192.168.255.255"));
+        } else if (ip_obj.is_v6()) {
+            boost::asio::ip::address_v6 v6_addr = ip_obj.to_v6();
+            return v6_addr.is_link_local() || v6_addr.is_site_local() || v6_addr.is_loopback();
+        }
+    } catch (std::exception& e) {
+        // If the input is not a valid IP address, it cannot be compliant
+        return false;
     }
 
-    // There should be exactly four segments
-    if (parts.size() != 4) return false;
-
-    return true;
+    // If none of the above conditions are met, the IP is not compliant
+    return false;
 }
 
 int main() {
-    std::string ip1 = "192.168.1.1";
-    std::string ip2 = "256.100.50.25";
-
-    std::cout << "Is " << ip1 << " compliant? " << (isCompliantIP(ip1) ? "Yes" : "No") << std::endl;
-    std::cout << "Is " << ip2 << " compliant? " << (isCompliantIP(ip2) ? "Yes" : "No") << std::endl;
+    std::string ip = "192.168.1.1";
+    std::cout << "IP Address " << ip << " is " << (is_compliant_ip(ip) ? "compliant" : "not compliant") << std::endl;
 
     return 0;
 }
 ```
 
 ### Explanation:
-1. **Splitting the IP Address**: The IP address is split into its components using the `std::istringstream` and `std::getline` functions with `'.'` as the delimiter.
-2. **Checking Each Segment**:
-   - An empty segment results in an invalid IP address.
-   - Each segment is converted to an integer using `std::stoi`.
-   - The integer value must be between 0 and 255 inclusive.
-3. **Validation**: The function ensures there are exactly four segments in the IP address.
+1. **Importing Libraries**: 
+   - We include the necessary headers (`<iostream>`, `<string>`, `<boost/asio.hpp>`). The `boost/asio` library provides comprehensive networking capabilities including IP address handling.
 
-This C++ code provides a similar functionality to the Python function you provided.
+2. **Function Definition**:
+   - The function `is_compliant_ip` takes a string `ip` as an argument and returns a boolean indicating whether the IP address is compliant.
+   
+3. **Try-Catch Block**:
+   - The `try` block attempts to convert the input string to an IP address using `boost::asio::ip::address::from_string`.
+   - If the conversion fails, a `std::exception` is caught, and the function returns `false`.
+
+4. **Compliance Check**:
+   - The function checks if the IP address is IPv4 or IPv6.
+   - For IPv4 addresses, it checks if the IP falls within the standard private IP ranges (`10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`).
+   - For IPv6 addresses, it checks if the IP is link-local, site-local, or loopback.
+
+5. **Main Function**:
+   - A sample IP address is tested with the `is_compliant_ip` function, and the result is printed to the console.
+
+This code ensures that the logic and functionality of the original Python code are preserved while adapting to C++ syntax and libraries.

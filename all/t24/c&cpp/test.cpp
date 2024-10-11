@@ -1,12 +1,3 @@
-#define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() automatically
-#include <catch2/catch.hpp>
-#include <fstream>
-#include <cstdio>
-#include "yaml-cpp/yaml.h"
-#include "nlohmann/json.hpp"
-
-void convertYamlToJson(const std::string& yamlFile, const std::string& jsonFile);
-
 TEST_CASE("Test YAML to JSON Conversion") {
     std::string output_json = "output.json";
 

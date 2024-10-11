@@ -1,39 +1,52 @@
-Sure, here is the equivalent TypeScript code for your Python function:
+Certainly! Below is the TypeScript code that replicates the functionality of the provided Python function:
 
 ```typescript
-type Data = { [key: string]: any } | any[];
-
-function convertStringsToNumbers(data: Data): Data {
-    if (Array.isArray(data)) {
-        return data.map(item => convertStringsToNumbers(item));
-    } else if (typeof data === 'object' && data !== null) {
-        const result: { [key: string]: any } = {};
-        for (const key in data) {
-            if (data.hasOwnProperty(key)) {
-                result[key] = convertStringsToNumbers(data[key]);
-            }
+function convertStringsToNumbers(data: any): any {
+    if (typeof data === 'object' && data !== null) {
+        if (Array.isArray(data)) {
+            return data.map(item => convertStringsToNumbers(item));
+        } else {
+            return Object.fromEntries(
+                Object.entries(data).map(([key, value]) => [key, convertStringsToNumbers(value)])
+            );
         }
-        return result;
     } else if (typeof data === 'string') {
-        const num = Number(data);
-        return isNaN(num) ? data : num;
-    } else {
-        return data;
+        try {
+            // Try converting to float first, then to int if possible
+            const num = parseFloat(data);
+            if (!isNaN(num)) {
+                if (data.includes('.')) {
+                    return num;
+                } else {
+                    return parseInt(data, 10);
+                }
+            }
+        } catch (error) {
+            // Ignore error
+        }
     }
+    return data;  // Return original data if conversion fails or is not a string
 }
+
+// Example usage
+const data = {
+    name: "John Doe",
+    age: "30",
+    height: "5.9",
+    children: ["Alice", "Bob"],
+    details: {
+        address: "123 Main St",
+        salary: "50000"
+    }
+};
+
+console.log(convertStringsToNumbers(data));
 ```
 
 ### Explanation:
-1. **Type Definitions**:
-   - `Data` type is defined as either an object (`{ [key: string]: any }`) or an array (`any[]`).
+1. **Type Checking**: The TypeScript code uses `typeof` to check if the data is an object or a string.
+2. **Dictionary Handling**: For dictionaries (`object`), it uses `Object.entries()` to iterate over key-value pairs and recursively applies the function.
+3. **List Handling**: For lists (`array`), it uses `Array.map()` to apply the function to each element.
+4. **String Conversion**: For strings, it attempts to parse the string as a number. If the string contains a dot (`.`), it converts it to a float; otherwise, it tries to convert it to an integer.
 
-2. **Function Definition**:
-   - The function `convertStringsToNumbers` takes a parameter `data` of type `Data` and returns a value of type `Data`.
-
-3. **Recursive Conversion**:
-   - If `data` is an array, it maps over each item recursively calling `convertStringsToNumbers`.
-   - If `data` is an object, it iterates over each property, converting nested values recursively.
-   - If `data` is a string, it attempts to convert it to a number using `Number()`. If the conversion results in a valid number, it returns the number; otherwise, it returns the original string.
-   - For other types (e.g., numbers, booleans), it simply returns the value as is.
-
-This TypeScript code should behave similarly to your Python function, handling nested structures and converting strings to numbers where possible.
+This approach ensures that the TypeScript code closely mirrors the behavior of the Python function.

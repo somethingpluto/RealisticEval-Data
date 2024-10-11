@@ -1,64 +1,54 @@
-Here is how you could translate your Python function into C and C++:
-
-C Code:
-
-```c
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-void write_unique_line_to_file(char* filename, char* line_content) {
-    FILE *file = fopen(filename, "r");
-    char buffer[256];
-    int exists = 0;
-
-    // Check if the line already exists in the file
-    while(fgets(buffer, sizeof(buffer), file)) {
-        if(strcmp(buffer, line_content) == 0) {
-            exists = 1;
-            break;
-        }
-    }
-
-    fclose(file);
-
-    // If the line doesn't exist, add it to the file
-    if(!exists) {
-        file = fopen(filename, "a");
-        fprintf(file, "%s", line_content);
-        fclose(file);
-    }
-}
-```
-
-C++ Code:
+Here is the equivalent C++ code that maintains the functionality, logic, and structure of the provided Python code:
 
 ```cpp
-#include <fstream>
 #include <iostream>
+#include <fstream>
 #include <string>
 
-void write_unique_line_to_file(std::string filename, std::string line_content) {
+void writeUniqueLineToFile(const std::string& filename, const std::string& lineContent) {
+    /**
+     * Writes a line to a text file only if the line with the same content does not already exist.
+     *
+     * Args:
+     *     filename (std::string): The name of the file to write to.
+     *     lineContent (std::string): The content of the line to write.
+     *
+     * Returns:
+     *     None
+     */
+    // Check if the lineContent already exists in the file
     std::ifstream file(filename);
-    std::string buffer;
-    bool exists = false;
-
-    // Check if the line already exists in the file
-    while(getline(file, buffer)) {
-        if(buffer == line_content) {
-            exists = true;
-            break;
+    if (file.is_open()) {
+        std::string currentLine;
+        while (getline(file, currentLine)) {
+            if (currentLine == lineContent) {
+                std::cout << "Line '" << lineContent << "' already exists in '" << filename << "'. Not writing again." << std::endl;
+                file.close();
+                return;
+            }
         }
+        file.close();
+    } else {
+        std::cerr << "Unable to open file: " << filename << std::endl;
+        return;
     }
 
-    file.close();
-
-    // If the line doesn't exist, add it to the file
-    if(!exists) {
-        std::ofstream outFile(filename, std::ios_base::app);
-        outFile << line_content << std::endl;
+    // If lineContent is not found, append it to the file
+    std::ofstream outFile(filename, std::ios_base::app);
+    if (outFile.is_open()) {
+        outFile << lineContent << '\n';
         outFile.close();
+        std::cout << "Line '" << lineContent << "' successfully written to '" << filename << "'." << std::endl;
+    } else {
+        std::cerr << "Unable to open file for appending: " << filename << std::endl;
     }
 }
+
+int main() {
+    // Example usage
+    writeUniqueLineToFile("example.txt", "This is a test line.");
+    return 0;
+}
 ```
-These codes open the specified file for reading and check if the line already exists in the file. If it does not exist, they then open the file again in append mode and write the new line to the end of the file. Note that these examples assume that lines in the file do not contain newline characters other than at the end of the line. Also, be aware that error handling has been omitted for brevity; in a production environment, you should always handle errors properly.
+
+This C++ code uses `std::ifstream` for reading from the file and `std::ofstream` for appending to the file. It checks if the line already exists in the file before appending it, just like the original Python code. The error handling for file operations is also included.

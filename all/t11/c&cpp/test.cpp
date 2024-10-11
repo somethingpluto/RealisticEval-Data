@@ -1,7 +1,3 @@
-#define CATCH_CONFIG_MAIN 
-#include <catch2/catch.hpp>
-#include "Trie.h"  // Include the header file where Trie is defined
-
 TEST_CASE("Trie operations", "[Trie]") {
     Trie trie;
 
