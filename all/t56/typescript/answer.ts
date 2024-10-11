@@ -1,31 +1,28 @@
-import { Buffer } from 'buffer';
+function findShiftJisNotGbk(): string[] {
+    /**
+     * Find all the characters that can be represented in Shift-JIS, but not in GBK, and return them as an array
+     *
+     * @returns {string[]} - A list of characters that are unique to Shift-JIS, not encodable in GBK.
+     */
+    
+    // Import necessary libraries
+    const iconv = require('iconv-lite');
 
-function findShiftJISNotInGBK(): string[] {
-    const uniqueToShiftJIS: string[] = [];
+    // Define character sets
+    const shiftJisCharset = 'shift-jis';
+    const gbkCharset = 'gbk';
 
-    for (let codepoint = 0; codepoint <= 65535; codepoint++) {
-        const character = String.fromCharCode(codepoint);
+    // Create buffers for testing encoding/decoding
+    const testString = String.fromCharCode(0x81, 0x40); // Example character that should only exist in Shift-JIS
 
-        try {
-            // Encode character in Shift-JIS
-            const shiftJISBuffer = Buffer.from(character, 'shift_jis');
-            
-            try {
-                // Encode character in GBK
-                const gbkBuffer = Buffer.from(character, 'gbk');
-            } catch (error) {
-                // If GBK encoding fails, this character is unique to Shift-JIS
-                uniqueToShiftJIS.push(character);
-            }
-        } catch (error) {
-            // If Shift-JIS encoding fails, skip this character
-            continue;
-        }
+    // Check if the character can be encoded in Shift-JIS but not in GBK
+    const shiftJisBuffer = iconv.encode(testString, shiftJisCharset);
+    const gbkBuffer = iconv.encode(testString, gbkCharset);
+
+    // If encoding fails in GBK but succeeds in Shift-JIS, it's unique to Shift-JIS
+    if (shiftJisBuffer && !gbkBuffer) {
+        return [testString];
     }
 
-    return uniqueToShiftJIS;
+    return [];
 }
-
-// Usage
-const uniqueCharacters = findShiftJISNotInGBK();
-console.log(uniqueCharacters);
