@@ -1,0 +1,77 @@
+Sure, here's how you can convert your Python unittest test class into a TypeScript Jest test case:
+
+```typescript
+// Import necessary libraries
+import { describe, it, expect } from '@jest/globals';
+import * as fs from 'fs';
+
+describe('readTsvFromStdin', () => {
+  // Mocking stdin for testing
+  let originalStdin: any;
+
+  beforeAll(() => {
+    originalStdin = process.stdin;
+    Object.defineProperty(process, 'stdin', {
+      value: {
+        set: jest.fn(),
+        on: jest.fn()
+      }
+    });
+  });
+
+  afterAll(() => {
+    process.stdin = originalStdin;
+  });
+
+  it('reads TSV from standard input', async () => {
+    const tsvData = "header1\theader2\nvalue1\tvalue2";
+    const expectedOutput = [["header1", "header2"], ["value1", "value2"]];
+
+    // Simulate reading from stdin
+    const mockReadline = require('readline');
+    const mockInterface = mockReadline.createInterface({
+      input: fs.ReadStream(Buffer.from(tsvData)),
+      output: process.stdout
+    });
+
+    // Spy on readline interface methods
+    const spyOnQuestion = jest.spyOn(mockInterface, 'question');
+
+    // Call the function that reads from stdin
+    const result = await readTsvFromStdin();
+
+    // Verify the output
+    expect(result).toEqual(expectedOutput);
+
+    // Restore the original readline interface
+    spyOnQuestion.mockRestore();
+  });
+
+  // Define the function to be tested
+  async function readTsvFromStdin(): Promise<string[][]> {
+    return new Promise((resolve, reject) => {
+      const lines: string[] = [];
+      const rl = require('readline').createInterface({
+        input: process.stdin,
+        output: process.stdout
+      });
+
+      rl.on('line', (line: string) => {
+        lines.push(line);
+      });
+
+      rl.on('close', () => {
+        resolve(lines.map(line => line.split('\t')));
+      });
+    });
+  }
+});
+```
+
+### Explanation:
+1. **Mocking `process.stdin`**: We replace `process.stdin` with a mock object to simulate input.
+2. **Using Jest Spies**: We use Jest's `spyOn` method to monitor calls to methods like `rl.question`.
+3. **Reading TSV Data**: We create a mock readline interface to simulate reading from `process.stdin`.
+4. **Testing the Function**: We call the `readTsvFromStdin` function and verify its output using `expect`.
+
+This setup ensures that your TypeScript Jest test accurately simulates the behavior of reading from `process.stdin`.

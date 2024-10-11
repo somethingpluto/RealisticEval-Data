@@ -1,0 +1,68 @@
+To convert your Python unittest test class into a TypeScript test case using Jest, you would first need to define the function `find_common_columns` and then write a corresponding test case. Since the actual implementation of `find_common_columns` is not provided in your question, I'll provide an example of how you might structure the TypeScript test case assuming that the function works as intended.
+
+Here's how you can do it:
+
+1. Define the `find_common_columns` function.
+2. Write a Jest test case for it.
+
+First, let's assume the implementation of `find_common_columns` looks something like this (this is just a placeholder):
+
+```typescript
+import fs from 'fs';
+import path from 'path';
+
+function findCommonColumns(directory: string): string[] {
+    const files = fs.readdirSync(directory);
+    if (files.length === 0) return [];
+
+    const fileContents = files.map(file => {
+        const filePath = path.join(directory, file);
+        if (path.extname(filePath) !== '.csv') return [];
+        return fs.readFileSync(filePath, 'utf-8').split('\n')[0].split(','); // Assuming CSV headers are on the first line
+    });
+
+    const commonColumns = fileContents[0];
+    for (let i = 1; i < fileContents.length; i++) {
+        commonColumns.filter(col => !fileContents[i].includes(col));
+    }
+
+    return commonColumns;
+}
+```
+
+Now, let's write the Jest test case:
+
+```typescript
+import { findCommonColumns } from './yourFilePath'; // Adjust the path accordingly
+
+describe('findCommonColumns', () => {
+    it('should return the common columns of all CSV files in a directory', () => {
+        // Mocking the file system to simulate reading files
+        const mockFiles = [
+            'header1,header2,header3\nvalue1,value2,value3',
+            'header1,header2,header4\nvalue4,value5,value6'
+        ];
+
+        const mockReadFileSync = jest.fn((filePath: string) => {
+            const fileIndex = parseInt(filePath.split('/').pop()!.replace('.csv', ''), 10);
+            return mockFiles[fileIndex];
+        });
+
+        jest.mock('fs', () => ({
+            ...jest.requireActual('fs'),
+            readFileSync: mockReadFileSync,
+            readdirSync: jest.fn(() => ['file1.csv', 'file2.csv'])
+        }));
+
+        const result = findCommonColumns('./mockDirectory');
+
+        expect(result).toEqual(['header1', 'header2']);
+    });
+});
+```
+
+### Explanation:
+1. **Mocking the File System**: We use `jest.mock` to mock the `fs` module so we can control what `readFileSync` returns. This allows us to test our function without actually reading files from disk.
+2. **Test Case**: The `it` block contains the actual test case. It checks if the `findCommonColumns` function correctly identifies the common columns between two sample CSV files.
+
+Make sure to adjust the path to where `findCommonColumns` is defined in your project. Also, ensure that the mock files (`file1.csv`, `file2.csv`) have the appropriate content for your test case.

@@ -1,0 +1,67 @@
+Certainly! Below is an example of how you can convert the given JavaScript Jest test case into a C++ Catch2 test case. Note that I'll assume the `getDate` function returns a `std::string` and uses the `<ctime>` library for formatting the date.
+
+### Original JavaScript Jest Test Case (for reference)
+```javascript
+/**
+ * Gets the current date formatted as 'Month Day, Year'.
+ *
+ * @returns {string} The formatted date string.
+ */
+function getDate() {
+    const now = new Date();
+    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    return now.toLocaleDateString('en-US', options);
+}
+
+// Jest test case
+test('getDate should return the current date in "Month Day, Year" format', () => {
+    const currentDate = new Date();
+    const expectedFormat = currentDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    expect(getDate()).toBe(expectedFormat);
+});
+```
+
+### Equivalent C++ Catch2 Test Case
+```cpp
+#include <catch2/catch.hpp>
+#include <iostream>
+#include <iomanip>
+#include <sstream>
+#include <ctime>
+
+/**
+ * Gets the current date formatted as 'Month Day, Year'.
+ *
+ * @returns {std::string} The formatted date string.
+ */
+std::string getDate() {
+    std::time_t now = std::time(nullptr);
+    std::tm localTime = *std::localtime(&now);
+
+    std::ostringstream oss;
+    oss << std::put_time(&localTime, "%B %d, %Y");
+    return oss.str();
+}
+
+TEST_CASE("getDate should return the current date in 'Month Day, Year' format", "[date]") {
+    std::time_t now = std::time(nullptr);
+    std::tm localTime = *std::localtime(&now);
+
+    std::ostringstream expectedFormatOss;
+    expectedFormatOss << std::put_time(&localTime, "%B %d, %Y");
+
+    REQUIRE(getDate() == expectedFormatOss.str());
+}
+```
+
+### Explanation:
+1. **Include Necessary Headers**: We include the necessary headers for input/output operations (`<iostream>`), stream manipulators (`<iomanip>`), string streams (`<sstream>`), and time handling (`<ctime>`).
+
+2. **Implement `getDate` Function**: This function uses `std::time`, `std::localtime`, and `std::ostringstream` to format the current date according to the specified format ('Month Day, Year').
+
+3. **Catch2 Test Case**:
+   - We define a test case using `TEST_CASE`.
+   - We get the current time using `std::time` and format it using `std::put_time` to create the expected output.
+   - We call the `getDate` function and compare its result with the expected formatted date using `REQUIRE`.
+
+This C++ test case ensures that the `getDate` function works correctly by comparing its output against the expected formatted date string.

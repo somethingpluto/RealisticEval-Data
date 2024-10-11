@@ -1,0 +1,85 @@
+Sure! Below is the equivalent C++ test case using Catch2 for the provided Python unittest test class. This assumes that the function `get_T_in_log10_Kelvin` is implemented in a C++ file and available for testing.
+
+First, let's assume the implementation of `get_T_in_log10_Kelvin` in C++:
+
+```cpp
+// temperature.cpp
+#include <cmath>
+#include "temperature.h"
+
+double k_B_over_keV = 8.617333262145e-5;
+
+double get_T_in_log10_Kelvin(double T_keV) {
+    return std::log10(T_keV / k_B_over_keV);
+}
+
+std::vector<double> get_T_in_log10_Kelvin(const std::vector<double>& T_keV) {
+    std::vector<double> result;
+    for (double temp : T_keV) {
+        result.push_back(std::log10(temp / k_B_over_keV));
+    }
+    return result;
+}
+```
+
+Next, we will write the C++ test cases using Catch2:
+
+```cpp
+// test_temperature.cpp
+#define CATCH_CONFIG_MAIN
+#include <catch2/catch.hpp>
+#include "temperature.h"
+#include <vector>
+
+TEST_CASE("Convert single temperature from keV to log10(K)", "[temperature]") {
+    double T_keV = 100.0;
+    double expected_log10K = std::log10(T_keV / k_B_over_keV);
+    REQUIRE(get_T_in_log10_Kelvin(T_keV) == Approx(expected_log10K));
+}
+
+TEST_CASE("Convert multiple temperatures from keV to log10(K)", "[temperature]") {
+    std::vector<double> T_keV = {100.0, 200.0, 300.0};
+    std::vector<double> expected_log10K = {
+        std::log10(100.0 / k_B_over_keV),
+        std::log10(200.0 / k_B_over_keV),
+        std::log10(300.0 / k_B_over_keV)
+    };
+    auto result = get_T_in_log10_Kelvin(T_keV);
+    REQUIRE(result.size() == expected_log10K.size());
+    for (size_t i = 0; i < result.size(); ++i) {
+        REQUIRE(result[i] == Approx(expected_log10K[i]));
+    }
+}
+```
+
+In this C++ code:
+- We include the necessary headers and define the `k_B_over_keV` constant.
+- We implement two test cases: one for converting a single temperature and another for converting multiple temperatures.
+- We use Catch2's `REQUIRE` macro to assert that the output of the function matches the expected values.
+
+To compile and run these tests, you need to have Catch2 installed and properly configured in your build system. Here is an example using CMake:
+
+```cmake
+# CMakeLists.txt
+cmake_minimum_required(VERSION 3.10)
+project(TemperatureTest)
+
+set(CMAKE_CXX_STANDARD 14)
+
+find_package(Catch2 REQUIRED)
+
+add_executable(TemperatureTest test_temperature.cpp temperature.cpp)
+target_link_libraries(TemperatureTest Catch2::Catch2)
+```
+
+Then, you can build and run the tests using CMake:
+
+```sh
+mkdir build
+cd build
+cmake ..
+make
+./TemperatureTest
+```
+
+This should execute the test cases and provide the results.

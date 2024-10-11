@@ -1,0 +1,90 @@
+To convert the given Python `unittest` test class into a TypeScript test case using Jest, you first need to define the function `find_min_window_substring`. After defining the function, you can write Jest tests to verify its correctness. Below is the complete implementation:
+
+### Step 1: Define the Function
+
+```typescript
+function findMinWindowSubstring(source: string, target: string): string {
+    const targetCounter = new Map<string, number>();
+    for (const char of target) {
+        targetCounter.set(char, (targetCounter.get(char) || 0) + 1);
+    }
+
+    let required = targetCounter.size;
+    let left = 0;
+    let right = 0;
+    let formed = 0;
+    const windowCounts = new Map<string, number>();
+
+    let ans = [-1, 0, 0];
+    while (right < source.length) {
+        const character = source[right];
+        windowCounts.set(character, (windowCounts.get(character) || 0) + 1);
+
+        if (targetCounter.has(character) && windowCounts.get(character) === targetCounter.get(character)) {
+            formed++;
+        }
+
+        while (left <= right && formed === required) {
+            const characterLeft = source[left];
+
+            if (ans[0] === -1 || right - left + 1 < ans[0]) {
+                ans = [right - left + 1, left, right];
+            }
+
+            windowCounts.set(characterLeft, windowCounts.get(characterLeft)! - 1);
+            if (targetCounter.has(characterLeft) && windowCounts.get(characterLeft)! < targetCounter.get(characterLeft)!) {
+                formed--;
+            }
+            left++;
+        }
+        right++;
+    }
+    return ans[0] !== -1 ? source.substring(ans[1], ans[2] + 1) : "";
+}
+```
+
+### Step 2: Write Jest Tests
+
+Create a file named `testFindMinWindowSubstring.ts` and add the following Jest tests:
+
+```typescript
+import { findMinWindowSubstring } from './findMinWindowSubstring'; // Adjust the path accordingly
+
+describe('findMinWindowSubstring', () => {
+    it('should return the smallest window containing all characters of the target', () => {
+        expect(findMinWindowSubstring("ADOBECODEBANC", "ABC")).toBe("BANC");
+    });
+
+    it('should return an empty string if no valid window exists', () => {
+        expect(findMinWindowSubstring("a", "aa")).toBe("");
+    });
+
+    it('should handle repeated characters correctly', () => {
+        expect(findMinWindowSubstring("aa", "aa")).toBe("aa");
+    });
+
+    it('should handle single character targets', () => {
+        expect(findMinWindowSubstring("ab", "b")).toBe("b");
+    });
+});
+```
+
+### Step 3: Run the Tests
+
+Make sure you have Jest installed. If not, you can install it using npm or yarn:
+
+```bash
+npm install --save-dev jest
+# or
+yarn add --dev jest
+```
+
+Then, run your tests with the following command:
+
+```bash
+npx jest testFindMinWindowSubstring.ts
+# or
+yarn jest testFindMinWindowSubstring.ts
+```
+
+This will execute the tests and output the results, indicating whether each test passed or failed.

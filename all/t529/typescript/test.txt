@@ -1,0 +1,78 @@
+Certainly! Below is the equivalent TypeScript Jest test case for your JavaScript function using `describe`:
+
+```typescript
+import fs from 'fs';
+import { promisify } from 'util';
+
+// Promisify the writeFile method to return a Promise
+const writeFileAsync = promisify(fs.writeFile);
+
+/**
+ * Converts the data object to JSON format and saves it to the specified file path.
+ * @param {Object} data - The data object to be converted to JSON.
+ * @param {string} outputFilePath - The file path where the JSON will be saved.
+ */
+async function saveAsJSON(data: any, outputFilePath: string): Promise<void> {
+  try {
+    await writeFileAsync(outputFilePath, JSON.stringify(data, null, 2));
+  } catch (error) {
+    throw new Error(`Error writing to file ${outputFilePath}: ${error.message}`);
+  }
+}
+
+describe('saveAsJSON', () => {
+  let mockData: any;
+  let mockOutputFilePath: string;
+
+  beforeEach(() => {
+    mockData = { key: 'value' };
+    mockOutputFilePath = 'mock.json';
+  });
+
+  afterEach(() => {
+    // Clean up any mocked functions or files after each test
+    jest.clearAllMocks();
+  });
+
+  test('should save data as JSON to the specified file path', async () => {
+    const spy = jest.spyOn(fs, 'writeFile').mockImplementation((filePath, content, callback) => {
+      if (filePath === mockOutputFilePath && content === JSON.stringify(mockData, null, 2)) {
+        callback(null);
+      } else {
+        callback(new Error('Mocked error'));
+      }
+    });
+
+    await expect(saveAsJSON(mockData, mockOutputFilePath)).resolves.not.toThrow();
+
+    expect(spy).toHaveBeenCalledWith(
+      mockOutputFilePath,
+      JSON.stringify(mockData, null, 2),
+      expect.any(Function)
+    );
+  });
+
+  test('should handle errors when saving JSON to file', async () => {
+    const spy = jest.spyOn(fs, 'writeFile').mockImplementation((filePath, content, callback) => {
+      callback(new Error('Mocked error'));
+    });
+
+    await expect(saveAsJSON(mockData, mockOutputFilePath)).rejects.toThrow('Error writing to file mock.json: Mocked error');
+
+    expect(spy).toHaveBeenCalledWith(
+      mockOutputFilePath,
+      JSON.stringify(mockData, null, 2),
+      expect.any(Function)
+    );
+  });
+});
+```
+
+### Explanation:
+1. **Promisification**: We use `promisify` from Node.js to convert `fs.writeFile` into a promise-based function.
+2. **TypeScript Types**: The `saveAsJSON` function now includes type annotations for its parameters and return type.
+3. **Jest Describe/It**: The test cases are wrapped in a `describe` block with individual `test` blocks for different scenarios.
+4. **Mocking**: We use `jest.spyOn` to mock the `fs.writeFile` function and control its behavior during testing.
+5. **Assertions**: We use Jest's assertion methods (`expect`) to verify that the function behaves as expected.
+
+This should give you a good starting point for testing your TypeScript function using Jest.

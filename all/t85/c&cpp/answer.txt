@@ -1,0 +1,97 @@
+Sure! Below is the equivalent C++ code using the `DataFrame` class from the `pandas` library. Note that C++ does not have a built-in `pandas` library like Python, so we will use a combination of C++ and Python via the `pybind11` library to achieve similar functionality.
+
+First, make sure you have `pybind11` installed. If not, you can install it using pip:
+
+```sh
+pip install pybind11
+```
+
+Then, create a C++ file (e.g., `fill_missing.cpp`) with the following content:
+
+```cpp
+#include <pybind11/pybind11.h>
+#include <pybind11/pandas.h>
+#include <pybind11/stl.h>
+
+namespace py = pybind11;
+
+void fill_missing_with_first_valid(py::object df, const std::string &column_name) {
+    auto pandas = py::module::import("pandas");
+    auto pd = pandas.attr("pd");
+
+    // Get the column data
+    py::object column_data = df.attr(column_name);
+
+    // Find the first valid value
+    py::object first_valid_value = py::none();
+    for (py::ssize_t i = 0; i < column_data.size(); ++i) {
+        if (!column_data[i].is_none()) {
+            first_valid_value = column_data[i];
+            break;
+        }
+    }
+
+    // Fill missing values with the first valid value
+    for (py::ssize_t i = 0; i < column_data.size(); ++i) {
+        if (column_data[i].is_none()) {
+            column_data[i] = first_valid_value;
+        }
+    }
+}
+
+PYBIND11_MODULE(fill_missing, m) {
+    m.def("fill_missing_with_first_valid", &fill_missing_with_first_valid, "Fills missing values in the specified column of the DataFrame with the first valid value in that column.");
+}
+```
+
+Next, compile the C++ code into a shared library using `pybind11`. Create a `setup.py` file with the following content:
+
+```python
+from setuptools import setup, Extension
+import pybind11
+
+ext_modules = [
+    Extension(
+        'fill_missing',
+        ['fill_missing.cpp'],
+        include_dirs=[pybind11.get_include()],
+        language='c++'
+    ),
+]
+
+setup(
+    name='fill_missing',
+    version='0.1',
+    ext_modules=ext_modules,
+)
+```
+
+Now, build the shared library:
+
+```sh
+python setup.py build_ext --inplace
+```
+
+Finally, you can use the compiled library in your Python script:
+
+```python
+import pandas as pd
+import fill_missing
+
+# Example usage
+df = pd.DataFrame({
+    'A': [1, None, 3],
+    'B': [None, 2, 3]
+})
+
+print("Original DataFrame:")
+print(df)
+
+fill_missing.fill_missing_with_first_valid(df, 'A')
+fill_missing.fill_missing_with_first_valid(df, 'B')
+
+print("\nDataFrame after filling missing values:")
+print(df)
+```
+
+This should give you the same functionality as the original Python code, but implemented in C++.

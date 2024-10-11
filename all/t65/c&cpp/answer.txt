@@ -1,0 +1,96 @@
+Here is a simple C++ implementation that does the same thing:
+
+```c++
+#include <vector>
+#include <string>
+#include <unordered_set>
+
+std::vector<std::string> findDuplicateIps(std::vector<std::string>& ipList, std::vector<std::string>& ignoreList) {
+    std::unordered_set<std::string> ipSet;
+    std::unordered_set<std::string> ignoreSet(ignoreList.begin(), ignoreList.end());
+    std::vector<std::string> duplicates;
+
+    for(const auto &ip : ipList) {
+        if(!ignoreSet.count(ip)) {
+            if(ipSet.count(ip)) {
+                duplicates.push_back(ip);
+            } else {
+                ipSet.insert(ip);
+            }
+        }
+    }
+
+    return duplicates;
+}
+```
+
+And here is a similar implementation in C:
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_IP_LEN 16
+
+typedef struct {
+    char ip[MAX_IP_LEN];
+} IPAddress;
+
+int contains(IPAddress *set, int size, const char *ip) {
+    for(int i = 0; i < size; i++) {
+        if(strcmp(set[i].ip, ip) == 0) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+void add(IPAddress *set, int *size, const char *ip) {
+    set[*size].ip[0] = '\0';
+    strcpy(set[*size].ip, ip);
+    (*size)++;
+}
+
+void remove(IPAddress *set, int *size, const char *ip) {
+    for(int i = 0; i < *size; i++) {
+        if(strcmp(set[i].ip, ip) == 0) {
+            for(int j = i; j < *size - 1; j++) {
+                set[j] = set[j + 1];
+            }
+            (*size)--;
+            break;
+        }
+    }
+}
+
+int findDuplicateIps(char **ipList, int ipListSize, char **ignoreList, int ignoreListSize, char ***result, int *resultSize) {
+    IPAddress ipSet[ipListSize];
+    IPAddress ignoreSet[ignoreListSize];
+    *resultSize = 0;
+
+    // Copy and sort ipList into ipSet
+    for(int i = 0; i < ipListSize; i++) {
+        add(ipSet, resultSize, ipList[i]);
+    }
+
+    // Remove ignoreList elements from ipSet
+    for(int i = 0; i < ignoreListSize; i++) {
+        remove(ipSet, resultSize, ignoreList[i]);
+    }
+
+    // Check for duplicates in ipSet
+    for(int i = 0; i < *resultSize; i++) {
+        for(int j = i + 1; j < *resultSize; j++) {
+            if(strcmp(ipSet[i].ip, ipSet[j].ip) == 0) {
+                (*result)[*resultSize] = malloc(MAX_IP_LEN * sizeof(char));
+                strcpy((*result)[(*resultSize)], ipSet[i].ip);
+                (*resultSize)++;
+            }
+        }
+    }
+
+    return *resultSize;
+}
+```
+Please note that these implementations do not handle memory allocation or deallocation properly, which should be done according to your specific needs.

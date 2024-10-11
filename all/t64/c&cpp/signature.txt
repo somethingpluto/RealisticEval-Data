@@ -1,0 +1,69 @@
+Here is the equivalent C++ code for your Python function:
+
+```cpp
+#include <fstream>
+#include <sstream>
+#include <string>
+
+/**
+ * Converts the contents of a CSV file into an SQL insert statement with a table name with the suffix removed.
+ *
+ * @param csv_file_path The CSV file path
+ * @return A string containing the parsed SQL statement
+ */
+std::string csvToSqlInsert(const std::string& csv_file_path)
+{
+    std::ifstream file(csv_file_path);
+    if (!file.is_open())
+    {
+        throw std::runtime_error("Failed to open file");
+    }
+
+    std::stringstream ss;
+    std::string line;
+
+    // Read the header line to get column names
+    std::getline(file, line);
+    std::istringstream iss(line);
+    std::vector<std::string> columns;
+    std::string column;
+    while (std::getline(iss, column, ','))
+    {
+        columns.push_back(column);
+    }
+
+    // Prepare the SQL insert statement
+    ss << "INSERT INTO ";
+    for (size_t i = 0; i < columns.size(); ++i)
+    {
+        ss << columns[i];
+        if (i != columns.size() - 1)
+        {
+            ss << ", ";
+        }
+    }
+    ss << " VALUES (";
+
+    // Read each data row and append to the SQL statement
+    while (std::getline(file, line))
+    {
+        std::istringstream iss(line);
+        std::string value;
+        bool first_value = true;
+        while (std::getline(iss, value, ','))
+        {
+            if (!first_value)
+            {
+                ss << ", ";
+            }
+            ss << "'" << value << "'";
+            first_value = false;
+        }
+        ss << ");\n";
+    }
+
+    return ss.str();
+}
+```
+
+This C++ function reads a CSV file, parses its contents, and generates an SQL `INSERT` statement. It assumes that the first line of the CSV file contains the column headers. Note that this example does not handle complex cases such as quoted values or escape characters within the CSV file.

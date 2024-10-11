@@ -1,0 +1,48 @@
+Here is the equivalent Java code for your JavaScript function:
+
+```java
+import java.util.Arrays;
+import java.util.Comparator;
+
+/**
+ * Sorts an array of objects alphabetically based on a specified field.
+ *
+ * @param <T>       The type of object in the array.
+ * @param array     The array of objects to sort.
+ * @param field     The field of the objects to sort by.
+ * @param ascending If true, sort in ascending order; if false, sort in descending order.
+ * @return The sorted array of objects.
+ */
+public static <T> T[] sortByField(T[] array, String field, boolean ascending) {
+    Arrays.sort(array, new Comparator<T>() {
+        @Override
+        public int compare(T o1, T o2) {
+            try {
+                Comparable<?> c1 = (Comparable<?>) getFieldValue(o1, field);
+                Comparable<?> c2 = (Comparable<?>) getFieldValue(o2, field);
+
+                return ascending ? c1.compareTo(c2) : c2.compareTo(c1);
+            } catch (Exception e) {
+                throw new RuntimeException("Error sorting", e);
+            }
+        }
+
+        private Object getFieldValue(Object obj, String fieldName) throws Exception {
+            Class<?> clazz = obj.getClass();
+            while (clazz != null) {
+                try {
+                    return clazz.getDeclaredField(fieldName).get(obj);
+                } catch (NoSuchFieldException e) {
+                    clazz = clazz.getSuperclass();
+                }
+            }
+            throw new NoSuchFieldException("Field " + fieldName + " not found");
+        }
+    });
+    return array;
+}
+```
+
+Please note that this code uses reflection to access fields, so it might be slow and could cause security issues if used improperly. It also assumes that all elements in the array have a field with the given name and that the field's value implements `Comparable`. 
+
+Also, remember that arrays in Java are covariant, meaning that you can't directly assign the result of this method back to the original array variable. For example, if you had an array of `Person`, you would need to use a `Person[]` instead of just `Object[]`.

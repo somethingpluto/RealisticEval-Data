@@ -1,0 +1,90 @@
+Sure! Below is the equivalent C++ test case using Catch2 for the given Python unittest test class. Note that Catch2 is a header-only library, so you'll need to include it in your project and link against it if necessary.
+
+```cpp
+#include <catch2/catch.hpp>
+#include <fstream>
+#include <sstream>
+#include <vector>
+
+std::vector<std::vector<double>> read_columns(const std::string& file_name) {
+    std::ifstream file(file_name);
+    if (!file.is_open()) {
+        throw std::runtime_error("Failed to open file");
+    }
+
+    std::vector<std::vector<double>> data;
+    std::string line;
+    bool found_divider = false;
+
+    while (std::getline(file, line)) {
+        if (line.find('/') != std::string::npos) {
+            found_divider = true;
+            continue;
+        }
+        if (!found_divider) {
+            continue;
+        }
+
+        std::istringstream iss(line);
+        std::vector<double> row;
+        double value;
+        while (iss >> value) {
+            row.push_back(value);
+        }
+        data.push_back(row);
+    }
+
+    return data;
+}
+
+TEST_CASE("read_columns", "[read_columns]") {
+    // Create a temporary file with test data
+    const std::string temp_file_name = "temp_data.txt";
+    std::ofstream temp_file(temp_file_name);
+    temp_file << "This is a test\n"
+              << "1 2 3\n"
+              << "4 5 6\n"
+              << "/\n"
+              << "7 8 9\n"
+              << "10 11 12\n";
+    temp_file.close();
+
+    SECTION("File contains divider") {
+        auto result = read_columns(temp_file_name);
+
+        REQUIRE(result.size() == 2);
+        REQUIRE(result[0].size() == 3);
+        REQUIRE(result[1].size() == 3);
+        REQUIRE(result[0][0] == 7);
+        REQUIRE(result[0][1] == 8);
+        REQUIRE(result[0][2] == 9);
+        REQUIRE(result[1][0] == 10);
+        REQUIRE(result[1][1] == 11);
+        REQUIRE(result[1][2] == 12);
+    }
+
+    SECTION("File does not contain divider") {
+        std::ofstream empty_temp_file("empty_temp_data.txt");
+        empty_temp_file.close();
+        REQUIRE_THROWS(read_columns("empty_temp_data.txt"));
+    }
+
+    // Clean up the temporary files
+    remove(temp_file_name.c_str());
+    remove("empty_temp_data.txt");
+}
+```
+
+### Explanation:
+
+1. **Function Implementation**:
+   - The `read_columns` function reads numerical columns from a file starting from the line after the last line containing '/'.
+   - It handles file opening and reading, parsing lines into vectors of doubles, and storing them in a 2D vector.
+
+2. **Catch2 Test Case**:
+   - We create a temporary file with test data and then call the `read_columns` function to test its behavior.
+   - We use `SECTION` to group related tests together.
+   - We use `REQUIRE` to assert conditions and `REQUIRE_THROWS` to verify exceptions.
+   - Finally, we clean up the temporary files using `remove`.
+
+Make sure you have Catch2 installed and properly configured in your build system to compile and run these tests.
