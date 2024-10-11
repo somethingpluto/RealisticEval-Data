@@ -1,70 +1,68 @@
-Sure! Here is the JavaScript equivalent of your Python function `get_min_distance`:
+Certainly! Below is the equivalent JavaScript code for the provided Python code, maintaining the same functionality, logic, and structure:
 
 ```javascript
-function getMinDistance(filePath, word1, word2) {
-    /**
-     * Find the minimum distance between two specified words (word1 and word2) from the file and return in which line the distance occurred
-     *
-     * @param {string} filePath - The path to the file.
-     * @param {string} word1 - The first word to find.
-     * @param {string} word2 - The second word to find.
-     * @returns {Object|null} - An object containing the minimum distance and the line number where it occurred, or null if either word is not found.
-     */
-    
+function readFileAsSequences(filePath) {
+    // Read the file and convert each line into an array of words.
     const fs = require('fs');
-    const readline = require('readline');
-
-    let minDistance = Infinity;
-    let lineWithMinDistance = null;
-
-    const rl = readline.createInterface({
-        input: fs.createReadStream(filePath),
-        crlfDelay: Infinity
-    });
-
-    let lineNumber = 0;
-    let indexWord1 = -1;
-    let indexWord2 = -1;
-
-    rl.on('line', (line) => {
-        lineNumber++;
-        const words = line.split(/\s+/);
-
-        for (let i = 0; i < words.length; i++) {
-            if (words[i] === word1) {
-                indexWord1 = i;
-            }
-            if (words[i] === word2) {
-                indexWord2 = i;
-            }
-
-            if (indexWord1 !== -1 && indexWord2 !== -1) {
-                const distance = Math.abs(indexWord1 - indexWord2);
-                if (distance < minDistance) {
-                    minDistance = distance;
-                    lineWithMinDistance = lineNumber;
-                }
-            }
-        }
-    });
-
-    rl.on('close', () => {
-        if (minDistance === Infinity) {
-            console.log(`Either "${word1}" or "${word2}" was not found in the file.`);
-            return null;
-        } else {
-            console.log(`Minimum distance between "${word1}" and "${word2}" is ${minDistance} at line ${lineWithMinDistance}.`);
-            return { minDistance, lineWithMinDistance };
-        }
-    });
+    const fileContent = fs.readFileSync(filePath, 'utf8');
+    const lines = fileContent.split('\n');
+    return lines.map(line => line.trim().split(/\s+/));
 }
 
-// Example usage:
-const filePath = 'path/to/your/file.txt';
-const word1 = 'example';
-const word2 = 'sample';
+function findClosestWordIndices(sequence, word1, word2) {
+    // Find the indices of two words in a sequence and calculate their closest distances.
+    let word1Indices = [];
+    let word2Indices = [];
+    let minDistance = Infinity;
 
-getMinDistance(filePath, word1, word2);
+    // Gather indices for both words
+    for (let index = 0; index < sequence.length; index++) {
+        const word = sequence[index];
+        if (word === word1) {
+            word1Indices.push(index);
+        } else if (word === word2) {
+            word2Indices.push(index);
+        }
+    }
+
+    // Calculate the minimum distance between all pairs of indices
+    for (const index1 of word1Indices) {
+        for (const index2 of word2Indices) {
+            const distance = Math.abs(index1 - index2);
+            if (distance < minDistance) {
+                minDistance = distance;
+            }
+        }
+    }
+
+    return minDistance;
+}
+
+function getMinDistance(filePath, word1, word2) {
+    // Determine the minimum distance between two words in any line of a file.
+    const sequences = readFileAsSequences(filePath);
+    let minDistance = Infinity;
+    let minSeqNum = null;
+
+    for (let i = 0; i < sequences.length; i++) {
+        const seq = sequences[i];
+        const distance = findClosestWordIndices(seq, word1, word2);
+        if (distance < minDistance) {
+            minDistance = distance;
+            minSeqNum = i;
+        }
+    }
+
+    return minDistance !== Infinity ? [minSeqNum, minDistance] : [null, null];
+}
 ```
 
-This JavaScript function reads a file line by line using Node.js's `fs` and `readline` modules. It keeps track of the positions of `word1` and `word2` and calculates the distance between them. If both words are found, it updates the minimum distance and the corresponding line number. Finally, it returns an object containing the minimum distance and the line number, or logs a message if either word is not found.
+### Explanation:
+1. **readFileAsSequences**: This function reads the content of a file specified by `filePath`, splits it into lines, and then converts each line into an array of words using the `split` method with a regular expression to handle multiple spaces.
+
+2. **findClosestWordIndices**: This function iterates through the given sequence to find the indices of `word1` and `word2`. It then calculates the minimum distance between any pair of these indices.
+
+3. **getMinDistance**: This function calls `readFileAsSequences` to get the sequences from the file, and then uses `findClosestWordIndices` to determine the minimum distance between the two words across all sequences. It returns the index of the sequence and the minimum distance.
+
+### Note:
+- The `fs` module is required for reading files synchronously in Node.js. If you are using this in a browser environment, you will need to modify the file reading part accordingly.

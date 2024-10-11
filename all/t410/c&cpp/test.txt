@@ -1,57 +1,54 @@
-To convert your Python unittest test class to a C++ Catch2 test case, you'll need to create a new C++ file and write the equivalent test cases using Catch2 syntax. Below is an example of how you might translate your Python unittest test class into a C++ Catch2 test case:
+First, let's create a C++ program that includes the necessary headers and defines the function `check_xor_sum`. We'll use Catch2 for the testing framework and `std::vector` to represent the 2D array since C++ does not have a direct equivalent to NumPy arrays. 
 
-1. **Install Catch2**: Ensure that Catch2 is installed on your system. You can download it from [Catch2's GitHub repository](https://github.com/catchorg/Catch2) or install it via a package manager like vcpkg or conan.
+Here's how you can define the `check_xor_sum` function and write tests for it using Catch2:
 
-2. **Create a C++ Test File**: Create a new C++ file for your tests, e.g., `test_check_xor_sum.cpp`.
-
-3. **Write the Catch2 Test Case**: Here’s how you might write the test case in C++ using Catch2:
+1. Include the necessary headers.
+2. Define the `check_xor_sum` function.
+3. Write tests using Catch2.
 
 ```cpp
-#define CATCH_CONFIG_MAIN
-#include <catch2/catch.hpp>
-#include <numpy/arrayobject.h> // Include numpy headers if needed
+#include <catch2/catch_test_macros.hpp>
+#include <vector>
 
-// Forward declaration of the function you want to test
-bool check_xor_sum(np::ndarray combination);
+// Function to calculate the XOR sum of specific columns in a 2D vector
+bool check_xor_sum(const std::vector<std::vector<int>>& combination) {
+    // Initialize XOR sums for each column
+    int col0_xor = 0;
+    int col1_xor = 0;
+    int col2_xor = 0;
 
-TEST_CASE("Check XOR Sum Function", "[check_xor_sum]") {
-    // Initialize numpy array object
-    Py_Initialize();
-    import_array();
+    // Calculate the XOR sum for each column
+    for (const auto& row : combination) {
+        col0_xor ^= row[0];
+        col1_xor ^= row[1];
+        col2_xor ^= row[2];
+    }
 
-    // Test case 1: Normal scenario with expected result
-    np::ndarray arr1 = np::frompyarray(np::array<int>({1, 0, 1}));
-    REQUIRE(check_xor_sum(arr1) == true); // Replace with actual expected result
+    // Check if the XOR sums match the required values
+    return (col0_xor == 0) && (col1_xor == 1) && (col2_xor == 1);
+}
 
-    // Test case 2: Scenario with unexpected result
-    np::ndarray arr2 = np::frompyarray(np::array<int>({0, 0, 0}));
-    REQUIRE(check_xor_sum(arr2) == false); // Replace with actual expected result
+TEST_CASE("Check XOR sums of specific columns") {
+    SECTION("Valid combination") {
+        std::vector<std::vector<int>> combination = {{0, 1, 1}, {0, 1, 1}};
+        REQUIRE(check_xor_sum(combination));
+    }
 
-    // Add more test cases as needed
-
-    // Finalize numpy
-    Py_Finalize();
+    SECTION("Invalid combination") {
+        std::vector<std::vector<int>> combination = {{1, 1, 1}, {0, 1, 1}};
+        REQUIRE_FALSE(check_xor_sum(combination));
+    }
 }
 ```
 
-### Explanation:
+### Explanation
 
-- **CATCH_CONFIG_MAIN**: This macro tells Catch2 to generate the main function for your tests.
-- **#include <catch2/catch.hpp>**: Includes the Catch2 header.
-- **Py_Initialize()** and **import_array()**: Initializes the Python interpreter and imports the numpy module. Note that these lines assume you are working with numpy arrays in C++. If not, you can remove them.
-- **TEST_CASE**: Defines a test case. The first argument is the name of the test case, and the second argument is a tag for organizing related test cases.
-- **REQUIRE**: Asserts that the condition is true. If the condition is false, the test will fail.
-- **np::ndarray**: Represents a numpy array in C++ using the numpy C API.
+1. **Headers**: We include the necessary headers for Catch2 and `vector`.
 
-### Running the Tests:
+2. **Function Definition**: The `check_xor_sum` function takes a 2D vector (`std::vector<std::vector<int>>`) as input and calculates the XOR sum for each column. It then checks if these XOR sums match the required values (0 for the first column, 1 for the second and third columns).
 
-To run the tests, compile your C++ code with the Catch2 library linked. For example, using g++:
+3. **Tests**:
+   - **Valid Combination**: We test with a valid combination that should return `true`.
+   - **Invalid Combination**: We test with an invalid combination that should return `false`.
 
-```sh
-g++ -std=c++17 test_check_xor_sum.cpp -o test_check_xor_sum -lcatch2_with_main -lnumpy
-./test_check_xor_sum
-```
-
-Make sure to link against the numpy library (`-lnumpy`) if you are using numpy arrays.
-
-This should give you a good starting point for converting your Python unittest test class to a C++ Catch2 test case. Adjust the test cases according to your specific requirements and ensure that the numpy array handling is appropriate for your use case.
+This setup ensures that the functionality and logic of the original Python tests are preserved in C++ using Catch2.

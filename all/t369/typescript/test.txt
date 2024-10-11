@@ -1,68 +1,114 @@
-Sure, I can help you convert the Python `unittest` test class to a TypeScript test case using Jest. However, your provided code snippet only defines the function `eight_queens()` without any test cases. Therefore, I'll assume you want to create a simple test case that checks if the function returns the correct output for a known input.
+Given the Python function `eight_queens` which solves the Eight Queens problem, we need to create a Jest test suite in TypeScript to validate the correctness of this function. Below is the equivalent TypeScript code using Jest for testing the `eight_queens` function.
 
-Here's how you might write a Jest test case in TypeScript for the `eight_queens` function:
+First, let's define the TypeScript function that represents the `eight_queens` algorithm. Then we'll write the Jest test suite to validate the function.
 
-1. First, make sure you have Jest installed. If not, you can install it using npm or yarn:
-
-```bash
-npm install --save-dev jest
-```
-
-or
-
-```bash
-yarn add --dev jest
-```
-
-2. Create a new file named `eightQueens.test.ts` and add the following code:
+### TypeScript Function Implementation
 
 ```typescript
-import { eightQueens } from './eightQueens'; // Adjust the import path according to your project structure
+function printChessBoard(board: string[][]): void {
+    board.forEach(row => {
+        console.log(row.join(' '));
+    });
+}
 
-describe('Eight Queens Problem', () => {
-  it('should return a valid solution when called', () => {
-    const expectedOutput = [
-      '. . Q . . . . .',
-      '. . . . Q . . .',
-      '. Q . . . . . .',
-      '. . . . . . . Q',
-      '. . . . . Q . .',
-      '. . . Q . . . .',
-      '. . . . . . Q .',
-      'Q . . . . . . .'
-    ];
+function isSafe(board: string[][], row: number, col: number): boolean {
+    // Check this row on left side
+    for (let i = 0; i < col; i++) {
+        if (board[row][i] === 'Q') {
+            return false;
+        }
+    }
 
-    // Call the function and store the result
-    const result = eightQueens();
+    // Check upper diagonal on left side
+    for (let i = row, j = col; i >= 0 && j >= 0; i--, j--) {
+        if (board[i][j] === 'Q') {
+            return false;
+        }
+    }
 
-    // Check if the result matches the expected output
-    expect(result).toEqual(expectedOutput);
-  });
+    // Check lower diagonal on left side
+    for (let i = row, j = col; j >= 0 && i < board.length; i++, j--) {
+        if (board[i][j] === 'Q') {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+function eightQueens(): void {
+    const N = 8;
+    const board: string[][] = Array.from({ length: N }, () => Array(N).fill('.'));
+    function solveNQ(col: number): boolean {
+        if (col >= N) {
+            printChessBoard(board);
+            return true;
+        }
+
+        let res = false;
+        for (let i = 0; i < N; i++) {
+            if (isSafe(board, i, col)) {
+                board[i][col] = 'Q';
+                res = solveNQ(col + 1) || res;
+                board[i][col] = '.'; // BACKTRACK
+            }
+        }
+        return res;
+    }
+
+    if (!solveNQ(0)) {
+        console.log("No solution");
+    }
+}
+
+// Example usage
+eightQueens();
+```
+
+### Jest Test Suite
+
+Now, let's create a Jest test suite to verify the correctness of the `eightQueens` function.
+
+```typescript
+import { captureConsole } from '@testing-library/node';
+
+describe('eightQueens', () => {
+    it('should solve the Eight Queens problem', async () => {
+        const expectedOutput = [
+            '. . Q . . . . .',
+            '. . . . Q . . .',
+            '. Q . . . . . .',
+            '. . . . . . . Q',
+            '. . . . . Q . .',
+            '. . . Q . . . .',
+            '. . . . . . Q .',
+            'Q . . . . . . .',
+        ].join('\n');
+
+        const output = await captureConsole(async () => {
+            eightQueens();
+        });
+
+        expect(output.stdout).toContain(expectedOutput);
+    });
+
+    it('should handle no solution scenario', async () => {
+        // Mocking the function to simulate no solution
+        const originalSolveNQ = eightQueens;
+        eightQueens = jest.fn(() => {
+            console.log("No solution");
+        });
+
+        const output = await captureConsole(async () => {
+            eightQueens();
+        });
+
+        expect(output.stdout).toContain("No solution");
+
+        // Restore the original function after the test
+        eightQueens = originalSolveNQ;
+    });
 });
 ```
 
-3. Make sure your `package.json` has a script to run Jest tests:
-
-```json
-{
-  "scripts": {
-    "test": "jest"
-  }
-}
-```
-
-4. Run the tests using the following command:
-
-```bash
-npm test
-```
-
-or
-
-```bash
-yarn test
-```
-
-This test case assumes that the `eightQueens` function returns an array of strings representing the board configuration. It checks if the returned result matches the expected output.
-
-If you need more complex test cases or additional functionality, feel free to provide more details!
+In this Jest test suite, we use the `@testing-library/node` package to capture the console output generated by the `eightQueens` function. We then compare the captured output with the expected output using Jest's `expect` assertion method. This ensures that the function behaves as expected when solving the Eight Queens problem.

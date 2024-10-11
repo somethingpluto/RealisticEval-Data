@@ -1,27 +1,57 @@
-Here is the equivalent JavaScript code for your Python function:
+Sure! Below is the equivalent JavaScript code that matches the functionality, logic, and structure of the provided Python code:
 
 ```javascript
+const fs = require('fs');
+
 function writeUniqueLineToFile(filename, lineContent) {
-    /*
+    /**
      * Writes a line to a text file only if the line with the same content does not already exist.
      *
      * @param {string} filename - The name of the file to write to.
      * @param {string} lineContent - The content of the line to write.
      */
 
-    // Read existing lines from file
-    let fs = require('fs');
-    let data = fs.readFileSync(filename, 'utf8');
-
-    // Split data into an array of lines
-    let lines = data.split('\n');
-
-    // Check if the line already exists in the file
-    if (!lines.includes(lineContent)) {
-        // If it doesn't, append the new line to the file
-        fs.appendFileSync(filename, '\n' + lineContent);
-    }
+    // Check if the lineContent already exists in the file
+    fs.readFile(filename, 'utf8', (err, data) => {
+        if (err && err.code === 'ENOENT') {
+            // File does not exist, so create it and write the line
+            fs.writeFile(filename, lineContent + '\n', (writeErr) => {
+                if (writeErr) {
+                    console.error(`Error writing to '${filename}':`, writeErr);
+                } else {
+                    console.log(`Line '${lineContent}' successfully written to '${filename}'.`);
+                }
+            });
+        } else if (err) {
+            console.error(`Error reading from '${filename}':`, err);
+        } else {
+            // File exists, check if the lineContent is already in the file
+            if (data.includes(lineContent)) {
+                console.log(`Line '${lineContent}' already exists in '${filename}'. Not writing again.`);
+            } else {
+                // Append the lineContent to the file
+                fs.appendFile(filename, lineContent + '\n', (appendErr) => {
+                    if (appendErr) {
+                        console.error(`Error appending to '${filename}':`, appendErr);
+                    } else {
+                        console.log(`Line '${lineContent}' successfully written to '${filename}'.`);
+                    }
+                });
+            }
+        }
+    });
 }
+
+// Example usage
+writeUniqueLineToFile('example.txt', 'This is a test line.');
 ```
 
-This JavaScript function uses Node.js's built-in `fs` module to read and write files. It reads all lines from the specified file, checks if the given line content already exists among them, and appends the new line if it doesn't. Note that this approach works well for small to medium-sized files but may be inefficient for very large files due to loading the entire file content into memory. For larger files, you might want to consider processing the file line-by-line or using more advanced techniques.
+### Explanation:
+1. **Importing `fs` Module**: The `fs` module is used for file system operations.
+2. **Function Definition**: The function `writeUniqueLineToFile` is defined to handle the logic of checking and writing lines to a file.
+3. **Reading the File**: `fs.readFile` is used to read the contents of the file. If the file does not exist (`ENOENT` error), it is created and the line is written directly.
+4. **Checking Line Existence**: If the file exists, the line content is checked within the file's data using `includes`.
+5. **Appending the Line**: If the line does not exist, it is appended to the file using `fs.appendFile`.
+6. **Error Handling**: Errors during file operations are handled and logged to the console.
+
+This ensures the same functionality and structure as the Python code, but adapted for JavaScript's asynchronous file I/O operations.

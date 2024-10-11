@@ -16,14 +16,3 @@ std::tuple<int, int, int> floatToRGB(float value) {
 
     return std::make_tuple(red, green, blue);
 }
-
-int main() {
-    try {
-        auto color = floatToRGB(0.5f); // Example value
-        std::cout << "Red: " << std::get<0>(color) << ", Green: " << std::get<1>(color) << ", Blue: " << std::get<2>(color) << std::endl;
-    } catch (const std::out_of_range& e) {
-        std::cerr << "Error: " << e.what() << std::endl;
-    }
-
-    return 0;
-}

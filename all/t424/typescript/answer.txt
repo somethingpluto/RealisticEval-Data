@@ -1,46 +1,91 @@
-Here is your Python code converted into TypeScript:
+Sure! Below is the equivalent TypeScript code for the provided Python code. This conversion includes defining types and using appropriate data structures in TypeScript.
 
 ```typescript
-interface Graph {
-  [key: string]: Array<[string, number]>
-}
+import { PriorityQueue } from 'typescript-collections';
 
-function dijkstra(graph: Graph, start: string): { [key: string]: number } {
-  const distances = {};
-  Object.keys(graph).forEach(key => {
-    distances[key] = Infinity;
-  });
-  
-  distances[start] = 0;
+function dijkstra(graph: Record<string, Array<[string, number]>>, start: string): Record<string, number> {
+    /**
+     * Implements Dijkstra's algorithm to find the shortest path from the start node to all other nodes in the graph.
+     *
+     * Parameters:
+     * - graph (Record<string, Array<[string, number]>>): A dictionary representing the adjacency list of the graph. Each key is a node, and the value is a list of tuples (neighbor, weight).
+     * - start: The starting node for the shortest path search.
+     *
+     * Returns:
+     * - Record<string, number>: A dictionary with the shortest distance from the start node to each node.
+     */
+    const queue = new PriorityQueue<[number, string]>((a, b) => a[0] - b[0]);
+    const shortestPaths: Record<string, number> = {};
 
-  while (Object.keys(distances).length > 0) {
-    let current = null;
-    let minDistance = Infinity;
-    
-    Object.keys(distances).forEach(node => {
-      if (distances[node] < minDistance) {
-        minDistance = distances[node];
-        current = node;
-      }
+    // Initialize distances to infinity
+    Object.keys(graph).forEach(node => {
+        shortestPaths[node] = Infinity;
     });
 
-    delete distances[current];
+    shortestPaths[start] = 0;
+    queue.enqueue([0, start]);
 
-    graph[current].forEach(([neighbor, weight]) => {
-      if (!distances.hasOwnProperty(neighbor)) return;
-      
-      const newDistance = minDistance + weight;
-      
-      if (newDistance < distances[neighbor]) {
-        distances[neighbor] = newDistance;
-      }
-    });
-  }
+    while (!queue.isEmpty()) {
+        const [currentDistance, currentNode] = queue.dequeue()!;
+        
+        // If the distance is greater than the recorded shortest path, skip processing
+        if (currentDistance > shortestPaths[currentNode]) {
+            continue;
+        }
 
-  return distances;
+        // Explore neighbors
+        graph[currentNode].forEach(([neighbor, weight]) => {
+            const distance = currentDistance + weight;
+
+            // Only consider this new path if it's better
+            if (distance < shortestPaths[neighbor]) {
+                shortestPaths[neighbor] = distance;
+                queue.enqueue([distance, neighbor]);
+            }
+        });
+    }
+
+    return shortestPaths;
 }
+
+// Example usage
+const graph: Record<string, Array<[string, number]>> = {
+    'A': [['B', 1], ['C', 4]],
+    'B': [['A', 1], ['C', 2], ['D', 5]],
+    'C': [['A', 4], ['B', 2], ['D', 1]],
+    'D': [['B', 5], ['C', 1]]
+};
+
+console.log(dijkstra(graph, 'A'));
 ```
 
-Please note that the above code assumes that the `graph` input is an object where keys represent the nodes and values represent the edges connected to those nodes. The edge values themselves are arrays containing two elements - the neighbor node and the weight of the edge between the current node and its neighbor. 
+### Explanation:
 
-The `dijkstra` function then calculates the shortest paths from the given `start` node to every other node in the graph using Dijkstra's algorithm. It returns an object where keys represent the nodes and values represent their corresponding shortest distances from the start node.
+1. **Imports**: TypeScript does not have a built-in priority queue, so we use the `PriorityQueue` class from the `typescript-collections` package. You need to install this package using npm or yarn.
+   
+   ```bash
+   npm install typescript-collections
+   ```
+
+2. **Type Definitions**:
+   - `graph`: A dictionary representing the adjacency list of the graph. Each key is a node, and the value is a list of tuples (neighbor, weight).
+   - `shortestPaths`: A dictionary to store the shortest path to each node.
+
+3. **Priority Queue**:
+   - We use a `PriorityQueue` to manage the nodes based on their distance.
+   - The `PriorityQueue` compares elements based on the first element of the tuple `[distance, node]`.
+
+4. **Initialization**:
+   - Initialize all distances to `Infinity`.
+   - Set the distance of the start node to `0`.
+   - Enqueue the start node with distance `0`.
+
+5. **Main Loop**:
+   - Dequeue the node with the smallest distance.
+   - Update the distances of its neighbors if a shorter path is found.
+   - Enqueue the updated neighbors.
+
+6. **Return**:
+   - Return the `shortestPaths` dictionary containing the shortest distances from the start node to all other nodes.
+
+This TypeScript code maintains the same functionality as the Python code while adapting to TypeScript's syntax and data structures.

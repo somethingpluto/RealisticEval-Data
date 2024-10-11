@@ -1,50 +1,116 @@
-Sure! Below is the equivalent JavaScript test case for your Python unittest test class using Jest:
+Sure, let's start by converting the given Python function `power` into JavaScript and then create the Jest test suite for it. We'll maintain the same functionality and logic as the original Python code.
+
+### Step 1: Convert the Python Function to JavaScript
+
+Here is the JavaScript version of the `power` function:
 
 ```javascript
-const { power } = require('./path_to_your_power_function'); // Adjust the path accordingly
+function power(matrix, n) {
+    if (!Array.isArray(matrix) || !matrix.every(row => Array.isArray(row))) {
+        throw new TypeError('Matrix must be a list of lists.');
+    }
+    if (typeof n !== 'number' || !Number.isInteger(n)) {
+        throw new TypeError('Exponent must be an integer.');
+    }
+    if (n < 0) {
+        throw new Error('Exponent must be non-negative.');
+    }
+
+    // Initialize the identity matrix
+    const size = matrix.length;
+    const identityMatrix = Array.from({ length: size }, () => Array(size).fill(0));
+    for (let i = 0; i < size; i++) {
+        identityMatrix[i][i] = 1;
+    }
+
+    let result = identityMatrix;
+
+    while (n > 0) {
+        if (n % 2 === 1) {
+            result = multiplyMatrices(result, matrix);
+        }
+        matrix = multiplyMatrices(matrix, matrix);
+        n = Math.floor(n / 2);
+    }
+
+    return result;
+
+    function multiplyMatrices(a, b) {
+        const rowsA = a.length;
+        const colsA = a[0].length;
+        const colsB = b[0].length;
+        const result = Array.from({ length: rowsA }, () => Array(colsB).fill(0));
+
+        for (let i = 0; i < rowsA; i++) {
+            for (let j = 0; j < colsB; j++) {
+                for (let k = 0; k < colsA; k++) {
+                    result[i][j] += a[i][k] * b[k][j];
+                }
+            }
+        }
+
+        return result;
+    }
+}
+```
+
+### Step 2: Create the Jest Test Suite
+
+Now, we will create a Jest test suite for the `power` function. This will include tests to cover various scenarios and edge cases.
+
+```javascript
+const { describe, it, expect } = global;
 
 describe('power function', () => {
-  it('should compute the n-th power of a matrix using the fast exponentiation method', () => {
-    const matrix = [
-      [1, 2],
-      [3, 4]
-    ];
-    const n = 2;
-    const expected = [
-      [7, 10],
-      [15, 22]
-    ];
+    it('should throw an error when the exponent is negative', () => {
+        expect(() => power([[1, 2], [3, 4]], -1)).toThrow('Exponent must be non-negative.');
+    });
 
-    expect(power(matrix, n)).toEqual(expected);
-  });
+    it('should throw an error when the matrix is not a list of lists', () => {
+        expect(() => power([1, 2, 3], 2)).toThrow('Matrix must be a list of lists.');
+    });
 
-  it('should throw an error if n is negative', () => {
-    const matrix = [
-      [1, 2],
-      [3, 4]
-    ];
-    const n = -1;
+    it('should throw an error when the exponent is not an integer', () => {
+        expect(() => power([[1, 2], [3, 4]], 2.5)).toThrow('Exponent must be an integer.');
+    });
 
-    expect(() => power(matrix, n)).toThrow('n must be a non-negative integer');
-  });
+    it('should return the identity matrix for exponent 0', () => {
+        const matrix = [[1, 2], [3, 4]];
+        const expected = [[1, 0], [0, 1]];
+        expect(power(matrix, 0)).toEqual(expected);
+    });
 
-  it('should throw an error if matrix is not a list of lists', () => {
-    const matrix = 'not a matrix';
-    const n = 2;
+    it('should compute the correct power for a simple matrix', () => {
+        const matrix = [[1, 1], [1, 1]];
+        const expected = [[4, 4], [4, 4]];
+        expect(power(matrix, 2)).toEqual(expected);
+    });
 
-    expect(() => power(matrix, n)).toThrow('matrix must be a list of lists');
-  });
-
-  it('should throw an error if n is not an integer', () => {
-    const matrix = [
-      [1, 2],
-      [3, 4]
-    ];
-    const n = 'not an integer';
-
-    expect(() => power(matrix, n)).toThrow('n must be a non-negative integer');
-  });
+    it('should compute the correct power for a complex matrix', () => {
+        const matrix = [[1, 2], [3, 4]];
+        const expected = [[37, 54], [81, 118]];
+        expect(power(matrix, 3)).toEqual(expected);
+    });
 });
 ```
 
-Make sure to adjust the path in `require` to point to where your `power` function is located. This Jest test suite includes tests for different scenarios, including valid input, invalid input for `n`, and invalid input for the matrix.
+### Explanation
+
+1. **Type Checking**:
+   - In JavaScript, we use `Array.isArray` to check if `matrix` is an array and `.every` to ensure each row is also an array.
+   - We use `typeof` and `Number.isInteger` to check if `n` is an integer.
+
+2. **Error Handling**:
+   - We throw errors using `throw new Error` or `throw new TypeError`.
+
+3. **Identity Matrix Initialization**:
+   - We initialize the identity matrix using `Array.from` and nested loops.
+
+4. **Fast Exponentiation**:
+   - We perform fast exponentiation using a loop and a helper function `multiplyMatrices`.
+
+5. **Jest Assertions**:
+   - We use `toThrow` to check for error throwing.
+   - We use `toEqual` to check if the computed matrix matches the expected matrix.
+
+This setup ensures that the functionality and logic of the tests are maintained in Jest.

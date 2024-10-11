@@ -1,12 +1,3 @@
-#define CATCH_CONFIG_MAIN // This tells Catch to provide a main() function
-#include "catch.hpp"
-#include <tuple>
-#include <stdexcept>
-
-// Function prototype (assuming it's in the same file for simplicity)
-std::tuple<int, int, int> floatToRGB(float value);
-
-// Tests
 TEST_CASE("TestFloatToRGB", "[floatToRGB]") {
 
     SECTION("Test pure red") {

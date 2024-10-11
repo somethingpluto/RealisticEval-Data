@@ -1,62 +1,83 @@
-To convert your Python `unittest` test class to a C++ test case using Catch2, you need to follow these steps:
-
-1. Install Catch2 if you haven't already. You can download it from [Catch2's GitHub repository](https://github.com/catchorg/Catch2).
-2. Write the equivalent C++ test case using Catch2 syntax.
-
-Here is an example of how you might write the C++ test case for the given Python function:
+Sure! Below is the equivalent C++ code with the test class using Catch2. This includes the `split_into_sentences` function and the corresponding tests:
 
 ```cpp
-#include <catch2/catch.hpp>
-#include <vector>
+#include <catch2/catch_test_macros.hpp>
 #include <string>
+#include <vector>
+#include <sstream>
 
-// Assuming the function is defined in a file named 'split.cpp'
-std::vector<std::string> split_into_sentences(const std::string& text);
+// Function to split the input text string into sentences
+std::vector<std::string> split_into_sentences(const std::string& text) {
+    std::vector<std::string> sentences;
+    std::istringstream iss(text);
+    std::string sentence;
+    while (getline(iss, sentence, '.')) {
+        // Trim leading and trailing whitespace
+        auto start = sentence.find_first_not_of(" \t\n\r\f\v");
+        auto end = sentence.find_last_not_of(" \t\n\r\f\v");
+        if (start != std::string::npos) {
+            sentences.push_back(sentence.substr(start, (end - start + 1)));
+        }
+    }
+    return sentences;
+}
 
-TEST_CASE("SplitIntoSentences", "[split]") {
-    SECTION("Empty String") {
-        std::vector<std::string> result = split_into_sentences("");
-        REQUIRE(result.empty());
+TEST_CASE("Test split_into_sentences") {
+    SECTION("Empty string") {
+        REQUIRE(split_into_sentences("").empty());
     }
 
-    SECTION("Single Sentence") {
-        std::vector<std::string> result = split_into_sentences("Hello world");
-        REQUIRE(result.size() == 1);
-        REQUIRE(result[0] == "Hello world");
+    SECTION("Single sentence") {
+        REQUIRE_THAT(split_into_sentences("This is a single sentence."),
+                     Catch::Matchers::Equals(std::vector<std::string>{"This is a single sentence"}));
     }
 
-    SECTION("Multiple Sentences with Different Delimiters") {
-        std::vector<std::string> result = split_into_sentences("This is the first sentence. This is the second one! And this is the third.");
-        REQUIRE(result.size() == 3);
-        REQUIRE(result[0] == "This is the first sentence");
-        REQUIRE(result[1] == "This is the second one");
-        REQUIRE(result[2] == "And this is the third");
+    SECTION("Multiple sentences") {
+        REQUIRE_THAT(split_into_sentences("This is the first sentence. This is the second sentence. This is the third sentence."),
+                     Catch::Matchers::Equals(std::vector<std::string>{
+                         "This is the first sentence",
+                         "This is the second sentence",
+                         "This is the third sentence"
+                     }));
     }
 
-    SECTION("Sentence with Leading/Trailing Whitespace") {
-        std::vector<std::string> result = split_into_sentences("   This is a sentence with leading and trailing spaces   ");
-        REQUIRE(result.size() == 1);
-        REQUIRE(result[0] == "This is a sentence with leading and trailing spaces");
+    SECTION("Trailing period") {
+        REQUIRE_THAT(split_into_sentences("This is a sentence with a trailing period..."),
+                     Catch::Matchers::Equals(std::vector<std::string>{
+                         "This is a sentence with a trailing period"
+                     }));
+    }
+
+    SECTION("Leading and trailing spaces") {
+        REQUIRE_THAT(split_into_sentences("   Leading and trailing spaces.   "),
+                     Catch::Matchers::Equals(std::vector<std::string>{"Leading and trailing spaces"}));
+    }
+
+    SECTION("Consecutive periods") {
+        REQUIRE_THAT(split_into_sentences("Consecutive periods.."),
+                     Catch::Matchers::Equals(std::vector<std::string>{
+                         "Consecutive periods",
+                         ""
+                     }));
     }
 }
 ```
 
 ### Explanation:
 
-- **Include Catch2 Header**: The `#include <catch2/catch.hpp>` line includes the Catch2 header file which provides the testing framework.
-  
-- **Function Definition**: The function `split_into_sentences` is assumed to be defined elsewhere, e.g., in a file named `split.cpp`.
+1. **Function Definition**: 
+   - The `split_into_sentences` function takes a string and returns a vector of strings representing the sentences in the input text.
+   - It uses `std::istringstream` to split the text by periods (`.`).
+   - It trims leading and trailing whitespace from each sentence before adding it to the result vector.
 
-- **Test Case**: The `TEST_CASE` macro defines a new test case named "SplitIntoSentences" with a tag `[split]`.
-  
-- **Sections**: Each `SECTION` within a `TEST_CASE` represents a different scenario or test case for the main function.
-  
-- **Assertions**: The `REQUIRE` macro is used to make assertions. If any assertion fails, the test will fail.
+2. **Test Class**:
+   - The `TEST_CASE` macro defines a test case named "Test split_into_sentences".
+   - Each `SECTION` defines a specific scenario or test case.
+   - `REQUIRE` is used to check boolean conditions.
+   - `REQUIRE_THAT` with `Catch::Matchers::Equals` is used to compare vectors of strings.
 
-### Note:
-- Ensure that the `split_into_sentences` function is correctly implemented and available in the same project or linked library.
-- Make sure to compile your C++ code with Catch2 included, typically using a command like:
-  ```sh
-  g++ -std=c++14 -o test_split test_split.cpp split.cpp -lc++abi
-  ```
-  Adjust the compiler flags according to your environment and setup.
+3. **Assertions**:
+   - The `REQUIRE` macro checks if the function returns an empty vector when given an empty string.
+   - The `REQUIRE_THAT` macro checks if the function returns the expected vector of sentences for different inputs.
+
+This setup ensures that the functionality and logic of the tests are preserved, making the transition from Python's unittest to C++'s Catch2 seamless.

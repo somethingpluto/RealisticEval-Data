@@ -5,4 +5,5 @@
  * @param seg2 Coordinates of the second line segment, defined as an array of four doubles [x3, y3, x4, y4].
  * @return A double array containing the (x, y) coordinates of the intersection point if the line segments intersect, otherwise null.
  */
-public class LineSegmentIntersection {}
+public static double[] getLineSegmentIntersection(double[] seg1, double[] seg2) {}
+

@@ -1,5 +1,3 @@
-import { containsPhoneNumber } from './path/to/your/module'; // Adjust the import based on your file structure
-
 describe('Phone Number Detection', () => {
     test('with international prefix', () => {
         expect(containsPhoneNumber("+1-800-555-1234")).toBe(true);

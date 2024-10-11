@@ -1,63 +1,81 @@
-Sure! Below is the equivalent TypeScript test case using Jest for the provided Python function `sum_calibration_values`.
+First, let's define the TypeScript function equivalent to the Python function `sum_calibration_values`. We'll also create a Jest test suite to validate this function.
+
+Here's how you can do it:
+
+1. Define the TypeScript function.
+2. Write the Jest tests for the function.
+
+### TypeScript Function
 
 ```typescript
-import { describe, it, expect } from '@jest/globals';
+import { sum } from "lodash";
 
-function sumCalibrationValues(calibrationDocument: string[]): number {
-    /**
-     * Sums up calibration values extracted from the document.
-     * Each calibration value is formed by combining the first and last digits of numbers found in each line
-     * into a two-digit number.
-     *
-     * @param calibrationDocument - An array of strings, each representing a line of text.
-     * @returns The total sum of all calibration values.
-     */
-    let totalSum = 0;
-
-    for (const line of calibrationDocument) {
-        const matches = line.match(/\d+/g);
-        if (matches) {
-            for (const match of matches) {
-                const firstDigit = parseInt(match[0], 10);
-                const lastDigit = parseInt(match[match.length - 1], 10);
-                totalSum += firstDigit * 10 + lastDigit;
-            }
-        }
-    }
-
-    return totalSum;
+function extractDigits(line: string): [number, number] {
+  const firstDigit = line.search(/\d/);
+  const lastDigit = line.search(/\d/g);
+  if (firstDigit === -1 || lastDigit === -1) {
+    return [0, 0];
+  }
+  const first = parseInt(line[firstDigit], 10);
+  const last = parseInt(line[lastDigit + line.length - 1], 10);
+  return [first, last];
 }
 
+function sumCalibrationValues(calibrationDocument: string[]): number {
+  let totalSum = 0;
+  for (const line of calibrationDocument) {
+    const [first, last] = extractDigits(line);
+    const calibrationValue = parseInt(`${first}${last}`, 10);
+    totalSum += calibrationValue;
+  }
+  return totalSum;
+}
+
+export { sumCalibrationValues };
+```
+
+### Jest Test Suite
+
+```typescript
+import { sumCalibrationValues } from './path-to-your-function';
+
 describe('sumCalibrationValues', () => {
-    it('should sum up calibration values correctly', () => {
-        const calibrationDocument = [
-            '1abc2',
-            'pqr3stu4',
-            '5v6w7x8y9z'
-        ];
-        const result = sumCalibrationValues(calibrationDocument);
-        expect(result).toBe(12 + 34 + 59); // 12 (from "1abc2") + 34 (from "pqr3stu4") + 59 (from "5v6w7x8y9z")
-    });
+  it('should handle empty input', () => {
+    expect(sumCalibrationValues([])).toBe(0);
+  });
 
-    it('should handle empty lines gracefully', () => {
-        const calibrationDocument = [
-            '',
-            'no numbers here',
-            '123456'
-        ];
-        const result = sumCalibrationValues(calibrationDocument);
-        expect(result).toBe(16); // 16 (from "123456")
-    });
+  it('should handle lines with no digits', () => {
+    expect(sumCalibrationValues(['abc', 'def'])).toBe(0);
+  });
 
-    it('should handle lines with no numbers', () => {
-        const calibrationDocument = [
-            'abcdef',
-            'ghijkl'
-        ];
-        const result = sumCalibrationValues(calibrationDocument);
-        expect(result).toBe(0); // No numbers, so sum should be 0
-    });
+  it('should handle lines with single digit', () => {
+    expect(sumCalibrationValues(['1', '2'])).toBe(12);
+  });
+
+  it('should handle lines with multiple digits', () => {
+    expect(sumCalibrationValues(['123', '456'])).toBe(16);
+  });
+
+  it('should handle mixed cases', () => {
+    expect(sumCalibrationValues(['123a', 'b456', '789c'])).toBe(169);
+  });
+
+  it('should handle complex cases', () => {
+    expect(sumCalibrationValues(['123a456', 'b789c0', '123d456e789'])).toBe(169);
+  });
 });
 ```
 
-This TypeScript code uses Jest's `describe`, `it`, and `expect` functions to write test cases that validate the behavior of the `sumCalibrationValues` function. The tests cover various scenarios including normal lines with numbers, empty lines, and lines without any numbers.
+### Explanation
+
+1. **Type Annotations**: The function `sumCalibrationValues` takes an array of strings (`string[]`) as its argument and returns a number (`number`).
+2. **Helper Function**: The helper function `extractDigits` finds the first and last digits in a given line.
+3. **Jest Assertions**:
+   - `expect(sumCalibrationValues([])).toBe(0)` checks if an empty array results in a sum of 0.
+   - `expect(sumCalibrationValues(['abc', 'def'])).toBe(0)` checks if lines without digits result in a sum of 0.
+   - `expect(sumCalibrationValues(['1', '2'])).toBe(12)` checks if lines with a single digit result in a correct sum.
+   - `expect(sumCalibrationValues(['123', '456'])).toBe(16)` checks if lines with multiple digits result in a correct sum.
+   - `expect(sumCalibrationValues(['123a', 'b456', '789c'])).toBe(169)` checks if lines with mixed characters result in a correct sum.
+   - `expect(sumCalibrationValues(['123a456', 'b789c0', '123d456e789'])).toBe(169)` checks if complex cases result in a correct sum.
+
+This approach ensures that the functionality and logic of the tests are preserved while adapting to TypeScript and Jest.

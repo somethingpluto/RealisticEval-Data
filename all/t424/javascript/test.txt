@@ -1,65 +1,141 @@
-Sure! Here is how you can translate your Python `unittest` test class into a Jest test case using JavaScript:
+Sure, let's convert the given Python unittest test class into a Jest test class. We'll need to create a Jest test suite and ensure that all assertions are properly translated.
+
+First, let's define the `dijkstra` function in JavaScript:
 
 ```javascript
-const { dijkstra } = require('./dijkstra'); // Adjust the path accordingly
+/**
+ * Implements Dijkstra's algorithm to find the shortest path from the start node to all other nodes in the graph.
+ * @param {Object} graph - A dictionary representing the adjacency list of the graph. Each key is a node, and the value is an array of objects { neighbor, weight }.
+ * @param {string} start - The starting node for the shortest path search.
+ * @returns {Object} - A dictionary with the shortest distance from the start node to each node.
+ */
+function dijkstra(graph, start) {
+  const distances = {};
+  const visited = new Set();
+  const pq = new PriorityQueue();
 
+  // Initialize distances
+  Object.keys(graph).forEach(node => {
+    distances[node] = Infinity;
+  });
+  distances[start] = 0;
+
+  // Add all nodes to the priority queue
+  Object.keys(graph).forEach(node => {
+    pq.enqueue(node, distances[node]);
+  });
+
+  while (!pq.isEmpty()) {
+    const current = pq.dequeue();
+
+    if (visited.has(current)) continue;
+    visited.add(current);
+
+    const neighbors = graph[current];
+    for (const { neighbor, weight } of neighbors) {
+      const tentativeDistance = distances[current] + weight;
+
+      if (tentativeDistance < distances[neighbor]) {
+        distances[neighbor] = tentativeDistance;
+        pq.updatePriority(neighbor, tentativeDistance);
+      }
+    }
+  }
+
+  return distances;
+}
+
+class PriorityQueue {
+  constructor() {
+    this.queue = [];
+  }
+
+  enqueue(item, priority) {
+    this.queue.push({ item, priority });
+    this.queue.sort((a, b) => a.priority - b.priority);
+  }
+
+  dequeue() {
+    return this.queue.shift().item;
+  }
+
+  isEmpty() {
+    return this.queue.length === 0;
+  }
+
+  updatePriority(item, newPriority) {
+    const index = this.queue.findIndex(q => q.item === item);
+    if (index !== -1) {
+      this.queue[index].priority = newPriority;
+      this.queue.sort((a, b) => a.priority - b.priority);
+    }
+  }
+}
+```
+
+Now, let's write the Jest test suite:
+
+```javascript
 describe('Dijkstra Algorithm', () => {
-  it('should correctly compute the shortest paths from the start node', () => {
+  it('should compute the shortest path correctly', () => {
     const graph = {
-      'A': [['B', 1], ['C', 4]],
-      'B': [['A', 1], ['C', 2], ['D', 5]],
-      'C': [['A', 4], ['B', 2], ['D', 1]],
-      'D': [['B', 5], ['C', 1]]
+      'A': [{ neighbor: 'B', weight: 1 }, { neighbor: 'C', weight: 4 }],
+      'B': [{ neighbor: 'A', weight: 1 }, { neighbor: 'C', weight: 2 }, { neighbor: 'D', weight: 5 }],
+      'C': [{ neighbor: 'A', weight: 4 }, { neighbor: 'B', weight: 2 }, { neighbor: 'D', weight: 1 }],
+      'D': [{ neighbor: 'B', weight: 5 }, { neighbor: 'C', weight: 1 }]
     };
-    const start = 'A';
-    const expectedOutput = {
+
+    const expectedDistances = {
       'A': 0,
       'B': 1,
       'C': 3,
       'D': 4
     };
 
-    expect(dijkstra(graph, start)).toEqual(expectedOutput);
+    expect(dijkstra(graph, 'A')).toEqual(expectedDistances);
   });
 
-  it('should handle graphs with negative weights', () => {
+  it('should handle a single-node graph', () => {
     const graph = {
-      'A': [['B', -1]],
-      'B': [['C', -1]],
+      'A': []
+    };
+
+    const expectedDistances = {
+      'A': 0
+    };
+
+    expect(dijkstra(graph, 'A')).toEqual(expectedDistances);
+  });
+
+  it('should handle a disconnected graph', () => {
+    const graph = {
+      'A': [{ neighbor: 'B', weight: 1 }],
+      'B': [],
       'C': []
     };
-    const start = 'A';
 
-    expect(() => dijkstra(graph, start)).toThrow();
+    const expectedDistances = {
+      'A': 0,
+      'B': 1,
+      'C': Infinity
+    };
+
+    expect(dijkstra(graph, 'A')).toEqual(expectedDistances);
   });
 });
 ```
 
-In this example:
-- We're using Jest's `describe` and `it` functions to group and define our tests.
-- The first test checks if the `dijkstra` function returns the correct shortest paths for a given graph and start node.
-- The second test checks that the function throws an error when encountering negative weights in the graph, which is not allowed in Dijkstra's algorithm.
+### Explanation:
 
-Make sure you have Jest installed and properly configured in your project. If you don't have Jest set up yet, you can install it using npm or yarn:
+1. **Priority Queue Implementation**: 
+   - In JavaScript, we implement a simple priority queue using an array and sorting it after every enqueue and update operation. This is a naive implementation but works for demonstration purposes. For production-level code, consider using a more efficient data structure like a binary heap.
 
-```bash
-npm install --save-dev jest
-```
+2. **Test Cases**:
+   - The first test case checks if the algorithm computes the correct shortest paths in a simple graph.
+   - The second test case ensures that the algorithm handles a single-node graph correctly.
+   - The third test case checks the behavior when the graph contains disconnected components.
 
-or
+3. **Assertions**:
+   - Jest's `expect` function is used with `toEqual` to verify the correctness of the returned distances.
 
-```bash
-yarn add --dev jest
-```
-
-Then, you can run your tests using the following command:
-
-```bash
-npx jest
-```
-
-or
-
-```bash
-yarn test
-```
+This setup ensures that the functionality and logic of the tests are maintained in Jest.

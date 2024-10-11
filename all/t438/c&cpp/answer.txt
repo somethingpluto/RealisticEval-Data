@@ -1,73 +1,53 @@
-To convert the Python function `read_csv_to_dataframe` into C/C++ code, we need to use libraries that can handle CSV files and create data structures similar to pandas DataFrames. One such library for C is `libcsv`, and for C++, you might use `Boost.PropertyTree` or `CSVParser`.
-
-Below is an example of how you could implement this in C++ using `Boost.PropertyTree`. Note that Boost is not part of the standard C++ library, so you'll need to install it if you don't already have it.
-
-First, ensure you have Boost installed on your system. You can download it from [Boost's official website](https://www.boost.org/).
-
-Here's the equivalent C++ code:
+Here’s the equivalent C++ code using the `cppcsv` library for reading CSV files. Please note that you need to install the `cppcsv` library to use this code. You can find the library [here](https://github.com/denysdovhan/cpp-csv-parser).
 
 ```cpp
 #include <iostream>
-#include <fstream>
-#include <vector>
 #include <string>
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/csv_parser.hpp>
+#include <csv.h> // Assuming you have installed the cppcsv library
 
-using boost::property_tree::ptree;
-using boost::property_tree::read_csv;
+// Function to read a CSV file and convert it to a structured format
+void read_csv_to_structured_format(const std::string& file_path) {
+    try {
+        csv::Parser file = csv::Parser(file_path);
 
-std::vector<std::map<std::string, std::string>> read_csv_to_dataframe(const std::string& file_path) {
-    ptree pt;
-    read_csv(file_path, pt);
+        if (file.is_open()) {
+            // Print header
+            for (const auto& header : file.headers()) {
+                std::cout << header << " ";
+            }
+            std::cout << "\n";
 
-    std::vector<std::map<std::string, std::string>> dataframe;
-    for (const auto& row : pt.get_child("data")) {
-        std::map<std::string, std::string> row_map;
-        for (const auto& column : row.second) {
-            row_map[column.first] = column.second.data();
+            // Print rows
+            for (const auto& row : file) {
+                for (const auto& cell : row) {
+                    std::cout << cell << " ";
+                }
+                std::cout << "\n";
+            }
+        } else {
+            std::cout << "Error: The file '" << file_path << "' could not be opened.\n";
         }
-        dataframe.push_back(row_map);
+    } catch (const std::exception& e) {
+        std::cout << "An error occurred: " << e.what() << "\n";
     }
-
-    return dataframe;
 }
 
 int main() {
     std::string file_path = "path/to/your/file.csv";
-    auto dataframe = read_csv_to_dataframe(file_path);
-
-    // Print the DataFrame to verify
-    for (const auto& row : dataframe) {
-        for (const auto& pair : row) {
-            std::cout << pair.first << ": " << pair.second << ", ";
-        }
-        std::cout << std::endl;
-    }
-
+    read_csv_to_structured_format(file_path);
     return 0;
 }
 ```
 
 ### Explanation:
-1. **Include Necessary Headers**: We include headers for input/output operations, string handling, vector, map, and Boost Property Tree.
-2. **Function Definition**:
-   - `read_csv_to_dataframe`: This function reads a CSV file using `Boost.PropertyTree` and converts it into a vector of maps, where each map represents a row in the DataFrame.
-3. **Reading CSV File**:
-   - `read_csv(file_path, pt)`: This reads the CSV file and stores the parsed data in a property tree.
-4. **Parsing the Property Tree**:
-   - We iterate over the rows and columns in the property tree to construct the DataFrame.
-5. **Main Function**:
-   - Demonstrates how to call the `read_csv_to_dataframe` function and print the resulting DataFrame.
+1. **Header Files**: Include necessary headers like `<iostream>` and `<string>` for basic I/O operations and string handling, respectively. Also, include `<csv.h>` assuming you have the `cppcsv` library installed.
 
-### Dependencies:
-- Ensure you have Boost installed and properly configured in your development environment.
-- Link against the Boost libraries when compiling your program.
+2. **Function Definition**: Define the function `read_csv_to_structured_format` which takes the file path as input and attempts to read the CSV file.
 
-For example, if you're using g++, you might compile the above code with the following command:
+3. **CSV Parsing**: Use the `csv::Parser` class from the `cppcsv` library to parse the CSV file. Check if the file is successfully opened and then print the headers and rows.
 
-```sh
-g++ -o read_csv read_csv.cpp -lboost_system -lboost_filesystem -lboost_program_options
-```
+4. **Exception Handling**: Catch any exceptions thrown during the parsing process and print an appropriate error message.
 
-This will generate an executable named `read_csv` that reads a CSV file and prints its contents. Adjust the file path and other details as needed.
+5. **Main Function**: In the `main` function, call `read_csv_to_structured_format` with the desired file path.
+
+This C++ code provides similar functionality to the given Python code by reading a CSV file and displaying its contents in a structured format.

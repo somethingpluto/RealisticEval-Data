@@ -1,24 +1,3 @@
-#define CATCH_CONFIG_MAIN
-#include "catch.hpp"
-#include <unordered_map>
-#include <cmath>
-#include <string>
-
-struct Coordinates {
-    double x;
-    double y;
-};
-
-double calculateDistance(const std::string& agent1, const std::string& agent2, const std::unordered_map<std::string, Coordinates>& observations) {
-    double x1 = observations.at(agent1).x;
-    double y1 = observations.at(agent1).y;
-    double x2 = observations.at(agent2).x;
-    double y2 = observations.at(agent2).y;
-
-    double distance = std::sqrt(std::pow(x1 - x2, 2) + std::pow(y1 - y2, 2));
-    return distance;
-}
-
 TEST_CASE("TestCalculateDistance") {
     SECTION("same_point") {
         std::unordered_map<std::string, Coordinates> observations = {

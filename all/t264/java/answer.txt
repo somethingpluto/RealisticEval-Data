@@ -1,47 +1,77 @@
-Here's the Java version of your Python code. This Java class will do the same thing - it extracts log entries from a log file based on their severity level (WARNING, ERROR, CRITICAL, and ALERT) and saves them into separate files.
+Here is the equivalent Java code for the given Python script, organized within the `org.real.temp` package and the `Answer` class:
 
 ```java
-import java.io.*;
-import java.util.*;
+package org.real.temp;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.List;
 
 public class Answer {
-    public static void extractLogEntries(String logFilePath) throws IOException {
-        BufferedReader reader = new BufferedReader(new FileReader(logFilePath));
-        String line;
-        Map<String, BufferedWriter> writers = new HashMap<>();
 
-        while ((line = reader.readLine()) != null) {
-            if (line.contains("WARNING")) {
-                getWriter(writers, "warnings.log").write(line + "\n");
-            } else if (line.contains("ERROR")) {
-                getWriter(writers, "errors.log").write(line + "\n");
-            } else if (line.contains("CRITICAL")) {
-                getWriter(writers, "criticals.log").write(line + "\n");
-            } else if (line.contains("ALERT")) {
-                getWriter(writers, "alerts.log").write(line + "\n");
+    private static final Map<String, String> outputFiles = new HashMap<>();
+    private static final Map<String, List<String>> logs = new HashMap<>();
+
+    static {
+        outputFiles.put("WARNING", "warning_logs.txt");
+        outputFiles.put("ERROR", "error_logs.txt");
+        outputFiles.put("CRITICAL", "critical_logs.txt");
+        outputFiles.put("ALERT", "alert_logs.txt");
+
+        logs.put("WARNING", List.of());
+        logs.put("ERROR", List.of());
+        logs.put("CRITICAL", List.of());
+        logs.put("ALERT", List.of());
+    }
+
+    public static void extractLogEntries(String logFilePath) throws IOException {
+        if (!Files.exists(Paths.get(logFilePath))) {
+            throw new IOException("No log file found at the specified path: " + logFilePath);
+        }
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(logFilePath))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                for (String level : logs.keySet()) {
+                    if (line.contains(level)) {
+                        logs.computeIfAbsent(level, k -> List.of()).add(line);
+                        break;
+                    }
+                }
             }
         }
 
-        for (BufferedWriter writer : writers.values()) {
-            writer.close();
+        for (Map.Entry<String, List<String>> entry : logs.entrySet()) {
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputFiles.get(entry.getKey())))) {
+                entry.getValue().forEach(writer::write);
+                System.out.println("Saved " + entry.getValue().size() + " '" + entry.getKey() + "' entries to " + outputFiles.get(entry.getKey()) + ".");
+            }
         }
-
-        reader.close();
     }
 
-    private static BufferedWriter getWriter(Map<String, BufferedWriter> writers, String fileName) throws IOException {
-        BufferedWriter writer = writers.get(fileName);
-        if (writer == null) {
-            writer = new BufferedWriter(new FileWriter(fileName, true));
-            writers.put(fileName, writer);
+    public static void main(String[] args) {
+        try {
+            extractLogEntries("path/to/logfile.log");
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        return writer;
     }
 }
 ```
 
-This Java method `extractLogEntries` reads from a specified log file and writes lines that contain specific keywords ("WARNING", "ERROR", "CRITICAL", "ALERT") to corresponding log files. If a keyword is not found in a line, it simply ignores that line.
+### Explanation:
+1. **Package and Class Definition**: The Java code is placed within the `org.real.temp` package and defined in the `Answer` class.
+2. **Static Initialization Blocks**: The `outputFiles` and `logs` maps are initialized using a static block. This is done to ensure they are populated before any methods are called.
+3. **Method Signature**: The `extractLogEntries` method is defined to take a single string argument representing the path to the log file and throws an `IOException`.
+4. **File Handling**: Java's `BufferedReader` and `BufferedWriter` classes are used to read from and write to files, respectively.
+5. **Error Handling**: An `IOException` is thrown if the specified log file does not exist.
+6. **Logging and Writing Files**: Each log level is checked against lines read from the log file. If a match is found, the line is added to the corresponding list in the `logs` map. After processing all lines, the entries are written to separate files.
 
-The `getWriter` helper function handles opening and closing the file writers, ensuring that each log level gets its own file. It also ensures that each file is only opened once per run of the program. 
-
-Note: This is a simple implementation. Depending upon your requirement you might want to handle exceptions more gracefully or use a better way to determine the log level. Also, make sure to close all resources properly after use to avoid resource leaks.
+This conversion ensures that the functionality and logic of the original Python script are preserved while adhering to Java's syntax and best practices.

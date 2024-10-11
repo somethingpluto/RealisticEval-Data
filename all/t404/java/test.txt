@@ -1,33 +1,143 @@
-Here's how you can convert your Python unittest test class to a Java JUnit test case:
+Sure! Below is the Java equivalent of the given Python unittest test class, converted to use JUnit. I will provide the conversion for the `power` function definition as well, assuming you would like to test this function within the JUnit test class:
+
+First, let's define the `power` function in Java. Then we'll create the JUnit test class.
+
+### Java Implementation of `power` Function
 
 ```java
-import static org.junit.Assert.assertEquals;
-import org.junit.Test;
+package org.real.temp;
 
-public class Tester {
-    
-    @Test(expected = IllegalArgumentException.class)
-    public void testNegativeExponent() {
-        int[][] matrix = {{1, 2}, {3, 4}};
-        MatrixPower.power(matrix, -1);
+import java.util.ArrayList;
+import java.util.List;
+
+public class MatrixUtil {
+
+    /**
+     * Computes the n-th power of a matrix using the fast exponentiation method.
+     *
+     * @param matrix A square matrix to be exponentiated.
+     * @param n      The exponent to raise the matrix to. Must be a non-negative integer.
+     * @return The matrix raised to the power of n.
+     * @throws IllegalArgumentException if n is negative or matrix is not valid.
+     */
+    public static List<List<Integer>> power(List<List<Integer>> matrix, int n) {
+        if (n < 0) {
+            throw new IllegalArgumentException("Exponent must be non-negative.");
+        }
+        
+        // Validate the matrix is square
+        int size = matrix.size();
+        for (List<Integer> row : matrix) {
+            if (row.size() != size) {
+                throw new IllegalArgumentException("Matrix must be square.");
+            }
+        }
+
+        // Base case: Identity matrix
+        List<List<Integer>> result = identityMatrix(size);
+
+        while (n > 0) {
+            if (n % 2 == 1) {
+                result = multiplyMatrices(result, matrix);
+            }
+            matrix = multiplyMatrices(matrix, matrix);
+            n /= 2;
+        }
+
+        return result;
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testNonIntegerExponent() {
-        int[][] matrix = {{1, 2}, {3, 4}};
-        MatrixPower.power(matrix, 1.5);
+    private static List<List<Integer>> identityMatrix(int size) {
+        List<List<Integer>> identity = new ArrayList<>();
+        for (int i = 0; i < size; i++) {
+            List<Integer> row = new ArrayList<>();
+            for (int j = 0; j < size; j++) {
+                row.add(i == j ? 1 : 0);
+            }
+            identity.add(row);
+        }
+        return identity;
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testNonMatrixInput() {
-        Object[] input = {"not", "a", "matrix"};
-        MatrixPower.power(input, 2);
+    private static List<List<Integer>> multiplyMatrices(List<List<Integer>> a, List<List<Integer>> b) {
+        int size = a.size();
+        List<List<Integer>> product = new ArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            List<Integer> row = new ArrayList<>(size);
+            for (int j = 0; j < size; j++) {
+                int sum = 0;
+                for (int k = 0; k < size; k++) {
+                    sum += a.get(i).get(k) * b.get(k).get(j);
+                }
+                row.add(sum);
+            }
+            product.add(row);
+        }
+        return product;
     }
-    
-    // Add more tests for other scenarios...
 }
 ```
 
-Note that in Java, we don't have direct equivalents to Python's `ValueError` and `TypeError`, so I've used `IllegalArgumentException` instead. Also, since Java doesn't support function overloading like Python, you might need to create separate methods for different types of inputs if necessary.
+### JUnit Test Class
 
-Please replace `MatrixPower.power()` with your actual method call which should compute the power of a matrix.
+Now, let's write the JUnit test class for the `power` function.
+
+```java
+package org.real.temp;
+
+import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+
+import java.util.Arrays;
+import java.util.List;
+
+public class Tester {
+
+    @Test
+    public void testPower() {
+        // Define test data
+        List<List<Integer>> matrix = Arrays.asList(
+            Arrays.asList(1, 2),
+            Arrays.asList(3, 4)
+        );
+        int n = 2;
+
+        // Expected result
+        List<List<Integer>> expectedResult = Arrays.asList(
+            Arrays.asList(7, 10),
+            Arrays.asList(15, 22)
+        );
+
+        // Perform the test
+        List<List<Integer>> result = MatrixUtil.power(matrix, n);
+
+        // Verify the result
+        assertEquals(expectedResult, result);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testNegativeExponent() {
+        List<List<Integer>> matrix = Arrays.asList(
+            Arrays.asList(1, 2),
+            Arrays.asList(3, 4)
+        );
+        int n = -1;
+        MatrixUtil.power(matrix, n);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testNonSquareMatrix() {
+        List<List<Integer>> matrix = Arrays.asList(
+            Arrays.asList(1, 2, 3),
+            Arrays.asList(4, 5, 6)
+        );
+        int n = 2;
+        MatrixUtil.power(matrix, n);
+    }
+}
+```
+
+This JUnit test class includes three test cases:
+1. `testPower`: Tests the `power` function with a positive exponent.
+2. `testNegativeExponent`: Tests the `power` function with a negative exponent, expecting an `IllegalArgumentException`.
+3. `testNonSquareMatrix`: Tests the `power` function with a non-square matrix, expecting an `IllegalArgumentException`.

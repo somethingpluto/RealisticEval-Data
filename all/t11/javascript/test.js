@@ -1,5 +1,3 @@
-const Trie = require('./Trie'); // Adjust the path as necessary
-
 describe('Trie', () => {
     let trie;
 

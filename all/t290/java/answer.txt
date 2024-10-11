@@ -1,23 +1,86 @@
-Here's the equivalent Java code for your Python function:
+Here is the equivalent Java code for the provided Python code, organized within the `org.real.temp` package and the `Answer` class:
 
 ```java
 package org.real.temp;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class Answer {
 
+    public static void main(String[] args) {
+        // Example usage
+        String rdfJsonLdString = "{\"@id\": \"urn:ngsi-ld:example\", \"@type\": \"ExampleType\", \"attr1\": \"value1\"}";
+        Map<String, Object> ngsiLdData = rdfJsonldToNgSILD(rdfJsonLdString);
+        System.out.println(ngsiLdData);
+    }
+
     /**
-     * Convert the question in RDF JSON-LD format to NGSI-LD format
+     * Convert RDF JSON-LD question to NGSI-LD format.
      *
-     * @param rdfJsonld RDF JSON-LD formatted question as a string.
+     * @param rdfJsonld RDF JSON-LD formatted question as a string or map.
      * @return Data formatted according to NGSI-LD specifications.
      */
-    public Map<String, Object> rdfJsonLdToNgsiLd(String rdfJsonld) {
-        // Your implementation here
-        return null;
+    public static Map<String, Object> rdfJsonldToNgSILD(Object rdfJsonld) {
+        Map<String, Object> parsedRdfJsonld;
+        if (rdfJsonld instanceof String) {
+            parsedRdfJsonld = JsonUtil.parse((String) rdfJsonld);
+        } else {
+            parsedRdfJsonld = (Map<String, Object>) rdfJsonld;
+        }
+
+        Map<String, Object> ngsiLd = new HashMap<>();
+        ngsiLd.put("id", parsedRdfJsonld.getOrDefault("@id", "urn:ngsi-ld:unknown:id"));
+        ngsiLd.put("type", parsedRdfJsonld.getOrDefault("@type", "UnknownType"));
+        ngsiLd.put("@context", parsedRdfJsonld.getOrDefault("@context", "https://schema.lab.fiware.org/ld/context"));
+        ngsiLd.put("attributes", new HashMap<>());
+
+        // Assuming simple attribute structure conversion
+        for (Map.Entry<String, Object> entry : parsedRdfJsonld.entrySet()) {
+            String key = entry.getKey();
+            Object value = entry.getValue();
+            if (!key.equals("@context") && !key.equals("@id") && !key.equals("@type")) {
+                Map<String, Object> attribute = new HashMap<>();
+                attribute.put("type", "Property");
+                attribute.put("name", key);
+                attribute.put("value", value);
+
+                ((Map<String, Object>) ngsiLd.get("attributes")).put(key, attribute);
+            }
+        }
+
+        return ngsiLd;
+    }
+
+    private static class JsonUtil {
+        public static Map<String, Object> parse(String jsonString) {
+            // Implement JSON parsing logic here
+            // For simplicity, we'll use a dummy implementation
+            try {
+                return JsonParser.parse(jsonString);
+            } catch (Exception e) {
+                throw new RuntimeException("Error parsing JSON", e);
+            }
+        }
+    }
+
+    private static class JsonParser {
+        public static Map<String, Object> parse(String jsonString) throws Exception {
+            // Dummy implementation of JSON parsing
+            // In a real scenario, you would use a library like Jackson or Gson
+            Map<String, Object> result = new HashMap<>();
+            result.put("@id", "dummy_id");
+            result.put("@type", "DummyType");
+            result.put("attr1", "dummy_value");
+            return result;
+        }
     }
 }
 ```
 
-Please note that I've used `Map<String, Object>` instead of `Dict` because Java does not have a built-in dictionary type like Python. Also, Java methods do not support default return types like Python functions. Instead, you should handle exceptions and return appropriate values based on your requirements.
+### Explanation:
+1. **Package and Class**: The code is organized within the `org.real.temp` package and the `Answer` class.
+2. **Method Signature**: The method `rdfJsonldToNgSILD` takes an `Object` as input (either a `String` or a `Map`) and returns a `Map<String, Object>` representing the converted data.
+3. **JSON Parsing**: A utility class `JsonUtil` is used to parse the JSON string. For simplicity, a dummy `JsonParser` class is included, which would typically be replaced with a real JSON parsing library such as Jackson or Gson.
+4. **Type Checking and Conversion**: The method checks the type of the input and parses it if it is a string.
+5. **Attribute Conversion**: The attributes are converted and added to the resulting `ngsiLd` map.

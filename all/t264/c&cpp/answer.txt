@@ -1,63 +1,89 @@
-Sure! Below is the equivalent C++ code for the provided Python function `extract_log_entries`. This C++ code reads a log file and extracts lines with specific log levels (WARNING, ERROR, CRITICAL, and ALERT) into separate files.
+Sure! Below is the equivalent C++ code for the provided Python script. This C++ code aims to maintain the same functionality, logic, and structure while adapting to C++ syntax and features.
 
 ```cpp
 #include <iostream>
 #include <fstream>
+#include <unordered_map>
+#include <vector>
 #include <string>
-#include <map>
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 void extract_log_entries(const std::string& log_file_path) {
-    // Define log level keywords
-    const std::map<std::string, std::string> log_levels = {
-        {"WARNING", "warnings.log"},
-        {"ERROR", "errors.log"},
-        {"CRITICAL", "criticals.log"},
-        {"ALERT", "alerts.log"}
-    };
-
-    // Open the input log file
-    std::ifstream log_file(log_file_path);
-    if (!log_file.is_open()) {
-        std::cerr << "Failed to open log file: " << log_file_path << std::endl;
+    /**
+     * Extract log entries from a log file for WARNING, ERROR, CRITICAL, and ALERT levels
+     * and save each type of log entry to a different file.
+     *
+     * Args:
+     * log_file_path (std::string): Path to the log file.
+     */
+    if (!fs::exists(log_file_path)) {
+        std::cerr << "No log file found at the specified path: " << log_file_path << std::endl;
         return;
     }
 
-    // Process each line in the log file
+    // Prepare unordered_maps to hold log entries for each level
+    std::unordered_map<std::string, std::vector<std::string>> logs = {
+        {"WARNING", {}},
+        {"ERROR", {}},
+        {"CRITICAL", {}},
+        {"ALERT", {}}
+    };
+
+    // Define output file paths
+    std::unordered_map<std::string, std::string> output_files = {
+        {"WARNING", "warning_logs.txt"},
+        {"ERROR", "error_logs.txt"},
+        {"CRITICAL", "critical_logs.txt"},
+        {"ALERT", "alert_logs.txt"}
+    };
+
+    // Read the log file and filter entries by level
+    std::ifstream file(log_file_path);
+    if (!file.is_open()) {
+        std::cerr << "Failed to open the log file." << std::endl;
+        return;
+    }
+
     std::string line;
-    while (std::getline(log_file, line)) {
-        for (const auto& [level, filename] : log_levels) {
-            if (line.find(level) != std::string::npos) {
-                // Open the output file for appending
-                std::ofstream out_file(filename, std::ios::app);
-                if (out_file.is_open()) {
-                    out_file << line << std::endl;
-                    out_file.close();
-                } else {
-                    std::cerr << "Failed to open output file: " << filename << std::endl;
-                }
-                break; // Move to next line after writing to one file
+    while (std::getline(file, line)) {
+        for (const auto& level : logs) {
+            if (line.find(level.first) != std::string::npos) {
+                logs[level.first].push_back(line);
+                break;
             }
         }
     }
+    file.close();
 
-    log_file.close();
+    // Write the filtered logs to separate files
+    for (const auto& [level, entries] : logs) {
+        std::ofstream outfile(output_files[level]);
+        if (!outfile.is_open()) {
+            std::cerr << "Failed to open output file: " << output_files[level] << std::endl;
+            continue;
+        }
+        for (const auto& entry : entries) {
+            outfile << entry << std::endl;
+        }
+        outfile.close();
+        std::cout << "Saved " << entries.size() << " '" << level << "' entries to " << output_files[level] << "." << std::endl;
+    }
 }
 
 int main() {
-    std::string log_file_path = "path/to/your/logfile.log";
+    std::string log_file_path = "path_to_your_log_file.log";
     extract_log_entries(log_file_path);
     return 0;
 }
 ```
 
 ### Explanation:
-1. **Log Levels Mapping**: The `log_levels` map stores the log level keywords ("WARNING", "ERROR", "CRITICAL", "ALERT") and their corresponding filenames where the logs will be saved.
-2. **File Handling**:
-   - The input log file is opened using `std::ifstream`.
-   - Each line from the log file is read using `std::getline`.
-3. **Log Level Detection and Writing**:
-   - For each line, the code checks if it contains any of the log level keywords.
-   - If a keyword is found, the line is written to the corresponding output file specified in the `log_levels` map.
-4. **Error Handling**: Basic error handling is implemented to check if files can be opened successfully.
-
-Make sure to replace `"path/to/your/logfile.log"` with the actual path to your log file when running the program.
+1. **Include Required Headers**: The necessary headers (`<iostream>`, `<fstream>`, `<unordered_map>`, `<vector>`, `<string>`, `<filesystem>`) are included to support file system operations, input/output streams, maps, vectors, and strings.
+2. **File System Namespace**: `std::filesystem` namespace is used to check if the log file exists.
+3. **Error Handling**: Proper error handling is implemented using `std::cerr` for reporting errors.
+4. **Unordered Maps**: Two unordered maps are used to store log entries and output file paths.
+5. **Reading Log File**: The log file is read line by line, and log entries are categorized based on their level.
+6. **Writing to Output Files**: Each category of log entries is written to a separate file, and the number of entries saved is printed to the console.
+7. **Main Function**: A sample `main` function is provided to demonstrate how to call the `extract_log_entries` function with a specific log file path.

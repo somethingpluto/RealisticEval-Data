@@ -1,88 +1,141 @@
-Sure! Below is the equivalent TypeScript test case using Jest for the provided Python unittest test class.
+Certainly! Below is the equivalent TypeScript code for the provided Python function and the corresponding Jest test class. The Python unittest test class will be converted to a Jest test suite in TypeScript.
+
+### TypeScript Function
+
+First, let's define the TypeScript function:
 
 ```typescript
-import { describe, it, expect } from '@jest/globals';
-
-// Assuming the function is defined somewhere in your project
-function convertStringsToNumbers(data: any): any {
-    if (typeof data === 'string') {
-        const num = Number(data);
-        return isNaN(num) ? data : num;
+/**
+ * Convert strings in nested structures (e.g., dictionaries, arrays) to numbers (integers or floating-point numbers) as much as possible.
+ *
+ * @param data - The input data before conversion.
+ * @returns The converted data.
+ */
+function convertStringsToNumbers(data: Record<string, any> | any[]): Record<string, any> | any[] {
+    if (typeof data === 'object' && !Array.isArray(data) && data !== null) {
+        return Object.entries(data).reduce((acc, [key, value]) => {
+            acc[key] = convertStringsToNumbers(value);
+            return acc;
+        }, {} as Record<string, any>);
     } else if (Array.isArray(data)) {
         return data.map(item => convertStringsToNumbers(item));
-    } else if (typeof data === 'object' && data !== null) {
-        const newObj: any = {};
-        for (const key in data) {
-            if (data.hasOwnProperty(key)) {
-                newObj[key] = convertStringsToNumbers(data[key]);
+    } else if (typeof data === 'string') {
+        try {
+            // Try converting to float first, then to int if possible
+            const num = parseFloat(data);
+            if (!isNaN(num)) {
+                if (data.includes('.')) {
+                    return num;
+                } else {
+                    return parseInt(data, 10);
+                }
             }
+        } catch (error) {
+            // Ignore error
         }
-        return newObj;
     }
-    return data;
+    return data; // Return data unchanged if it's not a string
 }
+```
+
+### Jest Test Class
+
+Now, let's write the Jest test class to verify the functionality of `convertStringsToNumbers`.
+
+```typescript
+import { convertStringsToNumbers } from './path/to/convertStringsToNumbers'; // Adjust the path as needed
 
 describe('convertStringsToNumbers', () => {
-    it('should convert strings to numbers in an array', () => {
-        const input = ['123', '456', '789'];
-        const expectedOutput = [123, 456, 789];
-        expect(convertStringsToNumbers(input)).toEqual(expectedOutput);
+    it('should handle empty objects', () => {
+        expect(convertStringsToNumbers({})).toEqual({});
     });
 
-    it('should convert strings to numbers in a dictionary', () => {
-        const input = { a: '123', b: '456', c: '789' };
-        const expectedOutput = { a: 123, b: 456, c: 789 };
-        expect(convertStringsToNumbers(input)).toEqual(expectedOutput);
+    it('should handle empty arrays', () => {
+        expect(convertStringsToNumbers([])).toEqual([]);
     });
 
-    it('should leave non-numeric strings unchanged', () => {
-        const input = ['abc', 'def', 'ghi'];
-        const expectedOutput = ['abc', 'def', 'ghi'];
-        expect(convertStringsToNumbers(input)).toEqual(expectedOutput);
+    it('should handle simple objects', () => {
+        const input = { name: 'John', age: '30', height: '5.9' };
+        const expected = { name: 'John', age: 30, height: 5.9 };
+        expect(convertStringsToNumbers(input)).toEqual(expected);
     });
 
-    it('should handle nested structures', () => {
+    it('should handle nested objects', () => {
         const input = {
-            a: '123',
-            b: ['456', '789'],
-            c: {
-                d: '101112',
-                e: ['131415']
-            }
+            name: 'John',
+            age: '30',
+            height: '5.9',
+            children: ['Alice', 'Bob'],
+            nested: { inner: '42' }
         };
-        const expectedOutput = {
-            a: 123,
-            b: [456, 789],
-            c: {
-                d: 101112,
-                e: [131415]
-            }
+        const expected = {
+            name: 'John',
+            age: 30,
+            height: 5.9,
+            children: ['Alice', 'Bob'],
+            nested: { inner: 42 }
         };
-        expect(convertStringsToNumbers(input)).toEqual(expectedOutput);
+        expect(convertStringsToNumbers(input)).toEqual(expected);
+    });
+
+    it('should handle simple arrays', () => {
+        const input = ['John', '30', '5.9'];
+        const expected = ['John', 30, 5.9];
+        expect(convertStringsToNumbers(input)).toEqual(expected);
+    });
+
+    it('should handle nested arrays', () => {
+        const input = ['John', '30', '5.9', ['Alice', 'Bob'], [{ inner: '42' }]];
+        const expected = ['John', 30, 5.9, ['Alice', 'Bob'], [{ inner: 42 }]];
+        expect(convertStringsToNumbers(input)).toEqual(expected);
+    });
+
+    it('should handle mixed structures', () => {
+        const input = {
+            name: 'John',
+            age: '30',
+            height: '5.9',
+            children: ['Alice', 'Bob'],
+            nested: { inner: '42', subNested: ['sub1', 'sub2'] }
+        };
+        const expected = {
+            name: 'John',
+            age: 30,
+            height: 5.9,
+            children: ['Alice', 'Bob'],
+            nested: { inner: 42, subNested: ['sub1', 'sub2'] }
+        };
+        expect(convertStringsToNumbers(input)).toEqual(expected);
+    });
+
+    it('should handle non-string data', () => {
+        const input = {
+            name: 'John',
+            age: 30,
+            height: 5.9,
+            children: ['Alice', 'Bob'],
+            nested: { inner: 42, subNested: ['sub1', 'sub2'] }
+        };
+        expect(convertStringsToNumbers(input)).toEqual(input);
     });
 });
 ```
 
 ### Explanation:
-1. **Function Definition**: The `convertStringsToNumbers` function is assumed to be defined somewhere in your project.
-2. **Jest Descriptions and Tests**:
-   - `describe`: Groups related tests together.
-   - `it`: Defines a single test case.
-   - `expect`: Asserts that the actual output matches the expected output.
+
+1. **Function Definition**:
+   - The TypeScript function `convertStringsToNumbers` is defined with appropriate type annotations.
+
+2. **Jest Test Suite**:
+   - The `describe` block defines the test suite for `convertStringsToNumbers`.
+   - Each `it` block represents a specific test case.
+   - The `expect` statements are used to assert the expected outcomes.
+
 3. **Test Cases**:
-   - Converts strings in an array to numbers.
-   - Converts strings in a dictionary to numbers.
-   - Leaves non-numeric strings unchanged.
-   - Handles nested structures correctly.
+   - **Empty Objects and Arrays**: Verify that empty objects and arrays are handled correctly.
+   - **Simple Objects and Arrays**: Verify that simple objects and arrays are correctly converted.
+   - **Nested Objects and Arrays**: Verify that nested structures are correctly processed.
+   - **Mixed Structures**: Verify that mixed structures are handled appropriately.
+   - **Non-String Data**: Verify that non-string data is returned unchanged.
 
-Make sure you have Jest installed in your project. If not, you can install it using npm:
-
-```sh
-npm install --save-dev jest
-```
-
-Then, you can run the tests using:
-
-```sh
-npx jest
-```
+This Jest test suite ensures that the `convertStringsToNumbers` function behaves as expected across various input scenarios.

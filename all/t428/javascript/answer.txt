@@ -1,25 +1,90 @@
-Here's how you could translate your Python code into JavaScript:
+Certainly! Below is the equivalent JavaScript code that mirrors the functionality and structure of the provided Python code:
 
 ```javascript
 function parseTypeHint(typeHintString) {
-    // Regular expression for matching type hints.
-    let regex = /(\b\w+\b|\[\b\w+,\s*\w+\b\])/g;
-    
-    // Extract all matches using regular expression.
-    let matches = typeHintString.match(regex);
-    
-    if(matches){
-        return matches.map(match => match.replace(/[\[\]\s]/g,'')); // Remove unwanted characters.
+    /**
+     * Parses a Python type hint string and returns the individual types as an array of strings.
+     *
+     * @param {string} typeHintString - The type hint string to parse.
+     * @returns {Array<string>} The individual types parsed from the type hint string.
+     *
+     * Example:
+     * const typeHint = "Union[typing.List[str], typing.Dict[str, int], Tuple[int, str], Optional[int]]";
+     * const parsedTypes = parseTypeHint(typeHint);
+     * console.log(parsedTypes);
+     * // Output: ['Union', 'typing.List', 'str', 'typing.Dict', 'str', 'int', 'Tuple', 'int', 'str', 'Optional', 'int']
+     */
+
+    // Create a source function definition with the type hint string
+    const source = `function f() { return ${typeHintString}; }`;
+
+    // Parse the source code into an Abstract Syntax Tree (AST)
+    const tree = esprima.parseScript(source);
+
+    // List to store the parsed type strings
+    const typeStrings = [];
+
+    function processNode(node, qualNames = []) {
+        /**
+         * Recursively processes the AST nodes and extracts the type names.
+         *
+         * @param {Object} node - The AST node to process.
+         * @param {Array<string>} qualNames - An array of qualified names encountered during processing.
+         * @returns {void}
+         */
+
+        if (node.type === 'Identifier') {
+            // Add simple type names (e.g., str, int)
+            typeStrings.push(qualNames.reverse().concat(node.name).join('.'));
+        } else if (node.type === 'TSTypeReference') {
+            // Process the type reference (e.g., typing.List)
+            processNode(node.typeName, qualNames.concat(node.typeName.name));
+        } else if (node.type === 'TSTypeLiteral') {
+            // Process the type literal (if any)
+            for (const member of node.members) {
+                processNode(member, qualNames);
+            }
+        } else if (node.type === 'TSLiteralType') {
+            // Process the literal type (if any)
+            processNode(node.literal, qualNames);
+        } else if (node.type === 'TSTupleType') {
+            // Process each element in a tuple type hint
+            for (const element of node.elementTypes) {
+                processNode(element, qualNames);
+            }
+        } else if (node.type === 'TSTypeQuery') {
+            // Process the type query (if any)
+            processNode(node.exprName, qualNames);
+        } else if (node.type === 'TSTypeOperator') {
+            // Process the type operator (e.g., Optional)
+            processNode(node.typeAnnotation, qualNames);
+        } else if (node.type === 'TSArrayType' || node.type === 'TSParenthesizedType') {
+            // Process array or parenthesized type (if any)
+            processNode(node.elementType, qualNames);
+        } else if (node.type === 'TSIndexedAccessType') {
+            // Process indexed access type (if any)
+            processNode(node.objectType, qualNames);
+            processNode(node.indexType, qualNames);
+        }
     }
-    else{
-        return [];
-    }
+
+    // Extract the return annotation from the parsed tree
+    const returnTypeAnnotation = tree.body[0].expression;
+
+    // Process the return annotation to fill typeStrings
+    processNode(returnTypeAnnotation);
+
+    return typeStrings;
 }
 
-// Test the function with an example.
-let typeHint = "Union[typing.List[str], typing.Dict[str, int], Tuple[int, str], Optional[int]]";
-let parsedTypes = parseTypeHint(typeHint);
+// Example usage
+const typeHint = "Union[typing.List[str], typing.Dict[str, int], Tuple[int, str], Optional[int]]";
+const parsedTypes = parseTypeHint(typeHint);
 console.log(parsedTypes);
 ```
 
-This JavaScript function uses a regular expression to extract the different parts of a Python type hint string and then removes any unwanted characters such as brackets and spaces before returning the result. It handles the basic cases described in your Python code but may not cover every possible scenario.
+### Notes:
+1. **ESPrima**: The `esprima` library is used to parse JavaScript code into an Abstract Syntax Tree (AST). You will need to install ESPrima using npm (`npm install esprima`).
+2. **Type Annotations**: The JavaScript version assumes the use of TypeScript type annotations for parsing. If you are working strictly with JavaScript, you may need to adapt the type handling logic accordingly.
+
+This JavaScript code should provide the same functionality as the original Python code, including the example output.

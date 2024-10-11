@@ -1,92 +1,99 @@
-To convert the provided Python unittest test class into a Jest test case in JavaScript, you need to follow these steps:
+First, let's define the JavaScript function equivalent to `extract_bib_info` and then create the Jest test suite.
 
-1. Install Jest if it's not already installed in your project. You can install it using npm or yarn:
-   ```sh
-   npm install --save-dev jest
-   ```
-   or
-   ```sh
-   yarn add --dev jest
-   ```
-
-2. Create a new JavaScript file for your test cases, for example `extractBibInfo.test.js`.
-
-3. Write the Jest test cases based on the Python unittest test methods.
-
-Here is an example of how you might write the Jest test cases for the `extract_bib_info` function:
+### JavaScript Function
 
 ```javascript
-// Assuming extract_bib_info function is defined in a separate file named extractBibInfo.js
-const { extract_bib_info } = require('./extractBibInfo');
+function extractBibInfo(bibFileContent) {
+    /**
+     * Extracts the title, author, and year from a BibTeX file content.
+     * 
+     * Example input:
+     * "@article{sample2024,\n  author = {John Doe and Jane Smith},\n  title = {A Comprehensive Study on AI},\n  year = {2024}\n}"
+     * 
+     * Args:
+     *     bibFileContent (string): The content of the BibTeX file.
+     * 
+     * Returns:
+     *     Array of objects: An array containing objects with title, author, and year for each article.
+     */
+    
+    const entries = bibFileContent.match(/@article\{[^}]+\}/g);
+    if (!entries) return [];
 
-describe('extract_bib_info', () => {
-  test('should extract title, author, and year from a BibTeX file', () => {
-    const bibFileContent = `
-@article{sample2024,
-  author = {John Doe and Jane Smith},
-  title = {A Comprehensive Study on AI},
-  year = {2024}
+    return entries.map(entry => {
+        const authorMatch = entry.match(/author = \{(.+?)\}/);
+        const titleMatch = entry.match(/title = \{(.+?)\}/);
+        const yearMatch = entry.match(/year = \{(\d{4})\}/);
+
+        if (!authorMatch || !titleMatch || !yearMatch) return null;
+
+        const author = authorMatch[1].replace(/\s+/g, ' ').trim();
+        const title = titleMatch[1].replace(/\s+/g, ' ').trim();
+        const year = parseInt(yearMatch[1], 10);
+
+        return { author, title, year };
+    }).filter(item => item !== null);
 }
-`;
+```
 
-    const expectedOutput = [
-      {
-        title: 'A Comprehensive Study on AI',
-        author: 'John Doe and Jane Smith',
-        year: '2024'
-      }
-    ];
+### Jest Test Suite
 
-    expect(extract_bib_info(bibFileContent)).toEqual(expectedOutput);
-  });
+Now, let's create the Jest test suite:
 
-  test('should handle multiple entries in a BibTeX file', () => {
-    const bibFileContent = `
-@article{sample2024,
-  author = {John Doe and Jane Smith},
-  title = {A Comprehensive Study on AI},
-  year = {2024}
-}
-@book{anotherBook2023,
-  author = {Alice Johnson},
-  title = {Learning JavaScript},
-  year = {2023}
-}
-`;
+```javascript
+const extractBibInfo = require('./path/to/extractBibInfo');
 
-    const expectedOutput = [
-      {
-        title: 'A Comprehensive Study on AI',
-        author: 'John Doe and Jane Smith',
-        year: '2024'
-      },
-      {
-        title: 'Learning JavaScript',
-        author: 'Alice Johnson',
-        year: '2023'
-      }
-    ];
+describe('extractBibInfo', () => {
+    it('should extract correct information from a valid BibTeX file', () => {
+        const bibFileContent = `@article{sample2024,
+            author = {John Doe and Jane Smith},
+            title = {A Comprehensive Study on AI},
+            year = {2024}
+        }`;
 
-    expect(extract_bib_info(bibFileContent)).toEqual(expectedOutput);
-  });
+        const expectedResult = [
+            {
+                author: "John Doe and Jane Smith",
+                title: "A Comprehensive Study on AI",
+                year: 2024
+            }
+        ];
 
-  test('should return an empty array if no valid entries are found', () => {
-    const bibFileContent = `
-@comment{This is a comment}
-@invalid{not_a_valid_entry}
-`;
+        expect(extractBibInfo(bibFileContent)).toEqual(expectedResult);
+    });
 
-    const expectedOutput = [];
+    it('should handle an empty BibTeX file correctly', () => {
+        const bibFileContent = '';
 
-    expect(extract_bib_info(bibFileContent)).toEqual(expectedOutput);
-  });
+        const expectedResult = [];
+
+        expect(extractBibInfo(bibFileContent)).toEqual(expectedResult);
+    });
+
+    it('should handle invalid BibTeX file content correctly', () => {
+        const bibFileContent = `@article{invalid,
+            author = {Invalid Author},
+            title = {Invalid Title},
+            year = {2023
+        }`;
+
+        const expectedResult = [];
+
+        expect(extractBibInfo(bibFileContent)).toEqual(expectedResult);
+    });
 });
 ```
 
-In this example:
-- We import the `extract_bib_info` function from the `extractBibInfo.js` file.
-- We use the `describe` function to group related tests together.
-- Each `test` function contains a description of what the test should do and the actual test logic using `expect`.
-- We compare the output of `extract_bib_info` with the expected result using `toEqual`.
+### Explanation of Changes:
 
-Make sure to adjust the path to the `extractBibInfo.js` file according to your project structure.
+1. **Function Definition**: The Python function `def extract_bib_info(bib_file: str)` has been converted to a JavaScript function `function extractBibInfo(bibFileContent)`. Note that the argument name `bib_file` was changed to `bibFileContent` to reflect that we're working with the content of the file rather than its path.
+
+2. **Regular Expressions**: The regular expressions used to match the BibTeX entries were adjusted to work in JavaScript. The `match` method is used to find patterns in the string.
+
+3. **Parsing Data**: The data is parsed similarly to the Python version, but using JavaScript string methods like `match`, `replace`, and `trim`.
+
+4. **Test Cases**: The test cases in Python's unittest have been converted to Jest test cases. Each `it` block represents a specific test case, and `expect` is used to assert the expected behavior of the function.
+
+5. **Data Structures**: In JavaScript, arrays and objects are used to represent the extracted data, similar to Python's lists and dictionaries.
+
+This conversion ensures that the functionality and logic of the original Python tests are preserved in JavaScript using Jest.

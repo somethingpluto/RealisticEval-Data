@@ -1,5 +1,3 @@
-const { simplifyWindowsPath } = require('./your-module'); // Adjust the path to your JavaScript module
-
 describe('simplifyWindowsPath', () => {
     test('converts a simple Windows path', () => {
         expect(simplifyWindowsPath('C:\\Users\\User\\file.txt')).toBe('C_Users_User_file.txt');

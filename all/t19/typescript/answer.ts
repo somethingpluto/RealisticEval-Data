@@ -1,5 +1,3 @@
-// Importing the regex module is not required in TypeScript as it is built-in
-
 function containsPhoneNumber(s: string): boolean {
     /**
      * Determines whether the string contains a phone number; a possible format for a phone number is +1-800-555-1234, 555-555-1234, 555 555 1234
@@ -13,7 +11,3 @@ function containsPhoneNumber(s: string): boolean {
         return false;
     }
 }
-
-// Example usage
-const exampleString = "+1-800-555-1234";
-console.log(containsPhoneNumber(exampleString)); // Should output: true

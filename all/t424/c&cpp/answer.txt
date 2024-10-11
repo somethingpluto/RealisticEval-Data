@@ -1,59 +1,110 @@
-Here is the equivalent C++ code for your Python function using priority queue:
+Certainly! Below is the equivalent C++ code that implements Dijkstra's algorithm with similar functionality, logic, and structure as the provided Python code:
 
 ```cpp
 #include <iostream>
 #include <vector>
-#include <queue>
 #include <unordered_map>
+#include <queue>
+#include <climits>
+
 using namespace std;
 
-typedef pair<int, string> pii;
-typedef unordered_map<string, vector<pii>> Graph;
+// Define a custom comparator for the priority queue
+struct CompareDist {
+    bool operator()(pair<int, char> const &a, pair<int, char> const &b) {
+        return a.first > b.first;
+    }
+};
 
-unordered_map<string, int> dijkstra(Graph &graph, string start) {
-    unordered_map<string, int> dist;
-    priority_queue<pii, vector<pii>, greater<pii>> pq;
+void dijkstra(const unordered_map<char, vector<pair<char, int>>> &graph, char start) {
+    /**
+     * Implements Dijkstra's algorithm to find the shortest path from the start node to all other nodes in the graph.
+     *
+     * Parameters:
+     * - graph (unordered_map<char, vector<pair<char, int>>>): A map representing the adjacency list of the graph.
+     *   Each key is a node, and the value is a vector of pairs (neighbor, weight).
+     * - start: The starting node for the shortest path search.
+     *
+     * Returns:
+     * - unordered_map<char, int>: A map with the shortest distance from the start node to each node.
+     */
+    
+    // Priority queue for the minimum distance nodes
+    priority_queue<pair<int, char>, vector<pair<int, char>>, CompareDist> queue;
+    // Map to store the shortest path to each node
+    unordered_map<char, int> shortest_paths;
     
     // Initialize distances to infinity
-    for(auto it = graph.begin(); it != graph.end(); ++it)
-        dist[it->first] = INT_MAX;
-        
-    dist[start] = 0;
-    pq.push({0, start});
+    for (const auto &node : graph) {
+        shortest_paths[node.first] = INT_MAX;
+    }
+    shortest_paths[start] = 0;
     
-    while(!pq.empty()) {
-        auto curr = pq.top();
-        pq.pop();
+    // Push the starting node with distance 0 into the queue
+    queue.push({0, start});
+    
+    while (!queue.empty()) {
+        int current_distance = queue.top().first;
+        char current_node = queue.top().second;
+        queue.pop();
         
-        for(auto neighbor : graph[curr.second]) {
-            if(dist[neighbor.first] > dist[curr.second] + neighbor.second) {
-                dist[neighbor.first] = dist[curr.second] + neighbor.second;
-                pq.push({dist[neighbor.first], neighbor.first});
+        // If the distance is greater than the recorded shortest path, skip processing
+        if (current_distance > shortest_paths[current_node]) {
+            continue;
+        }
+        
+        // Explore neighbors
+        for (const auto &neighbor_info : graph.at(current_node)) {
+            char neighbor = neighbor_info.first;
+            int weight = neighbor_info.second;
+            int distance = current_distance + weight;
+            
+            // Only consider this new path if it's better
+            if (distance < shortest_paths[neighbor]) {
+                shortest_paths[neighbor] = distance;
+                queue.push({distance, neighbor});
             }
         }
     }
     
-    return dist;
+    // Print the shortest paths
+    for (const auto &path : shortest_paths) {
+        cout << "Node " << path.first << ": Distance = " << path.second << endl;
+    }
 }
 
 int main() {
-    Graph g;
-    g["A"] = {{ "B", 1 }, { "C", 4 }};
-    g["B"] = {{ "A", 1 }, { "C", 2 }, { "D", 5 }};
-    g["C"] = {{ "A", 4 }, { "B", 2 }, { "D", 1 }};
-    g["D"] = {{ "B", 5 }, { "C", 1 }};
+    // Example graph represented as an adjacency list
+    unordered_map<char, vector<pair<char, int>>> graph = {
+        {'A', {{'B', 1}, {'C', 4}}},
+        {'B', {{'A', 1}, {'C', 2}, {'D', 5}}},
+        {'C', {{'A', 4}, {'B', 2}, {'D', 1}}},
+        {'D', {{'B', 5}, {'C', 1}}}
+    };
     
-    unordered_map<string, int> result = dijkstra(g, "A");
-    
-    for(auto it = result.begin(); it != result.end(); ++it)
-        cout << "Distance from 'A' to '" << it->first << "' is " << it->second << endl;
+    char start = 'A';
+    dijkstra(graph, start);
     
     return 0;
 }
 ```
 
-This C++ code uses an unordered map to represent the graph, where each key-value pair represents a node and its neighbors respectively. The neighbors are represented as pairs of strings (representing the neighboring node) and integers (representing the edge weights).
+### Explanation:
+1. **Data Structures**:
+   - `unordered_map` is used to represent the graph as an adjacency list.
+   - `priority_queue` is used to implement the priority queue with a custom comparator `CompareDist`.
 
-The `dijkstra` function then calculates the shortest paths from the start node to all other nodes using Dijkstra's algorithm, and returns these shortest distances in another unordered map.
+2. **Initialization**:
+   - Distances are initialized to `INT_MAX` (infinity) except for the start node, which is set to 0.
 
-Note that unlike Python, C++ does not have built-in support for dictionaries or priority queues. Therefore, we use standard library containers like `std::unordered_map` and `std::priority_queue`.
+3. **Priority Queue Handling**:
+   - The priority queue stores pairs `(distance, node)` where the distance is the first element.
+   - The custom comparator ensures that the queue pops the node with the smallest distance first.
+
+4. **Exploring Neighbors**:
+   - For each neighbor of the current node, calculate the distance and update the shortest paths if necessary.
+
+5. **Printing Results**:
+   - The function prints the shortest distances to each node for demonstration purposes.
+
+This code closely mirrors the functionality and logic of the original Python implementation while adhering to C++ syntax and best practices.

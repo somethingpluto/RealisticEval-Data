@@ -1,30 +1,47 @@
-Here's how you can convert your Python code to TypeScript:
+Sure! Here is the equivalent TypeScript code for the provided Python function:
 
 ```typescript
-function decompose(n: number, shape: number[]): number[] {
-    // ...
-}
-```
-
-TypeScript doesn't have a direct equivalent to Python's `Tuple`, but it does support arrays and tuples in its type system. In this case, we're using an array to represent the `shape`. The function parameters and return value are typed as `number`.
-
-Please note that TypeScript doesn't have a built-in way to check if a value is within a range like Python's `ValueError`. You would need to add your own error handling for that. Here's an example of how you might do that:
-
-```typescript
-function decompose(n: number, shape: number[]): number[] {
-    let result: number[] = [];
-    let remaining = n;
-
-    for(let i = shape.length - 1; i >= 0; i--) {
-        if(remaining < 0 || remaining >= shape[i]) {
-            throw new Error(`Index ${n} is out of bounds for shape ${shape}`);
-        }
-        
-        result.unshift(remaining % shape[i]);
-        remaining = Math.floor(remaining / shape[i]);
+function decompose(n: number, shape: number[]): [number, ...number[]] {
+    /**
+     * Decompose a flat index `n` into a multidimensional index based on the given shape.
+     *
+     * @param n - Flat index (non-negative integer).
+     * @param shape - Array representing the dimensions of the multi-dimensional array.
+     * @returns Tuple representing the multidimensional index corresponding to `n`.
+     * @throws {Error} If `n` is out of bounds for the array defined by `shape`.
+     */
+    // Calculate the total size of the array
+    let size = 1;
+    for (const dim of shape) {
+        size *= dim;
     }
 
-    return result;
+    // Check if the index is within bounds
+    if (!(0 <= n && n < size)) {
+        throw new Error("Index out of bounds");
+    }
+
+    // Decompose the index
+    const result: number[] = [];
+    for (let i = shape.length - 1; i >= 0; i--) {
+        const dim = shape[i];
+        result.push(n % dim);
+        n = Math.floor(n / dim);  // Update n by integer division
+    }
+
+    // Reverse the result to match the original shape order and return as tuple
+    return result.reverse() as [number, ...number[]];
 }
+
+// Example usage
+console.log(decompose(10, [3, 4, 2]));  // Output: [1, 2, 0]
 ```
-This code will throw an error if `n` is not a valid index for the given `shape`.
+
+### Explanation:
+1. **Function Definition**: The function `decompose` takes two parameters: `n` (a non-negative integer) and `shape` (an array of numbers representing the dimensions of the multi-dimensional array). It returns a tuple of numbers.
+2. **Type Annotations**: Types are explicitly defined for the parameters (`n` and `shape`) and the return type (`[number, ...number[]]`).
+3. **Error Handling**: Instead of using `ValueError`, TypeScript uses the `Error` class for throwing exceptions.
+4. **Logic and Structure**: The logic remains the same, including the calculation of the total size, checking bounds, decomposing the index, and reversing the result.
+5. **Array Manipulation**: In TypeScript, we use `.reverse()` to reverse the array and then cast it to a tuple type `[number, ...number[]]` to ensure compatibility with the return type.
+
+This TypeScript code preserves the functionality and logic of the original Python code while adapting to TypeScript's static type system and conventions.

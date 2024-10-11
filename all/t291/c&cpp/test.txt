@@ -1,73 +1,96 @@
-Sure, here is an equivalent C++ test case using Catch2 for the given Python unittest function `prepend_to_each_line`. Note that Catch2 is a header-only testing framework for C++ and you need to include it in your project.
+To convert the given Python function into a C++ program and write equivalent tests using Catch2, follow these steps:
 
-First, let's define the function `prepend_to_each_line` in C++. For simplicity, I'll assume that the function reads from a file into memory, modifies the lines, and then writes them back to the same file. In a real-world scenario, you might want to handle file operations more carefully, but for the sake of this example, we'll keep it simple.
+1. **Implement the `prepend_to_each_line` function in C++**.
+2. **Create a Catch2 test suite** to ensure the function behaves as expected.
+
+Here’s how you can do it:
+
+### 1. Implement the Function
 
 ```cpp
 #include <fstream>
-#include <sstream>
 #include <string>
+#include <iostream>
 
+// Function to prepend a prefix to each line of a file
 void prepend_to_each_line(const std::string& file_path, const std::string& prefix) {
-    std::ifstream input_file(file_path);
-    if (!input_file.is_open()) {
-        throw std::runtime_error("Failed to open file");
-    }
+    // Temporary file name
+    std::string temp_file = file_path + ".tmp";
 
-    std::stringstream buffer;
-    buffer << input_file.rdbuf();
-    input_file.close();
+    std::ifstream infile(file_path);
+    std::ofstream outfile(temp_file);
 
-    std::ofstream output_file(file_path);
-    if (!output_file.is_open()) {
-        throw std::runtime_error("Failed to open file for writing");
+    if (!infile.is_open() || !outfile.is_open()) {
+        std::cerr << "Error opening files" << std::endl;
+        return;
     }
 
     std::string line;
-    while (std::getline(buffer, line)) {
-        output_file << prefix << line << '\n';
+    while (std::getline(infile, line)) {
+        outfile << prefix << line << '\n';
     }
-    output_file.close();
+
+    infile.close();
+    outfile.close();
+
+    // Replace original file with the temporary file
+    if (std::rename(temp_file.c_str(), file_path.c_str()) != 0) {
+        std::cerr << "Error replacing file" << std::endl;
+    }
 }
 ```
 
-Now, let's write the corresponding Catch2 test cases:
+### 2. Create the Test Suite with Catch2
+
+First, include the necessary headers and define your test suite:
 
 ```cpp
-#define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
-#include "catch.hpp"
+#include <catch2/catch_test_macros.hpp>
+#include <fstream>
+#include <string>
+#include <iostream>
 
-TEST_CASE("Prepend to Each Line", "[prepend_to_each_line]") {
-    std::string test_file = "test.txt";
-    std::string expected_output = "prefixLine1\nprefixLine2\n";
+// Function implementation (same as above)
+void prepend_to_each_line(const std::string& file_path, const std::string& prefix);
 
-    // Create a temporary test file with some content
-    std::ofstream temp_file(test_file);
-    temp_file << "Line1\nLine2\n";
-    temp_file.close();
+TEST_CASE("Prepend prefix to each line of a file", "[prepend_to_each_line]") {
+    // Test data
+    std::string file_path = "test.txt";
+    std::string prefix = ">> ";
 
-    try {
-        prepend_to_each_line(test_file, "prefix");
+    // Create a test file
+    std::ofstream testFile(file_path);
+    testFile << "Hello\nWorld\n";
+    testFile.close();
 
-        // Read the modified content back from the file
-        std::ifstream result_file(test_file);
-        std::string actual_output((std::istreambuf_iterator<char>(result_file)), std::istreambuf_iterator<char>());
-        result_file.close();
+    // Call the function under test
+    prepend_to_each_line(file_path, prefix);
 
-        REQUIRE(actual_output == expected_output);
-    } catch (const std::exception& e) {
-        REQUIRE(false);  // If an exception was thrown, the test failed
+    // Read the modified file and check its contents
+    std::ifstream modifiedFile(file_path);
+    std::string line;
+
+    SECTION("First line is prepended correctly") {
+        REQUIRE(std::getline(modifiedFile, line));
+        REQUIRE(line == prefix + "Hello");
     }
 
-    // Clean up the temporary test file
-    std::remove(test_file.c_str());
+    SECTION("Second line is prepended correctly") {
+        REQUIRE(std::getline(modifiedFile, line));
+        REQUIRE(line == prefix + "World");
+    }
+
+    // Check for end of file
+    REQUIRE_FALSE(std::getline(modifiedFile, line));
+
+    // Clean up the test file
+    std::remove(file_path.c_str());
 }
 ```
 
-In this Catch2 test case:
+### Explanation
 
-1. We define a test file `test.txt` with some initial content.
-2. We call the `prepend_to_each_line` function with the prefix `"prefix"`.
-3. We read the modified content back from the file and compare it with the expected output.
-4. We clean up the temporary test file after the test.
+- **Function Implementation**: The `prepend_to_each_line` function reads each line from the input file, prepends the prefix, and writes it to a temporary file. After processing all lines, it replaces the original file with the temporary one.
+- **Test Suite**: The Catch2 test suite creates a test file, calls the function under test, and verifies the results by reading the modified file and comparing the lines against the expected values.
 
-Make sure to include the Catch2 library in your project and link against it when compiling your tests. The `CATCH_CONFIG_MAIN` macro automatically defines a `main` function for you, so you don't need to write one manually.
+This setup ensures that the functionality and logic of the tests are preserved while making necessary adjustments for language differences between Python and C++.

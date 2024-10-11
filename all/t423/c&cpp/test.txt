@@ -1,72 +1,89 @@
-To convert your Python unittest test class to a C++ test case using Catch2, you'll need to follow these steps:
-
-1. Install Catch2: If you haven't already, install Catch2 in your project. You can download it from [Catch2's GitHub repository](https://github.com/catchorg/Catch2).
-
-2. Create a new C++ test file and include the necessary headers.
-3. Write the equivalent test cases in C++ using Catch2 syntax.
-
-Here's how you can translate your Python unittest test class to a C++ test case using Catch2:
+To create an equivalent test class in C++ using Catch2, you'll need to define a fixture class that sets up the environment for your tests, such as creating temporary files. Below is the C++ code using Catch2 for the given Python function `write_unique_line_to_file`. Note that I've included the necessary setup for temporary files using the standard library facilities:
 
 ```cpp
 #include <catch2/catch.hpp>
 #include <fstream>
-#include <string>
+#include <filesystem>
 
-void write_unique_line_to_file(const std::string& filename, const std::string& line_content) {
-    // Implementation remains the same as provided in the question
-}
+namespace fs = std::filesystem;
 
-TEST_CASE("write_unique_line_to_file", "[file][unique]") {
-    // Test case 1: Writing a unique line
-    std::string filename = "test_file.txt";
-    std::string line_content = "This is a unique line.";
+// Fixture class for setting up the test environment
+class UniqueLineWriterTestFixture {
+public:
+    // Constructor creates a temporary file for testing
+    UniqueLineWriterTestFixture() : tempFile("temp_test.txt") {
+        // Clear the file if it exists before starting the test
+        std::ofstream ofs(tempFile);
+        ofs.close();
+    }
 
-    // Clear the file before each test
-    std::ofstream ofs(filename);
-    ofs.close();
+    // Destructor removes the temporary file after the test
+    ~UniqueLineWriterTestFixture() {
+        fs::remove(tempFile);
+    }
 
-    // Call the function under test
-    write_unique_line_to_file(filename, line_content);
+    const std::string& getTempFilename() const { return tempFile; }
 
-    // Verify that the line was written
+private:
+    std::string tempFile;
+};
+
+// Function to write a unique line to a file
+void write_unique_line_to_file(const std::string& filename, const std::string& lineContent) {
     std::ifstream ifs(filename);
-    REQUIRE(ifs.is_open());
-    std::string read_line;
-    std::getline(ifs, read_line);
-    REQUIRE(read_line == line_content);
+    std::string line;
+    bool lineExists = false;
+
+    while (std::getline(ifs, line)) {
+        if (line == lineContent) {
+            lineExists = true;
+            break;
+        }
+    }
     ifs.close();
 
-    // Test case 2: Trying to write an existing line
-    line_content = "This is a duplicate line.";
-    write_unique_line_to_file(filename, line_content); // This should do nothing
+    if (!lineExists) {
+        std::ofstream ofs(filename, std::ios_base::app);
+        ofs << lineContent << '\n';
+        ofs.close();
+    }
+}
 
-    // Verify that the file still contains only one line
-    ifs.open(filename);
-    REQUIRE(ifs.is_open());
-    std::getline(ifs, read_line);
-    REQUIRE(read_line == line_content);
-    ifs.close();
+TEST_CASE_METHOD(UniqueLineWriterTestFixture, "Test writing unique lines to a file", "[unique_line_writer]") {
+    // Given a new file
+    const std::string line1 = "First line";
+    const std::string line2 = "Second line";
+
+    // When writing the first line
+    write_unique_line_to_file(getTempFilename(), line1);
+
+    // Then the first line should be written
+    REQUIRE(fs::exists(getTempFilename()));
+    std::ifstream ifs(getTempFilename());
+    std::string fileContent((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+    REQUIRE(fileContent.find(line1) != std::string::npos);
+
+    // When writing the second line
+    write_unique_line_to_file(getTempFilename(), line2);
+
+    // Then both lines should be written
+    ifs.clear(); // Clear EOF flag
+    ifs.seekg(0); // Reset file position
+    std::string updatedFileContent((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+    REQUIRE(updatedFileContent.find(line2) != std::string::npos);
+
+    // When trying to write the first line again
+    write_unique_line_to_file(getTempFilename(), line1);
+
+    // Then the first line should still appear only once
+    ifs.clear(); // Clear EOF flag
+    ifs.seekg(0); // Reset file position
+    std::string finalFileContent((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+    REQUIRE(std::count(finalFileContent.begin(), finalFileContent.end(), '\n') == 2);
 }
 ```
 
-### Explanation:
-
-1. **Include Headers**: We include the `catch.hpp` header which provides all the necessary macros for writing tests with Catch2.
-2. **Function Definition**: The `write_unique_line_to_file` function is defined similarly to your original Python function.
-3. **Test Case**: We define a test case using the `TEST_CASE` macro provided by Catch2. Each test case has a description and a tag (`[file][unique]`).
-4. **File Operations**: Inside the test case, we open and close the file multiple times to ensure the file operations work correctly.
-5. **Assertions**: We use `REQUIRE` to assert conditions that must be true for the test to pass. If any assertion fails, the test will fail.
-
-Make sure to compile your C++ code with the Catch2 library linked. For example, if you're using g++, you might compile like this:
-
-```sh
-g++ -std=c++17 -o test_write_unique_line_to_file test_write_unique_line_to_file.cpp -lcatch2_main
-```
-
-Then run the executable:
-
-```sh
-./test_write_unique_line_to_file
-```
-
-This will execute your test cases using Catch2.
+In this example:
+- A fixture class `UniqueLineWriterTestFixture` is used to set up and tear down the test environment.
+- The `write_unique_line_to_file` function checks if the line already exists in the file before appending it.
+- The test case verifies that the function behaves correctly by checking the file contents after each write operation.

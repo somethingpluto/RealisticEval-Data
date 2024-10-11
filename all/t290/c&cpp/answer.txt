@@ -1,86 +1,63 @@
-Converting Python code to C/C++ can be quite complex, especially when dealing with higher-level abstractions like dictionaries and strings. However, I'll provide you with a basic implementation of the function `rdf_jsonld_to_ngsild` in C++ using the POCO library for handling JSON data. Note that this is a simplified version and may not cover all edge cases or complexities of your original Python function.
+Sure! Below is the equivalent C++ code for the provided Python script. This code will handle the conversion of RDF JSON-LD data to NGSI-LD format using C++ and the `nlohmann/json` library for JSON handling.
 
-First, make sure you have the POCO library installed on your system. You can install it via package managers like apt on Ubuntu:
+First, you need to include the `nlohmann/json` library, which can be included via a header file or installed in your project.
 
-```sh
-sudo apt-get install libpoco-dev
-```
-
-Now, here's the equivalent C++ code:
+Here’s the C++ code:
 
 ```cpp
 #include <iostream>
 #include <string>
-#include <map>
-#include <Poco/JSON/Object.h>
-#include <Poco/JSON/Parser.h>
+#include <nlohmann/json.hpp>
 
-namespace Poco {
-    namespace JSON {
-        class Object;
-    }
-}
+using json = nlohmann::json;
 
-std::map<std::string, std::string> rdf_jsonld_to_ngsild(const std::string& rdf_jsonld) {
-    // Parse the RDF JSON-LD string into a POCO JSON object
-    Poco::JSON::Parser parser;
-    auto json = parser.parse(rdf_jsonld).extract<Poco::JSON::Object::Ptr>();
+// Function to convert RDF JSON-LD to NGSI-LD format
+json rdf_jsonld_to_ngsild(const json& rdf_jsonld) {
+    json ngsi_ld;
+    ngsi_ld["id"] = rdf_jsonld.value("@id", "urn:ngsi-ld:unknown:id");
+    ngsi_ld["type"] = rdf_jsonld.value("@type", "UnknownType");
+    ngsi_ld["@context"] = rdf_jsonld.value("@context", "https://schema.lab.fiware.org/ld/context");
+    ngsi_ld["attributes"] = json::array();
 
-    // Create an empty map to store the NGSI-LD output
-    std::map<std::string, std::string> ngsi_ld;
-
-    // Iterate through the keys in the JSON object
-    for (auto it = json->begin(); it != json->end(); ++it) {
-        const std::string& key = it->first;
-        const Poco::Dynamic::Var& value = it->second;
-
-        if (value.type() == typeid(std::string)) {
-            ngsi_ld[key] = value.convert<std::string>();
-        } else if (value.type() == typeid(Poco::JSON::Array)) {
-            // Handle arrays if needed
-            // For simplicity, we'll just convert each element to a string
-            std::ostringstream oss;
-            Poco::JSON::Array array = value.extract<Poco::JSON::Array>();
-            for (const auto& elem : array) {
-                if (elem.type() == typeid(std::string)) {
-                    oss << elem.convert<std::string>() << ", ";
-                }
-            }
-            ngsi_ld[key] = oss.str();
+    // Assuming simple attribute structure conversion
+    for (auto it = rdf_jsonld.begin(); it != rdf_jsonld.end(); ++it) {
+        std::string key = it.key();
+        if (key != "@context" && key != "@id" && key != "@type") {
+            json attribute;
+            attribute["type"] = "Property";
+            attribute["name"] = key;
+            attribute["value"] = it.value();
+            ngsi_ld["attributes"].push_back(attribute);
         }
-        // Add more conditions for other types if necessary
     }
 
     return ngsi_ld;
 }
 
 int main() {
-    std::string rdf_jsonld = R"({
+    // Example usage
+    std::string input_json = R"({
         "@context": "http://example.com/context",
-        "id": "urn:ngsi-ld:Entity:001",
-        "type": "ExampleType"
+        "@id": "urn:ngsi-ld:example:123",
+        "@type": "ExampleType",
+        "attribute1": "value1",
+        "attribute2": "value2"
     })";
 
-    auto ngsi_ld = rdf_jsonld_to_ngsild(rdf_jsonld);
+    json rdf_jsonld = json::parse(input_json);
+    json ngsi_ld = rdf_jsonld_to_ngsild(rdf_jsonld);
 
-    for (const auto& pair : ngsi_ld) {
-        std::cout << pair.first << ": " << pair.second << std::endl;
-    }
+    std::cout << ngsi_ld.dump(4) << std::endl;  // Pretty print the result
 
     return 0;
 }
 ```
 
 ### Explanation:
+1. **Imports**: The necessary headers are included at the beginning, including the `nlohmann/json` library for JSON handling.
+2. **Function Definition**: The function `rdf_jsonld_to_ngsild` takes a `json` object as input and returns a `json` object representing the converted data.
+3. **JSON Handling**: The `json` library provides methods for parsing, accessing, and manipulating JSON objects.
+4. **Attribute Conversion**: The loop iterates over the keys in the input JSON and constructs the attributes section accordingly.
+5. **Example Usage**: In the `main` function, an example input JSON is provided, parsed, and then converted to NGSI-LD format. The resulting JSON is printed to the console.
 
-1. **POCO Library**: The POCO library is used for handling JSON data in C++. It provides classes for parsing and manipulating JSON objects.
-
-2. **Parsing JSON**: The `Poco::JSON::Parser` class is used to parse the input RDF JSON-LD string into a `Poco::JSON::Object`.
-
-3. **Iterating Through JSON Object**: We iterate through the keys and values of the JSON object. If a value is a string, we add it directly to the `ngsi_ld` map. If the value is an array, we concatenate its elements into a single string.
-
-4. **Returning the Result**: The function returns a `std::map<std::string, std::string>` containing the NGSI-LD formatted data.
-
-5. **Main Function**: A simple example demonstrating how to use the `rdf_jsonld_to_ngsild` function is provided.
-
-This is a basic implementation and may need adjustments based on the specific requirements and complexity of your RDF JSON-LD to NGSI-LD conversion logic.
+Make sure you have the `nlohmann/json` library available in your project or include it via a package manager or by downloading the single-header file.

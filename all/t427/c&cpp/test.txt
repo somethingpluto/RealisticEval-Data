@@ -1,110 +1,188 @@
-To convert your Python unittest test class to a C++ Catch2 test case, you'll need to first implement the `check_sequences` function in C++. Then, you can write the corresponding test cases using Catch2. Below is an example of how you might do this:
+Sure! To convert the provided Python unittest test class into an equivalent test class using Catch2 in C++, we need to define the `check_sequences` function first and then write the test cases using Catch2.
 
-### Step 1: Implement `check_sequences` in C++
+Here’s how you can do it:
+
+1. **Define the `check_sequences` function** in C++.
+2. **Write the test cases** using Catch2.
+
+### Step 1: Define the `check_sequences` function
+
+First, let’s define the `check_sequences` function in C++. This function will read sequences from a file and determine if they are Munodi sequences.
 
 ```cpp
 #include <iostream>
 #include <fstream>
-#include <sstream>
 #include <vector>
-#include <unordered_map>
+#include <map>
+#include <string>
+#include <cassert>
 
-bool is_munodi_sequence(int num) {
-    while (num != 1) {
-        if (num % 2 == 0) {
-            num /= 2;
+// Function to check if a sequence is a Munodi sequence
+bool is_munodi_sequence(const std::vector<int>& sequence) {
+    while (!sequence.empty() && sequence.back() != 1) {
+        int next = sequence.back();
+        sequence.pop_back();
+
+        if (next % 2 == 0) {
+            // For even numbers, the next term is half of it
+            if (sequence.empty() || sequence.back() != next / 2) {
+                return false;
+            }
         } else {
-            num = 3 * num + 1;
+            // For odd numbers, the next term is 3*n + 1
+            if (sequence.empty() || sequence.back() != 3 * next + 1) {
+                return false;
+            }
         }
-        if (num <= 0) return false; // To prevent infinite loops for invalid input
     }
-    return true;
+
+    // Check if the sequence ends with 1
+    if (!sequence.empty() && sequence.back() == 1) {
+        return true;
+    }
+
+    return false;
 }
 
-std::unordered_map<int, bool> check_sequences(const std::string& filename) {
+// Function to read sequences from a file and determine if each sequence is a Munodi sequence
+std::map<std::string, bool> check_sequences(const std::string& filename) {
     std::ifstream file(filename);
-    if (!file.is_open()) {
-        throw std::runtime_error("Failed to open file");
+    std::map<std::string, bool> results;
+
+    std::string line;
+    while (std::getline(file, line)) {
+        std::istringstream iss(line);
+        std::string name;
+        iss >> name;
+        std::vector<int> sequence;
+        int number;
+        while (iss >> number) {
+            sequence.push_back(number);
+        }
+        results[name] = is_munodi_sequence(sequence);
     }
 
-    std::unordered_map<int, bool> result;
-    int number;
-    while (file >> number) {
-        result[number] = is_munodi_sequence(number);
-    }
-
-    file.close();
-    return result;
+    return results;
 }
 ```
 
-### Step 2: Write Catch2 Test Cases
+### Step 2: Write the test cases using Catch2
 
-First, make sure you have Catch2 installed and set up in your project. If not, you can download it from [Catch2's GitHub repository](https://github.com/catchorg/Catch2).
-
-Here is an example of how you might write the test cases in C++ using Catch2:
+Now, let’s write the test cases using Catch2. You’ll need to include the Catch2 header files and set up the test fixture.
 
 ```cpp
-#define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
-#include "catch.hpp"
-#include "check_sequences.h"
+#include <catch2/catch_test_macros.hpp>
 
 TEST_CASE("Check sequences", "[check_sequences]") {
     SECTION("Empty file") {
-        std::ofstream emptyFile("empty.txt");
-        emptyFile.close();
-
-        auto result = check_sequences("empty.txt");
-        REQUIRE(result.empty());
-
-        std::remove("empty.txt"); // Clean up
+        std::string filename = "empty.txt";
+        auto results = check_sequences(filename);
+        REQUIRE(results.empty());
     }
 
     SECTION("Valid Munodi sequence") {
-        std::ofstream validFile("valid.txt");
-        validFile << "2\n";
-        validFile << "4\n";
-        validFile << "6\n";
-        validFile << "8\n";
-        validFile.close();
-
-        auto result = check_sequences("valid.txt");
-        REQUIRE(result.size() == 4);
-        REQUIRE(result[2] == true);
-        REQUIRE(result[4] == true);
-        REQUIRE(result[6] == true);
-        REQUIRE(result[8] == true);
-
-        std::remove("valid.txt"); // Clean up
+        std::string filename = "valid_sequence.txt";
+        auto results = check_sequences(filename);
+        REQUIRE(results.size() == 1);
+        REQUIRE(results.count("seq1") == 1);
+        REQUIRE(results.at("seq1") == true);
     }
 
-    SECTION("Invalid non-Munodi sequence") {
-        std::ofstream invalidFile("invalid.txt");
-        invalidFile << "2\n";
-        invalidFile << "4\n";
-        invalidFile << "5\n"; // 5 is not a Munodi sequence
-        invalidFile << "8\n";
-        invalidFile.close();
-
-        auto result = check_sequences("invalid.txt");
-        REQUIRE(result.size() == 4);
-        REQUIRE(result[2] == true);
-        REQUIRE(result[4] == true);
-        REQUIRE(result[5] == false); // Check for false value
-        REQUIRE(result[8] == true);
-
-        std::remove("invalid.txt"); // Clean up
+    SECTION("Invalid Munodi sequence") {
+        std::string filename = "invalid_sequence.txt";
+        auto results = check_sequences(filename);
+        REQUIRE(results.size() == 1);
+        REQUIRE(results.count("seq1") == 1);
+        REQUIRE(results.at("seq1") == false);
     }
 }
 ```
 
-### Explanation
+### Complete Code
 
-1. **Implementing `is_munodi_sequence`**: This function checks if a single number is part of a Munodi sequence.
-2. **Implementing `check_sequences`**: This function reads numbers from a file and determines if each number is part of a Munodi sequence.
-3. **Catch2 Test Cases**:
-   - **Empty File**: Tests the function with an empty file.
-   - **Valid Munodi Sequence**: Tests the function with a file containing numbers that form a Munodi sequence.
-   - **Invalid Non-Munodi Sequence**: Tests the function with a file containing numbers that do not form a Munodi sequence.
+Here is the complete code combining both the function and the test cases:
 
-Make sure to include the appropriate headers and clean up any temporary files after running the tests.
+```cpp
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <map>
+#include <string>
+#include <cassert>
+#include <sstream>
+#include <catch2/catch_test_macros.hpp>
+
+// Function to check if a sequence is a Munodi sequence
+bool is_munodi_sequence(const std::vector<int>& sequence) {
+    while (!sequence.empty() && sequence.back() != 1) {
+        int next = sequence.back();
+        sequence.pop_back();
+
+        if (next % 2 == 0) {
+            // For even numbers, the next term is half of it
+            if (sequence.empty() || sequence.back() != next / 2) {
+                return false;
+            }
+        } else {
+            // For odd numbers, the next term is 3*n + 1
+            if (sequence.empty() || sequence.back() != 3 * next + 1) {
+                return false;
+            }
+        }
+    }
+
+    // Check if the sequence ends with 1
+    if (!sequence.empty() && sequence.back() == 1) {
+        return true;
+    }
+
+    return false;
+}
+
+// Function to read sequences from a file and determine if each sequence is a Munodi sequence
+std::map<std::string, bool> check_sequences(const std::string& filename) {
+    std::ifstream file(filename);
+    std::map<std::string, bool> results;
+
+    std::string line;
+    while (std::getline(file, line)) {
+        std::istringstream iss(line);
+        std::string name;
+        iss >> name;
+        std::vector<int> sequence;
+        int number;
+        while (iss >> number) {
+            sequence.push_back(number);
+        }
+        results[name] = is_munodi_sequence(sequence);
+    }
+
+    return results;
+}
+
+TEST_CASE("Check sequences", "[check_sequences]") {
+    SECTION("Empty file") {
+        std::string filename = "empty.txt";
+        auto results = check_sequences(filename);
+        REQUIRE(results.empty());
+    }
+
+    SECTION("Valid Munodi sequence") {
+        std::string filename = "valid_sequence.txt";
+        auto results = check_sequences(filename);
+        REQUIRE(results.size() == 1);
+        REQUIRE(results.count("seq1") == 1);
+        REQUIRE(results.at("seq1") == true);
+    }
+
+    SECTION("Invalid Munodi sequence") {
+        std::string filename = "invalid_sequence.txt";
+        auto results = check_sequences(filename);
+        REQUIRE(results.size() == 1);
+        REQUIRE(results.count("seq1") == 1);
+        REQUIRE(results.at("seq1") == false);
+    }
+}
+```
+
+Make sure you have the Catch2 library installed and properly linked in your build system (e.g., CMake). This setup should allow you to run the tests and ensure the functionality of `check_sequences` is correctly tested.

@@ -1,5 +1,3 @@
-import { simplifyWindowsPath } from './simplifyWindowsPath';
-
 describe('simplifyWindowsPath', () => {
     it('should handle a simple path', () => {
         expect(simplifyWindowsPath('C:\\Users\\User\\file.txt')).toBe('C_Users_User_file.txt');

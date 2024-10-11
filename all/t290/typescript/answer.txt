@@ -1,19 +1,75 @@
-Here is your Python function translated into TypeScript:
+Sure! Here is the equivalent TypeScript code for the provided Python function:
 
 ```typescript
-interface RDFJSONLD {
+import * as json from 'json';
+
+interface RdfJsonLd {
   [key: string]: any;
+  '@id'?: string;
+  '@type'?: string;
+  '@context'?: string | object;
 }
 
-interface NGSIld {
-  [key: string]: any;
+interface NgsiLd {
+  id: string;
+  type: string;
+  '@context': string | object;
+  attributes: Attribute[];
 }
 
-function rdfJsonLdToNgSild(rdfJsonLd: RDFJSONLD): NGSIld {
-  // Your conversion logic here
-
-  return {};
+interface Attribute {
+  type: string;
+  name: string;
+  value: any;
 }
+
+function rdfJsonldToNgsild(rdfJsonld: string | RdfJsonLd): NgsiLd {
+  let parsedRdfJsonld: RdfJsonLd;
+
+  if (typeof rdfJsonld === 'string') {
+    parsedRdfJsonld = JSON.parse(rdfJsonld);
+  } else {
+    parsedRdfJsonld = rdfJsonld;
+  }
+
+  const ngsiLd: NgsiLd = {
+    id: parsedRdfJsonld['@id'] || 'urn:ngsi-ld:unknown:id',
+    type: parsedRdfJsonld['@type'] || 'UnknownType',
+    '@context': parsedRdfJsonld['@context'] || 'https://schema.lab.fiware.org/ld/context',
+    attributes: []
+  };
+
+  // Assuming simple attribute structure conversion
+  for (const key in parsedRdfJsonld) {
+    if (parsedRdfJsonld.hasOwnProperty(key) && !['@context', '@id', '@type'].includes(key)) {
+      ngsiLd.attributes.push({
+        type: 'Property',
+        name: key,
+        value: parsedRdfJsonld[key]
+      });
+    }
+  }
+
+  return ngsiLd;
+}
+
+// Example usage
+const exampleRdfJsonld: RdfJsonLd = {
+  '@id': 'urn:ngsi-ld:example',
+  '@type': 'ExampleType',
+  '@context': 'https://example.com/context',
+  attr1: 'value1',
+  attr2: 'value2'
+};
+
+console.log(rdfJsonldToNgsild(exampleRdfJsonld));
 ```
 
-In this TypeScript version of your function, we define two interfaces `RDFJSONLD` and `NGSIld` that represent the structure of the input and output data respectively. The actual conversion logic would go inside the `rdfJsonLdToNgSild` function. Note that the `[key: string]: any;` syntax means that these interfaces can have any number of properties with string keys and values of any type.
+### Explanation:
+1. **Interfaces**: Defined interfaces `RdfJsonLd`, `NgsiLd`, and `Attribute` to specify the expected structures of the objects.
+2. **Function Definition**: The function `rdfJsonldToNgsild` takes either a string or an object conforming to the `RdfJsonLd` interface and returns an object conforming to the `NgsiLd` interface.
+3. **JSON Parsing**: If the input is a string, it is parsed using `JSON.parse`.
+4. **Object Construction**: Constructs the `ngsiLd` object with default values if properties are missing.
+5. **Attribute Conversion**: Iterates over the keys of the parsed RDF JSON-LD object and constructs the attributes array accordingly.
+
+This TypeScript code preserves the functionality, structure, and logic of the original Python code while adapting to TypeScript's static type system and conventions.

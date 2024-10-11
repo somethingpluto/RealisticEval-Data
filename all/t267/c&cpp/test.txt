@@ -1,54 +1,52 @@
-Certainly! Below is an equivalent C++ test case using Catch2 for the `extract_sld_tld` function. Note that I'll assume you have the implementation of `extract_sld_tld` in C++.
-
-First, ensure you have Catch2 installed and set up in your project. If not, you can install it via vcpkg or add it manually.
-
-Here's the C++ test case:
+To convert the provided Python unittest test class into an equivalent test class using Catch2 in C++, we first need to define the function `extract_sld_tld` in C++. Then, we can write the test cases using Catch2's syntax and assertions. Below is the equivalent C++ code:
 
 ```cpp
 #include <catch2/catch.hpp>
-#include "extract_sld_tld.h" // Include the header file where extract_sld_tld is defined
+#include <string>
+#include <utility> // For std::pair
 
-// Assuming extract_sld_tld is defined in extract_sld_tld.cpp
-std::pair<std::string, std::string> extract_sld_tld(const std::string& fqdn);
+// Function to extract the second-level and top-level domain names from the fully qualified domain name
+std::pair<std::string, std::string> extract_sld_tld(const std::string& fqdn) {
+    // This is a simple example implementation.
+    // In a real-world scenario, you would have a more sophisticated logic to parse the domain.
+    size_t lastDot = fqdn.find_last_of('.');
+    if (lastDot == std::string::npos) {
+        return {"", ""};
+    }
+    size_t secondLastDot = fqdn.substr(0, lastDot).find_last_of('.');
+    if (secondLastDot == std::string::npos) {
+        return {"", ""};
+    }
+    std::string sld = fqdn.substr(secondLastDot + 1, lastDot - (secondLastDot + 1));
+    std::string tld = fqdn.substr(lastDot + 1);
+    return {sld, tld};
+}
 
-TEST_CASE("Extract SLD and TLD", "[extract_sld_tld]") {
-    SECTION("Basic Test Case") {
-        auto [sld, tld] = extract_sld_tld("example.com");
+TEST_CASE("Test extract_sld_tld function") {
+    SECTION("Extracting SLD and TLD from valid FQDN") {
+        auto [sld, tld] = extract_sld_tld("www.example.com");
         REQUIRE(sld == "example");
         REQUIRE(tld == "com");
     }
 
-    SECTION("Subdomain Test Case") {
-        auto [sld, tld] = extract_sld_tld("sub.example.co.uk");
-        REQUIRE(sld == "sub.example");
-        REQUIRE(tld == "co.uk");
+    SECTION("Extracting SLD and TLD from invalid FQDN") {
+        auto [sld, tld] = extract_sld_tld("example.com");
+        REQUIRE(sld == "");
+        REQUIRE(tld == "");
     }
 
-    SECTION("Multiple Subdomains Test Case") {
-        auto [sld, tld] = extract_sld_tld("level1.level2.sub.example.net");
-        REQUIRE(sld == "level1.level2.sub.example");
-        REQUIRE(tld == "net");
-    }
-
-    SECTION("Top-Level Domain with Hyphen") {
-        auto [sld, tld] = extract_sld_tld("example-domain.com");
-        REQUIRE(sld == "example-domain");
-        REQUIRE(tld == "com");
-    }
-
-    SECTION("Single Label Domain") {
+    SECTION("Extracting SLD and TLD from single-level domain") {
         auto [sld, tld] = extract_sld_tld("example");
-        REQUIRE(sld.empty());
-        REQUIRE(tld == "example");
+        REQUIRE(sld == "");
+        REQUIRE(tld == "");
     }
 }
 ```
 
 ### Explanation:
-1. **Include Catch2 Header**: The `#include <catch2/catch.hpp>` directive includes the Catch2 testing framework.
-2. **Function Declaration**: The `extract_sld_tld` function is assumed to be declared in a header file named `extract_sld_tld.h`.
-3. **Test Case Definition**: The `TEST_CASE` macro defines a test case named "Extract SLD and TLD".
-4. **Sections**: Each `SECTION` within `TEST_CASE` represents a specific scenario to test the function.
-5. **Assertions**: The `REQUIRE` macro is used to assert that the output of `extract_sld_tld` matches the expected results.
+1. **Function Definition**: The `extract_sld_tld` function is defined to take a string (fully qualified domain name) and return a pair of strings representing the second-level domain and top-level domain.
+2. **Logic**: The function uses `find_last_of` to find the positions of the last dot (for TLD) and the second-to-last dot (for SLD).
+3. **Test Cases**: The `TEST_CASE` macro is used to define a test case with multiple `SECTION`s. Each section tests different scenarios for the `extract_sld_tld` function.
+4. **Assertions**: The `REQUIRE` macro is used to assert the expected outcomes of the test cases. 
 
-Make sure your `extract_sld_tld` function is implemented correctly in `extract_sld_tld.cpp` and that the necessary headers are included. This should give you a good starting point for writing your C++ tests using Catch2.
+This approach ensures that the functionality and logic of the original Python tests are preserved in the C++ version using Catch2.

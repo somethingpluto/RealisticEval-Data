@@ -1,30 +1,67 @@
-Here's how you can convert your Python code to JavaScript using Node.js with 'pandas-js' library:
+Here is the equivalent JavaScript code using Node.js and the `papaparse` library to handle CSV parsing, as JavaScript does not have a direct equivalent to pandas:
+
+First, you need to install the required dependencies:
+```bash
+npm install papaparse fs path
+```
+
+Then, you can write the JavaScript code:
 
 ```javascript
 const fs = require('fs');
-const csvtojson = require('csvtojson');
+const path = require('path');
+const Papa = require('papaparse');
 
-async function readCSVToDataFrame(filePath) {
+/**
+ * Reads a CSV file and converts it to an array of objects.
+ *
+ * @param {string} filePath - The path to the CSV file.
+ * @returns {Promise<Array<Object>>} A promise that resolves to an array of objects containing the data from the CSV file.
+ */
+async function readCsvToDataArray(filePath) {
     try {
-        let jsonArray = await csvtojson().fromFile(filePath);
-        return jsonArray;
-    } catch(err) {
-        console.error(`Error reading CSV file: ${err}`);
-        throw err;
+        // Check if the file exists
+        const fileStats = await fs.promises.stat(filePath);
+        if (!fileStats.isFile()) {
+            throw new Error(`Error: The file '${filePath}' was not found.`);
+        }
+
+        // Read the CSV file content
+        const fileContent = await fs.promises.readFile(filePath, 'utf8');
+
+        // Parse the CSV content
+        const results = Papa.parse(fileContent, { header: true });
+        if (results.errors.length > 0) {
+            throw new Error("Error: Could not parse the file.");
+        }
+        if (results.data.length === 0) {
+            throw new Error("Error: The file is empty.");
+        }
+
+        return results.data;
+    } catch (error) {
+        console.error(error.message);
+        throw error;
     }
 }
 
-// Usage
-readCSVToDataFrame('/path/to/your/file.csv')
-    .then(data => {
-        // Now data is an array of JSON objects
-        console.log(data);
-    })
-    .catch(error => {
-        console.error(error);
-    });
+// Example usage
+(async () => {
+    try {
+        const filePath = path.join(__dirname, 'example.csv');
+        const dataArray = await readCsvToDataArray(filePath);
+        console.log(dataArray);
+    } catch (error) {
+        console.error(error.message);
+    }
+})();
 ```
 
-Note that 'pandas-js' is not an official package from pandas but a community-driven one. It may not support all features of pandas, especially those related to complex data manipulation or analysis.
-
-If you need full pandas functionality in JavaScript, you might consider using Python on the backend server and calling its API from the frontend JavaScript code via AJAX or Fetch API.
+### Explanation:
+1. **Dependencies**: We use `fs` for file system operations, `path` for handling file paths, and `Papa.parse` from the `papaparse` library for CSV parsing.
+2. **Function Definition**: The `readCsvToDataArray` function reads a CSV file and converts it to an array of objects.
+3. **File Existence Check**: We check if the file exists using `fs.promises.stat`.
+4. **Reading File Content**: We read the file content using `fs.promises.readFile`.
+5. **Parsing CSV Content**: We use `Papa.parse` with the `header: true` option to parse the CSV content into an array of objects.
+6. **Error Handling**: We handle errors such as file not found, empty file, and parsing errors.
+7. **Example Usage**: An example usage of the function is provided at the end.

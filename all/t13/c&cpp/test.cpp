@@ -1,15 +1,3 @@
-#define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
-#include <catch2/catch.hpp>
-#include <vector>
-#include <string>
-#include <tuple>
-#include <algorithm>
-#include <sstream>
-
-// Declare the parse_markdown_table function here (same as the previously provided C++ implementation)
-std::vector<std::vector<std::string>> parse_markdown_table(const std::string &md_table);
-
-// Helper function to compare vectors of vectors
 bool compareTable(const std::vector<std::vector<std::string>>& result, const std::vector<std::vector<std::string>>& expected) {
     if (result.size() != expected.size()) return false;
     for (size_t i = 0; i < result.size(); ++i) {
@@ -109,10 +97,4 @@ TEST_CASE("Excessive whitespace") {
 
     auto result = parse_markdown_table(md_table);
     REQUIRE(compareTable(result, expected));
-}
-
-// Simple implementation of parse_markdown_table for demonstration (fill with actual code)
-std::vector<std::vector<std::string>> parse_markdown_table(const std::string &md_table) {
-    // This is a placeholder. Use the provided C++ implementation from the earlier sections.
-    return {};
 }

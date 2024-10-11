@@ -1,51 +1,37 @@
 #include <iostream>
 #include <string>
 #include <sstream>
-#include <cmath>
+#include <variant>
 
-bool is_integer(const std::string &str) {
-    size_t pos;
-    std::stoll(str, &pos);
-    return pos == str.length();
-}
-
-double is_float(const std::string &str) {
+std::variant<int, float, std::string> numericalStrConvert(const std::string& value) {
+    // Try to convert to an integer
     try {
-        size_t pos;
-        double val = std::stod(str, &pos);
-        if (pos == str.length()) return val;
-    } catch (...) {}
-    return NAN;
-}
-
-struct ConvertResult {
-    union {
-        int integer;
-        double floating_point;
-        std::string original_string;
-    };
-    bool is_original_string;
-
-    ConvertResult(int val) : integer(val), is_original_string(false) {}
-    ConvertResult(double val) : floating_point(val), is_original_string(false) {}
-    ConvertResult(std::string str) : original_string(str), is_original_string(true) {}
-
-    ~ConvertResult() {
-        if (is_original_string) {
-            original_string.~basic_string<char>();
+        size_t idx;
+        int intValue = std::stoi(value, &idx);
+        // Ensure the entire string was consumed
+        if (idx == value.length()) {
+            return intValue;
         }
-    }
-};
-
-ConvertResult numerical_str_convert(const std::string &value) {
-    if (is_integer(value)) {
-        return ConvertResult(std::stoi(value));
+    } catch (const std::invalid_argument&) {
+        // Not an integer
+    } catch (const std::out_of_range&) {
+        // Integer out of range
     }
 
-    double float_value = is_float(value);
-    if (!std::isnan(float_value)) {
-        return ConvertResult(float_value);
+    // Try to convert to a float
+    try {
+        size_t idx;
+        float floatValue = std::stof(value, &idx);
+        // Ensure the entire string was consumed
+        if (idx == value.length()) {
+            return floatValue;
+        }
+    } catch (const std::invalid_argument&) {
+        // Not a float
+    } catch (const std::out_of_range&) {
+        // Float out of range
     }
 
-    return ConvertResult(value);
+    // Return the original string if neither conversion succeeded
+    return value;
 }

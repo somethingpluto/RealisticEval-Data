@@ -6,4 +6,4 @@
  * @return An optional containing the (x, y) coordinates of the intersection point if the line segments intersect,
  *         otherwise an empty optional.
  */
-std::optional<std::pair<double, double>> getLineSegmentIntersection(std::pair<std::pair<double, double>, std::pair<double, double>> seg1, std::pair<std::pair<double, double>, std::pair<double, double>> seg2);
+std::optional<std::pair<double, double>> getLineSegmentIntersection(std::pair<std::pair<double, double>, std::pair<double, double>> seg1, std::pair<std::pair<double, double>, std::pair<double, double>> seg2){};

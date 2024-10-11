@@ -1,55 +1,104 @@
-Certainly! Below is the equivalent JavaScript test case using Jest for the provided Python `unittest` test class. Note that I'll assume you want to test a function named `extractTextFromWord` that extracts text content from a `.docx` file.
+First, let's define the equivalent JavaScript function for `extract_text_from_word`. We will use the `docx` library for Node.js, which needs to be installed first:
 
-First, let's create a mock implementation of the `extractTextFromWord` function in JavaScript. Then, we'll write a Jest test case to verify its functionality.
-
-### Mock Implementation of `extractTextFromWord`
-
-```javascript
-// mockExtractTextFromWord.js
-module.exports = {
-  extractTextFromWord: (docxFilePath) => {
-    // This is a mock implementation. In a real scenario, you would interact with a .docx file here.
-    return "Mocked extracted text from " + docxFilePath;
-  }
-};
+```bash
+npm install docx
 ```
 
-### Jest Test Case
+Now, let's create the JavaScript function and the Jest test class.
 
-Now, let's write a Jest test case to verify the `extractTextFromWord` function.
+### JavaScript Function
+
+Create a file named `extractTextFromWord.js`:
 
 ```javascript
-// testExtractTextFromWord.js
-const { extractTextFromWord } = require('./mockExtractTextFromWord');
+const { Document } = require('docx');
+
+function extractTextFromWord(docxFilePath) {
+    /**
+     * Extracts text content from a given Word file (.docx).
+     *
+     * @param {string} docxFilePath - The path to the Word file.
+     * @returns {Promise<string>} - A promise that resolves to the extracted text content.
+     */
+    return new Promise((resolve, reject) => {
+        const document = new Document({ filePath: docxFilePath });
+        document.getText().then(text => {
+            resolve(text);
+        }).catch(error => {
+            reject(error);
+        });
+    });
+}
+
+module.exports = extractTextFromWord;
+```
+
+### Jest Test Class
+
+Create a file named `extractTextFromWord.test.js`:
+
+```javascript
+const extractTextFromWord = require('./extractTextFromWord');
+const fs = require('fs');
+const path = require('path');
 
 describe('extractTextFromWord', () => {
-  it('should extract text from a .docx file', () => {
-    const filePath = 'path/to/your/file.docx';
-    const expectedText = 'Mocked extracted text from path/to/your/file.docx';
+    it('should correctly extract text from a valid Word document', async () => {
+        const docxFilePath = path.join(__dirname, 'test.docx');
+        const expectedText = 'This is a test document.';
 
-    const result = extractTextFromWord(filePath);
+        // Mock the document to simulate the expected behavior
+        jest.mock('docx', () => ({
+            Document: jest.fn(() => ({
+                getText: jest.fn(() => Promise.resolve(expectedText)),
+            })),
+        }), { virtual: true });
 
-    expect(result).toBe(expectedText);
-  });
+        const result = await extractTextFromWord(docxFilePath);
+        expect(result).toBe(expectedText);
+    });
+
+    it('should handle errors when the Word document cannot be read', async () => {
+        const docxFilePath = path.join(__dirname, 'nonexistent.docx');
+        const errorMessage = 'File not found';
+
+        // Mock the document to simulate an error
+        jest.mock('docx', () => ({
+            Document: jest.fn(() => ({
+                getText: jest.fn(() => Promise.reject(new Error(errorMessage))),
+            })),
+        }), { virtual: true });
+
+        await expect(extractTextFromWord(docxFilePath)).rejects.toThrow(errorMessage);
+    });
+
+    it('should handle errors when the Word document is invalid', async () => {
+        const docxFilePath = path.join(__dirname, 'invalid.docx');
+        const errorMessage = 'Invalid document format';
+
+        // Mock the document to simulate an error
+        jest.mock('docx', () => ({
+            Document: jest.fn(() => ({
+                getText: jest.fn(() => Promise.reject(new Error(errorMessage))),
+            })),
+        }), { virtual: true });
+
+        await expect(extractTextFromWord(docxFilePath)).rejects.toThrow(errorMessage);
+    });
 });
 ```
 
 ### Explanation
 
-1. **Mock Implementation**: We create a mock implementation of the `extractTextFromWord` function in `mockExtractTextFromWord.js`. This mock function simply returns a string indicating that it has extracted text from the specified file path.
+1. **Function Definition**: The JavaScript function `extractTextFromWord` uses promises to handle asynchronous operations. It returns a promise that resolves with the extracted text or rejects with an error if something goes wrong.
 
-2. **Jest Test Case**: We write a Jest test case in `testExtractTextFromWord.js`. The `describe` block groups related tests together, and the `it` block defines an individual test case. Inside the test case, we call the `extractTextFromWord` function with a sample file path and check if the returned result matches the expected output using the `expect` function.
+2. **Test Cases**:
+   - The first test case checks if the function correctly extracts text from a valid Word document.
+   - The second test case checks if the function handles errors properly when the Word document cannot be read.
+   - The third test case checks if the function handles errors properly when the Word document is invalid.
 
-To run the Jest test case, make sure you have Jest installed in your project. You can install it using npm:
+3. **Mocking**: We use Jest's mocking capabilities to simulate the behavior of the `Document` class and its `getText` method. This allows us to control the output and test various scenarios without needing actual Word documents.
 
-```sh
-npm install --save-dev jest
-```
+4. **Error Handling**: We use `await expect(...).rejects.toThrow(...)` to handle rejected promises and verify that the correct error message is thrown.
 
-Then, you can run the test case using the following command:
-
-```sh
-npx jest testExtractTextFromWord.js
-```
-
-This will execute the test case and provide you with the results.
+This conversion maintains the functionality and logic of the original Python unittest class while adapting it to work with Jest in JavaScript.

@@ -1,4 +1,4 @@
-Sure, here's how you can translate the given Python code into Java:
+Here is the Java code equivalent to the provided Python code, organized within the package `org.real.temp` and the class `Answer`. The Java code includes proper type declarations, method signatures, and utilizes Java's object-oriented principles:
 
 ```java
 package org.real.temp;
@@ -6,69 +6,69 @@ package org.real.temp;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Answer {
-    
-    public static Map<String, Boolean> checkSequences(String filename) throws IOException {
-        Map<String, Boolean> result = new HashMap<>();
-        
-        try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
+
+    public static List<List<Integer>> readSequencesFromFile(String filename) {
+        List<List<Integer>> sequences = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
             String line;
-            while ((line = br.readLine()) != null) {
-                boolean isMunodiSequence = true;
-                long[] sequence = Arrays.stream(line.split(","))
-                                        .mapToLong(Long::parseLong)
-                                        .toArray();
-                
-                for (long num : sequence) {
-                    if (!isMunodi(num)) {
-                        isMunodiSequence = false;
-                        break;
-                    }
+            while ((line = reader.readLine()) != null) {
+                // Assuming sequences are comma-separated in the file
+                String[] parts = line.strip().split(",");
+                List<Integer> seq = new ArrayList<>();
+                for (String part : parts) {
+                    seq.add(Integer.parseInt(part));
                 }
-                
-                result.put(Arrays.toString(sequence), isMunodiSequence);
+                sequences.add(seq);
             }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        
-        return result;
+        return sequences;
     }
 
-    private static boolean isMunodi(long n) {
-        while (n != 1) {
-            if (n % 2 == 0) {
-                n /= 2;
-            } else {
-                n = 3 * n + 1;
-            }
-            
-            // To prevent infinite loop in case of invalid input
-            if (n < 1) {
-                return false;
+    public static boolean isMunodiSequence(List<Integer> sequence) {
+        if (sequence.size() < 2) {
+            return false;  // A sequence with less than 2 elements cannot be a Munodi sequence
+        }
+
+        int commonDifference = sequence.get(1) - sequence.get(0);
+        for (int i = 2; i < sequence.size(); i++) {
+            if (sequence.get(i) - sequence.get(i - 1) != commonDifference) {
+                return false;  // Found a different difference, not a Munodi sequence
             }
         }
-        
-        return true;
+        return true;  // All differences are the same
+    }
+
+    public static Map<List<Integer>, Boolean> checkSequences(String filename) {
+        List<List<Integer>> sequences = readSequencesFromFile(filename);
+        Map<List<Integer>, Boolean> results = new HashMap<>();
+        for (List<Integer> seq : sequences) {
+            results.put(seq, isMunodiSequence(seq));
+        }
+        return results;
+    }
+
+    public static void main(String[] args) {
+        String filename = "sequences.txt";  // Example filename
+        Map<List<Integer>, Boolean> results = checkSequences(filename);
+        for (Map.Entry<List<Integer>, Boolean> entry : results.entrySet()) {
+            System.out.println("Sequence: " + entry.getKey() + " is Munodi: " + entry.getValue());
+        }
     }
 }
 ```
 
 ### Explanation:
-- **`checkSequences` Method**:
-  - Reads lines from the file specified by `filename`.
-  - Each line is split into an array of numbers using `split(",")`.
-  - Converts each number in the string array to a `long` array using `Arrays.stream().mapToLong()`.
-  - Checks if each number in the sequence is part of a Munodi sequence using the helper method `isMunodi`.
-  - Stores the result (`true` or `false`) for each sequence in a `Map`.
+1. **readSequencesFromFile**: This method reads sequences from a file and converts each line into a list of integers.
+2. **isMunodiSequence**: This method checks if a given sequence is a Munodi sequence by ensuring all differences between consecutive elements are the same.
+3. **checkSequences**: This method reads sequences from a file and determines if each sequence is a Munodi sequence, storing the results in a map.
+4. **main**: This method demonstrates how to use the above methods by reading sequences from a file and printing the results.
 
-- **`isMunodi` Method**:
-  - Determines if a given number `n` is part of a Munodi sequence.
-  - Continues the process until `n` becomes `1`, applying the rules for even and odd numbers.
-  - If `n` becomes less than `1` at any point, it returns `false` to indicate the sequence is not valid.
-
-### Notes:
-- Ensure that the file path provided is correct and accessible.
-- This implementation assumes that the file contains sequences separated by commas and does not contain any invalid data.
-- Exception handling is done using `try-with-resources` to ensure proper resource management.
+This Java code maintains the functionality and logic of the original Python code while adhering to Java's syntax and best practices.

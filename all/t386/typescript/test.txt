@@ -1,49 +1,81 @@
-Here's how you can write a Jest test case in TypeScript for the given Python function using `jest` and `fs-extra`:
+First, let's define the TypeScript function `convertEncoding` which is equivalent to the Python function `convert_encoding`. Then we'll write the Jest test class to cover this function.
+
+### TypeScript Function Definition
 
 ```typescript
-import fs from 'fs-extra';
-import { convertEncoding } from './convertEncoding'; // Adjust the path according to your project structure
+import * as fs from 'fs';
+import { promisify } from 'util';
+
+const readFileAsync = promisify(fs.readFile);
+const writeFileAsync = promisify(fs.writeFile);
+
+async function convertEncoding(
+  inputFilePath: string,
+  outputFilePath: string,
+  originalEncoding: string = "cp932",
+  targetEncoding: string = "utf-16"
+): Promise<boolean> {
+  try {
+    const content = await readFileAsync(inputFilePath, { encoding: originalEncoding });
+    await writeFileAsync(outputFilePath, content, { encoding: targetEncoding });
+    return true;
+  } catch (error) {
+    console.error("Error converting encoding:", error);
+    return false;
+  }
+}
+
+export default convertEncoding;
+```
+
+### Jest Test Class
+
+Now, let's write the Jest test class for `convertEncoding`.
+
+```typescript
+import convertEncoding from './path/to/convertEncoding'; // Adjust the import path accordingly
 
 describe('convertEncoding', () => {
-  const tempDir = fs.mkdtempSync('/tmp/');
-  let inputFile: string;
-  let outputFile: string;
+  const inputFilePath = './testInput.txt';
+  const outputFilePath = './testOutput.txt';
+  const testContent = 'Hello, World!';
 
   beforeEach(() => {
-    inputFile = `${tempDir}/input.txt`;
-    outputFile = `${tempDir}/output.txt`;
-
-    // Create an example input file with some text encoded in cp932
-    fs.writeFileSync(inputFile, '\u3042\u308a\u304c\u3057\u304b\u3089\u3081\u306f\u3002', 'binary');
+    // Write the test content to the input file with the specified encoding
+    fs.writeFileSync(inputFilePath, testContent, { encoding: 'cp932' });
   });
 
   afterEach(() => {
-    fs.removeSync(tempDir);
+    // Clean up by removing the test files
+    fs.unlinkSync(inputFilePath);
+    fs.unlinkSync(outputFilePath);
   });
 
-  it('should convert encoding from cp932 to utf-16 successfully', async () => {
-    expect(await convertEncoding(inputFile, outputFile)).toBe(true);
+  it('should successfully convert the encoding of a file', async () => {
+    const result = await convertEncoding(inputFilePath, outputFilePath);
+    expect(result).toBe(true);
 
-    // Read the output file and check its contents
-    const outputContent = fs.readFileSync(outputFile, 'utf-16le');
-    expect(outputContent).toBe('\u3042\u308a\u304c\u3057\u304b\u3089\u3081\u306f\u3002');
+    const convertedContent = await fs.promises.readFile(outputFilePath, { encoding: 'utf-16' });
+    expect(convertedContent).toBe(testContent);
   });
 
-  it('should return false if no conversion was needed', async () => {
-    // Ensure the input file has already been saved with the target encoding
-    fs.writeFileSync(outputFile, '\u3042\u308a\u304c\u3057\u304b\u3089\u3081\u306f\u3002', 'utf-16le');
-
-    expect(await convertEncoding(outputFile, outputFile)).toBe(false);
+  it('should handle errors during encoding conversion', async () => {
+    // Simulate an error by providing a non-existent input file
+    const result = await convertEncoding('./nonExistentFile.txt', outputFilePath);
+    expect(result).toBe(false);
   });
 });
 ```
 
-This test suite sets up a temporary directory before each test case and cleans it up after each test case. It tests two scenarios: when the input file needs to be converted from `cp932` to `utf-16`, and when no conversion is needed because the file is already in the target encoding.
+### Explanation:
 
-Make sure to install the required dependencies (`fs-extra`) before running the tests:
+1. **Function Definition**: The `convertEncoding` function reads the content of the input file with the specified original encoding and writes it to the output file with the specified target encoding. It returns `true` on success and `false` on failure.
 
-```sh
-npm install --save-dev jest @types/jest fs-extra @types/fs-extra
-```
+2. **Jest Test Class**:
+   - **Before Each**: Before each test, it sets up the test environment by writing the test content to the input file with the specified original encoding.
+   - **After Each**: After each test, it cleans up by removing the test files.
+   - **Test Cases**:
+     - **Success Case**: Checks that the function successfully converts the encoding and verifies the content of the output file.
+     - **Error Handling**: Simulates an error by providing a non-existent input file and checks that the function returns `false`.
 
-Also, update the import statement at the top of the file to point to the correct location of your `convertEncoding` function.
+Make sure you have Jest installed (`npm install --save-dev jest`) and adjust the import paths as needed.

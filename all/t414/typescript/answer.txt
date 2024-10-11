@@ -1,72 +1,62 @@
-Sure! Here's how you can convert your Python function `extract_bib_info` to TypeScript:
+Sure! Below is the equivalent TypeScript code for the provided Python script. This code includes proper type definitions and follows TypeScript's static type system:
 
 ```typescript
 import * as fs from 'fs';
-import * as path from 'path';
+import * as re from 'xregexp';
 
-interface BibEntry {
-    title: string;
-    author: string;
-    year: string;
-}
-
-function extractBibInfo(bibFile: string): BibEntry[] {
+function extractBibInfo(bibFile: string): Array<{ title?: string; author?: string; year?: string }> {
     /**
      * Extracts the title, author, and year from a BibTeX file.
      *
      * @param {string} bibFile - The path to the BibTeX file.
-     * @returns {BibEntry[]} - A list containing dictionaries with title, author, and year for each article.
+     * @returns {Array<{ title?: string; author?: string; year?: string }>} A list containing objects with title, author, and year for each article.
      */
-    
-    // Read the content of the BibTeX file
-    const fileContent = fs.readFileSync(bibFile, 'utf-8');
-    
-    // Split the content into individual entries based on '@'
-    const entries = fileContent.split('@').filter(entry => entry.trim() !== '');
-    
-    const results: BibEntry[] = [];
-    
-    for (const entry of entries) {
-        // Find the type of entry (e.g., article, book)
-        const entryTypeMatch = entry.match(/^\s*([a-zA-Z]+)\{/);
-        if (!entryTypeMatch) continue;
-        
-        const entryType = entryTypeMatch[1];
-        
-        // Extract the title, author, and year
-        const fields = entry.split(',').map(field => field.trim());
-        let title = '', author = '', year = '';
-        
-        for (const field of fields) {
-            const [key, value] = field.split('=').map(part => part.trim().replace(/^{/, '').replace(/}$/, '').trim());
-            if (key === 'title') title = value;
-            else if (key === 'author') author = value;
-            else if (key === 'year') year = value;
+    const articles: Array<{ title?: string; author?: string; year?: string }> = [];
+
+    // Regular expressions to match title, author, and year
+    const titlePattern = re('title\\s*=\\s*{([^}]*)}', 'i');
+    const authorPattern = re('author\\s*=\\s*{([^}]*)}', 'i');
+    const yearPattern = re('year\\s*=\\s*{([^}]*)}', 'i');
+
+    try {
+        const content = fs.readFileSync(bibFile, 'utf8');
+
+        // Split the content into individual entries based on '@'
+        const entries = content.split('@').slice(1);  // Skip the first split, which is empty
+
+        for (const entry of entries) {
+            const titleMatch = titlePattern.exec(entry);
+            const authorMatch = authorPattern.exec(entry);
+            const yearMatch = yearPattern.exec(entry);
+
+            // Extracting matched groups if found
+            articles.push({
+                title: titleMatch ? titleMatch[1] : undefined,
+                author: authorMatch ? authorMatch[1] : undefined,
+                year: yearMatch ? yearMatch[1] : undefined
+            });
         }
-        
-        results.push({ title, author, year });
+    } catch (error) {
+        if (error.code === 'ENOENT') {
+            console.error(`Error: The file '${bibFile}' was not found.`);
+        } else {
+            throw error;
+        }
     }
-    
-    return results;
+
+    return articles;
 }
+
+// Example usage
+console.log(extractBibInfo('example.bib'));
 ```
 
 ### Explanation:
-1. **Interfaces**: We define an interface `BibEntry` to represent the structure of each entry in the BibTeX file.
-2. **Reading File Content**: We use Node.js's `fs.readFileSync` to read the content of the BibTeX file synchronously.
-3. **Splitting Entries**: We split the content into individual entries using `@` as the delimiter.
-4. **Extracting Information**: For each entry, we determine its type and then parse out the `title`, `author`, and `year`.
-5. **Returning Results**: We collect all parsed entries into an array and return it.
+1. **Imports**: We use `fs` for file system operations and `xregexp` for regular expressions. TypeScript does not have built-in regex support like Python, so we use `xregexp` for compatibility.
+2. **Function Definition**: The function `extractBibInfo` is defined with a type annotation for the return value (`Array<{ title?: string; author?: string; year?: string }>`) to ensure consistency.
+3. **Regular Expressions**: We use `xregexp` to create case-insensitive regular expressions.
+4. **File Reading**: We use `fs.readFileSync` to read the file synchronously. If you need asynchronous behavior, you can use `fs.promises.readFile`.
+5. **Error Handling**: We handle the `FileNotFoundError` by checking the error code and logging an appropriate message.
+6. **Match Extraction**: We use `exec` to find matches and extract the relevant parts of the BibTeX entries.
 
-Make sure you have Node.js installed to run this TypeScript code. You can compile and run it using the following commands:
-
-```sh
-# Install TypeScript if not already installed
-npm install -g typescript
-
-# Compile the TypeScript code
-tsc extract-bib-info.ts
-
-# Run the compiled JavaScript code
-node extract-bib-info.js
-```
+This TypeScript code maintains the same functionality and logic as the original Python script.

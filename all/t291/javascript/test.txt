@@ -1,42 +1,75 @@
-Sure, here is how you can convert your Python unittest test class into a Jest test case in JavaScript:
+Sure, let's first define the function `prepend_to_each_line` in JavaScript and then write the corresponding Jest test cases. 
+
+### Step 1: Convert the Python Function to JavaScript
+
+Here's how you would implement the `prepend_to_each_line` function in JavaScript:
 
 ```javascript
-const fs = require('fs');
+const fs = require('fs').promises;
 const path = require('path');
 
-function prependToEachLine(filePath, prefix) {
+async function prepend_to_each_line(file_path, prefix) {
     try {
-        let data = fs.readFileSync(filePath, 'utf8');
-        let lines = data.split('\n');
-        for(let i=0; i<lines.length; i++) {
-            lines[i] = prefix + lines[i];
-        }
-        fs.writeFileSync(filePath, lines.join('\n'), 'utf8');
+        const data = await fs.readFile(file_path, 'utf8');
+        const lines = data.split('\n');
+        const updatedLines = lines.map(line => prefix + line);
+        const updatedData = updatedLines.join('\n');
+        await fs.writeFile(file_path, updatedData, 'utf8');
     } catch (error) {
-        throw error;
+        console.error('Error processing file:', error);
     }
 }
+```
 
-// Jest test case
-describe('prependToEachLine', () => {
-  it('should prepend prefix to each line of the file', async () => {
-    const tempFilePath = path.join(__dirname, 'temp.txt');
-    const content = "line1\nline2\nline3";
-    
-    // Create a temporary file with initial content
-    fs.writeFileSync(tempFilePath, content);
+### Step 2: Write Jest Test Cases
 
-    // Call the function
-    prependToEachLine(tempFilePath, 'prefix_');
+Now, we'll write Jest test cases for this function. We'll use Jest's `beforeEach` hook to set up a temporary directory and files for our tests.
 
-    // Read the updated file and check if the content is correct
-    let updatedContent = fs.readFileSync(tempFilePath, 'utf8');
-    expect(updatedContent).toBe("prefix_line1\nprefix_line2\nprefix_line3");
+```javascript
+const fs = require('fs').promises;
+const path = require('path');
+const { tmpdir } = require('os');
 
-    // Clean up - remove the temporary file
-    fs.unlinkSync(tempFilePath);
-  });
+// The function to be tested
+const prepend_to_each_line = require('./prepend_to_each_line');
+
+describe('prepend_to_each_line', () => {
+    let tempDir;
+    let filePath;
+
+    beforeEach(async () => {
+        tempDir = tmpdir();
+        filePath = path.join(tempDir, 'test.txt');
+
+        // Create a temporary file with some content
+        await fs.writeFile(filePath, 'line 1\nline 2\nline 3', 'utf8');
+    });
+
+    afterEach(async () => {
+        // Clean up the temporary file after each test
+        await fs.unlink(filePath);
+    });
+
+    it('should prepend the specified string to the beginning of each line', async () => {
+        const prefix = 'prefix-';
+        await prepend_to_each_line(filePath, prefix);
+
+        const updatedContent = await fs.readFile(filePath, 'utf8');
+        expect(updatedContent).toBe(`prefix-line 1\nprefix-line 2\nprefix-line 3`);
+    });
 });
 ```
 
-This JavaScript code uses Node.js's built-in `fs` module to read from and write to files, similar to what the Python code does using `open`. The Jest test case checks that the `prependToEachLine` function correctly prepends a prefix to each line of the file and then cleans up by removing the temporary file after the test has run.
+### Explanation of Changes
+
+1. **File Handling**: In Python, file operations are handled using built-in functions. In JavaScript, we use the `fs.promises` API for asynchronous file operations.
+
+2. **Testing Framework**: Jest provides a different set of assertion methods compared to Python's `unittest`. We use `expect` for assertions.
+
+3. **Temporary Directory Setup**: To avoid modifying any existing files, we create a temporary file in the system's temporary directory using `tmpdir`.
+
+4. **Asynchronous Testing**: Jest supports asynchronous testing using `async/await`, which makes handling file operations easier.
+
+5. **Test Cleanup**: We use `afterEach` to clean up the temporary file after each test to ensure the test environment remains clean for the next test.
+
+This setup ensures that the functionality and logic of the tests are maintained while adapting to JavaScript's syntax and Jest's testing framework.

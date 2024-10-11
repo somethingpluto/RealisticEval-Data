@@ -1,38 +1,81 @@
-Here's how you could translate that Python function into Java:
+Here’s the Java equivalent of the given Python code, organized within the package `org.real.temp` and the class `Answer`. The code will include necessary imports, method signatures, and handle file operations according to Java standards:
 
 ```java
 package org.real.temp;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileReader;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.List;
 
 public class Answer {
-    
-    /**
-     * Prepends the specified string to the beginning of each line of the file.
-     *
-     * @param filePath path to the file whose lines will be modified.
-     * @param prefix   string to prepend to the beginning of each line.
-     */
-    public static void prependToEachLine(String filePath, String prefix) throws IOException {
-        try (BufferedReader reader = new BufferedReader(new FileReader(filePath));
-             BufferedWriter writer = new BufferedWriter(new FileWriter("temp.txt"))) {
 
-            String line;
-            while ((line = reader.readLine()) != null) {
-                writer.write(prefix + line);
-                writer.newLine();
+    /**
+     * Appends the specified string to the beginning of each line of the file.
+     *
+     * @param filePath the path to the file whose lines will be modified
+     * @param prefix   the string to append to the beginning of each line
+     */
+    public static void prependToEachLine(String filePath, String prefix) {
+        String tempFilePath = filePath + ".tmp";
+
+        try {
+            // Read all lines from the original file
+            List<String> lines = Files.readAllLines(Paths.get(filePath));
+
+            // Write the modified lines to a temporary file
+            try (FileWriter tempFileWriter = new FileWriter(tempFilePath)) {
+                for (String line : lines) {
+                    tempFileWriter.write(prefix + line);
+                    tempFileWriter.write(System.lineSeparator());
+                }
             }
-            
-            // Replace original file with temp file
-            new File(filePath).delete();
-            new File("temp.txt").renameTo(new File(filePath));
+
+            // Replace the original file with the modified file
+            File originalFile = new File(filePath);
+            File tempFile = new File(tempFilePath);
+            if (!tempFile.renameTo(originalFile)) {
+                throw new IOException("Failed to rename temporary file to original file");
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+    }
+
+    public static void main(String[] args) {
+        // Example usage
+        String filePath = "path/to/your/file.txt";
+        String prefix = "Prefix: ";
+        prependToEachLine(filePath, prefix);
     }
 }
 ```
 
-This Java method does the same thing as your Python function. It reads each line from the file, prepends the given prefix to it, and writes it back to a temporary file. After all lines have been processed, it replaces the original file with the temporary file. Please note that in a production environment, you should handle exceptions more gracefully than just throwing them away.
+### Explanation:
+1. **Imports**:
+   - `java.io.File`: Used for file operations.
+   - `java.io.FileWriter`: Used to write to files.
+   - `java.io.IOException`: Exception handling for I/O operations.
+   - `java.nio.file.Files`: Used to read lines from files.
+   - `java.nio.file.Paths`: Used to create paths.
+
+2. **Method Signature**:
+   - `prependToEachLine`: Takes two parameters, `filePath` and `prefix`.
+
+3. **Reading Lines**:
+   - Uses `Files.readAllLines` to read all lines from the original file.
+
+4. **Writing Modified Lines**:
+   - Uses `FileWriter` to write the modified lines to a temporary file, appending the prefix to each line.
+
+5. **Replacing Original File**:
+   - Renames the temporary file to replace the original file. If renaming fails, it throws an exception.
+
+6. **Exception Handling**:
+   - Catches `IOException` and prints the stack trace for debugging purposes.
+
+7. **Main Method**:
+   - Provides an example usage of the `prependToEachLine` method.

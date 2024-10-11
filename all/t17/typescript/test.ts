@@ -1,5 +1,3 @@
-import { haversineDistance } from './haversineDistance';  // Assuming your distance function is in haversineDistance.ts
-
 describe('haversineDistance', () => {
 
     it('should return 0 for the same point', () => {

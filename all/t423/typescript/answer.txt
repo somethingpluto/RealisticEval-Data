@@ -1,27 +1,51 @@
-Here is your Python function converted into TypeScript:
+Sure! Here is the equivalent TypeScript code for the provided Python function, including the necessary adjustments for TypeScript's static typing and file handling:
 
 ```typescript
-async function writeUniqueLineToFile(filename: string, lineContent: string): Promise<void> {
-    /**
-     * Writes a line to a text file only if the line with the same content does not already exist.
-     *
-     * @param {string} filename - The name of the file to write to.
-     * @param {string} lineContent - The content of the line to write.
-     *
-     * @returns {Promise<void>}
-     */
-    
-    try {
-        const fs = require('fs').promises;
-        let data = await fs.readFile(filename, 'utf8');
-        
-        if (!data.includes(lineContent)) {
-            await fs.appendFile(filename, `${lineContent}\n`);
+import fs from 'fs';
+
+function writeUniqueLineToFile(filename: string, lineContent: string): void {
+    // Check if the lineContent already exists in the file
+    fs.readFile(filename, 'utf8', (err, data) => {
+        if (err && err.code === 'ENOENT') {
+            // File does not exist
+            appendLineToFile(filename, lineContent);
+        } else if (err) {
+            console.error(`Error reading file: ${err.message}`);
+        } else {
+            if (data.includes(lineContent)) {
+                console.log(`Line '${lineContent}' already exists in '${filename}'. Not writing again.`);
+            } else {
+                appendLineToFile(filename, lineContent);
+            }
         }
-    } catch (err) {
-        console.error(err);
-    }
+    });
 }
+
+function appendLineToFile(filename: string, lineContent: string): void {
+    fs.appendFile(filename, lineContent + '\n', (err) => {
+        if (err) {
+            console.error(`Error writing to file: ${err.message}`);
+        } else {
+            console.log(`Line '${lineContent}' successfully written to '${filename}'.`);
+        }
+    });
+}
+
+// Example usage
+writeUniqueLineToFile('example.txt', 'This is a test line.');
 ```
 
-This TypeScript function uses Node.js's built-in `fs` module to read and append files asynchronously. It first reads the contents of the specified file, checks if the desired line is present, and appends it if not. If an error occurs during any step, it logs the error to the console. Note that you'll need to call this function in an async context or use `.then()`/`.catch()` with promises.
+### Explanation:
+1. **Importing `fs` module**: In TypeScript/JavaScript, file system operations are performed using the `fs` module from Node.js.
+
+2. **Asynchronous File Handling**: In TypeScript/JavaScript, file operations are asynchronous. We use `fs.readFile` to read the file content and `fs.appendFile` to append the line content.
+
+3. **Error Handling**: We handle errors when reading the file. If the file does not exist (`ENOENT` error), we directly append the line content. For other errors, we log an error message.
+
+4. **Function Definitions**:
+   - `writeUniqueLineToFile`: This function checks if the line content already exists in the file and appends it if not.
+   - `appendLineToFile`: This helper function appends the line content to the file.
+
+5. **Example Usage**: An example call to `writeUniqueLineToFile` is included at the end.
+
+This TypeScript code preserves the functionality of the Python code while adapting to the asynchronous nature of file operations in JavaScript/TypeScript.

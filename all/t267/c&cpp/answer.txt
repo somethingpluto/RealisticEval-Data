@@ -1,58 +1,54 @@
-Sure! Below is the equivalent C++ code for the provided Python function:
+Certainly! Below is the equivalent C++ code for the given Python function. This code extracts the second-level domain (SLD) and top-level domain (TLD) from a fully qualified domain name (FQDN). It includes necessary error handling and uses standard C++ libraries for string manipulation.
 
 ```cpp
 #include <iostream>
 #include <string>
 #include <vector>
-#include <sstream>
+#include <stdexcept>
 
+// Function to extract the second-level domain (SLD) and top-level domain (TLD) from a fully qualified domain name (FQDN).
 std::pair<std::string, std::string> extract_sld_tld(const std::string& fqdn) {
-    // Split the FQDN into parts based on dots
-    std::istringstream iss(fqdn);
+    // Split the FQDN into parts
     std::vector<std::string> parts;
-    std::string part;
-    while (getline(iss, part, '.')) {
-        parts.push_back(part);
+    size_t start = 0;
+    size_t end = fqdn.find('.');
+    while (end != std::string::npos) {
+        parts.push_back(fqdn.substr(start, end - start));
+        start = end + 1;
+        end = fqdn.find('.', start);
+    }
+    parts.push_back(fqdn.substr(start));
+
+    // Check if there are enough parts to extract SLD and TLD
+    if (parts.size() < 2) {
+        throw std::invalid_argument("The provided FQDN does not contain enough parts to extract SLD and TLD.");
     }
 
-    int num_parts = parts.size();
-    if (num_parts <= 1) {
-        throw std::invalid_argument("Invalid FQDN");
-    }
-
-    // Join all but the last two parts to get the SLD
-    std::string sld;
-    for (int i = 0; i < num_parts - 2; ++i) {
-        sld += parts[i];
-        if (i != num_parts - 3) {
-            sld += '.';
-        }
-    }
-
-    // The last two parts are TLD
-    std::string tld = parts[num_parts - 2] + "." + parts[num_parts - 1];
+    // Extract the SLD and TLD
+    std::string sld = parts[parts.size() - 2];  // Second to last item is the SLD
+    std::string tld = parts.back();  // Last item is the TLD
 
     return {sld, tld};
 }
 
 int main() {
     try {
-        auto [sld, tld] = extract_sld_tld("example.co.uk");
-        std::cout << "Second-Level Domain: " << sld << std::endl;
-        std::cout << "Top-Level Domain: " << tld << std::endl;
+        std::string fqdn = "example.com";
+        auto result = extract_sld_tld(fqdn);
+        std::cout << "SLD: " << result.first << ", TLD: " << result.second << std::endl;
     } catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;
     }
+
     return 0;
 }
 ```
 
 ### Explanation:
-1. **Splitting the FQDN**: The `extract_sld_tld` function splits the input FQDN string into parts using `std::istringstream`.
-2. **Extracting SLD and TLD**:
-   - It then joins all parts except the last two to form the Second-Level Domain (SLD).
-   - The last two parts are concatenated to form the Top-Level Domain (TLD).
-3. **Return Value**: The function returns a `std::pair` containing the SLD and TLD.
-4. **Main Function**: Demonstrates how to use the `extract_sld_tld` function and handles any potential exceptions.
-
-This C++ code should work similarly to your Python function, extracting the SLD and TLD from a given FQDN.
+1. **Header Files**: Include necessary header files (`<iostream>`, `<string>`, `<vector>`, `<stdexcept>`).
+2. **Function Definition**: Define the `extract_sld_tld` function that takes a string (FQDN) and returns a pair of strings (SLD and TLD).
+3. **Splitting the FQDN**: Use a loop to split the FQDN into parts based on the dot ('.') delimiter.
+4. **Error Handling**: Throw an exception if the number of parts is less than 2.
+5. **Extracting SLD and TLD**: Retrieve the SLD and TLD from the vector of parts.
+6. **Returning the Result**: Return a pair of strings containing the SLD and TLD.
+7. **Main Function**: Test the function with a sample FQDN and handle any exceptions thrown by the function.

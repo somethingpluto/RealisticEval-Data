@@ -1,14 +1,3 @@
-const isPointOnLine = (A, B, C) => {
-    const [x_a, y_a] = A;
-    const [x_b, y_b] = B;
-    const [x_c, y_c] = C;
-
-    if (x_a === x_b) { // Check for vertical line
-        return x_c === x_a;
-    }
-    return (y_c - y_a) * (x_b - x_a) === (y_b - y_a) * (x_c - x_a);
-}
-
 describe('isPointOnLine tests', () => {
 
     test('Point on line', () => {

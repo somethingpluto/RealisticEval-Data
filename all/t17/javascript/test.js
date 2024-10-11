@@ -1,5 +1,3 @@
-const { haversineDistance } = require('./haversine'); // Adjust the path as needed
-
 describe('Haversine Distance', () => {
     it('should return a distance of 0 for the same point', () => {
         const lat = 52.2296756;

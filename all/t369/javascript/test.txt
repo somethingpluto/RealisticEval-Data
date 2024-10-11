@@ -1,58 +1,119 @@
-Certainly! Below is an equivalent JavaScript test case using Jest for the `eightQueens` function. Note that the actual implementation of the `eightQueens` function is not provided in your Python code, so I'll assume you have a basic implementation or a reference to it.
+To convert the given Python unittest test class to an equivalent Jest test class, we need to first define the `eight_queens` function in JavaScript and then write the Jest tests for it.
+
+Here's how you can do it:
+
+1. **Implement the `eightQueens` function**:
+   - This function needs to solve the Eight Queens problem.
+   - The function should print the configuration of the chessboard if a solution is found, or "No solution" otherwise.
+
+2. **Write the Jest tests**:
+   - Ensure that the functionality and logic of the tests are maintained.
+   - Use Jest's `describe` and `it` blocks for structuring the tests.
+   - Map Python's `assertEqual`, `assertTrue`, etc., to Jest's `expect` functions.
+
+Here's the JavaScript implementation:
 
 ```javascript
-const { eightQueens } = require('./path-to-your-eight-queens-function');
+function eightQueens() {
+    const N = 8;
+    const board = Array.from({ length: N }, () => Array(N).fill('.'));
+    let solutions = [];
 
+    function isSafe(row, col) {
+        // Check this row on left side
+        for (let i = 0; i < col; i++) {
+            if (board[row][i] === 'Q') return false;
+        }
+
+        // Check upper diagonal on left side
+        for (let i = row, j = col; i >= 0 && j >= 0; i--, j--) {
+            if (board[i][j] === 'Q') return false;
+        }
+
+        // Check lower diagonal on left side
+        for (let i = row, j = col; i < N && j >= 0; i++, j--) {
+            if (board[i][j] === 'Q') return false;
+        }
+
+        return true;
+    }
+
+    function solveNQueensUtil(col) {
+        if (col === N) {
+            let solution = board.map(row => row.join(' ')).join('\n');
+            solutions.push(solution);
+            return true;
+        }
+
+        let res = false;
+        for (let i = 0; i < N; i++) {
+            if (isSafe(i, col)) {
+                board[i][col] = 'Q';
+                res = solveNQueensUtil(col + 1) || res;
+                board[i][col] = '.'; // BACKTRACK
+            }
+        }
+
+        return res;
+    }
+
+    solveNQueensUtil(0);
+
+    if (solutions.length > 0) {
+        console.log(solutions[0]);
+    } else {
+        console.log("No solution");
+    }
+}
+
+// Jest tests
 describe('Eight Queens Problem', () => {
-  test('should find and print a valid solution', () => {
-    // Mock console.log to capture output
-    const mockConsoleLog = jest.spyOn(console, 'log');
-    
-    // Call the function
-    eightQueens();
-    
-    // Check if the expected output was printed
-    expect(mockConsoleLog).toHaveBeenCalledWith(
-      '. . Q . . . . .\n' +
-      '. . . . Q . . .\n' +
-      '. Q . . . . . .\n' +
-      '. . . . . . . Q\n' +
-      '. . . . . Q . .\n' +
-      '. . . Q . . . .\n' +
-      '. . . . . . Q .\n' +
-      'Q . . . . . . .'
-    );
-    
-    // Restore original console.log
-    mockConsoleLog.mockRestore();
-  });
+    it('should find a solution for the Eight Queens problem', () => {
+        consoleLogMock = jest.fn();
+        global.console.log = consoleLogMock;
 
-  test('should handle no solution case', () => {
-    // Mock console.log to capture output
-    const mockConsoleLog = jest.spyOn(console, 'log');
-    
-    // Modify the implementation to force no solution (e.g., by changing the board size)
-    const originalEightQueens = eightQueens;
-    eightQueens = () => {
-      console.log('No solution');
-    };
-    
-    // Call the modified function
-    eightQueens();
-    
-    // Check if the expected output was printed
-    expect(mockConsoleLog).toHaveBeenCalledWith('No solution');
-    
-    // Restore original eightQueens function and console.log
-    eightQueens = originalEightQueens;
-    mockConsoleLog.mockRestore();
-  });
+        eightQueens();
+
+        expect(consoleLogMock).toHaveBeenCalledWith(
+            '. . . . . . Q .\n' +
+            '. . . . Q . . .\n' +
+            '. . . . . . . Q\n' +
+            'Q . . . . . . .\n' +
+            '. . . . . Q . .\n' +
+            '. . Q . . . . .\n' +
+            '. . . . . . Q .\n' +
+            '. Q . . . . . .'
+        );
+    });
+
+    it('should handle no solution case', () => {
+        // Modify the function to simulate a no solution scenario
+        const originalIsSafe = isSafe;
+        isSafe = jest.fn(() => false);
+
+        consoleLogMock = jest.fn();
+        global.console.log = consoleLogMock;
+
+        eightQueens();
+
+        expect(consoleLogMock).toHaveBeenCalledWith('No solution');
+
+        // Restore the original function
+        isSafe = originalIsSafe;
+    });
 });
 ```
 
 ### Explanation:
-1. **Mocking `console.log`:** We use `jest.spyOn` to spy on the `console.log` method so we can capture its output during the test.
-2. **Calling the Function:** We call the `eightQueens` function and check if the expected output matches.
-3. **Handling No Solution Case:** To test the scenario where there's no solution, we temporarily modify the `eightQueens` function to always log "No solution" and then restore the original function after the test.
+- **Implementation**:
+  - The `eightQueens` function solves the Eight Queens problem recursively.
+  - It uses backtracking to place queens on the board and checks for safety at each step.
+  - The function prints the solution or "No solution" based on the result.
 
-Make sure to replace `'./path-to-your-eight-queens-function'` with the actual path to your `eightQueens` function file.
+- **Jest Tests**:
+  - The `describe` block groups related tests.
+  - The `it` block defines individual test cases.
+  - Jest's `console.log` is mocked using `jest.fn()` to capture the output and verify it against expected values.
+  - The second test case simulates a no solution scenario by mocking the `isSafe` function to always return `false`.
+
+This ensures that the functionality and logic of the tests are maintained while adapting to JavaScript and Jest.

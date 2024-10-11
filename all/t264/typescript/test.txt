@@ -1,85 +1,109 @@
-Sure! Below is the equivalent TypeScript test case using Jest for the provided Python `unittest` test class. Note that I'll assume you have a function named `extractLogEntries` in your TypeScript code that performs the same functionality as the Python function.
+It seems like you've provided a docstring for a function named `extract_log_entries` but haven't provided the actual implementation or the unittest class. Let's assume the following:
 
-First, let's define the TypeScript function `extractLogEntries`:
+1. The `extract_log_entries` function processes a log file and saves log entries of different levels to separate files.
+2. We need to write a test class in TypeScript using Jest that mimics the behavior of the Python unittest class.
+
+Here's how you can structure the TypeScript Jest test class based on the given Python unittest class:
+
+### Python Unittest Class
+
+```python
+import unittest
+from pathlib import Path
+from your_module import extract_log_entries  # Assuming this is where the function is defined
+
+class TestLogExtraction(unittest.TestCase):
+
+    def setUp(self):
+        self.log_file_path = 'test_log.txt'
+        with open(self.log_file_path, 'w') as f:
+            f.write("WARNING: Something went wrong\n")
+            f.write("ERROR: Another error occurred\n")
+            f.write("CRITICAL: System failure\n")
+            f.write("ALERT: Immediate action required\n")
+
+    def test_extract_log_entries(self):
+        extract_log_entries(self.log_file_path)
+        
+        warning_file = 'warning_logs.txt'
+        error_file = 'error_logs.txt'
+        critical_file = 'critical_logs.txt'
+        alert_file = 'alert_logs.txt'
+
+        with open(warning_file, 'r') as f:
+            self.assertIn('WARNING', f.read())
+
+        with open(error_file, 'r') as f:
+            self.assertIn('ERROR', f.read())
+
+        with open(critical_file, 'r') as f:
+            self.assertIn('CRITICAL', f.read())
+
+        with open(alert_file, 'r') as f:
+            self.assertIn('ALERT', f.read())
+
+if __name__ == '__main__':
+    unittest.main()
+```
+
+### TypeScript Jest Test Class
+
+Assuming the `extract_log_entries` function is defined in a TypeScript module:
 
 ```typescript
-function extractLogEntries(logFilePath: string): void {
-    // Implementation goes here
+// your_module.ts
+export function extract_log_entries(log_file_path: string): void {
+    // Implementation details here
 }
 ```
 
-Now, let's write the Jest test cases for this function:
+Now, let's write the Jest test class:
 
 ```typescript
-import { extractLogEntries } from './path-to-your-extract-log-entries'; // Adjust the import path accordingly
+import { extract_log_entries } from './your_module';
 
-describe('extractLogEntries', () => {
-    it('should extract WARNING logs to a separate file', async () => {
-        const mockFilePath = 'mock.log';
-        const mockWarningLogs = [
-            'WARNING: This is a warning message',
-            'WARNING: Another warning message'
-        ];
+describe('TestLogExtraction', () => {
+    const log_file_path = 'test_log.txt';
 
-        // Mock the file reading and writing operations
-        jest.spyOn(fs, 'readFileSync').mockImplementation(() => mockWarningLogs.join('\n'));
-        jest.spyOn(fs, 'writeFileSync');
-
-        await extractLogEntries(mockFilePath);
-
-        expect(fs.writeFileSync).toHaveBeenCalledWith('WARNING_mock.log', mockWarningLogs[0] + '\n' + mockWarningLogs[1]);
+    beforeAll(() => {
+        // Write sample log entries to the test log file
+        const content = "WARNING: Something went wrong\n" +
+                        "ERROR: Another error occurred\n" +
+                        "CRITICAL: System failure\n" +
+                        "ALERT: Immediate action required\n";
+        fs.writeFileSync(log_file_path, content);
     });
 
-    it('should extract ERROR logs to a separate file', async () => {
-        const mockFilePath = 'mock.log';
-        const mockErrorLogs = [
-            'ERROR: This is an error message',
-            'ERROR: Another error message'
-        ];
-
-        // Mock the file reading and writing operations
-        jest.spyOn(fs, 'readFileSync').mockImplementation(() => mockErrorLogs.join('\n'));
-        jest.spyOn(fs, 'writeFileSync');
-
-        await extractLogEntries(mockFilePath);
-
-        expect(fs.writeFileSync).toHaveBeenCalledWith('ERROR_mock.log', mockErrorLogs[0] + '\n' + mockErrorLogs[1]);
+    afterAll(() => {
+        // Clean up by removing the test log file and output files
+        fs.unlinkSync(log_file_path);
+        fs.unlinkSync('warning_logs.txt');
+        fs.unlinkSync('error_logs.txt');
+        fs.unlinkSync('critical_logs.txt');
+        fs.unlinkSync('alert_logs.txt');
     });
 
-    it('should extract CRITICAL logs to a separate file', async () => {
-        const mockFilePath = 'mock.log';
-        const mockCriticalLogs = [
-            'CRITICAL: This is a critical message',
-            'CRITICAL: Another critical message'
-        ];
+    it('should extract log entries correctly', () => {
+        extract_log_entries(log_file_path);
 
-        // Mock the file reading and writing operations
-        jest.spyOn(fs, 'readFileSync').mockImplementation(() => mockCriticalLogs.join('\n'));
-        jest.spyOn(fs, 'writeFileSync');
+        const warning_file = 'warning_logs.txt';
+        const error_file = 'error_logs.txt';
+        const critical_file = 'critical_logs.txt';
+        const alert_file = 'alert_logs.txt';
 
-        await extractLogEntries(mockFilePath);
-
-        expect(fs.writeFileSync).toHaveBeenCalledWith('CRITICAL_mock.log', mockCriticalLogs[0] + '\n' + mockCriticalLogs[1]);
-    });
-
-    it('should extract ALERT logs to a separate file', async () => {
-        const mockFilePath = 'mock.log';
-        const mockAlertLogs = [
-            'ALERT: This is an alert message',
-            'ALERT: Another alert message'
-        ];
-
-        // Mock the file reading and writing operations
-        jest.spyOn(fs, 'readFileSync').mockImplementation(() => mockAlertLogs.join('\n'));
-        jest.spyOn(fs, 'writeFileSync');
-
-        await extractLogEntries(mockFilePath);
-
-        expect(fs.writeFileSync).toHaveBeenCalledWith('ALERT_mock.log', mockAlertLogs[0] + '\n' + mockAlertLogs[1]);
+        expect(fs.readFileSync(warning_file, 'utf8')).toContain('WARNING');
+        expect(fs.readFileSync(error_file, 'utf8')).toContain('ERROR');
+        expect(fs.readFileSync(critical_file, 'utf8')).toContain('CRITICAL');
+        expect(fs.readFileSync(alert_file, 'utf8')).toContain('ALERT');
     });
 });
 ```
 
-In this example, we're mocking the file reading and writing operations using Jest's `spyOn` method. We then call the `extractLogEntries` function and assert that the `writeFileSync` method was called with the correct arguments.
+### Explanation
 
-Make sure to replace `'./path-to-your-extract-log-entries'` with the actual path to your TypeScript module where the `extractLogEntries` function is defined. Also, ensure that you have imported the necessary modules (`fs`) at the beginning of your test file.
+1. **Imports**: Import the necessary functions and modules.
+2. **Before All**: Set up the initial state by writing sample log entries to the test log file.
+3. **After All**: Clean up by removing the test log file and output files.
+4. **Test Case**: Use Jest's `expect` assertions to check if the log entries are correctly extracted and saved to the respective files.
+
+This conversion ensures that the functionality and logic of the tests are preserved while accounting for the differences between Python's unittest and TypeScript's Jest frameworks.

@@ -1,5 +1,3 @@
-import { Trie } from './trie'; // Adjust the import based on your file structure
-
 describe('TestTrie', () => {
     let trie: Trie;
 
