@@ -1,52 +1,100 @@
-Here is the Java version of your Python code with the same functionality and comments:
+Certainly! Below is the equivalent Java code for the provided Python function, including appropriate Java-style comments and Javadoc documentation:
 
 ```java
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
-
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
-public class DataframeToMarkdown {
+/**
+ * Converts a DataFrame (represented as a List of Lists) to a table in Markdown format.
+ */
+public class Answer {
 
     /**
-     * Converts a DataFrame object to a table in markdown format.
+     * Converts a DataFrame object to a table in Markdown format.
+     * <p>
+     * Example:
+     * Input: DataFrame with columns {'Name': ['Alice', 'Bob'], 'Age': [25, 30]}
+     * Output:
+     * <pre>
+     * | Name | Age |
+     * | --- | --- |
+     * | Alice | 25 |
+     * | Bob | 30 |
+     * </pre>
      *
-     * @param dataFrame The DataFrame to be converted.
-     * @param mdPath    The output markdown file path.
-     * @return Markdown file content string.
+     * @param data The data represented as a List of Lists, where each inner list represents a row.
+     * @param columns The column names of the DataFrame.
+     * @param mdPath The output Markdown file path.
+     * @return The generated Markdown file content as a string.
      */
-    public static String dataframeToMarkdown(List<Map<String, Object>> dataFrame, String mdPath) {
-        try (FileWriter writer = new FileWriter(mdPath);
-             CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT.withHeader(dataFrame.get(0).keySet().toArray(new String[0])))) {
+    public static String dataframeToMarkdown(List<List<String>> data, List<String> columns, String mdPath) {
+        StringBuilder markdown = new StringBuilder();
 
-            for (Map<String, Object> row : dataFrame) {
-                List<Object> values = row.values().stream()
-                        .map(value -> value instanceof Number ? ((Number) value).longValue() : value.toString())
-                        .collect(Collectors.toList());
-                csvPrinter.printRecord(values);
-            }
+        // Construct the header row
+        markdown.append("| ").append(String.join(" | ", columns)).append(" |\n");
 
-            return "Successfully written to " + mdPath;
+        // Construct the separator row
+        String separator = "| " + String.join(" | ", new String[columns.size()]) + " |\n";
+        separator = separator.replace(" ", "---");
+        markdown.append(separator);
+
+        // Build markdown table body
+        for (List<String> row : data) {
+            markdown.append("| ").append(String.join(" | ", row)).append(" |\n");
+        }
+
+        // Write markdown to file
+        try (FileWriter writer = new FileWriter(mdPath)) {
+            writer.write(markdown.toString());
         } catch (IOException e) {
             e.printStackTrace();
-            return "Error writing to file";
         }
+
+        return markdown.toString();
+    }
+
+    public static void main(String[] args) {
+        // Example usage
+        List<List<String>> data = List.of(
+            List.of("Alice", "25"),
+            List.of("Bob", "30")
+        );
+        List<String> columns = List.of("Name", "Age");
+        String mdPath = "output.md";
+
+        String markdown = dataframeToMarkdown(data, columns, mdPath);
+        System.out.println(markdown);
     }
 }
 ```
 
-This Java method `dataframeToMarkdown` takes a list of maps (representing rows and columns), and a file path where the markdown file will be saved. It uses Apache Commons CSV library to handle CSV formatting which is similar to markdown tables.
+### Explanation:
+1. **Imports**:
+   - `java.io.FileWriter`: For writing to a file.
+   - `java.io.IOException`: To handle file I/O exceptions.
+   - `java.util.List`: For handling lists.
 
-Please note that you need to add the Apache Commons CSV dependency in your project if not already included. Here's how it can be added in Maven:
+2. **Class Definition**:
+   - The class `Answer` contains the method `dataframeToMarkdown`.
 
-```xml
-<dependency>
-    <groupId>org.apache.commons</groupId>
-    <artifactId>commons-csv</artifactId>
-    <version>1.9.0</version>
-</dependency>
-```
-And also, please ensure that the `mdPath` provided is valid and writable.
+3. **Javadoc Documentation**:
+   - The method `dataframeToMarkdown` includes detailed Javadoc comments explaining the purpose, parameters, and return value.
+
+4. **Method Signature**:
+   - The method `dataframeToMarkdown` takes three parameters:
+     - `data`: A `List<List<String>>` representing the data rows.
+     - `columns`: A `List<String>` representing the column names.
+     - `mdPath`: A `String` representing the output Markdown file path.
+
+5. **Markdown Construction**:
+   - Constructs the header row and separator row using `StringBuilder` and `String.join`.
+   - Builds the table body by iterating over the data rows.
+
+6. **File Writing**:
+   - Writes the Markdown content to the specified file path using `FileWriter`.
+
+7. **Main Method**:
+   - Provides an example usage of the `dataframeToMarkdown` method.
+
+This Java code preserves the original functionality and structure of the Python code while adhering to Java conventions and best practices.

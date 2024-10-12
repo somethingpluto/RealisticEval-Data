@@ -1,66 +1,91 @@
-Sure, here's how you can convert the given Python code to TypeScript:
+Sure! Here’s the equivalent TypeScript code, including the necessary package imports and adjustments for TypeScript's static typing and idiomatic practices:
+
+First, ensure you have the required dependencies installed. You can install them using npm or yarn:
+
+```sh
+npm install csv-parser fs extra-static-methods
+```
+
+Or if you prefer `yarn`:
+
+```sh
+yarn add csv-parser fs extra-static-methods
+```
+
+Now, here’s the TypeScript code:
 
 ```typescript
-import fs from 'fs';
-import path from 'path';
+import * as fs from 'fs';
+import * as path from 'path';
+import { parse } from 'csv-parser';
+import { reduce } from 'extra-static-methods';
 
-interface CSVData {
-  [key: string]: any;
-}
-
-function readCSVFile(filePath: string): CSVData[] {
-  const fileContent = fs.readFileSync(filePath, 'utf8');
-  const rows = fileContent.split('\n').filter(row => row.trim() !== '');
-  const headers = rows[0].split(',').map(header => header.trim());
-  
-  return rows.slice(1).map(row => {
-    const values = row.split(',').map(value => value.trim());
-    const obj: CSVData = {};
-    for (let i = 0; i < headers.length; i++) {
-      obj[headers[i]] = values[i];
-    }
-    return obj;
-  });
+interface DataFrame {
+  [key: string]: string[];
 }
 
 function findCommonColumns(directory: string): string[] {
-  let allHeaders: Set<string> = new Set();
+  const dataframes: DataFrame[] = [];
 
-  fs.readdirSync(directory).forEach(file => {
-    if (file.endsWith('.csv')) {
-      const filePath = path.join(directory, file);
-      const data = readCSVFile(filePath);
-      
-      const headers = Object.keys(data[0]);
-      headers.forEach(header => allHeaders.add(header));
+  // Iterate through all files in the specified directory
+  fs.readdir(directory, (err, files) => {
+    if (err) throw err;
+
+    files.forEach((filename) => {
+      if (filename.endsWith('.csv')) {
+        const filepath = path.join(directory, filename);
+
+        // Load the CSV file into a DataFrame
+        const df: DataFrame = {};
+        parse()
+          .on('data', (row: any) => {
+            Object.keys(row).forEach((key) => {
+              if (!df[key]) {
+                df[key] = [];
+              }
+              df[key].push(row[key]);
+            });
+          })
+          .on('end', () => {
+            dataframes.push(df);
+          });
+
+        fs.createReadStream(filepath).pipe(parse());
+      }
+    });
+
+    // Use set intersection to find common columns across all DataFrames
+    if (dataframes.length > 0) {
+      let commonColumns = new Set(Object.keys(dataframes[0]));
+      dataframes.slice(1).forEach((df) => {
+        commonColumns = reduce(
+          commonColumns,
+          (acc, key) => (df[key] ? acc : acc.delete(key)),
+          commonColumns
+        );
+      });
+      return Array.from(commonColumns);
+    } else {
+      // Return an empty list if no CSV files are found
+      return [];
     }
   });
 
-  // Convert Set to Array
-  let commonColumnsArray = Array.from(allHeaders);
-
-  // Filter out columns that appear in only one file
-  commonColumnsArray = commonColumnsArray.filter(column => {
-    return fs.readdirSync(directory).some(file => {
-      if (file.endsWith('.csv')) {
-        const filePath = path.join(directory, file);
-        const data = readCSVFile(filePath);
-        return data.some(row => column in row);
-      }
-      return false;
-    });
-  });
-
-  return commonColumnsArray;
+  // Since the function is asynchronous, we need to return an empty array initially
+  return [];
 }
+
+// Example usage
+const directory = '/path/to/directory';
+console.log(findCommonColumns(directory));
 ```
 
-### Explanation:
-1. **Imports**: The `fs` module is used for reading files, and the `path` module is used for handling file paths.
-2. **readCSVFile Function**: This function reads a CSV file and converts it into an array of objects where each object represents a row in the CSV file with keys as column headers.
-3. **findCommonColumns Function**:
-   - It initializes an empty `Set` to store all unique column headers.
-   - It iterates over all files in the specified directory, checks if they are CSV files, and reads their contents using `readCSVFile`.
-   - It then filters out columns that appear in only one file.
+### Explanation
 
-This TypeScript code should achieve the same functionality as your original Python code.
+1. **Imports**: We import the necessary modules (`fs`, `path`, `csv-parser`, and `reduce` from `extra-static-methods`) to handle file operations and CSV parsing.
+2. **DataFrame Interface**: We define a generic interface `DataFrame` to represent the structure of the parsed CSV data.
+3. **findCommonColumns Function**: This function reads all CSV files in the specified directory, parses them into DataFrames, and finds the common columns among them.
+4. **CSV Parsing**: We use `csv-parser` to parse the CSV files and populate the `DataFrame` objects.
+5. **Set Intersection**: We use a set intersection approach to find the common columns across all DataFrames.
+
+Note that this function is asynchronous due to the file reading and parsing operations. The initial return value is an empty array, but the actual processing happens asynchronously.

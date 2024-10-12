@@ -1,34 +1,87 @@
-Sure, here is the equivalent Java code signature for your Python function, keeping the comments intact:
+Certainly! Below is the equivalent Java code for the provided Python function, including appropriate Java method signature, Javadoc comments, and type conversions:
 
 ```java
+package org.real.temp;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
-public class CSVToSQLInsert {
+/**
+ * Converts the contents of a CSV file into an SQL insert statement with the table name derived from the file name.
+ */
+public class Answer {
 
     /**
-     * Converts the contents of a CSV file into an SQL insert statement with a table name with the suffix removed.
+     * Converts the contents of a CSV file into an SQL insert statement with the table name derived from the file name.
      *
-     * @param csvFilePath The path to the CSV file.
-     * @return The parsed SQL string.
+     * @param csvFilePath the path to the CSV file
+     * @return a string containing the SQL insert statements
      */
-    public static String csvToSQLInsert(String csvFilePath) {
-        // Your implementation goes here
-        return "";
+    public static String csvToSqlInsert(String csvFilePath) {
+        // Extract the table name from the CSV file name, removing the suffix
+        Path path = Paths.get(csvFilePath);
+        String tableName = path.getFileName().toString().replaceFirst("[.][^.]+$", "");
+
+        // Open the CSV file and read its contents
+        List<String> insertStatements = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(csvFilePath))) {
+            String line = reader.readLine(); // Skip the first line (header)
+            if (line != null) {
+                String[] headers = line.split(",");
+                
+                String currentLine;
+                while ((currentLine = reader.readLine()) != null) {
+                    String[] row = currentLine.split(",");
+                    List<String> values = new ArrayList<>();
+                    
+                    for (String value : row) {
+                        // Handle different types of values (e.g., strings, numbers)
+                        if (value.matches("\\d+")) {  // If value is a digit, no quotes needed
+                            values.add(value);
+                        } else {  // Assume it's a string otherwise
+                            String escapedValue = value.replace("'", "''");  // Escape single quotes
+                            values.add("'" + escapedValue + "'");  // Use double quotes outside
+                        }
+                    }
+
+                    // Join column names and values to form an INSERT statement
+                    String insertStatement = String.format("INSERT INTO %s (%s) VALUES (%s);",
+                            tableName,
+                            String.join(", ", headers),
+                            String.join(", ", values));
+                    insertStatements.add(insertStatement);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // Combine all insert statements into a single output
+        return String.join("\n", insertStatements);
     }
 
     public static void main(String[] args) {
-        // Example usage
-        String sql = csvToSQLInsert("path/to/your/file.csv");
-        System.out.println(sql);
+        String csvFilePath = "path/to/your/csvfile.csv";
+        System.out.println(csvToSqlInsert(csvFilePath));
     }
 }
 ```
 
-In this Java code:
-- We have a `CSVToSQLInsert` class that contains the `csvToSQLInsert` method.
-- The method takes a `String` parameter `csvFilePath` and returns a `String`.
-- The `main` method is provided for example usage.
+### Explanation:
+1. **Package and Class Definition**: The Java code is defined within the package `org.real.temp` and the class `Answer`.
+2. **Javadoc Comments**: The method `csvToSqlInsert` includes Javadoc comments that describe the purpose, parameters, and return type.
+3. **Method Signature**: The method signature `csvToSqlInsert` takes a `String` parameter `csvFilePath` and returns a `String`.
+4. **File Handling**: The `BufferedReader` is used to read the CSV file line by line.
+5. **Table Name Extraction**: The table name is extracted from the CSV file name using `path.getFileName().toString().replaceFirst("[.][^.]+$", "")`.
+6. **CSV Parsing**: The CSV file is parsed to extract headers and rows.
+7. **SQL Insert Statement Construction**: Each row is processed to construct the SQL insert statement, handling different types of values (strings and numbers).
+8. **Exception Handling**: An exception handler is included to catch and print any `IOException`.
+9. **Main Method**: A `main` method is included to demonstrate how to call the `csvToSqlInsert` method.
 
-Make sure to implement the actual logic inside the `csvToSQLInsert` method to convert the CSV content to SQL insert statements.
+This Java code preserves the original functionality and structure of the Python code while adhering to Java's syntax and conventions.

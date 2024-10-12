@@ -1,78 +1,103 @@
-Sure! Below is the equivalent Java JUnit test case for your Python `unittest` test class. The package name is `org.real.temp`, and the class name is `Tester`.
+Certainly! Below is the equivalent Java test class using JUnit for the provided Python unittest class. The Java test class is placed in the package `org.real.temp` and named `Tester`. It uses appropriate JUnit annotations and assertion methods to preserve the functionality and logic of the tests.
 
 ```java
 package org.real.temp;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import org.junit.jupiter.api.Test;
+import static org.junit.Assert.assertEquals;
 
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
+@RunWith(JUnit4.class)
 public class Tester {
 
+    private static final double DELTA = 1e-6; // Tolerance for floating-point comparisons
+
     @Test
-    public void testHaversineDistance() {
-        // Example data points
-        double lat1 = 51.5074; // London, UK
-        double lon1 = -0.1278;
-        double lat2 = 40.7128; // New York, USA
-        double lon2 = -74.0060;
-
-        // Expected result (in kilometers)
-        double expectedDistance = 5570.399; // Approximate distance
-
-        // Calculate the actual distance using the method you want to test
-        double actualDistance = haversineDistance(lat1, lon1, lat2, lon2);
-
-        // Assert that the actual distance is close enough to the expected distance
-        assertEquals(expectedDistance, actualDistance, 0.01); // Allow a small margin of error
+    public void testSamePoint() {
+        // Same point should return a distance of 0
+        double lat = 52.2296756;
+        double lon = 21.0122287;
+        double result = haversineDistance(lat, lon, lat, lon);
+        assertEquals(0.0, result, DELTA);
     }
 
-    /**
-     * Calculate the distance between two points on the earth based on their latitude and longitude
-     *
-     * @param lat1 Latitude of the first point in degrees.
-     * @param lon1 Longitude of the first point in degrees.
-     * @param lat2 Latitude of the second point in degrees.
-     * @param lon2 Longitude of the second point in degrees.
-     * @return Distance between the two points in kilometers.
-     */
-    public double haversineDistance(double lat1, double lon1, double lat2, double lon2) {
-        final int R = 6371; // Radius of the Earth in kilometers
-        double dLat = Math.toRadians(lat2 - lat1);
-        double dLon = Math.toRadians(lon2 - lon1);
-        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
-                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
-                * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    @Test
+    public void testSmallDistance() {
+        // Points that are very close together (few meters apart)
+        double lat1 = 52.2296756;
+        double lon1 = 21.0122287;  // Warsaw, Poland
+        double lat2 = 52.2296756;
+        double lon2 = 21.0122297;  // Very close to the previous point
+        double result = haversineDistance(lat1, lon1, lat2, lon2);
+        assertEquals(0.0001, result, 1e-4);  // Expected small distance
+    }
+
+    @Test
+    public void testLargeDistance() {
+        // Points that are far apart
+        double lat1 = 52.2296756;
+        double lon1 = 21.0122287;  // Warsaw, Poland
+        double lat2 = 41.8919300;
+        double lon2 = 12.5113300;  // Rome, Italy
+        double result = haversineDistance(lat1, lon1, lat2, lon2);
+        assertEquals(1315.514, result, 1e-2);  // Approx distance in km
+    }
+
+    @Test
+    public void testEquatorDistance() {
+        // Points on the equator
+        double lat1 = 0.0;
+        double lon1 = 0.0;  // Gulf of Guinea (Equator and Prime Meridian intersection)
+        double lat2 = 0.0;
+        double lon2 = 90.0;  // On the Equator, 90 degrees east
+        double result = haversineDistance(lat1, lon1, lat2, lon2);
+        assertEquals(10007.54, result, 1e-2);  // Approx quarter of Earth's circumference
+    }
+
+    @Test
+    public void testPoleToPole() {
+        // Distance from North Pole to South Pole
+        double lat1 = 90.0;
+        double lon1 = 0.0;  // North Pole
+        double lat2 = -90.0;
+        double lon2 = 0.0;  // South Pole
+        double result = haversineDistance(lat1, lon1, lat2, lon2);
+        assertEquals(20015.09, result, 1e-2);  // Approx half of Earth's circumference
+    }
+
+    // Haversine distance method (same as before)
+    private static double haversineDistance(double lat1, double lon1, double lat2, double lon2) {
+        // Radius of the Earth in kilometers
+        final double R = 6371.0;
+
+        // Convert latitude and longitude from degrees to radians
+        double lat1Rad = Math.toRadians(lat1);
+        double lon1Rad = Math.toRadians(lon1);
+        double lat2Rad = Math.toRadians(lat2);
+        double lon2Rad = Math.toRadians(lon2);
+
+        // Differences in coordinates
+        double dLat = lat2Rad - lat1Rad;
+        double dLon = lon2Rad - lon1Rad;
+
+        // Haversine formula
+        double a = Math.pow(Math.sin(dLat / 2), 2) + Math.cos(lat1Rad) * Math.cos(lat2Rad) * Math.pow(Math.sin(dLon / 2), 2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return R * c;
+
+        // Distance in kilometers
+        double distance = R * c;
+
+        return distance;
     }
 }
 ```
 
 ### Explanation:
+1. **JUnit Annotations**: The `@Test` annotation is used to mark each test method.
+2. **Assertion Methods**: The `assertEquals` method is used for floating-point comparisons with a specified tolerance (`DELTA`).
+3. **Method Structure**: Each test method follows the structure of the Python test cases, with clear descriptions and assertions.
+4. **Haversine Distance Method**: The `haversineDistance` method is included within the test class for completeness. This method is the same as the one provided earlier.
 
-1. **Package Declaration**: The `package` declaration at the top specifies the package name `org.real.temp`.
-2. **Class Declaration**: The class `Tester` contains the JUnit test methods.
-3. **Test Method**: The `testHaversineDistance` method tests the `haversineDistance` method. It uses example coordinates for London and New York, calculates the expected distance, and asserts that the calculated distance is close enough to the expected value.
-4. **haversineDistance Method**: This method implements the Haversine formula to calculate the distance between two geographical points.
-
-Make sure you have the necessary dependencies for JUnit in your project. If you're using Maven, add the following dependency to your `pom.xml`:
-
-```xml
-<dependency>
-    <groupId>org.junit.jupiter</groupId>
-    <artifactId>junit-jupiter-engine</artifactId>
-    <version>5.8.1</version>
-    <scope>test</scope>
-</dependency>
-```
-
-If you're using Gradle, add the following to your `build.gradle`:
-
-```groovy
-dependencies {
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
-}
-```
-
-This setup should allow you to run the JUnit test case in your Java environment.
+This Java test class preserves the functionality and logic of the Python unittest class while adhering to JUnit conventions.

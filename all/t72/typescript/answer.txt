@@ -1,44 +1,58 @@
-Sure! Below is the equivalent TypeScript code for your Python function:
+Sure! Here is the equivalent TypeScript code, including proper type definitions and adjustments for TypeScript's static type system:
 
 ```typescript
-interface Matrix {
-    [index: number]: number[];
+import * as math from 'mathjs';
+
+interface CameraIntrinsicMatrix {
+    0: number;
+    1: number;
+    2: number;
+    3: number;
+    4: number;
+    5: number;
+    6: number;
+    7: number;
+    8: number;
 }
 
-function get3DCoordinates(K: Matrix, d: number, x: number, y: number): number[] {
-    /**
-     * Converts 2D pixel coordinates into 3D world coordinates using camera intrinsic parameters and depth.
-     * @param K - Camera intrinsic matrix (3x3).
-     * @param d - Depth (distance along z-axis).
-     * @param x - Pixel x-coordinate.
-     * @param y - Pixel y-coordinate.
-     * @returns 3D point coordinates in camera RDF coordinates.
-     */
-    
-    // Extracting elements from the camera intrinsic matrix K
-    const fx = K[0][0];
-    const fy = K[1][1];
-    const cx = K[0][2];
-    const cy = K[1][2];
+function get3DCoordinates(K: CameraIntrinsicMatrix, d: number, x: number, y: number): [number, number, number] {
+    // Step 1: Convert pixel coordinates to normalized device coordinates (NDC)
+    const cx = K[0 * 3 + 2];
+    const cy = K[1 * 3 + 2];
+    const fx = K[0 * 3 + 0];
+    const fy = K[1 * 3 + 1];
 
-    // Calculating 3D coordinates
-    const X = (x - cx) * d / fx;
-    const Y = (y - cy) * d / fy;
-    const Z = d;
+    const NDC_x = (x - cx) / fx;
+    const NDC_y = (y - cy) / fy;
 
-    return [X, Y, Z];
+    // Step 2: Get the 3D world coordinates (W)
+    const W_x = NDC_x * d;
+    const W_y = NDC_y * d;
+    const W_z = d;
+
+    return [W_x, W_y, W_z];
 }
+
+// Example usage
+const K: CameraIntrinsicMatrix = [1, 0, 320, 0, 1, 240, 0, 0, 1];
+const d = 10;
+const x = 320;
+const y = 240;
+console.log(get3DCoordinates(K, d, x, y));
 ```
 
 ### Explanation:
-1. **Matrix Interface**: The `Matrix` interface defines a type for a 2D array where each element can be accessed using two indices (`[index: number]: number[]`).
+1. **Type Definitions**:
+   - `CameraIntrinsicMatrix` is defined as an interface with specific indices to represent a 3x3 matrix.
+   - The function `get3DCoordinates` takes a `CameraIntrinsicMatrix`, a depth (`d`), and two pixel coordinates (`x` and `y`), and returns a tuple of `[number, number, number]` representing the 3D coordinates.
 
-2. **Function Signature**: The `get3DCoordinates` function takes four parameters: `K` (the camera intrinsic matrix), `d` (depth), `x` (pixel x-coordinate), and `y` (pixel y-coordinate). It returns an array of three numbers representing the 3D coordinates.
+2. **Math Library**:
+   - Since TypeScript does not have a built-in `numpy` library, we use `mathjs` as a substitute. However, in this case, basic arithmetic operations can be performed directly without needing an external library.
 
-3. **Extracting Elements**: The elements of the camera intrinsic matrix `K` are extracted using their respective indices.
+3. **Indexing**:
+   - The indexing of the `K` matrix is adjusted to work with a flat array representation. For example, `K[0, 2]` becomes `K[0 * 3 + 2]`.
 
-4. **Calculations**: The 3D coordinates `(X, Y, Z)` are calculated based on the given formulas.
+4. **Return Type**:
+   - The function returns a tuple `[number, number, number]` to represent the 3D coordinates.
 
-5. **Return Value**: The function returns an array containing the calculated 3D coordinates.
-
-This TypeScript code should work similarly to your original Python function.
+This TypeScript code maintains the same functionality and logic as the original Python code, while adapting to TypeScript's static typing and syntax conventions.

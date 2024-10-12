@@ -1,17 +1,88 @@
+Certainly! Below is the equivalent TypeScript code for the provided Python function, including proper type annotations and JSDoc-style documentation comments:
+
 ```typescript
-import { Counter } from 'typescript-collections';
+import { isEqual } from 'lodash';
 
 /**
  * Finds the smallest window in the source string that contains all characters of the target string.
  *
- * @param source - The source string in which to search for the window.
- * @param target - The target string containing the characters to be matched.
+ * @param source The source string in which to search for the window.
+ * @param target The target string containing the characters to be matched.
  * @returns The smallest window in the source string that contains all characters of the target string.
  *          Returns an empty string if no such window exists.
  */
 function findMinWindowSubstring(source: string, target: string): string {
-    // Your implementation here
+  if (!source || !target) {
+    return '';
+  }
+
+  // Count the frequency of characters in the target string
+  const requiredChars = countChars(target);
+  // Counter to track characters in the current window of the source string
+  let windowChars = countChars('');
+
+  let left = 0; // Left boundary of the window
+  let minLength = Infinity; // Initialize the minimum length as infinity
+  let minWindow = ''; // Initialize the minimum window string
+
+  // Iterate over the source string with the right boundary of the window
+  for (let right = 0; right < source.length; right++) {
+    const char = source[right];
+    if (requiredChars[char]) {
+      windowChars[char] = (windowChars[char] || 0) + 1;
+    }
+
+    // Check if the current window contains all characters of the target string
+    while (allCharsMatch(windowChars, requiredChars)) {
+      const windowSize = right - left + 1;
+      if (windowSize < minLength) {
+        minLength = windowSize;
+        minWindow = source.substring(left, right + 1);
+      }
+
+      // Attempt to shrink the window from the left
+      const leftChar = source[left];
+      if (requiredChars[leftChar]) {
+        windowChars[leftChar]--;
+      }
+      left++;
+    }
+  }
+
+  return minLength <= source.length ? minWindow : '';
 }
+
+// Helper function to count characters in a string
+function countChars(str: string): Record<string, number> {
+  const counter: Record<string, number> = {};
+  for (const char of str) {
+    counter[char] = (counter[char] || 0) + 1;
+  }
+  return counter;
+}
+
+// Helper function to check if all characters match
+function allCharsMatch(windowChars: Record<string, number>, requiredChars: Record<string, number>): boolean {
+  for (const char in requiredChars) {
+    if ((windowChars[char] || 0) < requiredChars[char]) {
+      return false;
+    }
+  }
+  return true;
+}
+
+// Example usage
+console.log(findMinWindowSubstring("ADOBECODEBANC", "ABC")); // Output: "BANC"
 ```
 
-Please note that TypeScript does not have built-in support for Python's `collections.Counter`, so you would need to install a package like `typescript-collections` or implement your own counter logic. Also, TypeScript doesn't have an exact equivalent to Python's `Optional` type, but you can use union types (`|`) to achieve similar functionality.
+### Explanation:
+1. **Function Definition**: The `findMinWindowSubstring` function is defined with the same parameters and return type.
+2. **JSDoc Documentation**: The Python docstring is converted to JSDoc-style comments.
+3. **Helper Functions**:
+   - `countChars`: Counts the frequency of characters in a string.
+   - `allCharsMatch`: Checks if all required characters are present in the window.
+4. **Main Logic**:
+   - The main loop iterates over the source string, updating the window character counts and checking if the current window meets the criteria.
+5. **Return Value**: The function returns the smallest window substring or an empty string if no such window exists.
+
+This TypeScript code preserves the original functionality and structure of the Python code, with appropriate type annotations and documentation.

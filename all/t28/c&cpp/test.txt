@@ -1,61 +1,108 @@
-To convert the provided Python unittest test class to a C++ Catch2 test case, we need to first define the function `print_memory_bits` and then create a corresponding test case using Catch2's syntax. Below is how you can do it:
+Certainly! Here is the equivalent C++ test class using the Catch2 testing framework. We will ensure that the functionality and logic of the tests are preserved, including capturing and verifying the output.
 
-### Step 1: Define the Function in C++
-First, let's define the function `print_memory_bits` in C++. We'll assume that the function takes a `std::vector<uint8_t>` instead of `bytes` for better compatibility with C++ types.
+First, make sure you have Catch2 installed and included in your project. You can include Catch2 using the following headers:
 
 ```cpp
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators_all.hpp>
+
 #include <iostream>
 #include <vector>
 #include <sstream>
-
-void print_memory_bits(const std::vector<uint8_t>& memory_section) {
-    std::stringstream ss;
-    for (const auto& byte : memory_section) {
-        for (int i = 7; i >= 0; --i) {
-            ss << ((byte >> i) & 1);
-        }
-        ss << '\n';
-    }
-    std::cout << ss.str();
-}
+#include <cstdio>
 ```
 
-### Step 2: Write the Catch2 Test Case
-Next, we will write a Catch2 test case to verify the functionality of `print_memory_bits`.
+Here is the complete C++ code with the test class:
 
 ```cpp
-#define CATCH_CONFIG_MAIN
-#include "catch.hpp"
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators_all.hpp>
 
-TEST_CASE("Test print_memory_bits function", "[memory_bits]") {
-    // Test case 1: Single byte
-    std::vector<uint8_t> single_byte = {0b10101010};
-    std::ostringstream expected_output_1;
-    expected_output_1 << "10101010";
-    std::ostringstream actual_output_1;
-    std::streambuf* old_cout_buf = std::cout.rdbuf(actual_output_1.rdbuf());
-    print_memory_bits(single_byte);
-    std::cout.rdbuf(old_cout_buf);
-    REQUIRE(expected_output_1.str() == actual_output_1.str());
+#include <iostream>
+#include <vector>
+#include <sstream>
+#include <cstdio>
 
-    // Test case 2: Multiple bytes
-    std::vector<uint8_t> multiple_bytes = {0b11001100, 0b11110000};
-    std::ostringstream expected_output_2;
-    expected_output_2 << "11001100\n11110000";
-    std::ostringstream actual_output_2;
-    old_cout_buf = std::cout.rdbuf(actual_output_2.rdbuf());
-    print_memory_bits(multiple_bytes);
-    std::cout.rdbuf(old_cout_buf);
-    REQUIRE(expected_output_2.str() == actual_output_2.str());
+// Function to print the status of each bit (0 or 1) in the given section of memory.
+void print_memory_bits(const std::vector<uint8_t>& memory_section) {
+    for (uint8_t byte : memory_section) {
+        for (int i = 7; i >= 0; --i) {
+            uint8_t bit = (byte >> i) & 1;
+            std::cout << bit;
+        }
+        std::cout << '\n';
+    }
+}
+
+TEST_CASE("TestPrintMemoryBits", "[print_memory_bits]") {
+    struct RedirectStdout {
+        std::streambuf* orig;
+        std::stringstream buffer;
+
+        RedirectStdout() : orig(std::cout.rdbuf(buffer.rdbuf())) {}
+        ~RedirectStdout() { std::cout.rdbuf(orig); }
+
+        std::string str() const { return buffer.str(); }
+    };
+
+    SECTION("test_single_byte") {
+        std::vector<uint8_t> memory_section = {0b10101010};
+        RedirectStdout redirector;
+        print_memory_bits(memory_section);
+        std::string output = redirector.str().substr(0, 8); // Remove newline
+        REQUIRE(output == "10101010");
+    }
+
+    SECTION("test_multiple_bytes") {
+        std::vector<uint8_t> memory_section = {0b11001100, 0b11110000};
+        RedirectStdout redirector;
+        print_memory_bits(memory_section);
+        std::string output = redirector.str();
+        REQUIRE(output == "11001100\n11110000\n");
+    }
+
+    SECTION("test_all_zeros") {
+        std::vector<uint8_t> memory_section = {0b00000000};
+        RedirectStdout redirector;
+        print_memory_bits(memory_section);
+        std::string output = redirector.str().substr(0, 8); // Remove newline
+        REQUIRE(output == "00000000");
+    }
+
+    SECTION("test_all_ones") {
+        std::vector<uint8_t> memory_section = {0b11111111};
+        RedirectStdout redirector;
+        print_memory_bits(memory_section);
+        std::string output = redirector.str().substr(0, 8); // Remove newline
+        REQUIRE(output == "11111111");
+    }
 }
 ```
 
 ### Explanation:
-1. **Function Definition**: The `print_memory_bits` function iterates through each byte and each bit within the byte, printing them out in binary format.
-2. **Catch2 Test Case**:
-   - We use `std::ostringstream` to capture the output of `print_memory_bits`.
-   - We redirect `std::cout` to our stream buffer temporarily so that the output from `print_memory_bits` goes into our `ostringstream`.
-   - After capturing the output, we reset `std::cout` back to its original state.
-   - Finally, we compare the captured output with the expected output using `REQUIRE`.
+1. **Catch2 Headers**:
+   - `#include <catch2/catch_test_macros.hpp>`: For defining tests and sections.
+   - `#include <catch2/generators/catch_generators_all.hpp>`: For additional generator support (not used here but included for completeness).
 
-This should give you a good starting point for converting your Python unittest test class to a C++ Catch2 test case.
+2. **Function Definition**:
+   - `print_memory_bits`: This function takes a `std::vector<uint8_t>` as input and prints the bits of each byte, separated by newlines.
+
+3. **Test Class**:
+   - `TEST_CASE`: Defines the test case named `TestPrintMemoryBits`.
+   - `SECTION`: Defines individual test sections within the test case.
+
+4. **Redirect Stdout**:
+   - `RedirectStdout`: A helper struct to capture the standard output during the test execution.
+   - It redirects `std::cout` to a `std::stringstream` and restores the original stream upon destruction.
+
+5. **Test Sections**:
+   - Each `SECTION` corresponds to a specific test case:
+     - `test_single_byte`: Tests a single byte with a specific pattern.
+     - `test_multiple_bytes`: Tests multiple bytes with specific patterns.
+     - `test_all_zeros`: Tests a byte with all zeros.
+     - `test_all_ones`: Tests a byte with all ones.
+
+6. **Assertions**:
+   - `REQUIRE`: Used to assert the captured output matches the expected output.
+
+This C++ code ensures that the functionality and logic of the tests are preserved, and the output is captured and verified using Catch2.

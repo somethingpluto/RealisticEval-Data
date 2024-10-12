@@ -1,16 +1,42 @@
+Certainly! Below is the equivalent Java code for the given Python class `Graph`, including the necessary imports, method signatures, and Javadoc comments:
+
 ```java
+package org.real.temp;
+
 import java.util.*;
-import org.jgrapht.graph.*;
+import java.util.stream.Collectors;
+import org.jgrapht.Graph;
+import org.jgrapht.GraphPath;
+import org.jgrapht.alg.cycle.SimpleCycleBasis;
+import org.jgrapht.alg.cycle.SimpleCycleBasisImpl;
+import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.graph.DirectedPseudograph;
 
+/**
+ * Represents a directed graph and provides methods to find cycles.
+ */
 public class Graph {
-    private DirectedGraph<String, DefaultEdge> graph;
 
-    public Graph(List<Edge<String>> edges) {
-        graph = new DefaultDirectedGraph<>(DefaultEdge.class);
-        for (Edge<String> edge : edges) {
-            graph.addVertex(edge.getSource());
-            graph.addVertex(edge.getTarget());
-            graph.addEdge(edge.getSource(), edge.getTarget());
+    private DirectedPseudograph<String, DefaultEdge> graph;
+
+    /**
+     * Constructs a directed graph from a list of edges.
+     *
+     * @param edges A list of edges represented as lists of strings.
+     */
+    public Graph(List<List<String>> edges) {
+        this.graph = new DirectedPseudograph<>(DefaultEdge.class);
+        // Add vertices
+        Set<String> vertices = new HashSet<>();
+        for (List<String> edge : edges) {
+            vertices.add(edge.get(0));
+            vertices.add(edge.get(1));
+        }
+        this.graph.addAllVertices(vertices);
+
+        // Add edges
+        for (List<String> edge : edges) {
+            this.graph.addEdge(edge.get(0), edge.get(1));
         }
     }
 
@@ -18,32 +44,77 @@ public class Graph {
      * Finds all unique cycles in the graph that are larger than size 2, optionally filtering out cycles with repeated nodes.
      *
      * @param filterRepeatNodes If true, filters out cycles where any node appears more than once.
-     * @return Map<Integer, List<DirectedGraph<String, DefaultEdge>>> - A map where keys represent cycle sizes and values are lists of directed graph objects representing each unique cycle of that size.
+     * @return A map mapping each cycle size to a list of subgraph objects representing each unique cycle of that size.
      */
-    public Map<Integer, List<DirectedGraph<String, DefaultEdge>>> cyclesBySize(boolean filterRepeatNodes) {
-        // Implementation goes here...
-        return new HashMap<>();
+    public Map<Integer, List<Graph>> cyclesBySize(boolean filterRepeatNodes) {
+        SimpleCycleBasis<String, DefaultEdge> cycleBasis = new SimpleCycleBasisImpl<>(this.graph);
+        List<List<String>> allCycles = cycleBasis.getCycles();
+
+        List<List<String>> cycles = allCycles.stream()
+                .filter(cycle -> cycle.size() > 2)
+                .collect(Collectors.toList());
+
+        if (filterRepeatNodes) {
+            cycles = cycles.stream()
+                    .filter(cycle -> cycle.size() == new HashSet<>(cycle).size())
+                    .collect(Collectors.toList());
+        }
+
+        Set<Set<String>> uniqueCycles = cycles.stream()
+                .map(ArrayList::new)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+
+        Map<Integer, List<Graph>> uniqueCyclesBySize = new LinkedHashMap<>();
+        for (Set<String> cycle : uniqueCycles) {
+            int size = cycle.size();
+            Graph subgraph = new Graph(new ArrayList<>(cycle.stream()
+                    .flatMap(node -> graph.outgoingEdgesOf(node).stream()
+                            .map(edge -> Arrays.asList(node, graph.getEdgeTarget(edge))))
+                    .collect(Collectors.toList())));
+            uniqueCyclesBySize.computeIfAbsent(size, k -> new ArrayList<>()).add(subgraph);
+        }
+
+        return uniqueCyclesBySize;
     }
-}
 
-// Helper class for edges
-class Edge<T> {
-    private T source;
-    private T target;
+    public static void main(String[] args) {
+        List<List<String>> edges = Arrays.asList(
+                Arrays.asList("A", "B"),
+                Arrays.asList("B", "C"),
+                Arrays.asList("C", "D"),
+                Arrays.asList("D", "A"),
+                Arrays.asList("E", "F"),
+                Arrays.asList("F", "G"),
+                Arrays.asList("G", "E")
+        );
 
-    public Edge(T source, T target) {
-        this.source = source;
-        this.target = target;
-    }
-
-    public T getSource() {
-        return source;
-    }
-
-    public T getTarget() {
-        return target;
+        Graph graph = new Graph(edges);
+        Map<Integer, List<Graph>> cyclesBySize = graph.cyclesBySize(true);
+        System.out.println(cyclesBySize);
     }
 }
 ```
 
-Please note that the `cyclesBySize` method's implementation is not provided here because it would require a specific algorithm to find cycles in a directed graph which isn't covered in the original Python code. This Java version uses JGraphT library for graph operations.
+### Explanation:
+1. **Imports**:
+   - Necessary imports for working with graphs and collections in Java.
+
+2. **Class Definition**:
+   - The `Graph` class is defined with a constructor and a method `cyclesBySize`.
+
+3. **Constructor**:
+   - Initializes a directed pseudograph using `DirectedPseudograph` from JGraphT.
+   - Adds vertices and edges based on the provided edges.
+
+4. **cyclesBySize Method**:
+   - Uses `SimpleCycleBasis` from JGraphT to find all simple cycles.
+   - Filters cycles based on length and uniqueness.
+   - Groups cycles by their size and returns a map of cycles.
+
+5. **Javadoc Comments**:
+   - Properly formatted Javadoc comments are added to describe the class, constructor, and method.
+
+6. **Main Method**:
+   - Demonstrates how to create a graph and find cycles by size.
+
+This Java code preserves the functionality and structure of the original Python code while adhering to Java's syntax and conventions.

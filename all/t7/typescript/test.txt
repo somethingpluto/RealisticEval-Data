@@ -1,60 +1,131 @@
-Sure! Here’s how you can convert the provided Python unittest test class into a TypeScript test case using Jest's `describe` and `it` syntax.
+Certainly! Here is the equivalent TypeScript code using Jest for testing the `Logger` class. We will use Jest's assertion methods and mocking capabilities to replicate the functionality of the Python unittest tests.
 
-### Python Unittest Code
-```python
-import logging
-import unittest
+### TypeScript Code
 
-class Logger:
-    def __init__(self, name, level=logging.DEBUG):
-        """
-        Initializes a new logger instance.
+First, let's define the `Logger` class in TypeScript:
 
-        :param name: Name of the logger, typically __name__ to reference the module name.
-        :param level: Logging level, default is DEBUG.
-        """
+```typescript
+import * as log4js from 'log4js';
 
-    def log(self, level, message):
-        """
-        Logs a message with the given level.
+/**
+ * A class representing a logger.
+ */
+class Logger {
+  private logger: log4js.Logger;
 
-        :param level: Logging level for the message (e.g., logging.INFO).
-        :param message: Log message.
-        """
+  /**
+   * Initializes a new logger instance.
+   *
+   * @param name - Name of the logger, typically __name__ to reference the module name.
+   * @param level - Logging level, default is DEBUG.
+   */
+  constructor(name: string, level: log4js.Level = 'debug') {
+    // Configure log4js
+    log4js.configure({
+      appenders: {
+        console: { type: 'console' }
+      },
+      categories: {
+        default: { appenders: ['console'], level }
+      }
+    });
 
-class TestLogger(unittest.TestCase):
+    // Create logger
+    this.logger = log4js.getLogger(name);
+  }
 
-    def test_logger_initialization(self):
-        logger = Logger("test_logger")
-        self.assertIsNotNone(logger)
-
-    def test_log_message(self):
-        logger = Logger("test_logger")
-        # Assuming we implement the log function to actually log something
-        logger.log(logging.INFO, "This is a test log")
-        # Here you would check if the log was indeed made (mocking or some assertion)
+  /**
+   * Logs a message with the given level.
+   *
+   * @param level - Logging level for the message (e.g., 'debug', 'info').
+   * @param message - Log message.
+   */
+  public log(level: log4js.Level, message: string): void {
+    switch (level) {
+      case 'debug':
+        this.logger.debug(message);
+        break;
+      case 'info':
+        this.logger.info(message);
+        break;
+      case 'warn':
+        this.logger.warn(message);
+        break;
+      case 'error':
+        this.logger.error(message);
+        break;
+      case 'fatal':
+        this.logger.fatal(message);
+        break;
+      default:
+        throw new Error('Invalid log level');
+    }
+  }
+}
 ```
 
-### TypeScript Jest Test Case
+### Jest Test Class
+
+Now, let's write the Jest test class:
+
 ```typescript
-import { Logger } from './logger'; // Adjust the import based on your file structure
+import { Logger } from './path/to/logger'; // Adjust the path as needed
+import * as log4js from 'log4js';
 
 describe('Logger', () => {
-    it('should initialize the logger', () => {
-        const logger = new Logger('test_logger');
-        expect(logger).toBeDefined();
-    });
+  let loggerName: string;
+  let logger: Logger;
 
-    it('should log a message', () => {
-        const logger = new Logger('test_logger');
-        // Assuming we implement the log function to actually log something
-        logger.log('info', 'This is a test log');
-        // Here you would check if the log was indeed made (mocking or some assertion)
+  beforeEach(() => {
+    loggerName = 'TestLogger';
+    logger = new Logger(loggerName);
+  });
+
+  describe('initialization', () => {
+    it('should initialize the logger with the correct name and level', () => {
+      expect(logger.logger.name).toBe(loggerName);
+      expect(logger.logger.level).toBe('debug');
     });
+  });
+
+  describe('default logging level', () => {
+    it('should default to DEBUG level if not specified', () => {
+      const loggerDefault = new Logger('DefaultLogger');
+      expect(loggerDefault.logger.level).toBe('debug');
+    });
+  });
+
+  describe('console handler added', () => {
+    it('should add a console handler to the logger', () => {
+      const handlers = logger.logger.appender.getAppenders();
+      expect(handlers.length).toBeGreaterThan(0);
+      expect(handlers[0].type).toBe('console');
+    });
+  });
 });
 ```
 
-### Notes
-- Adjust the import path for the `Logger` class based on your project structure.
-- The logging functionality will need to be implemented in the `Logger` class for the tests to be meaningful.
-- In the second test, you might want to use a mock or spy to verify that the logging was executed correctly.
+### Explanation:
+1. **Logger Class**:
+   - The `Logger` class is defined with a private property `logger`.
+   - The constructor initializes the logger using `log4js`, which is a popular logging library for Node.js.
+   - The `log` method uses a switch statement to handle different log levels.
+
+2. **Jest Test Class**:
+   - The `describe` blocks are used to group related tests.
+   - The `beforeEach` hook sets up a new `Logger` instance before each test.
+   - Jest assertions (`expect`) are used to verify the expected behavior of the `Logger` class.
+
+3. **Initialization Test**:
+   - Verifies that the logger is initialized with the correct name and level.
+
+4. **Default Logging Level Test**:
+   - Verifies that the logger defaults to the `DEBUG` level if not specified.
+
+5. **Console Handler Added Test**:
+   - Verifies that a console handler is added to the logger.
+
+6. **Mocking and Assertions**:
+   - Jest's `expect` is used to perform assertions on the properties and methods of the `Logger` class.
+
+This TypeScript code preserves the original functionality and logic of the Python unittest tests while adapting them to Jest's testing framework.

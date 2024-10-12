@@ -1,54 +1,68 @@
-Sure, here's how you can convert the Python function `get_3d_coordinates` to C++ code:
+Sure! Let's convert the given Python code into equivalent C++ code. We will use the `Eigen` library for handling matrices and vectors since it provides a convenient and efficient way to work with linear algebra operations.
+
+First, you need to install the Eigen library if you haven't already. You can download it from [here](http://eigen.tuxfamily.org/index.php?title=Main_Page).
+
+Here’s the C++ version of the Python code:
 
 ```cpp
 #include <iostream>
-#include <array>
+#include <Eigen/Dense>
 
-// Function prototype for getting 3D coordinates from 2D pixel coordinates
-std::array<double, 3> get_3d_coordinates(const std::array<std::array<double, 3>, 3>& K, double d, double x, double y);
+using Eigen::MatrixXd;
+using Eigen::VectorXd;
+
+VectorXd get_3d_coordinates(const MatrixXd& K, double d, double x, double y) {
+    // Step 1: Convert pixel coordinates to normalized device coordinates (NDC)
+    double cx = K(0, 2);
+    double cy = K(1, 2);
+    double fx = K(0, 0);
+    double fy = K(1, 1);
+
+    double NDC_x = (x - cx) / fx;
+    double NDC_y = (y - cy) / fy;
+
+    // Step 2: Get the 3D world coordinates (W)
+    double W_x = NDC_x * d;
+    double W_y = NDC_y * d;
+    double W_z = d;
+
+    return VectorXd::Map(&W_x, 3);  // Map the array to a VectorXd
+}
 
 int main() {
     // Example usage
-    std::array<std::array<double, 3>, 3> K = {{
-        {1000.0, 0.0, 640.0},
-        {0.0, 1000.0, 480.0},
-        {0.0, 0.0, 1.0}
-    }};
-    double d = 5.0;
-    double x = 320.0;
-    double y = 240.0;
+    MatrixXd K(3, 3);
+    K << 500, 0, 320,
+         0, 500, 240,
+         0, 0, 1;
 
-    std::array<double, 3> result = get_3d_coordinates(K, d, x, y);
-    
-    std::cout << "3D Coordinates: (" 
-              << result[0] << ", " 
-              << result[1] << ", " 
-              << result[2] << ")" << std::endl;
+    double d = 10.0;
+    double x = 350.0;
+    double y = 200.0;
+
+    VectorXd result = get_3d_coordinates(K, d, x, y);
+
+    std::cout << "3D Coordinates: " << result.transpose() << std::endl;
 
     return 0;
-}
-
-// Implementation of the function
-std::array<double, 3> get_3d_coordinates(const std::array<std::array<double, 3>, 3>& K, double d, double x, double y) {
-    std::array<double, 3> result;
-    
-    // Calculate 3D coordinates
-    result[0] = (x - K[0][2]) * d / K[0][0];
-    result[1] = (y - K[1][2]) * d / K[1][1];
-    result[2] = d;
-    
-    return result;
 }
 ```
 
 ### Explanation:
+1. **Headers**: 
+   - `#include <iostream>` for input/output.
+   - `#include <Eigen/Dense>` for using Eigen library for matrix and vector operations.
 
-- **Include Headers**: We include `<iostream>` for input/output operations and `<array>` for fixed-size arrays.
-  
-- **Function Prototype**: The function `get_3d_coordinates` is declared with a prototype that matches the Python function signature.
+2. **Using Directives**:
+   - `using Eigen::MatrixXd;` and `using Eigen::VectorXd;` to simplify the namespace.
 
-- **Main Function**: In the `main` function, we demonstrate how to use the `get_3d_coordinates` function with an example. The camera intrinsic matrix `K`, depth `d`, and pixel coordinates `(x, y)` are defined, and the resulting 3D coordinates are printed.
+3. **Function Definition**:
+   - The function `get_3d_coordinates` takes a `MatrixXd` (3x3 matrix) `K`, a depth `d`, and pixel coordinates `x` and `y`.
+   - It performs the same calculations as the Python code to compute the 3D coordinates.
+   - The result is returned as a `VectorXd`.
 
-- **Implementation**: The implementation of `get_3d_coordinates` calculates the 3D coordinates based on the provided camera intrinsic matrix `K`, depth `d`, and pixel coordinates `(x, y)` using the same formula as in the Python version.
+4. **Example Usage**:
+   - In the `main` function, we create a sample `K` matrix and provide some values for `d`, `x`, and `y`.
+   - The function call `get_3d_coordinates` computes the 3D coordinates, which are then printed out.
 
-This C++ code should work similarly to your original Python function, converting 2D pixel coordinates to 3D world coordinates using the given camera intrinsic parameters and depth.
+This should give you a working C++ equivalent of the provided Python code.

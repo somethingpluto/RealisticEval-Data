@@ -1,55 +1,95 @@
-Sure, I can help you convert the Python unittest test class to a C++ Catch2 test case. Below is an example of how you might write the corresponding C++ test cases for the `find_duplicate_ips` function using Catch2:
+Certainly! Below is the equivalent C++ test class using the Catch2 testing framework. The provided Python unittest class will be converted into a C++ test suite using Catch2, ensuring that the functionality and logic of the tests are preserved.
+
+First, make sure you have Catch2 installed and included in your project. You can include Catch2 by adding the header file and using the `CATCH_TEST_CASE` macro for defining test cases.
+
+Here is the complete C++ code:
 
 ```cpp
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <vector>
+#include <unordered_set>
+#include <unordered_map>
 #include <string>
 
-// Assuming the function is defined somewhere in your project
-std::vector<std::string> find_duplicate_ips(const std::vector<std::string>& ip_list, const std::vector<std::string>& ignore_list);
+// Function to find duplicate IPs in the given IP list excluding specified IPs to ignore.
+std::vector<std::string> findDuplicateIPs(const std::vector<std::string>& ipList, const std::vector<std::string>& ignoreList) {
+    // Convert ignoreList to an unordered_set for faster lookups
+    std::unordered_set<std::string> ignoreSet(ignoreList.begin(), ignoreList.end());
 
-TEST_CASE("Find Duplicate IPs", "[find_duplicate_ips]") {
-    // Test Case 1: No duplicates and no ignore list
-    SECTION("No Duplicates and No Ignore List") {
-        std::vector<std::string> ip_list = {"192.168.1.1", "10.0.0.1", "172.16.0.1"};
-        std::vector<std::string> ignore_list = {};
-        std::vector<std::string> expected_result = {};
-        REQUIRE(find_duplicate_ips(ip_list, ignore_list) == expected_result);
+    // Unordered map to count occurrences of each IP
+    std::unordered_map<std::string, int> ipCount;
+
+    // Count occurrences of each IP, excluding ignored IPs
+    for (const auto& ip : ipList) {
+        if (ignoreSet.find(ip) == ignoreSet.end()) {
+            if (ipCount.find(ip) != ipCount.end()) {
+                ipCount[ip]++;
+            } else {
+                ipCount[ip] = 1;
+            }
+        }
     }
 
-    // Test Case 2: Duplicates but all ignored
-    SECTION("Duplicates but All Ignored") {
-        std::vector<std::string> ip_list = {"192.168.1.1", "192.168.1.1", "10.0.0.1"};
-        std::vector<std::string> ignore_list = {"192.168.1.1"};
-        std::vector<std::string> expected_result = {};
-        REQUIRE(find_duplicate_ips(ip_list, ignore_list) == expected_result);
+    // Collect duplicate IPs
+    std::vector<std::string> duplicates;
+    for (const auto& entry : ipCount) {
+        if (entry.second > 1) {
+            duplicates.push_back(entry.first);
+        }
     }
 
-    // Test Case 3: Single IP with multiple duplicates but one ignored
-    SECTION("Single IP with Multiple Duplicates but One Ignored") {
-        std::vector<std::string> ip_list = {"192.168.1.1", "192.168.1.1", "192.168.1.1"};
-        std::vector<std::string> ignore_list = {"192.168.1.1"};
-        std::vector<std::string> expected_result = {};
-        REQUIRE(find_duplicate_ips(ip_list, ignore_list) == expected_result);
+    return duplicates;
+}
+
+TEST_CASE("Test findDuplicateIPs function") {
+    SECTION("Basic duplicates") {
+        std::vector<std::string> ipList = {"192.168.1.1", "192.168.1.2", "192.168.1.1"};
+        std::vector<std::string> ignoreList = {};
+        REQUIRE(findDuplicateIPs(ipList, ignoreList) == std::vector<std::string>({"192.168.1.1"}));
     }
 
-    // Test Case 4: Multiple IPs with some duplicates and some ignored
-    SECTION("Multiple IPs with Some Duplicates and Some Ignored") {
-        std::vector<std::string> ip_list = {"192.168.1.1", "192.168.1.1", "10.0.0.1", "10.0.0.1", "172.16.0.1"};
-        std::vector<std::string> ignore_list = {"192.168.1.1"};
-        std::vector<std::string> expected_result = {"10.0.0.1"};
-        REQUIRE(find_duplicate_ips(ip_list, ignore_list) == expected_result);
+    SECTION("Ignored duplicates") {
+        std::vector<std::string> ipList = {"192.168.1.1", "192.168.1.1", "192.168.1.2"};
+        std::vector<std::string> ignoreList = {"192.168.1.1"};
+        REQUIRE(findDuplicateIPs(ipList, ignoreList).empty());
+    }
+
+    SECTION("No duplicates") {
+        std::vector<std::string> ipList = {"192.168.1.1", "192.168.1.2", "192.168.1.3"};
+        std::vector<std::string> ignoreList = {};
+        REQUIRE(findDuplicateIPs(ipList, ignoreList).empty());
+    }
+
+    SECTION("Mixed duplicates") {
+        std::vector<std::string> ipList = {"192.168.1.1", "192.168.1.1", "10.0.0.1", "192.168.1.2"};
+        std::vector<std::string> ignoreList = {"192.168.1.2"};
+        REQUIRE(findDuplicateIPs(ipList, ignoreList) == std::vector<std::string>({"192.168.1.1"}));
+    }
+
+    SECTION("Empty input") {
+        std::vector<std::string> ipList = {};
+        std::vector<std::string> ignoreList = {};
+        REQUIRE(findDuplicateIPs(ipList, ignoreList).empty());
+    }
+
+    SECTION("Only ignored IPs") {
+        std::vector<std::string> ipList = {"192.168.1.1", "192.168.1.1"};
+        std::vector<std::string> ignoreList = {"192.168.1.1"};
+        REQUIRE(findDuplicateIPs(ipList, ignoreList).empty());
+    }
+
+    SECTION("All duplicates") {
+        std::vector<std::string> ipList = {"192.168.1.1", "192.168.1.1", "192.168.1.1"};
+        std::vector<std::string> ignoreList = {};
+        REQUIRE(findDuplicateIPs(ipList, ignoreList) == std::vector<std::string>({"192.168.1.1"}));
     }
 }
 ```
 
 ### Explanation:
-- **Catch2 Headers**: The `#include <catch2/catch.hpp>` directive includes the necessary headers for Catch2 testing framework.
-- **Function Signature**: The `find_duplicate_ips` function signature is assumed to be available in your project.
-- **Test Cases**:
-  - **No Duplicates and No Ignore List**: Checks if the function correctly handles a list without any duplicates or items to ignore.
-  - **Duplicates but All Ignored**: Verifies that duplicates are not returned when they are all listed in the ignore list.
-  - **Single IP with Multiple Duplicates but One Ignored**: Ensures that a single IP with multiple duplicates does not appear in the result if it's in the ignore list.
-  - **Multiple IPs with Some Duplicates and Some Ignored**: Tests a more complex scenario where there are both duplicates and ignored items.
+1. **Headers**: The required headers (`<catch2/catch_test_macros.hpp>`, `<vector>`, `<unordered_set>`, `<unordered_map>`, `<string>`) are included at the beginning.
+2. **Function Definition**: The `findDuplicateIPs` function is defined as before.
+3. **Test Class**: The `TEST_CASE` macro is used to define the test suite, and `SECTION` macros are used to define individual test cases.
+4. **Assertions**: The `REQUIRE` macro is used to assert the expected results. For comparing vectors, we use `==` to check equality directly.
 
-Make sure to include the appropriate paths to the Catch2 library in your build configuration if needed.
+This C++ code preserves the original functionality and logic of the Python unittest class, ensuring that the tests are equivalent and perform the same checks.

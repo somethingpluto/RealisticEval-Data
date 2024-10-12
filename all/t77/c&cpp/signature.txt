@@ -1,17 +1,90 @@
-Sure, here is the equivalent C++ code signature with comments:
+Certainly! Below is the equivalent C++ code that preserves the original purpose and structure of the Python function, including comments and type annotations:
 
 ```cpp
+#include <iostream>
+#include <chrono>
 #include <ctime>
+#include <stdexcept>
+#include <optional>
 #include <string>
+
+// Utility function to get the local timezone
+std::optional<std::string> get_local_timezone() {
+    // In C++, getting the local timezone name is not straightforward.
+    // For simplicity, we assume "localtime" is the local timezone.
+    return "localtime";
+}
 
 /**
  * Formats the given timestamp as a string according to the specified format, using the system's local time zone.
  *
  * @param timestamp The time value representing the seconds since the epoch.
- * @param dateFormat The format string to use for formatting the timestamp. Defaults to "%a %b %d %I:%M:%S %p %z %Y".
- * @return A formatted date and time string.
+ * @param date_format The format string to use for formatting the timestamp.
+ *                    Defaults to '%a %b %d %I:%M:%S %p %z %Y'.
+ * @return The formatted date and time string.
  */
-std::string formatTimestampToString(double timestamp, const std::string& dateFormat = "%a %b %d %I:%M:%S %p %z %Y");
+std::string format_timestamp_to_string(double timestamp, std::optional<std::string> date_format = std::nullopt) {
+    if (timestamp < 0) {
+        throw std::invalid_argument("error timestamp");
+    }
+
+    std::optional<std::string> local_tz = get_local_timezone();
+    if (!local_tz.has_value()) {
+        // Fallback to UTC if the local timezone is not found
+        local_tz = "UTC";
+    }
+
+    try {
+        // Convert the UNIX timestamp to a time_t value
+        std::time_t raw_time = static_cast<std::time_t>(timestamp);
+        std::tm* ptm;
+
+        // Use local time if the timezone is "localtime", otherwise use UTC
+        if (local_tz.value() == "localtime") {
+            ptm = std::localtime(&raw_time);
+        } else {
+            ptm = std::gmtime(&raw_time);
+        }
+
+        // Default format string
+        std::string format = date_format.has_value() ? date_format.value() : "%a %b %d %I:%M:%S %p %z %Y";
+
+        // Format the datetime string
+        char buffer[128];
+        if (std::strftime(buffer, sizeof(buffer), format.c_str(), ptm) == 0) {
+            throw std::runtime_error("Error formatting the datetime");
+        }
+
+        return std::string(buffer);
+    } catch (const std::exception& e) {
+        // Handle any other unexpected errors
+        throw std::invalid_argument("Error formatting the datetime: " + std::string(e.what()));
+    }
+}
+
+int main() {
+    try {
+        double timestamp = 1697753448.0; // Example UNIX timestamp
+        std::optional<std::string> date_format = std::nullopt; // Optional parameter
+        std::string formatted_datetime = format_timestamp_to_string(timestamp, date_format);
+        std::cout << "Formatted datetime: " << formatted_datetime << std::endl;
+    } catch (const std::exception& e) {
+        std::cerr << "Exception: " << e.what() << std::endl;
+    }
+
+    return 0;
+}
 ```
 
-This function takes a `double` representing a timestamp and an optional `std::string` for the date format, returning a formatted date and time string as a `std::string`.
+### Explanation:
+1. **Function Signature**: The function `format_timestamp_to_string` is defined with the appropriate C++ types and default values.
+2. **Type Annotations**: The Python `Optional[str]` is translated to `std::optional<std::string>` in C++.
+3. **Comments and Documentation**:
+   - Multi-line comments are used for the function documentation.
+   - Single-line comments are used for inline explanations.
+4. **Timestamp Conversion**: The UNIX timestamp is converted to a `std::time_t` value.
+5. **Timezone Handling**: The function `get_local_timezone` returns an optional string representing the local timezone.
+6. **Formatting**: The `std::strftime` function is used to format the datetime string according to the specified format.
+7. **Error Handling**: Exceptions are caught and re-thrown with appropriate error messages.
+
+This code preserves the original functionality and structure of the Python code while adhering to C++ conventions and best practices.

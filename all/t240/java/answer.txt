@@ -1,72 +1,97 @@
-Here's the equivalent Java code for the provided Python function:
+Certainly! Below is the equivalent Java code for the given Python script, organized within the `org.real.temp` package and the `Answer` class:
 
 ```java
 package org.real.temp;
 
-import java.time.Duration;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public class Answer {
 
     /**
      * Converts a time duration string into a Duration object.
      * The input string can include days (d), hours (h), minutes (m), seconds (s), and milliseconds (ms).
-     * e.g. "1d 2h 3m 4s 500ms"
+     * eg. "1d 2h 3m 4s 500ms"
      * Each unit should be specified by an integer followed by its corresponding unit letter.
      *
      * @param timeString A string representing the time duration.
-     * @return Duration An object representing the input duration.
+     * @return A Duration object representing the input duration.
      */
     public static Duration genTimeoutDuration(String timeString) {
-        Pattern pattern = Pattern.compile("(\\d+)([dhms])");
+        // Define a map to hold all our values
+        int days = 0, hours = 0, minutes = 0, seconds = 0, milliseconds = 0;
+
+        // Regular expression to find all parts of the time string
+        Pattern pattern = Pattern.compile("(\\d+)([dhms]{1,2})");
         Matcher matcher = pattern.matcher(timeString);
-        
-        long totalDuration = 0;
+
+        // Process each found part
         while (matcher.find()) {
-            int value = Integer.parseInt(matcher.group(1));
-            char unit = matcher.group(2).charAt(0);
+            String amount = matcher.group(1);
+            String unit = matcher.group(2);
 
             switch (unit) {
-                case 'd':
-                    totalDuration += value * 24 * 60 * 60 * 1000; // Convert days to milliseconds
+                case "d":
+                    days = Integer.parseInt(amount);
                     break;
-                case 'h':
-                    totalDuration += value * 60 * 60 * 1000; // Convert hours to milliseconds
+                case "h":
+                    hours = Integer.parseInt(amount);
                     break;
-                case 'm':
-                    totalDuration += value * 60 * 1000; // Convert minutes to milliseconds
+                case "m":
+                    minutes = Integer.parseInt(amount);
                     break;
-                case 's':
-                    totalDuration += value * 1000; // Convert seconds to milliseconds
+                case "s":
+                    seconds = Integer.parseInt(amount);
                     break;
-                case 'ms':
-                    totalDuration += value; // Already in milliseconds
+                case "ms":
+                    milliseconds = Integer.parseInt(amount);
                     break;
                 default:
-                    throw new IllegalArgumentException("Invalid unit: " + unit);
+                    throw new IllegalArgumentException("Invalid time unit: " + unit);
             }
         }
 
-        return Duration.ofMillis(totalDuration);
+        // Create a LocalDateTime object using the extracted values
+        LocalDateTime now = LocalDateTime.now();
+        LocalDate futureDate = now.plusDays(days);
+        LocalDateTime futureTime = LocalDateTime.of(futureDate, now.toLocalTime().plusHours(hours).plusMinutes(minutes).plusSeconds(seconds).plusNanos(milliseconds * 1_000_000));
+
+        // Calculate the duration
+        return Duration.between(now, futureTime);
     }
 
     public static void main(String[] args) {
         String timeString = "1d 2h 3m 4s 500ms";
         Duration duration = genTimeoutDuration(timeString);
-        System.out.println(duration.toDays() + " days, " +
-                           duration.toHoursPart() + " hours, " +
-                           duration.toMinutesPart() + " minutes, " +
-                           duration.getSeconds() + " seconds, " +
-                           duration.getNano() / 1_000_000 + " milliseconds");
+        System.out.println("Duration: " + duration);
     }
 }
 ```
 
 ### Explanation:
-- **Pattern and Matcher**: The `Pattern` and `Matcher` classes from the `java.util.regex` package are used to parse the input string.
-- **Duration Calculation**: The method calculates the total duration in milliseconds based on the parsed values and units.
-- **Duration Object**: The `Duration.ofMillis()` method creates a `Duration` object from the total milliseconds.
-- **Main Method**: The `main` method demonstrates how to use the `genTimeoutDuration` method with a sample input string.
+1. **Import Statements**: 
+   - `java.util.regex.Matcher` and `java.util.regex.Pattern` for regex matching.
+   - `java.time.Duration`, `java.time.LocalDate`, and `java.time.LocalDateTime` for handling durations and dates.
 
-This Java code provides similar functionality to the original Python code, converting a time duration string into a `Duration` object.
+2. **Method Signature**:
+   - The method `genTimeoutDuration` takes a `String` as input and returns a `Duration` object.
+
+3. **Regular Expression**:
+   - The regular expression `(\\d+)([dhms]{1,2})` is used to match the time units in the input string.
+
+4. **Processing the Time Units**:
+   - A `Pattern` and `Matcher` are used to extract the amount and unit from the input string.
+   - The extracted values are parsed and assigned to the respective variables.
+
+5. **Creating the Duration Object**:
+   - A `LocalDateTime` object is created for the current time.
+   - A future date and time are calculated by adding the extracted values.
+   - The `Duration` between the current time and the future time is calculated and returned.
+
+6. **Main Method**:
+   - A sample `timeString` is provided, and the `genTimeoutDuration` method is called to demonstrate its functionality.
+
+This Java code maintains the same functionality and logic as the original Python code but adapts to Java's syntax and features.

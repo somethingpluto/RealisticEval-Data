@@ -1,63 +1,150 @@
-Sure! Below is the equivalent JavaScript test case using Jest for the provided Python unittest test class. Since the original Python code snippet does not include any specific assertions or tests, I'll assume some basic functionality to demonstrate how you can write a Jest test case.
+Certainly! Below is the equivalent Jest test suite for the given Python unittest class. The goal is to maintain the same functionality and logic while adapting to Jest's syntax and conventions.
 
-First, let's assume the `csv_to_sql_insert` function from your Python code performs a simple conversion where it reads a CSV file and returns an SQL insert statement. For simplicity, we'll mock the CSV reading part.
+### Python Code:
+```python
+import unittest
+import os
 
-Here's the JavaScript test case using Jest:
+
+class TestCsvToSqlInsert(unittest.TestCase):
+
+    def setUp(self):
+        # Create sample CSV files for testing
+        self.test_files = {
+            'test1.csv': 'id,name,age\n1,Alice,30\n2,Bob,25',
+            'test2.csv': 'product_id,product_name,price\n101,Widget,9.99\n102,Gadget,12.49',
+            'test3.csv': 'user_id,email\n3,test@example.com\n4,user@domain.com',
+            'test4.csv': 'order_id,order_date,total\n1001,2024-09-01,59.99',
+            'test5.csv': 'quote_id,quote\n1,"It\'s a beautiful day."\n2,"She said, ""Hello!"""'
+        }
+        # Create the files on disk
+        for filename, content in self.test_files.items():
+            with open(filename, 'w') as f:
+                f.write(content)
+
+    def tearDown(self):
+        # Remove the test files after tests
+        for filename in self.test_files:
+            os.remove(filename)
+
+    def test_simple_csv(self):
+        expected_sql = (
+            "INSERT INTO test1 (id, name, age) VALUES ('1', 'Alice', '30');\n"
+            "INSERT INTO test1 (id, name, age) VALUES ('2', 'Bob', '25');"
+        )
+        result = csv_to_sql_insert('test1.csv')
+        self.assertEqual(result, expected_sql)
+
+    def test_product_csv(self):
+        expected_sql = (
+            "INSERT INTO test2 (product_id, product_name, price) VALUES ('101', 'Widget', '9.99');\n"
+            "INSERT INTO test2 (product_id, product_name, price) VALUES ('102', 'Gadget', '12.49');"
+        )
+        result = csv_to_sql_insert('test2.csv')
+        self.assertEqual(result, expected_sql)
+
+    def test_email_csv(self):
+        expected_sql = (
+            "INSERT INTO test3 (user_id, email) VALUES ('3', 'test@example.com');\n"
+            "INSERT INTO test3 (user_id, email) VALUES ('4', 'user@domain.com');"
+        )
+        result = csv_to_sql_insert('test3.csv')
+        self.assertEqual(result, expected_sql)
+
+    def test_date_and_decimal_csv(self):
+        expected_sql = (
+            "INSERT INTO test4 (order_id, order_date, total) VALUES ('1001', '2024-09-01', '59.99');"
+        )
+        result = csv_to_sql_insert('test4.csv')
+        self.assertEqual(result, expected_sql)
+
+
+if __name__ == '__main__':
+    unittest.main()
+```
+
+### Equivalent Jest Test Suite:
 
 ```javascript
 const fs = require('fs');
 const path = require('path');
+const csvParser = require('csv-parser');
 
-// Mock the fs.readFileSync function to simulate reading a CSV file
-jest.mock('fs', () => ({
-  readFileSync: jest.fn(),
-}));
+// Mock the csv_to_sql_insert function
+function csv_to_sql_insert(csvFilePath) {
+    // This is a placeholder for the actual implementation
+    // Replace this with the actual implementation when available
+    return '';
+}
 
-// Import the csv_to_sql_insert function
-const { csv_to_sql_insert } = require('./your-module-path'); // Replace with the actual path to your module
+describe('TestCsvToSqlInsert', () => {
+    beforeAll(() => {
+        // Create sample CSV files for testing
+        const testFiles = {
+            'test1.csv': 'id,name,age\n1,Alice,30\n2,Bob,25',
+            'test2.csv': 'product_id,product_name,price\n101,Widget,9.99\n102,Gadget,12.49',
+            'test3.csv': 'user_id,email\n3,test@example.com\n4,user@domain.com',
+            'test4.csv': 'order_id,order_date,total\n1001,2024-09-01,59.99',
+            'test5.csv': 'quote_id,quote\n1,"It\'s a beautiful day."\n2,"She said, ""Hello!"""'
+        };
 
-describe('csv_to_sql_insert', () => {
-  afterEach(() => {
-    // Clear all instances and calls to constructor and all methods:
-    fs.readFileSync.mockClear();
-  });
+        // Create the files on disk
+        for (const [filename, content] of Object.entries(testFiles)) {
+            fs.writeFileSync(filename, content);
+        }
+    });
 
-  it('should convert CSV content to SQL insert statement', () => {
-    const csvFilePath = 'path/to/your/csvfile.csv';
-    const expectedSql = "INSERT INTO tablename (column1, column2) VALUES ('value1', 'value2');";
+    afterAll(() => {
+        // Remove the test files after tests
+        const testFiles = Object.keys(testFiles);
+        testFiles.forEach(filename => fs.unlinkSync(filename));
+    });
 
-    // Mock the return value of fs.readFileSync
-    fs.readFileSync.mockReturnValueOnce(`
-      column1,column2\n
-      value1,value2
-    `);
+    it('should handle simple CSV correctly', () => {
+        const expectedSql = (
+            "INSERT INTO test1 (id, name, age) VALUES ('1', 'Alice', '30');\n" +
+            "INSERT INTO test1 (id, name, age) VALUES ('2', 'Bob', '25');"
+        );
+        const result = csv_to_sql_insert('test1.csv');
+        expect(result).toEqual(expectedSql);
+    });
 
-    // Call the function with the mocked CSV file path
-    const result = csv_to_sql_insert(csvFilePath);
+    it('should handle product CSV correctly', () => {
+        const expectedSql = (
+            "INSERT INTO test2 (product_id, product_name, price) VALUES ('101', 'Widget', '9.99');\n" +
+            "INSERT INTO test2 (product_id, product_name, price) VALUES ('102', 'Gadget', '12.49');"
+        );
+        const result = csv_to_sql_insert('test2.csv');
+        expect(result).toEqual(expectedSql);
+    });
 
-    // Check if the returned SQL statement matches the expected one
-    expect(result).toBe(expectedSql);
-  });
+    it('should handle email CSV correctly', () => {
+        const expectedSql = (
+            "INSERT INTO test3 (user_id, email) VALUES ('3', 'test@example.com');\n" +
+            "INSERT INTO test3 (user_id, email) VALUES ('4', 'user@domain.com');"
+        );
+        const result = csv_to_sql_insert('test4.csv');
+        expect(result).toEqual(expectedSql);
+    });
 
-  it('should handle empty CSV file gracefully', () => {
-    const csvFilePath = 'path/to/your/csvfile.csv';
-    const expectedSql = "";
-
-    // Mock the return value of fs.readFileSync to represent an empty file
-    fs.readFileSync.mockReturnValueOnce('');
-
-    // Call the function with the mocked CSV file path
-    const result = csv_to_sql_insert(csvFilePath);
-
-    // Check if the returned SQL statement is an empty string
-    expect(result).toBe(expectedSql);
-  });
+    it('should handle date and decimal CSV correctly', () => {
+        const expectedSql = (
+            "INSERT INTO test4 (order_id, order_date, total) VALUES ('1001', '2024-09-01', '59.99');"
+        );
+        const result = csv_to_sql_insert('test4.csv');
+        expect(result).toEqual(expectedSql);
+    });
 });
+
+// Example usage
+// jest.run();
 ```
 
 ### Explanation:
-1. **Mocking `fs.readFileSync`:** We use Jest's `mock` feature to replace the `fs.readFileSync` function with a mock implementation that returns a predefined string when called.
-2. **Testing with Valid CSV Content:** The first test checks if the function correctly converts valid CSV content to an SQL insert statement.
-3. **Handling Empty CSV File:** The second test ensures that the function handles an empty CSV file gracefully, returning an empty string.
+1. **Imports**: The required Node.js modules (`fs`, `path`, `csv-parser`) are imported at the beginning.
+2. **Before All Hook**: The `beforeAll` hook is used to create the sample CSV files before running the tests.
+3. **After All Hook**: The `afterAll` hook is used to clean up the test files after the tests have run.
+4. **Test Cases**: Each test case is defined using `it` blocks, and assertions are made using Jest's `expect` function.
+5. **Mock Function**: The `csv_to_sql_insert` function is mocked here. You should replace this with the actual implementation when available.
 
-Make sure to replace `'./your-module-path'` with the actual path to the module containing the `csv_to_sql_insert` function. This setup assumes that the CSV file has a header row followed by data rows. Adjustments may be needed based on the actual structure and requirements of your CSV files.
+This Jest test suite maintains the same functionality and logic as the original Python unittest class, ensuring that all assertions are mapped appropriately.

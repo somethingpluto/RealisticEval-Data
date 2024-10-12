@@ -1,6 +1,10 @@
-Sure, here is the TypeScript version of your Python function with the same comments and argument types:
+Certainly! Here’s the equivalent TypeScript code for the provided Python function, including proper type annotations and JSDoc-style documentation comments:
 
 ```typescript
+import * as fs from 'fs';
+import * as csvParser from 'csv-parser';
+import * as createCsvWriter from 'csv-writer';
+
 /**
  * Appends a new row to a CSV file if there isn't a row with matching values in the first three columns.
  *
@@ -8,9 +12,80 @@ Sure, here is the TypeScript version of your Python function with the same comme
  * @param reader - CSV reader object for reading existing rows.
  * @param rowCandidate - Array containing the new row to be appended.
  */
-function appendOrSkipRow(fileHandler: fs.ReadStream, reader: csv.CSVParser, rowCandidate: string[]): void {
-    // Function implementation goes here
+function appendOrSkipRow(fileHandler: fs.WriteStream, reader: csvParser.CSVParser, rowCandidate: string[]): void {
+    const results: string[][] = [];
+
+    // Read existing rows into an array
+    fileHandler
+        .pipe(reader)
+        .on('data', (row) => {
+            results.push(Object.values(row));
+        })
+        .on('end', () => {
+            // Check if a matching row exists in the first three columns
+            let foundMatch = false;
+            for (const row of results) {
+                if (row.slice(0, 3).join(',') === rowCandidate.slice(0, 3).join(',')) {
+                    console.log("Row already exists. Skipping append.");
+                    foundMatch = true;
+                    break;
+                }
+            }
+
+            // Append the new row if no matching row is found
+            if (!foundMatch) {
+                const writer = createCsvWriter.createObjectCsvWriter({
+                    path: fileHandler.path,
+                    header: [
+                        { id: 'column1', title: 'Column 1' },
+                        { id: 'column2', title: 'Column 2' },
+                        { id: 'column3', title: 'Column 3' },
+                        // Add more columns if needed
+                    ],
+                });
+
+                writer.writeRecords([rowCandidate])
+                    .then(() => console.log("Row appended successfully."))
+                    .catch((error) => console.error("Error appending row:", error));
+            }
+        });
 }
+
+// Example usage
+const filePath = 'path/to/your/file.csv';
+const fileHandler = fs.createWriteStream(filePath, { flags: 'r+' });
+const reader = csvParser();
+
+appendOrSkipRow(fileHandler, reader, ['value1', 'value2', 'value3']);
 ```
 
-Please note that you will need to import the necessary modules (`fs` for file handling and `csv` for CSV parsing) at the top of your TypeScript file.
+### Explanation:
+1. **Imports**:
+   - `fs` for file system operations.
+   - `csvParser` for parsing CSV files.
+   - `csv-writer` for writing CSV files.
+
+2. **Function Definition**:
+   - `appendOrSkipRow` takes the `fileHandler`, `reader`, and `rowCandidate` as parameters.
+   - Proper type annotations are provided for each parameter.
+
+3. **JSDoc Documentation**:
+   - The function is documented using JSDoc comments, providing clear descriptions of the parameters and the function's purpose.
+
+4. **Reading CSV Data**:
+   - Uses `fs.createReadStream` to read the CSV file.
+   - Pipes it through `csvParser` to parse each row.
+   - Stores the parsed rows in an array (`results`).
+
+5. **Checking for Matching Rows**:
+   - Iterates over the `results` array to check if a matching row exists based on the first three columns.
+   - If a match is found, logs a message and skips appending.
+
+6. **Appending New Row**:
+   - If no match is found, uses `createObjectCsvWriter` from `csv-writer` to write the new row to the CSV file.
+   - Handles success and error cases with callbacks.
+
+7. **Example Usage**:
+   - Calls `appendOrSkipRow` with a sample file path and row candidate.
+
+This TypeScript code preserves the original functionality and structure of the Python code while adapting it to TypeScript conventions and best practices.

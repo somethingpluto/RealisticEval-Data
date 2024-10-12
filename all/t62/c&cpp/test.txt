@@ -1,131 +1,197 @@
-To convert your Python unit test class to a C++ test case using Catch2, you need to create a C++ class that mirrors the functionality of your `BinaryTree` class and then write tests for it. Below is an example of how you might do this:
+Certainly! Below is the equivalent C++ test class using the Catch2 testing framework. This conversion ensures that the functionality and logic of the tests are preserved, with appropriate assertions and setup.
 
-### C++ Code
+First, make sure you have Catch2 installed and included in your project. You can include Catch2 by adding the header file and using the `CATCH_TEST_CASE` macro for each test case.
+
+Here is the complete C++ code:
 
 ```cpp
-#include <iostream>
+#include <catch2/catch_test_macros.hpp>
 #include <vector>
-#include "catch.hpp"
+#include <iostream>
 
-// Define the TreeNode struct
-struct TreeNode {
-    int val;
+// TreeNode class represents a node in the binary tree.
+class TreeNode {
+public:
+    // Constructor initializes a new TreeNode with the given key.
+    explicit TreeNode(int key) : val(key), left(nullptr), right(nullptr) {}
+
+    // Pointers to the left and right child nodes.
     TreeNode* left;
     TreeNode* right;
 
-    TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+    // Value stored in the node.
+    int val;
 };
 
-// Define the BinaryTree class
+// BinaryTree class implements a binary tree with insertion and traversal methods.
 class BinaryTree {
-private:
-    TreeNode* root;
-
-    void _insert(TreeNode*& node, int key);
-    std::vector<int> _inorderTraversal(TreeNode* node) const;
-    std::vector<int> _preorderTraversal(TreeNode* node) const;
-    std::vector<int> _postorderTraversal(TreeNode* node) const;
-
 public:
+    // Constructor initializes the root of the binary tree to null.
     BinaryTree() : root(nullptr) {}
 
+    // Inserts a new node with the given key into the binary tree.
     void insert(int key);
-    std::vector<int> inorderTraversal() const;
-    std::vector<int> preorderTraversal() const;
-    std::vector<int> postorderTraversal() const;
+
+private:
+    // Helper function to insert a new node with the given key.
+    void _insert(TreeNode* node, int key);
+
+public:
+    // Performs an inorder traversal of the binary tree and returns the result.
+    std::vector<int> inorder_traversal();
+
+private:
+    // Helper function to perform an inorder traversal.
+    void _inorder_traversal(TreeNode* node, std::vector<int>& result);
+
+public:
+    // Performs a preorder traversal of the binary tree and returns the result.
+    std::vector<int> preorder_traversal();
+
+private:
+    // Helper function to perform a preorder traversal.
+    void _preorder_traversal(TreeNode* node, std::vector<int>& result);
+
+public:
+    // Performs a postorder traversal of the binary tree and returns the result.
+    std::vector<int> postorder_traversal();
+
+private:
+    // Helper function to perform a postorder traversal.
+    void _postorder_traversal(TreeNode* node, std::vector<int>& result);
+
+    // Pointer to the root of the binary tree.
+    TreeNode* root;
 };
 
-void BinaryTree::_insert(TreeNode*& node, int key) {
-    if (node == nullptr) {
-        node = new TreeNode(key);
-    } else if (key < node->val) {
-        _insert(node->left, key);
-    } else {
-        _insert(node->right, key);
-    }
-}
-
-std::vector<int> BinaryTree::_inorderTraversal(TreeNode* node) const {
-    std::vector<int> result;
-    if (node != nullptr) {
-        result = _inorderTraversal(node->left);
-        result.push_back(node->val);
-        result.insert(result.end(), _inorderTraversal(node->right).begin(), _inorderTraversal(node->right).end());
-    }
-    return result;
-}
-
-std::vector<int> BinaryTree::_preorderTraversal(TreeNode* node) const {
-    std::vector<int> result;
-    if (node != nullptr) {
-        result.push_back(node->val);
-        result.insert(result.end(), _preorderTraversal(node->left).begin(), _preorderTraversal(node->left).end());
-        result.insert(result.end(), _preorderTraversal(node->right).begin(), _preorderTraversal(node->right).end());
-    }
-    return result;
-}
-
-std::vector<int> BinaryTree::_postorderTraversal(TreeNode* node) const {
-    std::vector<int> result;
-    if (node != nullptr) {
-        result.insert(result.end(), _postorderTraversal(node->left).begin(), _postorderTraversal(node->left).end());
-        result.insert(result.end(), _postorderTraversal(node->right).begin(), _postorderTraversal(node->right).end());
-        result.push_back(node->val);
-    }
-    return result;
-}
-
+// Implementation of the BinaryTree methods
 void BinaryTree::insert(int key) {
-    _insert(root, key);
+    if (root == nullptr) {
+        root = new TreeNode(key);
+    } else {
+        _insert(root, key);
+    }
 }
 
-std::vector<int> BinaryTree::inorderTraversal() const {
-    return _inorderTraversal(root);
+void BinaryTree::_insert(TreeNode* node, int key) {
+    if (key < node->val) {
+        if (node->left == nullptr) {
+            node->left = new TreeNode(key);
+        } else {
+            _insert(node->left, key);
+        }
+    } else {
+        if (node->right == nullptr) {
+            node->right = new TreeNode(key);
+        } else {
+            _insert(node->right, key);
+        }
+    }
 }
 
-std::vector<int> BinaryTree::preorderTraversal() const {
-    return _preorderTraversal(root);
+std::vector<int> BinaryTree::inorder_traversal() {
+    std::vector<int> result;
+    _inorder_traversal(root, result);
+    return result;
 }
 
-std::vector<int> BinaryTree::postorderTraversal() const {
-    return _postorderTraversal(root);
+void BinaryTree::_inorder_traversal(TreeNode* node, std::vector<int>& result) {
+    if (node != nullptr) {
+        _inorder_traversal(node->left, result);
+        result.push_back(node->val);
+        _inorder_traversal(node->right, result);
+    }
+}
+
+std::vector<int> BinaryTree::preorder_traversal() {
+    std::vector<int> result;
+    _preorder_traversal(root, result);
+    return result;
+}
+
+void BinaryTree::_preorder_traversal(TreeNode* node, std::vector<int>& result) {
+    if (node != nullptr) {
+        result.push_back(node->val);
+        _preorder_traversal(node->left, result);
+        _preorder_traversal(node->right, result);
+    }
+}
+
+std::vector<int> BinaryTree::postorder_traversal() {
+    std::vector<int> result;
+    _postorder_traversal(root, result);
+    return result;
+}
+
+void BinaryTree::_postorder_traversal(TreeNode* node, std::vector<int>& result) {
+    if (node != nullptr) {
+        _postorder_traversal(node->left, result);
+        _postorder_traversal(node->right, result);
+        result.push_back(node->val);
+    }
 }
 
 // Test cases using Catch2
-TEST_CASE("Binary Tree Tests", "[binarytree]") {
+TEST_CASE("Test empty tree", "[BinaryTree]") {
     BinaryTree bt;
-    bt.insert(50);
-    bt.insert(30);
-    bt.insert(70);
-    bt.insert(20);
-    bt.insert(40);
-    bt.insert(60);
-    bt.insert(80);
+    REQUIRE(bt.inorder_traversal() == std::vector<int>());
+    REQUIRE(bt.preorder_traversal() == std::vector<int>());
+    REQUIRE(bt.postorder_traversal() == std::vector<int>());
+}
 
-    SECTION("Inorder Traversal") {
-        std::vector<int> expected = {20, 30, 40, 50, 60, 70, 80};
-        REQUIRE(bt.inorderTraversal() == expected);
-    }
+TEST_CASE("Test single node tree", "[BinaryTree]") {
+    BinaryTree bt;
+    bt.insert(10);
+    REQUIRE(bt.inorder_traversal() == std::vector<int>({10}));
+    REQUIRE(bt.preorder_traversal() == std::vector<int>({10}));
+    REQUIRE(bt.postorder_traversal() == std::vector<int>({10}));
+}
 
-    SECTION("Preorder Traversal") {
-        std::vector<int> expected = {50, 30, 20, 40, 70, 60, 80};
-        REQUIRE(bt.preorderTraversal() == expected);
+TEST_CASE("Test balanced tree", "[BinaryTree]") {
+    BinaryTree bt;
+    std::vector<int> elements = {8, 3, 10, 1, 6, 9, 14};
+    for (int elem : elements) {
+        bt.insert(elem);
     }
+    REQUIRE(bt.inorder_traversal() == std::vector<int>({1, 3, 6, 8, 9, 10, 14}));
+    REQUIRE(bt.preorder_traversal() == std::vector<int>({8, 3, 1, 6, 10, 9, 14}));
+    REQUIRE(bt.postorder_traversal() == std::vector<int>({1, 6, 3, 9, 14, 10, 8}));
+}
 
-    SECTION("Postorder Traversal") {
-        std::vector<int> expected = {20, 40, 30, 60, 80, 70, 50};
-        REQUIRE(bt.postorderTraversal() == expected);
+TEST_CASE("Test left-heavy tree", "[BinaryTree]") {
+    BinaryTree bt;
+    for (int i = 10; i >= 1; --i) {
+        bt.insert(i);
     }
+    REQUIRE(bt.inorder_traversal() == std::vector<int>({1, 2, 3, 4, 5, 6, 7, 8, 9, 10}));
+    REQUIRE(bt.preorder_traversal() == std::vector<int>({10, 9, 8, 7, 6, 5, 4, 3, 2, 1}));
+    REQUIRE(bt.postorder_traversal() == std::vector<int>({1, 2, 3, 4, 5, 6, 7, 8, 9, 10}));
+}
+
+TEST_CASE("Test right-heavy tree", "[BinaryTree]") {
+    BinaryTree bt;
+    for (int i = 1; i <= 10; ++i) {
+        bt.insert(i);
+    }
+    REQUIRE(bt.inorder_traversal() == std::vector<int>({1, 2, 3, 4, 5, 6, 7, 8, 9, 10}));
+    REQUIRE(bt.preorder_traversal() == std::vector<int>({1, 2, 3, 4, 5, 6, 7, 8, 9, 10}));
+    REQUIRE(bt.postorder_traversal() == std::vector<int>({10, 9, 8, 7, 6, 5, 4, 3, 2, 1}));
 }
 ```
 
-### Explanation
+### Explanation:
+1. **Catch2 Test Cases**:
+   - Each test case is defined using the `TEST_CASE` macro from Catch2.
+   - The test cases are tagged with `[BinaryTree]` to categorize them.
 
-1. **TreeNode Struct**: This is a simple representation of a tree node.
-2. **BinaryTree Class**: This class contains methods to insert nodes and perform various traversals.
-   - `_insert`: A private helper method to insert a node into the tree.
-   - `_inorderTraversal`, `_preorderTraversal`, `_postorderTraversal`: Private helper methods to perform the respective traversals.
-   - `insert`, `inorderTraversal`, `preorderTraversal`, `postorderTraversal`: Public methods to insert nodes and get the traversal results.
-3. **Catch2 Test Cases**: The test cases check the correctness of the insertion and traversal methods.
+2. **BinaryTree Class**:
+   - The `BinaryTree` class is implemented with methods for insertion and traversal.
+   - The private helper methods (`_insert`, `_inorder_traversal`, `_preorder_traversal`, `_postorder_traversal`) are used to implement the core functionality.
 
-Make sure you have Catch2 installed and properly configured in your development environment. If you're using a build system like CMake, you can add Catch2 as a subdirectory or include it via a package manager.
+3. **Assertions**:
+   - `REQUIRE` is used for assertions to check the correctness of the traversal results.
+
+4. **Test Data**:
+   - Each test case creates a `BinaryTree` object, inserts elements, and verifies the traversal results using `REQUIRE`.
+
+This conversion preserves the functionality and logic of the original Python tests while adapting them to the C++ environment using Catch2.

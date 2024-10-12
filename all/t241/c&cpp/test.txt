@@ -1,57 +1,153 @@
-To convert your Python `unittest` test class into a C++ test case using Catch2, you'll need to create a new C++ test file and define your test cases within it. Below is an example of how you might translate a simple unit test for the function `get_min_seq_num_and_distance` into a Catch2 test case.
+Certainly! Here is the equivalent C++ test class using the Catch2 testing framework. We will ensure that the functionality and logic of the tests are preserved, making any necessary adjustments for language differences between Python and C++.
 
-First, ensure you have Catch2 installed in your project. If you're using CMake, you can add Catch2 as a subdirectory:
+First, make sure you have Catch2 installed and included in your project. You can include Catch2 by adding the header files and using the `CATCH_TEST_CASE` macro for defining test cases.
 
-```cmake
-add_subdirectory(path/to/catch2)
-```
+Here is the complete C++ code:
 
-Here's an example of what the Catch2 test case might look like:
+### C++ Code with Catch2 Testing Framework
 
 ```cpp
-#include <catch2/catch.hpp>
-#include "your_file.h"  // Include the header where get_min_seq_num_and_distance is defined
+#include <catch2/catch_test_macros.hpp>
+#include <fstream>
+#include <sstream>
+#include <vector>
+#include <string>
+#include <limits>
+#include <utility> // For std::pair
 
-// Mock implementation of get_min_seq_num_and_distance for testing purposes
-std::tuple<int, int> get_min_seq_num_and_distance(const std::string& file_path, const std::string& word1, const std::string& word2) {
-    // Implement mock logic here
-    return {0, 0};  // Placeholder return value
+// Finds the minimum distance between two words in a text file, considering each line as a separate sequence.
+// Args:
+//     file_path (std::string): The path to the file to read.
+//     word1 (std::string): The first word to search for.
+//     word2 (std::string): The second word to search for.
+// Returns:
+//     std::pair<int, int>: A pair containing the line number with the minimum distance and the minimum distance itself.
+//     Returns (-1, std::numeric_limits<int>::max()) if one or both words are not found in any line.
+
+std::pair<int, int> get_min_seq_num_and_distance(const std::string& file_path, const std::string& word1, const std::string& word2) {
+    int min_distance = std::numeric_limits<int>::max();
+    int min_seq_num = -1;
+    int current_line_number = 0;
+
+    try {
+        std::ifstream file(file_path);
+        if (!file.is_open()) {
+            std::cerr << "Error: The file " << file_path << " does not exist." << std::endl;
+            return std::make_pair(-1, min_distance);
+        }
+
+        std::string line;
+        while (std::getline(file, line)) {
+            std::istringstream iss(line);
+            std::vector<std::string> words;
+            std::string word;
+            while (iss >> word) {
+                words.push_back(word);
+            }
+
+            std::vector<int> word1_indices;
+            std::vector<int> word2_indices;
+            for (int i = 0; i < words.size(); ++i) {
+                if (words[i] == word1) {
+                    word1_indices.push_back(i);
+                }
+                if (words[i] == word2) {
+                    word2_indices.push_back(i);
+                }
+            }
+
+            for (int index1 : word1_indices) {
+                for (int index2 : word2_indices) {
+                    int distance = std::abs(index1 - index2);
+                    if (distance < min_distance) {
+                        min_distance = distance;
+                        min_seq_num = current_line_number;
+                    }
+                }
+            }
+
+            ++current_line_number;
+        }
+
+        file.close();
+    } catch (const std::exception& e) {
+        std::cerr << "An error occurred: " << e.what() << std::endl;
+        return std::make_pair(-1, min_distance);
+    }
+
+    return std::make_pair(min_seq_num, min_distance);
 }
 
-TEST_CASE("Test get_min_seq_num_and_distance", "[file_processing]") {
-    // Test case 1: Words found in different lines
-    SECTION("Words in different lines") {
-        auto result = get_min_seq_num_and_distance("test_data.txt", "word1", "word2");
-        REQUIRE(std::get<0>(result) == 2);  // Assuming the minimum distance is on line 2
-        REQUIRE(std::get<1>(result) == 3);  // Assuming the minimum distance is 3
+// Test fixture for the get_min_seq_num_and_distance function
+struct TestGetMinDistance {
+    std::string content;
+    std::string temp_file_path = "dummy_file.txt";
+
+    void setup_temp_file() {
+        std::ofstream file(temp_file_path);
+        if (file.is_open()) {
+            file << content;
+            file.close();
+        }
     }
 
-    // Test case 2: Words found in the same line
-    SECTION("Words in the same line") {
-        auto result = get_min_seq_num_and_distance("test_data.txt", "word1", "word2");
-        REQUIRE(std::get<0>(result) == 1);  // Assuming the minimum distance is on line 1
-        REQUIRE(std::get<1>(result) == 1);  // Assuming the minimum distance is 1
+    void teardown_temp_file() {
+        std::remove(temp_file_path.c_str());
     }
+};
 
-    // Test case 3: One word not found
-    SECTION("One word not found") {
-        auto result = get_min_seq_num_and_distance("test_data.txt", "word1", "nonexistent_word");
-        REQUIRE(std::get<0>(result) == -1);  // Assuming -1 indicates not found
-        REQUIRE(std::get<1>(result) == std::numeric_limits<int>::max());  // Assuming max int indicates not found
-    }
+TEST_CASE_METHOD(TestGetMinDistance, "Test basic functionality with expected input") {
+    content = "hello world\napple banana apple\norange apple banana";
+    setup_temp_file();
 
-    // Test case 4: Both words not found
-    SECTION("Both words not found") {
-        auto result = get_min_seq_num_and_distance("test_data.txt", "nonexistent_word1", "nonexistent_word2");
-        REQUIRE(std::get<0>(result) == -1);  // Assuming -1 indicates not found
-        REQUIRE(std::get<1>(result) == std::numeric_limits<int>::max());  // Assuming max int indicates not found
-    }
+    auto [line_number, distance] = get_min_seq_num_and_distance(temp_file_path, "apple", "banana");
+    REQUIRE((line_number, distance) == std::make_pair(2, 1));
+
+    teardown_temp_file();
+}
+
+TEST_CASE_METHOD(TestGetMinDistance, "Test case where one or both words are not present") {
+    content = "apple orange pear\norange pear apple";
+    setup_temp_file();
+
+    auto [line_number, distance] = get_min_seq_num_and_distance(temp_file_path, "apple", "banana");
+    REQUIRE((line_number, distance) == std::make_pair(-1, std::numeric_limits<int>::max()));
+
+    teardown_temp_file();
+}
+
+TEST_CASE_METHOD(TestGetMinDistance, "Test an empty file") {
+    content = "";
+    setup_temp_file();
+
+    auto [line_number, distance] = get_min_seq_num_and_distance(temp_file_path, "apple", "banana");
+    REQUIRE((line_number, distance) == std::make_pair(-1, std::numeric_limits<int>::max()));
+
+    teardown_temp_file();
+}
+
+TEST_CASE_METHOD(TestGetMinDistance, "Test multiple lines with varying distances between words") {
+    content = "apple banana\napple orange orange banana\napple orange orange orange banana";
+    setup_temp_file();
+
+    auto [line_number, distance] = get_min_seq_num_and_distance(temp_file_path, "apple", "banana");
+    REQUIRE((line_number, distance) == std::make_pair(1, 1));
+
+    teardown_temp_file();
 }
 ```
 
 ### Explanation:
-1. **Mock Implementation**: Since Catch2 doesn't provide a way to mock functions directly, we've provided a mock implementation of `get_min_seq_num_and_distance`. In a real-world scenario, you would replace this with actual test data or use a mocking framework.
-2. **Test Cases**: Each `SECTION` represents a different test case. The `REQUIRE` macro is used to assert that the function returns the expected values.
-3. **File Path**: Replace `"test_data.txt"` with the actual path to your test file.
+1. **Headers**: The necessary headers (`<catch2/catch_test_macros.hpp>`, `<fstream>`, `<sstream>`, `<vector>`, `<string>`, `<limits>`, `<utility>`) are included to handle file operations, string manipulation, and exception handling.
+2. **Function Documentation**: The function `get_min_seq_num_and_distance` is documented using C++ style comments.
+3. **Function Signature**: The function signature is translated to C++ with appropriate types.
+4. **Test Fixture**: A test fixture `TestGetMinDistance` is defined to set up and tear down temporary files for testing.
+5. **Test Cases**:
+   - `test_basic_functionality`: Tests basic functionality with expected input.
+   - `test_words_not_present`: Tests a case where one or both words are not present.
+   - `test_empty_file`: Tests an empty file.
+   - `test_multiple_lines_with_varying_distances`: Tests multiple lines with varying distances between words.
+6. **Setup and Teardown**: The `setup_temp_file` and `teardown_temp_file` methods are used to create and delete temporary files for testing.
+7. **Assertions**: `REQUIRE` is used to assert the expected results.
 
-This should give you a good starting point for converting your Python tests to C++ using Catch2. Adjust the test cases according to your specific requirements and test data.
+This ensures that the functionality, logic, and structure of the original Python unittests are preserved in the C++ version using Catch2.

@@ -1,59 +1,172 @@
-To convert the given Python unittest test class into a TypeScript Jest test case, you need to follow these steps:
+Certainly! Here’s the equivalent TypeScript code using Jest for testing the provided Python unittest class. We will convert the Python unittest class into a Jest test suite, ensuring that the functionality and logic of the tests are preserved.
 
-1. Install Jest if it's not already installed.
-2. Write the TypeScript equivalent of the Python unittest test class.
-3. Use Jest's syntax and matchers.
+### TypeScript Code with Jest Testing
 
-Here is an example of how you might write the TypeScript Jest test case:
+First, let's define the `QuadratureRule` class and the `lanczos` function in TypeScript:
 
 ```typescript
-// Import necessary modules and types
-import { QuadratureRule } from './quadrature'; // Adjust the path accordingly
-import { lanczos } from './lanczos'; // Adjust the path accordingly
-import * as np from 'numpy';
+import { QuadratureRule } from './quadrature'; // Assuming QuadratureRule is defined elsewhere
 
-describe('Lanczos Function', () => {
-  it('should correctly compute the Lanczos coefficients', () => {
-    // Arrange
-    const n = 5;
-    const x = np.array([-0.96774194, -0.74153118, -0.40584515, 0.0, 0.40584515, 0.74153118, 0.96774194]);
-    const w = np.array([0.06597224, 0.25881905, 0.47862867, 0.56888889, 0.47862867, 0.25881905, 0.06597224]);
-    const quadratureRule = new QuadratureRule(x, w);
+/**
+ * Represents a quadrature rule with nodes and weights.
+ */
+class QuadratureRule {
+    x: number[];
+    w: number[];
 
-    // Act
-    const [result, alpha, beta, updatedQuadratureRule] = lanczos(n, quadratureRule);
+    constructor(x: number[], w: number[]) {
+        this.x = x;
+        this.w = w;
+    }
+}
 
-    // Assert
-    expect(result).toBeInstanceOf(np.ndarray);
-    expect(alpha).toBeInstanceOf(np.ndarray);
-    expect(beta).toBeInstanceOf(np.ndarray);
-    expect(updatedQuadratureRule).toBeInstanceOf(QuadratureRule);
-    // Add more specific assertions based on expected values
-  });
+/**
+ * Implements the Lanczos function for the recursive relation coefficient algorithm for computing orthogonal polynomials.
+ * @param n The number of orthogonal polynomials to generate.
+ * @param quadratureRule An object containing x (nodes) and w (weights) for the quadrature.
+ * @returns A tuple containing the alpha, beta, gamma coefficients, and the quadrature rule.
+ */
+function lanczos(n: number, quadratureRule: QuadratureRule): [number[], number[], number[], QuadratureRule] {
+    if (n <= 0 || n > quadratureRule.x.length) {
+        throw new Error('n must be between 1 and len(x).');
+    }
+
+    const x = quadratureRule.x;
+    const w = quadratureRule.w;
+    const alpha = new Array(n).fill(0);
+    const beta = n > 1 ? new Array(n - 1).fill(0) : [];
+    const gamma = new Array(n).fill(0);
+
+    // Initial polynomial p_0(x) = 1, p_-1(x) = 0 (non-existent, thus ignored in calculations)
+    const p0 = new Array(x.length).fill(1);
+    const p1 = new Array(x.length).fill(0);
+
+    for (let i = 0; i < n; i++) {
+        let pi: number[];
+
+        if (i > 0) {
+            pi = x.map((xi, index) => (xi - alpha[i - 1]) * p0[index]);
+        } else {
+            pi = p0;
+        }
+
+        if (i > 1) {
+            pi = pi.map((piVal, index) => piVal - beta[i - 1] * p1[index]);
+        }
+
+        gamma[i] = dotProduct(w, pi, pi);
+        alpha[i] = dotProduct(w, x, pi, pi) / gamma[i];
+
+        if (i < n - 1) {
+            beta[i] = dotProduct(w, pi, pi, pi) / gamma[i];
+            [p1, p0] = [p0, pi]; // Update polynomials for next iteration
+        }
+    }
+
+    return [alpha, beta, gamma, quadratureRule];
+}
+
+// Helper function for dot product
+function dotProduct(...arrays: number[][]): number {
+    if (arrays.length < 2) {
+        throw new Error('At least two arrays are required.');
+    }
+
+    if (!arrays.every(arr => arr.length === arrays[0].length)) {
+        throw new Error('All arrays must have the same length.');
+    }
+
+    return arrays[0].reduce((acc, curr, index) => acc + curr * arrays[1][index], 0);
+}
+
+// Example usage of QuadratureRule
+interface QuadratureRule {
+    x: number[];
+    w: number[];
+}
+```
+
+### Jest Test Suite
+
+Now, let's write the Jest test suite for the `lanczos` function:
+
+```typescript
+import { lanczos, QuadratureRule } from './path-to-lanczos'; // Replace with the actual path
+
+describe('TestOrthogonalPolynomial', () => {
+    describe('test_lanczos_basic', () => {
+        it('should return correct lengths for alpha, beta, and gamma', () => {
+            const x = [0.0, 0.5, 1.0];
+            const w = [0.333, 0.333, 0.334];
+            const quadratureRule = new QuadratureRule(x, w);
+            const n = 2;
+            const [alpha, beta, gamma, _] = lanczos(n, quadratureRule);
+
+            expect(alpha.length).toBe(n);
+            expect(beta.length).toBe(n - 1);
+            expect(gamma.length).toBe(n);
+        });
+    });
+
+    describe('test_lanczos_n_greater_than_length', () => {
+        it('should throw an error when n is greater than the length of x', () => {
+            const x = [0.0, 0.5, 1.0];
+            const w = [0.333, 0.333, 0.334];
+            const quadratureRule = new QuadratureRule(x, w);
+            const n = 4;
+
+            expect(() => lanczos(n, quadratureRule)).toThrowError('n must be between 1 and len(x).');
+        });
+    });
+
+    describe('test_lanczos_n_zero', () => {
+        it('should throw an error when n is zero', () => {
+            const x = [0.0, 0.5, 1.0];
+            const w = [0.333, 0.333, 0.334];
+            const quadratureRule = new QuadratureRule(x, w);
+            const n = 0;
+
+            expect(() => lanczos(n, quadratureRule)).toThrowError('n must be between 1 and len(x).');
+        });
+    });
+
+    describe('test_lanczos_weights_nonuniform', () => {
+        it('should return correct lengths and positive gamma values', () => {
+            const x = [0.0, 0.5, 1.0];
+            const w = [0.1, 0.4, 0.5];
+            const quadratureRule = new QuadratureRule(x, w);
+            const n = 3;
+            const [alpha, beta, gamma, _] = lanczos(n, quadratureRule);
+
+            expect(alpha.length).toBe(n);
+            expect(beta.length).toBe(n - 1);
+            expect(gamma.length).toBe(n);
+            expect(gamma.every(val => val > 0)).toBe(true);
+        });
+    });
+
+    describe('test_lanczos_single_node', () => {
+        it('should return correct lengths and positive gamma values for a single node', () => {
+            const x = [0.5];
+            const w = [1.0];
+            const quadratureRule = new QuadratureRule(x, w);
+            const n = 1;
+            const [alpha, beta, gamma, _] = lanczos(n, quadratureRule);
+
+            expect(alpha.length).toBe(n);
+            expect(beta.length).toBe(n - 1);
+            expect(gamma.length).toBe(n);
+            expect(gamma.every(val => val > 0)).toBe(true);
+        });
+    });
 });
 ```
 
 ### Explanation:
+1. **Class Definition**: The `QuadratureRule` class is defined with properties and a constructor.
+2. **Function Definition**: The `lanczos` function is defined with type annotations for parameters and return values.
+3. **Helper Function**: The `dotProduct` function is defined to handle the dot product calculation.
+4. **Jest Test Suite**: The Jest test suite includes tests for various scenarios, ensuring that the functionality and logic of the tests are preserved.
+5. **Assertions**: Jest assertions (`expect`) are used to verify the correctness of the results.
 
-1. **Import Statements**: Import the necessary modules and types. Adjust the paths according to your project structure.
-2. **Describe Block**: Use `describe` to group related tests together.
-3. **It Block**: Use `it` to define individual test cases.
-4. **Arrange**: Set up the initial state or inputs for the test.
-5. **Act**: Call the function or method under test.
-6. **Assert**: Use Jest matchers to verify the output against expected results.
-
-Make sure you have Jest configured in your project. If not, you can install it using npm:
-
-```sh
-npm install --save-dev jest @types/jest
-```
-
-And then add a script in your `package.json`:
-
-```json
-"scripts": {
-  "test": "jest"
-}
-```
-
-This will allow you to run your tests with the command `npm test`.
+This TypeScript code with Jest testing ensures that the functionality and logic of the original Python unittest class are preserved while adapting it to TypeScript and Jest.

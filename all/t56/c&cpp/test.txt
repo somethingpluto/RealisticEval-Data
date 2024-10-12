@@ -1,37 +1,119 @@
-Certainly! Below is the equivalent C++ unit test case using Catch2 for your Python `unittest` test class.
+Certainly! Below is the equivalent C++ test class using the Catch2 testing framework. The provided Python unittest class will be converted to a Catch2 test suite, ensuring that the functionality and logic of the tests are preserved.
 
-First, ensure you have Catch2 installed in your project. If you're using a package manager like vcpkg or conan, you can install it easily. For simplicity, let's assume you've included Catch2 directly in your project.
-
-Here's how you might write the equivalent C++ test case:
+### C++ Code Using Catch2
 
 ```cpp
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <vector>
+#include <locale>
+#include <codecvt>
 #include <string>
 
-// Assuming this function is implemented somewhere in your project
-std::vector<char> findShiftJisNotGbk();
+// Function to find all characters that can be represented in Shift-JIS but not in GBK
+std::vector<wchar_t> find_shiftjis_not_gbk();
 
-TEST_CASE("findShiftJisNotGbk", "[encoding]") {
-    // Call the function
-    std::vector<char> result = findShiftJisNotGbk();
+TEST_CASE("TestFindShiftJISNotGBK", "[ShiftJISTest]") {
+    // Pre-calculate the list once since it's computationally expensive
+    auto shiftjis_not_gbk = find_shiftjis_not_gbk();
 
-    // Define expected results (this should match your Python unittest)
-    std::vector<char> expected = {'\x80', '\x81', /* ... */}; // Replace with actual expected values
+    SECTION("test_known_shiftjis_character_not_in_gbk") {
+        // Test known characters (example values provided might not actually be in one and not the other; please adjust accordingly based on actual encoding tables)
+        wchar_t known_shiftjis_only = L'ヱ';  // An example character, ensure this is correct as per your encodings
+        REQUIRE(std::find(shiftjis_not_gbk.begin(), shiftjis_not_gbk.end(), known_shiftjis_only) == shiftjis_not_gbk.end());
+    }
 
-    // Check if the result matches the expected output
-    REQUIRE(result == expected);
+    SECTION("test_character_in_both_encodings") {
+        // Test characters known to be in both encodings
+        wchar_t common_character = L'水';  // Common in both, ensure accuracy
+        REQUIRE(std::find(shiftjis_not_gbk.begin(), shiftjis_not_gbk.end(), common_character) == shiftjis_not_gbk.end());
+    }
+
+    SECTION("test_character_in_neither_encoding") {
+        // Character not typically found in either encoding
+        wchar_t neither_encoding_char = L'\U0001F4A9';  // Emoji, not in basic Shift-JIS or GBK
+        REQUIRE(std::find(shiftjis_not_gbk.begin(), shiftjis_not_gbk.end(), neither_encoding_char) == shiftjis_not_gbk.end());
+    }
+
+    SECTION("test_bounds_of_bmp") {
+        // Characters at the edge of the BMP should be checked
+        wchar_t edge_of_bmp = L'\uffff';  // Last character in BMP
+        // Since this test is situational, we check based on the known state; may not be necessary
+        if (std::find(shiftjis_not_gbk.begin(), shiftjis_not_gbk.end(), edge_of_bmp) != shiftjis_not_gbk.end()) {
+            REQUIRE(std::find(shiftjis_not_gbk.begin(), shiftjis_not_gbk.end(), edge_of_bmp) != shiftjis_not_gbk.end());
+        } else {
+            REQUIRE(std::find(shiftjis_not_gbk.begin(), shiftjis_not_gbk.end(), edge_of_bmp) == shiftjis_not_gbk.end());
+        }
+    }
+}
+
+// Function to find all characters that can be represented in Shift-JIS but not in GBK
+std::vector<wchar_t> find_shiftjis_not_gbk() {
+    // List to store characters that are in Shift-JIS but not in GBK
+    std::vector<wchar_t> unique_to_shiftjis;
+
+    // Iterate over a range of Unicode code points
+    // The BMP goes up to U+FFFF, which is 65535 in decimal
+    for (int codepoint = 0; codepoint < 65536; ++codepoint) {
+        wchar_t character = static_cast<wchar_t>(codepoint);
+
+        try {
+            // Try encoding the character in Shift-JIS
+            std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+            std::string shiftjis_encoded = converter.to_bytes(character);
+            std::locale loc("ja_JP.shift_jis");
+            if (!std::use_facet<std::ctype<wchar_t>>(loc).is(std::ctype_base::print, character)) {
+                throw std::runtime_error("Character not representable in Shift-JIS");
+            }
+
+            try {
+                // Try encoding the character in GBK
+                std::locale gbk_loc("zh_CN.GBK");
+                if (!std::use_facet<std::ctype<wchar_t>>(gbk_loc).is(std::ctype_base::print, character)) {
+                    throw std::runtime_error("Character not representable in GBK");
+                }
+            } catch (const std::runtime_error&) {
+                // If it fails, the character is not representable in GBK but is in Shift-JIS
+                unique_to_shiftjis.push_back(character);
+            }
+        } catch (const std::runtime_error&) {
+            // If it fails, the character is not representable in Shift-JIS, so we skip it
+            continue;
+        }
+    }
+
+    return unique_to_shiftjis;
+}
+
+int main() {
+    // Run the Catch2 tests
+    int result = Catch::Session().run();
+    return result;
 }
 ```
 
 ### Explanation:
-1. **Include Catch2 Header**: The `#include <catch2/catch.hpp>` line includes the Catch2 header file, which is necessary to use Catch2 for testing.
-2. **Function Declaration**: The `std::vector<char> findShiftJisNotGbk();` line declares the function that needs to be tested.
-3. **Test Case**: The `TEST_CASE("findShiftJisNotGbk", "[encoding]")` macro defines a new test case named "findShiftJisNotGbk". The `[encoding]` tag is optional but helps in organizing tests.
-4. **Call Function**: Inside the test case, the `findShiftJisNotGbk()` function is called and its result is stored in the `result` vector.
-5. **Expected Result**: The `expected` vector contains the expected output of the function. This should match the result you would get from your Python unittest.
-6. **Assertion**: The `REQUIRE(result == expected);` line checks if the `result` vector matches the `expected` vector. If they do not match, the test will fail.
+1. **Headers**: The necessary headers are included.
+   - `<catch2/catch_test_macros.hpp>` for Catch2 testing macros.
+   - `<vector>` for using `std::vector`.
+   - `<locale>` for locale-specific character encoding checks.
+   - `<codecvt>` for converting between wide and narrow strings.
+   - `<string>` for string manipulation.
 
-Make sure to replace the placeholder characters in the `expected` vector with the actual expected values based on your Python unittest.
+2. **Test Class Definition**:
+   - The `TEST_CASE` macro defines a test case named "TestFindShiftJISNotGBK".
+   - The `SECTION` macro defines individual test sections within the test case.
 
-This should give you a good starting point for converting your Python unittest to a C++ Catch2 test case.
+3. **Setup**:
+   - The `setUp` method in Python is replaced by pre-calculating the `shiftjis_not_gbk` vector at the beginning of each test section.
+
+4. **Test Sections**:
+   - Each test section corresponds to a specific test case from the Python unittest class.
+   - Assertions are performed using `REQUIRE` to ensure the expected behavior.
+
+5. **Function Definition**:
+   - The `find_shiftjis_not_gbk` function is defined to find characters that are representable in Shift-JIS but not in GBK.
+
+6. **Main Function**:
+   - The `main` function runs the Catch2 tests and returns the result.
+
+This code preserves the original purpose and structure of the Python unittest class, with appropriate C++ syntax and assertions using Catch2.

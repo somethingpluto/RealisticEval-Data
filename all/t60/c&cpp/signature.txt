@@ -1,16 +1,89 @@
-Sure! Below is the equivalent C++ code signature with comments:
+Certainly! Here is the equivalent C++ code for the given Python function, including the translation of the function signature, comments, and documentation:
 
 ```cpp
+#include <iostream>
+#include <filesystem>
 #include <vector>
-#include <string>
+#include <set>
+#include <fstream>
+#include <sstream>
+
+// Function to read column names from a CSV file
+std::vector<std::string> readCSVColumns(const std::string& filepath) {
+    std::ifstream file(filepath);
+    std::string line;
+    std::getline(file, line); // Read the first line which contains headers
+    std::istringstream ss(line);
+    std::string column;
+    std::vector<std::string> columns;
+
+    while (std::getline(ss, column, ',')) {
+        columns.push_back(column);
+    }
+
+    return columns;
+}
 
 /**
- * Find the common columns of all CSV files in a directory and return these column names as a vector.
+ * Find the common columns of all CSV files in a directory and return these column names as a list.
  *
- * @param directory The directory path containing the CSV files.
- * @return A vector containing the names of the common columns.
+ * @param directory Directory path.
+ * @return A vector containing the common column names.
  */
-std::vector<std::string> findCommonColumns(const std::string& directory);
+std::vector<std::string> findCommonColumns(const std::string& directory) {
+    std::vector<std::set<std::string>> columnSets;
+
+    // Iterate through all files in the specified directory
+    for (const auto& entry : std::filesystem::directory_iterator(directory)) {
+        if (entry.path().extension() == ".csv") {
+            std::vector<std::string> columns = readCSVColumns(entry.path().string());
+            columnSets.emplace_back(columns.begin(), columns.end());
+        }
+    }
+
+    if (!columnSets.empty()) {
+        std::set<std::string> commonColumns = columnSets[0];
+        for (size_t i = 1; i < columnSets.size(); ++i) {
+            std::set<std::string> tempSet;
+            std::set_intersection(commonColumns.begin(), commonColumns.end(),
+                                  columnSets[i].begin(), columnSets[i].end(),
+                                  std::inserter(tempSet, tempSet.begin()));
+            commonColumns = std::move(tempSet);
+        }
+        return std::vector<std::string>(commonColumns.begin(), commonColumns.end());
+    } else {
+        return {};
+    }
+}
+
+int main() {
+    std::string directory = "path/to/your/directory";
+    std::vector<std::string> commonColumns = findCommonColumns(directory);
+
+    for (const auto& column : commonColumns) {
+        std::cout << column << std::endl;
+    }
+
+    return 0;
+}
 ```
 
-This C++ function signature follows the same structure and purpose as your Python function, including the use of `std::vector` for returning a list of strings.
+### Explanation:
+1. **Function Signature**:
+   - The Python function `find_common_columns` is translated to `findCommonColumns` in C++.
+   - The function takes a `std::string` parameter for the directory path and returns a `std::vector<std::string>` for the common column names.
+
+2. **Comments and Documentation**:
+   - The Python docstring is translated into a multi-line comment block using `/* ... */`.
+   - Single-line comments are used where necessary.
+
+3. **Reading CSV Files**:
+   - The `readCSVColumns` function reads the first line of a CSV file and extracts the column names.
+
+4. **Finding Common Columns**:
+   - The `findCommonColumns` function iterates over all CSV files in the specified directory, reads their column names, and finds the common columns using set intersection.
+
+5. **Main Function**:
+   - The `main` function demonstrates how to use the `findCommonColumns` function and prints the common columns.
+
+This C++ code ensures that the functionality, logic, and structure of the original Python code are preserved while adhering to C++ syntax and conventions.

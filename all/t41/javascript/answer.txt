@@ -1,45 +1,60 @@
-Here is the JavaScript equivalent of your Python code:
+Sure! Below is the equivalent JavaScript code for the provided Python Bloom Filter implementation:
 
 ```javascript
-class BloomFilter {
-    /**
-     * Implement a bloom filter class with an add method that adds an element to the Bloom filter.
-     * Callers can check for the presence of an element directly using the 'includes' method.
-     */
+const crypto = require('crypto');
 
+class BloomFilter {
     constructor(size, hashCount) {
-        // Initialize the Bloom Filter
         this.size = size;
         this.hashCount = hashCount;
-        this.filter = new Array(size).fill(false);
+        this.bitArray = new Uint8Array(size / 8);
+    }
+
+    _hashes(item) {
+        // Generate multiple hashes for an item
+        const itemBuffer = Buffer.from(item, 'utf-8');
+        for (let i = 0; i < this.hashCount; i++) {
+            // Create a new hash for each hash count using a seed
+            const hashResult = crypto.createHash('sha256').update(itemBuffer).digest('hex');
+            const numericHashResult = parseInt(hashResult, 16) + i;
+            yield numericHashResult % this.size;
+        }
     }
 
     add(item) {
-        // Add an item to the Bloom Filter
-        for (let i = 0; i < this.hashCount; i++) {
-            const index = this._hash(item, i);
-            this.filter[index] = true;
+        // Add an item to the bloom filter
+        for (const hashValue of this._hashes(item)) {
+            const byteIndex = Math.floor(hashValue / 8);
+            const bitIndex = hashValue % 8;
+            this.bitArray[byteIndex] |= (1 << bitIndex);
         }
     }
 
-    _hash(item, seed) {
-        let hash = 0;
-        for (let i = 0; i < item.length; i++) {
-            hash = ((hash << 5) - hash + item.charCodeAt(i) + seed) | 0;
-        }
-        return Math.abs(hash % this.size);
-    }
-
-    includes(item) {
-        for (let i = 0; i < this.hashCount; i++) {
-            const index = this._hash(item, i);
-            if (!this.filter[index]) {
+    contains(item) {
+        // Check if an item is in the bloom filter
+        for (const hashValue of this._hashes(item)) {
+            const byteIndex = Math.floor(hashValue / 8);
+            const bitIndex = hashValue % 8;
+            if ((this.bitArray[byteIndex] & (1 << bitIndex)) === 0) {
                 return false;
             }
         }
         return true;
     }
 }
+
+// Example usage
+const bloomFilter = new BloomFilter(1000, 5);
+bloomFilter.add("hello");
+console.log(bloomFilter.contains("hello"));  // Should log true
+console.log(bloomFilter.contains("world"));  // Should log false
 ```
 
-This JavaScript version uses an array `filter` to represent the bits in the Bloom filter. The `_hash` function generates a hash value for each item and seed. The `add` function sets the corresponding bit(s) to `true`, and the `includes` function checks if all corresponding bits are `true`. Note that this is a simple implementation and may not provide optimal performance or space efficiency compared to more sophisticated implementations.
+### Explanation:
+1. **Importing `crypto` Module**: The `crypto` module is used for generating SHA-256 hashes.
+2. **Bit Array Representation**: In JavaScript, we use a `Uint8Array` to represent the bit array. Each byte represents 8 bits.
+3. **Hash Generation**: The `_hashes` method generates multiple hashes for an item by adding a seed value (`i`) to the hash result.
+4. **Adding Items**: The `add` method sets the corresponding bits in the bit array based on the hash values.
+5. **Checking Containment**: The `contains` method checks if all the bits corresponding to the hash values are set.
+
+This should provide a functional equivalent of the Python Bloom Filter in JavaScript.

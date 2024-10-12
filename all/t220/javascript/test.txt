@@ -1,78 +1,213 @@
-Here's how you could write your `UniqueDeque` class in JavaScript using Jest for testing:
+Certainly! Below is the equivalent Jest test suite for the given Python unittest class. The conversion will maintain the functionality and logic of the tests while adapting to Jest's syntax and assertion methods.
 
+### Python Unittest Code:
+```python
+import unittest
+from collections import deque
+
+class UniqueDeque:
+    def __init__(self):
+        self._array = []
+        self._set = set()
+
+    def add(self, item):
+        if item not in self._set:
+            self._array.append(item)
+            self._set.add(item)
+            return True
+        return False
+
+    def delete(self, item):
+        index = self._array.index(item) if item in self._set else -1
+        if index != -1:
+            self._array.pop(index)
+            self._set.remove(item)
+            return True
+        return False
+
+    def contains(self, item):
+        return item in self._set
+
+    def __len__(self):
+        return len(self._array)
+
+    def __iter__(self):
+        return iter(self._array)
+
+    def __repr__(self):
+        return f"UniqueDeque({list(self._array)})"
+
+class TestUniqueDeque(unittest.TestCase):
+
+    def test_add_unique_elements(self):
+        ud = UniqueDeque()
+        self.assertTrue(ud.add(1))
+        self.assertTrue(ud.add(2))
+        self.assertTrue(ud.add(3))
+        self.assertEqual(len(ud), 3)
+        self.assertEqual(list(ud), [1, 2, 3])
+
+    def test_add_duplicate_elements(self):
+        ud = UniqueDeque()
+        self.assertTrue(ud.add(1))
+        self.assertFalse(ud.add(1))  # Duplicate add should return False
+        self.assertEqual(len(ud), 1)
+        self.assertEqual(list(ud), [1])
+
+    def test_delete_elements(self):
+        ud = UniqueDeque()
+        ud.add(1)
+        ud.add(2)
+        ud.add(3)
+        self.assertTrue(ud.delete(2))
+        self.assertFalse(ud.delete(2))  # Deleting non-existing element should return False
+        self.assertEqual(len(ud), 2)
+        self.assertEqual(list(ud), [1, 3])
+
+    def test_contains(self):
+        ud = UniqueDeque()
+        ud.add(1)
+        self.assertTrue(ud.contains(1))
+        self.assertFalse(ud.contains(2))
+        ud.delete(1)
+        self.assertFalse(ud.contains(1))
+
+    def test_iter_and_len(self):
+        ud = UniqueDeque()
+        ud.add(1)
+        ud.add(2)
+        self.assertEqual(len(ud), 2)
+        items = list(iter(ud))
+        self.assertEqual(items, [1, 2])
+        ud.delete(1)
+        self.assertEqual(len(ud), 1)
+        self.assertEqual(list(ud), [2])
+
+if __name__ == '__main__':
+    unittest.main()
+```
+
+### Equivalent Jest Test Suite:
 ```javascript
-// Import required packages
-const { Deque } = require('collections/deque');
-
+// Import the UniqueDeque class
 class UniqueDeque {
   constructor() {
-    this.deque = new Deque();
+    this._array = [];
+    this._set = new Set();
   }
 
   add(item) {
-    if (!this.contains(item)) {
-      this.deque.pushBack(item);
+    if (!this._set.has(item)) {
+      this._array.push(item);
+      this._set.add(item);
       return true;
     }
     return false;
   }
 
   delete(item) {
-    const index = this.deque.toArray().indexOf(item);
+    const index = this._array.findIndex(element => element === item);
     if (index !== -1) {
-      this.deque.removeAt(index);
+      this._array.splice(index, 1);
+      this._set.delete(item);
       return true;
     }
     return false;
   }
 
   contains(item) {
-    return this.deque.toArray().includes(item);
+    return this._set.has(item);
   }
 
-  get size() {
-    return this.deque.size();
+  get length() {
+    return this._array.length;
   }
 
-  [Symbol.iterator]() {
-    let i = 0;
-    const array = this.deque.toArray();
-    return {
-      next: () => ({
-        value: array[i++],
-        done: i > array.length,
-      }),
-    };
+  *[Symbol.iterator]() {
+    for (const item of this._array) {
+      yield item;
+    }
+  }
+
+  toString() {
+    return `UniqueDeque(${JSON.stringify(this._array)})`;
   }
 }
 
-module.exports = UniqueDeque;
-
-// Test file: UniqueDeque.test.js
-const UniqueDeque = require('./UniqueDeque');
-const { expect } = require('@jest/globals');
-
-describe('UniqueDeque', () => {
-  let uniqueDeque;
-
-  beforeEach(() => {
-    uniqueDeque = new UniqueDeque();
-  });
-
-  describe('add method', () => {
-    test('adds an item when it is not present', () => {
-      expect(uniqueDeque.add(1)).toBe(true);
-      expect(uniqueDeque.add(2)).toBe(true);
-    });
-
-    test('does not add an item when it is already present', () => {
-      uniqueDeque.add(1);
-      expect(uniqueDeque.add(1)).toBe(false);
+describe('TestUniqueDeque', () => {
+  describe('test_add_unique_elements', () => {
+    it('should add unique elements and maintain the correct size and order', () => {
+      const ud = new UniqueDeque();
+      expect(ud.add(1)).toBe(true);
+      expect(ud.add(2)).toBe(true);
+      expect(ud.add(3)).toBe(true);
+      expect(ud.length).toBe(3);
+      expect([...ud]).toEqual([1, 2, 3]);
     });
   });
 
-  // Similarly, implement tests for other methods...
+  describe('test_add_duplicate_elements', () => {
+    it('should handle duplicate adds correctly', () => {
+      const ud = new UniqueDeque();
+      expect(ud.add(1)).toBe(true);
+      expect(ud.add(1)).toBe(false); // Duplicate add should return false
+      expect(ud.length).toBe(1);
+      expect([...ud]).toEqual([1]);
+    });
+  });
+
+  describe('test_delete_elements', () => {
+    it('should delete elements correctly', () => {
+      const ud = new UniqueDeque();
+      ud.add(1);
+      ud.add(2);
+      ud.add(3);
+      expect(ud.delete(2)).toBe(true);
+      expect(ud.delete(2)).toBe(false); // Deleting non-existing element should return false
+      expect(ud.length).toBe(2);
+      expect([...ud]).toEqual([1, 3]);
+    });
+  });
+
+  describe('test_contains', () => {
+    it('should check if elements are contained correctly', () => {
+      const ud = new UniqueDeque();
+      ud.add(1);
+      expect(ud.contains(1)).toBe(true);
+      expect(ud.contains(2)).toBe(false);
+      ud.delete(1);
+      expect(ud.contains(1)).toBe(false);
+    });
+  });
+
+  describe('test_iter_and_len', () => {
+    it('should iterate and provide correct length', () => {
+      const ud = new UniqueDeque();
+      ud.add(1);
+      ud.add(2);
+      expect(ud.length).toBe(2);
+      const items = [...ud];
+      expect(items).toEqual([1, 2]);
+      ud.delete(1);
+      expect(ud.length).toBe(1);
+      expect([...ud]).toEqual([2]);
+    });
+  });
 });
 ```
 
-Note that I've used the `collections/deque` package from npm to provide a deque implementation in Node.js. If you're running this code in another environment or prefer not to use an external package, you would need to implement the deque functionality yourself or find an alternative solution. Also, please note that the `contains` and `delete` methods have been simplified here since JavaScript does not support built-in deques with these exact methods. Instead, we convert the deque to an array and perform operations on that array.
+### Explanation:
+1. **Class Definition**: The `UniqueDeque` class is defined with the necessary methods.
+2. **Test Suite Structure**:
+   - Each test case is organized within a `describe` block.
+   - Each test case is defined using `it` blocks.
+3. **Assertions**:
+   - `expect(ud.add(1)).toBe(true)` checks if the method returns the expected value.
+   - `expect(ud.length).toBe(3)` checks the length of the deque.
+   - `expect([...ud]).toEqual([1, 2, 3])` checks the contents of the deque by converting it to an array.
+4. **Conversion Details**:
+   - The `__len__` method is replaced with a getter `get length`.
+   - The `__iter__` method is replaced with `[Symbol.iterator]`.
+   - The `__repr__` method is replaced with `toString`.
+
+This conversion ensures that the functionality and logic of the tests are preserved while adapting to Jest's syntax and assertion methods.

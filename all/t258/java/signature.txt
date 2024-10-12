@@ -1,18 +1,100 @@
-Here's the equivalent Java code signature with comments:
+Certainly! Here is the equivalent Java code for the given Python function, including appropriate Javadoc comments and type conversions:
 
 ```java
-import java.nio.charset.Charset;
-import java.util.Arrays;
+import java.nio.charset.StandardCharsets;
+import java.nio.charset.UnsupportedCharsetException;
 
-/**
- * Extracts the position and bits of a specific character from a byte array.
- *
- * @param byteArray The byte array to search within
- * @param charToFind The character to find in the byte array
- * @param charset The character encoding of the byte array
- * @return A tuple of (position, bits) if the character is found, otherwise null.
- */
-public static Integer[] extractCharacterBits(byte[] byteArray, String charToFind, Charset charset) {
+public class Answer {
+
+    /**
+     * Extracts the position and bits of a specific character from a byte array.
+     *
+     * @param byteArray The byte array to search within
+     * @param character The character to find in the byte array
+     * @param charset   The character encoding of the byte array
+     * @return A pair of (position, bits) if the character is found, otherwise null
+     */
+    public static Pair<Integer, String> extractCharacterBits(byte[] byteArray, char character, String charset) {
+        try {
+            // Decode byte array to string using the specified character set
+            String string = new String(byteArray, charset);
+            return extractCharacterDetails(string, character, charset);
+        } catch (UnsupportedCharsetException e) {
+            System.out.println("Failed to decode the byte array.");
+            return null;
+        }
+    }
+
+    private static Pair<Integer, String> extractCharacterDetails(String string, char character, String charset) {
+        // Check if the character is in the decoded string
+        if (string.indexOf(character) != -1) {
+            int position = string.indexOf(character);
+
+            // Find the byte position of the character
+            int bytePosition = string.substring(0, position).getBytes(StandardCharsets.UTF_8).length;
+
+            // Determine the length of the character in bytes
+            int charLength = Character.toString(character).getBytes(StandardCharsets.UTF_8).length;
+
+            // Extract the bits corresponding to the character
+            byte[] bits = new byte[charLength];
+            System.arraycopy(byteArray, bytePosition, bits, 0, charLength);
+
+            // Convert bits to a human-readable binary string
+            StringBuilder bitsAsString = new StringBuilder();
+            for (byte b : bits) {
+                bitsAsString.append(String.format("%8s", Integer.toBinaryString(b & 0xFF)).replace(' ', '0')).append(" ");
+            }
+
+            return new Pair<>(position, bitsAsString.toString().trim());
+        } else {
+            System.out.printf("The character '%c' is not in the byte array.%n", character);
+            return null;
+        }
+    }
+
+    // Simple implementation of a Pair class
+    public static class Pair<K, V> {
+        private K key;
+        private V value;
+
+        public Pair(K key, V value) {
+            this.key = key;
+            this.value = value;
+        }
+
+        public K getKey() {
+            return key;
+        }
+
+        public V getValue() {
+            return value;
+        }
+    }
+
+    public static void main(String[] args) {
+        byte[] byteArray = "Hello, world!".getBytes(StandardCharsets.UTF_8);
+        char character = 'w';
+        String charset = "UTF-8";
+
+        Pair<Integer, String> result = extractCharacterBits(byteArray, character, charset);
+        if (result != null) {
+            System.out.println("Position: " + result.getKey() + ", Bits: " + result.getValue());
+        }
+    }
+}
 ```
 
-Please note that in Java, there isn't an exact equivalent to Python's `Tuple` return type. Instead, we use an array (`Integer[]`) to return multiple values. Also, Java doesn't have a built-in way to specify default parameters for method arguments like Python does. So, you need to pass all required arguments explicitly when calling the method. If you want to handle cases where some parameters might not be provided, you can add additional overloads or provide a separate method for each case.
+### Explanation:
+1. **Package and Class Definition**: The code is organized under the class `Answer`.
+2. **Method Signature**: The method `extractCharacterBits` takes a `byte[]`, a `char`, and a `String` representing the charset.
+3. **Javadoc Comments**: The method is documented using Javadoc comments.
+4. **Decoding**: The byte array is decoded using the specified charset.
+5. **Character Position**: The position of the character in the decoded string is determined.
+6. **Byte Position**: The byte position of the character is calculated.
+7. **Character Length**: The length of the character in bytes is determined.
+8. **Extracting Bits**: The bits corresponding to the character are extracted and converted to a human-readable binary string.
+9. **Pair Class**: A simple `Pair` class is implemented to hold the result.
+10. **Main Method**: A sample usage of the `extractCharacterBits` method is demonstrated in the `main` method.
+
+This Java code preserves the original functionality and structure of the Python code while adhering to Java conventions and syntax.

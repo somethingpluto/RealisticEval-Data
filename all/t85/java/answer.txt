@@ -1,40 +1,81 @@
-Here's the equivalent Java code for your Python function using the Apache Commons CSV library:
+Below is the Java code equivalent to the provided Python code, organized within the package `org.real.temp` and the class `Answer`. The Java code includes handling for type declarations, method signatures, and object-oriented principles:
 
 ```java
 package org.real.temp;
 
-import java.io.IOException;
-import java.util.Iterator;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVRecord;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.math3.util.Pair;
 
 public class Answer {
 
-    public static void fillMissingWithFirstValid(String filePath, String columnName) throws IOException {
-        try (CSVParser parser = new CSVParser(java.nio.file.Files.newBufferedReader(new java.io.File(filePath)), 
-                CSVFormat.DEFAULT.withHeader())) {
-            
-            Iterator<CSVRecord> records = parser.iterator();
-            if (!records.hasNext()) return; // Check if file is empty
-            
-            String firstValidValue = null;
-            while (records.hasNext() && firstValidValue == null) {
-                CSVRecord record = records.next();
-                firstValidValue = record.get(columnName);
-                if (!firstValidValue.isEmpty()) break;
+    /**
+     * Fills missing values in the specified column of the DataFrame with the first valid value in that column.
+     *
+     * @param dataFrame The DataFrame represented as a List of Pairs.
+     * @param columnName The name of the column to fill missing values.
+     * @return The DataFrame with missing values filled.
+     */
+    public static List<Pair<String, String>> fillMissingWithFirstValid(List<Pair<String, String>> dataFrame, String columnName) {
+        if (dataFrame == null || dataFrame.isEmpty()) {
+            throw new IllegalArgumentException("DataFrame cannot be null or empty.");
+        }
+
+        boolean columnExists = false;
+        String firstValidValue = null;
+
+        // Check if the column exists and find the first valid value
+        for (Pair<String, String> row : dataFrame) {
+            if (row.getValue() != null && row.getValue().equals(columnName)) {
+                columnExists = true;
+                if (firstValidValue == null && row.getKey() != null) {
+                    firstValidValue = row.getKey();
+                }
             }
-            
-            if (firstValidValue != null) {
-                records.forEachRemaining(record -> {
-                    if (record.get(columnName).isEmpty()) {
-                        record.set(columnName, firstValidValue);
-                    }
-                });
+        }
+
+        if (!columnExists) {
+            throw new IllegalArgumentException("Column '" + columnName + "' does not exist in the DataFrame.");
+        }
+
+        // Fill missing values in the specified column with the first valid value
+        for (Pair<String, String> row : dataFrame) {
+            if (row.getValue().equals(columnName) && row.getKey() == null) {
+                row = Pair.of(firstValidValue, row.getValue());
             }
+        }
+
+        return dataFrame;
+    }
+
+    public static void main(String[] args) {
+        // Example usage
+        List<Pair<String, String>> dataFrame = Arrays.asList(
+            Pair.of(null, "A"),
+            Pair.of("B1", "B"),
+            Pair.of(null, "A"),
+            Pair.of("C1", "C")
+        );
+
+        String columnName = "A";
+        List<Pair<String, String>> updatedDataFrame = fillMissingWithFirstValid(dataFrame, columnName);
+
+        // Print the updated DataFrame
+        for (Pair<String, String> row : updatedDataFrame) {
+            System.out.println(row);
         }
     }
 }
 ```
 
-Please note that this code assumes you're working with CSV files and not pandas DataFrames. If you want to work with pandas DataFrames in Java, you might consider using libraries like Jupyter or Spark.
+### Notes:
+1. **Data Structure**: The DataFrame is represented as a `List<Pair<String, String>>`, where each pair represents a row with the key being the value and the value being the column name.
+2. **Dependencies**: This example uses Apache Commons Lang (`org.apache.commons.lang3`) and Apache Commons Collections (`org.apache.commons.collections4`) for utility methods and data structures.
+3. **Exception Handling**: The method throws an `IllegalArgumentException` if the DataFrame is null or empty, or if the specified column does not exist.
+4. **Main Method**: An example usage is provided in the `main` method to demonstrate how to call the `fillMissingWithFirstValid` method and print the updated DataFrame.
+
+This Java code maintains the functionality and logic of the original Python code while adapting to Java's syntax and best practices.

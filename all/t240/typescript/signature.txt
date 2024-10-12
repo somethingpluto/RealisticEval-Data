@@ -1,47 +1,100 @@
-Sure! Here is the TypeScript version of your Python code with the same function signature and comments:
+Certainly! Below is the equivalent TypeScript code for the provided Python function, including appropriate JSDoc-style documentation comments and type annotations:
 
 ```typescript
+import { parse } from "path";
+import { strict as assert } from "assert";
+
 /**
- * Converts a time duration string into a `Date` object.
+ * Converts a time duration string into a timedelta object.
  * The input string can include days (d), hours (h), minutes (m), seconds (s), and milliseconds (ms).
- * e.g. "1d 2h 3m 4s 500ms"
+ * e.g., "1d 2h 3m 4s 500ms".
  * Each unit should be specified by an integer followed by its corresponding unit letter.
  *
- * @param {string} timeString - A string representing the time duration.
- * @returns {Date} - A Date object representing the input duration.
+ * @param timeString - A string representing the time duration.
+ * @returns A timedelta object representing the input duration.
  */
-function genTimeoutDuration(timeString: string): Date {
-    const regex = /(\d+)([dhms])/g;
-    let match: RegExpExecArray | null;
-    let totalMilliseconds = 0;
+function genTimeoutTimedelta(timeString: string): Timedelta {
+    // Define a dictionary to hold all our values
+    const timeValues: { [key: string]: number } = { d: 0, h: 0, m: 0, s: 0, ms: 0 };
 
-    while ((match = regex.exec(timeString)) !== null) {
-        const value = parseInt(match[1], 10);
+    // Regular expression to find all parts of the time string
+    const parts = Array.from(timeString.matchAll(/(\d+)([dhms]{1,2})/g));
+
+    // Process each found part
+    for (const match of parts) {
+        const amount = parseInt(match[1], 10);
         const unit = match[2];
 
-        switch (unit) {
-            case 'd':
-                totalMilliseconds += value * 24 * 60 * 60 * 1000;
-                break;
-            case 'h':
-                totalMilliseconds += value * 60 * 60 * 1000;
-                break;
-            case 'm':
-                totalMilliseconds += value * 60 * 1000;
-                break;
-            case 's':
-                totalMilliseconds += value * 1000;
-                break;
-            case 'ms':
-                totalMilliseconds += value;
-                break;
-            default:
-                throw new Error(`Invalid unit: ${unit}`);
+        if (unit === 'd') {
+            timeValues.d = amount;
+        } else if (unit === 'h') {
+            timeValues.h = amount;
+        } else if (unit === 'm') {
+            timeValues.m = amount;
+        } else if (unit === 's') {
+            timeValues.s = amount;
+        } else if (unit === 'ms') {
+            timeValues.ms = amount;
         }
     }
 
-    return new Date(Date.now() + totalMilliseconds);
+    // Create a timedelta object using the extracted values
+    return new Timedelta(
+        timeValues.d,
+        timeValues.h,
+        timeValues.m,
+        timeValues.s,
+        timeValues.ms
+    );
 }
+
+// Mock implementation of timedelta class
+class Timedelta {
+    constructor(
+        public days: number,
+        public hours: number,
+        public minutes: number,
+        public seconds: number,
+        public milliseconds: number
+    ) {}
+
+    toString() {
+        return `Timedelta(days=${this.days}, hours=${this.hours}, minutes=${this.minutes}, seconds=${this.seconds}, milliseconds=${this.milliseconds})`;
+    }
+}
+
+// Example usage
+const timeString = "1d 2h 3m 4s 500ms";
+const result = genTimeoutTimedelta(timeString);
+console.log(result.toString());
+
+// Check function to verify correctness
+function checkGenTimeoutTimedelta() {
+    const testCases = [
+        { input: "1d 2h 3m 4s 500ms", expected: new Timedelta(1, 2, 3, 4, 500) },
+        { input: "2h 3m 4s", expected: new Timedelta(0, 2, 3, 4, 0) },
+        { input: "1d 10m 500ms", expected: new Timedelta(1, 0, 10, 0, 500) },
+    ];
+
+    testCases.forEach(({ input, expected }) => {
+        const result = genTimeoutTimedelta(input);
+        assert.deepEqual(result, expected, `genTimeoutTimedelta(${input}) should equal ${expected}`);
+    });
+
+    console.log("All tests passed!");
+}
+
+// Run the check function
+checkGenTimeoutTimedelta();
 ```
 
-This TypeScript function `genTimeoutDuration` takes a time duration string and converts it into a `Date` object representing the input duration. It uses a regular expression to parse the input string and calculates the total number of milliseconds based on the provided units. Finally, it creates a new `Date` object with the current timestamp plus the calculated milliseconds.
+### Explanation:
+1. **JSDoc Documentation**: The Python docstring is converted to JSDoc-style comments.
+2. **Type Annotations**: The function signature and variable types are properly annotated in TypeScript.
+3. **Regular Expression**: The regular expression is used to extract the time components from the input string.
+4. **Match All**: The `Array.from` method is used to convert the iterator returned by `matchAll` into an array.
+5. **Mock Implementation**: A mock `Timedelta` class is implemented to mimic the behavior of Python's `timedelta`.
+6. **Example Usage**: An example usage is provided to demonstrate how the function works.
+7. **Check Function**: A check function is included to verify the correctness of the conversion.
+
+This TypeScript code preserves the original functionality and structure of the Python code while adhering to TypeScript conventions.

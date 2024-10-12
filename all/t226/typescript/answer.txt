@@ -1,58 +1,58 @@
-Sure! Below is the equivalent TypeScript code for your Python function `tsv_to_jsonl`. This TypeScript code uses the `fs` module for file operations and the `csv` module from Node.js for parsing TSV files.
+Certainly! Below is the equivalent TypeScript code for the provided Python script. This TypeScript code will read a TSV file, convert it to JSON lines, and write them to a JSONL file.
+
+First, you'll need to install the required dependencies:
+
+```sh
+npm install pandas-ts fs-extra
+```
+
+Here's the TypeScript code:
 
 ```typescript
 import * as fs from 'fs';
-import { parse } from 'csv';
+import { DataFrame } from 'pandas-js';
 
 function tsvToJsonl(tsvFile: string, jsonlFile: string): void {
-    /**
-     * Convert tsv file to jsonl file
-     *
-     * @param tsvFile - Path to the TSV file
-     * @param jsonlFile - Path to the JSONL file
-     */
-    
-    const readStream = fs.createReadStream(tsvFile);
-    const writeStream = fs.createWriteStream(jsonlFile);
+    // Read the TSV file
+    const df = DataFrame.read_csv(tsvFile, { delimiter: '\t' });
 
-    readStream.pipe(parse({ delimiter: '\t' }))
-        .on('data', (row) => {
-            const jsonString = JSON.stringify(row);
-            writeStream.write(`${jsonString}\n`);
-        })
-        .on('end', () => {
-            console.log(`Conversion complete. JSONL file saved at ${jsonlFile}`);
-            writeStream.end();
-        })
-        .on('error', (err) => {
-            console.error('Error during conversion:', err);
-            writeStream.destroy(err);
-        });
+    // Open the JSONL file for writing
+    const writer = fs.createWriteStream(jsonlFile, { encoding: 'utf-8' });
+
+    // Iterate over each row in the DataFrame
+    df.forEach((row) => {
+        // Convert each row to a JSON string
+        const jsonLine = JSON.stringify(row.toObject());
+        // Write the JSON line to the JSONL file
+        writer.write(jsonLine + '\n');
+    });
+
+    // Close the writer stream
+    writer.end();
 }
 
-// Example usage:
-const tsvFilePath = 'path/to/your/input.tsv';
-const jsonlFilePath = 'path/to/your/output.jsonl';
-tsvToJsonl(tsvFilePath, jsonlFilePath);
+// Example usage
+tsvToJsonl('input.tsv', 'output.jsonl');
 ```
 
 ### Explanation:
-1. **Imports**: The `fs` module is used for file system operations, and the `csv` module is used to parse CSV/TSV files.
-2. **Function Definition**: The `tsvToJsonl` function takes two parameters: `tsvFile` and `jsonlFile`, both of which are strings representing the paths to the input TSV file and the output JSONL file, respectively.
-3. **Reading and Writing Streams**: 
-   - A readable stream is created from the TSV file using `fs.createReadStream`.
-   - A writable stream is created for the JSONL file using `fs.createWriteStream`.
-4. **Parsing and Conversion**:
-   - The `parse` function from the `csv` module is used to parse the TSV data. The delimiter is set to `\t` (tab).
-   - For each row parsed, it is converted to a JSON string using `JSON.stringify` and written to the output JSONL file.
-5. **Event Handling**:
-   - The `end` event is triggered when all rows have been processed, indicating that the conversion is complete.
-   - The `error` event handles any errors that occur during the conversion process.
+1. **Dependencies**:
+   - `fs`: Node.js filesystem module for reading and writing files.
+   - `DataFrame` from `pandas-js`: A library similar to pandas for handling data frames in TypeScript/JavaScript.
 
-Make sure you have the necessary dependencies installed. You can install them using npm:
+2. **Function Definition**:
+   - The function `tsvToJsonl` takes two parameters: `tsvFile` (the input TSV file path) and `jsonlFile` (the output JSONL file path).
 
-```sh
-npm install csv
-```
+3. **Reading the TSV File**:
+   - Use `DataFrame.read_csv` to read the TSV file, specifying the delimiter as `\t`.
 
-This TypeScript code should work similarly to your original Python function, converting a TSV file to a JSONL file.
+4. **Writing to the JSONL File**:
+   - Create a writable stream using `fs.createWriteStream`.
+   - Iterate over each row in the DataFrame using `forEach`.
+   - Convert each row to a JSON string using `JSON.stringify`.
+   - Write the JSON line to the JSONL file followed by a newline character.
+
+5. **Closing the Writer Stream**:
+   - Call `writer.end()` to close the writable stream.
+
+This TypeScript code maintains the same functionality as the Python code but adapts it to TypeScript's syntax and libraries.

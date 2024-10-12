@@ -1,15 +1,86 @@
-Sure, here is the C++ code signature with the same comments:
+Certainly! Below is the equivalent C++ code for the given Python function, including the function signature, comments, and documentation:
 
 ```cpp
+#include <iostream>
 #include <vector>
-#include <string>
+#include <codecvt>
+#include <locale>
 
-/**
- * find all the characters that can be represented in Shift-JIS, but not in GBK, and return them as an array
- *
- * @return std::vector<char>: A vector of characters that are unique to Shift-JIS, not encodable in GBK.
- */
-std::vector<char> findShiftJisNotGbk();
+// Function to find all characters that can be represented in Shift-JIS but not in GBK
+// and return them as a vector.
+std::vector<wchar_t> find_shiftjis_not_gbk() {
+    /*
+     * find all the characters that can be represented in Shift-JIS, but not in GBK, and return them as an array
+     *
+     * Returns:
+     *     std::vector<wchar_t>: A vector of characters that are unique to Shift-JIS, not encodable in GBK.
+     */
+
+    // List to store characters that are in Shift-JIS but not in GBK
+    std::vector<wchar_t> unique_to_shiftjis;
+
+    // Iterate over a range of Unicode code points
+    // The BMP goes up to U+FFFF, which is 65535 in decimal
+    for (int codepoint = 0; codepoint < 65536; ++codepoint) {
+        wchar_t character = static_cast<wchar_t>(codepoint);
+
+        try {
+            // Try encoding the character in Shift-JIS
+            std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+            std::string shiftjis_encoded = converter.to_bytes(character);
+            std::locale loc("ja_JP.shift_jis");
+            if (!std::use_facet<std::ctype<wchar_t>>(loc).is(std::ctype_base::print, character)) {
+                throw std::runtime_error("Character not representable in Shift-JIS");
+            }
+
+            try {
+                // Try encoding the character in GBK
+                std::locale gbk_loc("zh_CN.GBK");
+                if (!std::use_facet<std::ctype<wchar_t>>(gbk_loc).is(std::ctype_base::print, character)) {
+                    throw std::runtime_error("Character not representable in GBK");
+                }
+            } catch (const std::runtime_error&) {
+                // If it fails, the character is not representable in GBK but is in Shift-JIS
+                unique_to_shiftjis.push_back(character);
+            }
+        } catch (const std::runtime_error&) {
+            // If it fails, the character is not representable in Shift-JIS, so we skip it
+            continue;
+        }
+    }
+
+    return unique_to_shiftjis;
+}
+
+int main() {
+    auto result = find_shiftjis_not_gbk();
+    for (wchar_t c : result) {
+        std::wcout << c << L" ";
+    }
+    return 0;
+}
 ```
 
-This function signature uses `std::vector<char>` instead of Python's `List` to represent the list of characters. The rest of the comment remains unchanged.
+### Explanation:
+1. **Headers**: The necessary headers are included.
+   - `<iostream>` for input/output operations.
+   - `<vector>` for using `std::vector`.
+   - `<codecvt>` for converting between wide and narrow strings.
+   - `<locale>` for locale-specific character encoding checks.
+
+2. **Function Documentation**:
+   - Single-line comment for the function description.
+   - Multi-line comment for the detailed description and return value.
+
+3. **Function Definition**: The function `find_shiftjis_not_gbk` is defined to find characters that are representable in Shift-JIS but not in GBK.
+
+4. **Loop**: A loop iterates over the range of Unicode code points from 0 to 65535.
+
+5. **Character Encoding Checks**:
+   - Each character is encoded in Shift-JIS and checked for printability.
+   - If the character is printable in Shift-JIS, it is then checked for printability in GBK.
+   - Characters that are printable in Shift-JIS but not in GBK are added to the `unique_to_shiftjis` vector.
+
+6. **Main Function**: The `main` function calls `find_shiftjis_not_gbk` and prints the resulting characters.
+
+This code preserves the original purpose and structure of the Python code, with appropriate C++ syntax and documentation.

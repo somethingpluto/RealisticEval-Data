@@ -1,35 +1,128 @@
-Sure, here's how you can convert your Python unittest test class to a C++ test case using Catch2:
+Certainly! Below is the equivalent C++ test class using the Catch2 testing framework. The provided Python unittest class will be converted into a Catch2 test suite, ensuring that the functionality and logic of the tests are preserved.
+
+### C++ Code with Catch2 Testing Framework
+
+First, make sure you have Catch2 installed and included in your project. You can include Catch2 via a header-only library or through a package manager.
 
 ```cpp
-#include <catch2/catch.hpp>
-#include "BloomFilter.h" // Assuming your BloomFilter implementation is in this header file
+#include <catch2/catch_test_macros.hpp>
+#include <string>
+#include <vector>
+#include <openssl/sha.h> // Requires OpenSSL library
 
-// Mocking the BloomFilter class for testing purposes
-class MockBloomFilter {
+class BloomFilter {
 public:
-    void add(const std::string& item) {
-        // Implementation of add method
-    }
+    BloomFilter(size_t size, size_t hash_count);
+
+    void add(const std::string& item);
+    bool contains(const std::string& item) const;
+
+private:
+    size_t size;
+    size_t hash_count;
+    std::vector<bool> bit_array;
+
+    size_t compute_hash(const std::string& item, size_t seed) const;
 };
 
-TEST_CASE("BloomFilter Test", "[bloomfilter]") {
-    MockBloomFilter bloomFilter;
+// Constructor implementation
+BloomFilter::BloomFilter(size_t size, size_t hash_count) : size(size), hash_count(hash_count), bit_array(size, false) {}
 
-    SECTION("Adding an item should not throw an exception") {
-        REQUIRE_NOTHROW(bloomFilter.add("testItem"));
+// Add method implementation
+void BloomFilter::add(const std::string& item) {
+    for (size_t i = 0; i < hash_count; ++i) {
+        size_t hash_value = compute_hash(item, i) % size;
+        bit_array[hash_value] = true;
+    }
+}
+
+// Contains method implementation
+bool BloomFilter::contains(const std::string& item) const {
+    for (size_t i = 0; i < hash_count; ++i) {
+        size_t hash_value = compute_hash(item, i) % size;
+        if (!bit_array[hash_value]) {
+            return false;
+        }
+    }
+    return true;
+}
+
+// Hash function implementation
+size_t BloomFilter::compute_hash(const std::string& item, size_t seed) const {
+    unsigned char hash[SHA256_DIGEST_LENGTH];
+    SHA256_CTX sha256;
+    SHA256_Init(&sha256);
+    SHA256_Update(&sha256, item.c_str(), item.length());
+    SHA256_Final(hash, &sha256);
+
+    size_t result = 0;
+    for (int i = 0; i < SHA256_DIGEST_LENGTH; ++i) {
+        result = (result << 8) | hash[i];
+    }
+    return result + seed;
+}
+
+TEST_CASE("Test BloomFilter functionality", "[BloomFilter]") {
+    SECTION("Test add and check presence") {
+        BloomFilter bf(1000, 5);
+        std::string test_item = "hello world";
+        bf.add(test_item);
+        REQUIRE(bf.contains(test_item));
     }
 
-    SECTION("Checking for the presence of an added item should return true") {
-        bloomFilter.add("testItem");
-        CHECK(bloomFilter.contains("testItem")); // Assuming contains() is a member function that checks if an item is present
+    SECTION("Test check absence") {
+        BloomFilter bf(1000, 5);
+        REQUIRE_FALSE(bf.contains("random item"));
     }
 
-    SECTION("Checking for the absence of an item should return false") {
-        CHECK(!bloomFilter.contains("nonExistentItem")); // Assuming contains() is a member function that checks if an item is present
+    SECTION("Test false positives") {
+        BloomFilter bf(1000, 5);
+        std::vector<std::string> items_to_add = {"item1", "item2", "item3"};
+        for (const auto& item : items_to_add) {
+            bf.add(item);
+        }
+        REQUIRE_FALSE(bf.contains("item4"));
+    }
+
+    SECTION("Test collision handling") {
+        BloomFilter bf(1000, 5);
+        bf.add("item123");
+        bf.add("item124");
+        REQUIRE(bf.contains("item123"));
+        REQUIRE(bf.contains("item124"));
+    }
+
+    SECTION("Test empty Bloom Filter") {
+        BloomFilter bf(1000, 5);
+        REQUIRE_FALSE(bf.contains("anything"));
     }
 }
 ```
 
-Please note that this is just a mock-up example and assumes you have a `contains` method implemented in your `BloomFilter` class. If your actual implementation does not include this method, you will need to add it or adjust the test cases accordingly.
+### Explanation:
+1. **Headers**:
+   - `#include <catch2/catch_test_macros.hpp>` for Catch2 testing macros.
+   - `#include <string>` for string manipulation.
+   - `#include <vector>` for vector manipulation.
+   - `#include <openssl/sha.h>` for SHA-256 hashing (requires OpenSSL).
 
-Also, make sure to replace `"BloomFilter.h"` with the actual path to your `BloomFilter` header file.
+2. **BloomFilter Class**:
+   - `BloomFilter` class with member variables `size`, `hash_count`, and `bit_array`.
+   - Constructor initializes the bit array with zeros.
+   - `add` method adds an item to the Bloom filter.
+   - `contains` method checks if an item might be in the Bloom filter.
+   - `compute_hash` method computes the SHA-256 hash of the input string and combines it with a seed value.
+
+3. **Catch2 Test Suite**:
+   - `TEST_CASE` defines the test suite.
+   - `SECTION` defines individual test cases.
+   - `REQUIRE` and `REQUIRE_FALSE` are used for assertions.
+
+4. **Test Cases**:
+   - `Test add and check presence`: Adds an item and checks its presence.
+   - `Test check absence`: Checks the absence of an unadded item.
+   - `Test false positives`: Adds several items and checks for a false positive.
+   - `Test collision handling`: Adds similar items and checks their presence.
+   - `Test empty Bloom Filter`: Ensures an empty Bloom filter reports no items.
+
+This code preserves the original purpose and structure of the Python unittest class while adhering to C++ syntax and Catch2 testing standards.

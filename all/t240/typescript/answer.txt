@@ -1,57 +1,99 @@
-Here is your Python code converted to TypeScript:
+Certainly! Below is the equivalent TypeScript code for the provided Python function. This includes defining types and adapting the regular expression to work with TypeScript:
 
 ```typescript
-import { Duration } from 'moment-duration-format';
+import { parse } from "path";
+import { strict as assert } from "assert";
 
-function genTimeoutDuration(timeString: string): Duration {
+function genTimeoutTimedelta(timeString: string): timedelta {
     /**
-     * Converts a time duration string into a moment.Duration object.
+     * Converts a time duration string into a timedelta object.
      * The input string can include days (d), hours (h), minutes (m), seconds (s), and milliseconds (ms).
-     * e.g. "1d 2h 3m 4s 500ms"
+     * eg. "1d 2h 3m 4s 500ms"
      * Each unit should be specified by an integer followed by its corresponding unit letter.
      *
      * @param timeString - A string representing the time duration.
-     * @returns A moment.Duration object representing the input duration.
+     * @returns A timedelta object representing the input duration.
      */
-    
-    const regex = /(\d+)([dhms])/g;
-    let match;
-    let duration = Duration(0);
 
-    while ((match = regex.exec(timeString)) !== null) {
-        const value = parseInt(match[1], 10);
+    // Define a dictionary to hold all our values
+    const timeValues: { [key: string]: number } = { d: 0, h: 0, m: 0, s: 0, ms: 0 };
+
+    // Regular expression to find all parts of the time string
+    const parts = timeString.matchAll(/(\d+)([dhms]{1,2})/g);
+
+    // Process each found part
+    for (const match of parts) {
+        const amount = parseInt(match[1], 10);
         const unit = match[2];
-        
-        switch(unit) {
-            case 'd':
-                duration.add(value, 'days');
-                break;
-            case 'h':
-                duration.add(value, 'hours');
-                break;
-            case 'm':
-                duration.add(value, 'minutes');
-                break;
-            case 's':
-                duration.add(value, 'seconds');
-                break;
-            default:
-                throw new Error(`Unknown time unit: ${unit}`);
+
+        if (unit === 'd') {
+            timeValues.d = amount;
+        } else if (unit === 'h') {
+            timeValues.h = amount;
+        } else if (unit === 'm') {
+            timeValues.m = amount;
+        } else if (unit === 's') {
+            timeValues.s = amount;
+        } else if (unit === 'ms') {
+            timeValues.ms = amount;
         }
     }
 
-    return duration;
+    // Create a timedelta object using the extracted values
+    return new Timedelta(
+        timeValues.d,
+        timeValues.h,
+        timeValues.m,
+        timeValues.s,
+        timeValues.ms
+    );
 }
+
+// Mock implementation of timedelta class
+class Timedelta {
+    constructor(
+        public days: number,
+        public hours: number,
+        public minutes: number,
+        public seconds: number,
+        public milliseconds: number
+    ) {}
+
+    toString() {
+        return `Timedelta(days=${this.days}, hours=${this.hours}, minutes=${this.minutes}, seconds=${this.seconds}, milliseconds=${this.milliseconds})`;
+    }
+}
+
+// Example usage
+const timeString = "1d 2h 3m 4s 500ms";
+const result = genTimeoutTimedelta(timeString);
+console.log(result.toString());
+
+// Check function to verify correctness
+function checkGenTimeoutTimedelta() {
+    const testCases = [
+        { input: "1d 2h 3m 4s 500ms", expected: new Timedelta(1, 2, 3, 4, 500) },
+        { input: "2h 3m 4s", expected: new Timedelta(0, 2, 3, 4, 0) },
+        { input: "1d 10m 500ms", expected: new Timedelta(1, 0, 10, 0, 500) },
+    ];
+
+    testCases.forEach(({ input, expected }) => {
+        const result = genTimeoutTimedelta(input);
+        assert.deepEqual(result, expected, `genTimeoutTimedelta(${input}) should equal ${expected}`);
+    });
+
+    console.log("All tests passed!");
+}
+
+// Run the check function
+checkGenTimeoutTimedelta();
 ```
 
-This TypeScript function uses the `moment-duration-format` library to convert a time duration string into a `Duration` object. This library provides powerful functionality for working with durations in JavaScript/TypeScript. 
+### Explanation:
+1. **TypeScript Class Definition**: The `timedelta` class is defined to mimic the behavior of Python's `timedelta`.
+2. **Regular Expression**: The regular expression is used to extract the time components from the input string.
+3. **Match All**: The `matchAll` method is used to iterate over all matches in the string.
+4. **Type Annotations**: Types are added to ensure proper typing in TypeScript.
+5. **Check Function**: A check function is included to verify the correctness of the conversion.
 
-To use this function, you need to install the `moment-duration-format` package using npm or yarn:
-
-```sh
-npm install moment-duration-format
-# or
-yarn add moment-duration-format
-```
-
-Please note that `moment.duration()` method has been deprecated since version 2.29.0 of Moment.js, so it's recommended to use `moment-duration-format` for creating durations in TypeScript.
+This TypeScript code maintains the same functionality and logic as the original Python code.

@@ -1,4 +1,4 @@
-Here's how you could translate your Python function into TypeScript:
+Certainly! Below is the TypeScript code that converts the provided Python function into equivalent TypeScript code, including appropriate JSDoc comments and type annotations:
 
 ```typescript
 import { DateTime } from 'luxon';
@@ -7,19 +7,52 @@ import { DateTime } from 'luxon';
  * Calculates the date of the nth occurrence of a specific weekday (k) in a given month (m) and year (y).
  * If the nth occurrence does not exist within the month, it returns the last occurrence of that weekday in the month.
  * This function extends the capability to handle edge cases where the nth weekday might not be present,
- * by providing the closest previous weekday in such cases
+ * by providing the closest previous weekday in such cases.
  * 
  * @param y - The year for which the date is to be calculated.
  * @param m - The month for which the date is to be calculated, where January is 1 and December is 12.
  * @param n - The nth occurrence of the weekday within the month. For example, 1 for the first occurrence, 2 for the second, etc.
  * @param k - The weekday, where Monday is 0 and Sunday is 6.
- * 
  * @returns The calculated date of the nth occurrence of the weekday in the given month and year.
  *          If the nth occurrence does not exist, returns the date of the last occurrence of that weekday in the month.
  */
 function findNthWeekdayOfSpecificYear(y: number, m: number, n: number, k: number): DateTime {
-    // Your implementation goes here...
+    const firstDayOfMonth = DateTime.local(y, m, 1);
+    const dayDifference = (k - firstDayOfMonth.weekday + 7) % 7;
+    const firstKWeekdayOfMonth = firstDayOfMonth.plus({ days: dayDifference });
+    const nthKWeekdayOfMonth = firstKWeekdayOfMonth.plus({ weeks: n - 1 });
+
+    let lastDayOfMonth: DateTime;
+
+    if (m === 12) {
+        lastDayOfMonth = DateTime.local(y + 1, 1, 1).minus({ days: 1 });
+    } else {
+        lastDayOfMonth = DateTime.local(y, m + 1, 1).minus({ days: 1 });
+    }
+
+    if (nthKWeekdayOfMonth > lastDayOfMonth) {
+        const lastKWeekdayOfMonth = lastDayOfMonth.minus({ days: (lastDayOfMonth.weekday - k + 7) % 7 });
+        return lastKWeekdayOfMonth;
+    }
+
+    return nthKWeekdayOfMonth;
 }
+
+// Example usage
+console.log(findNthWeekdayOfSpecificYear(2023, 4, 5, 1)); // Example call
 ```
 
-Note: In order to work with dates in TypeScript, I've used the `luxon` library which provides powerful and flexible tools for working with dates. It should be installed via npm (`npm install luxon`) or yarn (`yarn add luxon`). The `DateTime` class from this library is used instead of Python's `datetime.date`.
+### Explanation:
+1. **Imports**: We use `DateTime` from the `luxon` library to handle dates and times in TypeScript.
+2. **JSDoc Comments**: The function is documented with JSDoc comments, including parameter descriptions and return type information.
+3. **Function Definition**: The function `findNthWeekdayOfSpecificYear` takes four parameters (`y`, `m`, `n`, `k`) and returns a `DateTime` object.
+4. **Date Calculations**:
+   - `firstDayOfMonth`: The first day of the specified month.
+   - `dayDifference`: The difference in days between the first day of the month and the desired weekday.
+   - `firstKWeekdayOfMonth`: The first occurrence of the desired weekday in the month.
+   - `nthKWeekdayOfMonth`: The nth occurrence of the desired weekday in the month.
+   - `lastDayOfMonth`: The last day of the specified month.
+   - If the nth occurrence exceeds the last day of the month, we calculate the last occurrence of the desired weekday in the month.
+5. **Return Statement**: Depending on the conditions, the function returns either the nth occurrence or the last occurrence of the desired weekday.
+
+This TypeScript code closely mirrors the functionality of the original Python code while adapting to TypeScript's static type system and using the `luxon` library for date handling.

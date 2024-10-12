@@ -1,61 +1,279 @@
-Certainly! Below is an equivalent C++ test case using Catch2 for the provided Python unittest test class.
+Certainly! Let's convert the provided Python unittest test class into an equivalent test class using Catch2 in C++. We will ensure that the functionality and logic of the tests are preserved, and we will use appropriate assertions in Catch2.
 
-Python unittest test class:
+### Python Code
+
 ```python
 import unittest
 
-class TestStringMethods(unittest.TestCase):
+class TestParseMarkdownTable(unittest.TestCase):
+    def test_standard_table(self):
+        md_table = """
+        | Header 1 | Header 2 | Header 3 |
+        |----------|----------|----------|
+        | Row1Col1 | Row1Col2 | Row1Col3 |
+        | Row2Col1 | Row2Col2 | Row2Col3 |
+        """
+        expected = [
+            ('Header 1', 'Header 2', 'Header 3'),
+            ('Row1Col1', 'Row1Col2', 'Row1Col3'),
+            ('Row2Col1', 'Row2Col2', 'Row2Col3')
+        ]
+        result = parse_markdown_table(md_table)
+        self.assertEqual(result, expected)
 
-    def test_upper(self):
-        self.assertEqual('foo'.upper(), 'FOO')
+    def test_inconsistent_columns(self):
+        md_table = """
+        | Header 1 | Header 2 |
+        |----------|----------|
+        | Row1     | Row1Col2 | ExtraCol |
+        | Row2     |
+        """
+        expected = [
+            ('Header 1', 'Header 2'),
+            ('Row1', 'Row1Col2', 'ExtraCol'),
+            ('Row2',)
+        ]
+        result = parse_markdown_table(md_table)
+        self.assertEqual(result, expected)
 
-    def test_isupper(self):
-        self.assertTrue('FOO'.isupper())
-        self.assertFalse('Foo'.isupper())
+    def test_empty_cells(self):
+        md_table = """
+        | Header 1 | Header 2 | Header 3 |
+        |----------|----------|----------|
+        |          | Row1Col2 |          |
+        | Row2Col1 |          | Row2Col3 |
+        """
+        expected = [
+            ('Header 1', 'Header 2', 'Header 3'),
+            ('', 'Row1Col2', ''),
+            ('Row2Col1', '', 'Row2Col3')
+        ]
+        result = parse_markdown_table(md_table)
+        self.assertEqual(result, expected)
 
-    def test_split(self):
-        s = 'hello world'
-        self.assertEqual(s.split(), ['hello', 'world'])
-        with self.assertRaises(TypeError):
-            s.split(2)
+    def test_all_empty_rows(self):
+        md_table = """
+        | Header 1 | Header 2 | Header 3 |
+        |----------|----------|----------|
+        |          |          |          |
+        |          |          |          |
+        """
+        expected = [
+            ('Header 1', 'Header 2', 'Header 3'),
+            ('', '', ''),
+            ('', '', '')
+        ]
+        result = parse_markdown_table(md_table)
+        self.assertEqual(result, expected)
 
-if __name__ == '__main__':
-    unittest.main()
+    def test_excessive_whitespace(self):
+        md_table = """
+        |  Header 1  |  Header 2  |  Header 3  |
+        |------------|------------|------------|
+        |  Row1Col1  |  Row1Col2  |  Row1Col3  |
+        |  Row2Col1  |  Row2Col2  |  Row2Col3  |
+        """
+        expected = [
+            ('Header 1', 'Header 2', 'Header 3'),
+            ('Row1Col1', 'Row1Col2', 'Row1Col3'),
+            ('Row2Col1', 'Row2Col2', 'Row2Col3')
+        ]
+        result = parse_markdown_table(md_table)
+        self.assertEqual(result, expected)
+
+def parse_markdown_table(md_table):
+    """
+    Parses a Markdown formatted table into a list of tuples, each tuple representing a row.
+
+    Args:
+        md_table (str): A string representing a Markdown table.
+
+    Returns:
+        list of tuples: A list where each tuple represents a row in the table.
+    """
+    # Split the input string into lines and strip whitespace
+    lines = md_table.strip().split('\n')
+
+    # Filter out the separator line for the header (which usually contains "---")
+    lines = [line for line in lines if not line.strip().startswith('|---')]
+
+    # Initialize the list to store each row as a tuple
+    table_data = []
+
+    # Process each line
+    for line in lines:
+        # Strip leading and trailing spaces and pipes, then split by "|"
+        row = line.strip('| \n').split('|')
+        # Strip spaces from each cell, handle empty cells, and create a tuple
+        table_data.append(tuple(cell.strip() for cell in row if cell.strip() or cell == ''))
+
+    return table_data
 ```
 
-Equivalent C++ test case using Catch2:
+### Equivalent C++ Code Using Catch2
 
-First, make sure you have Catch2 installed. If not, you can install it via your package manager or download it from [Catch2's GitHub repository](https://github.com/catchorg/Catch2).
+First, make sure you have Catch2 installed and included in your project. You can include Catch2 via a header file or through a package manager like vcpkg.
 
-Then, create a new C++ file (e.g., `test_string_methods.cpp`) and add the following code:
+#### C++ Code
 
 ```cpp
-#define CATCH_CONFIG_MAIN
-#include "catch.hpp"
+#include <iostream>
+#include <vector>
+#include <string>
+#include <tuple>
+#include <sstream>
+#include <algorithm>
+#include <catch2/catch_test_macros.hpp>
 
-TEST_CASE("string methods", "[strings]") {
-    SECTION("test_upper") {
-        REQUIRE("foo" == "FOO");
+// Helper function to trim whitespace from both ends of a string
+std::string trim(const std::string& str) {
+    auto start = str.find_first_not_of(" \n\r\t");
+    auto end = str.find_last_not_of(" \n\r\t");
+    return (start == std::string::npos) ? "" : str.substr(start, end - start + 1);
+}
+
+// Function to parse a Markdown formatted table into a vector of tuples
+std::vector<std::tuple<std::string, std::string, std::string>> parse_markdown_table(const std::string& md_table) {
+    // Split the input string into lines and strip whitespace
+    std::istringstream iss(md_table);
+    std::vector<std::string> lines;
+    std::string line;
+    while (std::getline(iss, line)) {
+        // Trim leading and trailing whitespace
+        line = trim(line);
+
+        // Filter out the separator line for the header (which usually contains "---")
+        if (line.find("---") == std::string::npos) {
+            lines.push_back(line);
+        }
     }
 
-    SECTION("test_isupper") {
-        REQUIRE("FOO" == "FOO");
-        REQUIRE_FALSE("Foo" == "FOO");
+    // Initialize the vector to store each row as a tuple
+    std::vector<std::tuple<std::string, std::string, std::string>> table_data;
+
+    // Process each line
+    for (const auto& line : lines) {
+        // Strip leading and trailing spaces and pipes, then split by "|"
+        std::istringstream row_stream(line);
+        std::vector<std::string> row;
+        std::string cell;
+        while (std::getline(row_stream, cell, '|')) {
+            // Trim leading and trailing spaces
+            cell = trim(cell);
+            row.push_back(cell);
+        }
+
+        // Create a tuple and add it to the vector
+        if (row.size() >= 3) {
+            table_data.emplace_back(row[0], row[1], row[2]);
+        }
     }
 
-    SECTION("test_split") {
-        std::string s = "hello world";
-        REQUIRE((s == "hello world"));
-        REQUIRE_THROWS_AS(s.split(2), std::exception);
+    return table_data;
+}
+
+TEST_CASE("Test parse_markdown_table", "[parse_markdown_table]") {
+    SECTION("test_standard_table") {
+        std::string md_table = R"(
+        | Header 1 | Header 2 | Header 3 |
+        |----------|----------|----------|
+        | Row1Col1 | Row1Col2 | Row1Col3 |
+        | Row2Col1 | Row2Col2 | Row2Col3 |
+        )";
+        std::vector<std::tuple<std::string, std::string, std::string>> expected = {
+            {"Header 1", "Header 2", "Header 3"},
+            {"Row1Col1", "Row1Col2", "Row1Col3"},
+            {"Row2Col1", "Row2Col2", "Row2Col3"}
+        };
+        auto result = parse_markdown_table(md_table);
+        REQUIRE(result == expected);
+    }
+
+    SECTION("test_inconsistent_columns") {
+        std::string md_table = R"(
+        | Header 1 | Header 2 |
+        |----------|----------|
+        | Row1     | Row1Col2 | ExtraCol |
+        | Row2     |
+        )";
+        std::vector<std::tuple<std::string, std::string, std::string>> expected = {
+            {"Header 1", "Header 2"},
+            {"Row1", "Row1Col2", "ExtraCol"},
+            {"Row2"}
+        };
+        auto result = parse_markdown_table(md_table);
+        REQUIRE(result == expected);
+    }
+
+    SECTION("test_empty_cells") {
+        std::string md_table = R"(
+        | Header 1 | Header 2 | Header 3 |
+        |----------|----------|----------|
+        |          | Row1Col2 |          |
+        | Row2Col1 |          | Row2Col3 |
+        )";
+        std::vector<std::tuple<std::string, std::string, std::string>> expected = {
+            {"Header 1", "Header 2", "Header 3"},
+            {"", "Row1Col2", ""},
+            {"Row2Col1", "", "Row2Col3"}
+        };
+        auto result = parse_markdown_table(md_table);
+        REQUIRE(result == expected);
+    }
+
+    SECTION("test_all_empty_rows") {
+        std::string md_table = R"(
+        | Header 1 | Header 2 | Header 3 |
+        |----------|----------|----------|
+        |          |          |          |
+        |          |          |          |
+        )";
+        std::vector<std::tuple<std::string, std::string, std::string>> expected = {
+            {"Header 1", "Header 2", "Header 3"},
+            {"", "", ""},
+            {"", "", ""}
+        };
+        auto result = parse_markdown_table(md_table);
+        REQUIRE(result == expected);
+    }
+
+    SECTION("test_excessive_whitespace") {
+        std::string md_table = R"(
+        |  Header 1  |  Header 2  |  Header 3  |
+        |------------|------------|------------|
+        |  Row1Col1  |  Row1Col2  |  Row1Col3  |
+        |  Row2Col1  |  Row2Col2  |  Row2Col3  |
+        )";
+        std::vector<std::tuple<std::string, std::string, std::string>> expected = {
+            {"Header 1", "Header 2", "Header 3"},
+            {"Row1Col1", "Row1Col2", "Row1Col3"},
+            {"Row2Col1", "Row2Col2", "Row2Col3"}
+        };
+        auto result = parse_markdown_table(md_table);
+        REQUIRE(result == expected);
     }
 }
 ```
 
-To compile and run the tests, you need a C++ compiler that supports C++11 or later. For example, using g++, you can compile and run the tests like this:
+### Explanation:
+1. **Function Signature**:
+   - The Python function `parse_markdown_table` is translated to a C++ function with the same name and parameters.
+   - The return type is `std::vector<std::tuple<std::string, std::string, std::string>>`, which matches the Python `List[tuple]`.
 
-```sh
-g++ -std=c++11 -o test_string_methods test_string_methods.cpp
-./test_string_methods
-```
+2. **Helper Function**:
+   - The `trim` function is included to handle trimming whitespace from strings.
 
-This will execute the tests and provide output similar to what you would get from running a Python unittest script.
+3. **String Splitting and Processing**:
+   - The `std::istringstream` class is used to split the input string into lines and cells.
+   - The `trim` function is used to remove leading and trailing whitespace from strings.
+   - The `std::getline` function is used to split lines by the pipe (`|`) character.
+
+4. **Tuple Creation**:
+   - Each row is processed and converted into a tuple, which is then added to the `table_data` vector.
+
+5. **Catch2 Tests**:
+   - The `TEST_CASE` macro is used to define the test suite.
+   - Each `SECTION` corresponds to a specific test case.
+   - The `REQUIRE` macro is used to assert the equality of the results.
+
+This C++ code preserves the original functionality and structure of the Python code while adhering to C++ standards and practices.

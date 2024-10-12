@@ -1,59 +1,84 @@
-Here is how you can convert your Python code to C++:
+Here’s the equivalent C++ code for the provided Python function, ensuring that the functionality, logic, and structure remain consistent:
 
-```c++
+```cpp
 #include <iostream>
 #include <string>
 #include <unordered_map>
+#include <climits>
 
-std::string findMinWindowSubstring(const std::string &source, const std::string &target) {
-    int targetCharCount[256] = {0};
-    int sourceCharCount[256] = {0};
-    
+std::string find_min_window_substring(const std::string& source, const std::string& target) {
+    if (source.empty() || target.empty()) {
+        return "";
+    }
+
+    // Count the frequency of characters in the target string
+    std::unordered_map<char, int> required_chars;
     for (char c : target) {
-        targetCharCount[c]++;
+        ++required_chars[c];
     }
-    
-    int start = 0, end = 0, minStart = 0, minLen = INT_MAX, formed = 0;
-    
-    while (end < source.length()) {
-        char currentChar = source[end];
-        sourceCharCount[currentChar]++;
-        
-        if (targetCharCount[currentChar] > 0 && sourceCharCount[currentChar] == targetCharCount[currentChar]) {
-            formed++;
+
+    // Counter to track characters in the current window of the source string
+    std::unordered_map<char, int> window_chars;
+
+    int left = 0;  // Left boundary of the window
+    int min_length = INT_MAX;  // Initialize the minimum length as infinity
+    std::string min_window = "";  // Initialize the minimum window string
+
+    // Iterate over the source string with the right boundary of the window
+    for (int right = 0; right < source.length(); ++right) {
+        char char_right = source[right];
+        if (required_chars.find(char_right) != required_chars.end()) {
+            ++window_chars[char_right];
         }
-        
-        while (start <= end && formed == target.length()) {
-            char tempChar = source[start];
-            
-            if (end - start + 1 < minLen) {
-                minLen = end - start + 1;
-                minStart = start;
+
+        // Check if the current window contains all characters of the target string
+        while (all_characters_match(required_chars, window_chars)) {
+            int window_size = right - left + 1;
+            if (window_size < min_length) {
+                min_length = window_size;
+                min_window = source.substr(left, window_size);
             }
-            
-            sourceCharCount[tempChar]--;
-            
-            if (targetCharCount[tempChar] > 0 && sourceCharCount[tempChar] < targetCharCount[tempChar]) {
-                formed--;
+
+            char char_left = source[left];
+            if (required_chars.find(char_left) != required_chars.end()) {
+                --window_chars[char_left];
             }
-            
-            start++;
+            ++left;
         }
-        
-        end++;
     }
-    
-    return minLen != INT_MAX ? source.substr(minStart, minLen) : "";
+
+    return min_window;
+}
+
+bool all_characters_match(const std::unordered_map<char, int>& required_chars, const std::unordered_map<char, int>& window_chars) {
+    for (const auto& pair : required_chars) {
+        if (window_chars[pair.first] < pair.second) {
+            return false;
+        }
+    }
+    return true;
 }
 
 int main() {
     std::string source = "ADOBECODEBANC";
     std::string target = "ABC";
-    std::cout << findMinWindowSubstring(source, target);
+    std::string result = find_min_window_substring(source, target);
+    std::cout << "Minimum window substring: " << result << std::endl;
     return 0;
 }
 ```
 
-This C++ code uses two arrays `targetCharCount` and `sourceCharCount` to store the frequency of each character in the target and source strings respectively. It then uses a sliding window approach to find the minimum window in the source string that contains all characters of the target string. If no such window exists, it returns an empty string. 
+### Explanation:
+1. **Header Files**: Included necessary header files (`<iostream>`, `<string>`, `<unordered_map>`, `<climits>`).
+2. **Function `find_min_window_substring`**:
+   - Checks if either `source` or `target` is empty.
+   - Initializes `required_chars` and `window_chars` using `std::unordered_map`.
+   - Iterates over the `source` string to update `window_chars`.
+   - Uses a helper function `all_characters_match` to check if the current window contains all characters of the target string.
+   - Shrinks the window from the left if it contains all required characters.
+3. **Helper Function `all_characters_match`**:
+   - Verifies if the `window_chars` map contains all characters of the `required_chars` map.
+4. **Main Function**:
+   - Demonstrates usage by providing sample input strings and printing the result.
 
-Please note that the time complexity of this code is O(n), where n is the length of the source string. This is because we traverse through the source string once with both start and end pointers.
+This C++ code maintains the same functionality and logic as the original Python code.

@@ -1,88 +1,97 @@
-To convert the given Python unittest test class to a C++ Catch2 test case, we need to define a function that performs the same task and then write tests for it using Catch2. Below is an example of how you can achieve this:
+Certainly! Below is the equivalent C++ test class using the Catch2 testing framework. The provided Python unittest class is converted into a Catch2 test suite, ensuring that the functionality and logic of the tests are preserved.
 
-### Python Code
-
-```python
-from typing import Dict, List
-
-def dict_of_lists_to_list_of_dicts(dict_of_lists: Dict) -> List[Dict]:
-    """
-    Convert a dictionary of lists into a list of dictionaries.
-    Args:
-        dict_of_lists (dict): A dictionary where each key has a list as its value.
-
-    Returns:
-        list of dicts: A list where each item is a dictionary formed by corresponding elements of lists in the input dictionary.
-    """
-    return [dict(zip(dict_of_lists.keys(), values)) for values in zip(*dict_of_lists.values())]
-```
-
-### C++ Code with Catch2
-
-First, ensure you have Catch2 installed. If not, you can install it via vcpkg or manually download it.
-
-Here's the equivalent C++ code using Catch2:
+### C++ Code with Catch2 Testing Framework
 
 ```cpp
-#include <catch2/catch.hpp>
-#include <vector>
+#include <catch2/catch_test_macros.hpp>
 #include <map>
-#include <algorithm>
+#include <vector>
+#include <string>
+#include <stdexcept>
 
-std::vector<std::map<std::string, int>> dictOfListsToListOfDicts(const std::map<std::string, std::vector<int>>& dictOfLists) {
-    std::vector<std::map<std::string, int>> result;
-    if (!dictOfLists.empty()) {
-        size_t max_size = *std::max_element(dictOfLists.begin()->second.begin(), dictOfLists.begin()->second.end());
-        for (size_t i = 0; i < max_size; ++i) {
-            std::map<std::string, int> temp;
-            for (const auto& pair : dictOfLists) {
-                if (pair.second.size() > i) {
-                    temp[pair.first] = pair.second[i];
-                }
-            }
-            result.push_back(temp);
+// Function to convert a map of vectors into a vector of maps
+std::vector<std::map<std::string, std::string>> dict_of_lists_to_list_of_dicts(const std::map<std::string, std::vector<std::string>>& dict_of_lists) {
+    // Check if all vectors are of the same length
+    if (dict_of_lists.empty()) {
+        return {};
+    }
+
+    size_t expected_length = dict_of_lists.begin()->second.size();
+    for (const auto& pair : dict_of_lists) {
+        if (pair.second.size() != expected_length) {
+            throw std::invalid_argument("All vectors in the dictionary must have the same length.");
         }
     }
-    return result;
+
+    // Using indices to iterate over vectors simultaneously
+    std::vector<std::map<std::string, std::string>> list_of_dicts;
+    for (size_t i = 0; i < expected_length; ++i) {
+        std::map<std::string, std::string> current_dict;
+        for (const auto& pair : dict_of_lists) {
+            current_dict[pair.first] = pair.second[i];
+        }
+        list_of_dicts.push_back(current_dict);
+    }
+
+    return list_of_dicts;
 }
 
-TEST_CASE("dictOfListsToListOfDicts", "[conversion]") {
-    SECTION("Single key-value pair") {
-        std::map<std::string, std::vector<int>> dict = {{"a", {1, 2, 3}}};
-        std::vector<std::map<std::string, int>> expected = {{{"a", 1}}, {{"a", 2}}, {{"a", 3}}};
-        REQUIRE(dictOfListsToListOfDicts(dict) == expected);
+TEST_CASE("TestDictOfListsToListOfDicts") {
+    SECTION("test_standard_conversion") {
+        // Test standard conversion with equal length lists
+        std::map<std::string, std::vector<std::string>> dict_of_lists = {
+            {"name", {"Alice", "Bob", "Charlie"}},
+            {"age", {"25", "30", "35"}},
+            {"city", {"New York", "Los Angeles", "Chicago"}}
+        };
+        std::vector<std::map<std::string, std::string>> expected_result = {
+            {{"name", "Alice"}, {"age", "25"}, {"city", "New York"}},
+            {{"name", "Bob"}, {"age", "30"}, {"city", "Los Angeles"}},
+            {{"name", "Charlie"}, {"age", "35"}, {"city", "Chicago"}}
+        };
+
+        auto result = dict_of_lists_to_list_of_dicts(dict_of_lists);
+        REQUIRE(result == expected_result);
     }
 
-    SECTION("Multiple key-value pairs") {
-        std::map<std::string, std::vector<int>> dict = {{"a", {1, 2}}, {"b", {3, 4}}, {"c", {5, 6}}};
-        std::vector<std::map<std::string, int>> expected = {{{"a", 1}, {"b", 3}, {"c", 5}}, {{"a", 2}, {"b", 4}, {"c", 6}}};
-        REQUIRE(dictOfListsToListOfDicts(dict) == expected);
+    SECTION("test_empty_lists") {
+        // Test the function with empty lists
+        std::map<std::string, std::vector<std::string>> dict_of_lists = {
+            {"name", {}},
+            {"age", {}},
+            {"city", {}}
+        };
+        std::vector<std::map<std::string, std::string>> expected_result = {};
+
+        auto result = dict_of_lists_to_list_of_dicts(dict_of_lists);
+        REQUIRE(result == expected_result);
     }
 
-    SECTION("Empty input") {
-        std::map<std::string, std::vector<int>> dict = {};
-        std::vector<std::map<std::string, int>> expected = {};
-        REQUIRE(dictOfListsToListOfDicts(dict) == expected);
-    }
+    SECTION("test_single_element_lists") {
+        // Test the function with single-element lists
+        std::map<std::string, std::vector<std::string>> dict_of_lists = {
+            {"name", {"Alice"}},
+            {"age", {"25"}},
+            {"city", {"New York"}}
+        };
+        std::vector<std::map<std::string, std::string>> expected_result = {
+            {{"name", "Alice"}, {"age", "25"}, {"city", "New York"}}
+        };
 
-    SECTION("Different lengths of lists") {
-        std::map<std::string, std::vector<int>> dict = {{"a", {1, 2}}, {"b", {3}}};
-        std::vector<std::map<std::string, int>> expected = {{{"a", 1}, {"b", 3}}, {{"a", 2}}};
-        REQUIRE(dictOfListsToListOfDicts(dict) == expected);
+        auto result = dict_of_lists_to_list_of_dicts(dict_of_lists);
+        REQUIRE(result == expected_result);
     }
 }
 ```
 
-### Explanation
+### Explanation:
+1. **Header Files**: Includes necessary header files (`<catch2/catch_test_macros.hpp>`, `<map>`, `<vector>`, `<string>`, `<stdexcept>`).
+2. **Function Definition**: The function `dict_of_lists_to_list_of_dicts` takes a `std::map<std::string, std::vector<std::string>>` as input and returns a `std::vector<std::map<std::string, std::string>>`.
+3. **Catch2 Test Suite**: The `TEST_CASE` macro defines the test suite, and each `SECTION` defines individual test cases.
+4. **Test Cases**:
+   - `test_standard_conversion`: Tests standard conversion with equal-length lists.
+   - `test_empty_lists`: Tests the function with empty lists.
+   - `test_single_element_lists`: Tests the function with single-element lists.
+5. **Assertions**: Uses `REQUIRE` for assertions to ensure the results match the expected outcomes.
 
-1. **Function Definition**: The `dictOfListsToListOfDicts` function in C++ takes a `std::map<std::string, std::vector<int>>` and returns a `std::vector<std::map<std::string, int>>`.
-
-2. **Test Cases**:
-   - **Single Key-Value Pair**: Tests the conversion when there is only one key-value pair.
-   - **Multiple Key-Value Pairs**: Tests the conversion when there are multiple key-value pairs.
-   - **Empty Input**: Tests the conversion when the input map is empty.
-   - **Different Lengths of Lists**: Tests the conversion when some keys have lists of different lengths.
-
-Each test case uses the `REQUIRE` macro from Catch2 to assert that the output of the function matches the expected result.
-
-Make sure to include the Catch2 header file (`#include <catch2/catch.hpp>`) and link against the Catch2 library when compiling your C++ code.
+This code preserves the original purpose and structure of the Python unittest class while adapting to the syntax and features of the Catch2 testing framework in C++.

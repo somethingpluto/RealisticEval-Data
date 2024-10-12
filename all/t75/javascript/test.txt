@@ -1,80 +1,252 @@
-Sure, here's how you can convert your Python `unittest` test class into a JavaScript test case using Jest:
+Certainly! Below is the equivalent Jest test suite for the given Python unittest class. The conversion ensures that the functionality and logic of the tests are maintained, and all necessary changes due to language differences are documented.
 
-First, ensure you have Jest installed in your project. If not, you can install it using npm:
+### Python Code:
+```python
+import re
+import unittest
+import os
+import shutil
+import tempfile
+from pathlib import Path
 
-```sh
-npm install --save-dev jest
+def rename_files(directory):
+    """
+    Renames PNG files in a specified directory by appending a sequence number to each file.
+    The files are sorted alphabetically, and each base name is assigned sequential numbers.
+
+    Args:
+        directory (str): The path to the directory containing PNG files to be renamed.
+
+    Returns:
+        None
+    """
+    dir_path = Path(directory)
+
+    if not dir_path.exists() or not dir_path.is_dir():
+        raise ValueError(f"The directory '{directory}' does not exist or is not a directory.")
+
+    png_files = [f for f in dir_path.iterdir() if f.is_file() and f.suffix.lower() == '.png']
+    png_files.sort()
+
+    prev_base_name = None
+    count = 1
+
+    for file in png_files:
+        base_name = re.sub(r'(\d{3})(-\d)?(?=\.png$)', '', file.stem)
+
+        if base_name != prev_base_name:
+            count = 1
+
+        new_filename = f"{base_name}{count:03d}.png"
+        new_file_path = file.with_name(new_filename)
+        os.rename(file, new_file_path)
+        prev_base_name = base_name
+        count += 1
+
+
+class TestRenameFiles(unittest.TestCase):
+
+    def setUp(self):
+        self.test_dir = tempfile.mkdtemp()
+
+    def tearDown(self):
+        shutil.rmtree(self.test_dir)
+
+    def create_png_files(self, filenames):
+        for filename in filenames:
+            file_path = Path(self.test_dir) / filename
+            file_path.touch()
+
+    def test_basic_renaming(self):
+        filenames = ["image1.png", "image2.png", "image3.png"]
+        self.create_png_files(filenames)
+
+        rename_files(self.test_dir)
+
+        expected_files = ['image1001.png', 'image2001.png', 'image3001.png']
+        result_files = sorted(os.listdir(self.test_dir))
+        self.assertEqual(result_files, expected_files)
+
+    def test_reset_counter_for_different_base_names(self):
+        filenames = ["image1.png", "picture1.png", "image2.png", "picture2.png"]
+        self.create_png_files(filenames)
+
+        rename_files(self.test_dir)
+
+        expected_files = ['image1001.png', 'image2001.png', 'picture1001.png', 'picture2001.png']
+        result_files = sorted(os.listdir(self.test_dir))
+        self.assertEqual(result_files, expected_files)
+
+    def test_no_png_files(self):
+        filenames = ["file1.txt", "file2.jpg"]
+        self.create_png_files(filenames)
+
+        rename_files(self.test_dir)
+
+        expected_files = filenames
+        result_files = sorted(os.listdir(self.test_dir))
+        self.assertEqual(result_files, expected_files)
+
+    def test_empty_directory(self):
+        rename_files(self.test_dir)
+        expected_files = []
+        result_files = os.listdir(self.test_dir)
+        self.assertEqual(result_files, expected_files)
+
+    def test_files_with_existing_numbers(self):
+        filenames = ["file001.png", "file002.png", "file003.png"]
+        self.create_png_files(filenames)
+
+        rename_files(self.test_dir)
+
+        expected_files = ['file001001.png', 'file002001.png', 'file003001.png']
+        result_files = sorted(os.listdir(self.test_dir))
+        self.assertEqual(result_files, expected_files)
+
+
+if __name__ == '__main__':
+    unittest.main()
 ```
 
-Next, create a new JavaScript file for your test cases, e.g., `renameFiles.test.js`. Then, write your test case using Jest syntax.
-
-Here's an example of how you might write the test case:
-
+### Equivalent Jest Test Suite:
 ```javascript
 const fs = require('fs');
 const path = require('path');
-const renameFiles = require('./renameFiles'); // Adjust the import path accordingly
+const { mkdtempSync, rmSync } = require('fs').promises;
+const { existsSync, renameSync } = require('fs');
+const { readdirSync } = require('fs');
+const { statSync } = require('fs');
 
-// Mock the fs module functions
-jest.mock('fs', () => ({
-  ...jest.requireActual('fs'),
-  readdirSync: jest.fn(),
-  renameSync: jest.fn(),
-}));
+function renameFiles(directory) {
+    /**
+     * Renames PNG files in a specified directory by appending a sequence number to each file.
+     * The files are sorted alphabetically, and each base name is assigned sequential numbers.
+     *
+     * @param {string} directory - The path to the directory containing PNG files to be renamed.
+     */
+    const dirPath = path.resolve(directory);
 
-describe('renameFiles function', () => {
-  let tempDir;
+    if (!existsSync(dirPath) || !statSync(dirPath).isDirectory()) {
+        throw new Error(`The directory '${directory}' does not exist or is not a directory.`);
+    }
 
-  beforeEach(() => {
-    // Create a temporary directory with some PNG files
-    tempDir = fs.mkdtempSync(path.join(__dirname, 'test-'));
-    fs.writeFileSync(path.join(tempDir, 'image1.png'), '');
-    fs.writeFileSync(path.join(tempDir, 'image2.png'), '');
-    fs.writeFileSync(path.join(tempDir, 'image3.png'), '');
-  });
+    const pngFiles = readdirSync(dirPath)
+        .filter(file => statSync(path.join(dirPath, file)).isFile() && path.extname(file).toLowerCase() === '.png');
 
-  afterEach(() => {
-    // Clean up the temporary directory
-    fs.rmSync(tempDir, { recursive: true });
-  });
+    pngFiles.sort();
 
-  test('renames PNG files in a specified directory', () => {
-    const directory = tempDir;
-    renameFiles(directory);
+    let prevBaseName = null;
+    let count = 1;
 
-    // Check if the files were renamed correctly
-    expect(fs.readdirSync(directory)).toEqual([
-      'image1001.png',
-      'image2001.png',
-      'image3001.png',
-    ]);
+    for (const file of pngFiles) {
+        const baseName = file.replace(/(\d{3})(-\d)?(?=\.png$)/, '');
 
-    // Check if the renameSync method was called with the correct arguments
-    expect(fs.renameSync).toBeCalledTimes(3);
-    expect(fs.renameSync).toHaveBeenCalledWith(
-      path.join(directory, 'image1.png'),
-      path.join(directory, 'image1001.png')
-    );
-    expect(fs.renameSync).toHaveBeenCalledWith(
-      path.join(directory, 'image2.png'),
-      path.join(directory, 'image2001.png')
-    );
-    expect(fs.renameSync).toHaveBeenCalledWith(
-      path.join(directory, 'image3.png'),
-      path.join(directory, 'image3001.png')
-    );
-  });
+        if (baseName !== prevBaseName) {
+            count = 1;
+        }
+
+        const newFilename = `${baseName}${count.toString().padStart(3, '0')}.png`;
+        const oldFilePath = path.join(dirPath, file);
+        const newFilePath = path.join(dirPath, newFilename);
+
+        renameSync(oldFilePath, newFilePath);
+        prevBaseName = baseName;
+        count += 1;
+    }
+}
+
+describe('TestRenameFiles', () => {
+    let testDir;
+
+    beforeAll(() => {
+        testDir = mkdtempSync(path.join(os.tmpdir(), 'test-rename-files-'));
+    });
+
+    afterAll(() => {
+        rmSync(testDir, { recursive: true });
+    });
+
+    beforeEach(() => {
+        // Ensure the test directory is clean before each test
+        fs.readdirSync(testDir).forEach(file => {
+            fs.unlinkSync(path.join(testDir, file));
+        });
+    });
+
+    function createPngFiles(filenames) {
+        filenames.forEach(filename => {
+            const filePath = path.join(testDir, filename);
+            fs.writeFileSync(filePath, '');
+        });
+    }
+
+    it('should rename files in a basic scenario with simple filenames', () => {
+        const filenames = ["image1.png", "image2.png", "image3.png"];
+        createPngFiles(filenames);
+
+        renameFiles(testDir);
+
+        const expectedFiles = ['image1001.png', 'image2001.png', 'image3001.png'];
+        const resultFiles = readdirSync(testDir).sort();
+        expect(resultFiles).toEqual(expectedFiles);
+    });
+
+    it('should reset the counter for different base names', () => {
+        const filenames = ["image1.png", "picture1.png", "image2.png", "picture2.png"];
+        createPngFiles(filenames);
+
+        renameFiles(testDir);
+
+        const expectedFiles = ['image1001.png', 'image2001.png', 'picture1001.png', 'picture2001.png'];
+        const resultFiles = readdirSync(testDir).sort();
+        expect(resultFiles).toEqual(expectedFiles);
+    });
+
+    it('should handle directories with no PNG files', () => {
+        const filenames = ["file1.txt", "file2.jpg"];
+        createPngFiles(filenames);
+
+        renameFiles(testDir);
+
+        const expectedFiles = filenames;
+        const resultFiles = readdirSync(testDir).sort();
+        expect(resultFiles).toEqual(expectedFiles);
+    });
+
+    it('should handle an empty directory', () => {
+        renameFiles(testDir);
+
+        const expectedFiles = [];
+        const resultFiles = readdirSync(testDir);
+        expect(resultFiles).toEqual(expectedFiles);
+    });
+
+    it('should rename files that already have numbers in their names', () => {
+        const filenames = ["file001.png", "file002.png", "file003.png"];
+        createPngFiles(filenames);
+
+        renameFiles(testDir);
+
+        const expectedFiles = ['file001001.png', 'file002001.png', 'file003001.png'];
+        const resultFiles = readdirSync(testDir).sort();
+        expect(resultFiles).toEqual(expectedFiles);
+    });
 });
 ```
 
 ### Explanation:
+1. **Setup and Teardown**:
+   - `beforeAll` and `afterAll` hooks are used to create and clean up the temporary directory.
+   - `beforeEach` hook ensures the test directory is clean before each test.
 
-1. **Mocking `fs` Module**: We mock the `fs` module to control its behavior during testing. This allows us to avoid actual file system operations and focus on testing the logic of our function.
+2. **File Creation**:
+   - The `createPngFiles` function creates empty files in the test directory.
 
-2. **Temporary Directory**: We create a temporary directory using `fs.mkdtempSync` before each test and clean it up afterward using `fs.rmSync`.
+3. **Tests**:
+   - Each test case is written using `it` blocks.
+   - Assertions are made using Jest's `expect` function.
 
-3. **Test Case**: We write a test case that calls the `renameFiles` function with the temporary directory as an argument. We then check if the files were renamed correctly and if the `fs.renameSync` method was called with the expected arguments.
+4. **File Operations**:
+   - File operations use Node.js `fs` module functions like `mkdtempSync`, `rmSync`, `readdirSync`, and `renameSync`.
 
-4. **Assertions**: We use Jest's assertion methods like `expect` to verify the behavior of our function.
-
-Make sure to adjust the import path for `renameFiles` according to where your function is located.
+This Jest test suite maintains the functionality and logic of the original Python unittest class while adapting to JavaScript's Jest framework.

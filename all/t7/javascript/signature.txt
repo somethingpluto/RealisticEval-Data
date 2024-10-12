@@ -1,27 +1,85 @@
-Here’s the equivalent JavaScript code signature with comments converted to JSDoc style:
+Certainly! Below is the equivalent JavaScript code with the class and function signatures converted, along with JSDoc comments for documentation:
 
 ```javascript
-import { createLogger, transports, format } from 'winston';
+const winston = require('winston');
 
-/**
- * Initializes a new logger instance.
- *
- * @param {string} name - Name of the logger, typically __filename to reference the module name.
- * @param {number} [level=0] - Logging level, default is DEBUG.
- */
 class Logger {
-    constructor(name, level = 0) {
-        // Logger initialization code goes here
+    /**
+     * Initializes a new logger instance.
+     *
+     * @param {string} name - Name of the logger, typically __filename to reference the module name.
+     * @param {string} [level='debug'] - Logging level, default is 'debug'.
+     */
+    constructor(name, level = 'debug') {
+        this.logger = winston.createLogger({
+            level: level,
+            format: winston.format.combine(
+                winston.format.timestamp(),
+                winston.format.printf(info => {
+                    return `${info.timestamp} - ${info.level.toUpperCase()} - ${info.filename}:${info.line}:${info.message}`;
+                })
+            ),
+            transports: [
+                new winston.transports.Console({
+                    level: level,
+                    format: winston.format.combine(
+                        winston.format.colorize(),
+                        winston.format.printf(info => {
+                            return `${info.timestamp} - ${info.level.toUpperCase()} - ${info.filename}:${info.line}:${info.message}`;
+                        })
+                    )
+                })
+            ]
+        });
+
+        // Set filename and line number
+        this.logger.filename = name;
+        this.logger.line = 0; // This will be updated when logging
     }
 
     /**
      * Logs a message with the given level.
      *
-     * @param {number} level - Logging level for the message (e.g., 1 for INFO).
+     * @param {string} level - Logging level for the message (e.g., 'debug', 'info').
      * @param {string} message - Log message.
      */
     log(level, message) {
-        // Log message code goes here
+        switch (level) {
+            case 'debug':
+                this.logger.debug(message);
+                break;
+            case 'info':
+                this.logger.info(message);
+                break;
+            case 'warn':
+                this.logger.warn(message);
+                break;
+            case 'error':
+                this.logger.error(message);
+                break;
+            case 'critical':
+                this.logger.critical(message);
+                break;
+            default:
+                this.logger.log(level, message);
+                break;
+        }
     }
 }
+
+// Example usage
+const myLogger = new Logger(__filename, 'debug');
+myLogger.log('debug', 'This is a debug message.');
+myLogger.log('info', 'This is an info message.');
+myLogger.log('warn', 'This is a warning message.');
+myLogger.log('error', 'This is an error message.');
+myLogger.log('critical', 'This is a critical message.');
 ```
+
+### Explanation:
+1. **Class Definition**: The `Logger` class is defined with JSDoc comments for documentation.
+2. **Constructor**: The constructor initializes the logger with the specified name and level, using JSDoc comments to describe parameters.
+3. **Logging Levels**: The `log` method uses a switch statement to handle different logging levels, with JSDoc comments for documentation.
+4. **Winston Configuration**: The logger is configured with a custom format and a console transport.
+
+This code ensures that the functionality, logic, and structure of the original Python code are preserved, while adhering to JavaScript conventions and JSDoc documentation standards.

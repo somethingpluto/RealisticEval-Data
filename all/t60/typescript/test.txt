@@ -1,68 +1,129 @@
-To convert your Python unittest test class into a TypeScript test case using Jest, you would first need to define the function `find_common_columns` and then write a corresponding test case. Since the actual implementation of `find_common_columns` is not provided in your question, I'll provide an example of how you might structure the TypeScript test case assuming that the function works as intended.
+Certainly! Here’s the equivalent TypeScript test class using Jest, ensuring that the functionality and logic of the tests are preserved. The necessary type annotations and Jest assertions are included.
 
-Here's how you can do it:
+### TypeScript Code
 
-1. Define the `find_common_columns` function.
-2. Write a Jest test case for it.
+First, ensure you have the required dependencies installed:
 
-First, let's assume the implementation of `find_common_columns` looks something like this (this is just a placeholder):
-
-```typescript
-import fs from 'fs';
-import path from 'path';
-
-function findCommonColumns(directory: string): string[] {
-    const files = fs.readdirSync(directory);
-    if (files.length === 0) return [];
-
-    const fileContents = files.map(file => {
-        const filePath = path.join(directory, file);
-        if (path.extname(filePath) !== '.csv') return [];
-        return fs.readFileSync(filePath, 'utf-8').split('\n')[0].split(','); // Assuming CSV headers are on the first line
-    });
-
-    const commonColumns = fileContents[0];
-    for (let i = 1; i < fileContents.length; i++) {
-        commonColumns.filter(col => !fileContents[i].includes(col));
-    }
-
-    return commonColumns;
-}
+```sh
+npm install --save-dev jest ts-jest @types/jest
 ```
 
-Now, let's write the Jest test case:
+Add the necessary Jest configuration to your `tsconfig.json` or `jest.config.js`.
+
+### TypeScript Test Class
+
+Here’s the TypeScript code for the test class:
 
 ```typescript
-import { findCommonColumns } from './yourFilePath'; // Adjust the path accordingly
+import * as fs from 'fs';
+import * as path from 'path';
+import { findCommonColumns } from './findCommonColumns'; // Assuming findCommonColumns is exported from another file
 
-describe('findCommonColumns', () => {
-    it('should return the common columns of all CSV files in a directory', () => {
-        // Mocking the file system to simulate reading files
-        const mockFiles = [
-            'header1,header2,header3\nvalue1,value2,value3',
-            'header1,header2,header4\nvalue4,value5,value6'
-        ];
+describe('TestCommonColumns', () => {
+  let testDir: string;
 
-        const mockReadFileSync = jest.fn((filePath: string) => {
-            const fileIndex = parseInt(filePath.split('/').pop()!.replace('.csv', ''), 10);
-            return mockFiles[fileIndex];
-        });
+  beforeEach(() => {
+    // Set up a temporary directory
+    testDir = 'test_dir';
+    fs.mkdirSync(testDir, { recursive: true });
+  });
 
-        jest.mock('fs', () => ({
-            ...jest.requireActual('fs'),
-            readFileSync: mockReadFileSync,
-            readdirSync: jest.fn(() => ['file1.csv', 'file2.csv'])
-        }));
-
-        const result = findCommonColumns('./mockDirectory');
-
-        expect(result).toEqual(['header1', 'header2']);
+  afterEach(() => {
+    // Remove created files and directory after each test
+    const files = fs.readdirSync(testDir);
+    files.forEach((filename) => {
+      fs.unlinkSync(path.join(testDir, filename));
     });
+    fs.rmdirSync(testDir);
+  });
+
+  it('should find all the same columns', () => {
+    // All CSV files have the same columns
+    const data1 = "A,B,C\n1,2,3";
+    const data2 = "A,B,C\n4,5,6";
+    const data3 = "A,B,C\n7,8,9";
+    const filenames = ['file1.csv', 'file2.csv', 'file3.csv'];
+    const datas = [data1, data2, data3];
+
+    filenames.forEach((filename, index) => {
+      const filepath = path.join(testDir, filename);
+      fs.writeFileSync(filepath, datas[index]);
+    });
+
+    expect(new Set(findCommonColumns(testDir))).toEqual(new Set(['A', 'B', 'C']));
+  });
+
+  it('should find no common columns', () => {
+    // No common columns
+    const data1 = "A,B,C\n1,2,3";
+    const data2 = "D,E,F\n4,5,6";
+    const data3 = "G,H,I\n7,8,9";
+    const filenames = ['file1.csv', 'file2.csv', 'file3.csv'];
+    const datas = [data1, data2, data3];
+
+    filenames.forEach((filename, index) => {
+      const filepath = path.join(testDir, filename);
+      fs.writeFileSync(filepath, datas[index]);
+    });
+
+    expect(findCommonColumns(testDir)).toEqual([]);
+  });
+
+  it('should find some common columns', () => {
+    // Some common columns
+    const data1 = "A,B,C\n1,2,3";
+    const data2 = "B,C,D\n4,5,6";
+    const data3 = "C,D,E\n7,8,9";
+    const filenames = ['file1.csv', 'file2.csv', 'file3.csv'];
+    const datas = [data1, data2, data3];
+
+    filenames.forEach((filename, index) => {
+      const filepath = path.join(testDir, filename);
+      fs.writeFileSync(filepath, datas[index]);
+    });
+
+    expect(findCommonColumns(testDir)).toEqual(['C']);
+  });
+
+  it('should find mixed common and unique columns', () => {
+    // Mixed common and unique columns
+    const data1 = "A,B,C\n1,2,3";
+    const data2 = "B,C,D\n4,5,6";
+    const data3 = "B,C,E\n7,8,9";
+    const filenames = ['file1.csv', 'file2.csv', 'file3.csv'];
+    const datas = [data1, data2, data3];
+
+    filenames.forEach((filename, index) => {
+      const filepath = path.join(testDir, filename);
+      fs.writeFileSync(filepath, datas[index]);
+    });
+
+    expect(new Set(findCommonColumns(testDir))).toEqual(new Set(['B', 'C']));
+  });
 });
 ```
 
-### Explanation:
-1. **Mocking the File System**: We use `jest.mock` to mock the `fs` module so we can control what `readFileSync` returns. This allows us to test our function without actually reading files from disk.
-2. **Test Case**: The `it` block contains the actual test case. It checks if the `findCommonColumns` function correctly identifies the common columns between two sample CSV files.
+### Explanation
 
-Make sure to adjust the path to where `findCommonColumns` is defined in your project. Also, ensure that the mock files (`file1.csv`, `file2.csv`) have the appropriate content for your test case.
+1. **Imports**:
+   - `fs` and `path` are imported to handle file operations and path manipulation.
+   - `findCommonColumns` is assumed to be imported from another file.
+
+2. **Describe Block**:
+   - The `describe` block groups the tests together under a single suite named `TestCommonColumns`.
+
+3. **BeforeEach and AfterEach Hooks**:
+   - `beforeEach` sets up the temporary directory before each test.
+   - `afterEach` cleans up the temporary directory and files after each test.
+
+4. **Test Cases**:
+   - Each `it` block represents a test case.
+   - The test cases create CSV files with specific content and then call `findCommonColumns` to verify the expected results.
+
+5. **Assertions**:
+   - Jest assertions like `expect` are used to check the results against expected values.
+
+6. **File Operations**:
+   - Files are created using `fs.writeFileSync` to write the CSV data.
+
+This TypeScript code preserves the original functionality and structure of the Python unittest class while adapting it to Jest's testing framework.

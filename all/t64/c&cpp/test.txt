@@ -1,58 +1,178 @@
-Sure! Below is the equivalent C++ test case using Catch2 for the provided Python unittest test class. Note that I'll assume you want to test a function `csvToSqlInsert` in a C++ file named `csv_to_sql.cpp`.
+Certainly! Below is the equivalent C++ test class using the Catch2 testing framework. The test class will create sample CSV files, run the `csv_to_sql_insert` function, and verify the results using Catch2 assertions.
 
-First, let's define the `csvToSqlInsert` function in `csv_to_sql.cpp`:
+### C++ Code with Catch2 Testing Framework
 
 ```cpp
-#include <string>
+#include <catch2/catch_test_macros.hpp>
 #include <fstream>
 #include <sstream>
+#include <string>
+#include <vector>
+#include <filesystem>
 
-std::string csvToSqlInsert(const std::string& csvFilePath) {
-    // Implement your CSV to SQL conversion logic here
-    // For demonstration purposes, we'll just return an empty string
-    return "";
+namespace fs = std::filesystem;
+
+// Function to escape single quotes in a string
+std::string escape_single_quotes(const std::string& input) {
+    std::string result;
+    for (char c : input) {
+        if (c == '\'') {
+            result += "''";
+        } else {
+            result += c;
+        }
+    }
+    return result;
+}
+
+// Function to check if a string is a number
+bool is_number(const std::string& s) {
+    return !s.empty() && std::all_of(s.begin(), s.end(), ::isdigit);
+}
+
+// Function to join elements of a vector with a delimiter
+template<typename T>
+std::string join(const std::vector<T>& vec, const std::string& delimiter) {
+    std::ostringstream oss;
+    for (size_t i = 0; i < vec.size(); ++i) {
+        oss << vec[i];
+        if (i != vec.size() - 1) {
+            oss << delimiter;
+        }
+    }
+    return oss.str();
+}
+
+// Function to convert CSV content to SQL insert statements
+std::string csv_to_sql_insert(const std::string& csv_file_path) {
+    // Extract the table name from the CSV file name, removing the suffix
+    std::string table_name = fs::path(csv_file_path).filename().replace_extension().string();
+
+    // Open the CSV file and read its contents
+    std::ifstream file(csv_file_path);
+    if (!file.is_open()) {
+        std::cerr << "Failed to open file: " << csv_file_path << std::endl;
+        return "";
+    }
+
+    // Read the first line (headers)
+    std::string line;
+    std::getline(file, line);
+    std::istringstream header_stream(line);
+    std::vector<std::string> headers;
+    std::string header;
+    while (std::getline(header_stream, header, ',')) {
+        headers.push_back(header);
+    }
+
+    // Prepare the SQL insert statements
+    std::vector<std::string> insert_statements;
+
+    // Process each row
+    while (std::getline(file, line)) {
+        std::istringstream row_stream(line);
+        std::vector<std::string> values;
+        std::string value;
+        while (std::getline(row_stream, value, ',')) {
+            if (is_number(value)) {
+                values.push_back(value);
+            } else {
+                std::string escaped_value = escape_single_quotes(value);
+                values.push_back("'" + escaped_value + "'");
+            }
+        }
+
+        // Join column names and values to form an INSERT statement
+        std::string insert_statement = "INSERT INTO " + table_name + " (" + 
+                                       join(headers, ", ") + ") VALUES (" + 
+                                       join(values, ", ") + ");";
+        insert_statements.push_back(insert_statement);
+    }
+
+    file.close();
+
+    // Combine all insert statements into a single output
+    std::ostringstream oss;
+    for (const auto& stmt : insert_statements) {
+        oss << stmt << '\n';
+    }
+
+    return oss.str();
+}
+
+TEST_CASE("TestCsvToSqlInsert", "[csv_to_sql_insert]") {
+    // Create sample CSV files for testing
+    std::map<std::string, std::string> test_files = {
+        {"test1.csv", "id,name,age\n1,Alice,30\n2,Bob,25"},
+        {"test2.csv", "product_id,product_name,price\n101,Widget,9.99\n102,Gadget,12.49"},
+        {"test3.csv", "user_id,email\n3,test@example.com\n4,user@domain.com"},
+        {"test4.csv", "order_id,order_date,total\n1001,2024-09-01,59.99"},
+        {"test5.csv", "quote_id,quote\n1,\"It's a beautiful day.\"\n2,\"She said, \"\"Hello!\"\"\""}
+    };
+
+    // Create the files on disk
+    for (const auto& [filename, content] : test_files) {
+        std::ofstream file(filename);
+        file << content;
+        file.close();
+    }
+
+    SECTION("test_simple_csv") {
+        std::string expected_sql = (
+            "INSERT INTO test1 (id, name, age) VALUES ('1', 'Alice', '30');\n"
+            "INSERT INTO test1 (id, name, age) VALUES ('2', 'Bob', '25');"
+        );
+        std::string result = csv_to_sql_insert("test1.csv");
+        REQUIRE(result == expected_sql);
+    }
+
+    SECTION("test_product_csv") {
+        std::string expected_sql = (
+            "INSERT INTO test2 (product_id, product_name, price) VALUES ('101', 'Widget', '9.99');\n"
+            "INSERT INTO test2 (product_id, product_name, price) VALUES ('102', 'Gadget', '12.49');"
+        );
+        std::string result = csv_to_sql_insert("test2.csv");
+        REQUIRE(result == expected_sql);
+    }
+
+    SECTION("test_email_csv") {
+        std::string expected_sql = (
+            "INSERT INTO test3 (user_id, email) VALUES ('3', 'test@example.com');\n"
+            "INSERT INTO test3 (user_id, email) VALUES ('4', 'user@domain.com');"
+        );
+        std::string result = csv_to_sql_insert("test3.csv");
+        REQUIRE(result == expected_sql);
+    }
+
+    SECTION("test_date_and_decimal_csv") {
+        std::string expected_sql = (
+            "INSERT INTO test4 (order_id, order_date, total) VALUES ('1001', '2024-09-01', '59.99');"
+        );
+        std::string result = csv_to_sql_insert("test4.csv");
+        REQUIRE(result == expected_sql);
+    }
+
+    // Remove the test files after tests
+    for (const auto& filename : test_files) {
+        fs::remove(filename.first);
+    }
 }
 ```
 
-Next, let's write the corresponding Catch2 test cases in `test_csv_to_sql.cpp`:
+### Explanation:
+1. **Header Files**: Necessary header files are included at the beginning.
+2. **Catch2 Testing Framework**: The `Catch2` framework is used for writing tests.
+3. **Helper Functions**:
+   - `escape_single_quotes`: Escapes single quotes in a string.
+   - `is_number`: Checks if a string is a number.
+   - `join`: Joins elements of a vector with a delimiter.
+4. **Function `csv_to_sql_insert`**: The function converts CSV content to SQL insert statements.
+5. **Test Class**:
+   - `TEST_CASE`: Defines the test case.
+   - `SECTION`: Defines individual test sections.
+   - `REQUIRE`: Used for assertions.
+6. **Setup and Teardown**:
+   - `setUp`: Creates sample CSV files for testing.
+   - `tearDown`: Removes the test files after tests.
 
-```cpp
-#define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
-#include "catch.hpp"
-#include "csv_to_sql.h"  // Include your header file where csvToSqlInsert is declared
-
-TEST_CASE("CSV to SQL Conversion", "[csv_to_sql]") {
-    SECTION("Empty CSV File") {
-        const std::string filePath = "path/to/empty.csv";
-        std::ofstream ofs(filePath);
-        ofs.close();
-        
-        REQUIRE(csvToSqlInsert(filePath).empty());
-        
-        // Clean up
-        std::remove(filePath.c_str());
-    }
-
-    SECTION("Valid CSV File") {
-        const std::string filePath = "path/to/valid.csv";
-        std::ofstream ofs(filePath);
-        ofs << "id,name\n1,Alice\n2,Bob";
-        ofs.close();
-        
-        std::string expectedSql = "INSERT INTO table_name (id, name) VALUES (1, 'Alice'), (2, 'Bob');\n";
-        REQUIRE(csvToSqlInsert(filePath) == expectedSql);
-        
-        // Clean up
-        std::remove(filePath.c_str());
-    }
-}
-```
-
-Make sure to include the necessary headers and link against Catch2 when compiling your test cases. Here’s an example of how you might compile the tests using g++:
-
-```sh
-g++ -std=c++14 -I/path/to/catch2/include -o test_csv_to_sql test_csv_to_sql.cpp csv_to_sql.cpp
-./test_csv_to_sql
-```
-
-This setup assumes you have Catch2 installed and properly configured in your project. Adjust the paths and configurations according to your specific environment.
+This C++ code preserves the original functionality and logic of the Python tests while adhering to C++ standards and practices.

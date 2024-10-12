@@ -1,42 +1,103 @@
-Sure, I can help you convert the Python unittest test class to a C++ test case using Catch2. Below is an example of how you might write a test for the `count_unique_colors` function in C++ using Catch2.
+Certainly! Here is the equivalent C++ test class using the Catch2 testing framework. I will ensure that the functionality and logic of the tests are preserved, and I will use appropriate assertions in Catch2.
 
-First, ensure you have Catch2 installed and set up in your project. You can download it from [Catch2's GitHub repository](https://github.com/catchorg/Catch2).
+First, make sure you have Catch2 installed in your project. You can include Catch2 by adding the following headers and ensuring you have the Catch2 library available.
 
-Here's an example of how you might write the test:
+### C++ Code with Catch2 Testing Framework
 
 ```cpp
-#include "catch.hpp"
+#include <catch2/catch_test_macros.hpp>
+#include <iostream>
+#include <set>
+#include <vector>
 #include <string>
-#include <unordered_set>
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
-// Assuming the function count_unique_colors is defined somewhere in your codebase
-int count_unique_colors(const std::string& image_path);
+// Function to count the number of unique colors in an image
+int count_unique_colors(const std::string& image_path) {
+    // Load the image
+    int width, height, channels;
+    unsigned char* data = stbi_load(image_path.c_str(), &width, &height, &channels, 3);
 
-TEST_CASE("Count unique colors in an image", "[image]") {
-    // Test with a valid image path
-    SECTION("Valid image path") {
-        std::string valid_image_path = "path/to/valid/image.jpg";
-        int result = count_unique_colors(valid_image_path);
-        REQUIRE(result >= 0); // Ensure the result is non-negative
+    if (!data) {
+        std::cerr << "Failed to load image." << std::endl;
+        return 0;
     }
 
-    // Test with an invalid image path
-    SECTION("Invalid image path") {
-        std::string invalid_image_path = "path/to/nonexistent/image.jpg";
-        int result = count_unique_colors(invalid_image_path);
-        REQUIRE(result == -1); // Assuming -1 indicates an error or invalid input
+    std::set<std::vector<unsigned char>> unique_colors;
+
+    // Iterate through each pixel
+    for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
+            unsigned char r = data[(y * width + x) * 3 + 0];
+            unsigned char g = data[(y * width + x) * 3 + 1];
+            unsigned char b = data[(y * width + x) * 3 + 2];
+
+            // Store the color in a vector
+            std::vector<unsigned char> color = {r, g, b};
+            unique_colors.insert(color);
+        }
     }
+
+    // Free the loaded image data
+    stbi_image_free(data);
+
+    // Return the number of unique colors
+    return unique_colors.size();
+}
+
+TEST_CASE("Test count_unique_colors function", "[count_unique_colors]") {
+    SECTION("Test case 1") {
+        std::string picture_path = R"(E:\code\code_back\python_project\RealisticEval-Data\envs\python\test_case\t227\testcase01.png)";
+        int expected_color_num = 1;
+        int output = count_unique_colors(picture_path);
+        REQUIRE(output == expected_color_num);
+    }
+
+    SECTION("Test case 2") {
+        std::string picture_path = R"(E:\code\code_back\python_project\RealisticEval-Data\envs\python\test_case\t227\testcase02.png)";
+        int expected_color_num = 2;
+        int output = count_unique_colors(picture_path);
+        REQUIRE(output == expected_color_num);
+    }
+
+    SECTION("Test case 3") {
+        std::string picture_path = R"(E:\code\code_back\python_project\RealisticEval-Data\envs\python\test_case\t227\testcase03.png)";
+        int expected_color_num = 3;
+        int output = count_unique_colors(picture_path);
+        REQUIRE(output == expected_color_num);
+    }
+
+    SECTION("Test case 4") {
+        std::string picture_path = R"(E:\code\code_back\python_project\RealisticEval-Data\envs\python\test_case\t227\testcase04.png)";
+        int expected_color_num = 466;
+        int output = count_unique_colors(picture_path);
+        REQUIRE(output == expected_color_num);
+    }
+}
+
+int main(int argc, char* argv[]) {
+    // Run Catch2 tests
+    return Catch::Session().run(argc, argv);
 }
 ```
 
 ### Explanation:
+1. **Catch2 Headers**:
+   - Include the necessary Catch2 headers to define the test cases.
 
-1. **Include Catch2**: The `#include "catch.hpp"` directive includes the Catch2 header file.
-2. **Function Prototype**: The `count_unique_colors` function prototype is included. Make sure this function is available in your project.
-3. **Test Case Definition**: The `TEST_CASE` macro defines a test case named "Count unique colors in an image".
-4. **Sections**: Inside the test case, `SECTION` macros define individual test scenarios.
-5. **Assertions**: The `REQUIRE` macro is used to assert that certain conditions must be true. For example, `REQUIRE(result >= 0)` ensures that the result is non-negative, which is a reasonable assumption for the number of unique colors.
+2. **Function Definition**:
+   - The `count_unique_colors` function remains the same as before.
 
-Make sure to adjust the expected values (`-1` in this example) based on how your function handles errors or invalid inputs.
+3. **Test Case Definitions**:
+   - The `TEST_CASE` macro defines a test case named "Test count_unique_colors function".
+   - Each `SECTION` within the test case corresponds to a specific test case from the Python code.
+   - The paths are defined using raw string literals (`R"(...)`), which allow backslashes to be treated as literal characters.
 
-This should give you a good starting point for converting your Python unittest test class to a C++ test case using Catch2.
+4. **Assertions**:
+   - The `REQUIRE` macro is used to assert that the output matches the expected number of unique colors.
+
+5. **Main Function**:
+   - The `main` function runs the Catch2 tests.
+
+This setup ensures that the tests are structured similarly to the Python unittest framework and that the functionality and logic are preserved. The Catch2 framework provides clear and concise test definitions and assertions.

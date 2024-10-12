@@ -1,17 +1,86 @@
-Here is your Python function converted into JavaScript with comments:
+Certainly! Here is the equivalent JavaScript code with the function signature and comments rewritten to conform to JSDoc standards:
 
 ```javascript
+const Jimp = require('jimp');
+
 /**
- * Converts a picture to an array of binary bits. It converts the image to black and white mode 
- * (only 0s and 1s, where 0 corresponds to black and 1 to white), then converts the white pixels 
- * (value 255) to 1 and the black pixels to 0. Finally, it stores these bits in an array and returns it.
+ * Converts an image to an array of binary bits. The image is converted to black and white mode,
+ * where white pixels (value 255) are represented by 1 and black pixels by 0. These bits are then
+ * stored in an array and returned.
  *
  * @param {string} imagePath - The path to the image file.
- * @returns {Array<number>} A list of bits (0 or 1) representing the image.
+ * @returns {Promise<Array<number>>} A promise that resolves to an array of bits (0 or 1) representing the image.
  */
-function convertImageToBits(imagePath) {
-    // Your implementation here...
+async function convertImageToBits(imagePath) {
+    try {
+        // Load the image using Jimp
+        const image = await Jimp.read(imagePath);
+
+        // Convert the image to grayscale
+        image.grayscale();
+
+        // Convert the grayscale image to black and white (1-bit pixels)
+        image.threshold(127);
+
+        // Get the width and height of the image
+        const w = image.bitmap.width;
+        const h = image.bitmap.height;
+
+        // Initialize an empty array to store the bits
+        const bitsArray = [];
+
+        // Loop over each pixel in the image
+        for (let y = 0; y < h; y++) {
+            for (let x = 0; x < w; x++) {
+                // Get the pixel value (0 for black, 255 for white after thresholding)
+                const pixel = image.getPixelColor(x, y);
+                const r = (pixel >> 16) & 0xff; // Extract red component
+                const g = (pixel >> 8) & 0xff;  // Extract green component
+                const b = pixel & 0xff;         // Extract blue component
+
+                // Convert pixel to bit: 1 for white, 0 for black
+                const bit = (r + g + b) > 0 ? 1 : 0;
+                bitsArray.push(bit);
+            }
+        }
+
+        return bitsArray;
+    } catch (error) {
+        console.error('Error converting image to bits:', error);
+        throw error;
+    }
 }
+
+// Example usage
+(async () => {
+    try {
+        const bits = await convertImageToBits('path/to/image.jpg');
+        console.log(bits);
+    } catch (error) {
+        console.error('Failed to convert image:', error);
+    }
+})();
 ```
 
-Note that JavaScript does not have built-in support for type annotations like Python, so you'll need to use external tools like JSDoc or TypeScript to enforce types in your JavaScript codebase if you want to maintain consistency with your original Python code.
+### Explanation:
+1. **Function Signature**:
+   - The function `convertImageToBits` is defined with the appropriate JSDoc comments.
+   - The function takes a single argument `imagePath` of type `string`.
+
+2. **JSDoc Comments**:
+   - The JSDoc comments provide a clear description of the function, its arguments, and its return type.
+   - The comments are structured to be readable and informative.
+
+3. **Image Loading and Processing**:
+   - The image is loaded using `Jimp.read`, which returns a promise.
+   - The image is converted to grayscale and then thresholded to create a black and white image.
+   - The width and height of the image are obtained.
+   - Each pixel is processed to convert it to a binary bit (0 or 1).
+
+4. **Error Handling**:
+   - The function wraps the image processing in a try-catch block to handle any errors that might occur during the process.
+
+5. **Example Usage**:
+   - An example usage is provided at the end to demonstrate how to call the function and handle the result.
+
+This JavaScript code preserves the functionality and structure of the original Python code while adhering to JavaScript best practices and documentation standards.

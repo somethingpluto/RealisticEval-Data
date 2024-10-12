@@ -1,36 +1,75 @@
-Here's how you can write the TypeScript version of your Python function signature:
+Certainly! Here’s the equivalent TypeScript code, including proper type annotations and JSDoc-style documentation comments:
 
 ```typescript
-import { readFileSync } from 'fs';
-import * as xml2js from 'xml2js';
+import * as fs from 'fs';
+import * as parse5 from 'parse5';
 
-interface ISequence {
-    [key: string]: any;
+/**
+ * Converts an XML file into a 2D array representing a DataFrame, where each <sequence> tag is treated as a row,
+ * and the tag and text content of each sub-element are treated as columns and questions of the DataFrame.
+ *
+ * @param xmlFile - Path to the XML file.
+ * @returns A 2D array representing the DataFrame containing the data from the XML file.
+ */
+function xmlToDataFrame(xmlFile: string): any[][] {
+  // Read the XML file
+  const xmlContent = fs.readFileSync(xmlFile, 'utf-8');
+
+  // Parse the XML content
+  const dom = parse5.parse(xmlContent);
+  const root = dom.childNodes.find(node => node.nodeName === 'root');
+
+  // Prepare a list to hold all rows
+  const rows: any[][] = [];
+
+  // Iterate over each <sequence> element in the XML file
+  root.childNodes.forEach(sequenceNode => {
+    if (sequenceNode.nodeName === 'sequence') {
+      const rowData: any[] = [];
+      sequenceNode.childNodes.forEach(childNode => {
+        if (childNode.nodeName !== '#text') {
+          // Use the tag as the column name and the text content as the value
+          rowData.push(childNode.nodeName);
+          rowData.push(childNode.childNodes.find(node => node.nodeName === '#text')?.nodeValue);
+        }
+      });
+      rows.push(rowData);
+    }
+  });
+
+  return rows;
 }
 
-function xmlToDataFrame(xmlFile: string): Promise<ISequence[]> {
-    /**
-     * Convert the XML file into an array of objects, where each <sequence> tag is treated as an object record in the XML,
-     * and the tag and text content of each sub-element are treated as properties and values of the object.
-     *
-     * @param xmlFile - Path to the XML file.
-     * @returns An array of objects representing the data from the XML file.
-     */
-    
-    return new Promise((resolve, reject) => {
-        const parser = new xml2js.Parser();
-        
-        parser.parseString(readFileSync(xmlFile), (err, result) => {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(result.sequence || []);
-            }
-        });
-    });
-}
+// Example usage
+const xmlFilePath = './example.xml';
+const data = xmlToDataFrame(xmlFilePath);
+console.log(data);
 ```
 
-Please note that in TypeScript, we need to use Promises instead of synchronous functions since parsing XML files could potentially block the execution thread for a long time. Also, `xml2js` library should be installed in your project. If it's not already installed, you can install it using npm or yarn. 
+### Explanation:
+1. **Imports**:
+   - `fs` is used for reading the XML file.
+   - `parse5` is used for parsing the XML content.
 
-The `ISequence` interface represents the structure of each sequence tag in the XML file. It allows for any number of properties with string keys and any type of values. Adjust this interface according to your specific XML structure if necessary.
+2. **Function Definition**:
+   - The function `xmlToDataFrame` takes the path to an XML file and returns a 2D array representing the DataFrame.
+
+3. **JSDoc Documentation**:
+   - The function is documented using JSDoc-style comments, providing clear descriptions of parameters and return values.
+
+4. **Reading the XML File**:
+   - The XML file is read using `fs.readFileSync`.
+
+5. **Parsing the XML Content**:
+   - The XML content is parsed using `parse5`.
+
+6. **Iterating Over `<sequence>` Elements**:
+   - The function iterates over each `<sequence>` element and extracts the data for each sub-element.
+
+7. **Preparing Rows**:
+   - Each `<sequence>` element is converted into a row, with each sub-element being a column.
+
+8. **Example Usage**:
+   - An example usage is provided at the end to demonstrate how to call the function.
+
+This approach ensures that the functionality remains consistent with the original Python code, while adapting it to TypeScript's static type system and idiomatic practices.

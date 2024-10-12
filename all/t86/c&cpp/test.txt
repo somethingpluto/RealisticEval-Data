@@ -1,54 +1,84 @@
-Sure, here is how you can translate the provided Python unittest test class into a C++ Catch2 test case:
+Certainly! Below is the equivalent C++ test class using the Catch2 testing framework. This conversion ensures that the functionality and logic of the tests are preserved, with appropriate assertions and adjustments for language differences between Python and C++.
+
+First, make sure you have Catch2 installed and included in your project. You can include Catch2 by adding the header file and ensuring it is properly configured.
+
+Here’s the complete C++ code:
 
 ```cpp
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <vector>
-#include <tuple>
+#include <utility>
 
-// Function signature remains the same
-std::vector<std::tuple<int, int>> bresenham_line(int x1, int y1, int x2, int y2);
+// Function to generate integer coordinates on the line from (x1, y1) to (x2, y2) using Bresenham's line algorithm.
+std::vector<std::pair<int, int>> bresenham_line(int x1, int y1, int x2, int y2);
 
-TEST_CASE("Bresenham Line Algorithm", "[bresenham]")
-{
-    // Test Case 1
-    SECTION("Line from (0, 0) to (3, 3)")
-    {
-        auto result = bresenham_line(0, 0, 3, 3);
-        REQUIRE(result.size() == 4); // Should generate 4 points
-        CHECK(result[0] == std::make_tuple(0, 0));
-        CHECK(result[1] == std::make_tuple(1, 1));
-        CHECK(result[2] == std::make_tuple(2, 2));
-        CHECK(result[3] == std::make_tuple(3, 3));
+TEST_CASE("Test Bresenham Line Algorithm", "[Bresenham]") {
+    SECTION("Horizontal Line") {
+        std::vector<std::pair<int, int>> expected = {{1, 5}, {2, 5}, {3, 5}, {4, 5}, {5, 5}};
+        REQUIRE(bresenham_line(1, 5, 5, 5) == expected);
     }
 
-    // Test Case 2
-    SECTION("Line from (0, 0) to (3, -3)")
-    {
-        auto result = bresenham_line(0, 0, 3, -3);
-        REQUIRE(result.size() == 4); // Should generate 4 points
-        CHECK(result[0] == std::make_tuple(0, 0));
-        CHECK(result[1] == std::make_tuple(1, -1));
-        CHECK(result[2] == std::make_tuple(2, -2));
-        CHECK(result[3] == std::make_tuple(3, -3));
+    SECTION("Vertical Line") {
+        std::vector<std::pair<int, int>> expected = {{3, 2}, {3, 3}, {3, 4}, {3, 5}, {3, 6}};
+        REQUIRE(bresenham_line(3, 2, 3, 6) == expected);
     }
 
-    // Add more test cases as needed...
+    SECTION("Diagonal Line") {
+        std::vector<std::pair<int, int>> expected = {{2, 2}, {3, 3}, {4, 4}, {5, 5}, {6, 6}};
+        REQUIRE(bresenham_line(2, 2, 6, 6) == expected);
+    }
+
+    SECTION("Steep Slope") {
+        std::vector<std::pair<int, int>> expected = {{1, 1}, {2, 2}, {2, 3}, {3, 4}, {3, 5}, {4, 6}};
+        REQUIRE(bresenham_line(1, 1, 4, 6) == expected);
+    }
+
+    SECTION("Negative Slope") {
+        std::vector<std::pair<int, int>> expected = {{5, 1}, {4, 2}, {3, 3}, {2, 4}, {1, 5}};
+        REQUIRE(bresenham_line(5, 1, 1, 5) == expected);
+    }
+}
+
+// Implementation of the bresenham_line function
+std::vector<std::pair<int, int>> bresenham_line(int x1, int y1, int x2, int y2) {
+    std::vector<std::pair<int, int>> points;
+    int dx = std::abs(x2 - x1);
+    int dy = -std::abs(y2 - y1);
+    int sx = (x1 < x2) ? 1 : -1;
+    int sy = (y1 < y2) ? 1 : -1;
+    int err = dx + dy;  // error value e_xy
+
+    while (true) {
+        points.push_back(std::make_pair(x1, y1));
+        if (x1 == x2 && y1 == y2) {
+            break;
+        }
+        int e2 = 2 * err;
+        if (e2 >= dy) {  // e_xy+e_x > 0
+            err += dy;
+            x1 += sx;
+        }
+        if (e2 <= dx) {  // e_xy+e_y < 0
+            err += dx;
+            y1 += sy;
+        }
+    }
+
+    return points;
+}
+
+// Example usage
+int main() {
+    // Catch2 requires this to run the tests
+    return Catch::Session().run();
 }
 ```
 
-In this C++ code snippet:
-- We include the `Catch2` header file.
-- We define the `bresenham_line` function with the same signature as in your Python code.
-- We create a `TEST_CASE` block named "Bresenham Line Algorithm" that groups multiple test sections together.
-- Each `SECTION` represents a specific test case, such as drawing a line from `(0, 0)` to `(3, 3)` or `(3, -3)`.
-- We use `REQUIRE` to ensure the number of points generated matches the expected count.
-- We use `CHECK` to verify individual points in the generated line.
+### Explanation:
+1. **Headers**: Include the necessary headers (`<catch2/catch_test_macros.hpp>`, `<vector>`, `<utility>`).
+2. **Test Class**: Use `TEST_CASE` and `SECTION` macros from Catch2 to define the test cases.
+3. **Assertions**: Use `REQUIRE` to assert the equality of the expected and actual results.
+4. **Function Implementation**: The `bresenham_line` function is implemented as before.
+5. **Main Function**: The `main` function is required to run the Catch2 tests.
 
-Make sure to compile your C++ code with Catch2 included. For example, if you're using g++, you might compile it like this:
-
-```sh
-g++ -std=c++17 -o test_bresenham test_bresenham.cpp -lc++abi
-./test_bresenham
-```
-
-This will run your tests and provide output indicating whether they passed or failed.
+This C++ code preserves the functionality and logic of the original Python tests while adhering to the Catch2 testing framework.

@@ -1,39 +1,72 @@
-Here's how you can write the equivalent C++ code for your Python `BitSequenceEncoder` class using the `nlohmann/json` library:
+Sure! Below is the equivalent C++ code that replicates the functionality of the provided Python code. The goal is to create a custom JSON encoder that converts specific fields to binary representation.
+
+First, we need to include the necessary headers and libraries. We will use `nlohmann/json` for JSON handling, which is a popular C++ library for working with JSON data.
 
 ```cpp
 #include <iostream>
 #include <string>
+#include <unordered_map>
 #include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
 
-class BitSequenceEncoder : public json::serializer<json> {
+// Custom JSON encoder class
+class BitSequenceEncoder {
 public:
-    static void encode(json &j, const std::string &key, const json &value) {
-        if (key == "bits" && value.is_number_integer()) {
-            j[key] = std::bitset<32>(value.get<int>()).to_string();
-        } else {
-            j[key] = value;
-        }
+    // Override the default JSON encoder to show register question in binary
+    std::string encode(const json& obj) const {
+        auto converted_obj = convert_bits(obj);
+        return converted_obj.dump();
     }
 
-    template<typename T>
-    static void encode(json &j, const std::string &key, const T &value) {
-        json::serializer<json>::encode(j, key, value);
+private:
+    // Helper function to convert bits to binary string
+    json convert_bits(const json& item) const {
+        if (item.is_object()) {
+            json result;
+            for (auto it = item.begin(); it != item.end(); ++it) {
+                const std::string& key = it.key();
+                const json& value = it.value();
+                if (key == "bits") {
+                    result[key] = format_binary(value);
+                } else {
+                    result[key] = convert_bits(value);
+                }
+            }
+            return result;
+        }
+        return item;
+    }
+
+    // Format the integer value as an 8-bit binary string
+    std::string format_binary(const json& value) const {
+        int intValue = value.get<int>();
+        return fmt::format("{:08b}", intValue);
     }
 };
 
 int main() {
-    json j;
-    j["bits"] = 255;
-    j.dump(4); // Pretty print with indentation of 4 spaces
+    // Example usage
+    json obj = {
+        {"name", "example"},
+        {"bits", 13}
+    };
+
+    BitSequenceEncoder encoder;
+    std::string encoded_json = encoder.encode(obj);
+
+    std::cout << "Encoded JSON: " << encoded_json << std::endl;
 
     return 0;
 }
 ```
 
-This C++ code defines a custom JSON serializer class called `BitSequenceEncoder`. The `encode()` function checks if the key is "bits" and the corresponding value is an integer. If so, it converts the integer to a binary string using `std::bitset<32>()` and stores it in the JSON object.
+### Explanation:
+1. **Headers**: We include the necessary headers and use `nlohmann::json` for JSON handling.
+2. **Class Definition**: We define a `BitSequenceEncoder` class that overrides the `encode` method to convert specific fields to binary representation.
+3. **Helper Functions**:
+   - `convert_bits`: Recursively processes the JSON object and converts the `"bits"` field to an 8-bit binary string.
+   - `format_binary`: Formats an integer value as an 8-bit binary string.
+4. **Main Function**: Demonstrates how to use the `BitSequenceEncoder` class to encode a sample JSON object.
 
-In the `main()` function, we create a JSON object `j`, set its "bits" field to 255, and then serialize it to a pretty-printed string with an indentation of 4 spaces.
-
-Make sure to include the `nlohmann/json.hpp` header file in your project and link against the `nlohmann_json` library when compiling your C++ code.
+This C++ code should provide the same functionality as the original Python code, converting specific fields to binary representation when encoding JSON.

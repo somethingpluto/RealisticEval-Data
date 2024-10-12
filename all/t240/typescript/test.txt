@@ -1,98 +1,152 @@
-Sure! Below is the equivalent TypeScript test case using Jest for the given Python unittest test class:
+Certainly! Below is the equivalent TypeScript code using Jest for testing the `genTimeoutTimedelta` function. The provided Python unittest class will be converted into a Jest test suite with the appropriate assertions.
+
+### TypeScript Code
+
+First, let's define the `genTimeoutTimedelta` function and the `Timedelta` class:
 
 ```typescript
-import { describe, it, expect } from '@jest/globals';
-import { genTimeoutTimedelta } from './genTimeoutTimedelta'; // Adjust the path accordingly
+import { strict as assert } from "assert";
 
+/**
+ * Converts a time duration string into a timedelta object.
+ * The input string can include days (d), hours (h), minutes (m), seconds (s), and milliseconds (ms).
+ * e.g., "1d 2h 3m 4s 500ms".
+ * Each unit should be specified by an integer followed by its corresponding unit letter.
+ *
+ * @param timeString - A string representing the time duration.
+ * @returns A timedelta object representing the input duration.
+ */
+function genTimeoutTimedelta(timeString: string): Timedelta {
+    // Define a dictionary to hold all our values
+    const timeValues: { [key: string]: number } = { d: 0, h: 0, m: 0, s: 0, ms: 0 };
+
+    // Regular expression to find all parts of the time string
+    const parts = Array.from(timeString.matchAll(/(\d+)([dhms]{1,2})/g));
+
+    // Process each found part
+    for (const match of parts) {
+        const amount = parseInt(match[1], 10);
+        const unit = match[2];
+
+        if (unit === 'd') {
+            timeValues.d = amount;
+        } else if (unit === 'h') {
+            timeValues.h = amount;
+        } else if (unit === 'm') {
+            timeValues.m = amount;
+        } else if (unit === 's') {
+            timeValues.s = amount;
+        } else if (unit === 'ms') {
+            timeValues.ms = amount;
+        }
+    }
+
+    // Create a timedelta object using the extracted values
+    return new Timedelta(
+        timeValues.d,
+        timeValues.h,
+        timeValues.m,
+        timeValues.s,
+        timeValues.ms
+    );
+}
+
+// Mock implementation of timedelta class
+class Timedelta {
+    constructor(
+        public days: number,
+        public hours: number,
+        public minutes: number,
+        public seconds: number,
+        public milliseconds: number
+    ) {}
+
+    // Method to compare with native JavaScript Date objects
+    toMilliseconds(): number {
+        return (
+            this.days * 24 * 60 * 60 * 1000 +
+            this.hours * 60 * 60 * 1000 +
+            this.minutes * 60 * 1000 +
+            this.seconds * 1000 +
+            this.milliseconds
+        );
+    }
+}
+
+// Example usage
+const timeString = "1d 2h 3m 4s 500ms";
+const result = genTimeoutTimedelta(timeString);
+console.log(result.toString());
+
+// Jest test suite
 describe('genTimeoutTimedelta', () => {
-  it('should convert "1d 2h 3m 4s 500ms" to correct timedelta', () => {
-    const result = genTimeoutTimedelta("1d 2h 3m 4s 500ms");
-    expect(result).toEqual({
-      days: 1,
-      hours: 2,
-      minutes: 3,
-      seconds: 4,
-      milliseconds: 500
+    it('should handle single unit days', () => {
+        const td = new Timedelta(5, 0, 0, 0, 0);
+        expect(genTimeoutTimedelta("5d").toMilliseconds()).toEqual(td.toMilliseconds());
     });
-  });
 
-  it('should convert "2h 30m" to correct timedelta', () => {
-    const result = genTimeoutTimedelta("2h 30m");
-    expect(result).toEqual({
-      days: 0,
-      hours: 2,
-      minutes: 30,
-      seconds: 0,
-      milliseconds: 0
+    it('should handle single unit hours', () => {
+        const td = new Timedelta(0, 8, 0, 0, 0);
+        expect(genTimeoutTimedelta("8h").toMilliseconds()).toEqual(td.toMilliseconds());
     });
-  });
 
-  it('should convert "1s" to correct timedelta', () => {
-    const result = genTimeoutTimedelta("1s");
-    expect(result).toEqual({
-      days: 0,
-      hours: 0,
-      minutes: 0,
-      seconds: 1,
-      milliseconds: 0
+    it('should handle single unit minutes', () => {
+        const td = new Timedelta(0, 0, 45, 0, 0);
+        expect(genTimeoutTimedelta("45m").toMilliseconds()).toEqual(td.toMilliseconds());
     });
-  });
 
-  it('should convert "500ms" to correct timedelta', () => {
-    const result = genTimeoutTimedelta("500ms");
-    expect(result).toEqual({
-      days: 0,
-      hours: 0,
-      minutes: 0,
-      seconds: 0,
-      milliseconds: 500
+    it('should handle single unit seconds', () => {
+        const td = new Timedelta(0, 0, 0, 30, 0);
+        expect(genTimeoutTimedelta("30s").toMilliseconds()).toEqual(td.toMilliseconds());
     });
-  });
 
-  it('should handle empty string', () => {
-    const result = genTimeoutTimedelta("");
-    expect(result).toEqual({
-      days: 0,
-      hours: 0,
-      minutes: 0,
-      seconds: 0,
-      milliseconds: 0
+    it('should handle complex mix', () => {
+        const td = new Timedelta(2, 20, 30, 0, 0);
+        expect(genTimeoutTimedelta("2d 20h 30m").toMilliseconds()).toEqual(td.toMilliseconds());
     });
-  });
 
-  it('should throw error for invalid input', () => {
-    expect(() => genTimeoutTimedelta("invalid_input")).toThrowError();
-  });
+    it('should handle no units', () => {
+        const td = new Timedelta(0, 0, 0, 0, 0);
+        expect(genTimeoutTimedelta("").toMilliseconds()).toEqual(td.toMilliseconds());
+    });
 });
+
+// Run the check function
+// Note: Jest tests are typically run via a command-line tool like `npm test` or `yarn test`
 ```
 
 ### Explanation:
-- **`describe`**: Groups related tests together.
-- **`it`**: Defines a single test case.
-- **`expect`**: Asserts that the result of the function matches the expected value.
-- **`toEqual`**: Compares two objects deeply to check if they are equal.
-- **`toThrowError`**: Checks if the function throws an error when called with invalid input.
+1. **Function Definition**: The `genTimeoutTimedelta` function is defined with appropriate type annotations.
+2. **Class Definition**: The `Timedelta` class is defined with a method `toMilliseconds` to facilitate comparison with native JavaScript Date objects.
+3. **Jest Test Suite**: The test cases are written using Jest's `describe` and `it` blocks.
+4. **Assertions**: The `expect` function is used with `toEqual` to compare the results of `genTimeoutTimedelta` with expected `Timedelta` instances.
 
-Make sure you have Jest installed in your project and properly configured. You can install Jest using npm or yarn:
+### Running the Tests:
+To run these tests, you would typically use a command-line tool like `npm test` or `yarn test`. Ensure that Jest is installed in your project:
 
-```bash
-npm install --save-dev jest
+```sh
+npm install --save-dev jest ts-jest @types/jest
 ```
 
-or
+Then, configure your `jest` setup in `package.json`:
 
-```bash
-yarn add --dev jest
+```json
+{
+  "scripts": {
+    "test": "jest"
+  },
+  "devDependencies": {
+    "jest": "^29.0.0",
+    "ts-jest": "^29.0.0",
+    "@types/jest": "^29.0.0"
+  }
+}
 ```
 
-Then, run your tests using:
+Finally, run the tests:
 
-```bash
-npx jest
+```sh
+npm test
 ```
 
-or
-
-```bash
-yarn jest
-```
+This setup ensures that the tests are executed correctly and that the functionality remains consistent with the original Python unittest class.

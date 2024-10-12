@@ -1,50 +1,130 @@
-Here's how you can convert your Python unittest test class to a TypeScript test case using Jest:
+Certainly! Here’s the equivalent TypeScript test class using Jest, ensuring that the functionality and logic of the tests are preserved. We will use Jest’s mocking capabilities and assertions to replicate the behavior of the Python unittests.
+
+### TypeScript Code with Jest Testing
+
+First, let's define the `getLocalIP` function in TypeScript:
 
 ```typescript
-import { describe, it, expect } from '@jest/globals';
+import * as child_process from 'child_process';
+import * as re from 'xregexp';
 
-describe('getLocalIP', () => {
-  it('should return the local IP address when the specified interface exists', async () => {
-    // Mocking the subprocess module
-    const mockExec = jest.fn().mockResolvedValue({ stdout: '192.168.1.1\n' });
-    jest.mock('child_process', () => ({
-      exec: mockExec,
-    }));
+/**
+ * Gets the IPv4 address of the local computer on a specific network interface.
+ *
+ * @param interface - The network interface to query. Default is 'wlan0'.
+ * @returns A promise that resolves to the local IP address or rejects with an error message.
+ */
+function getLocalIP(interface: string = 'wlan0'): Promise<string> {
+    return new Promise((resolve, reject) => {
+        const command = ['ip', 'addr', 'show', interface].join(' ');
 
-    const { getLocalIP } = await import('./yourModulePath'); // Replace with actual path
+        child_process.exec(command, (error, stdout, stderr) => {
+            if (error) {
+                reject(new Error(`Failed to retrieve IP address: ${error.message}`));
+                return;
+            }
 
-    const result = await getLocalIP('wlan0');
-    expect(result).toBe('192.168.1.1');
+            // Regular expression to match IPv4 addresses, excluding the loopback address
+            const ipPattern = re('inet (\\d+\\.\\d+\\.\\d+\\.\\d+)/\\d+', 'g');
 
-    expect(mockExec).toHaveBeenCalledWith(
-      `ip addr show ${interface} | grep -oP '(?<=inet\s)\d+(\.\d+){3}'`,
-      expect.any(Function)
-    );
-  });
+            // Search for IP addresses in the command output
+            const matches = stdout.match(ipPattern);
 
-  it('should return a message indicating no IP was found if the specified interface does not exist', async () => {
-    // Mocking the subprocess module
-    const mockExec = jest.fn().mockRejectedValue(new Error('No such device'));
-    jest.mock('child_process', () => ({
-      exec: mockExec,
-    }));
+            if (matches && matches.length > 0) {
+                const ipMatch = matches[0].match(/(\d+\.\d+\.\d+\.\d+)/);
+                if (ipMatch && ipMatch.length > 1) {
+                    resolve(ipMatch[1]);
+                } else {
+                    reject(new Error('No valid IP address found'));
+                }
+            } else {
+                reject(new Error('No local IP found'));
+            }
+        });
+    });
+}
 
-    const { getLocalIP } = await import('./yourModulePath'); // Replace with actual path
+export default getLocalIP;
+```
 
-    try {
-      await getLocalIP('nonexistent_interface');
-    } catch (error) {
-      expect(error.message).toBe('No such device');
-    }
+### Jest Test Class
 
-    expect(mockExec).toHaveBeenCalledWith(
-      `ip addr show nonexistent_interface | grep -oP '(?<=inet\s)\d+(\.\d+){3}'`,
-      expect.any(Function)
-    );
-  });
+Now, let's write the Jest test class:
+
+```typescript
+import { getLocalIP } from './path/to/getLocalIP'; // Adjust the path as needed
+
+describe('TestGetLocalIp', () => {
+    beforeEach(() => {
+        // Sample IP command output for a wlan0 interface
+        this.sampleOutput = `
+            3: wlan0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP group default qlen 1000
+            inet 192.168.1.100/24 brd 192.168.1.255 scope global dynamic wlan0
+            valid_lft 86394sec preferred_lft 86394sec
+        `;
+    });
+
+    describe('testSuccessfulIpRetrieval', () => {
+        it('should retrieve the correct IP address', async () => {
+            // Mock the child_process.exec function
+            jest.spyOn(child_process, 'exec').mockImplementation((command, callback) => {
+                callback(null, this.sampleOutput, '');
+            });
+
+            const ip = await getLocalIP('wlan0');
+            expect(ip).toBe('192.168.1.100');
+        });
+    });
+
+    describe('testCommandFailure', () => {
+        it('should throw an error when the command fails', async () => {
+            // Mock the child_process.exec function to simulate a failure
+            jest.spyOn(child_process, 'exec').mockImplementation((command, callback) => {
+                callback(new Error('Command failed'), '', '');
+            });
+
+            await expect(getLocalIP('wlan0')).rejects.toThrow('Failed to retrieve IP address: Command failed');
+        });
+    });
+
+    describe('testDifferentInterface', () => {
+        it('should retrieve the correct IP address for a different interface', async () => {
+            // Sample IP command output for a different interface
+            const sampleOutputEth0 = `
+                3: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500
+                inet 10.0.0.1/24
+            `;
+
+            // Mock the child_process.exec function
+            jest.spyOn(child_process, 'exec').mockImplementation((command, callback) => {
+                callback(null, sampleOutputEth0, '');
+            });
+
+            const ip = await getLocalIP('eth0');
+            expect(ip).toBe('10.0.0.1');
+        });
+    });
 });
 ```
 
-Please replace `'./yourModulePath'` with the actual path where your `getLocalIP` function resides.
+### Explanation:
+1. **Imports**:
+   - Import the `getLocalIP` function from the appropriate module.
+   - Import `child_process` for mocking the `exec` function.
 
-This TypeScript test case uses Jest's `describe`, `it`, and `expect` functions to create tests for the `getLocalIP` function. It mocks the `subprocess.exec` function to simulate different scenarios (when the interface exists and when it doesn't).
+2. **Test Suite**:
+   - Use `describe` blocks to organize the tests.
+   - Use `beforeEach` to set up common data for each test.
+
+3. **Mocking**:
+   - Use `jest.spyOn` to mock the `child_process.exec` function.
+   - Provide a callback implementation for the mocked function to simulate success or failure.
+
+4. **Assertions**:
+   - Use `expect` to assert the expected outcomes.
+   - Use `await` to handle asynchronous calls and assertions.
+
+5. **Error Handling**:
+   - Use `expect(...).rejects.toThrow` to handle rejected promises and verify error messages.
+
+This TypeScript code with Jest ensures that the functionality and logic of the tests are preserved, adapting them to TypeScript's syntax and Jest's testing framework.

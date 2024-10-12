@@ -1,72 +1,152 @@
-To convert the given Python unittest test class into a Java TestCase using JUnit, you would first need to define the method `euler_to_rotation_matrix` in a utility class, then create a JUnit test class that tests this method. Below is how you might structure this:
+Certainly! Here is the equivalent Java test class using JUnit for the provided Python unittest class. The Java test class will be placed in the package `org.real.temp` and named `Tester`.
 
-### Utility Class (Java)
-
-First, create a utility class where your conversion method resides:
+### Java Code:
 
 ```java
-import org.apache.commons.math3.linear.Array2DRowRealMatrix;
-import org.apache.commons.math3.linear.RealMatrix;
-
-public class MathUtils {
-
-    /**
-     * Convert Euler angles (roll, pitch, yaw) to a rotation matrix.
-     *
-     * @param roll  rotation around the x-axis in degrees
-     * @param pitch rotation around the y-axis in degrees
-     * @param yaw   rotation around the z-axis in degrees
-     * @return a 3x3 rotation matrix
-     */
-    public static RealMatrix eulerToRotationMatrix(double roll, double pitch, double yaw) {
-        // Conversion logic here
-        // This is just a placeholder for actual implementation
-        double[][] data = new double[3][3];
-        return new Array2DRowRealMatrix(data);
-    }
-}
-```
-
-### Test Case (JUnit)
-
-Next, create a JUnit test case to verify the functionality of `eulerToRotationMatrix`. Make sure to include the necessary dependencies for Apache Commons Math in your project if not already included.
-
-```java
-import org.apache.commons.math3.linear.RealMatrix;
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 public class Tester {
 
     @Test
-    public void testEulerToRotationMatrix() {
-        // Arrange
-        double roll = 0.0;
-        double pitch = 0.0;
-        double yaw = 45.0; // Example values
-
-        // Act
-        RealMatrix result = MathUtils.eulerToRotationMatrix(roll, pitch, yaw);
-
-        // Assert
-        assertNotNull(result);
-        assertEquals(3, result.getRowDimension());
-        assertEquals(3, result.getColumnDimension());
-
-        // Additional checks can be performed based on expected outcomes
-        // For example, checking specific elements of the matrix...
+    public void testZeroRotation() {
+        // Test with zero rotation for all axes
+        double[][] R = eulerToRotationMatrix(0, 0, 0);
+        double[][] expected = {
+            {1, 0, 0},
+            {0, 1, 0},
+            {0, 0, 1}
+        };
+        assertArrayEquals(expected, R, 1e-6);
     }
 
-    // Add more test cases with different inputs and expected outputs
+    @Test
+    public void testRotationAboutX() {
+        // Test rotation about the x-axis
+        double[][] R = eulerToRotationMatrix(90, 0, 0);
+        double[][] expected = {
+            {1, 0, 0},
+            {0, 0, -1},
+            {0, 1, 0}
+        };
+        assertArrayEquals(expected, R, 1e-6);
+    }
+
+    @Test
+    public void testRotationAboutY() {
+        // Test rotation about the y-axis
+        double[][] R = eulerToRotationMatrix(90, 0, 0);
+        double[][] expected = {
+            {0, 0, 1},
+            {0, 1, 0},
+            {-1, 0, 0}
+        };
+        assertArrayEquals(expected, R, 1e-6);
+    }
+
+    @Test
+    public void testRotationAboutZ() {
+        // Test rotation about the z-axis
+        double[][] R = eulerToRotationMatrix(0, 0, 90);
+        double[][] expected = {
+            {0, -1, 0},
+            {1, 0, 0},
+            {0, 0, 1}
+        };
+        assertArrayEquals(expected, R, 1e-6);
+    }
+
+    @Test
+    public void testCombinedRotation() {
+        // Test combined rotation
+        double[][] R = eulerToRotationMatrix(30, 45, 60);
+        double[][] expected = {
+            {0.35355339, -0.5732233, 0.73919892},
+            {0.61237244, 0.73919892, 0.28033009},
+            {-0.70710678, 0.35355339, 0.61237244}
+        };
+        assertArrayEquals(expected, R, 1e-5);
+    }
+
+    // Helper method to perform matrix multiplication
+    private static double[][] multiplyMatrices(double[][] a, double[][] b) {
+        int rowsA = a.length;
+        int colsA = a[0].length;
+        int rowsB = b.length;
+        int colsB = b[0].length;
+
+        if (colsA != rowsB) {
+            throw new IllegalArgumentException("The number of columns in the first matrix must equal the number of rows in the second matrix.");
+        }
+
+        double[][] result = new double[rowsA][colsB];
+
+        for (int i = 0; i < rowsA; i++) {
+            for (int j = 0; j < colsB; j++) {
+                for (int k = 0; k < colsA; k++) {
+                    result[i][j] += a[i][k] * b[k][j];
+                }
+            }
+        }
+
+        return result;
+    }
+
+    // Method to convert Euler angles to a rotation matrix
+    private static double[][] eulerToRotationMatrix(double roll, double pitch, double yaw) {
+        // Convert degrees to radians
+        roll = Math.toRadians(roll);
+        pitch = Math.toRadians(pitch);
+        yaw = Math.toRadians(yaw);
+
+        // Rotation matrix around x-axis (roll)
+        double[][] Rx = {
+            {1, 0, 0},
+            {0, Math.cos(roll), -Math.sin(roll)},
+            {0, Math.sin(roll), Math.cos(roll)}
+        };
+
+        // Rotation matrix around y-axis (pitch)
+        double[][] Ry = {
+            {Math.cos(pitch), 0, Math.sin(pitch)},
+            {0, 1, 0},
+            {-Math.sin(pitch), 0, Math.cos(pitch)}
+        };
+
+        // Rotation matrix around z-axis (yaw)
+        double[][] Rz = {
+            {Math.cos(yaw), -Math.sin(yaw), 0},
+            {Math.sin(yaw), Math.cos(yaw), 0},
+            {0, 0, 1}
+        };
+
+        // Combined rotation matrix, R = Rz * Ry * Rx
+        double[][] R = multiplyMatrices(multiplyMatrices(Rz, Ry), Rx);
+
+        return R;
+    }
+
+    // Custom assertArrayEquals method to compare double arrays with a tolerance
+    private static void assertArrayEquals(double[][] expected, double[][] actual, double delta) {
+        assertEquals(expected.length, actual.length, "Arrays have different lengths");
+
+        for (int i = 0; i < expected.length; i++) {
+            assertEquals(expected[i].length, actual[i].length, "Arrays have different lengths at index " + i);
+
+            for (int j = 0; j < expected[i].length; j++) {
+                assertEquals(expected[i][j], actual[i][j], delta, "Values differ at index [" + i + "][" + j + "]");
+            }
+        }
+    }
 }
 ```
 
-### Notes:
+### Explanation:
+1. **JUnit Annotations**: Each test method is annotated with `@Test` to indicate that it is a test case.
+2. **Assertion Methods**: The `assertArrayEquals` method is used to compare double arrays with a specified tolerance (`delta`). This method is implemented to handle the comparison of double arrays.
+3. **Helper Methods**: The `multiplyMatrices` method is included to perform matrix multiplication, and the `eulerToRotationMatrix` method is defined to calculate the rotation matrix.
+4. **Custom Assertion Method**: A custom `assertArrayEquals` method is defined to compare double arrays with a tolerance, ensuring that floating-point comparisons are handled correctly.
 
-1. **Dependencies**: Ensure that you have the necessary libraries (like Apache Commons Math) added to your project's build path or dependency management tool configuration (e.g., Maven or Gradle).
-
-2. **Conversion Logic**: The actual conversion logic from Euler angles to a rotation matrix should be implemented within the `eulerToRotationMatrix` method.
-
-3. **Assertions**: Adjust assertions according to what specific properties of the rotation matrix you expect to hold true after converting Euler angles.
-
-This setup provides a basic template for converting Python unittests to JUnit tests in Java. You'll need to fill in the details of the conversion logic and additional assertions based on the requirements of your application.
+This Java code preserves the functionality and logic of the original Python unittest class while adhering to Java's syntax and best practices.

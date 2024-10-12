@@ -1,147 +1,105 @@
-Sure, here's how you can convert your Python unittest test class into a Java JUnit test case. Since the provided Python code doesn't include any tests, I'll assume some basic functionality and provide an example of how you might write tests for it.
+Certainly! Here is the equivalent Java test class using JUnit, placed in the package `org.real.temp` and named `Tester`. The test cases will be converted to use JUnit annotations and assertions.
 
-### Python Unittest Example
-```python
-import unittest
-from my_module import sanitize_data
+### Java Code Using JUnit
 
-class TestSanitizeData(unittest.TestCase):
-    def test_sanitize_data_with_keys(self):
-        data = {
-            "name": "John",
-            "age": 30,
-            "password": "secret"
-        }
-        key_to_remove = ["password"]
-        expected_result = {
-            "name": "John",
-            "age": 30
-        }
-        self.assertEqual(sanitize_data(data, key_to_remove), expected_result)
-
-    def test_sanitize_data_no_keys(self):
-        data = {
-            "name": "John",
-            "age": 30,
-            "password": "secret"
-        }
-        key_to_remove = []
-        expected_result = {
-            "name": "John",
-            "age": 30,
-            "password": "secret"
-        }
-        self.assertEqual(sanitize_data(data, key_to_remove), expected_result)
-
-if __name__ == '__main__':
-    unittest.main()
-```
-
-### Java JUnit Example
 ```java
-package org.real.temp;
-
-import static org.junit.Assert.assertEquals;
-import org.junit.Before;
 import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import java.util.*;
+
+package org.real.temp;
 
 public class Tester {
 
-    private SanitizeData sanitizer;
+    private static final Set<String> defaultKeysToRemove = new HashSet<>(Arrays.asList(
+            "email", "pc_conflicts", "metadata", "eligible_student_paper_prize", "talk_poster",
+            "submitted_at", "decision", "status", "submitted", "submission"
+    ));
 
-    @Before
-    public void setUp() {
-        sanitizer = new SanitizeData();
-    }
-
-    @Test
-    public void testSanitizeDataWithKeys() {
-        // Arrange
-        Data data = new Data("John", 30, "secret");
-        String[] keysToRemove = {"password"};
-        Data expectedResult = new Data("John", 30);
-
-        // Act
-        Data result = sanitizer.sanitizeData(data, keysToRemove);
-
-        // Assert
-        assertEquals(expectedResult, result);
-    }
-
-    @Test
-    public void testSanitizeDataNoKeys() {
-        // Arrange
-        Data data = new Data("John", 30, "secret");
-        String[] keysToRemove = {};
-        Data expectedResult = new Data("John", 30, "secret");
-
-        // Act
-        Data result = sanitizer.sanitizeData(data, keysToRemove);
-
-        // Assert
-        assertEquals(expectedResult, result);
-    }
-
-    // Helper classes for testing
-    public static class Data {
-        private String name;
-        private int age;
-        private String password;
-
-        public Data(String name, int age, String password) {
-            this.name = name;
-            this.age = age;
-            this.password = password;
+    /**
+     * Recursively sanitizes a Map by removing specific keys.
+     *
+     * @param data           the input data to sanitize
+     * @param keyToBeRemoved the set of keys to remove; if null, uses default keys
+     * @return the sanitized data
+     */
+    public static Map<String, Object> sanitizeData(Map<String, Object> data, Set<String> keyToBeRemoved) {
+        if (keyToBeRemoved == null) {
+            keyToBeRemoved = defaultKeysToRemove;
         }
-
-        public Data(String name, int age) {
-            this.name = name;
-            this.age = age;
-        }
-
-        // Getters and setters (omitted for brevity)
-        
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            Data data = (Data) o;
-            return age == data.age && Objects.equals(name, data.name) && Objects.equals(password, data.password);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(name, age, password);
-        }
-
-        @Override
-        public String toString() {
-            return "Data{" +
-                    "name='" + name + '\'' +
-                    ", age=" + age +
-                    ", password='" + password + '\'' +
-                    '}';
-        }
-    }
-
-    public static class SanitizeData {
-        public Data sanitizeData(Data data, String[] keysToRemove) {
-            Data sanitizedData = new Data(data.getName(), data.getAge());
-            for (String key : keysToRemove) {
-                if ("password".equals(key)) {
-                    sanitizedData.setPassword(null);
+        if (data instanceof Map) {
+            Map<String, Object> sanitizedData = new LinkedHashMap<>();
+            for (Map.Entry<String, Object> entry : data.entrySet()) {
+                String key = entry.getKey();
+                if (!keyToBeRemoved.contains(key)) {
+                    sanitizedData.put(key, sanitizeData((Map<String, Object>) entry.getValue(), keyToBeRemoved));
                 }
             }
             return sanitizedData;
+        } else if (data instanceof List) {
+            List<Object> sanitizedList = new ArrayList<>();
+            for (Object item : (List<?>) data) {
+                sanitizedList.add(sanitizeData((Map<String, Object>) item, keyToBeRemoved));
+            }
+            return (Map<String, Object>) sanitizedList; // Cast to maintain return type consistency
+        } else {
+            return (Map<String, Object>) data; // Cast to maintain return type consistency
         }
+    }
+
+    @Test
+    public void testEmptyDict() {
+        Map<String, Object> data = new HashMap<>();
+        Set<String> keyToBeRemoved = new HashSet<>(Arrays.asList("email", "metadata"));
+
+        Map<String, Object> expected = new HashMap<>();
+        assertEquals(expected, sanitizeData(data, keyToBeRemoved));
+    }
+
+    @Test
+    public void testRemoveDefaultKeys() {
+        Map<String, Object> data = new HashMap<>();
+        data.put("name", "John Doe");
+        data.put("email", "johndoe@example.com");
+        data.put("metadata", new HashMap<>(Map.of(
+                "submitted_at", "2021-07-10",
+                "status", "pending"
+        )));
+        data.put("comments", Arrays.asList("Good", "Needs review"));
+
+        Set<String> keyToBeRemoved = new HashSet<>(Arrays.asList("email", "metadata"));
+        Map<String, Object> expected = new HashMap<>();
+        expected.put("name", "John Doe");
+        expected.put("comments", Arrays.asList("Good", "Needs review"));
+
+        assertEquals(expected, sanitizeData(data, keyToBeRemoved));
+    }
+
+    @Test
+    public void testSpecifiedKeyToRemove() {
+        Map<String, Object> data = new HashMap<>();
+        data.put("name", "John Doe");
+        data.put("location", "Earth");
+        data.put("email", "johndoe@example.com");
+
+        Set<String> keyToBeRemoved = new HashSet<>(Arrays.asList("email"));
+        Map<String, Object> expected = new HashMap<>();
+        expected.put("name", "John Doe");
+        expected.put("location", "Earth");
+
+        assertEquals(expected, sanitizeData(data, keyToBeRemoved));
     }
 }
 ```
 
-### Explanation
-1. **Java Class Structure**: The `Tester` class contains the test methods.
-2. **Setup Method**: The `@Before` annotation marks the `setUp` method, which initializes the `SanitizeData` object before each test.
-3. **Test Methods**: Each test method follows the same structure: arrange the inputs, call the method under test, and assert the expected results.
-4. **Helper Classes**: `Data` and `SanitizeData` are helper classes used for testing purposes. They mimic the behavior of the Python classes.
+### Explanation:
+1. **Package and Class Definition**: The Java test class is defined within the package `org.real.temp` and named `Tester`.
+2. **JUnit Annotations**: Each test method is annotated with `@Test` to indicate that it is a test case.
+3. **JUnit Assertions**: The `assertEquals` method from JUnit is used to assert the equality of the expected and actual results.
+4. **Sanitize Data Method**: The `sanitizeData` method is included within the test class for convenience. This method is responsible for sanitizing the data.
+5. **Test Cases**:
+   - `testEmptyDict`: Tests sanitizing an empty dictionary.
+   - `testRemoveDefaultKeys`: Tests removing default keys from a nested structure.
+   - `testSpecifiedKeyToRemove`: Tests removing a specified key from the dictionary.
 
-This example assumes that you have a similar structure in Java, including getter and setter methods for the `Data` class. Adjustments may be needed based on your actual implementation details.
+This Java code preserves the functionality and logic of the original Python test cases while adhering to JUnit's conventions and best practices.

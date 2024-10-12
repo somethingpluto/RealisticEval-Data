@@ -1,64 +1,61 @@
-Sure! Below is an example of how you can implement the `find_common_columns` function in C++ using the `<filesystem>` library for handling file paths and directories, and `<fstream>` for reading CSV files.
+Here’s the equivalent C++ code that performs the same functionality as the provided Python script. This involves reading CSV files from a directory, storing them in a container (similar to a list of DataFrames), and finding the common columns among these CSV files.
 
 ```cpp
 #include <iostream>
-#include <fstream>
+#include <filesystem>
 #include <vector>
 #include <set>
-#include <string>
-#include <filesystem>
+#include <fstream>
+#include <sstream>
+#include <unordered_map>
 
-namespace fs = std::filesystem;
+// Function to read a CSV file and return its column names
+std::vector<std::string> readCSVColumns(const std::string& filepath) {
+    std::ifstream file(filepath);
+    std::string line;
+    std::getline(file, line); // Read the first line which contains headers
+    std::istringstream ss(line);
+    std::string column;
+    std::vector<std::string> columns;
 
-std::vector<std::string> findCommonColumns(const std::string& directory) {
-    if (!fs::exists(directory) || !fs::is_directory(directory)) {
-        throw std::invalid_argument("Invalid directory");
+    while (std::getline(ss, column, ',')) {
+        columns.push_back(column);
     }
 
-    std::set<std::string> commonColumns;
-    bool firstFile = true;
+    return columns;
+}
 
-    for (const auto& entry : fs::directory_iterator(directory)) {
-        if (entry.is_regular_file() && entry.path().extension() == ".csv") {
-            std::ifstream file(entry.path());
-            if (!file.is_open()) {
-                throw std::runtime_error("Failed to open file: " + entry.path().string());
-            }
-
-            std::string line;
-            if (std::getline(file, line)) { // Read the header line
-                std::istringstream iss(line);
-                std::string column;
-                while (std::getline(iss, column, ',')) {
-                    if (firstFile) {
-                        commonColumns.insert(column);
-                    } else {
-                        commonColumns.erase(column);
-                    }
-                }
-            }
-            file.close();
+std::set<std::string> findCommonColumns(const std::string& directory) {
+    std::vector<std::set<std::string>> columnSets;
+    
+    for (const auto& entry : std::filesystem::directory_iterator(directory)) {
+        if (entry.path().extension() == ".csv") {
+            std::vector<std::string> columns = readCSVColumns(entry.path().string());
+            columnSets.emplace_back(columns.begin(), columns.end());
         }
     }
 
-    if (firstFile) {
-        throw std::runtime_error("No CSV files found in the directory");
+    if (!columnSets.empty()) {
+        std::set<std::string> commonColumns = columnSets[0];
+        for (size_t i = 1; i < columnSets.size(); ++i) {
+            std::set<std::string> tempSet;
+            std::set_intersection(commonColumns.begin(), commonColumns.end(),
+                                  columnSets[i].begin(), columnSets[i].end(),
+                                  std::inserter(tempSet, tempSet.begin()));
+            commonColumns = std::move(tempSet);
+        }
+        return commonColumns;
+    } else {
+        return {};
     }
-
-    return std::vector<std::string>(commonColumns.begin(), commonColumns.end());
 }
 
 int main() {
-    try {
-        std::string directory = "path/to/your/directory";
-        std::vector<std::string> commonColumns = findCommonColumns(directory);
+    std::string directory = "path/to/your/directory";
+    std::set<std::string> commonColumns = findCommonColumns(directory);
 
-        std::cout << "Common Columns:" << std::endl;
-        for (const auto& col : commonColumns) {
-            std::cout << col << std::endl;
-        }
-    } catch (const std::exception& e) {
-        std::cerr << "Error: " << e.what() << std::endl;
+    for (const auto& column : commonColumns) {
+        std::cout << column << std::endl;
     }
 
     return 0;
@@ -66,12 +63,8 @@ int main() {
 ```
 
 ### Explanation:
-1. **Namespace**: The `<filesystem>` library is used for file system operations.
-2. **Function**: `findCommonColumns` takes a directory path as input and returns a vector of strings containing the common column names.
-3. **Directory Check**: It checks if the provided directory exists and is indeed a directory.
-4. **File Iteration**: It iterates over each file in the directory, checking if it's a regular file with a `.csv` extension.
-5. **Header Reading**: For each CSV file, it reads the first line (header) and extracts column names.
-6. **Set Operations**: It uses a set to keep track of common columns. If it's the first file, it adds all columns to the set. For subsequent files, it removes any columns that do not appear in the current file's header.
-7. **Main Function**: Demonstrates how to use the `findCommonColumns` function and prints the common columns.
+1. **Reading CSV Files**: The `readCSVColumns` function reads the first line of a CSV file and extracts the column names.
+2. **Finding Common Columns**: The `findCommonColumns` function iterates over all CSV files in the specified directory, reads their column names, and finds the common columns using set intersection.
+3. **Main Function**: The `main` function demonstrates how to use the `findCommonColumns` function and prints the common columns.
 
-Make sure to replace `"path/to/your/directory"` with the actual path to your directory containing CSV files.
+This C++ code uses the `<filesystem>` library to iterate over files in a directory and the `<set>` library to manage sets of column names. It also uses `<fstream>` and `<sstream>` for file I/O and string manipulation.

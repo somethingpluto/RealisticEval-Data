@@ -1,15 +1,77 @@
-Sure! Here is the JavaScript code signature with the same comments and function name:
+Certainly! I will convert the Python function signature and comments into equivalent JavaScript syntax, including JSDoc comments for documentation.
+
+Here is the converted JavaScript code:
 
 ```javascript
 /**
- * Convert tsv file to jsonl file
+ * Convert a TSV file to a JSON Lines (JSONL) file.
  *
- * @param {string} tsvFile - Path to the TSV file
- * @param {string} jsonlFile - Path to the JSONL file
+ * @param {string} tsvFile - The path to the TSV file.
+ * @param {string} jsonlFile - The path to the JSONL file.
  */
-function tsvToJsonl(tsvFile, jsonlFile) {
-    // Function implementation will go here
+function tsvToJSONL(tsvFile, jsonlFile) {
+    // Read the TSV file
+    const fs = require('fs');
+    const csvParser = require('csv-parser');
+    const { promisify } = require('util');
+
+    // Promisify the fs.writeFile method
+    const writeFileAsync = promisify(fs.writeFile);
+
+    async function processFiles() {
+        const results = [];
+
+        return new Promise((resolve, reject) => {
+            fs.createReadStream(tsvFile)
+                .pipe(csvParser({ delimiter: '\t' }))
+                .on('data', (row) => {
+                    results.push(row);
+                })
+                .on('end', () => {
+                    resolve(results);
+                })
+                .on('error', (err) => {
+                    reject(err);
+                });
+        }).then(async (results) => {
+            // Open the JSONL file for writing
+            const writeStream = fs.createWriteStream(jsonlFile, { encoding: 'utf-8' });
+
+            // Write each row as a JSON object to the JSONL file
+            for (const row of results) {
+                const jsonLine = JSON.stringify(row) + '\n';
+                await writeFileAsync(writeStream.path, jsonLine, { flag: 'a' });
+            }
+
+            // Close the write stream
+            writeStream.end();
+        }).catch((error) => {
+            console.error('Error processing the files:', error);
+        });
+    }
+
+    processFiles();
 }
+
+// Example usage
+tsvToJSONL('input.tsv', 'output.jsonl');
 ```
 
-This JavaScript function `tsvToJsonl` takes two parameters: `tsvFile` (the path to the TSV file) and `jsonlFile` (the path to the JSONL file), just like the Python function. The comment above the function describes its purpose and parameters.
+### Explanation:
+1. **JSDoc Comments**:
+   - The function signature is documented using JSDoc comments.
+   - The parameters and their descriptions are included.
+
+2. **Function Definition**:
+   - The `tsvToJSONL` function is defined with the appropriate parameter types.
+   - The function includes the necessary imports (`fs`, `csv-parser`, `promisify`).
+
+3. **File Processing**:
+   - The function reads the TSV file using `fs.createReadStream` and pipes it through `csvParser`.
+   - It collects all rows in an array.
+   - Each row is converted to a JSON string and written to the JSONL file.
+
+4. **Example Usage**:
+   - The function is called with example file paths.
+
+This JavaScript code preserves the functionality and structure of the original Python code while adhering to JavaScript documentation standards using JSDoc.

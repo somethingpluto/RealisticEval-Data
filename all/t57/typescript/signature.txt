@@ -1,16 +1,70 @@
-Sure! Below is the TypeScript code signature for the given Python function, keeping the comments intact:
+Certainly! Here’s the equivalent TypeScript code for the given Python function, including proper type annotations and JSDoc-style documentation comments:
 
 ```typescript
+import { createWriteStream } from 'fs';
+import { PNG } from 'pngjs';
+import { ICO } from 'icojs';
+
 /**
- * Convert PNG images to ICO files.
+ * Converts PNG images to ICO files.
  * 
  * @param pngFilePath - Path to the source PNG image file.
  * @param icoFilePath - Path to save the ICO file.
- * @param iconSizes - List of tuples specifying the sizes to include in the ICO file. Default is [(32, 32)].
+ * @param iconSizes - List of tuples specifying the sizes to include in the ICO file.
  */
 function convertPngToIco(pngFilePath: string, icoFilePath: string, iconSizes: [number, number][] = [[32, 32]]): void {
-    // Function implementation goes here
+    // Open the PNG image file using pngjs
+    const pngStream = PNG.sync.read(fs.readFileSync(pngFilePath));
+
+    // Create an ICO writer
+    const icoWriter = new ICO.Writer();
+
+    // Add the PNG image to the ICO writer with specified sizes
+    iconSizes.forEach(size => {
+        const [width, height] = size;
+        icoWriter.add(pngStream, width, height);
+    });
+
+    // Write the ICO file
+    const writeStream = createWriteStream(icoFilePath);
+    icoWriter.pipe(writeStream);
+
+    writeStream.on('finish', () => {
+        console.log('ICO file saved successfully:', icoFilePath);
+    });
+
+    writeStream.on('error', (err) => {
+        console.error('Error converting PNG to ICO:', err);
+    });
 }
+
+// Example usage
+convertPngToIco('path/to/source.png', 'path/to/output.ico');
 ```
 
-This TypeScript function signature matches the Python function's parameters and includes JSDoc-style comments for clarity. The `iconSizes` parameter is typed as an array of tuples, where each tuple represents the width and height of the icons. The default value is set to `[[32, 32]]`.
+### Explanation:
+1. **Imports**:
+   - `createWriteStream` from `fs` is used to create a writable stream for writing the ICO file.
+   - `PNG` from `pngjs` is used to read the PNG image.
+   - `ICO` from `icojs` is used to handle ICO file creation.
+
+2. **JSDoc Documentation**:
+   - The function is documented using JSDoc comments, providing clear descriptions of the parameters and the function's purpose.
+
+3. **Type Annotations**:
+   - `pngFilePath` and `icoFilePath` are typed as `string`.
+   - `iconSizes` is typed as an array of tuples `[number, number][]`.
+
+4. **Function Implementation**:
+   - The PNG image is read using `PNG.sync.read` from `pngjs`.
+   - An ICO writer is created using `ICO.Writer`.
+   - Each size in `iconSizes` is added to the ICO writer.
+   - The ICO file is written to the specified path using a writable stream.
+
+5. **Error Handling**:
+   - Error handling is included to log any issues during the conversion process.
+
+6. **Example Usage**:
+   - A simple example usage is provided at the end to demonstrate how to call the function.
+
+This TypeScript code preserves the original functionality and structure of the Python code while adapting it to TypeScript conventions and libraries.

@@ -1,67 +1,100 @@
-Sure! Below is the equivalent TypeScript test case using Jest for the given Python `unittest` test class. Since the original Python code does not include any specific tests, I'll assume you want to write a simple test case to verify that the `BitSequenceEncoder` class works as expected.
+Certainly! Here is the equivalent TypeScript test class using Jest, along with the necessary setup and assertions to preserve the functionality and logic of the Python unittest class.
 
-First, let's define the TypeScript class:
+### TypeScript Code with Jest Testing
 
-```typescript
-import { JSON.stringify } from 'node:util';
+First, ensure you have Jest installed in your TypeScript project:
 
-class BitSequenceEncoder extends JSON.Stringify {
-    override encode(obj: any): string {
-        const encodedObj = super.encode(obj);
-        return encodedObj.replace(/"(\w+)": (\d+)/g, (match, key, value) => {
-            if (key === 'bits') {
-                return `"${key}": "${value.toString(2).padStart(8, '0')}"`;
-            }
-            return match;
-        });
-    }
+```sh
+npm install --save-dev jest ts-jest @types/jest
+```
+
+Add Jest configuration to your `tsconfig.json`:
+
+```json
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "target": "es6",
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "outDir": "./dist",
+    "baseUrl": "./src",
+    "incremental": true,
+    "strict": true,
+    "skipLibCheck": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "**/*.spec.ts"],
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node"
+  }
 }
 ```
 
-Now, let's write the Jest test case:
+Now, let's write the TypeScript test class using Jest:
 
 ```typescript
-import { describe, it, expect } from '@jest/globals';
-import { BitSequenceEncoder } from './path-to-your-class'; // Adjust the path accordingly
+import { BitSequenceEncoder } from './BitSequenceEncoder'; // Import the BitSequenceEncoder class
+import { stringify } from 'json-js';
 
-describe('BitSequenceEncoder', () => {
-    it('should convert integer values of "bits" key to binary strings', () => {
-        const encoder = new BitSequenceEncoder();
-        const input = { bits: 255 };
-        const expectedOutput = '{"bits":"11111111"}';
-
-        const result = encoder.encode(input);
-
-        expect(result).toBe(expectedOutput);
+describe('TestBitSequenceEncoder', () => {
+    it('test_basic_encoding', () => {
+        /** Test encoding with simple dictionary containing 'bits'. */
+        const data = { name: 'Processor', bits: 255 };
+        const result = stringify(data, new BitSequenceEncoder());
+        expect(result).toBe('{"name":"Processor","bits":"11111111"}');
     });
 
-    it('should leave other keys unchanged', () => {
-        const encoder = new BitSequenceEncoder();
-        const input = { bits: 255, otherKey: 'otherValue' };
-        const expectedOutput = '{"bits":"11111111","otherKey":"otherValue"}';
-
-        const result = encoder.encode(input);
-
-        expect(result).toBe(expectedOutput);
+    it('test_nested_encoding', () => {
+        /** Test encoding with nested dictionary containing 'bits'. */
+        const data = { component: { name: 'ALU', bits: 128 }, bits: 1 };
+        const result = stringify(data, new BitSequenceEncoder());
+        expect(result).toBe('{"component":{"name":"ALU","bits":"10000000"},"bits":"00000001"}');
     });
 
-    it('should handle multiple "bits" keys correctly', () => {
-        const encoder = new BitSequenceEncoder();
-        const input = { bits: 255, anotherBits: 16 };
-        const expectedOutput = '{"bits":"11111111","anotherBits":"00010000"}';
+    it('test_non_bits_key', () => {
+        /** Test encoding with dictionary not containing 'bits' key. */
+        const data = { name: 'Processor', value: 123 };
+        const result = stringify(data, new BitSequenceEncoder());
+        expect(result).toBe('{"name":"Processor","value":123}');
+    });
 
-        const result = encoder.encode(input);
+    it('test_no_bits_conversion_needed', () => {
+        /** Test encoding with dictionary where 'bits' key needs no conversion. */
+        const data = { name: 'Unit', bits: 'Already binary' };
+        const result = stringify(data, new BitSequenceEncoder());
+        expect(result).toBe('{"name":"Unit","bits":"Already binary"}');
+    });
 
-        expect(result).toBe(expectedOutput);
+    it('test_complex_structure_with_bits', () => {
+        /** Test encoding a complex dictionary structure containing multiple 'bits' keys. */
+        const data = {
+            processor: { bits: 3, type: 'A' },
+            memory: { bits: 255, size: 16 },
+            ports: { count: 2, bits: 128 }
+        };
+        const result = stringify(data, new BitSequenceEncoder());
+        expect(result).toBe('{"processor":{"bits":"00000011","type":"A"},"memory":{"bits":"11111111","size":16},"ports":{"count":2,"bits":"10000000"}}');
     });
 });
 ```
 
-In this test case:
-- We're importing the `BitSequenceEncoder` class.
-- We're writing three test cases to ensure that the `encode` method works correctly:
-  - The first test checks if an integer value of the `bits` key is converted to a binary string.
-  - The second test ensures that other keys remain unchanged.
-  - The third test verifies that multiple `bits` keys are handled correctly.
+### Explanation:
+1. **Imports**:
+   - Import the `BitSequenceEncoder` class from the appropriate file.
+   - Import the `stringify` function from `json-js` to mimic the behavior of `json.dumps` in Python.
 
-Make sure to adjust the import path to where your `BitSequenceEncoder` class is located. This should give you a good starting point for testing your TypeScript code with Jest.
+2. **Describe Block**:
+   - Use the `describe` block to group the test cases under `TestBitSequenceEncoder`.
+
+3. **Test Cases**:
+   - Each `it` block represents a specific test case.
+   - The test descriptions are included as comments within the `it` blocks.
+   - Assertions are made using `expect` and `toBe` to check the expected JSON output.
+
+4. **Helper Function**:
+   - The `stringify` function from `json-js` is used to serialize the object with the custom encoder.
+
+This setup ensures that the functionality and logic of the Python unittest class are preserved in TypeScript using Jest.

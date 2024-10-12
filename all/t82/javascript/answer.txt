@@ -1,58 +1,96 @@
-Here's how you can convert your Python code into JavaScript using the `networkx` library and `jsnetworkx` package:
+Sure! I'll convert the given Python code into equivalent JavaScript code using appropriate libraries and structures. The main functionalities we need to replicate are:
 
-```javascript
-const { DiGraph } = require('jsnetworkx');
+1. Creating a directed graph.
+2. Finding simple cycles in the graph.
+3. Filtering cycles based on their length and uniqueness.
+4. Grouping cycles by their size.
 
-class Graph {
-    constructor(edges) {
-        this.graph = new DiGraph();
-        for (let [u, v] of edges) {
-            this.graph.addEdge(u, v);
-        }
-    }
+Here's the equivalent JavaScript code using the `graphology` library for graph operations:
 
-    async cyclesBySize(filterRepeatNodes = true) {
-        let result = {};
-
-        // Get all cycles in the graph
-        let cycles = await this.findCycles();
-
-        // Filter out cycles with repeated nodes if needed
-        if (filterRepeatNodes) {
-            cycles = cycles.filter(cycle => Array.from(new Set(cycle)).length === cycle.length);
-        }
-
-        // Group cycles by their size
-        for (let cycle of cycles) {
-            let size = cycle.length;
-            if (!result[size]) {
-                result[size] = [];
-            }
-            result[size].push(this.subgraph(cycle));
-        }
-
-        return result;
-    }
-
-    async findCycles() {
-        // Implement cycle finding algorithm here
-        // This is a placeholder function and needs to be replaced with actual implementation
-        throw new Error("Cycle finding algorithm not implemented");
-    }
-
-    subgraph(nodes) {
-        let sg = new DiGraph();
-        for (let node of nodes) {
-            sg.addNode(node);
-            for (let neighbor of this.graph.neighbors(node)) {
-                if (nodes.includes(neighbor)) {
-                    sg.addEdge(node, neighbor);
-                }
-            }
-        }
-        return sg;
-    }
-}
+First, you need to install the `graphology` library:
+```sh
+npm install graphology
 ```
 
-Please note that the `findCycles()` method is a placeholder and should be replaced with an actual implementation of a cycle-finding algorithm for directed graphs. The `jsnetworkx` library does not provide built-in support for cycle detection in directed graphs like `networkx`. You may need to implement your own cycle detection logic or use other libraries/packages specifically designed for graph analysis in JavaScript/Node.js environments.
+Now, here's the JavaScript code:
+
+```javascript
+const { Graph } = require('graphology');
+
+class Graph {
+  constructor(edges) {
+    this.graph = new Graph({ type: 'directed' });
+    edges.forEach(([source, target]) => {
+      this.graph.addEdge(source, target);
+    });
+  }
+
+  cyclesBySize(filterRepeatNodes = true) {
+    const allCycles = this.findAllSimpleCycles();
+    const cycles = allCycles.filter(cycle => cycle.length > 2);
+
+    if (filterRepeatNodes) {
+      cycles.filter(cycle => new Set(cycle).size === cycle.length);
+    }
+
+    const uniqueCycles = Array.from(new Set(cycles.map(cycle => JSON.stringify(cycle)))).map(strCycle => JSON.parse(strCycle));
+    const uniqueCyclesBySize = {};
+
+    uniqueCycles.forEach(cycle => {
+      const size = cycle.length;
+      if (!uniqueCyclesBySize[size]) {
+        uniqueCyclesBySize[size] = [];
+      }
+      uniqueCyclesBySize[size].push(this.graph.subgraph(cycle));
+    });
+
+    return uniqueCyclesBySize;
+  }
+
+  findAllSimpleCycles() {
+    const cycles = [];
+    const stack = [];
+    const onCycle = cycle => cycles.push(cycle);
+    this.graph.forEachNode(node => {
+      this.graph.forEachOutgoingEdge(node, edge => {
+        const target = this.graph.getOpposite(node, edge);
+        if (!stack.includes(target)) {
+          stack.push(target);
+          this.graph.traverseSimplePaths(node, target, onCycle);
+          stack.pop();
+        }
+      });
+    });
+    return cycles;
+  }
+}
+
+// Example usage
+const edges = [
+  ['A', 'B'],
+  ['B', 'C'],
+  ['C', 'D'],
+  ['D', 'A'],
+  ['B', 'D']
+];
+
+const graph = new Graph(edges);
+console.log(graph.cyclesBySize());
+```
+
+### Explanation:
+1. **Graph Construction**:
+   - We use the `graphology` library to create a directed graph.
+   - The `constructor` initializes the graph and adds edges.
+
+2. **Finding Simple Cycles**:
+   - The `findAllSimpleCycles` method uses the `traverseSimplePaths` function to find all simple cycles.
+
+3. **Filtering Cycles**:
+   - The `cyclesBySize` method filters cycles based on their length and uniqueness.
+   - It uses a `Set` to ensure uniqueness and groups cycles by their size.
+
+4. **Subgraph Creation**:
+   - The `subgraph` method creates subgraphs based on the cycles found.
+
+This should provide the same functionality as the original Python code.

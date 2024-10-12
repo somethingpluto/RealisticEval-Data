@@ -1,26 +1,108 @@
-Here's how you can convert your Python unittest test class to TypeScript using Jest:
+Certainly! Here’s the equivalent TypeScript test class using Jest, ensuring that the functionality and logic of the tests are preserved. The provided Python unittest class will be converted to a Jest test suite in TypeScript.
+
+### TypeScript Code
+
+First, let's include the necessary imports and define the function `dictOfListsToListOfDicts`:
 
 ```typescript
 import { describe, it, expect } from '@jest/globals';
 
-describe('dictOfListsToListOfDicts', () => {
-  it('should convert a dictionary of lists into a list of dictionaries', () => {
-    const dictOfLists = {
-      'a': [1, 2],
-      'b': ['x', 'y']
-    };
-    
-    const expectedOutput = [
-      {'a': 1, 'b': 'x'},
-      {'a': 2, 'b': 'y'}
-    ];
+/**
+ * Convert a dictionary of lists into a list of dictionaries.
+ *
+ * @param dictOfLists - A dictionary where each key has a list as its value.
+ * @returns A list where each item is a dictionary formed by corresponding elements of lists in the input dictionary.
+ * @throws {Error} If lists in the dictionary are of different lengths.
+ */
+function dictOfListsToListOfDicts(dictOfLists: { [key: string]: any[] }): { [key: string]: any }[] {
+    // Check if all lists are of the same length
+    if (Object.keys(dictOfLists).length === 0) {
+        return [];
+    }
+    const lengths = Object.values(dictOfLists).map(lst => lst.length);
+    const uniqueLengths = new Set(lengths);
+    if (uniqueLengths.size !== 1) {
+        throw new Error("All lists in the dictionary must have the same length.");
+    }
 
-    // Assuming the function dictOfListsToListOfDicts exists and works as described
-    const output = dictOfListsToListOfDicts(dictOfLists);
+    // Using zip to iterate over lists simultaneously
+    const keys = Object.keys(dictOfLists);
+    const listOfDicts = keys[0]
+        ? keys.map((_, index) => {
+            return keys.reduce((acc, key) => {
+                acc[key] = dictOfLists[key][index];
+                return acc;
+            }, {} as { [key: string]: any });
+        })
+        : [];
 
-    expect(output).toEqual(expectedOutput);
-  });
+    return listOfDicts;
+}
+
+describe('TestDictOfListsToListOfDicts', () => {
+    it('test_standard_conversion', () => {
+        const dictOfLists = {
+            "name": ["Alice", "Bob", "Charlie"],
+            "age": [25, 30, 35],
+            "city": ["New York", "Los Angeles", "Chicago"]
+        };
+        const expectedResult = [
+            { name: 'Alice', age: 25, city: 'New York' },
+            { name: 'Bob', age: 30, city: 'Los Angeles' },
+            { name: 'Charlie', age: 35, city: 'Chicago' }
+        ];
+        const result = dictOfListsToListOfDicts(dictOfLists);
+        expect(result).toEqual(expectedResult);
+    });
+
+    it('test_empty_lists', () => {
+        const dictOfLists = {
+            "name": [],
+            "age": [],
+            "city": []
+        };
+        const expectedResult = [];
+        const result = dictOfListsToListOfDicts(dictOfLists);
+        expect(result).toEqual(expectedResult);
+    });
+
+    it('test_single_element_lists', () => {
+        const dictOfLists = {
+            "name": ["Alice"],
+            "age": [25],
+            "city": ["New York"]
+        };
+        const expectedResult = [
+            { name: 'Alice', age: 25, city: 'New York' }
+        ];
+        const result = dictOfListsToListOfDicts(dictOfLists);
+        expect(result).toEqual(expectedResult);
+    });
 });
 ```
 
-Please note that I've made an assumption about the existence of `dictOfListsToListOfDicts` function in your TypeScript codebase. If the function doesn't exist yet, you'll need to define it before running these tests.
+### Explanation:
+1. **Imports**:
+   - Import `describe`, `it`, and `expect` from `@jest/globals` to use Jest's testing utilities.
+
+2. **Function Definition**:
+   - Define the `dictOfListsToListOfDicts` function with proper type annotations and logic.
+
+3. **Test Suite**:
+   - Use `describe` to group the tests under a descriptive name.
+   - Use `it` to define individual test cases.
+   - Use `expect` to assert the expected results.
+
+4. **Test Cases**:
+   - `test_standard_conversion`: Tests the standard conversion with equal-length lists.
+   - `test_empty_lists`: Tests the function with empty lists.
+   - `test_single_element_lists`: Tests the function with single-element lists.
+
+### Running the Tests
+To run the tests, you can use the following command in your project directory:
+
+```sh
+npx jest
+```
+
+This setup ensures that the tests are structured and executed correctly, preserving the functionality and logic of the original Python unittest class.

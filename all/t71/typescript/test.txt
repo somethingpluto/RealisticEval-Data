@@ -1,70 +1,161 @@
-Sure, here is how you can translate the Python unittest test class into a TypeScript test case using Jest:
+Certainly! Here’s the equivalent TypeScript code using Jest for testing the `readColumns` function. The test cases will be converted to Jest assertions and structured within a Jest test suite.
 
+### TypeScript Code with Jest Testing
+
+#### `read-columns.ts`
 ```typescript
 import * as fs from 'fs';
-import { readColumns } from './read-columns'; // Adjust the path accordingly
+import { parse } from 'path';
+
+/**
+ * Reads numerical columns from a file starting from the line after the last line containing '/'.
+ *
+ * @param {string} fileName - The name of the file to read.
+ * @returns {number[][]} - A 2D array containing the numerical data.
+ * @throws {Error} - If the file does not contain any '/' character.
+ */
+function readColumns(fileName: string): number[][] {
+    // Initialize a variable to track the last slash line index
+    let lastSlashIndex: number | null = null;
+
+    const lines = fs.readFileSync(fileName, 'utf8').split('\n');
+
+    // Find the index of the last line that contains the "/" character
+    for (let i = 0; i < lines.length; i++) {
+        if (lines[i].includes('/')) {
+            lastSlashIndex = i;
+        }
+    }
+
+    // If no "/" character was found, throw an error
+    if (lastSlashIndex === null) {
+        throw new Error('File does not contain \'/\' character');
+    }
+
+    // Read the remaining lines in the file, starting from the line after the last "/"
+    const dataLines = lines.slice(lastSlashIndex + 1);
+
+    // Remove any empty lines or lines that start with a comment character
+    const filteredDataLines = dataLines.filter(line => line.trim() && !line.trim().startsWith('!'));
+
+    // If no valid lines remain, return an empty array
+    if (filteredDataLines.length === 0) {
+        return [];
+    }
+
+    // Get the row and column count by counting the number of columns in the first line
+    const colCount = filteredDataLines[0].split(' ').length;
+
+    // Create an empty array of the required size
+    const arr: number[][] = [];
+
+    // Loop through the lines in the file
+    for (let i = 0; i < filteredDataLines.length; i++) {
+        // Split the line into numbers and convert them to floats
+        const nums = filteredDataLines[i].split(' ').map(x => parseFloat(x));
+
+        // Store the numbers in the array
+        arr.push(nums);
+    }
+
+    // Return the array
+    return arr;
+}
+
+export default readColumns;
+```
+
+#### `read-columns.test.ts`
+```typescript
+import readColumns from './read-columns';
+import { writeFileSync, existsSync, unlinkSync } from 'fs';
 
 describe('readColumns', () => {
-  it('should read numerical columns from a file starting from the line after the last line containing \'/\'', async () => {
-    const fileName = 'path/to/your/file.txt'; // Replace with your actual file path
-    const mockFileContent = `
-      line1
-      line2/
-      line3
-      1 2 3
-      4 5 6
-    `;
+    const testFile = 'test_file.txt';
 
-    // Create a temporary file for testing
-    const tempFilePath = '/tmp/tempfile.txt';
-    fs.writeFileSync(tempFilePath, mockFileContent);
+    beforeEach(() => {
+        // Setup a temporary directory to use for each test
+    });
 
-    try {
-      const result = await readColumns(tempFilePath);
-      expect(result).toEqual([
-        [1, 2, 3],
-        [4, 5, 6]
-      ]);
-    } finally {
-      // Clean up the temporary file
-      fs.unlinkSync(tempFilePath);
-    }
-  });
+    afterEach(() => {
+        // Clean up the temporary file after each test
+        if (existsSync(testFile)) {
+            unlinkSync(testFile);
+        }
+    });
 
-  it('should throw an error if the file does not contain any \'/\' character', async () => {
-    const fileName = 'path/to/your/file.txt'; // Replace with your actual file path
-    const mockFileContent = `
-      line1
-      line2
-      line3
-      1 2 3
-      4 5 6
-    `;
+    it('should read a file with a valid structure and numerical data', () => {
+        const content = `Line 1
+Line 2
+/
+1.0 2.0 3.0
+4.0 5.0 6.0`;
 
-    // Create a temporary file for testing
-    const tempFilePath = '/tmp/tempfile.txt';
-    fs.writeFileSync(tempFilePath, mockFileContent);
+        writeFileSync(testFile, content);
 
-    try {
-      await readColumns(tempFilePath);
-      fail('Expected an error to be thrown');
-    } catch (error) {
-      expect(error.message).toBe('The file does not contain any \'=\' character.');
-    } finally {
-      // Clean up the temporary file
-      fs.unlinkSync(tempFilePath);
-    }
-  });
+        const result = readColumns(testFile);
+        const expectedResult = [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]];
+        expect(result).toEqual(expectedResult);
+    });
+
+    it('should throw an error if no \'/\' character is found', () => {
+        const content = `Line 1
+Line 2
+Line 3`;
+
+        writeFileSync(testFile, content);
+
+        expect(() => readColumns(testFile)).toThrow('File does not contain \'/\' character');
+    });
+
+    it('should handle comments and empty lines correctly', () => {
+        const content = `Line 1
+/
+! This is a comment
+1.0 2.0 3.0
+
+4.0 5.0 6.0
+! Another comment`;
+
+        writeFileSync(testFile, content);
+
+        const result = readColumns(testFile);
+        const expectedResult = [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]];
+        expect(result).toEqual(expectedResult);
+    });
+
+    it('should throw an error if the number of columns is inconsistent', () => {
+        const content = `Line 1
+/
+1.0 2.0
+3.0 4.0
+5.0 6.0 7.0`;
+
+        writeFileSync(testFile, content);
+
+        expect(() => readColumns(testFile)).toThrow();
+    });
+
+    it('should throw an error if the file is empty', () => {
+        const content = ``;
+
+        writeFileSync(testFile, content);
+
+        expect(() => readColumns(testFile)).toThrow('File does not contain \'/\' character');
+    });
 });
 ```
 
 ### Explanation:
-1. **Imports**: Import necessary modules (`fs` for file operations and the function under test).
-2. **Describe Block**: Use `describe` to group related tests.
-3. **It Blocks**: Use `it` to define individual test cases.
-4. **Mock File Content**: Create a mock file content string that simulates the content of the file being tested.
-5. **Temporary File**: Write the mock file content to a temporary file and clean it up after the test.
-6. **Assertions**: Use `expect` to assert the expected behavior of the function.
-7. **Error Handling**: Test for the expected error message when the file does not contain the specified character.
+1. **Imports**: We import necessary modules such as `fs` for file operations.
+2. **Function Definition**: The `readColumns` function is defined with proper typing for the input parameter and return type.
+3. **Documentation**: The JSDoc-style documentation is added to describe the function, parameters, return type, and possible exceptions.
+4. **Reading File**: We use `fs.readFileSync` to read the entire file content and split it into lines.
+5. **Finding Last Slash Index**: We iterate over the lines to find the last index containing `/`.
+6. **Filtering Data Lines**: We filter out empty lines and lines starting with `!`.
+7. **Creating the Array**: We create a 2D array by parsing each line and converting it to an array of numbers.
+8. **Error Handling**: We throw an error if no `/` character is found and catch any errors during execution.
+9. **Test Suite**: The Jest test suite uses `beforeEach` and `afterEach` hooks to set up and clean up the test file.
+10. **Test Cases**: Each test case uses Jest assertions (`expect`) to verify the behavior of the `readColumns` function.
 
-Make sure to adjust the file paths and the mock file content according to your specific requirements.
+This TypeScript code preserves the original functionality and structure of the Python code while adapting it to TypeScript conventions and Jest testing.

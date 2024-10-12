@@ -1,45 +1,60 @@
-Sure! Here is the equivalent TypeScript code for the provided Python function:
+Certainly! Below is the equivalent TypeScript code for the provided Python code. Since TypeScript does not have a direct equivalent for the `PyPDF2` library, I will use the `pdf-lib` library, which is a popular choice for working with PDFs in Node.js. 
+
+First, you need to install the `pdf-lib` package:
+
+```bash
+npm install pdf-lib
+```
+
+Here is the TypeScript code:
 
 ```typescript
-import { createReadStream } from 'fs';
-import * as pdfjsLib from 'pdfjs-dist';
+import { PDFDocument } from 'pdf-lib';
 
-export async function extractTextFromPdf(filePath: string): Promise<string> {
-    /**
-     * Extracts text from a given PDF file.
-     *
-     * @param filePath - The path to the PDF file from which to extract text.
-     * @returns A promise that resolves with the extracted text from the PDF.
-     */
-    
-    const loadingTask = pdfjsLib.getDocument({ url: filePath });
-    const pdfDocument = await loadingTask.promise;
+/**
+ * Extracts text from a given PDF file.
+ *
+ * @param filePath - The path to the PDF file from which to extract text.
+ * @returns A promise that resolves to the extracted text from the PDF.
+ */
+async function extractTextFromPdf(filePath: string): Promise<string> {
+  // Initialize a text container
+  let extractedText = '';
 
-    let textContent = '';
+  // Read the PDF file
+  const fileBuffer = await readFileAsync(filePath);
 
-    for (let i = 1; i <= pdfDocument.numPages; i++) {
-        const page = await pdfDocument.getPage(i);
-        const textPage = await page.getTextContent();
-        
-        textContent += textPage.items.map(item => item.str).join(' ');
-    }
+  // Load the PDF document
+  const pdfDoc = await PDFDocument.load(fileBuffer);
 
-    return textContent;
+  // Loop through each page in the PDF
+  for (const page of pdfDoc.getPages()) {
+    // Extract text from each page and add it to the text container
+    extractedText += page.getTextContent().items.map(item => item.str).join(' ') + '\n';
+  }
+
+  return extractedText;
+}
+
+// Helper function to read a file asynchronously
+function readFileAsync(filePath: string): Promise<Uint8Array> {
+  return new Promise((resolve, reject) => {
+    require('fs').readFile(filePath, (err, data) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(new Uint8Array(data));
+      }
+    });
+  });
 }
 ```
 
 ### Explanation:
-- **Imports**: We import `createReadStream` from the `fs` module and `pdfjsLib` from the `pdfjs-dist` package.
-- **Function Signature**: The TypeScript version of the function uses `async/await` to handle asynchronous operations. It returns a `Promise<string>` instead of a direct string.
-- **PDF Document Loading**: We use `pdfjsLib.getDocument` to load the PDF document asynchronously.
-- **Extracting Text**: We iterate through each page of the PDF, get the text content using `page.getTextContent()`, and accumulate it into a single string.
+1. **Imports**: We import `PDFDocument` from the `pdf-lib` package.
+2. **Function Definition**: The `extractTextFromPdf` function is defined as an asynchronous function because reading files and loading PDF documents are asynchronous operations.
+3. **Reading the File**: We use a helper function `readFileAsync` to read the file asynchronously and convert it to a `Uint8Array`.
+4. **Loading the PDF Document**: We load the PDF document using `PDFDocument.load`.
+5. **Extracting Text**: We loop through each page and extract the text content using `page.getTextContent().items.map(item => item.str).join(' ')`.
 
-Make sure you have the `pdfjs-dist` package installed in your project. You can install it using npm or yarn:
-
-```bash
-npm install pdfjs-dist
-# or
-yarn add pdfjs-dist
-```
-
-This TypeScript function should work similarly to your original Python function, extracting text from a PDF file.
+This TypeScript code maintains the same functionality as the Python code but adapts it to work with the `pdf-lib` library and asynchronous operations in Node.js.

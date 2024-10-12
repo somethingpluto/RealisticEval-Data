@@ -1,48 +1,114 @@
-Sure! Below is the equivalent TypeScript Jest test case for the provided Python unittest test class.
+Certainly! Here’s the equivalent TypeScript code using Jest for testing the `printMemoryBits` function. We will use Jest’s `test` and `expect` functions to replicate the behavior of the Python `unittest` framework.
+
+### TypeScript Code with Jest Testing
+
+First, let's define the `printMemoryBits` function in TypeScript:
 
 ```typescript
-import { describe, it, expect } from '@jest/globals';
-
-describe('printMemoryBits', () => {
-  it('should print bits for a single byte', () => {
-    const memorySection = Buffer.from([0b10101010]);
-    const expectedOutput = '10101010';
-    const actualOutput = printMemoryBits(memorySection);
-    expect(actualOutput).toBe(expectedOutput);
-  });
-
-  it('should print bits for multiple bytes with newline separation', () => {
-    const memorySection = Buffer.from([0b11001100, 0b11110000]);
-    const expectedOutput = '11001100\n11110000';
-    const actualOutput = printMemoryBits(memorySection);
-    expect(actualOutput).toBe(expectedOutput);
-  });
-});
-
-function printMemoryBits(memorySection: Buffer): string {
-  /**
-   * Prints the status of each bit (0 or 1) in the given section of memory.
-   * For example:
-   *     input: 0b10101010
-   *     output: 10101010
-   * If have multiple bytes use \n split
-   * For example:
-   *     input: [0b11001100, 0b11110000]
-   *     output: 11001100\n11110000
-   *
-   * Args:
-   *     memory_section (Buffer): A Buffer object representing the section of memory to be read.
-   *
-   * Returns:
-   *     string: The formatted string representation of the memory section.
-   */
-  return memorySection.map(byte => byte.toString(2)).join('\n');
+function printMemoryBits(memorySection: Uint8Array): void {
+    for (let byte of memorySection) {
+        console.log(Array.from({ length: 8 }, (_, i) => (byte >> (7 - i)) & 1).join(''));
+    }
 }
 ```
 
-### Explanation:
-1. **Test Descriptions**: Each `it` block describes a specific test case.
-2. **Expected and Actual Outputs**: The `expect` function is used to compare the actual output of the `printMemoryBits` function with the expected output.
-3. **Function Implementation**: The `printMemoryBits` function converts each byte in the `memorySection` buffer to its binary string representation using `toString(2)` and joins them with newline characters `\n`.
+Next, we'll write the Jest test suite:
 
-This TypeScript Jest test case should cover the same functionality as your original Python unittest test class.
+```typescript
+import { captureConsole } from 'jest-capture-console';
+
+describe('TestPrintMemoryBits', () => {
+    // Helper function to capture console output
+    const captureOutput = (fn: () => void): string => {
+        const originalConsoleLog = console.log;
+        let capturedOutput = '';
+
+        console.log = (message?: any) => {
+            capturedOutput += message + '\n';
+        };
+
+        fn();
+
+        console.log = originalConsoleLog;
+        return capturedOutput.trim();
+    };
+
+    test('test_single_byte', () => {
+        const memorySection = new Uint8Array([0b10101010]);
+        const output = captureOutput(() => printMemoryBits(memorySection));
+        expect(output).toBe("10101010");
+    });
+
+    test('test_multiple_bytes', () => {
+        const memorySection = new Uint8Array([0b11001100, 0b11110000]);
+        const output = captureOutput(() => printMemoryBits(memorySection));
+        expect(output).toBe("11001100\n11110000");
+    });
+
+    test('test_all_zeros', () => {
+        const memorySection = new Uint8Array([0b00000000]);
+        const output = captureOutput(() => printMemoryBits(memorySection));
+        expect(output).toBe("00000000");
+    });
+
+    test('test_all_ones', () => {
+        const memorySection = new Uint8Array([0b11111111]);
+        const output = captureOutput(() => printMemoryBits(memorySection));
+        expect(output).toBe("11111111");
+    });
+});
+```
+
+### Explanation:
+1. **Helper Function `captureOutput`**:
+   - This helper function captures the console output during the execution of the `printMemoryBits` function. It temporarily overrides `console.log` to capture the output and restores the original `console.log` after capturing.
+
+2. **Test Cases**:
+   - Each test case sets up the `memorySection` with the desired data and calls `printMemoryBits`.
+   - The `captureOutput` function is used to capture the console output.
+   - Jest’s `expect` function is used to verify that the captured output matches the expected output.
+
+### Running the Tests
+To run these tests, you need to have Jest installed and configured in your project. You can install Jest using npm or yarn:
+
+```sh
+npm install --save-dev jest ts-jest @types/jest
+```
+
+Then, configure your `tsconfig.json` and `jest.config.js` files accordingly:
+
+#### `tsconfig.json`
+```json
+{
+  "compilerOptions": {
+    "target": "es6",
+    "module": "commonjs",
+    "outDir": "./dist",
+    "strict": true,
+    "esModuleInterop": true
+  },
+  "include": ["src/**/*"]
+}
+```
+
+#### `jest.config.js`
+```javascript
+module.exports = {
+  preset: 'ts-jest',
+  testEnvironment: 'node',
+  roots: ['<rootDir>/src'],
+  transform: {
+    '^.+\\.tsx?$': 'ts-jest'
+  },
+  testRegex: '.*\\.test\\.tsx?$',
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node']
+};
+```
+
+Finally, run the tests using Jest:
+
+```sh
+npx jest
+```
+
+This setup ensures that the tests are executed correctly and the output is verified against the expected values.

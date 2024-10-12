@@ -1,70 +1,103 @@
-Sure, here's how you can convert the Python `unittest` test class into a TypeScript test case using Jest:
+Certainly! Below is the equivalent Jest test class in TypeScript, ensuring that the functionality and logic of the tests are preserved. The unittest assertions are mapped to the appropriate Jest assertions, and the necessary type annotations are included.
+
+### TypeScript Code with Jest Testing
 
 ```typescript
-import { describe, it, expect } from '@jest/globals';
+import { isPointInPolygon } from './path-to-your-function'; // Import the isPointInPolygon function
 
-describe('isPointInPolygon', () => {
-  it('should return true for points inside the polygon', () => {
-    const pointInside = [1, 1];
-    const polygon = [
-      [0, 0],
-      [2, 0],
-      [2, 2],
-      [0, 2]
-    ];
+describe('TestPointInPolygon', () => {
+    let square: [number, number][];
+    let triangle: [number, number][];
+    let concave: [number, number][];
 
-    expect(isPointInPolygon(pointInside, polygon)).toBe(true);
-  });
+    beforeEach(() => {
+        // Define some polygons to use in tests
+        square = [[0, 0], [0, 10], [10, 10], [10, 0]];
+        triangle = [[0, 0], [5, 10], [10, 0]];
+        concave = [[0, 0], [5, 5], [10, 0], [5, 10], [0, 10]];
+    });
 
-  it('should return false for points outside the polygon', () => {
-    const pointOutside = [3, 3];
-    const polygon = [
-      [0, 0],
-      [2, 0],
-      [2, 2],
-      [0, 2]
-    ];
+    it('should detect a point inside the square', () => {
+        // Point inside the square
+        expect(isPointInPolygon([5, 5], square)).toBe(true);
+    });
 
-    expect(isPointInPolygon(pointOutside, polygon)).toBe(false);
-  });
+    it('should detect a point outside the square', () => {
+        // Point outside the square
+        expect(isPointInPolygon([15, 5], square)).toBe(false);
+    });
 
-  it('should handle polygons with holes correctly', () => {
-    const pointInsideHole = [1, 1];
-    const polygonWithHole = [
-      [0, 0],
-      [4, 0],
-      [4, 4],
-      [0, 4],
-      [1, 2], // Hole
-      [3, 2]  // Hole
-    ];
+    it('should detect a point on the edge of the triangle', () => {
+        // Point on the edge of the triangle
+        expect(isPointInPolygon([5, 0], triangle)).toBe(false);
+    });
 
-    expect(isPointInPolygon(pointInsideHole, polygonWithHole)).toBe(false);
-  });
+    it('should detect a point inside the concave polygon', () => {
+        // Point inside concave polygon
+        expect(isPointInPolygon([5, 9], concave)).toBe(true);
+    });
+
+    it('should detect a point outside the concave polygon', () => {
+        // Point outside concave polygon
+        expect(isPointInPolygon([5, 1], concave)).toBe(false);
+    });
 });
-
-function isPointInPolygon(point: number[], polygon: number[][]): boolean {
-  let x = point[0], y = point[1];
-  let inside = false;
-
-  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
-    const xi = polygon[i][0], yi = polygon[i][1];
-    const xj = polygon[j][0], yj = polygon[j][1];
-
-    const intersect = ((yi > y) !== (yj > y)) &&
-                      (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
-
-    if (intersect) inside = !inside;
-  }
-
-  return inside;
-}
 ```
 
 ### Explanation:
-1. **Importing Jest**: We use `@jest/globals` to import the necessary Jest functions (`describe`, `it`, and `expect`).
-2. **Test Suite Description**: We describe our test suite using `describe`.
-3. **Individual Test Cases**: Each test case is defined using `it`. We assert the expected outcomes using `expect`.
-4. **Function Implementation**: The function `isPointInPolygon` remains largely unchanged but uses JavaScript/TypeScript syntax.
+1. **Import Function**:
+   - Import the `isPointInPolygon` function from the appropriate module.
 
-This TypeScript code will work in an environment where Jest is installed and configured, such as a Node.js project with a `.test.ts` file extension.
+2. **Describe Block**:
+   - Use the `describe` block to group the tests under a single description.
+
+3. **BeforeEach Hook**:
+   - Use the `beforeEach` hook to set up the polygons before each test case.
+
+4. **Test Cases**:
+   - Each test case uses the `it` block to describe the test and the `expect` assertion to verify the expected outcome.
+
+5. **Type Annotations**:
+   - The polygons and points are defined with the appropriate tuple types `[number, number][]` and `[number, number]`.
+
+6. **Assertions**:
+   - The `expect` method is used with `toBe` to match the expected boolean values.
+
+### Example of `isPointInPolygon` Function
+Here’s an example of how you might define the `isPointInPolygon` function in TypeScript:
+
+```typescript
+function isPointInPolygon(point: [number, number], polygon: [number, number][]): boolean {
+    const [x, y] = point;
+    let inside = false;
+    const n = polygon.length;
+    let [p1x, p1y] = polygon[0];
+
+    for (let i = 0; i < n + 1; i++) {
+        const [p2x, p2y] = polygon[i % n];
+        if (y > Math.min(p1y, p2y)) {
+            if (y <= Math.max(p1y, p2y)) {
+                if (x <= Math.max(p1x, p2x)) {
+                    if (p1y !== p2y) {
+                        const xinters = (y - p1y) * (p2x - p1x) / (p2y - p1y) + p1x;
+                        if (p1x === p2x || x <= xinters) {
+                            inside = !inside;
+                        }
+                    } else {
+                        if (p1x === p2x) {
+                            inside = !inside;
+                        }
+                    }
+                }
+            }
+        }
+        [p1x, p1y] = [p2x, p2y];
+    }
+
+    return inside;
+}
+
+export { isPointInPolygon };
+```
+
+This setup ensures that the tests are structured and executed correctly in TypeScript using Jest.

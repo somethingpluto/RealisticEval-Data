@@ -1,25 +1,39 @@
-Here is your Python function translated into JavaScript:
+Sure, here’s how you can convert the given Python code into equivalent JavaScript code:
 
 ```javascript
 function sanitizeData(data, keyToRemove = null) {
-    // Check if keyToRemove is null or undefined and set it as an empty array if true
-    if (!keyToRemove) {
-        keyToRemove = [];
+    // Recursively sanitize an object by removing specific keys.
+    if (keyToRemove === null) {
+        keyToRemove = new Set([
+            "email", "pc_conflicts", "metadata", 
+            "eligible_student_paper_prize", "talk_poster", 
+            "submitted_at", "decision", "status", 
+            "submitted", "submission"
+        ]);
     }
 
-    // Create a new object to store the sanitized data
-    let sanitizedData = {};
-
-    // Iterate over each key-value pair in the original data
-    for(let key in data) {
-        // If the current key is not in the keyToRemove array, add it to the sanitizedData object
-        if(!keyToRemove.includes(key)) {
-            sanitizedData[key] = data[key];
+    if (typeof data === 'object' && !Array.isArray(data) && data !== null) {
+        const result = {};
+        for (const [key, value] of Object.entries(data)) {
+            if (!keyToRemove.has(key)) {
+                result[key] = sanitizeData(value, keyToRemove);
+            }
         }
+        return result;
+    } else if (Array.isArray(data)) {
+        return data.map(value => sanitizeData(value, keyToRemove));
+    } else {
+        return data;
     }
-
-    return sanitizedData;
 }
 ```
 
-This JavaScript function does the same thing as your Python function - it iterates over all keys in the input `data` object, checks if the key is in the `keyToRemove` array, and if it's not, adds it to a new object called `sanitizedData`. The resulting `sanitizedData` object is then returned. If no keys should be removed, an empty array can be passed as the second argument to the function.
+### Explanation:
+1. **Function Definition**: The `sanitizeData` function is defined with two parameters: `data` and `keyToRemove`.
+2. **Default Value**: If `keyToRemove` is `null`, it initializes a `Set` containing the keys to be removed.
+3. **Type Checking**:
+   - If `data` is an object (excluding arrays and null), it iterates over the keys using `Object.entries` and recursively applies `sanitizeData` on each value.
+   - If `data` is an array, it maps over the array elements and applies `sanitizeData` on each element.
+   - Otherwise, it returns the original `data`.
+
+This JavaScript function maintains the same functionality and logic as the provided Python code.

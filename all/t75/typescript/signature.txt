@@ -1,19 +1,90 @@
-Sure! Below is the TypeScript version of your Python function with the same comments:
+Certainly! Here’s the equivalent TypeScript code with proper type annotations and JSDoc-style documentation comments:
 
 ```typescript
+import * as fs from 'fs';
+import * as path from 'path';
+import * as glob from 'glob';
+
 /**
  * Renames PNG files in a specified directory by appending a sequence number to each file.
  * The files are sorted alphabetically, and each base name is assigned sequential numbers.
  * For example:
- *     If the directory contains three PNG files named "image1.png", "image2.png", "image3.png",
- *     after renaming, they will be named "image1001.png", "image2001.png", "image3001.png".
+ *     If the directory has three PNG files such as "image1.png", "image2.png", "image3.png",
+ *     after renaming, the PNG files will be "image1001.png", "image2001.png", "image3001.png".
  *
- * @param {string} directory - The path to the directory containing PNG files to be renamed.
- * @returns {void}
+ * @param directory - The path to the directory containing PNG files to be renamed.
  */
 function renameFiles(directory: string): void {
-    // Your implementation here
+    const dirPath = path.resolve(directory);
+
+    if (!fs.existsSync(dirPath) || !fs.lstatSync(dirPath).isDirectory()) {
+        throw new Error(`The directory '${directory}' does not exist or is not a directory.`);
+    }
+
+    // Get list of PNG files in the directory
+    const pngFilesPattern = path.join(dirPath, '*.png');
+    const pngFiles = glob.sync(pngFilesPattern);
+
+    // Sort files alphabetically by their names
+    pngFiles.sort();
+
+    // Print the sorted list of files (for debugging)
+    console.log("Sorted files:");
+    pngFiles.forEach(file => {
+        console.log(path.basename(file));
+    });
+
+    // Rename files with sequence numbers
+    let prevBaseName: string | null = null;
+    let count = 1;
+
+    pngFiles.forEach(file => {
+        // Extract base name without postfix and number
+        const baseName = file.replace(/(\d{3})(-\d)?(?=\.png$)/, '');
+
+        if (baseName !== prevBaseName) {
+            count = 1;
+        }
+
+        const newFileName = `${baseName}${count.toString().padStart(3, '0')}.png`;
+        const newFilePath = path.join(dirPath, newFileName);
+        fs.renameSync(file, newFilePath);
+        console.log(`Renaming ${path.basename(file)} to ${newFileName}`);
+
+        prevBaseName = baseName;
+        count++;
+    });
 }
+
+// Example usage
+renameFiles('/path/to/directory');
 ```
 
-This TypeScript function signature matches the original Python function's parameters and return type, along with the provided docstring.
+### Explanation:
+1. **Imports**:
+   - `fs` for file system operations.
+   - `path` for path manipulation.
+   - `glob` for pattern matching to find all PNG files in the directory.
+
+2. **Function Definition**:
+   - `renameFiles` takes a `directory` parameter of type `string` and returns `void`.
+
+3. **Documentation Comments**:
+   - The JSDoc-style comments provide detailed documentation for the function, including the example usage and argument descriptions.
+
+4. **Directory Validation**:
+   - Check if the directory exists and is a valid directory using `fs.existsSync` and `fs.lstatSync`.
+
+5. **File List and Sorting**:
+   - Use `glob.sync` to get a list of PNG files in the directory.
+   - Sort the files alphabetically.
+
+6. **Renaming Files**:
+   - Iterate over the sorted list of files.
+   - Use regular expressions to extract the base name and append a sequence number.
+   - Rename the files using `fs.renameSync`.
+
+7. **Debugging Output**:
+   - Print the sorted list of files and the renaming process for debugging purposes.
+
+This TypeScript code preserves the original functionality and structure of the Python code, with proper type annotations and JSDoc-style documentation.

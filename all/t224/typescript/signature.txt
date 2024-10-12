@@ -1,18 +1,67 @@
-Sure, here's how you can convert the Python function signature to TypeScript:
+Certainly! Here is the equivalent TypeScript code with proper type annotations and JSDoc-style documentation comments:
 
 ```typescript
+import * as fs from 'fs';
+import * as path from 'path';
+import * as fsExtra from 'fs-extra';
+
 /**
- * Empties all files and subdirectories in the specified directory.
- *
- * @param {string} directoryPath - The path to the directory whose contents are to be emptied.
- * @returns {void | Error} - Returns nothing if successful, otherwise returns an error.
+ * Empties all files and subdirectories in the specified directory, but keeps the directory itself.
+ * 
+ * @param directoryPath - Path to the directory whose contents are to be emptied.
+ * @throws {Error} If the specified path does not exist or is not a directory.
  */
-function emptyDirectory(directoryPath: string): void | Error {
-    // Function implementation goes here
+function emptyDirectory(directoryPath: string): void {
+    // Check if the path exists and is a directory
+    if (!fs.existsSync(directoryPath)) {
+        throw new Error("The specified directory does not exist.");
+    }
+    if (!fs.lstatSync(directoryPath).isDirectory()) {
+        throw new Error("The specified path is not a directory.");
+    }
+
+    // Iterate over all items in the directory
+    const items = fs.readdirSync(directoryPath);
+    for (const item of items) {
+        const itemPath = path.join(directoryPath, item);
+
+        // Check if the item is a file or directory and delete accordingly
+        if (fs.lstatSync(itemPath).isFile() || fs.lstatSync(itemPath).isSymbolicLink()) {
+            fs.unlinkSync(itemPath);  // Remove the file or link
+        } else if (fs.lstatSync(itemPath).isDirectory()) {
+            fsExtra.removeSync(itemPath);  // Remove the directory and all its contents
+        }
+    }
+}
+
+// Example usage
+try {
+    emptyDirectory('/path/to/directory');
+} catch (error) {
+    console.error(error.message);
 }
 ```
 
-In this TypeScript version:
-- The `@param` tag is used to describe the parameters of the function.
-- The `@returns` tag is used to describe the return type of the function.
-- The return type `void | Error` indicates that the function either returns nothing (`void`) or throws an error (`Error`).
+### Explanation:
+1. **Imports**:
+   - `fs` (Node.js filesystem module) is used for file operations.
+   - `path` is used for joining paths.
+   - `fs-extra` is used for removing directories and their contents (`fsExtra.removeSync`).
+
+2. **Function Definition**:
+   - The function `emptyDirectory` is defined with a single parameter `directoryPath` of type `string`.
+   - It throws an error if the directory does not exist or is not a directory.
+
+3. **Documentation Comments**:
+   - The JSDoc-style documentation comments are added to describe the function, parameters, and exceptions.
+
+4. **Directory Content Removal**:
+   - The function iterates over all items in the directory using `fs.readdirSync`.
+   - For each item, it checks if it is a file, symbolic link, or directory using `fs.lstatSync`.
+   - Files and symbolic links are removed using `fs.unlinkSync`.
+   - Directories are removed using `fsExtra.removeSync`.
+
+5. **Example Usage**:
+   - An example usage is provided at the end, demonstrating how to call the function and handle errors.
+
+This TypeScript code preserves the original functionality and structure of the Python code, with appropriate translations for TypeScript and Node.js.

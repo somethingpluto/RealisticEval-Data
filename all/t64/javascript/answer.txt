@@ -1,23 +1,58 @@
-Here is your Python code translated into JavaScript:
+Sure! Here is the equivalent JavaScript code that maintains the same functionality, logic, and structure as the provided Python code:
 
 ```javascript
 const fs = require('fs');
 const path = require('path');
+const csvParser = require('csv-parser');
 
 function csvToSqlInsert(csvFilePath) {
-  const tableName = path.basename(csvFilePath, '.csv');
-  let sql = `INSERT INTO ${tableName} VALUES\n`;
+    // Extract the table name from the CSV file name, removing the suffix
+    const tableName = path.splitext(path.basename(csvFilePath))[0];
 
-  const data = fs.readFileSync(csvFilePath, 'utf8');
-  const rows = data.split('\n').map(row => row.trim()).filter(row => row);
+    // Open the CSV file and read its contents
+    const results = [];
+    let headers = [];
 
-  for (let i = 1; i < rows.length; i++) {
-    const values = rows[i].split(',').map(value => `'${value}'`);
-    sql += `(${values.join(',')})\n`;
-  }
+    fs.createReadStream(csvFilePath)
+        .on('data', (row) => {
+            if (!headers.length) {
+                headers = Object.keys(row);
+                return;
+            }
 
-  return sql;
+            const values = [];
+            for (const [key, value] of Object.entries(row)) {
+                // Handle different types of values (e.g., strings, numbers)
+                if (!isNaN(value)) {  // If value is a number, no quotes needed
+                    values.push(value);
+                } else {  // Assume it's a string otherwise
+                    const escapedValue = value.replace(/'/g, "''");  // Escape single quotes
+                    values.push(`'${escapedValue}'`);  // Use double quotes outside
+                }
+            }
+
+            // Join column names and values to form an INSERT statement
+            const insertStatement = `INSERT INTO ${tableName} (${headers.join(', ')}) VALUES (${values.join(', ')});`;
+            results.push(insertStatement);
+        })
+        .on('end', () => {
+            // Combine all insert statements into a single output
+            console.log(results.join('\n'));
+        })
+        .pipe(csvParser());
 }
+
+// Example usage
+csvToSqlInsert('example.csv');
 ```
 
-Please note that this JavaScript version assumes you're using Node.js and has access to the filesystem module (`fs`) and path module (`path`). The CSV parsing logic here is simplified and might need to be adjusted depending on the complexity of your CSV files. Also, it doesn't handle headers or escaping special characters in the CSV values - these would need to be added if necessary.
+### Explanation:
+1. **Imports**: The required Node.js modules (`fs`, `path`, `csv-parser`) are imported at the beginning.
+2. **Function Definition**: The `csvToSqlInsert` function is defined to handle the conversion of CSV data to SQL insert statements.
+3. **File Reading**: The `fs.createReadStream` method is used to read the CSV file. The `csvParser` module is piped to parse the CSV data.
+4. **Header Extraction**: The first row of the CSV is used to extract the headers.
+5. **Value Handling**: Each row is processed to handle different types of values (numbers and strings). Strings are escaped and quoted appropriately.
+6. **SQL Insert Statement Construction**: An `INSERT` statement is constructed for each row and added to the `results` array.
+7. **Output**: The final `results` array is joined and printed.
+
+This JavaScript code should provide the same functionality as the original Python code.

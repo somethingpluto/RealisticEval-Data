@@ -1,28 +1,87 @@
-Sure! Here is the JavaScript equivalent of your Python function signature using TypeScript, which is a superset of JavaScript that adds static types:
+Certainly! Below is the equivalent JavaScript code with the function signature and comments rewritten to conform to JSDoc standards:
 
-```typescript
+```javascript
 /**
  * Checks that the arguments passed to a given method object (e.g., method of a class) comply with their
- * expected question types, based on the method's signature. If there's a discrepancy, it raises a ValueError.
+ * expected types, based on the method's signature. If there's a discrepancy, it raises an error.
  *
- * @param methodObj - The method for which arguments are checked.
- * @param args - Positional arguments passed to the method.
- * @param kwargs - Keyword arguments passed to the method.
+ * @param {Function} methodObj - The method for which arguments are checked.
+ * @param {...any} args - Positional arguments passed to the method.
+ * @param {Object} [kwargs] - Keyword arguments passed to the method.
  *
- * @optional
- * @param exclude - Names of parameters to exclude from the type check.
+ * @property {Array<string>} [kwargs.exclude=[]] - Names of parameters to exclude from the type check.
  */
-function methodArgTypeCheck<T extends (...args: any[]) => any>(
-  methodObj: T,
-  ...args: Parameters<T>
-): void {
-  // Implementation goes here
+function methodArgTypeCheck(methodObj, ...args) {
+    // Extract the list of parameters to exclude from the type check from kwargs, defaulting to an empty array if not provided
+    const kwargs = args[args.length - 1];
+    const isLastArgObject = typeof kwargs === 'object' && !Array.isArray(kwargs);
+
+    let actualArgs = args;
+    let exclude = [];
+
+    if (isLastArgObject) {
+        actualArgs = args.slice(0, -1);  // Exclude the last argument (kwargs)
+        exclude = kwargs.exclude || [];  // Default to an empty array if exclude is not provided
+        exclude.push('this');  // Exclude 'this' by default since it refers to the method's instance
+    }
+
+    // Get the signature of the method and prepare the expected types dictionary
+    const argsSignature = Reflect.getMetadata('design:paramtypes', methodObj);
+    const boundArgs = {};
+
+    // Bind the arguments to the method's signature
+    for (let i = 0; i < argsSignature.length; i++) {
+        boundArgs[`arg${i}`] = actualArgs[i];
+    }
+
+    const expectedTypes = {};
+    const methodParams = Reflect.getMetadata('design:paramtypes', methodObj);
+    const methodParamNames = Reflect.getMetadata('design:paramtypes', methodObj).map((_, index) => `arg${index}`);
+
+    for (let i = 0; i < methodParams.length; i++) {
+        const paramName = methodParamNames[i];
+        if (!exclude.includes(paramName) && methodParams[i] !== undefined) {
+            expectedTypes[paramName] = methodParams[i];
+        }
+    }
+
+    // Check each argument against its expected type
+    for (const [argName, argType] of Object.entries(expectedTypes)) {
+        if (boundArgs[argName]) {
+            const actualValue = boundArgs[argName];
+            const passedArgType = typeof actualValue;
+            const expectedArgType = argType.name;
+
+            if (passedArgType !== expectedArgType) {
+                throw new Error(
+                    `${argName} should be of type ${expectedArgType}, but got type ${passedArgType} instead.`
+                );
+            }
+        }
+    }
+}
+
+// Example usage:
+function someMethod(thisArg, arg1, arg2) {
+    // Method implementation
+}
+
+Reflect.defineMetadata('design:paramtypes', [Object, Number, String], someMethod);
+
+try {
+    methodArgTypeCheck(someMethod, {}, 123, "hello", { exclude: ['arg1'] });
+    console.log("Arguments are valid.");
+} catch (error) {
+    console.error(error.message);
 }
 ```
 
-In this TypeScript version:
-- `T extends (...args: any[]) => any` defines a generic type `T` that represents a function with any number and types of arguments.
-- `Parameters<T>` extracts the parameter types of the function `T`.
-- The function `methodArgTypeCheck` takes `methodObj` of type `T`, and the rest of the arguments are spread into an array called `args`.
+### Explanation:
+1. **JSDoc Comments**: The comments have been rewritten to conform to JSDoc standards.
+2. **Function Signature**: The function signature has been adapted to JavaScript, including the use of `...args` for variadic arguments.
+3. **Handling `kwargs`**: The `kwargs` parameter is handled correctly to extract the `exclude` list.
+4. **Type Checking**: The function checks each argument against its expected type and throws an error if there is a discrepancy.
 
-This ensures that the function signature in JavaScript/TypeScript matches the original Python function signature while keeping the comments intact.
+### Notes:
+- **Reflect Metadata**: The `Reflect.getMetadata` function is used to simulate the Python `inspect.signature` functionality. You need to define metadata for the method using `Reflect.defineMetadata`.
+- **Example Usage**: An example usage demonstrates how to define metadata for a method and call `methodArgTypeCheck` to validate the arguments.

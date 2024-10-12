@@ -1,57 +1,117 @@
-Sure! Below is the equivalent C++ test case using Catch2 for the provided Python unittest function `remove_common_indentation`. Note that I'll assume you have the implementation of `remove_common_indentation` in C++. If not, you would need to provide it or mock it out for testing purposes.
+Certainly! Below is the equivalent C++ test class using the Catch2 testing framework. The provided Python unittest class will be converted into a Catch2 test suite, ensuring that the functionality and logic of the tests are preserved.
+
+### C++ Code Using Catch2
+
+First, make sure you have Catch2 installed in your project. You can include it via a header-only library or through a package manager.
+
+Here is the equivalent C++ test class using Catch2:
 
 ```cpp
-#define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
-#include "catch.hpp"
+#include <catch2/catch_test_macros.hpp>
+#include <string>
+#include <vector>
+#include <sstream>
+#include <algorithm>
 
-// Assuming you have the implementation of remove_common_indentation here
-std::string remove_common_indentation(const std::string& multiline_text);
-
-TEST_CASE("remove_common_indentation", "[remove_common_indentation]") {
-    SECTION("Single line without indentation") {
-        REQUIRE(remove_common_indentation("Hello World") == "Hello World");
+// Function to remove common leading indentation from a multi-line string
+std::string remove_common_indentation(const std::string& multiline_text) {
+    // Split the input string into lines
+    std::vector<std::string> lines;
+    std::string current_line;
+    std::istringstream iss(multiline_text);
+    while (std::getline(iss, current_line, '\n')) {
+        lines.push_back(current_line);
     }
 
-    SECTION("Multiple lines with consistent indentation") {
-        REQUIRE(remove_common_indentation(
-            "    Line 1\n"
-            "    Line 2\n"
-            "    Line 3"
-        ) == "Line 1\nLine 2\nLine 3");
+    // Filter out lines that are empty or only whitespace
+    std::vector<std::string> non_empty_lines;
+    for (const auto& line : lines) {
+        if (!line.empty() && line.find_first_not_of(" \t") != std::string::npos) {
+            non_empty_lines.push_back(line);
+        }
     }
 
-    SECTION("Mixed tabs and spaces") {
-        REQUIRE(remove_common_indentation(
-            "\t\tTabbed Line 1\n"
-            "    Spaced Line 2\n"
-            "\t\tTabbed Line 3"
-        ) == "Tabbed Line 1\nSpaced Line 2\nTabbed Line 3");
+    // Determine the minimum indentation of non-empty lines
+    size_t min_indent = std::string::npos;
+    for (const auto& line : non_empty_lines) {
+        size_t first_non_space = line.find_first_not_of(" \t");
+        if (first_non_space != std::string::npos) {
+            min_indent = std::min(min_indent, first_non_space);
+        }
     }
 
-    SECTION("No common indentation") {
-        REQUIRE(remove_common_indentation(
-            "Line 1\n"
-            "    Line 2\n"
-            "Line 3"
-        ) == "Line 1\n    Line 2\nLine 3");
+    // If there's no indentation or all lines are empty, return the original string
+    if (min_indent == std::string::npos) {
+        return multiline_text;
     }
 
-    SECTION("Leading spaces on some lines") {
-        REQUIRE(remove_common_indentation(
-            "    Line 1\n"
-            "Line 2\n"
-            "    Line 3"
-        ) == "Line 1\nLine 2\nLine 3");
+    // Remove the common leading indentation from each line
+    std::vector<std::string> sanitized_lines;
+    for (const auto& line : lines) {
+        if (line.length() > min_indent) {
+            sanitized_lines.push_back(line.substr(min_indent));
+        } else {
+            sanitized_lines.push_back("");
+        }
+    }
+
+    // Join the sanitized lines back into a single string
+    std::string result;
+    for (size_t i = 0; i < sanitized_lines.size(); ++i) {
+        result += sanitized_lines[i];
+        if (i < sanitized_lines.size() - 1) {
+            result += "\n";
+        }
+    }
+
+    return result;
+}
+
+TEST_CASE("Test remove_common_indentation function", "[remove_common_indentation]") {
+    SECTION("test_empty_string") {
+        // Testing edge case with an empty string
+        CHECK(remove_common_indentation("") == "");
+    }
+
+    SECTION("test_single_line_string") {
+        // Testing a single line with no indentation
+        CHECK(remove_common_indentation("No indentation here") == "No indentation here");
+    }
+
+    SECTION("test_multiple_lines_with_uniform_indentation") {
+        // Testing basic logic with uniform indentation across multiple lines
+        std::string input_text = "    Line one\n    Line two\n    Line three";
+        std::string expected_output = "Line one\nLine two\nLine three";
+        CHECK(remove_common_indentation(input_text) == expected_output);
+    }
+
+    SECTION("test_multiple_lines_with_mixed_indentation") {
+        // Testing lines with mixed indentation levels
+        std::string input_text = "  Line one\n  Line two\n  Line three";
+        std::string expected_output = "Line one\nLine two\nLine three";
+        CHECK(remove_common_indentation(input_text) == expected_output);
     }
 }
 ```
 
-In this C++ code:
-- `#define CATCH_CONFIG_MAIN` tells Catch2 to provide a `main()` function.
-- `#include "catch.hpp"` includes the Catch2 header file.
-- `remove_common_indentation` is assumed to be implemented somewhere in your project. If not, you should provide its implementation or mock it out.
-- `TEST_CASE` defines a test case named "remove_common_indentation".
-- `SECTION` defines individual sections within the test case, each representing a different scenario or test case.
-- `REQUIRE` is used to assert that the output of `remove_common_indentation` matches the expected result.
+### Explanation:
+1. **Header Inclusion**:
+   - Include the necessary headers: `catch2/catch_test_macros.hpp` for Catch2, and other standard C++ headers.
 
-Make sure you have Catch2 installed and properly set up in your build system to compile and run these tests.
+2. **Function Definition**:
+   - Define the `remove_common_indentation` function, which implements the logic to remove common leading indentation from a multi-line string.
+
+3. **Test Class**:
+   - Use the `TEST_CASE` macro to define a test case named "Test remove_common_indentation function".
+   - Use the `SECTION` macro to define individual test sections within the test case.
+
+4. **Assertions**:
+   - Use `CHECK` assertions to verify the correctness of the `remove_common_indentation` function for different test cases.
+
+5. **Test Cases**:
+   - `test_empty_string`: Tests the edge case with an empty string.
+   - `test_single_line_string`: Tests a single line with no indentation.
+   - `test_multiple_lines_with_uniform_indentation`: Tests basic logic with uniform indentation across multiple lines.
+   - `test_multiple_lines_with_mixed_indentation`: Tests lines with mixed indentation levels.
+
+This C++ code using Catch2 should provide the same functionality and logic as the original Python unittest class.

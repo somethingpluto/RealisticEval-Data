@@ -1,34 +1,68 @@
-Here is your Python function translated into TypeScript:
+Certainly! Below is the equivalent TypeScript code for the provided Python function:
 
 ```typescript
+import { DateTime } from 'luxon';
+
+/**
+ * Generate a formatted date range string.
+ *
+ * @param startDate - The start date in 'YYYY-MM-DD' format.
+ * @param endDate - The end date in 'YYYY-MM-DD' format.
+ * @returns A string representing the date range in a human-readable format.
+ * @throws {Error} If the startDate or endDate are not in the correct format or if startDate is after endDate.
+ */
 function dateRangeString(startDate: string, endDate: string): string {
-    const startDateObj = new Date(startDate);
-    const endDateObj = new Date(endDate);
+  try {
+    const startDt = DateTime.fromISO(startDate);
+    const endDt = DateTime.fromISO(endDate);
 
-    const months = ['January', 'February', 'March', 'April', 'May', 'June', 
-                   'July', 'August', 'September', 'October', 'November', 'December'];
-
-    const startMonthName = months[startDateObj.getMonth()];
-    const endMonthName = months[endDateObj.getMonth()];
-
-    const startDay = startDateObj.getDate();
-    const endDay = endDateObj.getDate();
-
-    const startYear = startDateObj.getFullYear();
-    const endYear = endDateObj.getFullYear();
-
-    let result = '';
-
-    if (startMonthName === endMonthName && startYear === endYear) {
-        result = `${startMonthName} ${startDay} to ${endDay}, ${startYear}`;
-    } else if (startYear === endYear) {
-        result = `${startMonthName} ${startDay} to ${endMonthName} ${endDay}, ${startYear}`;
-    } else {
-        result = `${startMonthName} ${startDay}, ${startYear} to ${endMonthName} ${endDay}, ${endYear}`;
+    if (!startDt.isValid) {
+      throw new Error(`Invalid start date: ${startDate}`);
+    }
+    if (!endDt.isValid) {
+      throw new Error(`Invalid end date: ${endDate}`);
+    }
+    if (startDt > endDt) {
+      throw new Error("startDate cannot be after endDate.");
     }
 
-    return result;
+    const startMonth = startDt.toFormat('MMMM');
+    const endMonth = endDt.toFormat('MMMM');
+    const startDay = startDt.day.toString();
+    const endDay = endDt.day.toString();
+    const startYear = startDt.year.toString();
+    const endYear = endDt.year.toString();
+
+    // Format output based on whether dates are within the same month and/or year
+    if (startYear !== endYear) {
+      return `${startMonth} ${startDay}, ${startYear} to ${endMonth} ${endDay}, ${endYear}`;
+    } else if (startMonth === endMonth) {
+      return `${startMonth} ${startDay} to ${endDay}, ${startYear}`;
+    } else {
+      return `${startMonth} ${startDay} to ${endMonth} ${endDay}, ${startYear}`;
+    }
+  } catch (error) {
+    throw new Error(`Date must be in 'YYYY-MM-DD' format. ${error.message}`);
+  }
 }
+
+// Example usage
+console.log(dateRangeString('2023-01-01', '2023-01-05'));
+console.log(dateRangeString('2023-01-01', '2023-02-05'));
+console.log(dateRangeString('2023-01-01', '2024-02-05'));
 ```
 
-This function does the same thing as your Python function but it's written in TypeScript. It takes two strings representing dates, converts them into `Date` objects, and then generates a string based on whether they are in the same month or year.
+### Explanation:
+1. **Imports**: We use `DateTime` from the `luxon` library to handle date parsing and formatting. Luxon is a powerful and flexible date-time library for JavaScript.
+2. **Function Definition**: The function `dateRangeString` takes two parameters (`startDate` and `endDate`) and returns a formatted date range string.
+3. **Validation**:
+   - We validate the input dates using `DateTime.fromISO` to ensure they are in the correct format.
+   - If the dates are invalid, we throw an error with a descriptive message.
+   - We check if `startDate` is before `endDate` and throw an error if it is not.
+4. **Formatting**:
+   - We use Luxon's `toFormat` method to get the full month name.
+   - We convert days and years to strings.
+   - We format the output based on the conditions specified in the original Python code.
+5. **Error Handling**: We wrap the main logic in a try-catch block to handle any errors and provide informative error messages.
+
+This TypeScript code maintains the same functionality and logic as the Python code while adapting to TypeScript's static type system and idiomatic practices.

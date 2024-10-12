@@ -1,36 +1,85 @@
-Here is your Python code translated into JavaScript. This code uses JavaScript's built-in `Function.prototype.toString` and `eval` functions to get the parameter names and types of the function. It then checks if the types of the provided arguments match the expected types.
+Sure! Below is the equivalent JavaScript code that maintains the same functionality, logic, and structure as the provided Python code:
 
 ```javascript
+function getParameterExclusionList(kwargs) {
+    // Extract the list of parameters to exclude from the type check from kwargs, defaulting to an empty array if not provided
+    const exclude = kwargs.exclude || [];
+    exclude.push('self');  // Exclude 'self' by default since it refers to the method's instance
+    return exclude;
+}
+
+function getExpectedTypes(argsSignature, exclude) {
+    const expectedTypes = {};
+    for (const [paramName, param] of Object.entries(argsSignature)) {
+        if (!exclude.includes(paramName) && param.type !== undefined) {
+            expectedTypes[paramName] = param.type;
+        }
+    }
+    return expectedTypes;
+}
+
+function checkArgumentType(argName, actualValue, expectedType) {
+    const passedArgType = typeof actualValue;
+    const expectedArgType = expectedType;
+    if (passedArgType !== expectedArgType) {
+        throw new Error(
+            `${argName} should be of type ${expectedArgType}, but got type ${passedArgType} instead.`
+        );
+    }
+}
+
 function methodArgTypeCheck(methodObj, ...args) {
-    // Get the string representation of the function
-    let funcStr = methodObj.toString();
-    
-    // Extract the parameters from the function string
-    let paramsMatch = funcStr.match(/\((.*?)\)/);
-    if (!paramsMatch) throw new Error('Invalid function format');
-    let params = paramsMatch[1].split(',').map(param => param.trim());
-    
+    const kwargs = args[args.length - 1];
+    const isLastArgObject = typeof kwargs === 'object' && !Array.isArray(kwargs);
+
+    let actualArgs = args;
+    let exclude = [];
+
+    if (isLastArgObject) {
+        actualArgs = args.slice(0, -1);  // Exclude the last argument (kwargs)
+        exclude = getParameterExclusionList(kwargs);
+    }
+
+    // Get the signature of the method and prepare the expected types dictionary
+    const argsSignature = Reflect.getMetadata('design:paramtypes', methodObj);
+    const boundArgs = {};
+
+    // Bind the arguments to the method's signature
+    for (let i = 0; i < argsSignature.length; i++) {
+        boundArgs[`arg${i}`] = actualArgs[i];
+    }
+
+    const expectedTypes = getExpectedTypes(argsSignature, exclude);
+
     // Check each argument against its expected type
-    params.forEach((param, index) => {
-        let arg = args[index];
-        
-        // Ignore undefined or null arguments
-        if (arg === undefined || arg === null) return;
-        
-        // Determine the expected type based on the parameter name
-        let expectedType = 'any';
-        if (/^\w+$/.test(param)) {
-            expectedType = param;
-        } else if (/^\w+ \?\=/.test(param)) {
-            expectedType = param.split(' ')[0];
+    for (const [argName, argType] of Object.entries(expectedTypes)) {
+        if (boundArgs[argName]) {
+            checkArgumentType(argName, boundArgs[argName], argType);
         }
-        
-        // Check if the actual type matches the expected type
-        if (typeof arg !== expectedType) {
-            throw new TypeError(`Argument ${index} must be of type ${expectedType}, but got ${typeof arg}`);
-        }
-    });
+    }
+}
+
+// Example usage:
+function someMethod(self, arg1, arg2) {
+    // Method implementation
+}
+
+Reflect.defineMetadata('design:paramtypes', [Object, Number, String], someMethod);
+
+try {
+    methodArgTypeCheck(someMethod, {}, 123, "hello");
+    console.log("Arguments are valid.");
+} catch (error) {
+    console.error(error.message);
 }
 ```
 
-This code does not support optional arguments or more complex type checking like in Python. For more advanced use cases, you may need to use a library such as TypeScript or JSDoc annotations.
+### Explanation:
+1. **getParameterExclusionList**: This function extracts the `exclude` list from `kwargs` and appends `'self'` to it.
+2. **getExpectedTypes**: This function constructs the `expectedTypes` dictionary based on the method's signature and the exclusion list.
+3. **checkArgumentType**: This function checks if the actual value matches the expected type and throws an error if not.
+4. **methodArgTypeCheck**: This is the main function that performs the type checking. It handles the `kwargs` parameter and calls the helper functions to perform the checks.
+
+### Notes:
+- In JavaScript, we use `Reflect.getMetadata` to simulate the Python `inspect.signature` functionality. This requires metadata to be defined using `Reflect.defineMetadata`.
+- The example usage demonstrates how to define metadata for a method and call `methodArgTypeCheck` to validate the arguments.

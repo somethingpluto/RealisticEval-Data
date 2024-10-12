@@ -1,73 +1,103 @@
-To convert the given Python unittest test class to a C++ Catch2 test case, we first need to implement the `remove_comments` function in C++. Then, we can write the corresponding Catch2 test cases. Below is how you can do it:
+Certainly! Here is the equivalent C++ test class using the Catch2 testing framework. The provided Python unittest class will be translated into a C++ Catch2 test suite, ensuring that the functionality and logic of the tests are preserved.
 
-### Step 1: Implement the `remove_comments` Function in C++
+### C++ Code with Catch2
+
+First, make sure you have Catch2 installed and included in your project. You can include Catch2 via a header-only library or through a package manager.
 
 ```cpp
+#include <catch2/catch_test_macros.hpp>
 #include <string>
-#include <iostream>
+#include <sstream>
+#include <vector>
 
-std::string remove_comments(const std::string& input) {
-    std::string result;
-    bool inside_comment = false;
+// Function to remove comments from a string
+std::string removeComments(const std::string& input);
 
-    for (char ch : input) {
-        if (ch == '#') {
-            inside_comment = true;
-        } else if (ch == '\n') {
-            inside_comment = false;
-        }
+TEST_CASE("Test removeComments functionality", "[removeComments]") {
+    SECTION("Test string with a comment on a single line") {
+        std::string input_string = "Hello, world!# This is a comment";
+        std::string expected_output = "Hello, world!";
+        REQUIRE(removeComments(input_string) == expected_output);
+    }
 
-        if (!inside_comment) {
-            result += ch;
+    SECTION("Test string with no comments") {
+        std::string input_string = "Hello, world!\nPython is fun!";
+        std::string expected_output = "Hello, world!\nPython is fun!";
+        REQUIRE(removeComments(input_string) == expected_output);
+    }
+
+    SECTION("Test an empty string") {
+        std::string input_string = "";
+        std::string expected_output = "";
+        REQUIRE(removeComments(input_string) == expected_output);
+    }
+
+    SECTION("Test string where all lines are comments") {
+        std::string input_string = "# comment only line\n#another comment line";
+        std::string expected_output = "\n";
+        REQUIRE(removeComments(input_string) == expected_output);
+    }
+}
+
+// Implementation of the removeComments function
+std::string removeComments(const std::string& input) {
+    std::istringstream iss(input);
+    std::vector<std::string> lines;
+    std::string line;
+
+    // Split the string into lines
+    while (std::getline(iss, line)) {
+        lines.push_back(line);
+    }
+
+    std::vector<std::string> cleanedLines;
+
+    // Remove the comment part from each line
+    for (const auto& l : lines) {
+        size_t commentPos = l.find('#');
+        if (commentPos != std::string::npos) {
+            cleanedLines.push_back(l.substr(0, commentPos));
+        } else {
+            cleanedLines.push_back(l);
         }
     }
 
-    return result;
+    std::ostringstream oss;
+
+    // Join the lines back into a single string
+    for (size_t i = 0; i < cleanedLines.size(); ++i) {
+        if (i > 0) {
+            oss << '\n';
+        }
+        oss << cleanedLines[i];
+    }
+
+    return oss.str();
+}
+
+// Main function to run the tests
+int main(int argc, char* argv[]) {
+    Catch::Session().run(argc, argv);
+    return 0;
 }
 ```
 
-### Step 2: Write the Catch2 Test Cases
+### Explanation:
+1. **Catch2 Header Inclusion**:
+   - Include the Catch2 header file `#include <catch2/catch_test_macros.hpp>`.
 
-First, make sure you have Catch2 installed. If not, you can download it from [Catch2's GitHub repository](https://github.com/catchorg/Catch2).
+2. **Test Class Definition**:
+   - Use `TEST_CASE` to define the test suite.
+   - Use `SECTION` to define individual test cases.
 
-Here is an example of how you can write the test cases using Catch2:
+3. **Function Implementation**:
+   - The `removeComments` function is implemented similarly to the Python version, using `std::istringstream` and `std::getline` to split the input string into lines.
+   - Comments are removed from each line, and the cleaned lines are joined back into a single string using `std::ostringstream`.
 
-```cpp
-#define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
-#include "catch.hpp"
+4. **Assertions**:
+   - Use `REQUIRE` to assert the expected outcomes of the tests.
 
-// Include the implementation of remove_comments
-#include "remove_comments.cpp"
+5. **Main Function**:
+   - The `main` function runs the Catch2 test suite using `Catch::Session().run(argc, argv)`.
 
-TEST_CASE("Remove comments from a string", "[remove_comments]") {
-    REQUIRE(remove_comments("Hello, world! # This is a comment") == "Hello, world!");
-    REQUIRE(remove_comments("# This is a comment\nHello, world!") == "\nHello, world!");
-    REQUIRE(remove_comments("No comments here!") == "No comments here!");
-    REQUIRE(remove_comments("Multiple #comments\n#on multiple lines") == "\n");
-    REQUIRE(remove_comments("Comments before newline #should stay") == "Comments before newline ");
-    REQUIRE(remove_comments("Comments after newline\n#should be removed") == "Comments after newline\n");
-}
-
-TEST_CASE("Edge cases", "[remove_comments]") {
-    REQUIRE(remove_comments("") == "");
-    REQUIRE(remove_comments("\n") == "\n");
-    REQUIRE(remove_comments("#") == "");
-    REQUIRE(remove_comments("##") == "#");
-    REQUIRE(remove_comments("a#b#c") == "ab#c");
-}
-```
-
-### Explanation
-
-- **`CATCH_CONFIG_MAIN`**: This macro tells Catch to provide a main() function. Only include this in one source file.
-- **`TEST_CASE`**: Defines a test case. The first argument is the name of the test case, and the second argument is a tag used to group related tests.
-- **`REQUIRE`**: Asserts that the condition is true. If the condition is false, the test will fail.
-
-Make sure to compile your C++ code with the Catch2 library. Here is an example command using g++:
-
-```sh
-g++ -std=c++14 -I/path/to/catch2/include -o test_remove_comments test_remove_comments.cpp remove_comments.cpp
-./test_remove_comments
-```
-
-Replace `/path/to/catch2/include` with the actual path where you have downloaded or cloned the Catch2 library.
+This C++ code preserves the functionality and logic of the Python unittest class while adhering to the Catch2 testing framework conventions.

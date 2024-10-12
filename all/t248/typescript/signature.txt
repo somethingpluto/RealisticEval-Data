@@ -1,28 +1,57 @@
-Sure, here is the TypeScript version of your Python function with the same comments and type annotations:
+Sure! Here is the equivalent TypeScript code with proper type annotations and JSDoc-style comments:
 
 ```typescript
-interface QuestionDict {
-    [key: string]: any;
-}
+import { Dictionary } from "lodash";
 
-function sanitizeData(data: QuestionDict, keyToRemove: string[] = []): QuestionDict {
-    /**
-     * Removes the corresponding sensitive questions in the given dictionary based on the given keyToRemove array.
-     *
-     * @param {QuestionDict} data - The original question dictionary.
-     * @param {string[]} keyToRemove - The array of keys to remove.
-     * @returns {QuestionDict} - The dictionary with the specified keys removed.
-     */
-    return Object.keys(data).reduce((acc, key) => {
-        if (!keyToRemove.includes(key)) {
-            acc[key] = data[key];
-        }
-        return acc;
-    }, {} as QuestionDict);
+/**
+ * Recursively sanitizes a dictionary by removing specific keys.
+ * 
+ * @param data - The original dictionary to sanitize.
+ * @param keyToRemove - An optional list of keys to remove. If not provided, defaults to a predefined set of keys.
+ * @returns The sanitized dictionary.
+ */
+function sanitizeData(data: Dictionary<any>, keyToRemove?: string[]): Dictionary<any> {
+  if (!keyToRemove) {
+    keyToRemove = [
+      "email",
+      "pc_conflicts",
+      "metadata",
+      "eligible_student_paper_prize",
+      "talk_poster",
+      "submitted_at",
+      "decision",
+      "status",
+      "submitted",
+      "submission"
+    ];
+  }
+
+  if (typeof data === 'object' && !Array.isArray(data) && data !== null) {
+    return Object.entries(data).reduce((acc, [key, value]) => {
+      if (!keyToRemove.includes(key)) {
+        acc[key] = sanitizeData(value, keyToRemove);
+      }
+      return acc;
+    }, {} as Dictionary<any>);
+  } else if (Array.isArray(data)) {
+    return data.map(value => sanitizeData(value, keyToRemove));
+  } else {
+    return data;
+  }
 }
 ```
 
-In this TypeScript code:
-- `QuestionDict` is an interface that represents a dictionary where keys are strings and values can be of any type.
-- `sanitizeData` function takes a `data` parameter of type `QuestionDict` and an optional `keyToRemove` parameter of type `string[]`.
-- The function uses the `reduce` method to create a new dictionary excluding the keys listed in `keyToRemove`.
+### Explanation:
+1. **Type Annotations**:
+   - `Dictionary<any>` from `lodash` is used to represent a generic dictionary with any key-value pairs.
+   - `string[]` is used to represent the list of keys to remove.
+
+2. **JSDoc Comments**:
+   - The function is documented using JSDoc comments, which provide clear descriptions of the function, its arguments, and its return type.
+
+3. **Function Implementation**:
+   - The function checks if `keyToRemove` is provided; if not, it initializes it with a default set of keys.
+   - It uses `Object.entries` to iterate over the dictionary entries and `reduce` to build the sanitized dictionary.
+   - The `includes` method is used to check if a key should be removed.
+
+This TypeScript code preserves the original functionality and structure of the Python code while adhering to TypeScript's static type system and best practices for documentation.

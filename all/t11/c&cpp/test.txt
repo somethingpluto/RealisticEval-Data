@@ -1,47 +1,162 @@
-Here’s a conversion of the provided Python unittest test class into a C++ Catch2 test case:
+Certainly! Here is the equivalent C++ test class using the Catch2 testing framework. This conversion will preserve the functionality and logic of the tests while adapting to C++ syntax and the Catch2 assertion framework.
+
+First, make sure you have Catch2 installed and included in your project. You can include Catch2 by adding the header file and using the `CATCH_TEST_CASE` macro for each test case.
+
+Here’s the complete C++ code:
 
 ```cpp
-#include <catch2/catch.hpp>
+#include <iostream>
+#include <unordered_map>
+#include <string>
+#include "catch2/catch_test_macros.hpp"
 
+// TrieNode class
 class TrieNode {
 public:
     std::unordered_map<char, TrieNode*> children;
+    bool is_end_of_word;
+
+    TrieNode() : is_end_of_word(false) {}
+
+    bool has_child(char ch) {
+        return children.find(ch) != children.end();
+    }
+
+    TrieNode* get_child(char ch) {
+        return children[ch];
+    }
+
+    void add_child(char ch) {
+        if (!has_child(ch)) {
+            children[ch] = new TrieNode();
+        }
+    }
+
+    void set_end_of_word() {
+        is_end_of_word = true;
+    }
+
+    bool is_end() const {
+        return is_end_of_word;
+    }
+
+    ~TrieNode() {
+        for (auto& child : children) {
+            delete child.second;
+        }
+    }
 };
 
+// Trie class
 class Trie {
 public:
+    TrieNode* root;
+
+    Trie() : root(new TrieNode()) {}
+
+    ~Trie() {
+        delete root;
+    }
+
+    // Insert a word into the trie
     void insert(const std::string& word) {
-        // Implementation goes here
+        TrieNode* current = root;
+        for (char ch : word) {
+            current->add_child(ch);
+            current = current->get_child(ch);
+        }
+        current->set_end_of_word();
     }
 
+    // Search for a word in the trie
     bool search(const std::string& word) {
-        // Implementation goes here
-        return false;
+        TrieNode* current = root;
+        for (char ch : word) {
+            if (!current->has_child(ch)) {
+                return false;
+            }
+            current = current->get_child(ch);
+        }
+        return current->is_end();
     }
 
+    // Check if there is any word in the trie that starts with the given prefix
     bool starts_with(const std::string& prefix) {
-        // Implementation goes here
-        return false;
+        TrieNode* current = root;
+        for (char ch : prefix) {
+            if (!current->has_child(ch)) {
+                return false;
+            }
+            current = current->get_child(ch);
+        }
+        return true;
     }
 };
 
-TEST_CASE("Trie operations", "[trie]") {
+TEST_CASE("Test Trie operations", "[Trie]") {
     Trie trie;
+    trie.insert("apple");
+    trie.insert("app");
+    trie.insert("apricot");
+    trie.insert("banana");
+    trie.insert("carrot");
+    trie.insert("car");
+    trie.insert("care");
+    trie.insert("");
+    trie.insert("Hello");
+    trie.insert("hello");
 
-    SECTION("Insert and search words") {
-        trie.insert("apple");
-        REQUIRE(trie.search("apple") == true);
-        REQUIRE(trie.search("app") == false);
+    SECTION("Basic search") {
+        REQUIRE(trie.search("apple"));
+        REQUIRE(trie.search("app"));
+        REQUIRE(trie.search("apricot"));
+    }
+
+    SECTION("Unsuccessful search") {
+        REQUIRE_FALSE(trie.search("bandana"));
     }
 
     SECTION("Prefix search") {
-        trie.insert("app");
-        REQUIRE(trie.starts_with("app") == true);
-        REQUIRE(trie.starts_with("ap") == true);
-        REQUIRE(trie.starts_with("a") == true);
-        REQUIRE(trie.starts_with("b") == false);
+        REQUIRE(trie.starts_with("car"));
+        REQUIRE(trie.starts_with("care"));
+        REQUIRE_FALSE(trie.starts_with("cat"));
     }
+
+    SECTION("Empty string") {
+        REQUIRE(trie.search(""));
+        REQUIRE(trie.starts_with(""));
+    }
+
+    SECTION("Case sensitivity") {
+        REQUIRE(trie.search("Hello"));
+        REQUIRE(trie.search("hello"));
+        REQUIRE_FALSE(trie.search("HELLO"));
+    }
+}
+
+int main(int argc, char* argv[]) {
+    // Run Catch2 tests
+    int result = Catch::Session().run(argc, argv);
+    return result;
 }
 ```
 
-This code sets up a basic framework for testing the Trie operations using Catch2. You can delve deeper into each function's implementation as needed!
+### Explanation:
+1. **TrieNode Class**:
+   - `std::unordered_map<char, TrieNode*>` is used to store children nodes.
+   - Methods like `has_child`, `get_child`, `add_child`, `set_end_of_word`, and `is_end` are implemented similarly to the Python version.
+
+2. **Trie Class**:
+   - The `root` node is initialized using a `new TrieNode()` constructor.
+   - Methods like `insert`, `search`, and `starts_with` are implemented similarly to the Python version.
+   - Destructor is added to properly clean up dynamically allocated nodes.
+
+3. **Catch2 Test Case**:
+   - The `TEST_CASE` macro is used to define the test suite.
+   - Each section of the test is defined using the `SECTION` macro.
+   - Assertions are made using `REQUIRE` and `REQUIRE_FALSE` from Catch2.
+
+4. **Main Function**:
+   - The `main` function runs the Catch2 tests.
+
+This C++ code preserves the original functionality and logic of the Python tests while adapting to C++ syntax and the Catch2 testing framework.

@@ -1,22 +1,71 @@
-Here's how you can translate the Python function signature into TypeScript:
+Certainly! Here is the equivalent TypeScript code for the provided Python function, including proper type annotations and JSDoc-style documentation comments:
 
 ```typescript
-interface MinSequenceNumberAndDistance {
-    lineNumber: number | null;
-    minDistance: number;
+import * as fs from 'fs';
+
+/**
+ * Finds the minimum distance between two words in a text file, considering each line as a separate sequence.
+ * @param filePath The path to the file to read.
+ * @param word1 The first word to search for.
+ * @param word2 The second word to search for.
+ * @returns A tuple containing the line number with the minimum distance and the minimum distance itself.
+ *          Returns [null, Infinity] if one or both words are not found in any line.
+ */
+function getMinSeqNumAndDistance(filePath: string, word1: string, word2: string): [number | null, number] {
+    let minDistance = Infinity;
+    let minSeqNum: number | null = null;
+    let currentLineNumber = 0;
+
+    try {
+        const fileContent = fs.readFileSync(filePath, 'utf8');
+        const lines = fileContent.split('\n');
+
+        for (const line of lines) {
+            const words = line.trim().split(/\s+/);
+            const word1Indices = words.map((word, index) => word === word1 ? index : -1).filter(index => index !== -1);
+            const word2Indices = words.map((word, index) => word === word2 ? index : -1).filter(index => index !== -1);
+
+            for (const index1 of word1Indices) {
+                for (const index2 of word2Indices) {
+                    const distance = Math.abs(index1 - index2);
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        minSeqNum = currentLineNumber;
+                    }
+                }
+            }
+
+            currentLineNumber += 1;
+        }
+    } catch (error) {
+        if (error instanceof Error && error.code === 'ENOENT') {
+            console.error(`Error: The file ${filePath} does not exist.`);
+        } else {
+            console.error(`An error occurred: ${error}`);
+        }
+        return [null, Infinity];
+    }
+
+    return [minSeqNum, minDistance];
 }
 
-function getMinSeqNumAndDistance(file_path: string, word1: string, word2: string): MinSequenceNumberAndDistance {
-    /**
-     * Finds the minimum distance between two words in a text file, considering each line as a separate sequence.
-     * @param file_path - The path to the file to read.
-     * @param word1 - The first word to search for.
-     * @param word2 - The second word to search for.
-     * 
-     * @returns An object containing the line number with the minimum distance and the minimum distance itself.
-     *          Returns {lineNumber: null, minDistance: Infinity} if one or both words are not found in any line.
-     */
-}
+// Example usage
+const filePath = 'example.txt';
+const word1 = 'hello';
+const word2 = 'world';
+const result = getMinSeqNumAndDistance(filePath, word1, word2);
+console.log(result);
 ```
 
-This TypeScript version uses an interface `MinSequenceNumberAndDistance` to define the return type of the function. It also keeps the docstring to provide documentation for the function.
+### Explanation:
+1. **Import Statement**: The `fs` module is imported to handle file operations.
+2. **JSDoc Documentation**: The function is documented using JSDoc-style comments, providing clear descriptions of parameters and return values.
+3. **Type Annotations**: The function signature includes type annotations for parameters and return values.
+4. **File Reading**: The `fs.readFileSync` method is used to read the file synchronously.
+5. **Line Splitting**: The file content is split into lines using `split('\n')`.
+6. **Word Indices**: The indices of `word1` and `word2` in each line are calculated using `map` and `filter`.
+7. **Distance Calculation**: The distances between the indices of `word1` and `word2` are calculated and compared to find the minimum distance.
+8. **Error Handling**: Error handling is implemented using a `try-catch` block. Specific error codes are checked to provide meaningful error messages.
+9. **Return Values**: The function returns a tuple `[minSeqNum, minDistance]`, where `minSeqNum` can be `null` if the words are not found.
+
+This TypeScript code preserves the original functionality and structure of the Python code, with appropriate adjustments for TypeScript's static type system and idiomatic practices.

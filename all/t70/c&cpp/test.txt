@@ -1,43 +1,137 @@
-Sure! Below is the equivalent C++ unit test case using Catch2 for the provided Python `unittest` test class:
+Certainly! Below is the equivalent C++ test class using the Catch2 testing framework. The provided Python unittest class will be converted into a Catch2 test suite, ensuring that the functionality and logic of the tests are preserved.
+
+### C++ Code with Catch2 Testing Framework
 
 ```cpp
-#include <catch2/catch.hpp>
-#include <string>
+#include <iostream>
+#include <regex>
 #include <vector>
+#include <string>
+#include <catch2/catch_test_macros.hpp>
 
-std::vector<std::string> code_block_remover(const std::string& markdown_string);
+// Function to extract the contents of code blocks from a markdown string
+std::vector<std::string> code_block_remover(const std::string& markdown_string) {
+    /**
+     * Extracts the contents of the code block from the given Markdown string.
+     *
+     * Args:
+     *     markdown_string (const std::string&): The input markdown string.
+     *
+     * Returns:
+     *     std::vector<std::string>: A vector of strings, each representing the content of a code block.
+     *                                Returns an empty vector if no code blocks are found.
+     */
 
-TEST_CASE("code_block_remover tests", "[code_block_remover]") {
-    SECTION("Empty markdown string") {
-        REQUIRE(code_block_remover("") == std::vector<std::string>());
+    // Define a pattern that captures content within triple backticks, with optional language specifier
+    std::regex pattern(R"(```[a-zA-Z]*\n([\s\S]*?)```)");
+
+    // Use std::sregex_iterator to find all occurrences of the pattern
+    std::sregex_iterator matches_begin = std::sregex_iterator(markdown_string.begin(), markdown_string.end(), pattern);
+    std::sregex_iterator matches_end = std::sregex_iterator();
+
+    // Extract the matched groups and store them in a vector
+    std::vector<std::string> code_blocks;
+    for (std::sregex_iterator i = matches_begin; i != matches_end; ++i) {
+        std::smatch match = *i;
+        code_blocks.push_back(match[1].str());
     }
 
-    SECTION("Markdown with no code blocks") {
-        REQUIRE(code_block_remover("This is some text without any code blocks.") == std::vector<std::string>());
+    return code_blocks;
+}
+
+// Test cases for the code_block_remover function
+TEST_CASE("Test code_block_remover", "[code_block_remover]") {
+    SECTION("Single code block") {
+        std::string markdown = R"(
+        This is a markdown with a code block.
+
+        ```python
+        print("Hello, World!")
+        ```
+
+        End of markdown.
+        )";
+        std::vector<std::string> expected = {"print(\"Hello, World!\")"};
+        std::vector<std::string> result = code_block_remover(markdown);
+        REQUIRE(result == expected);
     }
 
-    SECTION("Markdown with one code block") {
-        std::vector<std::string> expected = {"This is a code block."};
-        REQUIRE(code_block_remover("Some text before\n```\nThis is a code block.\n```") == expected);
+    SECTION("Multiple code blocks") {
+        std::string markdown = R"(
+        First code block:
+
+        ```python
+        print("Hello, World!")
+        ```
+
+        Second code block:
+
+        ```javascript
+        console.log("Hello, World!");
+        )";
+        std::vector<std::string> expected = {
+            "print(\"Hello, World!\")",
+            "console.log(\"Hello, World!\");"
+        };
+        std::vector<std::string> result = code_block_remover(markdown);
+        REQUIRE(result == expected);
     }
 
-    SECTION("Markdown with multiple code blocks") {
-        std::vector<std::string> expected = {"This is the first code block.", "This is the second code block."};
-        REQUIRE(code_block_remover("Some text before\n```\nThis is the first code block.\n```\nAnd here is another one:\n```\nThis is the second code block.\n```") == expected);
+    SECTION("No code block") {
+        std::string markdown = R"(
+        This markdown has no code blocks.
+
+        Just some plain text.
+        )";
+        std::vector<std::string> expected = {};
+        std::vector<std::string> result = code_block_remover(markdown);
+        REQUIRE(result == expected);
     }
 
-    SECTION("Markdown with code blocks separated by other elements") {
-        std::vector<std::string> expected = {"This is the first code block.", "This is the second code block."};
-        REQUIRE(code_block_remover("Some text before\n```\nThis is the first code block.\n```\nMore text in between\n```\nThis is the second code block.\n```") == expected);
+    SECTION("Empty code block") {
+        std::string markdown = R"(
+        Here is an empty code block:
+
+        ```python
+        ```
+
+        End of markdown.
+        )";
+        std::vector<std::string> expected = {""};
+        std::vector<std::string> result = code_block_remover(markdown);
+        REQUIRE(result == expected);
     }
+
+    SECTION("Malformed code block") {
+        std::string markdown = R"(
+        This code block is missing ending:
+
+        ```python
+        print("Hello, World!")
+
+        And some more text.
+        )";
+        std::vector<std::string> expected = {};
+        std::vector<std::string> result = code_block_remover(markdown);
+        REQUIRE(result == expected);
+    }
+}
+
+// Example usage
+int main() {
+    // Run all tests
+    int result = Catch::Session().run();
+    return result;
 }
 ```
 
 ### Explanation:
-1. **Include Headers**: We include the necessary headers for Catch2 and standard library components.
-2. **Function Declaration**: We declare the `code_block_remover` function that we assume is already defined elsewhere in your project.
-3. **Test Case**: We define a test case using `TEST_CASE` macro from Catch2.
-4. **Sections**: Each section within the test case represents a different scenario or test case.
-5. **Assertions**: We use `REQUIRE` to assert that the output of `code_block_remover` matches the expected result.
+1. **Header and Includes**: The necessary headers (`<iostream>`, `<regex>`, `<vector>`, `<string>`, `<catch2/catch_test_macros.hpp>`) are included at the beginning.
+2. **Function Definition**: The `code_block_remover` function is defined to take a `const std::string&` and return a `std::vector<std::string>`.
+3. **Documentation Comments**: The Python docstring is translated into a multi-line comment using `/** */` in C++.
+4. **Regular Expression Pattern**: The pattern `R"(```[a-zA-Z]*\n([\s\S]*?)``")"` is used to match code blocks within the markdown string.
+5. **Finding Matches**: `std::sregex_iterator` is used to find all occurrences of the pattern in the input string.
+6. **Extracting Matches**: The matched groups are extracted and stored in a `std::vector<std::string>`.
+7. **Test Cases**: The Python unittest test cases are converted into Catch2 test sections using `SECTION` within the `TEST_CASE`. Each section contains the test data, expected results, and assertions using `REQUIRE`.
 
-Make sure you have Catch2 installed and properly configured in your project to compile and run these tests.
+This ensures that the functionality, logic, and structure of the original Python unittest class are preserved in the C++ version using the Catch2 testing framework.

@@ -1,0 +1,148 @@
+Certainly! Below is the equivalent C++ test class using the Catch2 testing framework. This conversion will ensure that the functionality and logic of the tests are preserved, with appropriate adjustments for language differences and the use of mocks in C++.
+
+### Python Code:
+```python
+import unittest
+from unittest.mock import patch, MagicMock
+
+class TestConvertPngToIco(unittest.TestCase):
+    @patch('PIL.Image.open')
+    def test_single_icon_size(self, mock_open):
+        mock_image = mock_open.return_value.__enter__.return_value
+        convert_png_to_ico('source.png', 'output.ico', [(64, 64)])
+        mock_image.save.assert_called_with('output.ico', format='ICO', sizes=[(64, 64)])
+
+    @patch('PIL.Image.open')
+    def test_multiple_icon_sizes(self, mock_open):
+        mock_image = mock_open.return_value.__enter__.return_value
+        convert_png_to_ico('source.png', 'output.ico', [(16, 16), (32, 32), (64, 64)])
+        mock_image.save.assert_called_with('output.ico', format='ICO', sizes=[(16, 16), (32, 32), (64, 64)])
+
+    @patch('PIL.Image.open')
+    def test_default_icon_size(self, mock_open):
+        mock_image = mock_open.return_value.__enter__.return_value
+        convert_png_to_ico('source.png', 'output.ico')
+        mock_image.save.assert_called_with('output.ico', format='ICO', sizes=[(32, 32)])
+
+    @patch('PIL.Image.open')
+    def test_file_handling(self, mock_open):
+        mock_image = MagicMock()
+        mock_open.return_value.__enter__.return_value = mock_image
+        convert_png_to_ico('source.png', 'output.ico')
+        # Check if save was called correctly
+        mock_image.save.assert_called_once_with('output.ico', format='ICO', sizes=[(32, 32)])
+
+    @patch('PIL.Image.open')
+    def test_invalid_image_path(self, mock_open):
+        mock_open.side_effect = FileNotFoundError
+        with self.assertRaises(FileNotFoundError):
+            convert_png_to_ico('invalid.png', 'output.ico')
+```
+
+### Equivalent C++ Code Using Catch2:
+
+First, ensure you have the Catch2 library installed and included in your project. You can download it from [here](https://github.com/catchorg/Catch2).
+
+### C++ Code:
+```cpp
+#include <catch2/catch_test_macros.hpp>
+#include <CImg/CImg.h>
+#include <iostream>
+#include <vector>
+#include <string>
+#include <stdexcept>
+
+using namespace cimg_library;
+
+// Mock class for CImg
+class MockImage {
+public:
+    MOCK_METHOD(void, save, (const char*, const char*, const std::vector<std::pair<int, int>>&), (noexcept));
+};
+
+// Function to be tested
+void convertPngToIco(const std::string& png_file_path, const std::string& ico_file_path, const std::vector<std::pair<int, int>>& icon_sizes = {{32, 32}}) {
+    // Load the PNG image
+    CImg<unsigned char> img(png_file_path.c_str());
+
+    // Create an ICO file
+    CImgList<unsigned char> ico;
+
+    // Add each size to the ICO file
+    for (const auto& size : icon_sizes) {
+        CImg<unsigned char> resizedImg(size.first, size.second, 1, 3);
+        img.resize(resizedImg, size.first, size.second, 0, 0, 3); // Resize the image
+        ico.insert(resizedImg); // Insert the resized image into the ICO list
+    }
+
+    // Save the ICO file
+    ico.save(ico_file_path.c_str(), "ICO");
+}
+
+TEST_CASE("TestConvertPngToIco", "[convert_png_to_ico]") {
+    SECTION("Single icon size") {
+        MockImage mock_image;
+        EXPECT_CALL(mock_image, save("output.ico", "ICO", Eq(std::vector<std::pair<int, int>>{{64, 64}})));
+
+        // Mock the image loading
+        CImg<unsigned char> img("source.png");
+        img = mock_image; // Assign the mock image
+
+        convertPngToIco("source.png", "output.ico", {{64, 64}});
+    }
+
+    SECTION("Multiple icon sizes") {
+        MockImage mock_image;
+        EXPECT_CALL(mock_image, save("output.ico", "ICO", Eq(std::vector<std::pair<int, int>>{{16, 16}, {32, 32}, {64, 64}})));
+
+        // Mock the image loading
+        CImg<unsigned char> img("source.png");
+        img = mock_image; // Assign the mock image
+
+        convertPngToIco("source.png", "output.ico", {{16, 16}, {32, 32}, {64, 64}});
+    }
+
+    SECTION("Default icon size") {
+        MockImage mock_image;
+        EXPECT_CALL(mock_image, save("output.ico", "ICO", Eq(std::vector<std::pair<int, int>>{{32, 32}})));
+
+        // Mock the image loading
+        CImg<unsigned char> img("source.png");
+        img = mock_image; // Assign the mock image
+
+        convertPngToIco("source.png", "output.ico");
+    }
+
+    SECTION("File handling") {
+        MockImage mock_image;
+        EXPECT_CALL(mock_image, save("output.ico", "ICO", Eq(std::vector<std::pair<int, int>>{{32, 32}}))).Times(1);
+
+        // Mock the image loading
+        CImg<unsigned char> img("source.png");
+        img = mock_image; // Assign the mock image
+
+        convertPngToIco("source.png", "output.ico");
+    }
+
+    SECTION("Invalid image path") {
+        // Mock the image loading to throw an exception
+        CImg<unsigned char> img("invalid.png");
+        img.load("invalid.png").fail(); // Simulate a failure
+
+        REQUIRE_THROWS_AS(convertPngToIco("invalid.png", "output.ico"), std::runtime_error);
+    }
+}
+```
+
+### Explanation:
+1. **Header Files**: Include the necessary headers (`Catch2`, `CImg`, `iostream`, `vector`, `string`, `stdexcept`).
+2. **Mock Class**: Define a `MockImage` class to simulate the behavior of the `CImg` object.
+3. **Function Definition**: Define the `convertPngToIco` function as before.
+4. **Test Cases**:
+   - **Single Icon Size**: Use `EXPECT_CALL` to set up the mock image to expect a specific call.
+   - **Multiple Icon Sizes**: Similar setup for multiple sizes.
+   - **Default Icon Size**: Set up the mock image for the default size.
+   - **File Handling**: Ensure the save method is called exactly once.
+   - **Invalid Image Path**: Simulate a failure when loading the image and check for the expected exception.
+
+This ensures that the functionality and logic of the tests are preserved in C++ using the Catch2 testing framework.

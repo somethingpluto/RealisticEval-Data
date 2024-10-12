@@ -1,4 +1,4 @@
-Sure! Below is the equivalent C++ code for the given Python function `find_shiftjis_not_gbk`. This C++ code uses the `<codecvt>` library for character encoding conversion and `<locale>` for handling locales.
+Certainly! Below is the equivalent C++ code for the given Python function. This code will find characters that are representable in Shift-JIS but not in GBK.
 
 ```cpp
 #include <iostream>
@@ -7,74 +7,69 @@ Sure! Below is the equivalent C++ code for the given Python function `find_shift
 #include <codecvt>
 #include <locale>
 
-std::vector<char> findShiftJisNotGbk() {
-    std::set<char> shiftJisChars;
-    std::set<char> gbkChars;
+std::vector<wchar_t> find_shiftjis_not_gbk() {
+    // List to store characters that are in Shift-JIS but not in GBK
+    std::vector<wchar_t> unique_to_shiftjis;
 
-    // Load Shift-JIS locale
-    std::locale shiftJisLocale("ja_JP.Shift_JIS");
-    std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> converter;
+    // Iterate over a range of Unicode code points
+    // The BMP goes up to U+FFFF, which is 65535 in decimal
+    for (int codepoint = 0; codepoint < 65536; ++codepoint) {
+        wchar_t character = static_cast<wchar_t>(codepoint);
 
-    // Populate shiftJisChars with characters encodable in Shift-JIS
-    for (int i = 0; i <= 255; ++i) {
-        char ch = static_cast<char>(i);
         try {
-            std::wstring wideStr = converter.from_bytes(&ch, &ch + 1);
-            if (!wideStr.empty()) {
-                std::string encodedStr = converter.to_bytes(wideStr);
-                if (encodedStr.size() == 1 && encodedStr[0] == ch) {
-                    shiftJisChars.insert(ch);
-                }
+            // Try encoding the character in Shift-JIS
+            std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+            std::string shiftjis_encoded = converter.to_bytes(character);
+            std::locale loc("ja_JP.shift_jis");
+            if (!std::use_facet<std::ctype<wchar_t>>(loc).is(std::ctype_base::print, character)) {
+                throw std::runtime_error("Character not representable in Shift-JIS");
             }
-        } catch (...) {
-            // Ignore exceptions
-        }
-    }
 
-    // Load GBK locale
-    std::locale gbkLocale("zh_CN.GBK");
-
-    // Populate gbkChars with characters encodable in GBK
-    for (int i = 0; i <= 255; ++i) {
-        char ch = static_cast<char>(i);
-        try {
-            std::wstring wideStr = converter.from_bytes(&ch, &ch + 1);
-            if (!wideStr.empty()) {
-                std::string encodedStr = converter.to_bytes(wideStr);
-                if (encodedStr.size() == 1 && encodedStr[0] == ch) {
-                    gbkChars.insert(ch);
+            try {
+                // Try encoding the character in GBK
+                std::locale gbk_loc("zh_CN.GBK");
+                if (!std::use_facet<std::ctype<wchar_t>>(gbk_loc).is(std::ctype_base::print, character)) {
+                    throw std::runtime_error("Character not representable in GBK");
                 }
+            } catch (const std::runtime_error&) {
+                // If it fails, the character is not representable in GBK but is in Shift-JIS
+                unique_to_shiftjis.push_back(character);
             }
-        } catch (...) {
-            // Ignore exceptions
+        } catch (const std::runtime_error&) {
+            // If it fails, the character is not representable in Shift-JIS, so we skip it
+            continue;
         }
     }
 
-    // Find characters unique to Shift-JIS
-    std::vector<char> result;
-    for (const auto& ch : shiftJisChars) {
-        if (gbkChars.find(ch) == gbkChars.end()) {
-            result.push_back(ch);
-        }
-    }
-
-    return result;
+    return unique_to_shiftjis;
 }
 
 int main() {
-    std::vector<char> uniqueChars = findShiftJisNotGbk();
-    for (char ch : uniqueChars) {
-        std::cout << ch << " ";
+    auto result = find_shiftjis_not_gbk();
+    for (wchar_t c : result) {
+        std::wcout << c << L" ";
     }
-    std::cout << std::endl;
     return 0;
 }
 ```
 
 ### Explanation:
-1. **Character Encoding Conversion**: The code uses `std::wstring_convert` and `std::codecvt_utf8` to handle character encoding conversions between UTF-8 and wide strings.
-2. **Locales**: It sets up locales for Shift-JIS (`ja_JP.Shift_JIS`) and GBK (`zh_CN.GBK`) to ensure proper encoding checks.
-3. **Character Set Population**: For each character in the range 0-255, it attempts to convert it to a wide string and back to check if it remains unchanged. If so, it adds the character to the corresponding set (`shiftJisChars` or `gbkChars`).
-4. **Finding Unique Characters**: Finally, it finds characters that are in `shiftJisChars` but not in `gbkChars`.
+1. **Headers**: The necessary headers are included.
+   - `<iostream>` for input/output operations.
+   - `<vector>` for using `std::vector`.
+   - `<string>` for string manipulation.
+   - `<codecvt>` for converting between wide and narrow strings.
+   - `<locale>` for locale-specific character encoding checks.
 
-This C++ code should provide similar functionality to the original Python function. Note that error handling and locale settings might need adjustments based on your specific environment.
+2. **Function Definition**: The function `find_shiftjis_not_gbk` is defined to find characters that are in Shift-JIS but not in GBK.
+
+3. **Loop**: A loop iterates over the range of Unicode code points from 0 to 65535.
+
+4. **Character Encoding Checks**:
+   - Each character is encoded in Shift-JIS and checked for printability.
+   - If the character is printable in Shift-JIS, it is then checked for printability in GBK.
+   - Characters that are printable in Shift-JIS but not in GBK are added to the `unique_to_shiftjis` vector.
+
+5. **Main Function**: The `main` function calls `find_shiftjis_not_gbk` and prints the resulting characters.
+
+This code should provide the same functionality as the original Python code, adapted to C++ syntax and features.

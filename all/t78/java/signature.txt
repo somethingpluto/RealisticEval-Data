@@ -1,46 +1,101 @@
-Here is the equivalent Java code with the same functionality and comments:
+Certainly! Here is the equivalent Java code for the provided Python function, including appropriate Javadoc comments and method signatures:
 
 ```java
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import java.util.Arrays;
 
-public class Main {
+public class Answer {
+
     /**
-     * Convert Euler angles (roll, pitch, yaw) to a rotation matrix.
+     * Converts Euler angles (roll, pitch, yaw) to a rotation matrix.
      *
-     * @param roll  Rotation around the x-axis in degrees.
-     * @param pitch Rotation around the y-axis in degrees.
-     * @param yaw   Rotation around the z-axis in degrees.
-     * @return A 3x3 rotation matrix.
+     * @param roll  the rotation around the x-axis in degrees
+     * @param pitch the rotation around the y-axis in degrees
+     * @param yaw   the rotation around the z-axis in degrees
+     * @return a 3x3 rotation matrix
      */
     public static double[][] eulerToRotationMatrix(double roll, double pitch, double yaw) {
         // Convert degrees to radians
-        double rollRad = Math.toRadians(roll);
-        double pitchRad = Math.toRadians(pitch);
-        double yawRad = Math.toRadians(yaw);
+        roll = Math.toRadians(roll);
+        pitch = Math.toRadians(pitch);
+        yaw = Math.toRadians(yaw);
 
-        // Create rotation vectors for each axis
-        Vector3D xAxis = new Vector3D(1, 0, 0);
-        Vector3D yAxis = new Vector3D(0, 1, 0);
-        Vector3D zAxis = new Vector3D(0, 0, 1);
+        // Rotation matrix around x-axis (roll)
+        double[][] Rx = {
+            {1, 0, 0},
+            {0, Math.cos(roll), -Math.sin(roll)},
+            {0, Math.sin(roll), Math.cos(roll)}
+        };
 
-        // Create rotations for each axis
-        Rotation rollRot = new Rotation(xAxis, rollRad, true);
-        Rotation pitchRot = new Rotation(yAxis, pitchRad, true);
-        Rotation yawRot = new Rotation(zAxis, yawRad, true);
+        // Rotation matrix around y-axis (pitch)
+        double[][] Ry = {
+            {Math.cos(pitch), 0, Math.sin(pitch)},
+            {0, 1, 0},
+            {-Math.sin(pitch), 0, Math.cos(pitch)}
+        };
 
-        // Combine rotations into one transformation
-        Rotation combinedRot = yawRot.applyTo(pitchRot.applyTo(rollRot));
+        // Rotation matrix around z-axis (yaw)
+        double[][] Rz = {
+            {Math.cos(yaw), -Math.sin(yaw), 0},
+            {Math.sin(yaw), Math.cos(yaw), 0},
+            {0, 0, 1}
+        };
 
-        // Get the rotation matrix from the combined rotation
-        double[][] rotationMatrix = new double[3][3];
-        rotationMatrix[0] = combinedRot.getDirection().toArray();
-        rotationMatrix[1] = combinedRot.getDirection().crossProduct(Vector3D.PLUS_K).toArray();
-        rotationMatrix[2] = Vector3D.PLUS_K.toArray();
+        // Combined rotation matrix, R = Rz * Ry * Rx
+        double[][] R = multiplyMatrices(multiplyMatrices(Rz, Ry), Rx);
 
-        return rotationMatrix;
+        return R;
+    }
+
+    /**
+     * Multiplies two matrices.
+     *
+     * @param a the first matrix
+     * @param b the second matrix
+     * @return the result of multiplying the two matrices
+     */
+    private static double[][] multiplyMatrices(double[][] a, double[][] b) {
+        int rowsA = a.length;
+        int colsA = a[0].length;
+        int rowsB = b.length;
+        int colsB = b[0].length;
+
+        if (colsA != rowsB) {
+            throw new IllegalArgumentException("The number of columns in the first matrix must equal the number of rows in the second matrix.");
+        }
+
+        double[][] result = new double[rowsA][colsB];
+
+        for (int i = 0; i < rowsA; i++) {
+            for (int j = 0; j < colsB; j++) {
+                for (int k = 0; k < colsA; k++) {
+                    result[i][j] += a[i][k] * b[k][j];
+                }
+            }
+        }
+
+        return result;
+    }
+
+    public static void main(String[] args) {
+        double roll = 45; // Example angle in degrees
+        double pitch = 30; // Example angle in degrees
+        double yaw = 60; // Example angle in degrees
+
+        double[][] rotationMatrix = eulerToRotationMatrix(roll, pitch, yaw);
+
+        // Print the rotation matrix
+        for (double[] row : rotationMatrix) {
+            System.out.println(Arrays.toString(row));
+        }
     }
 }
 ```
 
-This Java code uses the Apache Commons Math library to handle rotations and vector operations. Make sure you have the Apache Commons Math library included in your project dependencies. The `eulerToRotationMatrix` function converts Euler angles to a 3x3 rotation matrix, similar to the Python function.
+### Explanation:
+1. **Javadoc Comments**: The Python docstring has been converted into Javadoc comments, providing clear documentation for the method parameters and return type.
+2. **Type Annotations**: The Python type annotations (`float` and `np.array`) have been translated into appropriate Java types (`double` and `double[][]`).
+3. **Method Signature**: The method `eulerToRotationMatrix` is defined with the appropriate parameter types (`double`) and returns a `double[][]` array representing the rotation matrix.
+4. **Matrix Multiplication**: A helper method `multiplyMatrices` is used to perform matrix multiplication.
+5. **Main Method**: A `main` method is included to demonstrate how to call the `eulerToRotationMatrix` method and print the resulting rotation matrix.
+
+This Java code preserves the functionality and structure of the original Python code while adhering to Java's syntax and best practices.

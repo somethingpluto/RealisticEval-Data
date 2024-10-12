@@ -1,57 +1,146 @@
-Sure, here is how you can convert your Python `unittest` test class to a TypeScript test case using Jest:
+Certainly! Here’s the equivalent TypeScript test class using Jest, ensuring that the functionality and logic of the tests are preserved. The provided Python unittest class will be converted to a Jest test suite in TypeScript.
+
+### TypeScript Code
+
+First, ensure you have the necessary dependencies installed:
+```sh
+npm install --save-dev jest ts-jest @types/jest
+```
+
+Add the necessary Jest configuration to your `tsconfig.json` or `jest.config.js`.
+
+### Jest Test Class
+
+Here’s the TypeScript code for the Jest test class:
 
 ```typescript
 import * as fs from 'fs';
-import { parse } from 'csv-parse';
+import * as path from 'path';
+import * as csvParser from 'csv-parser';
 
-describe('CSV to SQL Insert', () => {
-  it('should convert CSV content to SQL insert statement', async () => {
-    // Mock CSV file content
-    const mockCsvContent = `
-      id,name,age
-      1,Alice,30
-      2,Bob,25
-    `;
+/**
+ * Converts the contents of a CSV file into an SQL insert statement with a table name with the suffix removed.
+ * 
+ * @param csvFilePath - The path to the CSV file.
+ * @returns A string containing the SQL insert statements.
+ */
+function csvToSqlInsert(csvFilePath: string): string {
+    // Extract the table name from the CSV file name, removing the suffix
+    const tableName = path.basename(csvFilePath, path.extname(csvFilePath));
 
-    // Write mock CSV file to disk
-    const tempFilePath = '/tmp/temp.csv';
-    fs.writeFileSync(tempFilePath, mockCsvContent);
+    // Initialize an array to store the SQL insert statements
+    let insertStatements: string[] = [];
 
-    // Function to simulate reading the CSV file and converting to SQL
-    function csvToSqlInsert(filePath: string): Promise<string> {
-      return new Promise((resolve, reject) => {
-        let sqlStatements = '';
-        fs.createReadStream(filePath)
-          .pipe(parse({ columns: true }))
-          .on('data', (row) => {
-            sqlStatements += `INSERT INTO ${filePath.replace('.csv', '')} (${Object.keys(row).join(', ')}) VALUES (${Object.values(row).map(value => `'${value}'`).join(', ')});\n`;
-          })
-          .on('end', () => resolve(sqlStatements))
-          .on('error', (err) => reject(err));
-      });
-    }
+    // Read the CSV file
+    fs.createReadStream(csvFilePath)
+        .pipe(csvParser())
+        .on('data', (row: any) => {
+            // Skip the header row
+            if (!insertStatements.length) {
+                return;
+            }
 
-    // Call the function with the temporary file path
-    csvToSqlInsert(tempFilePath).then((sql) => {
-      expect(sql.trim()).toBe(`
-        INSERT INTO /tmp/temp.csv (id, name, age) VALUES ('1', 'Alice', '30');
-        INSERT INTO /tmp/temp.csv (id, name, age) VALUES ('2', 'Bob', '25');
-      `.trim());
-    }).catch((err) => {
-      console.error(err);
+            // Prepare the values for the SQL insert statement
+            const values = Object.values(row).map(value => {
+                if (!isNaN(Number(value))) {
+                    return value; // If value is a number, no quotes needed
+                } else {
+                    // Escape single quotes and wrap in double quotes
+                    return `'${value.replace(/'/g, "''")}'`;
+                }
+            });
+
+            // Form the SQL insert statement
+            const headers = Object.keys(row);
+            const insertStatement = `INSERT INTO ${tableName} (${headers.join(', ')}) VALUES (${values.join(', ')});`;
+            insertStatements.push(insertStatement);
+        })
+        .on('end', () => {
+            // Combine all insert statements into a single output
+            return insertStatements.join('\n');
+        });
+}
+
+describe('TestCsvToSqlInsert', () => {
+    const testFiles = {
+        'test1.csv': 'id,name,age\n1,Alice,30\n2,Bob,25',
+        'test2.csv': 'product_id,product_name,price\n101,Widget,9.99\n102,Gadget,12.49',
+        'test3.csv': 'user_id,email\n3,test@example.com\n4,user@domain.com',
+        'test4.csv': 'order_id,order_date,total\n1001,2024-09-01,59.99',
+        'test5.csv': 'quote_id,quote\n1,"It\'s a beautiful day."\n2,"She said, ""Hello!"""'
+    };
+
+    beforeAll(() => {
+        // Create the sample CSV files for testing
+        for (const [filename, content] of Object.entries(testFiles)) {
+            fs.writeFileSync(filename, content);
+        }
     });
 
-    // Clean up - remove the temporary file
-    fs.unlinkSync(tempFilePath);
-  });
+    afterAll(() => {
+        // Remove the test files after tests
+        for (const filename of Object.keys(testFiles)) {
+            fs.unlinkSync(filename);
+        }
+    });
+
+    it('should handle simple CSV correctly', () => {
+        const expectedSql = (
+            "INSERT INTO test1 (id, name, age) VALUES ('1', 'Alice', '30');\n" +
+            "INSERT INTO test1 (id, name, age) VALUES ('2', 'Bob', '25');"
+        );
+        const result = csvToSqlInsert('test1.csv');
+        expect(result).toEqual(expectedSql);
+    });
+
+    it('should handle product CSV correctly', () => {
+        const expectedSql = (
+            "INSERT INTO test2 (product_id, product_name, price) VALUES ('101', 'Widget', '9.99');\n" +
+            "INSERT INTO test2 (product_id, product_name, price) VALUES ('102', 'Gadget', '12.49');"
+        );
+        const result = csvToSqlInsert('test2.csv');
+        expect(result).toEqual(expectedSql);
+    });
+
+    it('should handle email CSV correctly', () => {
+        const expectedSql = (
+            "INSERT INTO test3 (user_id, email) VALUES ('3', 'test@example.com');\n" +
+            "INSERT INTO test3 (user_id, email) VALUES ('4', 'user@domain.com');"
+        );
+        const result = csvToSqlInsert('test3.csv');
+        expect(result).toEqual(expectedSql);
+    });
+
+    it('should handle date and decimal CSV correctly', () => {
+        const expectedSql = (
+            "INSERT INTO test4 (order_id, order_date, total) VALUES ('1001', '2024-09-01', '59.99');"
+        );
+        const result = csvToSqlInsert('test4.csv');
+        expect(result).toEqual(expectedSql);
+    });
 });
 ```
 
 ### Explanation:
-1. **Mock CSV Content**: We create a mock CSV content string.
-2. **Write to Temporary File**: We write this mock content to a temporary file on the disk.
-3. **Simulate CSV Reading and Conversion**: We define a function `csvToSqlInsert` that reads the CSV file, parses its contents, and constructs SQL insert statements.
-4. **Test Case**: We use Jest's `it` function to write our test case. The test calls `csvToSqlInsert` with the temporary file path and checks if the output matches the expected SQL insert statements.
-5. **Clean Up**: Finally, we clean up by removing the temporary file.
+1. **Imports**:
+   - `fs` for file system operations.
+   - `path` for path manipulation.
+   - `csv-parser` for parsing CSV files.
 
-This TypeScript test case uses Jest for assertions and handles asynchronous operations properly using Promises.
+2. **Function Definition**:
+   - `csvToSqlInsert` takes a `csvFilePath` as input and returns a string containing the SQL insert statements.
+
+3. **Jest Test Suite**:
+   - `describe` block defines the test suite.
+   - `beforeAll` hook creates the sample CSV files for testing.
+   - `afterAll` hook removes the test files after tests.
+
+4. **Test Cases**:
+   - Each `it` block represents a test case.
+   - `expect` is used to assert the expected results.
+
+5. **File Operations**:
+   - `fs.writeFileSync` is used to write the sample CSV files.
+   - `fs.unlinkSync` is used to remove the test files after tests.
+
+This TypeScript code preserves the original functionality and structure of the Python unittest class, with appropriate Jest assertions and setup/teardown hooks.

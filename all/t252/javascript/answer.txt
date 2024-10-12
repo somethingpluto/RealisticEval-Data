@@ -1,23 +1,56 @@
-Here's how you can implement the same functionality in JavaScript:
+Sure! Here is the equivalent JavaScript code that maintains the same functionality, logic, and structure as the provided Python code:
 
 ```javascript
-function BitSequenceEncoder() {
+const JSON = require('json');
+
+class BitSequenceEncoder extends JSON {
+    /**
+     * Function to override the default JSON encoder to show register question in binary.
+     * Note: This function was generated using ChatGPT-4o on July 15, 24. Might behave unexpectedly.
+     */
+    constructor() {
+        super();
+    }
+
+    encode(obj) {
+        const convertBits = (item) => {
+            if (typeof item === 'object' && item !== null) {
+                if (Array.isArray(item)) {
+                    return item.map(v => convertBits(v));
+                } else {
+                    return Object.fromEntries(
+                        Object.entries(item).map(([k, v]) => 
+                            k === 'bits' ? [k, v.toString(2).padStart(8, '0')] : [k, convertBits(v)]
+                        )
+                    );
+                }
+            }
+            return item;
+        };
+
+        const convertedObj = convertBits(obj);
+        return JSON.stringify(convertedObj);
+    }
 }
 
-BitSequenceEncoder.prototype = Object.create(JSONEncoder.prototype);
-BitSequenceEncoder.prototype.constructor = BitSequenceEncoder;
-
-BitSequenceEncoder.prototype.encode = function(obj) {
-    let result = JSON.stringify(obj, (key, value) => {
-        if (typeof value === 'number' && key.includes('bits')) {
-            return value.toString(2);
-        }
-        return value;
-    });
-    return result;
+// Example usage:
+const obj = {
+    name: "example",
+    bits: 255
 };
+
+const encoder = new BitSequenceEncoder();
+console.log(encoder.encode(obj));
 ```
 
-In this JavaScript version, we're using `JSON.stringify` with a custom replacer function. This function checks whether each value is a number and its corresponding key includes 'bits'. If both conditions are met, it converts the number to a binary string using the `toString(2)` method. Otherwise, it simply returns the original value.
+### Explanation:
+1. **Class Definition**: The `BitSequenceEncoder` class is defined to extend the `JSON` object.
+2. **Constructor**: A constructor is added to initialize the class.
+3. **`encode` Method**:
+   - The `convertBits` function is defined within the `encode` method to handle the conversion of objects.
+   - It checks if the item is an object or array and recursively applies the conversion.
+   - If the key is `'bits'`, it converts the value to an 8-bit binary string.
+   - The `convertedObj` is created by applying `convertBits` to the input object.
+   - Finally, `JSON.stringify` is used to convert the `convertedObj` to a JSON string.
 
-Please note that JavaScript doesn't have built-in classes for JSON encoding like Python does. Therefore, we use prototypes instead. Also, JavaScript doesn't have a direct equivalent to Python's `json.JSONEncoder`, but we can create a custom encoder by extending the native `JSON.stringify` function.
+This JavaScript code should provide the same functionality as the original Python code.

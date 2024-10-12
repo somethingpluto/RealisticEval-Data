@@ -1,69 +1,100 @@
-To convert your Python `unittest` test class to a C++ test case using Catch2, you need to follow these steps:
+Certainly! Below is the equivalent C++ test class using the Catch2 testing framework. The provided Python unittest class is converted into a Catch2 test suite, ensuring that the functionality and logic of the tests are preserved.
 
-1. **Install Catch2**: Make sure you have Catch2 installed. You can download it from its [GitHub repository](https://github.com/catchorg/Catch2).
+### C++ Code with Catch2 Testing Framework
 
-2. **Create a C++ Test File**: Create a new C++ source file for your tests.
+First, make sure you have the Catch2 library included in your project. You can download it from [here](https://github.com/catchorg/Catch2).
 
-3. **Write the Test Case**: Translate your Python test methods into C++ using Catch2's syntax.
-
-Here is an example of how you might write the test case for the given Python function `parse_xaml_to_dict` in C++ using Catch2:
-
-### Python Test Class Example
-
-```python
-import unittest
-from my_module import parse_xaml_to_dict  # Assuming parse_xaml_to_dict is in my_module.py
-
-class TestParseXaml(unittest.TestCase):
-    def test_parse_xaml_to_dict(self):
-        xaml_content = """<root>
-                            <String key="name">John</String>
-                            <String key="age">30</String>
-                          </root>"""
-        
-        expected_output = {
-            "name": "John",
-            "age": "30"
-        }
-        
-        self.assertEqual(parse_xaml_to_dict("dummy_path"), expected_output)
-
-if __name__ == '__main__':
-    unittest.main()
-```
-
-### Equivalent C++ Test Case Using Catch2
+Here’s the equivalent C++ test class using Catch2:
 
 ```cpp
-#include <catch2/catch.hpp>
-#include <my_module.h>  // Include the header where parse_xaml_to_dict is declared
+#include <catch2/catch_test_macros.hpp>
+#include <pugixml.hpp>
+#include <map>
+#include <string>
+#include <sstream>
 
-TEST_CASE("Test Parse XAML to Dictionary", "[parse_xaml_to_dict]") {
-    std::string xaml_content = R"(
-        <root>
-            <String key="name">John</String>
-            <String key="age">30</String>
-        </root>
-    )";
+// Function to parse XAML data and extract key-value pairs
+std::map<std::string, std::string> parse_xaml_to_dict(const std::string& xaml_data) {
+    try {
+        pugi::xml_document doc;
+        pugi::xml_parse_result result = doc.load_string(xaml_data.c_str());
+        if (!result) {
+            std::cerr << "Error parsing the XAML data: " << result.description() << std::endl;
+            return {};
+        }
 
-    std::unordered_map<std::string, std::string> expected_output = {
-        {"name", "John"},
-        {"age", "30"}
-    };
+        std::map<std::string, std::string> result_dict;
 
-    auto result = parse_xaml_to_dict("dummy_path");  // Assuming parse_xaml_to_dict returns a std::unordered_map
+        // Iterate through all 'String' elements in the XAML data
+        for (pugi::xml_node string_element : doc.select_nodes("//String")) {
+            const char* key = string_element.attribute("Key").value();
+            if (key != nullptr && *key != '\0') {
+                const char* text = string_element.child_value();
+                if (text == nullptr || *text == '\0') {
+                    result_dict[key] = "";
+                } else {
+                    result_dict[key] = text;
+                }
+            }
+        }
 
-    REQUIRE(result == expected_output);
+        return result_dict;
+
+    } catch (const pugi::xml_parse_error& e) {
+        std::cerr << "Error parsing the XAML data: " << e.description() << std::endl;
+        return {};
+    }
+}
+
+TEST_CASE("Test parse_xaml_to_dict", "[parse_xaml_to_dict]") {
+    SECTION("test_valid_strings") {
+        std::string xaml_data = R"(<root>
+                                     <String Key="Username">Alice</String>
+                                     <String Key="Password">secret</String>
+                                   </root>)";
+        std::map<std::string, std::string> expected = {{"Username", "Alice"}, {"Password", "secret"}};
+        std::map<std::string, std::string> result = parse_xaml_to_dict(xaml_data);
+        REQUIRE(result == expected);
+    }
+
+    SECTION("test_missing_key_attribute") {
+        std::string xaml_data = R"(<root>
+                                     <String>Alice</String>
+                                   </root>)";
+        std::map<std::string, std::string> expected = {};
+        std::map<std::string, std::string> result = parse_xaml_to_dict(xaml_data);
+        REQUIRE(result == expected);
+    }
+
+    SECTION("test_no_string_tags") {
+        std::string xaml_data = R"(<root>
+                                     <Data>Some question</Data>
+                                   </root>)";
+        std::map<std::string, std::string> expected = {};
+        std::map<std::string, std::string> result = parse_xaml_to_dict(xaml_data);
+        REQUIRE(result == expected);
+    }
+
+    SECTION("test_nested_string_tags") {
+        std::string xaml_data = R"(<root>
+                                     <Container>
+                                       <String Key="Username">Bob</String>
+                                     </Container>
+                                     <String Key="Location">Earth</String>
+                                   </root>)";
+        std::map<std::string, std::string> expected = {{"Username", "Bob"}, {"Location", "Earth"}};
+        std::map<std::string, std::string> result = parse_xaml_to_dict(xaml_data);
+        REQUIRE(result == expected);
+    }
 }
 ```
 
-### Explanation
+### Explanation:
+1. **Header Files**: Includes necessary headers (`catch2/catch_test_macros.hpp`, `pugixml.hpp`, `map`, `string`, `sstream`).
+2. **Function Definition**: Defines the function `parse_xaml_to_dict` which takes a string `xaml_data` and returns a `std::map<std::string, std::string>` containing the key-value pairs.
+3. **Catch2 Test Suite**: Uses the `TEST_CASE` macro to define a test suite named "Test parse_xaml_to_dict".
+4. **Sections**: Each section corresponds to a specific test case.
+5. **Assertions**: Uses `REQUIRE` to check that the results match the expected values.
+6. **Raw String Literals**: Uses raw string literals (`R"(...)"`) to define XML strings, making them easier to read and write.
 
-- **Include Catch2 Header**: The `#include <catch2/catch.hpp>` line includes the Catch2 library.
-- **Define Test Case**: The `TEST_CASE` macro defines a test case named "Test Parse XAML to Dictionary".
-- **Test Data**: The `xaml_content` string contains the XML content to be parsed.
-- **Expected Output**: The `expected_output` map holds the expected key-value pairs.
-- **Actual Result**: The `result` variable stores the actual output from the `parse_xaml_to_dict` function.
-- **Assertion**: The `REQUIRE` macro checks if the actual result matches the expected output.
-
-Make sure that the `parse_xaml_to_dict` function returns a `std::unordered_map<std::string, std::string>` or adjust the assertion accordingly if the return type differs.
+This code ensures that the functionality and logic of the original Python unittest class are preserved while adhering to C++ syntax and conventions.

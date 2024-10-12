@@ -1,35 +1,62 @@
-Sure! Here is the JavaScript code signature equivalent to your Python function, keeping the comments intact:
+Certainly! Below is the equivalent JavaScript code with the function signature and JSDoc comments:
+
+### JavaScript Code
 
 ```javascript
 /**
  * Extracts text from a given PDF file.
  *
- * @param {string} filePath - The path to the PDF file from which to extract text.
- * @returns {Promise<string>} A promise that resolves with the extracted text from the PDF.
+ * @param {string} fileUrl - The URL/path to the PDF file from which to extract text.
+ * @returns {Promise<string>} A promise that resolves to the extracted text from the PDF.
  */
-```
+async function extractTextFromPdf(fileUrl) {
+    let extractedText = "";
 
-In JavaScript, functions often return promises for asynchronous operations like reading files. If you need to implement the actual extraction logic in JavaScript, you might use libraries such as `pdf-parse` or `pdfjs-dist`. Here's an example using `pdf-parse`:
+    // Load the PDF document
+    const loadingTask = pdfjsLib.getDocument(fileUrl);
+    const pdfDocument = await loadingTask.promise;
 
-```javascript
-const fs = require('fs');
-const pdf = require('pdf-parse');
+    // Get the number of pages in the PDF
+    const numPages = pdfDocument.numPages;
 
-/**
- * Extracts text from a given PDF file.
- *
- * @param {string} filePath - The path to the PDF file from which to extract text.
- * @returns {Promise<string>} A promise that resolves with the extracted text from the PDF.
- */
-async function extractTextFromPdf(filePath) {
-    try {
-        const dataBuffer = fs.readFileSync(filePath);
-        const data = await pdf(dataBuffer);
-        return data.text;
-    } catch (error) {
-        throw new Error(`Error extracting text from PDF: ${error.message}`);
+    // Loop through each page in the PDF
+    for (let pageNum = 1; pageNum <= numPages; pageNum++) {
+        const page = await pdfDocument.getPage(pageNum);
+
+        // Extract text from each page and add it to the text container
+        const content = await page.getTextContent();
+        const text = content.items.map(item => item.str).join('');
+        extractedText += text + '\n';
     }
+
+    return extractedText;
 }
+
+// Example usage
+(async () => {
+    try {
+        const filePath = 'path/to/your/file.pdf'; // Replace with the actual file path
+        const extractedText = await extractTextFromPdf(filePath);
+        console.log(extractedText);
+    } catch (error) {
+        console.error('Error extracting text from PDF:', error);
+    }
+})();
 ```
 
-This function reads the PDF file synchronously and then uses `pdf-parse` to extract the text asynchronously.
+### Explanation:
+1. **JSDoc Comments**:
+   - The JSDoc comment block at the beginning of the function provides detailed documentation for the function.
+   - It specifies the parameters (`fileUrl`) and the return type (`Promise<string>`).
+
+2. **Function Signature**:
+   - The function `extractTextFromPdf` is defined with an asynchronous signature to handle asynchronous operations.
+
+3. **Implementation**:
+   - The function loads the PDF document using `pdfjsLib.getDocument`.
+   - It then iterates through each page, extracts the text content, and concatenates it into the `extractedText` variable.
+
+4. **Example Usage**:
+   - An example usage block demonstrates how to call the function and handle the result.
+
+This JavaScript code preserves the purpose and structure of the original Python code while adhering to JavaScript documentation standards using JSDoc.

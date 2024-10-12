@@ -1,54 +1,79 @@
-Sure! Below is the equivalent C++ code for the given Python function:
+Here’s the equivalent C++ code for the provided Python function. This code uses the `<chrono>` library for handling dates and the `<format>` library for formatting strings, which is available starting from C++20. If you are using an older version of C++, you may need to use a different library or approach for string formatting.
 
 ```cpp
 #include <iostream>
+#include <chrono>
 #include <string>
-#include <sstream>
+#include <stdexcept>
 #include <iomanip>
+#include <sstream>
 
-std::string date_range_string(const std::string& start_date, const std::string& end_date) {
-    // Parse the dates
-    int year_start, month_start, day_start;
-    int year_end, month_end, day_end;
-
-    std::istringstream ss_start(start_date);
-    std::istringstream ss_end(end_date);
-
-    char delimiter;
-    ss_start >> year_start >> delimiter >> month_start >> delimiter >> day_start;
-    ss_end >> year_end >> delimiter >> month_end >> delimiter >> day_end;
-
-    // Get month names
-    const char* months[] = {"January", "February", "March", "April", "May", "June",
-                            "July", "August", "September", "October", "November", "December"};
-
-    // Format the output string
-    std::ostringstream oss;
-    if (year_start == year_end && month_start == month_end) {
-        oss << months[month_start - 1] << " " << day_start << " to " << day_end << ", " << year_start;
-    } else {
-        oss << months[month_start - 1] << " " << day_start << ", " << year_start << " to "
-           << months[month_end - 1] << " " << day_end << ", " << year_end;
+// Function to parse a date string in 'YYYY-MM-DD' format
+std::tm parse_date(const std::string& date_str) {
+    std::istringstream ss(date_str);
+    std::tm tm = {};
+    ss >> std::get_time(&tm, "%Y-%m-%d");
+    if (ss.fail()) {
+        throw std::invalid_argument("Date must be in 'YYYY-MM-DD' format.");
     }
+    return tm;
+}
 
-    return oss.str();
+// Function to generate a formatted date range string
+std::string date_range_string(const std::string& start_date, const std::string& end_date) {
+    try {
+        auto start_tm = parse_date(start_date);
+        auto end_tm = parse_date(end_date);
+
+        // Convert tm structures to time_points
+        std::chrono::system_clock::time_point start_time = std::chrono::system_clock::from_time_t(std::mktime(&start_tm));
+        std::chrono::system_clock::time_point end_time = std::chrono::system_clock::from_time_t(std::mktime(&end_tm));
+
+        if (start_time > end_time) {
+            throw std::invalid_argument("start_date cannot be after end_date.");
+        }
+
+        // Extract month names and day numbers
+        std::ostringstream oss_start, oss_end;
+        oss_start << std::put_time(&start_tm, "%B %d");
+        oss_end << std::put_time(&end_tm, "%B %d");
+
+        std::string start_month, end_month, start_day, end_day, start_year, end_year;
+        oss_start >> start_month >> start_day;
+        oss_end >> end_month >> end_day;
+
+        start_year = std::to_string(1900 + start_tm.tm_year);
+        end_year = std::to_string(1900 + end_tm.tm_year);
+
+        // Format output based on whether dates are within the same month and/or year
+        if (start_year != end_year) {
+            return fmt::format("{} {}, {} to {} {}, {}", start_month, start_day, start_year, end_month, end_day, end_year);
+        } else if (start_month == end_month) {
+            return fmt::format("{} {} to {}, {}", start_month, start_day, end_day, start_year);
+        } else {
+            return fmt::format("{} {} to {} {}, {}", start_month, start_day, end_month, end_day, start_year);
+        }
+    } catch (const std::exception& e) {
+        throw std::invalid_argument(fmt::format("Date must be in 'YYYY-MM-DD' format. {}", e.what()));
+    }
 }
 
 int main() {
-    std::string start_date = "2023-08-01";
-    std::string end_date = "2023-08-15";
-
-    std::string result = date_range_string(start_date, end_date);
-    std::cout << result << std::endl;  // Output: August 1 to 15, 2023
+    try {
+        std::string result = date_range_string("2023-01-01", "2023-01-15");
+        std::cout << result << std::endl;
+    } catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+    }
 
     return 0;
 }
 ```
 
 ### Explanation:
-1. **Parsing Dates**: The function first parses the input strings `start_date` and `end_date` into their respective components (year, month, day).
-2. **Month Names**: An array of month names is defined to convert numerical months to their corresponding names.
-3. **Formatting the Output**: Depending on whether the start and end dates are in the same month or different months, the output string is formatted accordingly.
-4. **Main Function**: The `main` function demonstrates how to use the `date_range_string` function with an example.
+1. **Parsing Dates**: The `parse_date` function parses the input date strings and throws an exception if the format is incorrect.
+2. **Converting to Time Points**: The parsed `tm` structures are converted to `std::chrono::system_clock::time_point` objects for comparison.
+3. **Formatting Output**: The month names and day numbers are extracted using `std::put_time` and formatted accordingly.
+4. **String Formatting**: The final date range string is formatted using the `fmt::format` function from the C++20 standard library.
 
-This C++ code should produce the same output as the provided Python function.
+This code ensures that the functionality, logic, and structure of the original Python code are preserved while adapting to C++ syntax and features.

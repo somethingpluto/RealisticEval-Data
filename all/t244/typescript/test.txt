@@ -1,56 +1,109 @@
-Sure, here is how you can convert the provided Python unittest test class into a TypeScript test case using Jest:
+Certainly! Below is the equivalent TypeScript test class using Jest. The provided Python unittest class will be converted to a Jest test suite, ensuring that the functionality and logic of the tests are preserved. Type annotations and Jest assertions are used appropriately.
+
+### TypeScript Code
+
+First, let's define the `MyClass` and the `methodArgTypeCheck` function in TypeScript:
 
 ```typescript
-// Import necessary modules
-import { describe, expect, test } from '@jest/globals';
+import { inspect } from "util";
 
-// Define the method_arg_type_check function
-function method_arg_type_check(methodObj: CallableFunction, ...args: any[]): void {
-    const methodSignature = methodObj.toString();
-    // Extract parameter names and types from the method signature
-    const paramRegex = /([a-zA-Z_$][0-9a-zA-Z_$]*)\s*:\s*(\w+)/g;
-    let match;
-    const params: { [key: string]: string } = {};
-
-    while ((match = paramRegex.exec(methodSignature)) !== null) {
-        params[match[1]] = match[2];
+class MyClass {
+    myMethod(this: MyClass, arg1: number, arg2: string, optionalArg: number = 3.14): void {
+        // Implementation of myMethod
     }
-
-    // Check if all arguments match their expected types
-    args.forEach((arg, index) => {
-        const paramName = Object.keys(params)[index];
-        if (paramName && typeof arg !== params[paramName]) {
-            throw new Error(`Argument '${paramName}' must be of type ${params[paramName]}, but got ${typeof arg}`);
-        }
-    });
 }
 
-// Test cases using Jest
-describe('method_arg_type_check', () => {
-    test('should pass when arguments match expected types', () => {
-        const method = (str: string, num: number) => {};
-        method_arg_type_check(method, 'test', 42);
+/**
+ * Checks that the arguments passed to a given method object (e.g., method of a class) comply with their
+ * expected types, based on the method's signature. If there's a discrepancy, it raises an error.
+ *
+ * @param methodObj - The method for which arguments are checked.
+ * @param args - Positional arguments passed to the method.
+ * @param kwargs - Keyword arguments passed to the method.
+ *
+ * Optional argument:
+ *   exclude (Array<string>): Names of parameters to exclude from the type check.
+ */
+function methodArgTypeCheck(methodObj: any, ...args: any[]): void {
+    const kwargs = args[args.length - 1];
+    const exclude = kwargs?.exclude || [];
+    exclude.push('this');  // Exclude 'this' by default since it refers to the method's instance
+
+    const argsSignature = inspect(methodObj);
+    const boundArgs = bindArguments(argsSignature, args.slice(0, -1));
+
+    const expectedTypes = Object.fromEntries(
+        Object.entries(argsSignature.parameters).filter(([paramName]) => !exclude.includes(paramName))
+            .map(([paramName, param]) => [paramName, param.type])
+    );
+
+    for (const [argName, argType] of Object.entries(expectedTypes)) {
+        if (boundArgs.hasOwnProperty(argName)) {
+            const actualValue = boundArgs[argName];
+            if (!isInstanceOf(actualValue, argType)) {
+                const passedArgType = typeof actualValue;
+                const expectedArgType = argType;
+                throw new Error(
+                    `${argName} should be of type ${expectedArgType}, but got type ${passedArgType} instead.`
+                );
+            }
+        }
+    }
+}
+
+// Helper function to simulate binding arguments
+function bindArguments(signature: any, args: any[]): Record<string, any> {
+    const boundArgs = {};
+    const parameterNames = Object.keys(signature.parameters);
+    parameterNames.forEach((paramName, index) => {
+        boundArgs[paramName] = args[index];
     });
 
-    test('should fail when an argument does not match the expected type', () => {
-        const method = (str: string, num: number) => {};
-        expect(() => method_arg_type_check(method, 'test', 'not a number')).toThrowError('Argument \'num\' must be of type number, but got string');
+    return boundArgs;
+}
+
+// Helper function to simulate checking if a value is an instance of a type
+function isInstanceOf(value: any, type: string): boolean {
+    switch (type) {
+        case 'number':
+            return typeof value === 'number';
+        case 'string':
+            return typeof value === 'string';
+        case 'boolean':
+            return typeof value === 'boolean';
+        case 'object':
+            return value !== null && typeof value === 'object';
+        case 'function':
+            return typeof value === 'function';
+        default:
+            return false;
+    }
+}
+
+// Example usage
+const obj = new MyClass();
+
+describe('TestMethodArgTypeCheck', () => {
+    it('test_correct_types', () => {
+        expect(() => {
+            methodArgTypeCheck(MyClass.prototype.myMethod, obj, 10, 'hello', { optionalArg: 3.14 });
+        }).not.toThrow();
     });
 
-    test('should handle optional parameters correctly', () => {
-        const method = (str: string, num?: number) => {};
-        method_arg_type_check(method, 'test'); // Should pass
-        method_arg_type_check(method, 'test', 42); // Should also pass
+    it('test_missing_argument', () => {
+        expect(() => {
+            methodArgTypeCheck(MyClass.prototype.myMethod, obj, 10);  // Missing arg2
+        }).toThrow(TypeError);
     });
 });
 ```
 
 ### Explanation:
-1. **Importing Modules**: We import `describe`, `expect`, and `test` from `@jest/globals` to use Jest's testing utilities.
-2. **method_arg_type_check Function**: This function checks if the arguments passed to a method match their expected types based on the method's signature.
-3. **Test Cases**:
-   - `should_pass_when_arguments_match_expected_types`: Tests that the function passes when the arguments match the expected types.
-   - `should_fail_when_an_argument_does_not_match_the_expected_type`: Tests that the function throws an error when an argument does not match the expected type.
-   - `should_handle_optional_parameters_correctly`: Tests that optional parameters are handled correctly.
+1. **Class Definition**: The `MyClass` class is defined with the `myMethod` method, including type annotations.
+2. **Function Definition**: The `methodArgTypeCheck` function is defined with appropriate type annotations and helper functions (`bindArguments` and `isInstanceOf`).
+3. **Jest Test Suite**: The `describe` block sets up the test suite named `TestMethodArgTypeCheck`.
+4. **Test Cases**:
+   - `test_correct_types`: Uses `expect(() => {...}).not.toThrow()` to ensure that the function does not throw an error when correct types are passed.
+   - `test_missing_argument`: Uses `expect(() => {...}).toThrow(TypeError)` to ensure that the function throws a `TypeError` when a required argument is missing.
 
-This should give you a good starting point for writing TypeScript test cases using Jest!
+This approach ensures that the TypeScript code preserves the original functionality and logic of the Python unittest class, while adapting it to Jest's testing framework.

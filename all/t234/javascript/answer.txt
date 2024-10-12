@@ -1,53 +1,78 @@
-Sure! Below is the equivalent JavaScript code using Node.js and the `csv-parser` and `fast-csv` libraries to handle CSV files. This code will check if a row with matching values in the first three columns already exists before appending a new row.
-
-First, make sure you have the necessary packages installed:
-
-```bash
-npm install csv-parser fast-csv
-```
-
-Here's the JavaScript code:
+Sure! Below is the equivalent JavaScript code that maintains the same functionality, logic, and structure as the provided Python code:
 
 ```javascript
 const fs = require('fs');
 const csvParser = require('csv-parser');
-const fastCsv = require('fast-csv');
+const csvWriter = require('csv-writer').createObjectCsvWriter;
 
-function appendOrSkipRow(filePath, rowCandidate) {
-    return new Promise((resolve, reject) => {
-        const firstThreeColumns = rowCandidate.slice(0, 3).join(',');
-        let exists = false;
+/**
+ * Appends a new row to a CSV file if there isn't a row with matching values in the first three columns.
+ *
+ * @param {fs.WriteStream} fileHandler - File handler of the CSV file opened in read-plus mode ('r+').
+ * @param {csvParser} reader - CSV reader object for reading existing rows.
+ * @param {Array} rowCandidate - Array containing the new row to be appended.
+ */
+function appendOrSkipRow(fileHandler, reader, rowCandidate) {
+    // Read existing rows into an array
+    const existingRows = [];
 
-        // Read the CSV file and check for duplicate rows
-        fastCsv.parseFile(filePath)
-            .on('data', (row) => {
-                if (row.slice(0, 3).join(',') === firstThreeColumns) {
-                    exists = true;
-                }
-            })
-            .on('end', () => {
-                if (!exists) {
-                    // Append the new row if it doesn't exist
-                    fastCsv.writeToPath(filePath, [rowCandidate], { headers: false, delimiter: ',' })
-                        .then(() => resolve())
-                        .catch(reject);
-                } else {
-                    resolve();
-                }
+    reader.on('data', (row) => {
+        existingRows.push(row);
+    });
+
+    reader.on('end', () => {
+        // Check if a matching row exists in the first three columns
+        let skipAppend = false;
+        for (let row of existingRows) {
+            if (
+                row['0'] === rowCandidate[0] &&
+                row['1'] === rowCandidate[1] &&
+                row['2'] === rowCandidate[2]
+            ) {
+                console.log("Row already exists. Skipping append.");
+                skipAppend = true;
+                break;  // Skip appending if a match is found
+            }
+        }
+
+        if (!skipAppend) {
+            // Append the new row if no matching row is found
+            fileHandler.write('\n');  // Ensure there's a newline before appending
+            const writer = csvWriter({
+                path: fileHandler.path,
+                header: [
+                    { id: '0', title: 'Column0' },
+                    { id: '1', title: 'Column1' },
+                    { id: '2', title: 'Column2' },
+                    // Add more columns if needed
+                ]
             });
+
+            writer.writeRecords([rowCandidate])
+                .then(() => console.log("Row appended successfully"))
+                .catch((error) => console.error("Error appending row:", error));
+        }
     });
 }
 
 // Example usage
-appendOrSkipRow('example.csv', ['value1', 'value2', 'value3', 'otherValues'])
-    .then(() => console.log('Row appended or skipped successfully'))
-    .catch(err => console.error('Error:', err));
+const filePath = 'example.csv';
+const fileHandler = fs.createWriteStream(filePath, { flags: 'a+' });
+const parser = csvParser();
+
+fileHandler.pipe(parser);
+
+appendOrSkipRow(fileHandler, parser, ['new_value_1', 'new_value_2', 'new_value_3']);
 ```
 
 ### Explanation:
-1. **Reading the CSV File**: The `fastCsv.parseFile` function reads the CSV file line by line.
-2. **Checking for Duplicates**: For each row, it checks if the first three columns match the candidate row's first three columns.
-3. **Appending the Row**: If no duplicate is found, the `fastCsv.writeToPath` function appends the new row to the CSV file.
-4. **Handling Promises**: The function returns a promise that resolves when the operation completes, either by appending the row or skipping it.
+1. **Dependencies**: The JavaScript version uses `fs` for file system operations, `csv-parser` for reading CSV files, and `csv-writer` for writing CSV files.
+2. **Function Definition**: The function `appendOrSkipRow` is defined to mimic the behavior of the Python function.
+3. **Reading Existing Rows**: The `reader` listens for `'data'` events to collect all existing rows into an array.
+4. **Checking for Matching Rows**: It checks if any existing row matches the first three columns of the candidate row.
+5. **Appending New Row**: If no matching row is found, it appends the new row using `csv-writer`.
 
-This approach ensures that the new row is only added if it does not already exist in the CSV file based on the first three columns.
+Make sure you have the required dependencies installed (`csv-parser` and `csv-writer`) by running:
+```sh
+npm install csv-parser csv-writer
+```

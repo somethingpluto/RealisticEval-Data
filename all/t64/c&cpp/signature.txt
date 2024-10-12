@@ -1,69 +1,124 @@
-Here is the equivalent C++ code for your Python function:
+Certainly! Below is the equivalent C++ code for the provided Python function, including comments and documentation adapted to C++ standards:
 
 ```cpp
+#include <iostream>
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <vector>
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 /**
- * Converts the contents of a CSV file into an SQL insert statement with a table name with the suffix removed.
+ * Converts the contents of a CSV file into an SQL insert statement with the table name derived from the file name.
  *
- * @param csv_file_path The CSV file path
- * @return A string containing the parsed SQL statement
+ * @param csv_file_path The path to the CSV file.
+ * @return A string containing the SQL insert statements.
  */
-std::string csvToSqlInsert(const std::string& csv_file_path)
-{
+std::string csv_to_sql_insert(const std::string& csv_file_path) {
+    // Extract the table name from the CSV file name, removing the suffix
+    std::string table_name = fs::path(csv_file_path).filename().replace_extension().string();
+
+    // Open the CSV file and read its contents
     std::ifstream file(csv_file_path);
-    if (!file.is_open())
-    {
-        throw std::runtime_error("Failed to open file");
+    if (!file.is_open()) {
+        std::cerr << "Failed to open file: " << csv_file_path << std::endl;
+        return "";
     }
 
-    std::stringstream ss;
+    // Read the first line (headers)
     std::string line;
-
-    // Read the header line to get column names
     std::getline(file, line);
-    std::istringstream iss(line);
-    std::vector<std::string> columns;
-    std::string column;
-    while (std::getline(iss, column, ','))
-    {
-        columns.push_back(column);
+    std::istringstream header_stream(line);
+    std::vector<std::string> headers;
+    std::string header;
+    while (std::getline(header_stream, header, ',')) {
+        headers.push_back(header);
     }
 
-    // Prepare the SQL insert statement
-    ss << "INSERT INTO ";
-    for (size_t i = 0; i < columns.size(); ++i)
-    {
-        ss << columns[i];
-        if (i != columns.size() - 1)
-        {
-            ss << ", ";
-        }
-    }
-    ss << " VALUES (";
+    // Prepare the SQL insert statements
+    std::vector<std::string> insert_statements;
 
-    // Read each data row and append to the SQL statement
-    while (std::getline(file, line))
-    {
-        std::istringstream iss(line);
+    // Process each row
+    while (std::getline(file, line)) {
+        std::istringstream row_stream(line);
+        std::vector<std::string> values;
         std::string value;
-        bool first_value = true;
-        while (std::getline(iss, value, ','))
-        {
-            if (!first_value)
-            {
-                ss << ", ";
+        while (std::getline(row_stream, value, ',')) {
+            if (is_number(value)) {
+                values.push_back(value);
+            } else {
+                std::string escaped_value = escape_single_quotes(value);
+                values.push_back("'" + escaped_value + "'");
             }
-            ss << "'" << value << "'";
-            first_value = false;
         }
-        ss << ");\n";
+
+        // Join column names and values to form an INSERT statement
+        std::string insert_statement = "INSERT INTO " + table_name + " (" + 
+                                       join(headers, ", ") + ") VALUES (" + 
+                                       join(values, ", ") + ");";
+        insert_statements.push_back(insert_statement);
     }
 
-    return ss.str();
+    file.close();
+
+    // Combine all insert statements into a single output
+    std::ostringstream oss;
+    for (const auto& stmt : insert_statements) {
+        oss << stmt << '\n';
+    }
+
+    return oss.str();
+}
+
+// Helper function to escape single quotes in a string
+std::string escape_single_quotes(const std::string& input) {
+    std::string result;
+    for (char c : input) {
+        if (c == '\'') {
+            result += "''";
+        } else {
+            result += c;
+        }
+    }
+    return result;
+}
+
+// Helper function to check if a string is a number
+bool is_number(const std::string& s) {
+    return !s.empty() && std::all_of(s.begin(), s.end(), ::isdigit);
+}
+
+// Helper function to join elements of a vector with a delimiter
+template<typename T>
+std::string join(const std::vector<T>& vec, const std::string& delimiter) {
+    std::ostringstream oss;
+    for (size_t i = 0; i < vec.size(); ++i) {
+        oss << vec[i];
+        if (i != vec.size() - 1) {
+            oss << delimiter;
+        }
+    }
+    return oss.str();
+}
+
+int main() {
+    std::string csv_file_path = "example.csv"; // Replace with your CSV file path
+    std::string sql_insert_statements = csv_to_sql_insert(csv_file_path);
+    std::cout << sql_insert_statements << std::endl;
+    return 0;
 }
 ```
 
-This C++ function reads a CSV file, parses its contents, and generates an SQL `INSERT` statement. It assumes that the first line of the CSV file contains the column headers. Note that this example does not handle complex cases such as quoted values or escape characters within the CSV file.
+### Explanation:
+1. **Header Files**: Necessary header files are included at the beginning.
+2. **Filesystem Namespace**: `std::filesystem` is used for handling file paths.
+3. **Documentation**: The function `csv_to_sql_insert` is documented using C++ style comments.
+4. **Helper Functions**:
+   - `escape_single_quotes`: Escapes single quotes in a string.
+   - `is_number`: Checks if a string is a number.
+   - `join`: Joins elements of a vector with a delimiter.
+5. **Main Function**: Demonstrates how to use the `csv_to_sql_insert` function.
+
+This C++ code preserves the original functionality and structure of the Python code while adhering to C++ standards and practices.

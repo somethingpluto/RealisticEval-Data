@@ -1,72 +1,59 @@
-Sure! Below is the equivalent JavaScript code for the given Python function:
+Sure! Below is the equivalent JavaScript code that maintains the same functionality, logic, and structure as the provided Python code:
 
 ```javascript
 const fs = require('fs');
 const path = require('path');
+const { rm, unlink } = fs.promises;
 
-function emptyDirectory(directoryPath) {
+async function emptyDirectory(directoryPath) {
     /**
-     * Empties all files and subdirectories in the specified directory.
-     * @param {string} directoryPath - The path to the directory whose contents are to be emptied.
-     * @returns {Promise<void>} A promise that resolves when the directory is emptied or rejects with an error.
+     * Empties all files and subdirectories in the specified directory, but keeps the directory itself.
+     *
+     * @param {string} directoryPath - Path to the directory whose contents are to be emptied.
+     *
+     * @throws {Error} If the specified path does not exist or is not a directory.
      */
     
-    return new Promise((resolve, reject) => {
-        if (!fs.existsSync(directoryPath)) {
-            return reject(new Error(`The specified path ${directoryPath} does not exist.`));
+    // Check if the path exists and is a directory
+    if (!fs.existsSync(directoryPath)) {
+        throw new Error("The specified directory does not exist.");
+    }
+    if (!fs.lstatSync(directoryPath).isDirectory()) {
+        throw new Error("The specified path is not a directory.");
+    }
+
+    // Iterate over all items in the directory
+    const items = fs.readdirSync(directoryPath, { withFileTypes: true });
+
+    for (const item of items) {
+        const itemPath = path.join(directoryPath, item.name);
+
+        // Check if the item is a file or directory and delete accordingly
+        if (item.isFile() || item.isSymbolicLink()) {
+            await unlink(itemPath);  // Remove the file or link
+        } else if (item.isDirectory()) {
+            await rm(itemPath, { recursive: true, force: true });  // Remove the directory and all its contents
         }
-
-        if (!fs.lstatSync(directoryPath).isDirectory()) {
-            return reject(new Error(`${directoryPath} is not a directory.`));
-        }
-
-        fs.readdir(directoryPath, (err, files) => {
-            if (err) {
-                return reject(err);
-            }
-
-            const promises = files.map(file => {
-                const filePath = path.join(directoryPath, file);
-
-                return new Promise((resolve, reject) => {
-                    fs.stat(filePath, (err, stats) => {
-                        if (err) {
-                            return reject(err);
-                        }
-
-                        if (stats.isDirectory()) {
-                            fs.promises.rmdir(filePath, { recursive: true })
-                                .then(resolve)
-                                .catch(reject);
-                        } else {
-                            fs.unlink(filePath)
-                                .then(resolve)
-                                .catch(reject);
-                        }
-                    });
-                });
-            });
-
-            Promise.all(promises)
-                .then(() => resolve())
-                .catch(reject);
-        });
-    });
+    }
 }
 
-// Example usage:
-emptyDirectory('/path/to/directory')
-    .then(() => console.log('Directory emptied successfully'))
-    .catch(err => console.error('Error:', err.message));
+// Example usage
+(async () => {
+    try {
+        await emptyDirectory('/path/to/directory');
+        console.log('Directory emptied successfully.');
+    } catch (error) {
+        console.error('Error:', error.message);
+    }
+})();
 ```
 
 ### Explanation:
-1. **Imports**: The `fs` and `path` modules are imported from Node.js to handle file system operations and path manipulations.
-2. **Function Definition**: The `emptyDirectory` function is defined to take a `directoryPath` parameter.
-3. **Validation**: It checks if the directory exists and if it is indeed a directory using `fs.existsSync` and `fs.lstatSync`.
-4. **Reading Directory Contents**: It reads the contents of the directory using `fs.readdir`.
-5. **Processing Files and Subdirectories**: For each file or subdirectory, it checks whether it is a directory or a file and removes it accordingly using `fs.promises.rmdir` for directories and `fs.unlink` for files.
-6. **Handling Errors**: Any errors encountered during the process are caught and rejected with a corresponding error message.
-7. **Example Usage**: An example usage of the `emptyDirectory` function is provided at the end.
-
-This JavaScript code should achieve the same functionality as your original Python function.
+1. **Imports**: The `fs` and `path` modules are required to perform file system operations and path manipulations.
+2. **Function Definition**: The `emptyDirectory` function is defined as an asynchronous function to handle file system operations that return promises.
+3. **Existence and Directory Check**: The `fs.existsSync` method checks if the directory exists, and `fs.lstatSync` checks if it is a directory.
+4. **Reading Directory Contents**: The `fs.readdirSync` method reads the directory contents and returns directory entries with metadata.
+5. **Deleting Files and Directories**:
+   - For files and symbolic links, `unlink` is used.
+   - For directories, `rm` is used with `{ recursive: true, force: true }` options to remove the directory and its contents recursively.
+6. **Example Usage**: An example usage is provided using an immediately invoked async function to demonstrate how to call the `emptyDirectory` function and handle any errors.

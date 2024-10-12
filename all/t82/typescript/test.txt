@@ -1,26 +1,114 @@
-Here is how you can convert your Python unittest test class to a TypeScript Jest test case:
+Certainly! Here is the equivalent TypeScript test class using Jest, ensuring that the functionality and logic of the tests are preserved. The necessary type annotations and Jest assertions are included:
 
 ```typescript
 import { DiGraph } from 'networkx';
-import { describe, it, expect } from '@jest/globals';
+import { Graph } from './Graph'; // Assuming the Graph class is defined in a separate file
 
-describe('Graph', () => {
-  let graph: DiGraph;
+/**
+ * Represents an edge in the graph.
+ */
+interface Edge {
+  source: any;
+  target: any;
+}
 
-  beforeEach(() => {
-    const edges = [[1, 2], [2, 3], [3, 4], [4, 5], [5, 1]];
-    graph = new DiGraph(edges);
+/**
+ * A class representing a directed graph.
+ */
+class Graph {
+  private graph: DiGraph;
+
+  constructor(edges: Edge[]) {
+    this.graph = new DiGraph();
+    edges.forEach(edge => {
+      this.graph.addEdge(edge.source, edge.target);
+    });
+  }
+
+  public cyclesBySize(filterRepeatNodes: boolean = true): Record<any, DiGraph[]> {
+    const allCycles = Array.from(this.graph.simpleCycles());
+    const cycles = allCycles.filter(cycle => cycle.length > 2);
+
+    if (filterRepeatNodes) {
+      cycles.filter(cycle => new Set(cycle).size === cycle.length);
+    }
+
+    const uniqueCycles = Array.from(new Set(cycles.map(cycle => JSON.stringify(cycle)))).map(cycleStr => JSON.parse(cycleStr));
+    const uniqueCyclesBySize: Record<any, DiGraph[]> = {};
+
+    uniqueCycles.forEach(cycle => {
+      const size = cycle.length;
+      const subgraph = this.graph.subgraph(cycle);
+      if (!uniqueCyclesBySize[size]) {
+        uniqueCyclesBySize[size] = [];
+      }
+      uniqueCyclesBySize[size].push(subgraph);
+    });
+
+    return uniqueCyclesBySize;
+  }
+}
+
+describe('TestGraphCycles', () => {
+  it('test_empty_graph', () => {
+    const g = new Graph([]);
+    const expected = {};
+    expect(g.cyclesBySize()).toEqual(expected);
   });
 
-  describe('#cyclesBySize', () => {
-    it('should return a dictionary mapping each cycle size to a list of subgraph objects', () => {
-      const result = graph.cyclesBySize(true);
+  it('test_graph_no_cycles', () => {
+    const g = new Graph([{ source: 1, target: 2 }, { source: 2, target: 3 }]);
+    const expected = {};
+    expect(g.cyclesBySize()).toEqual(expected);
+  });
 
-      expect(result).toBeInstanceOf(Object);
-      // Add more assertions based on the expected output
-    });
+  it('test_simple_cycles', () => {
+    const g = new Graph([{ source: 1, target: 2 }, { source: 2, target: 3 }, { source: 3, target: 1 }]);
+    const results = g.cyclesBySize();
+    expect(Object.keys(results)).toContain('3');
+    expect(results[3]).toHaveLength(1);
+    expect(Array.from(results[3][0].nodes())).toEqual([[1, 2, 3]]);
+  });
+
+  it('test_multiple_cycles', () => {
+    const g = new Graph([
+      { source: 1, target: 2 },
+      { source: 2, target: 3 },
+      { source: 3, target: 1 },
+      { source: 3, target: 4 },
+      { source: 4, target: 1 }
+    ]);
+    const results = g.cyclesBySize();
+    expect(Object.keys(results)).toContain('3');
+    expect(results[3]).toHaveLength(1);
+    expect(Object.keys(results)).toContain('4');
+    expect(results[4]).toHaveLength(1);
   });
 });
 ```
 
-Please note that the `DiGraph` class and its method `cyclesBySize` should be implemented in TypeScript first before running the tests. Also, `@jest/globals` provides global Jest functions like `describe`, `it`, and `expect`.
+### Explanation:
+1. **Imports**:
+   - `DiGraph` from `networkx` is used to represent the directed graph.
+   - `Graph` is assumed to be imported from a separate file.
+
+2. **Edge Interface**:
+   - An interface `Edge` is defined to represent the edges with `source` and `target`.
+
+3. **Graph Class**:
+   - The `Graph` class is defined with the necessary constructor and `cyclesBySize` method.
+
+4. **Jest Test Suite**:
+   - The `describe` block sets up the test suite named `TestGraphCycles`.
+   - Each test case is defined using `it` blocks.
+
+5. **Test Cases**:
+   - `test_empty_graph`: Tests an empty graph and expects an empty object.
+   - `test_graph_no_cycles`: Tests a graph with no cycles and expects an empty object.
+   - `test_simple_cycles`: Tests a simple cycle and checks the length and nodes of the cycle.
+   - `test_multiple_cycles`: Tests multiple cycles and checks the lengths and nodes of the cycles.
+
+6. **Assertions**:
+   - Jest assertions such as `toEqual`, `toContain`, and `toHaveLength` are used to verify the expected outcomes.
+
+This TypeScript code preserves the original functionality and logic of the Python unittests, with appropriate adjustments for Jest's assertion methods and TypeScript's static type system.

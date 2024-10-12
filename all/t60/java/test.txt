@@ -1,35 +1,165 @@
-Sure! Below is the equivalent Java JUnit test case for your Python unittest test class `Tester`. The package is `org.real.temp`, and the class is also named `Tester`.
+Certainly! Below is the equivalent Java test class using JUnit, placed in the package `org.real.temp` and named `Tester`. The test cases are structured to preserve the original functionality and logic, using appropriate JUnit annotations and assertion methods.
+
+### Java Code
 
 ```java
 package org.real.temp;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 
 public class Tester {
 
-    @Test
-    public void testFindCommonColumns() {
-        // Assuming you have a method to call that returns the common columns
-        List<String> commonColumns = findCommonColumns("directoryPath");
+    private static final String TEST_DIR = "test_dir";
 
-        // Add assertions to verify the correctness of the returned list
-        assertEquals(expectedCommonColumns, commonColumns);
+    @Before
+    public void setUp() throws IOException {
+        // Set up a temporary directory
+        Files.createDirectories(new File(TEST_DIR).toPath());
     }
 
-    // Dummy implementation of findCommonColumns for testing purposes
-    private List<String> findCommonColumns(String directory) {
-        // Your implementation here
-        return null; // Replace with actual implementation
+    @After
+    public void tearDown() throws IOException {
+        // Remove created files and directory after each test
+        File dir = new File(TEST_DIR);
+        File[] files = dir.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                file.delete();
+            }
+        }
+        dir.delete();
+    }
+
+    @Test
+    public void testAllSameColumns() throws IOException {
+        // All CSV files have the same columns
+        String data1 = "A,B,C\n1,2,3";
+        String data2 = "A,B,C\n4,5,6";
+        String data3 = "A,B,C\n7,8,9";
+        List<String> filenames = Arrays.asList("file1.csv", "file2.csv", "file3.csv");
+        List<String> datas = Arrays.asList(data1, data2, data3);
+
+        writeFiles(filenames, datas);
+
+        assertEquals(Set.of("A", "B", "C"), findCommonColumns(TEST_DIR));
+    }
+
+    @Test
+    public void testNoCommonColumns() throws IOException {
+        // No common columns
+        String data1 = "A,B,C\n1,2,3";
+        String data2 = "D,E,F\n4,5,6";
+        String data3 = "G,H,I\n7,8,9";
+        List<String> filenames = Arrays.asList("file1.csv", "file2.csv", "file3.csv");
+        List<String> datas = Arrays.asList(data1, data2, data3);
+
+        writeFiles(filenames, datas);
+
+        assertEquals(Set.of(), findCommonColumns(TEST_DIR));
+    }
+
+    @Test
+    public void testSomeCommonColumns() throws IOException {
+        // Some common columns
+        String data1 = "A,B,C\n1,2,3";
+        String data2 = "B,C,D\n4,5,6";
+        String data3 = "C,D,E\n7,8,9";
+        List<String> filenames = Arrays.asList("file1.csv", "file2.csv", "file3.csv");
+        List<String> datas = Arrays.asList(data1, data2, data3);
+
+        writeFiles(filenames, datas);
+
+        assertEquals(Set.of("C"), findCommonColumns(TEST_DIR));
+    }
+
+    @Test
+    public void testMixedCommonAndUniqueColumns() throws IOException {
+        // Mixed common and unique columns
+        String data1 = "A,B,C\n1,2,3";
+        String data2 = "B,C,D\n4,5,6";
+        String data3 = "B,C,E\n7,8,9";
+        List<String> filenames = Arrays.asList("file1.csv", "file2.csv", "file3.csv");
+        List<String> datas = Arrays.asList(data1, data2, data3);
+
+        writeFiles(filenames, datas);
+
+        assertEquals(Set.of("B", "C"), findCommonColumns(TEST_DIR));
+    }
+
+    private void writeFiles(List<String> filenames, List<String> datas) throws IOException {
+        for (int i = 0; i < filenames.size(); i++) {
+            String filename = filenames.get(i);
+            String data = datas.get(i);
+            File file = new File(TEST_DIR, filename);
+            try (FileWriter writer = new FileWriter(file)) {
+                writer.write(data);
+            }
+        }
+    }
+
+    // Helper method to find common columns
+    public static List<String> findCommonColumns(String directoryPath) {
+        File directory = new File(directoryPath);
+        File[] files = directory.listFiles((dir, name) -> name.toLowerCase().endsWith(".csv"));
+
+        if (files == null || files.length == 0) {
+            return new ArrayList<>();
+        }
+
+        List<Set<String>> columnSets = new ArrayList<>();
+
+        try {
+            for (File file : files) {
+                List<String> header = readHeaderFromCsv(file);
+                if (header != null && !header.isEmpty()) {
+                    columnSets.add(new HashSet<>(header));
+                }
+            }
+
+            // Use set intersection to find common columns across all CSV files
+            if (!columnSets.isEmpty()) {
+                Set<String> commonColumns = new HashSet<>(columnSets.get(0));
+                for (int i = 1; i < columnSets.size(); i++) {
+                    commonColumns.retainAll(columnSets.get(i));
+                }
+                return new ArrayList<>(commonColumns);
+            } else {
+                return new ArrayList<>();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+
+    private static List<String> readHeaderFromCsv(File file) throws Exception {
+        try (CSVReader reader = new CSVReader(new java.io.FileReader(file))) {
+            String[] header = reader.readNext(); // Read the header row
+            if (header != null) {
+                return Arrays.asList(header);
+            }
+        }
+        return new ArrayList<>();
     }
 }
 ```
 
-### Explanation:
-1. **Package Declaration**: The package declaration is set to `org.real.temp`.
-2. **Class Declaration**: The class `Tester` is declared within the specified package.
-3. **JUnit Test Method**: The method `testFindCommonColumns` is annotated with `@Test` to indicate it is a JUnit test method.
-4. **Assertions**: Inside the test method, an assertion is used to check if the returned list of common columns matches the expected result.
-5. **Dummy Implementation**: A dummy implementation of `findCommonColumns` is provided for testing purposes. You should replace this with your actual implementation.
+### Key Points:
+1. **JUnit Annotations**: The `@Before`, `@After`, and `@Test` annotations are used to set up and tear down the test environment and define individual test cases.
+2. **File Operations**: Java's `Files` utility and `FileWriter` are used to create and write to CSV files.
+3. **Assertions**: `assertEquals` is used to verify the expected results.
+4. **Helper Methods**: `writeFiles` and `readHeaderFromCsv` are helper methods to simplify the test cases.
+5. **Exception Handling**: Proper exception handling is included to catch any potential errors during file operations.
 
-Make sure to include the necessary imports for JUnit and any other dependencies you might need. If you have specific requirements or additional methods to test, feel free to add them accordingly.
+This Java code preserves the original functionality and structure of the Python test cases while adhering to Java's conventions and best practices.

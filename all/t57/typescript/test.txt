@@ -1,45 +1,109 @@
-Sure, I can help you convert the given Python unittest test class to TypeScript using Jest. Below is an example of how you might write a Jest test case for the `convert_png_to_ico` function.
+Certainly! Below is the equivalent TypeScript test class using Jest. The provided Python unittest class will be converted to a Jest test suite, ensuring that the functionality and logic of the tests are preserved. Type annotations and Jest assertions are included to match the behavior of the Python tests.
 
-First, let's assume that the `convert_png_to_ico` function is part of a module named `image_converter`. We'll also assume that the function is already implemented and available for testing.
-
-Here's how you can write the Jest test case:
-
-1. Create a new file named `image_converter.test.ts`.
-2. Write the Jest test cases in this file.
+### TypeScript Code with Jest Testing
 
 ```typescript
-import { convert_png_to_ico } from './image_converter'; // Adjust the import path accordingly
+import { convertPngToIco } from './path-to-convert-png-to-ico'; // Import the convertPngToIco function
+import { mock } from 'jest-mock-extended';
 
-describe('convert_png_to_ico', () => {
-  it('should convert a PNG file to an ICO file with specified sizes', async () => {
-    const pngFilePath = 'path/to/source.png';
-    const icoFilePath = 'path/to/output.ico';
-    const iconSizes = [(32, 32)];
+describe('TestConvertPngToIco', () => {
+    let mockImage: any;
 
-    await convert_png_to_ico(pngFilePath, icoFilePath, iconSizes);
+    beforeEach(() => {
+        mockImage = mock();
+    });
 
-    // Assuming there is some way to verify if the ICO file was created successfully
-    // For example, checking if the file exists at the specified path
-    expect(icoFilePath).toBeExist(); // This is a hypothetical method to check file existence
-  });
+    describe('convertPngToIco', () => {
+        it('should save ICO with a single icon size', () => {
+            const mockOpen = jest.fn().mockReturnValue({
+                __enter__: jest.fn().mockReturnValue(mockImage),
+                __exit__: jest.fn(),
+            });
 
-  it('should handle different icon sizes', async () => {
-    const pngFilePath = 'path/to/source.png';
-    const icoFilePath = 'path/to/output.ico';
-    const iconSizes = [(32, 32), (64, 64), (128, 128)];
+            jest.spyOn(global, 'Image').mockImplementation(() => ({
+                open: mockOpen,
+            }));
 
-    await convert_png_to_ico(pngFilePath, icoFilePath, iconSizes);
+            convertPngToIco('source.png', 'output.ico', [[64, 64]]);
+            expect(mockImage.save).toHaveBeenCalledWith('output.ico', { format: 'ICO', sizes: [[64, 64]] });
+        });
 
-    // Similarly, verify if the ICO file contains all the specified sizes
-    // For example, checking if the file size matches the expected size
-    expect(icoFilePath).toBeSizeOf(3 * /* expected size */); // Hypothetical method to check file size
-  });
+        it('should save ICO with multiple icon sizes', () => {
+            const mockOpen = jest.fn().mockReturnValue({
+                __enter__: jest.fn().mockReturnValue(mockImage),
+                __exit__: jest.fn(),
+            });
+
+            jest.spyOn(global, 'Image').mockImplementation(() => ({
+                open: mockOpen,
+            }));
+
+            convertPngToIco('source.png', 'output.ico', [[16, 16], [32, 32], [64, 64]]);
+            expect(mockImage.save).toHaveBeenCalledWith('output.ico', { format: 'ICO', sizes: [[16, 16], [32, 32], [64, 64]] });
+        });
+
+        it('should save ICO with the default icon size', () => {
+            const mockOpen = jest.fn().mockReturnValue({
+                __enter__: jest.fn().mockReturnValue(mockImage),
+                __exit__: jest.fn(),
+            });
+
+            jest.spyOn(global, 'Image').mockImplementation(() => ({
+                open: mockOpen,
+            }));
+
+            convertPngToIco('source.png', 'output.ico');
+            expect(mockImage.save).toHaveBeenCalledWith('output.ico', { format: 'ICO', sizes: [[32, 32]] });
+        });
+
+        it('should handle file opening correctly', () => {
+            const mockOpen = jest.fn().mockReturnValue({
+                __enter__: jest.fn().mockReturnValue(mockImage),
+                __exit__: jest.fn(),
+            });
+
+            jest.spyOn(global, 'Image').mockImplementation(() => ({
+                open: mockOpen,
+            }));
+
+            convertPngToIco('source.png', 'output.ico');
+            expect(mockImage.save).toHaveBeenCalledTimes(1);
+            expect(mockImage.save).toHaveBeenCalledWith('output.ico', { format: 'ICO', sizes: [[32, 32]] });
+        });
+
+        it('should throw an error when the image path is invalid', () => {
+            const mockOpen = jest.fn().mockImplementation(() => {
+                throw new Error('File not found');
+            });
+
+            jest.spyOn(global, 'Image').mockImplementation(() => ({
+                open: mockOpen,
+            }));
+
+            expect(() => convertPngToIco('invalid.png', 'output.ico')).toThrow('File not found');
+        });
+    });
 });
 ```
 
-### Notes:
-1. **Importing the Function**: Ensure that the `convert_png_to_ico` function is correctly imported from the appropriate module.
-2. **File Existence Check**: The `expect(icoFilePath).toBeExist()` and `expect(icoFilePath).toBeSizeOf(expectedSize)` methods are hypothetical. You will need to implement these methods or use existing Jest matchers like `fs.existsSync` and `fs.statSync` to check file existence and size.
-3. **Asynchronous Testing**: Since the `convert_png_to_ico` function appears to be asynchronous (as indicated by the `async` keyword in the Python version), make sure your Jest tests are also asynchronous. You can use `await` within the `it` blocks.
+### Explanation:
+1. **Imports**:
+   - Import the `convertPngToIco` function from the relevant module.
+   - Import `mock` from `jest-mock-extended` to create mock objects.
 
-This should give you a good starting point for writing Jest test cases for your TypeScript functions.
+2. **Setup**:
+   - Use `beforeEach` to reset the mock image before each test.
+
+3. **Test Cases**:
+   - Each test case uses `jest.fn()` to create a mock `open` function.
+   - The `Image` object is mocked using `jest.spyOn` to simulate the behavior of `PIL.Image.open`.
+   - Assertions are made using `expect` to check the calls to `mockImage.save`.
+
+4. **Mocking**:
+   - Mock the `open` method to return a mock image object.
+   - Use `__enter__` and `__exit__` to simulate the context manager behavior.
+
+5. **Error Handling**:
+   - The last test case checks for throwing an error when the image path is invalid.
+
+This TypeScript code ensures that the functionality and logic of the Python unittests are preserved while adapting to Jest's syntax and conventions.

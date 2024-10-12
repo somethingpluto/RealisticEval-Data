@@ -1,33 +1,55 @@
-Here is how you can translate the Python function into JavaScript:
+Here is the equivalent JavaScript code that maintains the same functionality, logic, and structure as the provided Python code:
 
 ```javascript
-function replaceWordsInFile(filePath, replacementDict) {
-    /*
-     * Read a text file, replace words according to a dictionary map, and return the modified text.
-     *
-     * @param {string} filePath - The path to the text file.
-     * @param {Object} replacementDict - A dictionary where the keys are words to be replaced, and the values are the replacement words.
-     * @return {string} The text with the words replaced.
-     */
-    
-    // Node.js fs module for reading files
-    const fs = require('fs');
+const fs = require('fs').promises; // Import the fs.promises API for asynchronous file operations
 
-    // Read the file synchronously
-    let data = fs.readFileSync(filePath, 'utf8');
-    
-    // Iterate over each key-value pair in the replacement dictionary
-    for(let oldWord in replacementDict){
-        if(replacementDict.hasOwnProperty(oldWord)){
-            let newWord = replacementDict[oldWord];
-            // Replace all occurrences of old word with new word
-            data = data.split(oldWord).join(newWord);
+/**
+ * Read a text file, replace words according to a dictionary map, and return the modified text.
+ *
+ * @param {string} file_path - The path to the text file.
+ * @param {Object} replacement_dict - An object where the keys are words to be replaced, and the values are the replacement words.
+ * @returns {Promise<string>} A promise that resolves to the text with the words replaced or an error message.
+ */
+async function replaceWordsInFile(file_path, replacement_dict) {
+    try {
+        // Read the content of the file
+        const text = await fs.readFile(file_path, 'utf-8');
+
+        // Replace words according to the replacement dictionary
+        for (const [oldWord, newWord] of Object.entries(replacement_dict)) {
+            text = text.replace(new RegExp(oldWord, 'g'), newWord);
         }
-    }
 
-    // Return the modified text
-    return data;
+        return text;
+
+    } catch (error) {
+        if (error.code === 'ENOENT') {
+            return "Error: The file was not found.";
+        }
+        return `Error: ${error.message}`;
+    }
 }
+
+// Example usage:
+(async () => {
+    try {
+        const result = await replaceWordsInFile('example.txt', {'hello': 'hi', 'world': 'earth'});
+        console.log(result);
+    } catch (error) {
+        console.error(error);
+    }
+})();
 ```
 
-This JavaScript function uses the `readFileSync` method from the `fs` (file system) module to read the contents of the file synchronously. It then iterates through each key-value pair in the replacement dictionary, replacing all occurrences of the key with its corresponding value in the text. Finally, it returns the modified text. Note that this function requires the Node.js environment because it makes use of the `fs` module which is not available in the browser's JavaScript environment.
+### Explanation:
+1. **Importing `fs.promises`**: In JavaScript, we use the `fs.promises` API for asynchronous file operations. This ensures that our function does not block the execution of other code while reading the file.
+
+2. **Function Definition**: The `replaceWordsInFile` function is defined using the `async` keyword to indicate that it performs asynchronous operations.
+
+3. **Reading the File**: We use `await fs.readFile(file_path, 'utf-8')` to read the content of the file asynchronously. The second argument `'utf-8'` specifies that the file should be read as a UTF-8 encoded string.
+
+4. **Replacing Words**: We iterate over the entries of the `replacement_dict` using `Object.entries` and replace each occurrence of `oldWord` with `newWord` using a global regular expression (`new RegExp(oldWord, 'g')`).
+
+5. **Handling Errors**: We catch any errors that occur during file operations and return appropriate error messages based on the type of error.
+
+6. **Example Usage**: An example usage of the function is provided at the end, demonstrating how to call the function and handle the returned value.

@@ -1,82 +1,80 @@
-Sure, here is how you might convert that Python function into C++ using the `<fstream>`, `<sstream>`, and `<vector>` libraries. Note that C++ does not have built-in support for CSV parsing like Python's `csv` module, so we'll use a simple approach to parse the lines.
+Certainly! Below is the equivalent C++ code that maintains the same functionality, logic, and structure as the provided Python code. The code will use the standard C++ library for handling files and CSV data.
 
 ```cpp
-#include <iostream>
 #include <fstream>
 #include <sstream>
 #include <vector>
 #include <string>
+#include <iostream>
 
-bool hasMatchingRow(std::ifstream &fileHandler, const std::vector<std::string> &rowCandidate) {
+// Function to split a string by a delimiter
+std::vector<std::string> split(const std::string &s, char delimiter) {
+    std::vector<std::string> tokens;
+    std::string token;
+    std::istringstream tokenStream(s);
+    while (std::getline(tokenStream, token, delimiter)) {
+        tokens.push_back(token);
+    }
+    return tokens;
+}
+
+// Function to append or skip a row in a CSV file
+void append_or_skip_row(std::fstream &file_handler, const std::string &row_candidate) {
+    /**
+     * Appends a new row to a CSV file if there isn't a row with matching values in the first three columns.
+     *
+     * :param file_handler: File handler of the CSV file opened in read-plus mode ('inout').
+     * :param row_candidate: String containing the new row to be appended.
+     */
+    // Read existing rows into a vector
+    std::vector<std::vector<std::string>> existing_rows;
+
     std::string line;
-    while (std::getline(fileHandler, line)) {
-        std::istringstream iss(line);
-        std::vector<std::string> row;
-        std::string cell;
+    while (std::getline(file_handler, line)) {
+        existing_rows.push_back(split(line, ','));
+    }
 
-        // Read each cell from the current line
-        while (std::getline(iss, cell, ',')) {
-            row.push_back(cell);
-        }
-
-        // Check if the first three cells match the candidate row
-        if (row.size() >= 3 && 
-            row[0] == rowCandidate[0] && 
-            row[1] == rowCandidate[1] && 
-            row[2] == rowCandidate[2]) {
-            return true;
+    // Check if a matching row exists in the first three columns
+    std::vector<std::string> candidate_tokens = split(row_candidate, ',');
+    bool row_exists = false;
+    for (const auto &row : existing_rows) {
+        if (row.size() >= 3 && candidate_tokens.size() >= 3 &&
+            row[0] == candidate_tokens[0] && row[1] == candidate_tokens[1] && row[2] == candidate_tokens[2]) {
+            std::cout << "Row already exists. Skipping append." << std::endl;
+            row_exists = true;
+            break;
         }
     }
 
-    return false;
-}
-
-void appendOrSkipRow(std::fstream &fileHandler, const std::vector<std::string> &rowCandidate) {
-    // Move to the beginning of the file to check for duplicates
-    fileHandler.seekg(0);
-
-    // If no matching row exists, append the new row
-    if (!hasMatchingRow(fileHandler, rowCandidate)) {
-        fileHandler.seekp(0, std::ios_base::end); // Go to the end of the file
-        for (size_t i = 0; i < rowCandidate.size(); ++i) {
-            fileHandler << rowCandidate[i];
-            if (i != rowCandidate.size() - 1) {
-                fileHandler << ",";
-            }
-        }
-        fileHandler << "\n";
+    // Append the new row if no matching row is found
+    if (!row_exists) {
+        file_handler.seekp(0, std::ios::end);  // Move to the end of the file
+        file_handler << '\n' << row_candidate;  // Append the new row
     }
 }
-```
 
-### Explanation:
-1. **hasMatchingRow Function**:
-   - Opens the file and reads it line by line.
-   - For each line, it splits the line into individual cells based on commas.
-   - It checks if the first three cells match any row candidate.
-   - Returns `true` if a match is found, otherwise `false`.
-
-2. **appendOrSkipRow Function**:
-   - Moves the file pointer to the beginning of the file to start checking for duplicates.
-   - Calls `hasMatchingRow` to check if the candidate row already exists.
-   - If no duplicate is found, it appends the candidate row at the end of the file.
-
-### Usage Example:
-```cpp
 int main() {
-    std::fstream fileHandler("example.csv", std::ios::in | std::ios::out | std::ios::app);
-    if (!fileHandler.is_open()) {
-        std::cerr << "Failed to open file" << std::endl;
+    std::string filename = "example.csv";
+    std::fstream file_handler(filename, std::ios::in | std::ios::out | std::ios::app);
+
+    if (!file_handler.is_open()) {
+        std::cerr << "Failed to open file: " << filename << std::endl;
         return 1;
     }
 
-    std::vector<std::string> rowCandidate = {"value1", "value2", "value3"};
+    std::string row_candidate = "new_value1,new_value2,new_value3,additional_data";
+    append_or_skip_row(file_handler, row_candidate);
 
-    appendOrSkipRow(fileHandler, rowCandidate);
-
-    fileHandler.close();
+    file_handler.close();
     return 0;
 }
 ```
 
-This C++ code provides a basic implementation similar to your Python function. However, depending on the complexity of your CSV data or performance requirements, you may want to consider using a more robust CSV library for C++.
+### Explanation:
+1. **Split Function**: The `split` function is used to split a string by a delimiter (`,` in this case).
+2. **Reading Existing Rows**: The `append_or_skip_row` function reads the existing rows from the CSV file and stores them in a vector of vectors.
+3. **Checking for Matching Rows**: It checks if a row with matching values in the first three columns already exists.
+4. **Appending New Row**: If no matching row is found, it appends the new row to the CSV file.
+5. **File Handling**: The file is opened in read-plus mode (`std::ios::in | std::ios::out | std::ios::app`) to allow both reading and writing.
+
+This C++ code should provide the same functionality as the original Python code.

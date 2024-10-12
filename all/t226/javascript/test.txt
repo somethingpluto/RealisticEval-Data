@@ -1,65 +1,107 @@
-Sure! Below is the equivalent JavaScript test case using Jest for your Python `unittest` test class. Since you haven't provided the actual implementation of the `tsv_to_jsonl` function in Python, I'll assume a basic structure and provide a mock implementation for demonstration purposes.
+Certainly! I will convert the given Python `unittest` test class into an equivalent Jest test suite, ensuring that the functionality and logic of the tests are maintained. I will also document any necessary changes due to language differences between Python and JavaScript.
 
-### Python Test Class (for reference)
-```python
-import unittest
-import pandas as pd
+Here is the converted Jest test suite:
 
-def tsv_to_jsonl(tsv_file: str, jsonl_file: str):
-    # Mock implementation for demonstration
-    pass
-
-class TestTsvToJsonl(unittest.TestCase):
-    def test_tsv_to_jsonl(self):
-        tsv_path = 'path/to/test.tsv'
-        jsonl_path = 'path/to/test.jsonl'
-        tsv_to_jsonl(tsv_path, jsonl_path)
-        # Add assertions here to verify the conversion
-
-if __name__ == '__main__':
-    unittest.main()
-```
-
-### Equivalent Jest Test Case
 ```javascript
+const os = require('os');
 const fs = require('fs');
-const { promisify } = require('util');
-const convert = require('./convert'); // Assuming the function is in a separate module named 'convert'
+const path = require('path');
 
-// Mock implementations
-jest.mock('fs', () => ({
-  readFileSync: jest.fn(),
-  writeFileSync: jest.fn(),
-}));
+describe('TestTSVtoJSONL', () => {
+    let testDir;
 
-describe('tsvToJsonl', () => {
-  const tsvPath = 'path/to/test.tsv';
-  const jsonlPath = 'path/to/test.jsonl';
-
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
-  it('should convert tsv to jsonl', async () => {
-    // Mock the readFileSync and writeFileSync functions
-    fs.readFileSync.mockReturnValueOnce('column1\tcolumn2\nvalue1\tvalue2');
-    fs.writeFileSync.mockImplementation((filePath, data) => {
-      expect(filePath).toBe(jsonlPath);
-      expect(data).toBe(JSON.stringify([{ column1: 'value1', column2: 'value2' }], null, 2));
+    beforeAll(() => {
+        // Create a temporary directory for testing
+        testDir = fs.mkdtempSync(os.tmpdir() + 'jest-test-');
     });
 
-    await convert.tsvToJsonl(tsvPath, jsonlPath);
+    afterAll(() => {
+        // Clean up the temporary directory
+        fs.rmSync(testDir, { recursive: true, force: true });
+    });
 
-    expect(fs.readFileSync).toHaveBeenCalledWith(tsvPath, 'utf8');
-    expect(fs.writeFileSync).toHaveBeenCalled();
-  });
+    const tsv_to_jsonl = require('./tsv_to_jsonl'); // Import the tsv_to_jsonl function
+
+    test('standard TSV conversion', () => {
+        const tsvContent = "Name\tAge\tCountry\nAlice\t30\tUSA\nBob\t25\tCanada\n";
+        const tsvFile = path.join(testDir, 'test_standard.tsv');
+        const jsonlFile = path.join(testDir, 'test_standard.jsonl');
+
+        fs.writeFileSync(tsvFile, tsvContent, 'utf-8');
+
+        tsv_to_jsonl(tsvFile, jsonlFile);
+
+        const lines = fs.readFileSync(jsonlFile, 'utf-8').split('\n');
+
+        const expectedLines = [
+            '{"Name":"Alice","Age":30,"Country":"USA"}\n',
+            '{"Name":"Bob","Age":25,"Country":"Canada"}\n'
+        ];
+
+        expect(lines).toEqual(expectedLines);
+    });
+
+    test('single row TSV conversion', () => {
+        const tsvContent = "Name\tAge\tCountry\nAlice\t30\tUSA\n";
+        const tsvFile = path.join(testDir, 'test_single_row.tsv');
+        const jsonlFile = path.join(testDir, 'test_single_row.jsonl');
+
+        fs.writeFileSync(tsvFile, tsvContent, 'utf-8');
+
+        tsv_to_jsonl(tsvFile, jsonlFile);
+
+        const lines = fs.readFileSync(jsonlFile, 'utf-8').split('\n');
+
+        const expectedLines = [
+            '{"Name":"Alice","Age":30,"Country":"USA"}\n'
+        ];
+
+        expect(lines).toEqual(expectedLines);
+    });
+
+    test('numeric and boolean values TSV conversion', () => {
+        const tsvContent = "Name\tAge\tIs_Student\nAlice\t30\tTrue\nBob\t25\tFalse\n";
+        const tsvFile = path.join(testDir, 'test_numeric_boolean.tsv');
+        const jsonlFile = path.join(testDir, 'test_numeric_boolean.jsonl');
+
+        fs.writeFileSync(tsvFile, tsvContent, 'utf-8');
+
+        tsv_to_jsonl(tsvFile, jsonlFile);
+
+        const lines = fs.readFileSync(jsonlFile, 'utf-8').split('\n');
+
+        const expectedLines = [
+            '{"Name":"Alice","Age":30,"Is_Student":true}\n',
+            '{"Name":"Bob","Age":25,"Is_Student":false}\n'
+        ];
+
+        expect(lines).toEqual(expectedLines);
+    });
 });
 ```
 
-### Explanation
-1. **Mocking `fs` Module**: We use `jest.mock` to mock the `fs` module so that we can control its behavior during testing.
-2. **Setting Up Mocks**: Before each test, we clear all mocks using `jest.clearAllMocks()`.
-3. **Testing Conversion**: In the test case, we mock the `readFileSync` and `writeFileSync` functions to simulate reading from and writing to files.
-4. **Assertions**: We assert that the `readFileSync` function was called with the correct path and that the `writeFileSync` function was called with the expected JSONL data.
+### Explanation:
+1. **Setup and Teardown**:
+   - `beforeAll` is used to create a temporary directory for testing.
+   - `afterAll` is used to clean up the temporary directory.
 
-Make sure to adjust the paths and mock implementations according to your actual requirements and environment.
+2. **Test Cases**:
+   - Each test case is defined using the `test` function from Jest.
+   - The test cases follow the same structure as the Python `unittest` tests.
+
+3. **File Operations**:
+   - `fs.writeFileSync` is used to write content to the TSV file.
+   - `fs.readFileSync` is used to read content from the JSONL file.
+   - The content is split by newline characters to match the expected lines.
+
+4. **Assertions**:
+   - `expect` is used to assert that the actual lines match the expected lines.
+
+5. **Importing the Function**:
+   - The `tsv_to_jsonl` function is imported at the beginning of the test suite.
+
+6. **Temporary Directory Management**:
+   - `fs.mkdtempSync` is used to create a temporary directory.
+   - `fs.rmSync` is used to remove the directory recursively.
+
+This Jest test suite maintains the functionality and logic of the original Python `unittest` tests while adapting to JavaScript's Jest framework.

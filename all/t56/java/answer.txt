@@ -1,37 +1,67 @@
-Here is the equivalent Java code for your Python function:
+Here’s the equivalent Java code organized within the package `org.real.temp` and the class `Answer`. The functionality, logic, and structure have been adapted to Java’s syntax and language features:
 
 ```java
+package org.real.temp;
+
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.List;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.CharsetEncoder;
 
 public class Answer {
-    public static List<Character> findShiftJisNotGbk() {
-        /*
-         * Find all the characters that can be represented in Shift-JIS, but not in GBK,
-         * and return them as an array
-         *
-         * Returns:
-         *     List<Character>: A list of characters that are unique to Shift-JIS, not encodable in GBK.
-         */
-        
-        Charset shiftJis = Charset.forName("Shift_JIS");
-        Charset gbk = Charset.forName("GBK");
 
-        List<Character> result = new ArrayList<>();
+    public static void main(String[] args) {
+        String[] uniqueToShiftJis = findShiftJisNotGbk();
+        for (String character : uniqueToShiftJis) {
+            System.out.println(character);
+        }
+    }
 
-        for (char c = 0; c < Character.MAX_VALUE; c++) {
-            String str = String.valueOf(c);
-            if (shiftJis.canEncode(str) && !gbk.canEncode(str)) {
-                result.add(c);
+    public static String[] findShiftJisNotGbk() {
+        // List to store characters that are in Shift-JIS but not in GBK
+        String[] uniqueToShiftJis = new String[65536];
+        int count = 0;
+
+        // Iterate over a range of Unicode code points
+        // The BMP goes up to U+FFFF, which is 65535 in decimal
+        for (int codepoint = 0; codepoint < 65536; codepoint++) {
+            char character = (char) codepoint;
+
+            try {
+                // Try encoding the character in Shift-JIS
+                if (isEncodable(character, "Shift_JIS")) {
+                    try {
+                        // Try encoding the character in GBK
+                        if (!isEncodable(character, "GBK")) {
+                            // If it fails, the character is not representable in GBK but is in Shift-JIS
+                            uniqueToShiftJis[count++] = Character.toString(character);
+                        }
+                    } catch (CharacterCodingException e) {
+                        // If it fails, the character is not representable in GBK but is in Shift-JIS
+                        uniqueToShiftJis[count++] = Character.toString(character);
+                    }
+                }
+            } catch (CharacterCodingException e) {
+                // If it fails, the character is not representable in Shift-JIS, so we skip it
+                continue;
             }
         }
 
-        return result;
+        // Trim the array to the actual size
+        return java.util.Arrays.copyOf(uniqueToShiftJis, count);
+    }
+
+    private static boolean isEncodable(char character, String charsetName) throws CharacterCodingException {
+        CharsetEncoder encoder = Charset.forName(charsetName).newEncoder();
+        return encoder.canEncode(character);
     }
 }
 ```
 
-This Java method iterates over all possible Unicode characters (from 0 to `Character.MAX_VALUE`) and checks whether each character can be encoded in Shift_JIS but not in GBK. If so, it adds the character to the result list.
+### Explanation:
+1. **Package and Class Definition**: The code is defined within the package `org.real.temp` and the class `Answer`.
+2. **Main Method**: A `main` method is included to demonstrate how to call the `findShiftJisNotGbk` method.
+3. **findShiftJisNotGbk Method**: This method iterates over Unicode code points and checks if each character can be encoded in Shift-JIS but not in GBK.
+4. **isEncodable Method**: This helper method checks if a character can be encoded in a given charset using `CharsetEncoder`.
+5. **Array Handling**: The resulting array is trimmed to the actual size of unique characters found.
 
-Please note that this solution assumes you have access to the Shift_JIS and GBK charsets in your Java environment. These charsets should be available on most standard Java installations.
+This Java code maintains the same functionality as the original Python code while adhering to Java's syntax and best practices.

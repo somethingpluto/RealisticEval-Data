@@ -1,77 +1,156 @@
-Sure! Below is an equivalent C++ unit test case using Catch2 for the given Python unittest function `euler_to_rotation_matrix`. The C++ version will also convert Euler angles (roll, pitch, yaw) to a rotation matrix.
+Certainly! Below is the equivalent C++ test class using the Catch2 testing framework. The test cases are converted to use Catch2 assertions and the Eigen library for matrix operations.
 
-First, ensure you have Catch2 installed and included in your project. You can download it from [Catch2's GitHub repository](https://github.com/catchorg/Catch2).
+### C++ Code with Catch2 and Eigen
 
-Here is the C++ code:
+1. **Include Required Libraries**
+2. **Define the Test Class**
+3. **Implement the Tests**
+
+Here’s the complete code:
 
 ```cpp
-#include <catch2/catch.hpp>
-#include <Eigen/Dense>
+#include <iostream>
 #include <cmath>
+#include <Eigen/Dense>
+#include <catch2/catch_test_macros.hpp>
 
-// Function to convert Euler angles to a rotation matrix
-Eigen::Matrix3d eulerToRotationMatrix(double roll, double pitch, double yaw) {
+using Eigen::Matrix3f; // Define a 3x3 float matrix
+
+/**
+ * Convert Euler angles (roll, pitch, yaw) to a rotation matrix.
+ *
+ * @param roll The rotation around the x-axis in degrees.
+ * @param pitch The rotation around the y-axis in degrees.
+ * @param yaw The rotation around the z-axis in degrees.
+ *
+ * @return A 3x3 rotation matrix.
+ */
+Matrix3f euler_to_rotation_matrix(float roll, float pitch, float yaw) {
     // Convert degrees to radians
-    roll = roll * M_PI / 180.0;
-    pitch = pitch * M_PI / 180.0;
-    yaw = yaw * M_PI / 180.0;
+    float roll_rad = roll * M_PI / 180.0f;
+    float pitch_rad = pitch * M_PI / 180.0f;
+    float yaw_rad = yaw * M_PI / 180.0f;
 
-    // Calculate individual rotation matrices
-    Eigen::Matrix3d Rx = Eigen::AngleAxisd(roll, Eigen::Vector3d::UnitX());
-    Eigen::Matrix3d Ry = Eigen::AngleAxisd(pitch, Eigen::Vector3d::UnitY());
-    Eigen::Matrix3d Rz = Eigen::AngleAxisd(yaw, Eigen::Vector3d::UnitZ());
+    // Rotation matrix around x-axis (roll)
+    Matrix3f Rx;
+    Rx << 1, 0, 0,
+          0, std::cos(roll_rad), -std::sin(roll_rad),
+          0, std::sin(roll_rad), std::cos(roll_rad);
 
-    // Combine rotations
-    return Rz * Ry * Rx;
+    // Rotation matrix around y-axis (pitch)
+    Matrix3f Ry;
+    Ry << std::cos(pitch_rad), 0, std::sin(pitch_rad),
+          0, 1, 0,
+          -std::sin(pitch_rad), 0, std::cos(pitch_rad);
+
+    // Rotation matrix around z-axis (yaw)
+    Matrix3f Rz;
+    Rz << std::cos(yaw_rad), -std::sin(yaw_rad), 0,
+          std::sin(yaw_rad), std::cos(yaw_rad), 0,
+          0, 0, 1;
+
+    // Combined rotation matrix, R = Rz * Ry * Rx
+    Matrix3f R = Rz * Ry * Rx;
+
+    return R;
 }
 
-TEST_CASE("Euler to Rotation Matrix", "[euler][rotation]") {
-    SECTION("Test with zero angles") {
-        Eigen::Matrix3d expected = Eigen::Matrix3d::Identity();
-        Eigen::Matrix3d result = eulerToRotationMatrix(0.0, 0.0, 0.0);
-        REQUIRE(result.isApprox(expected));
+TEST_CASE("Test Euler to Rotation Matrix") {
+    SECTION("Zero Rotation") {
+        // Test with zero rotation for all axes
+        Matrix3f R = euler_to_rotation_matrix(0, 0, 0);
+        Matrix3f expected = Matrix3f::Identity();
+        REQUIRE_THAT(R, Catch::Approx(expected).epsilon(1e-6));
     }
 
-    SECTION("Test with 90 degree roll") {
-        Eigen::Matrix3d expected = Eigen::Matrix3d::Zero();
-        expected << 0, -1, 0,
-                   1, 0, 0,
-                   0, 0, 1;
-        Eigen::Matrix3d result = eulerToRotationMatrix(90.0, 0.0, 0.0);
-        REQUIRE(result.isApprox(expected, 1e-6));
-    }
-
-    SECTION("Test with 90 degree pitch") {
-        Eigen::Matrix3d expected = Eigen::Matrix3d::Zero();
+    SECTION("Rotation About X") {
+        // Test rotation about the x-axis
+        Matrix3f R = euler_to_rotation_matrix(90, 0, 0);
+        Matrix3f expected = Matrix3f::Zero();
         expected << 1, 0, 0,
-                   0, 0, -1,
-                   0, 1, 0;
-        Eigen::Matrix3d result = eulerToRotationMatrix(0.0, 90.0, 0.0);
-        REQUIRE(result.isApprox(expected, 1e-6));
+                    0, 0, -1,
+                    0, 1, 0;
+        REQUIRE_THAT(R, Catch::Approx(expected).epsilon(1e-6));
     }
 
-    SECTION("Test with 90 degree yaw") {
-        Eigen::Matrix3d expected = Eigen::Matrix3d::Zero();
+    SECTION("Rotation About Y") {
+        // Test rotation about the y-axis
+        Matrix3f R = euler_to_rotation_matrix(0, 90, 0);
+        Matrix3f expected = Matrix3f::Zero();
         expected << 0, 0, 1,
-                   1, 0, 0,
-                   0, -1, 0;
-        Eigen::Matrix3d result = eulerToRotationMatrix(0.0, 0.0, 90.0);
-        REQUIRE(result.isApprox(expected, 1e-6));
+                    0, 1, 0,
+                    -1, 0, 0;
+        REQUIRE_THAT(R, Catch::Approx(expected).epsilon(1e-6));
     }
+
+    SECTION("Rotation About Z") {
+        // Test rotation about the z-axis
+        Matrix3f R = euler_to_rotation_matrix(0, 0, 90);
+        Matrix3f expected = Matrix3f::Zero();
+        expected << 0, -1, 0,
+                    1, 0, 0,
+                    0, 0, 1;
+        REQUIRE_THAT(R, Catch::Approx(expected).epsilon(1e-6));
+    }
+
+    SECTION("Combined Rotation") {
+        // Test combined rotation
+        Matrix3f R = euler_to_rotation_matrix(30, 45, 60);
+        Matrix3f expected = Matrix3f::Zero();
+        expected << 0.35355339, -0.5732233, 0.73919892,
+                    0.61237244, 0.73919892, 0.28033009,
+                    -0.70710678, 0.35355339, 0.61237244;
+        REQUIRE_THAT(R, Catch::Approx(expected).epsilon(1e-5));
+    }
+}
+
+int main(int argc, char* argv[]) {
+    return Catch::Session().run(argc, argv);
 }
 ```
 
 ### Explanation:
-1. **Include Necessary Headers**: We include `catch.hpp` for Catch2 and `Eigen/Dense` for matrix operations.
-2. **Function Definition**: The `eulerToRotationMatrix` function converts Euler angles to a rotation matrix using Eigen library.
-3. **Catch2 Test Cases**:
-   - `SECTION("Test with zero angles")`: Checks if the rotation matrix is identity when all angles are zero.
-   - `SECTION("Test with 90 degree roll")`, `SECTION("Test with 90 degree pitch")`, `SECTION("Test with 90 degree yaw")`: Check the rotation matrix for specific Euler angle values.
+1. **Include Libraries**:
+   - `<iostream>` for basic I/O.
+   - `<cmath>` for trigonometric functions.
+   - `<Eigen/Dense>` for matrix operations.
+   - `<catch2/catch_test_macros.hpp>` for Catch2 testing framework.
 
-Make sure to link against the Eigen library when compiling your C++ code. For example, if you're using g++, you might compile it like this:
+2. **Type Definitions**:
+   - `Matrix3f` is defined using `Eigen::Matrix3f`, which represents a 3x3 matrix with float elements.
 
-```sh
-g++ -std=c++14 -I/path/to/eigen your_test_file.cpp -o your_test_executable
+3. **Function Definition**:
+   - `euler_to_rotation_matrix` takes three floats representing Euler angles in degrees and returns a 3x3 rotation matrix.
+
+4. **Test Class**:
+   - The `TEST_CASE` macro defines a test case.
+   - Each `SECTION` within the test case defines a specific test scenario.
+   - Assertions are performed using `REQUIRE_THAT` with `Catch::Approx` to compare floating-point values with a specified epsilon value.
+
+5. **Main Function**:
+   - The `main` function initializes and runs the Catch2 test session.
+
+### CMake Configuration (Optional)
+If you are using CMake to build your project, you can add the following lines to your `CMakeLists.txt` file to ensure that the Eigen and Catch2 libraries are linked correctly:
+
+```cmake
+cmake_minimum_required(VERSION 3.10)
+project(EulerToRotationMatrix)
+
+# Find Eigen3
+find_package(Eigen3 REQUIRED)
+
+# Find Catch2
+find_package(Catch2 REQUIRED)
+
+# Add executable
+add_executable(EulerToRotationMatrix main.cpp)
+
+# Link Eigen3
+target_include_directories(EulerToRotationMatrix PRIVATE ${EIGEN3_INCLUDE_DIRS})
+
+# Link Catch2
+target_link_libraries(EulerToRotationMatrix PRIVATE Catch2::Catch2)
 ```
 
-Replace `/path/to/eigen` with the actual path where the Eigen headers are located.
+This configuration ensures that the Eigen and Catch2 headers and libraries are included correctly during compilation.

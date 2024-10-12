@@ -1,36 +1,73 @@
-To convert the given Python unittest test class to TypeScript using Jest, you'll need to define a similar test function that uses Jest's testing syntax. Below is an example of how you might write the corresponding TypeScript test case for the `extract_character_bits` function:
+Certainly! Below is the equivalent TypeScript test class using Jest, ensuring that the functionality and logic of the tests are preserved. The necessary type annotations and Jest assertions are included to match the Python unittest framework.
+
+### TypeScript Code with Jest Testing
 
 ```typescript
-import { extractCharacterBits } from './path-to-your-module'; // Adjust the path accordingly
-import { expect } from '@jest/globals';
+import { extractCharacterBits } from './your_module'; // Import the function from your module
 
-describe('extractCharacterBits', () => {
-  it('should return the correct position and bits when character is found', () => {
-    const byteArray = Buffer.from('Hello, World!', 'utf-8');
-    const char = 'o';
-    const result = extractCharacterBits(byteArray, char);
+describe('TestExtractCharacterBits', () => {
+    it('test_case_1_valid_utf8', () => {
+        const byteArray = new Uint8Array([72, 101, 108, 108, 111, 44, 32, 87, 111, 114, 108, 100, 33]);
+        const char = 'W';
+        const result = extractCharacterBits(byteArray, char, 'utf-8');
+        const expectedResult = [7, '01010111'];  // 'W' is at position 7 with binary bits
+        expect(result).toEqual(expectedResult);
+    });
 
-    expect(result).toEqual([4, '1100']);
-  });
+    it('test_case_2_non_existent_character', () => {
+        const byteArray = new Uint8Array([84, 104, 105, 115, 32, 105, 115, 32, 97, 32, 116, 101, 115, 116, 46]);
+        const char = 'z';
+        const result = extractCharacterBits(byteArray, char, 'utf-8');
+        expect(result).toBeNull();  // Character 'z' is not in the byte array
+    });
 
-  it('should return null when character is not found', () => {
-    const byteArray = Buffer.from('Hello, World!', 'utf-8');
-    const char = 'z';
-    const result = extractCharacterBits(byteArray, char);
+    it('test_case_3_invalid_encoding', () => {
+        const byteArray = new Uint8Array([255, 254]);
+        const char = 'A';
+        const result = extractCharacterBits(byteArray, char, 'ascii');  // Invalid bytes for ASCII
+        expect(result).toBeNull();  // Should handle UnicodeDecodeError and return null
+    });
 
-    expect(result).toBeNull();
-  });
+    it('test_case_4_valid_utf16', () => {
+        const byteString = 'Hello, World!';
+        const byteArray = new Uint8Array(new TextEncoder().encode(byteString).buffer);
+        const char = '!';
+        const result = extractCharacterBits(byteArray, char, 'utf-16');
+        const expectedResult = [12, '00100001 00000000'];  // '!' at position 12 in UTF-16 encoding
+        expect(result).toEqual(expectedResult);
+    });
 
-  it('should handle different character encodings', () => {
-    const byteArray = Buffer.from('你好，世界！', 'gbk'); // Assuming gbk encoding
-    const char = '好';
-    const result = extractCharacterBits(byteArray, char, 'gbk');
-
-    expect(result).toEqual([0, '11100100']);
-  });
+    it('test_case_5_special_characters_utf8', () => {
+        const byteString = 'Python 🐍 is fun!';
+        const byteArray = new Uint8Array(new TextEncoder().encode(byteString).buffer);
+        const char = '🐍';
+        const result = extractCharacterBits(byteArray, char, 'utf-8');
+        const expectedResult = [7, '11110000 10011111 10010000 10001101'];  // Unicode character 🐍 in UTF-8
+        expect(result).toEqual(expectedResult);
+    });
 });
 ```
 
-In this TypeScript test file, we're using Jest's `describe` and `it` functions to group our tests together and define individual test cases. We're also using `expect` to assert the expected outcomes of our `extractCharacterBits` function.
+### Explanation:
+1. **Importing the Function**:
+   - The `extractCharacterBits` function is imported from the module where it is defined.
 
-Make sure to adjust the import statement to point to the actual location of your `extractCharacterBits` function implementation. Additionally, you may need to install the necessary dependencies (`@types/jest`) and configure your project to use TypeScript with Jest.
+2. **Describe Block**:
+   - The `describe` block groups all the test cases under a single description.
+
+3. **Test Cases**:
+   - Each test case is defined using the `it` function.
+   - The test cases are named similarly to the Python unittest test methods.
+
+4. **Byte Arrays**:
+   - Byte arrays are created using `Uint8Array` and populated with the appropriate byte values.
+
+5. **Assertions**:
+   - Jest assertions (`expect`) are used to verify the results.
+   - `toEqual` is used to compare tuples.
+   - `toBeNull` is used to check for `null` results.
+
+6. **Encoding and Decoding**:
+   - For UTF-16 encoding, the byte array is created using `new TextEncoder().encode(byteString).buffer`.
+
+This TypeScript code preserves the original functionality and logic of the Python unittest test cases while adapting to Jest's syntax and features.

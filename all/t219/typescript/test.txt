@@ -1,34 +1,107 @@
-Here's how you can convert your Python unittest test case into a TypeScript test case using Jest:
+Certainly! Here is the equivalent TypeScript test class using Jest, ensuring that the functionality and logic of the tests are preserved. The Python unittest assertions are mapped to the appropriate Jest assertions.
+
+### TypeScript Code
+
+First, let's define the `checkDividendVariances` function in TypeScript:
 
 ```typescript
-import { checkDividendVariances } from './path_to_your_module'; // Adjust path accordingly
+function checkDividendVariances(records: [string, string, number][]): [string, string][] {
+    // Dictionary to store dividend amounts by (ticker, exDividendDate)
+    const dividendDict: Map<[string, string], Set<number>> = new Map();
 
-describe('checkDividendVariances', () => {
-  it('should return tickers with the same ex-dividend date but different dividend amounts', () => {
-    const records = [
-      ['AAPL', '2023-10-05', 0.75],
-      ['GOOGL', '2023-10-05', 0.65],
-      ['AAPL', '2023-10-05', 0.85], // Different amount for AAPL
-      ['MSFT', '2023-10-05', 0.45],
-      ['MSFT', '2023-10-05', 0.45] // Same amount for MSFT
-    ];
+    // Iterate through the records
+    for (const [ticker, exDividendDate, dividendAmount] of records) {
+        const key: [string, string] = [ticker, exDividendDate];
+        if (!dividendDict.has(key)) {
+            dividendDict.set(key, new Set());
+        }
+        dividendDict.get(key)?.add(dividendAmount);
+    }
 
-    const expected = [
-      ['AAPL', '2023-10-05']
-    ];
+    // Find entries with more than one unique dividend amount
+    const result: [string, string][] = [];
+    for (const [key, amounts] of dividendDict) {
+        if (amounts.size > 1) {
+            result.push([key[0], key[1]]);
+        }
+    }
 
-    expect(checkDividendVariances(records)).toEqual(expected);
-  });
+    return result;
+}
+```
+
+### Jest Test Class
+
+Now, let's define the Jest test class:
+
+```typescript
+import { expect } from '@jest/globals';
+
+describe('TestCheckDividendVariances', () => {
+    it('should handle no inconsistencies', () => {
+        const records = [
+            ['AAPL', '2023-09-01', 0.22],
+            ['AAPL', '2023-09-01', 0.22],
+            ['MSFT', '2023-09-01', 0.56],
+            ['GOOG', '2023-09-02', 0.00]
+        ];
+        const expectedOutput: [string, string][] = [];
+        expect(checkDividendVariances(records)).toEqual(expectedOutput);
+    });
+
+    it('should handle one inconsistency', () => {
+        const records = [
+            ['AAPL', '2023-09-01', 0.22],
+            ['AAPL', '2023-09-01', 0.23],  // Different amount
+            ['MSFT', '2023-09-01', 0.56],
+            ['GOOG', '2023-09-02', 0.00]
+        ];
+        const expectedOutput: [string, string][] = [['AAPL', '2023-09-01']];
+        expect(checkDividendVariances(records)).toEqual(expectedOutput);
+    });
+
+    it('should handle multiple inconsistencies', () => {
+        const records = [
+            ['AAPL', '2023-09-01', 0.22],
+            ['AAPL', '2023-09-01', 0.23],  // Different amount
+            ['MSFT', '2023-09-01', 0.56],
+            ['MSFT', '2023-09-01', 0.60],  // Different amount
+            ['GOOG', '2023-09-02', 0.00],
+            ['TSLA', '2023-09-03', 0.10],
+            ['TSLA', '2023-09-03', 0.10],  // Same amount, no inconsistency
+            ['TSLA', '2023-09-03', 0.15]  // Different amount
+        ];
+        const expectedOutput: [string, string][] = [['AAPL', '2023-09-01'], ['MSFT', '2023-09-01'], ['TSLA', '2023-09-03']];
+        expect(checkDividendVariances(records)).toEqual(expectedOutput);
+    });
+
+    it('should handle a single record', () => {
+        const records = [
+            ['AAPL', '2023-09-01', 0.22]
+        ];
+        const expectedOutput: [string, string][] = [];
+        expect(checkDividendVariances(records)).toEqual(expectedOutput);
+    });
+
+    it('should handle an empty list', () => {
+        const records: [string, string, number][] = [];
+        const expectedOutput: [string, string][] = [];
+        expect(checkDividendVariances(records)).toEqual(expectedOutput);
+    });
 });
 ```
 
-In this TypeScript test case:
+### Explanation:
+1. **Function Definition**:
+   - The `checkDividendVariances` function is defined with proper type annotations.
 
-1. We import the `checkDividendVariances` function from your module.
-2. We use `describe` to group related tests together.
-3. Inside the `describe`, we define an `it` block for each test case.
-4. We provide input data in the form of an array of tuples, similar to your Python example.
-5. We define the expected output.
-6. We call `expect` followed by the function call and chain `.toEqual(expected)` to assert that the output matches the expected result.
+2. **Jest Test Suite**:
+   - The `describe` block defines the test suite named `TestCheckDividendVariances`.
+   - Each `it` block represents a test case with a descriptive name.
+   - The `expect` function is used to assert the expected output using `toEqual`.
 
-Make sure to adjust the import statement to point to the correct location of your `checkDividendVariances` function.
+3. **Test Cases**:
+   - Each test case provides input data (`records`) and expected output (`expectedOutput`).
+   - The `expect` function checks that the actual output matches the expected output.
+
+This TypeScript code preserves the original functionality and logic of the Python unittest test cases while adapting them to Jest's syntax and conventions.

@@ -1,75 +1,142 @@
-Certainly! Below is the equivalent TypeScript test case using Jest for the given Python `unittest` test method. The TypeScript function `convertYamlToJson` would need to be implemented separately and then tested with Jest.
+Certainly! Below is the equivalent TypeScript test class using Jest, ensuring that the functionality and logic of the tests are preserved. The necessary imports, setup, teardown, and assertions are adjusted to match Jest's syntax and conventions.
+
+### TypeScript Code with Jest Testing Framework
+
+First, ensure you have the necessary dependencies installed:
+
+```bash
+npm install --save-dev jest ts-jest @types/jest
+```
+
+Add Jest configuration to your `tsconfig.json`:
+
+```json
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "target": "es6",
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "outDir": "./dist",
+    "baseUrl": "./src",
+    "incremental": true,
+    "strict": true,
+    "jsx": "react"
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "**/*.spec.ts"],
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node"
+  }
+}
+```
+
+Now, here is the TypeScript test class using Jest:
 
 ```typescript
-import { describe, it, expect } from '@jest/globals';
-import fs from 'fs';
-import path from 'path';
+import * as fs from 'fs';
+import * as yaml from 'js-yaml';
+import { convertYamlToJson } from './path/to/convertYamlToJson'; // Import your conversion function
 
-// Assuming the convertYamlToJson function is defined somewhere in your project
-import { convertYamlToJson } from './yourModule'; // Adjust the import path accordingly
-
-describe('convertYamlToJson', () => {
-  const tempDir = path.join(__dirname, 'temp');
-  let inputYamlPath: string;
-  let outputJsonPath: string;
+describe('TestConvertYamlToJson', () => {
+  let simpleYaml: string;
+  let nestedYaml: string;
+  let emptyYaml: string;
+  let listYaml: string;
+  let invalidYaml: string;
 
   beforeEach(() => {
-    if (!fs.existsSync(tempDir)) {
-      fs.mkdirSync(tempDir);
-    }
+    // Create temporary YAML files for testing
+    simpleYaml = 'simple.yaml';
+    nestedYaml = 'nested.yaml';
+    emptyYaml = 'empty.yaml';
+    listYaml = 'list.yaml';
+    invalidYaml = 'invalid.yaml';
 
-    inputYamlPath = path.join(tempDir, 'input.yaml');
-    outputJsonPath = path.join(tempDir, 'output.json');
-
-    // Write some sample YAML content to the input file
-    fs.writeFileSync(inputYamlPath, `
-name: John Doe
-age: 30
-`);
+    fs.writeFileSync(simpleYaml, "name: John Doe\nage: 30\n");
+    fs.writeFileSync(nestedYaml, "person:\n  name: Jane Doe\n  age: 25\n  address:\n    city: New York\n    zip: 10001\n");
+    fs.writeFileSync(emptyYaml, "");
+    fs.writeFileSync(listYaml, "- item1\n- item2\n- item3\n");
+    fs.writeFileSync(invalidYaml, "{ invalid: YAML: structure }\n");
   });
 
   afterEach(() => {
-    fs.unlinkSync(inputYamlPath);
-    fs.unlinkSync(outputJsonPath);
-    fs.rmdirSync(tempDir);
+    // Remove temporary files after testing
+    fs.unlinkSync(simpleYaml);
+    fs.unlinkSync(nestedYaml);
+    fs.unlinkSync(emptyYaml);
+    fs.unlinkSync(listYaml);
+    fs.unlinkSync(invalidYaml);
+
+    if (fs.existsSync('output.json')) {
+      fs.unlinkSync('output.json');
+    }
   });
 
-  it('should convert YAML to JSON successfully', async () => {
-    await convertYamlToJson(inputYamlPath, outputJsonPath);
+  it('should correctly convert simple YAML to JSON', () => {
+    convertYamlToJson(simpleYaml, 'output.json');
+    const data = JSON.parse(fs.readFileSync('output.json', 'utf-8'));
+    expect(data).toEqual({ name: 'John Doe', age: 30 });
+  });
 
-    const jsonContent = fs.readFileSync(outputJsonPath, 'utf8');
-    const expectedJsonContent = '{"name":"John Doe","age":30}';
+  it('should correctly convert nested YAML to JSON', () => {
+    convertYamlToJson(nestedYaml, 'output.json');
+    const data = JSON.parse(fs.readFileSync('output.json', 'utf-8'));
+    const expectedData = {
+      person: {
+        name: 'Jane Doe',
+        age: 25,
+        address: {
+          city: 'New York',
+          zip: 10001
+        }
+      }
+    };
+    expect(data).toEqual(expectedData);
+  });
 
-    expect(jsonContent).toBe(expectedJsonContent);
+  it('should correctly handle empty YAML conversion', () => {
+    convertYamlToJson(emptyYaml, 'output.json');
+    const data = JSON.parse(fs.readFileSync('output.json', 'utf-8'));
+    expect(data).toBeNull();
+  });
+
+  it('should correctly convert list YAML to JSON', () => {
+    convertYamlToJson(listYaml, 'output.json');
+    const data = JSON.parse(fs.readFileSync('output.json', 'utf-8'));
+    expect(data).toEqual(['item1', 'item2', 'item3']);
+  });
+
+  it('should throw an error when converting invalid YAML', () => {
+    expect(() => convertYamlToJson(invalidYaml, 'output.json')).toThrowErrorMatchingInlineSnapshot(`"YAMLException: while parsing a flow scalar\\n  in \\"<unicode string>\\", line 1, column 1:\\n    { invalid: YAML: structure }\\n    ^\\nexpected \\'<<\\', but found \\'{\\'\\n  in \\"<unicode string>\\", line 1, column 2:\\n    { invalid: YAML: structure }\\n      ^\\"`);
   });
 });
 ```
 
 ### Explanation:
-1. **Imports**: Import necessary modules like `@jest/globals` for Jest testing utilities, `fs` for file system operations, and `path` for handling file paths.
-2. **Test Suite**: Use `describe` to create a test suite named `'convertYamlToJson'`.
-3. **Setup and Teardown**:
-   - `beforeEach`: Creates a temporary directory and writes a sample YAML file before each test.
-   - `afterEach`: Deletes the temporary files and directory after each test.
-4. **Test Case**: 
-   - Uses `it` to define a test case named `'should convert YAML to JSON successfully'`.
-   - Calls the `convertYamlToJson` function with the input and output file paths.
-   - Reads the content of the output JSON file and compares it with the expected JSON content using `expect`.
 
-Make sure you have Jest installed and configured in your project. You can install Jest using npm or yarn:
+1. **Imports**:
+   - `fs` is used for reading and writing files.
+   - `yaml` is used for parsing YAML content.
+   - Import the `convertYamlToJson` function from the appropriate path.
 
-```sh
-npm install --save-dev jest
-# or
-yarn add --dev jest
-```
+2. **Describe Block**:
+   - The `describe` block groups all the test cases together.
 
-Then, you can run the tests using the following command:
+3. **BeforeEach Block**:
+   - `beforeEach` sets up the temporary YAML files before each test case.
 
-```sh
-npx jest
-# or
-yarn jest
-```
+4. **AfterEach Block**:
+   - `afterEach` cleans up the temporary files after each test case.
 
-This setup assumes that the `convertYamlToJson` function is correctly implemented and available for testing. If the function is part of another module, adjust the import statement accordingly.
+5. **Test Cases**:
+   - Each `it` block represents a test case.
+   - Assertions are made using Jest's `expect` function.
+
+6. **Assertions**:
+   - `expect(data).toEqual(expectedData)` checks if the parsed JSON matches the expected data.
+   - `expect(() => convertYamlToJson(invalidYaml, 'output.json')).toThrowErrorMatchingInlineSnapshot` checks if the function throws an error when given invalid YAML.
+
+This TypeScript code preserves the original functionality and structure of the Python unittest test class, using Jest for testing.

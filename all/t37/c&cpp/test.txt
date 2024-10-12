@@ -1,115 +1,158 @@
-To convert the given Python unittest test class to a C++ test case using Catch2, you first need to define your `QuadratureRule` class in C++ and then implement the `lanczos` function. Below is an example of how you can do it:
+Certainly! Let's convert the provided Python unittest test class into an equivalent test class using Catch2 in C++. We will ensure that the functionality and logic of the tests are preserved, and we will use appropriate assertions in Catch2.
 
-### Step 1: Define the `QuadratureRule` Class in C++
+Here is the equivalent C++ code using Catch2:
+
+### C++ Code with Catch2 Testing Framework
 
 ```cpp
+#include <catch2/catch_test_macros.hpp>
 #include <vector>
-#include <array>
+#include <stdexcept>
+#include <cmath>
 
-struct QuadratureRule {
+// QuadratureRule class definition
+class QuadratureRule {
+public:
     std::vector<double> x;
     std::vector<double> w;
 
-    QuadratureRule(const std::vector<double>& _x, const std::vector<double>& _w)
-        : x(_x), w(_w) {}
-};
-```
-
-### Step 2: Implement the `lanczos` Function in C++
-
-```cpp
-#include <vector>
-#include <array>
-
-std::tuple<std::vector<double>, std::vector<double>, std::vector<double>, QuadratureRule>
-lanczos(int n, const QuadratureRule& quadrature_rule) {
-    // Implementation of the Lanczos function goes here
-    // This is just a placeholder implementation
-    std::vector<double> alpha(n);
-    std::vector<double> beta(n);
-    std::vector<double> p(n + 1);
-    std::vector<double> q(n + 1);
-
-    // Placeholder values
-    for (int i = 0; i < n; ++i) {
-        alpha[i] = 0.0;
-        beta[i] = 0.0;
-        p[i] = 0.0;
-        q[i] = 0.0;
-    }
-
-    return {alpha, beta, p, quadrature_rule};
-}
-```
-
-### Step 3: Write the Test Case Using Catch2
-
-First, ensure you have Catch2 installed. If not, you can download it from [Catch2's GitHub repository](https://github.com/catchorg/Catch2).
-
-Here is an example of how you can write the test case using Catch2:
-
-```cpp
-#define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
-#include "catch.hpp"
-
-#include <vector>
-#include <array>
-
-struct QuadratureRule {
-    std::vector<double> x;
-    std::vector<double> w;
-
-    QuadratureRule(const std::vector<double>& _x, const std::vector<double>& _w)
-        : x(_x), w(_w) {}
+    // Constructor
+    QuadratureRule(const std::vector<double>& x, const std::vector<double>& w) : x(x), w(w) {}
 };
 
-std::tuple<std::vector<double>, std::vector<double>, std::vector<double>, QuadratureRule>
-lanczos(int n, const QuadratureRule& quadrature_rule) {
-    // Implementation of the Lanczos function goes here
-    // This is just a placeholder implementation
-    std::vector<double> alpha(n);
-    std::vector<double> beta(n);
-    std::vector<double> p(n + 1);
-    std::vector<double> q(n + 1);
-
-    // Placeholder values
-    for (int i = 0; i < n; ++i) {
-        alpha[i] = 0.0;
-        beta[i] = 0.0;
-        p[i] = 0.0;
-        q[i] = 0.0;
+// Function to compute the dot product of two vectors
+double dot_product(const std::vector<double>& v1, const std::vector<double>& v2) {
+    double result = 0.0;
+    for (size_t i = 0; i < v1.size(); ++i) {
+        result += v1[i] * v2[i];
     }
-
-    return {alpha, beta, p, quadrature_rule};
+    return result;
 }
 
-TEST_CASE("Lanczos Function", "[lanczos]") {
-    // Create a sample QuadratureRule
-    std::vector<double> nodes = {0.0, 0.5, 1.0};
-    std::vector<double> weights = {1.0, 1.0, 1.0};
-    QuadratureRule qr(nodes, weights);
+// Lanczos function implementation
+std::tuple<std::vector<double>, std::vector<double>, std::vector<double>, QuadratureRule>
+lanczos(int n, const QuadratureRule& quadrature_rule) {
+    if (n <= 0 || n > quadrature_rule.x.size()) {
+        throw std::invalid_argument("n must be between 1 and len(x).");
+    }
 
-    // Call the lanczos function
-    auto result = lanczos(3, qr);
+    const auto& x = quadrature_rule.x;
+    const auto& w = quadrature_rule.w;
+    std::vector<double> alpha(n);
+    std::vector<double> beta(n - 1);
+    std::vector<double> gamma(n);
 
-    // Extract the results
-    auto [alpha, beta, p, new_qr] = result;
+    // Initial polynomial p_0(x) = 1, p_-1(x) = 0 (non-existent, thus ignored in calculations)
+    std::vector<double> p0(x.size(), 1.0);
+    std::vector<double> p1(x.size(), 0.0);
 
-    // Perform assertions
-    REQUIRE(alpha.size() == 3);
-    REQUIRE(beta.size() == 3);
-    REQUIRE(p.size() == 4);
-    REQUIRE(new_qr.x == qr.x);
-    REQUIRE(new_qr.w == qr.w);
+    for (int i = 0; i < n; ++i) {
+        // Compute new polynomial p_i
+        std::vector<double> pi(x.size());
+        if (i > 0) {
+            for (size_t j = 0; j < x.size(); ++j) {
+                pi[j] = (x[j] - alpha[i - 1]) * p0[j];
+            }
+        } else {
+            pi = p0;
+        }
+
+        if (i > 1) {
+            for (size_t j = 0; j < x.size(); ++j) {
+                pi[j] -= beta[i - 1] * p1[j];
+            }
+        }
+
+        gamma[i] = dot_product(w, pi);
+        alpha[i] = dot_product(w, x) / gamma[i];
+
+        if (i < n - 1) {
+            beta[i] = dot_product(w, pi) / gamma[i];
+            p1 = p0;
+            p0 = pi;
+        }
+    }
+
+    return std::make_tuple(alpha, beta, gamma, quadrature_rule);
+}
+
+TEST_CASE("Test Orthogonal Polynomial", "[orthogonal_polynomial]") {
+    SECTION("Basic Lanczos Test") {
+        std::vector<double> x = {0.0, 0.5, 1.0};
+        std::vector<double> w = {0.333, 0.333, 0.334};
+        QuadratureRule quadrature_rule(x, w);
+        int n = 2;
+
+        auto [alpha, beta, gamma, _] = lanczos(n, quadrature_rule);
+
+        REQUIRE(alpha.size() == n);
+        REQUIRE(beta.size() == n - 1);
+        REQUIRE(gamma.size() == n);
+    }
+
+    SECTION("N Greater Than Length Test") {
+        std::vector<double> x = {0.0, 0.5, 1.0};
+        std::vector<double> w = {0.333, 0.333, 0.334};
+        QuadratureRule quadrature_rule(x, w);
+        int n = 4;
+
+        REQUIRE_THROWS_AS(lanczos(n, quadrature_rule), std::invalid_argument);
+    }
+
+    SECTION("N Zero Test") {
+        std::vector<double> x = {0.0, 0.5, 1.0};
+        std::vector<double> w = {0.333, 0.333, 0.334};
+        QuadratureRule quadrature_rule(x, w);
+        int n = 0;
+
+        REQUIRE_THROWS_AS(lanczos(n, quadrature_rule), std::invalid_argument);
+    }
+
+    SECTION("Non-uniform Weights Test") {
+        std::vector<double> x = {0.0, 0.5, 1.0};
+        std::vector<double> w = {0.1, 0.4, 0.5};
+        QuadratureRule quadrature_rule(x, w);
+        int n = 3;
+
+        auto [alpha, beta, gamma, _] = lanczos(n, quadrature_rule);
+
+        REQUIRE(alpha.size() == n);
+        REQUIRE(beta.size() == n - 1);
+        REQUIRE(gamma.size() == n);
+        REQUIRE(std::all_of(gamma.begin(), gamma.end(), [](double val) { return val > 0; }));
+    }
+
+    SECTION("Single Node Test") {
+        std::vector<double> x = {0.5};
+        std::vector<double> w = {1.0};
+        QuadratureRule quadrature_rule(x, w);
+        int n = 1;
+
+        auto [alpha, beta, gamma, _] = lanczos(n, quadrature_rule);
+
+        REQUIRE(alpha.size() == n);
+        REQUIRE(beta.size() == n - 1);
+        REQUIRE(gamma.size() == n);
+        REQUIRE(std::all_of(gamma.begin(), gamma.end(), [](double val) { return val > 0; }));
+    }
 }
 ```
 
-### Explanation
+### Explanation:
+1. **QuadratureRule Class**:
+   - The `QuadratureRule` class is defined with member variables `x` and `w`.
+   - The constructor initializes these member variables.
 
-1. **Define the `QuadratureRule` Struct**: The struct is defined similarly to the Python version but uses standard C++ containers.
+2. **Dot Product Function**:
+   - A helper function `dot_product` is defined to compute the dot product of two vectors.
 
-2. **Implement the `lanczos` Function**: The function signature and logic are converted to C++. Note that the actual implementation of the Lanczos algorithm should be added where indicated.
+3. **Lanczos Function**:
+   - The `lanczos` function is implemented with appropriate error checking and computation logic.
 
-3. **Write the Test Case**: The test case uses Catch2 macros to create a test case named "Lanczos Function". It sets up a sample `QuadratureRule`, calls the `lanczos` function, and performs assertions to check if the output is as expected.
+4. **Catch2 Test Cases**:
+   - Each test case is defined within a `SECTION` block inside the `TEST_CASE`.
+   - Assertions are used to verify the correctness of the function outputs.
+   - `REQUIRE` is used for basic assertions.
+   - `REQUIRE_THROWS_AS` is used to check for specific exception types.
 
-Make sure to compile and run your tests using a build system that supports C++ and Catch2.
+This C++ code preserves the functionality and logic of the original Python unittest test cases while adhering to the Catch2 testing framework.

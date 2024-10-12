@@ -1,36 +1,99 @@
-Here is your Python function converted into Java:
+Here is the equivalent Java code organized with the package name `org.real.temp` and the class name `Answer`. The functionality, logic, and structure have been preserved while adapting to Java's syntax and language features:
 
 ```java
 package org.real.temp;
 
-import java.nio.charset.Charset;
-import java.util.Arrays;
+import java.nio.charset.StandardCharsets;
+import java.nio.charset.UnsupportedCharsetException;
 
 public class Answer {
-    
-    public static Object[] extractCharacterBits(byte[] byteArray, String charToFind, Charset charset) {
-        
+
+    /**
+     * Extracts the position and bits of a specific character from a byte array.
+     *
+     * @param byteArray The byte array to search within.
+     * @param character The character to find in the byte array.
+     * @param charset   The character encoding of the byte array.
+     * @return A pair of (position, bits) if the character is found, otherwise null.
+     */
+    public static Pair<Integer, String> extractCharacterBits(byte[] byteArray, char character, String charset) {
         try {
-            // Convert byte array to string using specified charset
-            String str = new String(byteArray, charset);
-            
-            // Get index of character
-            int pos = str.indexOf(charToFind);
-            
-            if(pos == -1) return null; // Character not found
-            
-            // Get bit representation of character
-            byte[] bits = Arrays.copyOfRange(byteArray, pos, pos + 1);
-            
-            return new Object[]{pos, bits};
-            
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
+            // Decode byte array to string using the specified character set
+            String string = new String(byteArray, charset);
+            return extractCharacterDetails(string, character, charset);
+        } catch (UnsupportedCharsetException e) {
+            System.out.println("Failed to decode the byte array.");
             return null;
         }
     }
 
+    private static Pair<Integer, String> extractCharacterDetails(String string, char character, String charset) {
+        // Check if the character is in the decoded string
+        if (string.indexOf(character) != -1) {
+            int position = string.indexOf(character);
+
+            // Find the byte position of the character
+            int bytePosition = string.substring(0, position).getBytes(StandardCharsets.UTF_8).length;
+
+            // Determine the length of the character in bytes
+            int charLength = Character.toString(character).getBytes(StandardCharsets.UTF_8).length;
+
+            // Extract the bits corresponding to the character
+            byte[] bits = new byte[charLength];
+            System.arraycopy(byteArray, bytePosition, bits, 0, charLength);
+
+            // Convert bits to a human-readable binary string
+            StringBuilder bitsAsString = new StringBuilder();
+            for (byte b : bits) {
+                bitsAsString.append(String.format("%8s", Integer.toBinaryString(b & 0xFF)).replace(' ', '0')).append(" ");
+            }
+
+            return new Pair<>(position, bitsAsString.toString().trim());
+        } else {
+            System.out.printf("The character '%c' is not in the byte array.%n", character);
+            return null;
+        }
+    }
+
+    // Simple implementation of a Pair class
+    public static class Pair<K, V> {
+        private K key;
+        private V value;
+
+        public Pair(K key, V value) {
+            this.key = key;
+            this.value = value;
+        }
+
+        public K getKey() {
+            return key;
+        }
+
+        public V getValue() {
+            return value;
+        }
+    }
+
+    public static void main(String[] args) {
+        byte[] byteArray = "Hello, world!".getBytes(StandardCharsets.UTF_8);
+        char character = 'w';
+        String charset = "UTF-8";
+
+        Pair<Integer, String> result = extractCharacterBits(byteArray, character, charset);
+        if (result != null) {
+            System.out.println("Position: " + result.getKey() + ", Bits: " + result.getValue());
+        }
+    }
 }
 ```
 
-Please note that this Java method returns an `Object[]` instead of a `Tuple`, because Java does not have built-in support for tuples like Python. Also, it uses `Charset` instead of `str` for specifying character encodings, and it catches all exceptions that might occur during execution. If you want to handle specific exceptions differently, you should adjust the exception handling accordingly.
+### Explanation:
+1. **Package and Class Definition**: The code is organized under the package `org.real.temp` and the class `Answer`.
+2. **Method Signature**: The method `extractCharacterBits` takes a `byte[]`, a `char`, and a `String` representing the charset.
+3. **Decoding**: The byte array is decoded using the specified charset.
+4. **Character Position**: The position of the character in the decoded string is determined.
+5. **Byte Position**: The byte position of the character is calculated.
+6. **Character Length**: The length of the character in bytes is determined.
+7. **Extracting Bits**: The bits corresponding to the character are extracted and converted to a human-readable binary string.
+8. **Pair Class**: A simple `Pair` class is implemented to hold the result.
+9. **Main Method**: A sample usage of the `extractCharacterBits` method is demonstrated in the `main` method.

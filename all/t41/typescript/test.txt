@@ -1,20 +1,124 @@
-Here is the equivalent TypeScript Jest test case:
+Certainly! Here’s the equivalent TypeScript test class using Jest, ensuring that the functionality and logic of the tests are preserved. The necessary type annotations and Jest assertions are included:
 
 ```typescript
-import { BloomFilter } from './bloom-filter'; // Adjust the import according to your file structure
+import { BloomFilter } from './BloomFilter'; // Assuming BloomFilter is in another file
+import { expect } from '@jest/globals';
 
 describe('BloomFilter', () => {
-  let bloomFilter: BloomFilter;
+  let bf: BloomFilter;
 
   beforeEach(() => {
-    bloomFilter = new BloomFilter(100, 5); // Initialize with size and hash count
+    // Initialize BloomFilter with reasonable size and hash count for testing
+    bf = new BloomFilter(1000, 5);
   });
 
-  it('should add an item to the bloom filter', () => {
-    bloomFilter.add('item');
-    expect(bloomFilter).toContain('item'); // Assuming 'contains' method is implemented
+  it('adds elements and checks their presence', () => {
+    // Test that added elements are reported as present
+    const testItem = "hello world";
+    bf.add(testItem);
+    expect(bf.contains(testItem)).toBe(true);
+  });
+
+  it('checks absence of unadded elements', () => {
+    // Test that an unadded element is not present
+    expect(bf.contains("random item")).toBe(false);
+  });
+
+  it('checks for false positives', () => {
+    // Adding some elements and check for a false positive
+    const itemsToAdd = ["item1", "item2", "item3"];
+    itemsToAdd.forEach(item => {
+      bf.add(item);
+    });
+    // Check for an item not added, expecting a very low chance of false positive due to size and hash count
+    expect(bf.contains("item4")).toBe(false);
+  });
+
+  it('handles hash collisions with similar items', () => {
+    // Test how the Bloom filter handles hash collisions by adding similar items
+    bf.add("item123");
+    bf.add("item124");
+    expect(bf.contains("item123")).toBe(true);
+    expect(bf.contains("item124")).toBe(true);
+  });
+
+  it('reports no items in an empty Bloom Filter', () => {
+    // Ensure that an empty Bloom Filter reports no items
+    expect(bf.contains("anything")).toBe(false);
   });
 });
 ```
 
-Please note that the above code assumes you have a `contains` method in your `BloomFilter` class similar to how Python's `in` keyword works. If not, you would need to implement or mock this method.
+### Explanation:
+1. **Imports**:
+   - Import the `BloomFilter` class from the appropriate file.
+   - Import `expect` from `@jest/globals` for Jest assertions.
+
+2. **Test Suite**:
+   - Use `describe` to group the tests under the `BloomFilter` class.
+
+3. **Before Each Hook**:
+   - Use `beforeEach` to initialize the `BloomFilter` instance before each test case.
+
+4. **Test Cases**:
+   - Each test case is defined using `it` and includes assertions to verify the behavior of the `BloomFilter` class.
+
+5. **Assertions**:
+   - Use `expect` with appropriate assertions (`toBe`) to check the presence or absence of items in the Bloom filter.
+
+### Example Usage:
+Assuming the `BloomFilter` class is defined in a separate file (`BloomFilter.ts`), you would run the tests using Jest:
+
+```typescript
+// BloomFilter.ts
+import { createHash } from 'crypto';
+import BitArray from 'bitarray-js';
+
+class BloomFilter {
+  private size: number;
+  private hashCount: number;
+  private bitArray: BitArray;
+
+  constructor(size: number, hashCount: number) {
+    this.size = size;
+    this.hashCount = hashCount;
+    this.bitArray = new BitArray(size);
+    this.bitArray.fill(false);
+  }
+
+  private *hashes(item: string): Generator<number> {
+    const itemBuffer = Buffer.from(item, 'utf-8');
+    for (let i = 0; i < this.hashCount; i++) {
+      const hashResult = createHash('sha256').update(itemBuffer).digest('hex');
+      const hashInt = parseInt(hashResult, 16) + i;
+      yield hashInt % this.size;
+    }
+  }
+
+  add(item: string): void {
+    for (const hashValue of this.hashes(item)) {
+      this.bitArray.set(hashValue, true);
+    }
+  }
+
+  contains(item: string): boolean {
+    for (const hashValue of this.hashes(item)) {
+      if (!this.bitArray.get(hashValue)) {
+        return false;
+      }
+    }
+    return true;
+  }
+}
+
+export default BloomFilter;
+```
+
+### Running the Tests:
+To run the tests, you would typically use the following command in your project directory:
+
+```sh
+npx jest
+```
+
+This setup ensures that the tests are equivalent to the Python unittests and adhere to TypeScript and Jest best practices.

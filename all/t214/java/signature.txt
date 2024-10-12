@@ -1,27 +1,99 @@
-Sure! Here's how you can translate the Python code signature to Java:
+Certainly! Here is the equivalent Java code for the provided Python function, including proper Javadoc comments and Java conventions:
 
 ```java
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
 /**
- * Reads questions from the given mapping file and returns a list where each element is a tuple containing the compiled regular expression and replacement strings.
- *
- * @param mappingFilePath The path to the file containing regex mappings.
- * @return A list of tuples, where each tuple contains a compiled regex object and a corresponding replacement string.
+ * Reads question from the given mapping file and returns a list where each element is a tuple containing the compiled regular expression and replacement strings.
  */
-public List<Object[]> readMappingFile(String mappingFilePath);
+public class Answer {
+
+    /**
+     * Reads a mapping file and returns a list of tuples with compiled regex and replacement strings.
+     *
+     * @param mappingFilePath Path to the file containing regex mappings.
+     * @return A list of tuples, where each tuple contains a compiled regex object and a corresponding replacement string.
+     * @throws IOException If the mapping file does not exist or cannot be read.
+     */
+    public static List<Tuple<Pattern, String>> readMappingFile(String mappingFilePath) throws IOException {
+        List<Tuple<Pattern, String>> mappings = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(mappingFilePath))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (!line.contains(",")) {
+                    throw new IllegalArgumentException(
+                            "Each line must contain exactly one comma separating the pattern and the replacement.");
+                }
+
+                String[] parts = line.split(",", 2);
+                String oldPattern = parts[0].trim().replaceAll("^'|'$", "");
+                String newWord = parts[1].trim().replaceAll("^'|'$", "");
+                mappings.add(new Tuple<>(Pattern.compile(oldPattern), newWord));
+            }
+        } catch (IOException e) {
+            throw new IOException("Unable to find the specified file: " + mappingFilePath, e);
+        }
+
+        return mappings;
+    }
+
+    /**
+     * A simple Tuple class implementation for demonstration purposes.
+     */
+    public static class Tuple<T1, T2> {
+        private T1 first;
+        private T2 second;
+
+        public Tuple(T1 first, T2 second) {
+            this.first = first;
+            this.second = second;
+        }
+
+        public T1 getFirst() {
+            return first;
+        }
+
+        public T2 getSecond() {
+            return second;
+        }
+    }
+
+    public static void main(String[] args) {
+        try {
+            List<Tuple<Pattern, String>> mappings = readMappingFile("path/to/mapping/file.txt");
+            mappings.forEach(tuple -> System.out.println(tuple.getFirst() + ", " + tuple.getSecond()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
 ```
 
 ### Explanation:
-- **`List<Object[]>`**: In Java, we use `List` to represent a collection of elements. Since the original Python function returns a list of tuples, I've used `Object[]` to represent each tuple. This is because Java doesn't have a built-in tuple type like Python does.
-  
-- **`Pattern`**: For compiling regular expressions in Java, we use the `Pattern` class from the `java.util.regex` package.
+1. **Package and Class Definition**: The Java code is defined within the class `Answer`.
 
-- **Method Signature**:
-  - `public`: Specifies that the method can be accessed from any other class.
-  - `readMappingFile`: The name of the method.
-  - `String mappingFilePath`: The parameter representing the path to the mapping file.
-  - `List<Object[]>`: The return type, which is a list of arrays of objects.
+2. **Javadoc Comments**:
+   - The class-level Javadoc comment explains the purpose of the class.
+   - The method-level Javadoc comment provides details about the method parameters, return type, and exceptions.
 
-This should give you a good starting point for translating your Python function into Java while keeping the structure and functionality similar.
+3. **Method Signature**:
+   - The `readMappingFile` method takes a `String` parameter `mappingFilePath` and returns a `List` of `Tuple<Pattern, String>` objects.
+   - It throws `IOException` if the file cannot be found or read.
+
+4. **File Reading**:
+   - The method uses a `BufferedReader` to read lines from the file.
+   - It checks each line for the presence of a comma and splits it accordingly.
+
+5. **Exception Handling**:
+   - Proper exception handling is implemented to catch `IOException` and `IllegalArgumentException`.
+
+6. **Tuple Class**:
+   - A simple `Tuple` class is defined to hold pairs of `Pattern` and `String` objects.
+
+7. **Main Method**:
+   - A `main` method is included for testing purposes, which calls `readMappingFile` and prints the results.

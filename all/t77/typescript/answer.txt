@@ -1,18 +1,59 @@
-Here is the equivalent TypeScript code:
+Certainly! Here is the equivalent TypeScript code:
 
 ```typescript
-import { format } from 'date-fns';
+import { DateTime, Zone } from 'luxon';
 
-interface FormatTimestampToStringOptions {
-  timestamp: number;
-  dateFormat?: string;
+function formatDateTimeStr(mtime: number, format: string = 'ccc LLL d hh:mm:ss a zzzz yyyy'): string {
+    /**
+     * Convert a UNIX timestamp to a formatted datetime string using the system's local timezone.
+     *
+     * @param mtime - UNIX timestamp.
+     * @param format - Format string for `toFormat`.
+     * @returns Formatted datetime string.
+     */
+    if (mtime < 0) {
+        throw new Error('error mtime');
+    }
+
+    try {
+        // Get the local system timezone
+        const localTz = Zone.local;
+
+        // Convert the UNIX timestamp to a datetime object with timezone
+        const dt = DateTime.fromMillis(mtime * 1000).setZone(localTz);
+
+        // Return the formatted datetime string
+        return dt.toFormat(format);
+    } catch (e) {
+        // Handle any other unexpected errors
+        throw new Error(`Error formatting the datetime: ${e}`);
+    }
 }
 
-export function formatTimestampToString(options: FormatTimestampToStringOptions): string {
-  const { timestamp, dateFormat = '%a %b %d %I:%M:%S %p %z %Y' } = options;
-
-  return format(new Date(timestamp * 1000), dateFormat);
-}
+// Example usage
+console.log(formatDateTimeStr(1689235200)); // Example UNIX timestamp for July 13, 2023
 ```
 
-In this code, I've used `date-fns` library which is a popular JavaScript/TypeScript library for working with dates. It has a `format` function that formats a date based on a provided pattern. Note that `timestamp` in Python is in seconds while in JavaScript it's in milliseconds, so we multiply by 1000 when converting it to a JavaScript `Date`. Also note that you need to install the `date-fns` package before running this code (`npm install date-fns`).
+### Explanation:
+1. **Imports**: 
+   - We use Luxon (`DateTime` and `Zone`) instead of `zoneinfo` because TypeScript does not have a direct equivalent for `zoneinfo`. Luxon provides comprehensive timezone handling.
+
+2. **Function Definition**:
+   - The function `formatDateTimeStr` takes two parameters: `mtime` (a number representing the UNIX timestamp) and `format` (a string representing the format).
+
+3. **Error Handling**:
+   - If `mtime` is negative, it throws an error.
+
+4. **Timezone Handling**:
+   - We use Luxon's `Zone.local` to get the local timezone.
+
+5. **Conversion**:
+   - We convert the UNIX timestamp to a `DateTime` object using `DateTime.fromMillis` and then set the timezone using `setZone`.
+
+6. **Formatting**:
+   - We use `toFormat` to format the datetime string according to the specified format.
+
+7. **Exception Handling**:
+   - Any unexpected errors are caught and re-thrown with a descriptive message.
+
+This TypeScript code maintains the same functionality and logic as the original Python code, adapting to TypeScript's static type system and using Luxon for timezone handling.

@@ -1,63 +1,67 @@
-Sure, here's an example of how you might implement the same functionality in C++ using the Poppler library:
+Certainly! Below is the equivalent C++ code for extracting text from a PDF file using the `poppler` library, which is a popular C++ library for handling PDF files. This code assumes you have the `poppler` library installed and configured in your project.
 
 ```cpp
 #include <iostream>
 #include <string>
 #include <poppler/cpp/poppler-document.h>
+#include <poppler/cpp/poppler-page.h>
 
-std::string extractTextFromPDF(const std::string &file_path) {
-    poppler::document *doc = poppler::document::load_from_file(file_path);
-    
-    if (!doc) {
-        std::cerr << "Error loading PDF document." << std::endl;
+// Function to extract text from a given PDF file
+std::string extract_text_from_pdf(const std::string& file_path) {
+    // Initialize a text container
+    std::string extracted_text;
+
+    try {
+        // Open the PDF file
+        poppler::document* doc = poppler::document::load_from_file(file_path);
+
+        if (!doc || doc->is_locked()) {
+            std::cerr << "Error loading or opening the PDF file." << std::endl;
+            return "";
+        }
+
+        // Loop through each page in the PDF
+        for (int i = 0; i < doc->pages(); ++i) {
+            // Get the current page
+            poppler::page* page = doc->create_page(i);
+
+            if (!page) {
+                std::cerr << "Failed to create page." << std::endl;
+                continue;
+            }
+
+            // Extract text from the page and add it to the text container
+            extracted_text += page->text().to_utf8() + "\n";
+
+            // Clean up the page
+            delete page;
+        }
+
+        // Clean up the document
+        delete doc;
+    } catch (const std::exception& e) {
+        std::cerr << "Exception caught: " << e.what() << std::endl;
         return "";
     }
 
-    int n_pages = doc->pages();
-    std::string extracted_text;
-
-    for (int i = 0; i < n_pages; ++i) {
-        poppler::page *page = doc->create_page(i);
-
-        if (page) {
-            extracted_text += page->text();
-            delete page;
-        }
-    }
-
-    delete doc;
     return extracted_text;
 }
 
 int main() {
-    std::string file_path = "path_to_your_pdf.pdf";
-    std::string text = extractTextFromPDF(file_path);
+    std::string file_path = "path/to/your/pdf/file.pdf";
+    std::string text = extract_text_from_pdf(file_path);
     std::cout << text << std::endl;
     return 0;
 }
 ```
 
-This C++ code uses the Poppler library to load and extract text from a PDF file. Make sure you have the Poppler development libraries installed on your system before compiling this code.
+### Explanation:
+1. **Headers**: Include necessary headers for working with strings and the `poppler` library.
+2. **Function Definition**: Define the function `extract_text_from_pdf` that takes a file path as input and returns the extracted text.
+3. **Document Loading**: Load the PDF document using `poppler::document::load_from_file`.
+4. **Page Iteration**: Iterate over each page in the PDF document.
+5. **Text Extraction**: Extract text from each page and append it to the `extracted_text` string.
+6. **Memory Management**: Properly manage memory by deleting pages and the document after use.
+7. **Exception Handling**: Handle exceptions that might occur during the process.
 
-Here's a brief explanation of the steps:
-
-1. **Include necessary headers**: We include `<iostream>` for input/output operations, `<string>` for string manipulation, and `poppler/cpp/poppler-document.h` for interacting with the Poppler library.
-
-2. **Define the function `extractTextFromPDF`**:
-   - It takes a file path as a parameter and returns the extracted text as a string.
-   - It loads the PDF document using `poppler::document::load_from_file`.
-   - If the document is successfully loaded, it iterates through each page, extracts the text, and appends it to the result string.
-   - Finally, it deletes the document object and returns the extracted text.
-
-3. **Main function**:
-   - Specifies the path to the PDF file.
-   - Calls `extractTextFromPDF` to extract text from the specified PDF.
-   - Prints the extracted text to the console.
-
-Make sure to link against the Poppler libraries when compiling this code. For example, using g++, you can compile it with the following command:
-
-```sh
-g++ -o extract_text_from_pdf extract_text_from_pdf.cpp -lpoppler-cpp
-```
-
-Replace `path_to_your_pdf.pdf` with the actual path to your PDF file.
+Make sure you have the `poppler` library installed and properly linked in your C++ project. You can typically install it using package managers like `apt-get` on Linux or `brew` on macOS.

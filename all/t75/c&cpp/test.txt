@@ -1,45 +1,200 @@
-Sure, here's how you can translate your Python `unittest` test class into a C++ `Catch2` test case:
+Certainly! Here is the equivalent C++ test class using the Catch2 testing framework. The test cases are converted to match the functionality and logic of the provided Python unittest class.
+
+### C++ Code with Catch2 Testing Framework
 
 ```cpp
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <filesystem>
-#include <fstream>
+#include <regex>
 #include <vector>
+#include <string>
+#include <cassert>
+#include <iostream>
 
 namespace fs = std::filesystem;
 
-void renameFiles(const std::string& directory) {
-    // Your implementation of rename_files function goes here
+// Function to rename files in a directory
+void rename_files(const std::string& directory) {
+    // Convert directory to Path object for easier handling
+    fs::path dir_path(directory);
+
+    if (!fs::exists(dir_path) || !fs::is_directory(dir_path)) {
+        throw std::invalid_argument("The directory '" + directory + "' does not exist or is not a directory.");
+    }
+
+    // Get list of PNG files in the directory
+    std::vector<fs::path> png_files;
+    for (const auto& entry : fs::directory_iterator(dir_path)) {
+        if (entry.is_regular_file() && entry.path().extension() == ".png") {
+            png_files.push_back(entry.path());
+        }
+    }
+
+    // Sort files alphabetically by their names
+    std::sort(png_files.begin(), png_files.end());
+
+    // Print the sorted list of files (for debugging)
+    std::cout << "Sorted files:" << std::endl;
+    for (const auto& file : png_files) {
+        std::cout << file.filename().string() << std::endl;
+    }
+
+    // Rename files with sequence numbers
+    std::string prev_base_name;
+    int count = 1;
+
+    std::regex re_pattern(R"((\d{3})(-\d)?(?=\.png$))");
+
+    for (const auto& file : png_files) {
+        // Extract base name without postfix and number
+        std::string base_name = std::regex_replace(file.stem().string(), re_pattern, "");
+
+        if (base_name != prev_base_name) {
+            count = 1;
+        }
+
+        std::string new_filename = base_name + std::to_string(count).substr(1, 3) + ".png";
+        fs::path new_file_path = file.parent_path() / new_filename;
+        fs::rename(file, new_file_path);
+        std::cout << "Renaming " << file.filename().string() << " to " << new_filename << std::endl;
+
+        prev_base_name = base_name;
+        ++count;
+    }
 }
 
-TEST_CASE("Rename Files Test Case", "[renameFiles]") {
-    const std::string testDirectory = "./test_directory";
-
-    // Create a temporary test directory
-    fs::create_directories(testDirectory);
-
-    // Create some test PNG files
-    const std::vector<std::string> originalFileNames = {"image1.png", "image2.png", "image3.png"};
-    for (const auto& fileName : originalFileNames) {
-        std::ofstream ofs(testDirectory + "/" + fileName);
-        ofs.close();
+// Helper function to create a temporary directory and clean up
+struct TempDir {
+    TempDir() : path(fs::temp_directory_path() / fs::unique_path()) {
+        fs::create_directories(path);
     }
 
-    // Call the renameFiles function
-    renameFiles(testDirectory);
-
-    // Check if the files were renamed correctly
-    const std::vector<std::string> expectedNewFileNames = {"image1001.png", "image2001.png", "image3001.png"};
-    for (size_t i = 0; i < expectedNewFileNames.size(); ++i) {
-        REQUIRE(fs::exists(testDirectory + "/" + expectedNewFileNames[i]));
-        REQUIRE(!fs::exists(testDirectory + "/" + originalFileNames[i]));
+    ~TempDir() {
+        fs::remove_all(path);
     }
 
-    // Clean up the test directory
-    fs::remove_all(testDirectory);
+    fs::path path;
+};
+
+// Helper function to create PNG files in a directory
+void create_png_files(const fs::path& dir, const std::vector<std::string>& filenames) {
+    for (const auto& filename : filenames) {
+        fs::path file_path = dir / filename;
+        fs::create_file(file_path);  // Create an empty file
+    }
+}
+
+TEST_CASE("TestRenameFiles", "[rename_files]") {
+    TempDir temp_dir;
+
+    SECTION("test_basic_renaming") {
+        std::vector<std::string> filenames = {"image1.png", "image2.png", "image3.png"};
+        create_png_files(temp_dir.path, filenames);
+
+        rename_files(temp_dir.path.string());
+
+        std::vector<std::string> expected_files = {"image1001.png", "image2001.png", "image3001.png"};
+        std::vector<std::string> result_files;
+        for (const auto& entry : fs::directory_iterator(temp_dir.path)) {
+            result_files.push_back(entry.path().filename().string());
+        }
+        std::sort(result_files.begin(), result_files.end());
+
+        REQUIRE(result_files == expected_files);
+    }
+
+    SECTION("test_reset_counter_for_different_base_names") {
+        std::vector<std::string> filenames = {"image1.png", "picture1.png", "image2.png", "picture2.png"};
+        create_png_files(temp_dir.path, filenames);
+
+        rename_files(temp_dir.path.string());
+
+        std::vector<std::string> expected_files = {"image1001.png", "image2001.png", "picture1001.png", "picture2001.png"};
+        std::vector<std::string> result_files;
+        for (const auto& entry : fs::directory_iterator(temp_dir.path)) {
+            result_files.push_back(entry.path().filename().string());
+        }
+        std::sort(result_files.begin(), result_files.end());
+
+        REQUIRE(result_files == expected_files);
+    }
+
+    SECTION("test_no_png_files") {
+        std::vector<std::string> filenames = {"file1.txt", "file2.jpg"};
+        create_png_files(temp_dir.path, filenames);
+
+        rename_files(temp_dir.path.string());
+
+        std::vector<std::string> expected_files = filenames;
+        std::vector<std::string> result_files;
+        for (const auto& entry : fs::directory_iterator(temp_dir.path)) {
+            result_files.push_back(entry.path().filename().string());
+        }
+        std::sort(result_files.begin(), result_files.end());
+
+        REQUIRE(result_files == expected_files);
+    }
+
+    SECTION("test_empty_directory") {
+        rename_files(temp_dir.path.string());
+
+        std::vector<std::string> expected_files = {};
+        std::vector<std::string> result_files;
+        for (const auto& entry : fs::directory_iterator(temp_dir.path)) {
+            result_files.push_back(entry.path().filename().string());
+        }
+
+        REQUIRE(result_files.empty());
+    }
+
+    SECTION("test_files_with_existing_numbers") {
+        std::vector<std::string> filenames = {"file001.png", "file002.png", "file003.png"};
+        create_png_files(temp_dir.path, filenames);
+
+        rename_files(temp_dir.path.string());
+
+        std::vector<std::string> expected_files = {"file001001.png", "file002001.png", "file003001.png"};
+        std::vector<std::string> result_files;
+        for (const auto& entry : fs::directory_iterator(temp_dir.path)) {
+            result_files.push_back(entry.path().filename().string());
+        }
+        std::sort(result_files.begin(), result_files.end());
+
+        REQUIRE(result_files == expected_files);
+    }
 }
 ```
 
-In this C++ test case using Catch2, we create a temporary test directory, populate it with some test PNG files, call the `renameFiles` function, and then check if the files were renamed correctly. Finally, we clean up the test directory.
+### Explanation:
+1. **Header Files**:
+   - `#include <catch2/catch_test_macros.hpp>` for Catch2 testing macros.
+   - `#include <filesystem>` for filesystem operations.
+   - `#include <regex>` for regular expressions.
+   - `#include <vector>` for using vectors.
+   - `#include <string>` for string operations.
+   - `#include <cassert>` for assertions.
+   - `#include <iostream>` for input/output operations.
 
-Make sure you have Catch2 installed and properly set up in your project to compile and run these tests.
+2. **Namespace**:
+   - `namespace fs = std::filesystem;` to simplify filesystem operations.
+
+3. **Function Definition**:
+   - The `rename_files` function remains the same as in the previous example.
+
+4. **Helper Functions**:
+   - `TempDir`: A RAII (Resource Acquisition Is Initialization) struct to manage the creation and cleanup of a temporary directory.
+   - `create_png_files`: A helper function to create PNG files in a directory.
+
+5. **Test Class**:
+   - The `TEST_CASE` macro defines the test suite.
+   - Each `SECTION` within the test case corresponds to a specific test scenario.
+   - The tests use `REQUIRE` for assertions to ensure the expected behavior.
+
+6. **Test Scenarios**:
+   - `test_basic_renaming`: Tests renaming in a basic scenario with simple filenames.
+   - `test_reset_counter_for_different_base_names`: Tests that the counter resets for different base names.
+   - `test_no_png_files`: Tests handling of directories with no PNG files.
+   - `test_empty_directory`: Tests handling of an empty directory.
+   - `test_files_with_existing_numbers`: Tests renaming files that already have numbers in their names.
+
+This C++ code preserves the functionality and logic of the original Python unittest class, ensuring that the tests are performed correctly using the Catch2 testing framework.

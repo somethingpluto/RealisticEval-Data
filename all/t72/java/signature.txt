@@ -1,38 +1,63 @@
-Here is how you can translate your Python function to Java:
+Certainly! Below is the equivalent Java code for the given Python function, including the appropriate Javadoc comments and type conversions. The Java code will follow Java conventions and handle type declarations, method signatures, and object-oriented principles.
 
 ```java
-import org.apache.commons.math3.linear.Array2DRowRealMatrix;
-import org.apache.commons.math3.linear.RealMatrix;
+package org.real.temp;
 
-public class Main {
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.factory.Nd4j;
+
+/**
+ * Converts 2D pixel coordinates into 3D world coordinates using camera intrinsic parameters and depth.
+ */
+public class Answer {
 
     /**
      * Converts 2D pixel coordinates into 3D world coordinates using camera intrinsic parameters and depth.
      *
-     * @param K   The camera intrinsic matrix (3x3).
-     * @param d   The depth (distance along z-axis).
-     * @param x   The pixel x coordinate.
-     * @param y   The pixel y coordinate.
-     * @return A RealVector representing the x, y, z 3D point coordinates in camera RDF coordinates.
+     * @param K A 3x3 matrix representing the camera intrinsic parameters.
+     * @param d Depth (distance along the z-axis).
+     * @param x Pixel x coordinate.
+     * @param y Pixel y coordinate.
+     * @return An array containing the 3D coordinates [x, y, z] in camera RDF coordinates.
      */
-    public static RealVector get3DCoordinates(RealMatrix K, double d, double x, double y) {
-        // Here, we need to implement the logic to convert 2D pixel coordinates into 3D world coordinates using camera intrinsic parameters and depth.
-        // This would typically involve matrix operations, which can be done using Apache Commons Math or similar libraries.
+    public static double[] get3DCoordinates(INDArray K, double d, double x, double y) {
+        // Step 1: Convert pixel coordinates to normalized device coordinates (NDC)
+        double cx = K.getDouble(0, 2);
+        double cy = K.getDouble(1, 2);
+        double fx = K.getDouble(0, 0);
+        double fy = K.getDouble(1, 1);
 
-        return null; // Placeholder return statement
+        double NDC_x = (x - cx) / fx;
+        double NDC_y = (y - cy) / fy;
+
+        // Step 2: Get the 3D world coordinates (W)
+        double W_x = NDC_x * d;
+        double W_y = NDC_y * d;
+        double W_z = d;
+
+        return new double[]{W_x, W_y, W_z};
     }
 
     public static void main(String[] args) {
-        // Example usage of the function
-        RealMatrix K = new Array2DRowRealMatrix(new double[][]{{1, 0, 0}, {0, 1, 0}, {0, 0, 1}});
-        double d = 1.0;
-        double x = 1.0;
-        double y = 1.0;
+        // Example usage
+        INDArray K = Nd4j.create(new double[][]{
+            {500, 0, 320},
+            {0, 500, 240},
+            {0, 0, 1}
+        });
 
-        RealVector result = get3DCoordinates(K, d, x, y);
-        System.out.println(result);
+        double[] result = get3DCoordinates(K, 1000, 320, 240);
+        System.out.println("3D Coordinates: " + result[0] + ", " + result[1] + ", " + result[2]);
     }
 }
 ```
 
-Please note that I used `org.apache.commons.math3.linear` for handling matrices and vectors, which you'll need to add to your project's dependencies if not already included. If you don't want to use an external library, you could implement your own matrix operations instead.
+### Explanation:
+1. **Package and Class Definition**: The Java code is defined within the package `org.real.temp` and the class `Answer`.
+2. **Import Statements**: The necessary imports are added for handling arrays using ND4J, which is a popular library for numerical computations in Java.
+3. **Method Signature**: The method `get3DCoordinates` takes an `INDArray` (representing the 3x3 intrinsic matrix `K`), a `double` for depth (`d`), and two `double` values for the pixel coordinates (`x` and `y`).
+4. **Javadoc Comments**: The method is documented using Javadoc comments, providing detailed explanations of the arguments and return value.
+5. **Functionality**: The method performs the same calculations as the Python function, converting pixel coordinates to 3D coordinates.
+6. **Main Method**: An example usage of the method is provided in the `main` method to demonstrate how to call the `get3DCoordinates` method and print the results.
+
+This Java code maintains the functionality and logic of the original Python code while adhering to Java's syntax and conventions.

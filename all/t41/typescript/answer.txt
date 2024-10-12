@@ -1,62 +1,75 @@
-Sure, here is the equivalent TypeScript code for your Python `BloomFilter` class:
+Sure! Here's the equivalent TypeScript code for the provided Python Bloom Filter implementation:
 
 ```typescript
+import { createHash } from 'crypto';
+import BitArray from 'bitarray-js';
+
 class BloomFilter {
-    private size: number;
-    private hashCount: number;
-    private bitArray: boolean[];
+  private size: number;
+  private hashCount: number;
+  private bitArray: BitArray;
 
-    constructor(size: number, hashCount: number) {
-        this.size = size;
-        this.hashCount = hashCount;
-        this.bitArray = new Array(this.size).fill(false);
-    }
+  constructor(size: number, hashCount: number) {
+    this.size = size;
+    this.hashCount = hashCount;
+    this.bitArray = new BitArray(size);
+    this.bitArray.fill(false);
+  }
 
-    public add(item: string): void {
-        // Add an item to the bloom filter
-        const hashes = this.generateHashes(item);
-        for (const hash of hashes) {
-            this.bitArray[hash % this.size] = true;
-        }
+  private *hashes(item: string): Generator<number> {
+    // Generate multiple hashes for an item
+    const itemBuffer = Buffer.from(item, 'utf-8');
+    for (let i = 0; i < this.hashCount; i++) {
+      // Create a new hash for each hash count using a seed
+      const hashResult = createHash('sha256').update(itemBuffer).digest('hex');
+      const hashInt = parseInt(hashResult, 16) + i;
+      yield hashInt % this.size;
     }
+  }
 
-    public has(item: string): boolean {
-        // Check if an item might be in the bloom filter
-        const hashes = this.generateHashes(item);
-        return hashes.every(hash => this.bitArray[hash % this.size]);
+  add(item: string): void {
+    // Add an item to the bloom filter
+    for (const hashValue of this.hashes(item)) {
+      this.bitArray.set(hashValue, true);
     }
+  }
 
-    private generateHashes(item: string): number[] {
-        // Generate hash values for the item
-        const hashes: number[] = [];
-        for (let i = 0; i < this.hashCount; i++) {
-            hashes.push(this.hashFunction(item, i));
-        }
-        return hashes;
+  contains(item: string): boolean {
+    // Check if an item is in the bloom filter
+    for (const hashValue of this.hashes(item)) {
+      if (!this.bitArray.get(hashValue)) {
+        return false;
+      }
     }
-
-    private hashFunction(item: string, seed: number): number {
-        // Simple hash function using a seed
-        let hash = 0;
-        for (let i = 0; i < item.length; i++) {
-            hash = (hash * 31 + item.charCodeAt(i)) ^ seed;
-        }
-        return Math.abs(hash);
-    }
+    return true;
+  }
 }
 
-// Usage example:
-const bloomFilter = new BloomFilter(1024, 5);
-bloomFilter.add("example");
-console.log(bloomFilter.has("example")); // true
-console.log(bloomFilter.has("nonexistent")); // false
+// Example usage
+const bloomFilter = new BloomFilter(1000, 5);
+bloomFilter.add('hello');
+console.log(bloomFilter.contains('hello')); // Should log true
+console.log(bloomFilter.contains('world')); // Should log false
 ```
 
 ### Explanation:
-1. **Constructor**: Initializes the bloom filter with a specified size and number of hash functions.
-2. **add Method**: Adds an item to the bloom filter by setting the corresponding bits in the bit array.
-3. **has Method**: Checks if an item might be in the bloom filter by verifying the corresponding bits in the bit array.
-4. **generateHashes Method**: Generates multiple hash values for the given item using different seeds.
-5. **hashFunction Method**: A simple hash function that incorporates a seed to differentiate between different hash functions.
+1. **Imports**:
+   - `createHash` from the `crypto` module is used for generating SHA-256 hashes.
+   - `BitArray` from `bitarray-js` is used for managing the bit array.
 
-This TypeScript implementation maintains the same functionality as your original Python code but uses TypeScript's syntax and features.
+2. **Class Definition**:
+   - The class `BloomFilter` has properties `size`, `hashCount`, and `bitArray`.
+   - The constructor initializes these properties and sets all bits in the bit array to `false`.
+
+3. **Private Method `_hashes`**:
+   - Renamed to `hashes` and made it a generator function.
+   - It generates multiple hashes for an item by using SHA-256 and a seed value.
+
+4. **Public Methods**:
+   - `add`: Adds an item to the bloom filter by setting the corresponding bits to `true`.
+   - `contains`: Checks if an item is in the bloom filter by verifying the corresponding bits.
+
+5. **Example Usage**:
+   - Demonstrates creating a `BloomFilter` instance, adding items, and checking for their presence.
+
+This TypeScript code maintains the same functionality as the Python code while adapting to TypeScript's syntax and idioms.

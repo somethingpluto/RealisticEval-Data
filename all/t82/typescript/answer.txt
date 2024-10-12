@@ -1,39 +1,67 @@
-Here is your Python code translated into TypeScript:
+Sure! Here is the equivalent TypeScript code, including the necessary imports and type definitions:
 
 ```typescript
+import * as _ from 'lodash';
 import { DiGraph } from 'networkx';
 
+interface Edge {
+  source: any;
+  target: any;
+}
+
 class Graph {
-    private graph: DiGraph;
+  private graph: DiGraph;
 
-    constructor(edges: [number, number][]) {
-        this.graph = new DiGraph();
-        this.graph.add_edges_from(edges);
+  constructor(edges: Edge[]) {
+    this.graph = new DiGraph();
+    edges.forEach(edge => {
+      this.graph.addEdge(edge.source, edge.target);
+    });
+  }
+
+  public cyclesBySize(filterRepeatNodes: boolean = true): Record<any, DiGraph[]> {
+    const allCycles = Array.from(this.graph.simpleCycles());
+    const cycles = allCycles.filter(cycle => cycle.length > 2);
+
+    if (filterRepeatNodes) {
+      cycles.filter(cycle => _.uniq(cycle).length === cycle.length);
     }
 
-    async cyclesBySize(filterRepeatNodes: boolean = true): Promise<{[key: number]: DiGraph[]}> {
-        let cycles = await this.findCycles(this.graph, filterRepeatNodes);
-        let result: {[key: number]: DiGraph[]} = {};
-        
-        for(let i=0; i<cycles.length; i++) {
-            if(result[cycles[i].length]) {
-                result[cycles[i].length].push(cycles[i]);
-            } else {
-                result[cycles[i].length] = [cycles[i]];
-            }
-        }
-        
-        return result;
-    }
+    const uniqueCycles = _.uniq(cycles.map(cycle => _.sortBy(_.uniq(cycle))));
+    const uniqueCyclesBySize: Record<any, DiGraph[]> = {};
 
-    private async findCycles(graph: DiGraph, filterRepeatNodes: boolean): Promise<DiGraph[]> {
-        // Implement the logic here based on how you want to find cycles.
-        // This is just a placeholder implementation.
-        let cycles = [];
-        // ...
-        return cycles;
-    }
+    uniqueCycles.forEach(cycle => {
+      const size = cycle.length;
+      const subgraph = this.graph.subgraph(cycle);
+      if (!uniqueCyclesBySize[size]) {
+        uniqueCyclesBySize[size] = [];
+      }
+      uniqueCyclesBySize[size].push(subgraph);
+    });
+
+    return uniqueCyclesBySize;
+  }
 }
 ```
 
-Please note that `findCycles` method is not implemented here because it depends on your specific use case and the way you want to find cycles in your graph. Also, keep in mind that the `networkx` library does not support asynchronous operations natively, so I used `async/await` syntax just for demonstration purposes.
+### Explanation:
+1. **Imports**:
+   - `DiGraph` from `networkx` is used to represent the directed graph.
+   - `_` (Lodash) is used for utility functions like `uniq`, `sortBy`, etc.
+
+2. **Edge Interface**:
+   - An interface `Edge` is defined to represent the edges with `source` and `target`.
+
+3. **Constructor**:
+   - The constructor takes an array of edges and initializes the graph using `DiGraph`.
+
+4. **cyclesBySize Method**:
+   - This method finds all simple cycles in the graph.
+   - It filters out cycles based on their length and whether they contain repeated nodes.
+   - It uses Lodash's `uniq` and `sortBy` functions to handle uniqueness and sorting.
+   - The result is stored in a `Record<any, DiGraph[]>` object, which maps sizes to arrays of subgraphs.
+
+5. **Type Definitions**:
+   - `Record<any, DiGraph[]>` is used to represent the dictionary of cycles by size.
+
+This TypeScript code maintains the same functionality and logic as the original Python code, with appropriate adjustments for TypeScript's static type system and idiomatic practices.

@@ -1,48 +1,47 @@
-Sure, here is the equivalent TypeScript code for the provided Python function:
+Sure! Here is the equivalent TypeScript code for the provided Python function:
 
 ```typescript
 function findShiftJisNotGbk(): string[] {
-    /**
-     * Find all the characters that can be represented in Shift-JIS, but not in GBK, and return them as an array
-     *
-     * @returns {string[]} - A list of characters that are unique to Shift-JIS, not encodable in GBK.
-     */
-    
-    // Import necessary libraries
-    const iconv = require('iconv-lite');
+    // Array to store characters that are in Shift-JIS but not in GBK
+    const uniqueToShiftJis: string[] = [];
 
-    // Define character sets
-    const shiftJisCharset = 'shift-jis';
-    const gbkCharset = 'gbk';
+    // Iterate over a range of Unicode code points
+    // The BMP goes up to U+FFFF, which is 65535 in decimal
+    for (let codepoint = 0; codepoint < 65536; codepoint++) {
+        const character = String.fromCodePoint(codepoint);
 
-    // Create buffers for testing encoding/decoding
-    const testString = String.fromCharCode(0x81, 0x40); // Example character that should only exist in Shift-JIS
-
-    // Check if the character can be encoded in Shift-JIS but not in GBK
-    const shiftJisBuffer = iconv.encode(testString, shiftJisCharset);
-    const gbkBuffer = iconv.encode(testString, gbkCharset);
-
-    // If encoding fails in GBK but succeeds in Shift-JIS, it's unique to Shift-JIS
-    if (shiftJisBuffer && !gbkBuffer) {
-        return [testString];
+        try {
+            // Try encoding the character in Shift-JIS
+            Buffer.from(character, 'shift-jis').toString('shift-jis');
+            try {
+                // Try encoding the character in GBK
+                Buffer.from(character, 'gbk').toString('gbk');
+            } catch (error) {
+                // If it fails, the character is not representable in GBK but is in Shift-JIS
+                uniqueToShiftJis.push(character);
+            }
+        } catch (error) {
+            // If it fails, the character is not representable in Shift-JIS, so we skip it
+            continue;
+        }
     }
 
-    return [];
+    return uniqueToShiftJis;
 }
+
+// Example usage
+console.log(findShiftJisNotGbk());
 ```
 
 ### Explanation:
-- **Import Libraries**: We use `iconv-lite` to handle character encoding conversions between different character sets.
-- **Character Sets**: We define the character sets `shift-jis` and `gbk`.
-- **Test String**: We create a test string with a character that is known to be present in Shift-JIS but not in GBK (`'\u8140'`).
-- **Encoding Checks**: We attempt to encode the test string using both character sets. If encoding succeeds in Shift-JIS but fails in GBK, we add the character to our result list.
+1. **Function Definition**: The function `findShiftJisNotGbk` is defined with a return type of `string[]`.
+2. **Array Initialization**: An array `uniqueToShiftJis` is initialized to store characters that are in Shift-JIS but not in GBK.
+3. **Loop Over Code Points**: A loop iterates over the range of Unicode code points from 0 to 65535.
+4. **Character Conversion**: The `String.fromCodePoint` method is used to convert the code point to a character.
+5. **Encoding Attempts**:
+   - The `Buffer.from` method is used to encode the character in Shift-JIS and GBK.
+   - If encoding in Shift-JIS succeeds, it then attempts to encode the character in GBK.
+   - If encoding in GBK fails, the character is added to the `uniqueToShiftJis` array.
+   - If encoding in Shift-JIS fails, the loop continues to the next iteration.
 
-This code assumes you have the `iconv-lite` library installed. You can install it using npm or yarn:
-
-```bash
-npm install iconv-lite
-# or
-yarn add iconv-lite
-```
-
-Please note that this example uses a specific test character (`'\u8140'`) which you might need to replace with other characters based on your requirements.
+This TypeScript code maintains the same functionality as the Python code, using Node.js's `Buffer` for encoding and decoding operations.

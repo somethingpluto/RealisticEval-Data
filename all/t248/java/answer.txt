@@ -1,30 +1,70 @@
-Here's how you can convert the Python code to Java:
+Sure, here is the equivalent Java code organized within the package `org.real.temp` and the class `Answer`. The Java code maintains the functionality of the provided Python code, including handling dictionaries (represented as `Map<String, Object>`), lists (represented as `List<Object>`), and other values.
 
 ```java
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
+package org.real.temp;
 
 public class Answer {
-    public static Map<String, Object> sanitizeData(Map<String, Object> data, List<String> keyToRemove) {
-        if (keyToRemove == null || keyToRemove.isEmpty()) {
+
+    private static final Set<String> defaultKeysToRemove = new HashSet<>(Arrays.asList(
+            "email", "pc_conflicts", "metadata", "eligible_student_paper_prize", "talk_poster",
+            "submitted_at", "decision", "status", "submitted", "submission"
+    ));
+
+    /**
+     * Recursively sanitize a Map by removing specific keys.
+     *
+     * @param data           the input data to sanitize
+     * @param keyToBeRemoved the set of keys to remove; if null, uses default keys
+     * @return the sanitized data
+     */
+    public static Object sanitizeData(Object data, Set<String> keyToBeRemoved) {
+        if (keyToBeRemoved == null) {
+            keyToBeRemoved = defaultKeysToRemove;
+        }
+        if (data instanceof Map) {
+            Map<?, ?> map = (Map<?, ?>) data;
+            Map<String, Object> sanitizedMap = new HashMap<>();
+            for (Map.Entry<?, ?> entry : map.entrySet()) {
+                String key = (String) entry.getKey();
+                if (!keyToBeRemoved.contains(key)) {
+                    sanitizedMap.put(key, sanitizeData(entry.getValue(), keyToBeRemoved));
+                }
+            }
+            return sanitizedMap;
+        } else if (data instanceof List) {
+            List<?> list = (List<?>) data;
+            List<Object> sanitizedList = new ArrayList<>();
+            for (Object item : list) {
+                sanitizedList.add(sanitizeData(item, keyToBeRemoved));
+            }
+            return sanitizedList;
+        } else {
             return data;
         }
+    }
 
-        Map<String, Object> result = new HashMap<>();
-        for (Map.Entry<String, Object> entry : data.entrySet()) {
-            if (!keyToRemove.contains(entry.getKey())) {
-                result.put(entry.getKey(), entry.getValue());
-            }
-        }
-        
-        return result;
+    // Example usage
+    public static void main(String[] args) {
+        Map<String, Object> sampleData = new HashMap<>();
+        sampleData.put("name", "John Doe");
+        sampleData.put("email", "john.doe@example.com");
+        sampleData.put("age", 30);
+        sampleData.put("metadata", "some metadata");
+
+        Map<String, Object> sanitizedData = (Map<String, Object>) sanitizeData(sampleData, null);
+        System.out.println(sanitizedData);
     }
 }
 ```
 
-In this Java code, we define a `sanitizeData` method that takes a `Map<String, Object>` and a `List<String>` as arguments and returns a sanitized `Map`. If `keyToRemove` is null or empty, it simply returns the original map.
+### Explanation:
+1. **Package and Class Definition**: The Java code is defined within the package `org.real.temp` and the class `Answer`.
+2. **Static Final Set**: A static final set `defaultKeysToRemove` is used to store the default keys to be removed.
+3. **Method Signature**: The `sanitizeData` method takes an `Object` representing the input data and a `Set<String>` representing the keys to be removed.
+4. **Type Checking**: The method checks if the input data is a `Map` or a `List`, and processes it accordingly.
+5. **Recursive Processing**: The method recursively calls itself to sanitize nested maps and lists.
+6. **Example Usage**: The `main` method demonstrates how to use the `sanitizeData` method with a sample data map.
 
-The method iterates over each entry in the input map and adds it to the result map unless its key is contained in `keyToRemove`.
-
-Please note that Java does not have built-in support for type hints like Python, so there is no direct equivalent of the Python function signature. Instead, the method parameters and return type are declared explicitly.
+This Java code preserves the functionality of the original Python code while adhering to Java's syntax and best practices.

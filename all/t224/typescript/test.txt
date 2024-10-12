@@ -1,42 +1,95 @@
-Certainly! Below is the equivalent TypeScript test case using Jest for the provided Python `unittest` function:
+Certainly! Here is the equivalent TypeScript test class using Jest, ensuring that the functionality and logic of the tests are preserved. The necessary type annotations and Jest assertions are included.
+
+### TypeScript Code with Jest Testing
 
 ```typescript
-import { emptyDirectory } from './path-to-your-empty-directory-function'; // Adjust the import path accordingly
+import * as os from 'os';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as fsExtra from 'fs-extra';
+import * as tmp from 'tmp';
 
-describe('emptyDirectory', () => {
-  it('should throw an error if the specified path does not exist', async () => {
-    const nonExistentPath = '/non-existent-path';
-    await expect(emptyDirectory(nonExistentPath)).rejects.toThrowError(/specified path does not exist/);
-  });
+/**
+ * Empties all files and subdirectories in the specified directory, but keeps the directory itself.
+ * 
+ * @param directoryPath - Path to the directory whose contents are to be emptied.
+ * @throws {Error} If the specified path does not exist or is not a directory.
+ */
+function emptyDirectory(directoryPath: string): void {
+    // Check if the path exists and is a directory
+    if (!fs.existsSync(directoryPath)) {
+        throw new Error("The specified directory does not exist.");
+    }
+    if (!fs.lstatSync(directoryPath).isDirectory()) {
+        throw new Error("The specified path is not a directory.");
+    }
 
-  it('should throw an error if the specified path is not a directory', async () => {
-    const nonDirectoryPath = '/path/to/a/file.txt'; // Assuming there's a file at this path
-    await expect(emptyDirectory(nonDirectoryPath)).rejects.toThrowError(/is not a directory/);
-  });
+    // Iterate over all items in the directory
+    const items = fs.readdirSync(directoryPath);
+    for (const item of items) {
+        const itemPath = path.join(directoryPath, item);
 
-  it('should empty all files and subdirectories in the specified directory', async () => {
-    const tempDir = '/path/to/temp/directory'; // Create a temporary directory for testing
-    // Populate the temporary directory with files and subdirectories
-    // For example, you can use fs-extra to create directories and files
+        // Check if the item is a file or directory and delete accordingly
+        if (fs.lstatSync(itemPath).isFile() || fs.lstatSync(itemPath).isSymbolicLink()) {
+            fs.unlinkSync(itemPath);  // Remove the file or link
+        } else if (fs.lstatSync(itemPath).isDirectory()) {
+            fsExtra.removeSync(itemPath);  // Remove the directory and all its contents
+        }
+    }
+}
 
-    await emptyDirectory(tempDir);
+describe('TestEmptyDirectory', () => {
+    let testDir: string;
 
-    // Verify that the directory is now empty
-    // For example, you can check if the directory exists and if it contains any files/subdirectories
-  });
+    beforeAll(() => {
+        // Set up a temporary directory with some files and directories
+        testDir = tmp.dirSync().name;
+        fs.mkdirSync(path.join(testDir, 'subdir'));
+        fs.writeFileSync(path.join(testDir, 'file1.txt'), "Hello");
+        fs.writeFileSync(path.join(testDir, 'subdir', 'file2.txt'), "World");
+    });
+
+    afterAll(() => {
+        // Remove the temporary directory after all tests
+        fsExtra.removeSync(testDir);
+    });
+
+    it('should empty the directory successfully', () => {
+        emptyDirectory(testDir);
+        expect(fs.readdirSync(testDir)).toEqual([]);
+    });
+
+    it('should empty a directory that includes subdirectories', () => {
+        emptyDirectory(testDir);
+        expect(fs.readdirSync(testDir)).toEqual([]);
+    });
+
+    it('should handle an already empty directory', () => {
+        emptyDirectory(testDir);  // First emptying
+        emptyDirectory(testDir);  // Empty again
+        expect(fs.readdirSync(testDir)).toEqual([]);
+    });
 });
 ```
 
 ### Explanation:
-1. **Importing the Function**: The `emptyDirectory` function is imported from the appropriate module. Adjust the import path according to your project structure.
+1. **Imports**:
+   - `os`, `fs`, `path`, `fs-extra`, and `tmp` are imported for file operations and temporary directory creation.
+   - `tmp` is used to create a temporary directory.
 
-2. **Describe Block**: The `describe` block groups related tests together. In this case, it groups all tests for the `emptyDirectory` function.
+2. **Function Definition**:
+   - The `emptyDirectory` function is defined with proper type annotations and throws an error if the directory does not exist or is not a directory.
 
-3. **It Blocks**:
-   - **Non-Existent Path Test**: This test checks if the function throws an error when the specified path does not exist.
-   - **Non-Directory Path Test**: This test checks if the function throws an error when the specified path is not a directory.
-   - **Empty Directory Test**: This test verifies that the function empties all files and subdirectories in the specified directory. You will need to create a temporary directory for testing and populate it with files and subdirectories before running this test.
+3. **Jest Test Suite**:
+   - The `describe` block sets up the test suite.
+   - `beforeAll` is used to set up the temporary directory and create some files and directories.
+   - `afterAll` is used to clean up the temporary directory after all tests.
 
-4. **Expectations**: The `expect` function along with `rejects.toThrowError` is used to assert that the function throws the expected error messages.
+4. **Test Cases**:
+   - Each `it` block defines a test case.
+   - The `expect` statements use Jest assertions to verify the expected behavior.
 
-Make sure to adjust the paths and logic according to your specific requirements and project setup.
+5. **Example Usage**:
+   - The test cases ensure that the directory is emptied correctly, including handling subdirectories and already empty directories.
+
+This TypeScript code preserves the original functionality and logic of the Python unittest code, with appropriate translations for Jest and TypeScript.

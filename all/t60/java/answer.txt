@@ -1,76 +1,75 @@
-Sure! Below is the equivalent Java code for your Python function `find_common_columns`. The Java code will be placed within a class named `Answer` in the package `org.real.temp`.
+Below is the Java code equivalent to the provided Python script, organized within the package `org.real.temp` and the class `Answer`. It includes necessary imports and follows Java's conventions and practices:
 
 ```java
 package org.real.temp;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+
+import com.opencsv.CSVReader;
+import com.opencsv.exceptions.CsvValidationException;
 
 public class Answer {
 
     /**
-     * Find the common columns of all CSV files in a directory and return these column names as a list.
-     *
-     * @param directory the directory path
-     * @return a list containing the common column names
+     * Finds common column headers across multiple CSV files in a given directory.
+     * 
+     * @param directoryPath the path to the directory containing CSV files
+     * @return a list of common column names
      */
-    public static List<String> findCommonColumns(String directory) {
-        File dir = new File(directory);
-        if (!dir.isDirectory()) {
-            throw new IllegalArgumentException("The provided path is not a directory.");
-        }
-
-        Set<String> commonColumns = null;
-        boolean firstFile = true;
-
-        for (File file : dir.listFiles((d, name) -> name.endsWith(".csv"))) {
-            if (file.isFile()) {
-                try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-                    String line = br.readLine();
-                    if (line != null) {
-                        String[] columns = line.split(",");
-                        Set<String> currentColumns = new HashSet<>();
-                        for (String column : columns) {
-                            currentColumns.add(column.trim());
-                        }
-                        if (firstFile) {
-                            commonColumns = new HashSet<>(currentColumns);
-                            firstFile = false;
-                        } else {
-                            commonColumns.retainAll(currentColumns);
-                        }
-                    }
-                } catch (IOException e) {
-                    System.err.println("Error reading file " + file.getName() + ": " + e.getMessage());
-                }
-            }
-        }
-
-        if (commonColumns == null || commonColumns.isEmpty()) {
+    public static List<String> findCommonColumns(String directoryPath) {
+        File directory = new File(directoryPath);
+        File[] files = directory.listFiles((dir, name) -> name.toLowerCase().endsWith(".csv"));
+        
+        if (files == null || files.length == 0) {
             return new ArrayList<>();
         }
 
-        return new ArrayList<>(commonColumns);
+        List<Set<String>> columnSets = new ArrayList<>();
+
+        try {
+            for (File file : files) {
+                CSVReader reader = new CSVReader(new java.io.FileReader(file));
+                String[] header = reader.readNext(); // Read the header row
+                if (header != null) {
+                    columnSets.add(Set.of(header));
+                }
+                reader.close();
+            }
+            
+            // Use set intersection to find common columns across all CSV files
+            if (!columnSets.isEmpty()) {
+                Set<String> commonColumns = new ArrayList<>(columnSets.get(0)).stream().collect(Collectors.toSet());
+                for (int i = 1; i < columnSets.size(); i++) {
+                    commonColumns.retainAll(columnSets.get(i));
+                }
+                return new ArrayList<>(commonColumns);
+            } else {
+                return new ArrayList<>();
+            }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
     }
 
     public static void main(String[] args) {
         // Example usage
-        String directoryPath = "/path/to/your/csv/files";
-        List<String> commonColumns = findCommonColumns(directoryPath);
-        System.out.println("Common Columns: " + commonColumns);
+        List<String> commonCols = findCommonColumns("path/to/directory");
+        System.out.println(commonCols);
     }
 }
 ```
 
-### Explanation:
-1. **Package and Class**: The Java code is placed within the `org.real.temp` package and defined in the `Answer` class.
-2. **Method Signature**: The method `findCommonColumns` takes a `String` parameter representing the directory path and returns a `List<String>` containing the common column names.
-3. **File Handling**: The code uses `BufferedReader` to read each CSV file in the specified directory.
-4. **Column Extraction**: Each line of the CSV file is split into columns using `split(",")`, and the column names are stored in a `HashSet`.
-5. **Common Column Calculation**: The `retainAll` method is used to keep only the columns that are present in all files.
-6. **Example Usage**: A `main` method is provided to demonstrate how to use the `findCommonColumns` method.
+### Notes:
+1. **CSV Reader**: The `CSVReader` from the `opencsv` library is used to read CSV files. You need to add this library to your project dependencies.
+2. **File Handling**: Java's `File` class is used to list and filter files in the directory.
+3. **Set Intersection**: The `retainAll` method is used to perform set intersection.
+4. **Exception Handling**: A simple exception handling block is included to catch any potential errors during file reading.
 
-Make sure to replace `/path/to/your/csv/files` with the actual path to your CSV files when running the example.
+Make sure you have the `opencsv` library added to your project to use the `CSVReader`. If not, you can include it via Maven or Gradle.

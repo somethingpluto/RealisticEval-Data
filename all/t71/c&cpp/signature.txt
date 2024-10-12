@@ -1,69 +1,124 @@
-Sure! Below is the equivalent C++ code with the same functionality and comments:
+Certainly! Below is the equivalent C++ code for the provided Python function, including the conversion of the function signature, comments, and documentation:
 
 ```cpp
 #include <iostream>
 #include <fstream>
 #include <vector>
 #include <string>
+#include <stdexcept>
 
 /**
- * @brief Reads numerical columns from a file starting from the line after the last line containing '/'.
+ * Reads numerical columns from a file starting from the line after the last line containing '/'.
  *
  * @param file_name The name of the file to read.
- * @return std::vector<std::vector<double>> A 2D vector containing the numerical question.
- * @throw std::runtime_error If the file does not contain any '/' character.
+ * @return A 2D vector containing the numerical data.
+ * @throws std::runtime_error If the file does not contain any '/' character.
  */
 std::vector<std::vector<double>> read_columns(const std::string& file_name) {
+    // Initialize a variable to track the last slash line index
+    int last_slash_index = -1;
+    std::vector<std::string> lines;
+
+    // Read all lines from the file
     std::ifstream file(file_name);
     if (!file.is_open()) {
         throw std::runtime_error("Failed to open file");
     }
-
-    std::vector<std::vector<double>> data;
-    bool found_slash = false;
-
     std::string line;
-    while (getline(file, line)) {
-        if (line.find('/') != std::string::npos) {
-            found_slash = true;
-        } else if (found_slash) {
-            std::istringstream iss(line);
-            std::vector<double> row;
-            double value;
-            while (iss >> value) {
-                row.push_back(value);
-            }
-            data.push_back(row);
+    while (std::getline(file, line)) {
+        lines.push_back(line);
+    }
+    file.close();
+
+    // Find the index of the last line that contains the "/" character
+    for (int i = 0; i < lines.size(); ++i) {
+        if (lines[i].find('/') != std::string::npos) {
+            last_slash_index = i;
         }
     }
 
-    if (!found_slash) {
-        throw std::runtime_error("File does not contain any '/' character");
+    // If no "/" character was found, raise an error
+    if (last_slash_index == -1) {
+        throw std::runtime_error("File does not contain '/' character");
     }
 
-    return data;
+    // Read the remaining lines in the file, starting from the line after the last "/"
+    std::vector<std::string> data_lines;
+    for (int i = last_slash_index + 1; i < lines.size(); ++i) {
+        std::string trimmed_line = lines[i];
+        trimmed_line.erase(0, trimmed_line.find_first_not_of(" \t\n\r\f\v")); // Trim leading spaces
+        trimmed_line.erase(trimmed_line.find_last_not_of(" \t\n\r\f\v") + 1); // Trim trailing spaces
+        if (!trimmed_line.empty() && !trimmed_line.starts_with('!')) {
+            data_lines.push_back(trimmed_line);
+        }
+    }
+
+    // If no valid lines remain, return an empty vector
+    if (data_lines.empty()) {
+        return {};
+    }
+
+    // Get the row and column count by counting the number of columns in the first line
+    int col_count = std::count(data_lines[0].begin(), data_lines[0].end(), ' ') + 1;
+
+    // Create an empty vector of vectors of the required size
+    std::vector<std::vector<double>> arr(data_lines.size(), std::vector<double>(col_count));
+
+    // Loop through the lines in the file
+    for (size_t i = 0; i < data_lines.size(); ++i) {
+        std::istringstream iss(data_lines[i]);
+        double num;
+        int j = 0;
+        while (iss >> num) {
+            arr[i][j++] = num;
+            if (iss.peek() == ' ') {
+                iss.ignore();
+            }
+        }
+    }
+
+    // Return the array
+    return arr;
 }
 
 int main() {
     try {
-        auto result = read_columns("example.txt");
+        std::vector<std::vector<double>> result = read_columns("example.txt");
         for (const auto& row : result) {
-            for (double value : row) {
-                std::cout << value << " ";
+            for (double val : row) {
+                std::cout << val << " ";
             }
             std::cout << std::endl;
         }
     } catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;
     }
-
     return 0;
 }
 ```
 
 ### Explanation:
-1. **Function Signature**: The function `read_columns` reads numerical columns from a file starting from the line after the last line containing a `/`. It returns a 2D vector of doubles.
-2. **File Handling**: The function opens the file using `std::ifstream` and checks if it is successfully opened.
-3. **Reading Lines**: It iterates through each line of the file. If a line contains a `/`, it sets the `found_slash` flag to true. After finding the first line without a `/`, it starts reading numbers into a row vector and adds this row to the main data structure.
-4. **Error Handling**: If no line contains a `/`, it throws an exception indicating that the file does not contain any `/`.
-5. **Main Function**: The `main` function demonstrates how to call `read_columns` and handle potential exceptions.
+1. **Function Signature**:
+   - The Python function `read_columns(file_name: str) -> np.array` is converted to `std::vector<std::vector<double>> read_columns(const std::string& file_name)` in C++.
+   - The return type `np.array` is translated to `std::vector<std::vector<double>>`.
+
+2. **Documentation**:
+   - The Python docstring is converted to a C++ style comment block using `/** */`.
+   - The arguments and return types are documented using C++ style comments.
+
+3. **File Reading**:
+   - The file is opened using `std::ifstream` and lines are read using `std::getline`.
+   - Error handling is included to check if the file opens successfully.
+
+4. **Line Processing**:
+   - Lines are stored in a `std::vector<std::string>` and processed to find the last line containing '/'.
+   - Lines are trimmed and filtered to remove empty lines and lines starting with '!'.
+
+5. **Data Parsing**:
+   - The data is parsed using `std::istringstream` to extract the numerical values.
+   - The resulting data is stored in a `std::vector<std::vector<double>>`.
+
+6. **Main Function**:
+   - The `main` function demonstrates how to call the `read_columns` function and handle exceptions.
+
+This C++ code preserves the original functionality and structure of the Python code while adhering to C++ standards and practices.

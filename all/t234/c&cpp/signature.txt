@@ -1,14 +1,108 @@
-Sure, here is the equivalent C++ function signature with the same comments:
+Certainly! Below is the equivalent C++ code for the given Python function, including the translation of the function signature, comments, and documentation:
 
 ```cpp
-/**
- * Appends a new row to a CSV file if there isn't a row with matching values in the first three columns.
- *
- * @param fileHandler File stream of the CSV file opened in read-plus mode ('r+').
- * @param reader CSV reader object for reading existing rows.
- * @param rowCandidate Vector containing the new row to be appended.
- */
-void appendOrSkipRow(std::fstream& fileHandler, std::istream& reader, const std::vector<std::string>& rowCandidate);
+#include <fstream>
+#include <vector>
+#include <string>
+#include <iostream>
+
+// Function to append or skip a row in a CSV file
+void append_or_skip_row(std::fstream& file_handler, 
+                        const std::vector<std::string>& reader, 
+                        const std::vector<std::string>& row_candidate) {
+    /**
+     * Appends a new row to a CSV file if there isn't a row with matching values in the first three columns.
+     *
+     * Args:
+     *     file_handler: File handler of the CSV file opened in read-plus mode ('inout').
+     *     reader: Vector of strings representing existing rows.
+     *     row_candidate: Vector of strings containing the new row to be appended.
+     */
+
+    // Read existing rows into a vector
+    std::vector<std::vector<std::string>> existing_rows;
+
+    std::string line;
+    while (std::getline(file_handler, line)) {
+        std::vector<std::string> row = split(line, ',');
+        existing_rows.push_back(row);
+    }
+
+    // Check if a matching row exists in the first three columns
+    bool row_exists = false;
+    for (const auto& row : existing_rows) {
+        if (row.size() >= 3 && row_candidate.size() >= 3 &&
+            row[0] == row_candidate[0] && row[1] == row_candidate[1] && row[2] == row_candidate[2]) {
+            std::cout << "Row already exists. Skipping append." << std::endl;
+            row_exists = true;
+            break;
+        }
+    }
+
+    // Append the new row if no matching row is found
+    if (!row_exists) {
+        file_handler.seekp(0, std::ios::end);  // Move to the end of the file
+        file_handler << '\n';
+        for (size_t i = 0; i < row_candidate.size(); ++i) {
+            file_handler << row_candidate[i];
+            if (i != row_candidate.size() - 1) {
+                file_handler << ",";
+            }
+        }
+    }
+}
+
+// Helper function to split a string by a delimiter
+std::vector<std::string> split(const std::string& s, char delimiter) {
+    std::vector<std::string> tokens;
+    std::string token;
+    std::istringstream tokenStream(s);
+    while (std::getline(tokenStream, token, delimiter)) {
+        tokens.push_back(token);
+    }
+    return tokens;
+}
+
+int main() {
+    std::string filename = "example.csv";
+    std::fstream file_handler(filename, std::ios::in | std::ios::out | std::ios::app);
+
+    if (!file_handler.is_open()) {
+        std::cerr << "Failed to open file: " << filename << std::endl;
+        return 1;
+    }
+
+    // Example usage
+    std::vector<std::string> reader = {"existing_row1", "existing_row2"};
+    std::vector<std::string> row_candidate = {"new_value1", "new_value2", "new_value3", "additional_data"};
+    append_or_skip_row(file_handler, reader, row_candidate);
+
+    file_handler.close();
+    return 0;
+}
 ```
 
-This assumes that you're using standard C++ libraries such as `std::fstream` and `std::istream`. The `rowCandidate` parameter is a vector of strings representing the candidate row to append. Adjustments may be needed based on your specific implementation details or additional requirements.
+### Explanation:
+1. **Function Signature**:
+   - The function `append_or_skip_row` takes a file stream reference (`std::fstream& file_handler`), a vector of strings (`const std::vector<std::string>& reader`), and another vector of strings (`const std::vector<std::string>& row_candidate`).
+
+2. **Comments and Documentation**:
+   - Multi-line comments are used to document the function and its arguments.
+   - Single-line comments are used for inline explanations.
+
+3. **Reading Existing Rows**:
+   - The function reads each line from the file and splits it into a vector of strings using the `split` helper function.
+
+4. **Checking for Matching Rows**:
+   - It checks if a row with matching values in the first three columns already exists.
+
+5. **Appending New Row**:
+   - If no matching row is found, it appends the new row to the CSV file.
+
+6. **Helper Function**:
+   - The `split` function is used to split a string by a delimiter (`,` in this case).
+
+7. **Main Function**:
+   - The `main` function demonstrates how to use the `append_or_skip_row` function with example data.
+
+This C++ code preserves the original functionality and structure of the Python code while adhering to C++ standards and practices.

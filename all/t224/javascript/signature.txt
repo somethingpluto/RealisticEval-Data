@@ -1,15 +1,67 @@
-Here's how you can convert the Python function signature to JavaScript:
+Certainly! Below is the equivalent JavaScript code with the function signature and comments rewritten to conform to JSDoc format:
 
 ```javascript
 /**
  * Empties all files and subdirectories in the specified directory.
- *
- * @param {string} directoryPath - The path to the directory whose contents are to be emptied.
- * @returns {void|Error} - Returns nothing if successful, otherwise throws an Error.
+ * 
+ * @param {string} directoryPath - Path to the directory whose contents are to be emptied.
+ * 
+ * @returns {Promise<void>} - A promise that resolves when the operation is complete.
+ * 
+ * @throws {Error} - If the specified path does not exist or is not a directory.
  */
-function emptyDirectory(directoryPath) {
-    // Function implementation goes here
+async function emptyDirectory(directoryPath) {
+    // Check if the path exists and is a directory
+    if (!fs.existsSync(directoryPath)) {
+        throw new Error("The specified directory does not exist.");
+    }
+    if (!fs.lstatSync(directoryPath).isDirectory()) {
+        throw new Error("The specified path is not a directory.");
+    }
+
+    // Iterate over all items in the directory
+    const items = fs.readdirSync(directoryPath, { withFileTypes: true });
+
+    for (const item of items) {
+        const itemPath = path.join(directoryPath, item.name);
+
+        // Check if the item is a file or directory and delete accordingly
+        if (item.isFile() || item.isSymbolicLink()) {
+            await fs.promises.unlink(itemPath);  // Remove the file or link
+        } else if (item.isDirectory()) {
+            await fs.promises.rm(itemPath, { recursive: true, force: true });  // Remove the directory and all its contents
+        }
+    }
 }
+
+// Example usage
+(async () => {
+    try {
+        await emptyDirectory('/path/to/directory');
+        console.log('Directory emptied successfully.');
+    } catch (error) {
+        console.error('Error:', error.message);
+    }
+})();
 ```
 
-In JavaScript, there isn't a direct equivalent to Python's type hinting (`str`), so we use JSDoc style comments to indicate the expected types of parameters and return values. The `@param` tag specifies the parameter name and its type, while the `@returns` tag describes what the function returns.
+### Explanation:
+1. **JSDoc Comments**:
+   - The JSDoc comment block is added at the beginning of the function to describe the purpose, parameters, return value, and possible exceptions.
+   - The `@param` tag is used to document the parameter `directoryPath`.
+   - The `@returns` tag is used to document the return type (`Promise<void>`).
+   - The `@throws` tag is used to document the possible exception (`Error`).
+
+2. **Function Signature**:
+   - The function is declared with the `async` keyword to handle asynchronous operations.
+   - The function name `emptyDirectory` is used, which matches the Python function name.
+
+3. **File System Operations**:
+   - The `fs` module is used to check if the directory exists and is a directory.
+   - The `fs.readdirSync` method is used to read the directory contents.
+   - Asynchronous methods like `fs.promises.unlink` and `fs.promises.rm` are used to delete files and directories.
+
+4. **Example Usage**:
+   - An immediately invoked async function is provided to demonstrate how to call the `emptyDirectory` function and handle any errors.
+
+This conversion ensures that the functionality, logic, and structure of the original Python code are preserved in JavaScript, with appropriate JSDoc comments for documentation.

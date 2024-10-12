@@ -1,45 +1,155 @@
-Here is how you might translate your Python unittest test class to TypeScript using Jest:
+Certainly! Here’s the equivalent TypeScript test class using Jest, ensuring that the functionality and logic of the tests are preserved. The necessary type annotations and Jest assertions are included.
+
+### TypeScript Code
+
+First, ensure you have the necessary dependencies installed:
+
+```bash
+npm install csv-parser csv-writer
+npm install --save-dev jest ts-jest @types/jest
+```
+
+Add the necessary Jest configuration to your `tsconfig.json` or `jest.config.js`:
+
+```json
+{
+  "preset": "ts-jest",
+  "testEnvironment": "node"
+}
+```
+
+Now, here’s the TypeScript test class:
 
 ```typescript
-import { describe, it, expect } from '@jest/globals';
+import * as fs from 'fs';
+import * as csvParser from 'csv-parser';
+import * as createCsvWriter from 'csv-writer';
+import { appendOrSkipRow } from './path/to/appendOrSkipRow'; // Import the function
 
-describe('appendOrSkipRow', () => {
-  it('should append a new row if there isn\'t a row with matching values in the first three columns', async () => {
-    // Mock the necessary dependencies
-    const mockFileHandler = {
-      writeFileSync: jest.fn(),
-      openSync: jest.fn(),
-      closeSync: jest.fn()
-    };
-    const mockReader = {
-      readFileSync: jest.fn().mockReturnValue('col1,col2,col3,value\n')
-    };
+describe('TestAppendOrSkipRow', () => {
+  let mockFile: fs.WriteStream;
+  let reader: csvParser.CSVParser;
 
-    // Call the function with the mocks
-    await appendOrSkipRow(mockFileHandler, mockReader, ['col1', 'col2', 'col4', 'value']);
+  beforeEach(() => {
+    // Set up a mock CSV file using a temporary file
+    const tempFilePath = 'temp.csv';
+    mockFile = fs.createWriteStream(tempFilePath);
+    mockFile.write('Alice,30,USA\nBob,25,UK\nCharlie,35,Canada\n');
+    mockFile.end();
 
-    // Expect that the function writes the new row to the file
-    expect(mockFileHandler.writeFileSync).toHaveBeenCalledWith(expect.stringContaining('col1,col2,col4,value'));
+    // Wait for the file to be written
+    return new Promise(resolve => mockFile.on('finish', resolve)).then(() => {
+      mockFile = fs.createReadStream(tempFilePath);
+      reader = csvParser();
+    });
   });
 
-  it('should skip appending a new row if there is a row with matching values in the first three columns', async () => {
-    // Mock the necessary dependencies
-    const mockFileHandler = {
-      writeFileSync: jest.fn(),
-      openSync: jest.fn(),
-      closeSync: jest.fn()
-    };
-    const mockReader = {
-      readFileSync: jest.fn().mockReturnValue('col1,col2,col3,value\n')
-    };
+  afterEach(() => {
+    // Clean up the temporary file
+    fs.unlinkSync('temp.csv');
+  });
 
-    // Call the function with the mocks
-    await appendOrSkipRow(mockFileHandler, mockReader, ['col1', 'col2', 'col3', 'value']);
+  it('should append a new row when there are no matching values', () => {
+    const new_row = ['David', '28', 'Australia'];
+    appendOrSkipRow(mockFile, reader, new_row);
 
-    // Expect that the function does not write the new row to the file
-    expect(mockFileHandler.writeFileSync).not.toHaveBeenCalled();
+    // Reset pointer to read from the start
+    mockFile = fs.createReadStream('temp.csv');
+    reader = csvParser();
+
+    const results: string[][] = [];
+    mockFile
+      .pipe(reader)
+      .on('data', (row) => {
+        results.push(Object.values(row));
+      })
+      .on('end', () => {
+        expect(results).toContainEqual(new_row);
+      });
+  });
+
+  it('should append a new row with different values', () => {
+    const new_row = ['Alice', '31', 'USA']; // Same name, different age
+    appendOrSkipRow(mockFile, reader, new_row);
+
+    // Reset pointer to read from the start
+    mockFile = fs.createReadStream('temp.csv');
+    reader = csvParser();
+
+    const results: string[][] = [];
+    mockFile
+      .pipe(reader)
+      .on('data', (row) => {
+        results.push(Object.values(row));
+      })
+      .on('end', () => {
+        expect(results).toContainEqual(new_row);
+      });
+  });
+
+  it('should append a row with different values in the first three columns', () => {
+    const new_row = ['Eve', '40', 'Australia', 'Engineer'];
+    appendOrSkipRow(mockFile, reader, new_row);
+
+    // Reset pointer to read from the start
+    mockFile = fs.createReadStream('temp.csv');
+    reader = csvParser();
+
+    const results: string[][] = [];
+    mockFile
+      .pipe(reader)
+      .on('data', (row) => {
+        results.push(Object.values(row));
+      })
+      .on('end', () => {
+        expect(results).toContainEqual(new_row);
+      });
+  });
+
+  it('should append multiple new rows correctly', () => {
+    const new_rows = [
+      ['Frank', '29', 'Germany'],
+      ['Grace', '22', 'France']
+    ];
+
+    for (const row of new_rows) {
+      appendOrSkipRow(mockFile, reader, row);
+      mockFile = fs.createReadStream('temp.csv');
+      reader = csvParser();
+    }
+
+    const results: string[][] = [];
+    mockFile
+      .pipe(reader)
+      .on('data', (row) => {
+        results.push(Object.values(row));
+      })
+      .on('end', () => {
+        new_rows.forEach(row => expect(results).toContainEqual(row));
+      });
   });
 });
 ```
 
-Please note that the above code assumes that `appendOrSkipRow` is an asynchronous function and that it uses the Node.js filesystem module (`fs`). If this is not the case, please adjust accordingly. Also, the mocks for `file_handler` and `reader` need to match the actual implementation of these objects in your project.
+### Explanation:
+1. **Imports**:
+   - `fs` for file system operations.
+   - `csvParser` for parsing CSV files.
+   - `createCsvWriter` for writing CSV files.
+   - Import the `appendOrSkipRow` function from the appropriate module.
+
+2. **Setup (`beforeEach`)**:
+   - Creates a temporary CSV file with initial data.
+   - Sets up the `mockFile` and `reader` objects.
+
+3. **Cleanup (`afterEach`)**:
+   - Cleans up the temporary CSV file after each test.
+
+4. **Test Cases**:
+   - Each test case sets up the `mockFile` and `reader` again to ensure a clean state.
+   - Uses Jest assertions (`toContainEqual`) to verify the expected behavior.
+
+5. **Reading CSV Data**:
+   - Reads the CSV file and checks if the new rows are present.
+
+This TypeScript code preserves the original functionality and structure of the Python unittests while adapting them to Jest conventions and best practices.

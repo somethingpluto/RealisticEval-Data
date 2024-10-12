@@ -1,87 +1,82 @@
-Here is a simple C++ implementation using POSIX API:
-
-```c++
-#include <iostream>
-#include <cstring>
-#include <sys/ioctl.h>
-#include <net/if.h>
-#include <arpa/inet.h>
-
-std::string getLocalIP(const std::string &interface) {
-    struct ifreq ifr;
-    int fd;
-
-    fd = socket(AF_INET, SOCK_DGRAM, 0);
-    if (fd == -1) {
-        perror("socket");
-        return "Error";
-    }
-
-    memset(&ifr, 0, sizeof(ifr));
-    strncpy(ifr.ifr_name, interface.c_str(), IFNAMSIZ-1);
-
-    if (ioctl(fd, SIOCGIFADDR, &ifr) != 0) {
-        close(fd);
-        perror("ioctl");
-        return "Error";
-    }
-
-    close(fd);
-
-    char ip[INET_ADDRSTRLEN];
-    inet_ntop(AF_INET, &((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr, ip, INET_ADDRSTRLEN);
-    
-    return std::string(ip);
-}
-```
-
-This function uses the `ioctl` system call with the `SIOCGIFADDR` command to retrieve the IP address of the specified network interface.
-
-Please note that this solution works only on Linux and it's not portable to other operating systems. Also, error handling is very basic in this example, you might want to add more robustness depending on your needs.
-
-For Windows platform, you would need to use Winsock library and `GetAdaptersAddresses` function instead. Here is a simplified version for Windows:
+Certainly! Below is the equivalent C++ code for the provided Python script. This code uses the `<regex>` library for regular expressions and the `<system_error>` library for handling errors. It also uses the `popen` and `pclose` functions for executing shell commands.
 
 ```cpp
-#include <winsock2.h>
-#include <iphlpapi.h>
-#include <ws2tcpip.h>
 #include <iostream>
+#include <fstream>
+#include <string>
+#include <regex>
+#include <cstdio>
+#include <stdexcept>
 
-#pragma comment(lib, "Ws2_32.lib")
-#pragma comment(lib, "Iphlpapi.lib")
-
-std::string getLocalIP(const std::string &interface) {
-    WSADATA wsaData;
-    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
-        return "Error";
+std::string get_local_ip(const std::string& interface = "wlan0") {
+    /**
+     * Retrieve the local IP address from the specified network interface.
+     *
+     * Args:
+     * interface (std::string): The network interface to query. Default is 'wlan0'.
+     *
+     * Returns:
+     * std::string: The local IP address, or a message indicating no IP was found.
+     *
+     * Throws:
+     * std::runtime_error: If the subprocess encounters an error or if no suitable IP is found.
+     */
+    std::string command = "ip addr show " + interface;
+    FILE* pipe = popen(command.c_str(), "r");
+    if (!pipe) {
+        throw std::runtime_error("Failed to execute command");
     }
 
-    ULONG flags = GAA_FLAG_INCLUDE_PREFIX | GAA_FLAG_SKIP_ANYCAST | GAA_FLAG_SKIP_MULTICAST | GAA_FLAG_SKIP_DNS_SERVER;
-    PIP_ADAPTER_ADDRESSES pAddresses = NULL;
-    ULONG outBufLen = 0;
-
-    // Get required buffer size.
-    if (GetAdaptersAddresses(AF_UNSPEC, flags, NULL, pAddresses, &outBufLen) == ERROR_BUFFER_OVERFLOW) {
-        pAddresses = (IP_ADAPTER_ADDRESSES *)malloc(outBufLen);
-    }
-
-    // Get addresses.
-    if (GetAdaptersAddresses(AF_UNSPEC, flags, NULL, pAddresses, &outBufLen) == NO_ERROR) {
-        for (PIP_ADAPTER_ADDRESSES pCurrAddr = pAddresses; pCurrAddr != NULL; pCurrAddr = pCurrAddr->Next) {
-            for (PIP_ADAPTER_UNICAST_ADDRESS pUnicastAddr = pCurrAddr->FirstUnicastAddress; pUnicastAddr != NULL; pUnicastAddr = pUnicastAddr->Next) {
-                char ip[NI_MAXHOST];
-                if (getnameinfo(pUnicastAddr->Address.lpSockaddr, pUnicastAddr->Address.iSockaddrLength, ip, NI_MAXHOST, NULL, 0, NI_NUMERICHOST) == 0) {
-                    free(pAddresses);
-                    WSACleanup();
-                    return std::string(ip);
-                }
-            }
+    std::string result;
+    char buffer[128];
+    while (!feof(pipe)) {
+        if (fgets(buffer, 128, pipe) != nullptr) {
+            result += buffer;
         }
     }
+    pclose(pipe);
 
-    free(pAddresses);
-    WSACleanup();
-    return "Error";
+    // Regular expression to match IPv4 addresses, excluding the loopback address
+    std::regex ip_pattern("inet ([0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+)/[0-9]+");
+
+    // Search for IP addresses in the command output
+    std::smatch match;
+    if (std::regex_search(result, match, ip_pattern)) {
+        return match[1];
+    } else {
+        throw std::runtime_error("No local IP found");
+    }
+}
+
+int main() {
+    try {
+        std::string local_ip = get_local_ip();
+        std::cout << "Local IP: " << local_ip << std::endl;
+    } catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+    }
+    return 0;
 }
 ```
-This code will list all unicast addresses for all adapters, including loopback and link-local addresses. If you specifically need an IPv4 address for a certain adapter, you may need to add additional checks.
+
+### Explanation:
+1. **Header Files**:
+   - `<iostream>`: For input/output operations.
+   - `<fstream>`: For file stream operations.
+   - `<string>`: For string manipulation.
+   - `<regex>`: For regular expressions.
+   - `<cstdio>`: For `popen` and `pclose` functions.
+   - `<stdexcept>`: For throwing exceptions.
+
+2. **Function `get_local_ip`**:
+   - Constructs the command to be executed using the provided interface name.
+   - Uses `popen` to open a pipe and execute the command.
+   - Reads the output of the command and stores it in a string.
+   - Uses a regular expression to find the first valid IPv4 address.
+   - Throws a `std::runtime_error` if no IP is found or if there is an error executing the command.
+
+3. **Main Function**:
+   - Calls `get_local_ip` and prints the result.
+   - Handles exceptions and prints error messages.
+
+This code should provide the same functionality as the original Python script but adapted to C++ syntax and features.

@@ -1,65 +1,80 @@
-Sure! Below is the equivalent C++ code for the provided Python function `remove_common_indentation`. This C++ code will remove the common leading indentation from each line in a given multi-line string, preserving the relative indentation of the text.
+Certainly! Below is the equivalent C++ code that maintains the same functionality, logic, and structure as the provided Python code:
 
 ```cpp
 #include <iostream>
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <cctype>
 
 std::string remove_common_indentation(const std::string& multiline_text) {
-    // Split the input text into individual lines
+    /**
+     * Removes the common leading indentation from each line in a given multi-line string,
+     * preserving the relative indentation of the text.
+     *
+     * Args:
+     *     multiline_text (const std::string&): The input string containing multiple lines.
+     *
+     * Returns:
+     *     std::string: The sanitized string with common leading indentation removed.
+     */
+
+    // Split the input string into lines
     std::vector<std::string> lines;
-    size_t start = 0;
-    size_t end = multiline_text.find('\n');
-    while (end != std::string::npos) {
-        lines.push_back(multiline_text.substr(start, end - start));
-        start = end + 1;
-        end = multiline_text.find('\n', start);
+    std::string current_line;
+    std::istringstream iss(multiline_text);
+    while (std::getline(iss, current_line, '\n')) {
+        lines.push_back(current_line);
     }
-    lines.push_back(multiline_text.substr(start));
 
-    // Find the minimum non-empty indentation length
-    size_t min_indent = std::numeric_limits<size_t>::max();
-    bool found_non_empty_line = false;
+    // Filter out lines that are empty or only whitespace
+    std::vector<std::string> non_empty_lines;
     for (const auto& line : lines) {
-        if (!line.empty()) {
-            found_non_empty_line = true;
-            size_t indent_length = 0;
-            for (char ch : line) {
-                if (ch == ' ' || ch == '\t') {
-                    ++indent_length;
-                } else {
-                    break;
-                }
-            }
-            min_indent = std::min(min_indent, indent_length);
+        if (!line.empty() && line.find_first_not_of(" \t") != std::string::npos) {
+            non_empty_lines.push_back(line);
         }
     }
 
-    // Remove the common indentation from each line
+    // Determine the minimum indentation of non-empty lines
+    size_t min_indent = std::string::npos;
+    for (const auto& line : non_empty_lines) {
+        size_t first_non_space = line.find_first_not_of(" \t");
+        if (first_non_space != std::string::npos) {
+            min_indent = std::min(min_indent, first_non_space);
+        }
+    }
+
+    // If there's no indentation or all lines are empty, return the original string
+    if (min_indent == std::string::npos) {
+        return multiline_text;
+    }
+
+    // Remove the common leading indentation from each line
+    std::vector<std::string> sanitized_lines;
+    for (const auto& line : lines) {
+        if (line.length() > min_indent) {
+            sanitized_lines.push_back(line.substr(min_indent));
+        } else {
+            sanitized_lines.push_back("");
+        }
+    }
+
+    // Join the sanitized lines back into a single string
     std::string result;
-    for (const auto& line : lines) {
-        size_t i = 0;
-        for (; i < min_indent; ++i) {
-            if (line[i] == ' ' || line[i] == '\t') {
-                continue;
-            } else {
-                break;
-            }
+    for (size_t i = 0; i < sanitized_lines.size(); ++i) {
+        result += sanitized_lines[i];
+        if (i < sanitized_lines.size() - 1) {
+            result += "\n";
         }
-        result += line.substr(i) + "\n";
-    }
-
-    // Remove the trailing newline character
-    if (!result.empty() && result.back() == '\n') {
-        result.pop_back();
     }
 
     return result;
 }
 
 int main() {
-    std::string multiline_text = "   Hello,\n   World!\nThis is a test.";
+    std::string multiline_text = "    This is a test.\n"
+                                 "      This is another line.\n"
+                                 "    And this is yet another line.";
     std::string sanitized_text = remove_common_indentation(multiline_text);
     std::cout << sanitized_text << std::endl;
     return 0;
@@ -67,9 +82,10 @@ int main() {
 ```
 
 ### Explanation:
-1. **Splitting the Input Text**: The input text is split into individual lines using the newline character (`\n`).
-2. **Finding Minimum Indentation**: The code finds the minimum non-empty indentation length among all lines.
-3. **Removing Common Indentation**: Each line has its common indentation removed, and the resulting lines are concatenated back together.
-4. **Main Function**: The `main` function demonstrates how to use the `remove_common_indentation` function.
+1. **Splitting the Input String**: The `std::istringstream` class is used to split the input string into individual lines.
+2. **Filtering Non-Empty Lines**: Lines that are empty or contain only whitespace are filtered out using `find_first_not_of`.
+3. **Determining Minimum Indentation**: The minimum indentation is calculated by finding the first non-space character in each non-empty line.
+4. **Removing Common Indentation**: Each line is adjusted by removing the common indentation.
+5. **Joining Sanitized Lines**: The sanitized lines are joined back into a single string using `std::string::append`.
 
-This C++ code should work similarly to the provided Python function, removing the common leading indentation from each line while preserving the relative indentation of the text.
+This C++ code should provide the same functionality as the Python code.

@@ -1,68 +1,108 @@
-Here's a C++ version of your Python code using `std::unordered_set` and `std::deque`. Note that C++ does not have built-in support for deques with unique items like Python's `collections.deque`, so we'll use `std::unordered_set` to store unique items and `std::deque` to maintain the order.
+Below is the equivalent C++ code for the provided Python code. This includes the necessary type declarations, memory management, and loop adaptations to ensure the functionality remains consistent:
 
 ```cpp
 #include <iostream>
-#include <unordered_set>
 #include <deque>
+#include <unordered_set>
+#include <string>
+#include <iterator>
+#include <sstream>
 
 class UniqueDeque {
-private:
-    std::unordered_set<int> set;
-    std::deque<int> deque;
-
 public:
-    bool add(int item) {
-        if (set.find(item) != set.end()) {
-            return false; // Item already present
+    // Initialize a UniqueDeque object using a deque and an unordered_set.
+    UniqueDeque() : _deque(), _set() {}
+
+    // Add an item to the deque if it is not already present.
+    bool add(const std::string& item) {
+        if (_set.find(item) == _set.end()) {
+            _deque.push_back(item);
+            _set.insert(item);
+            return true;
         }
-        set.insert(item);
-        deque.push_back(item);
-        return true;
+        return false;
     }
 
-    bool deleteItem(int item) {
-        auto it = set.find(item);
-        if (it == set.end()) {
-            return false; // Item not found
+    // Remove an item from the deque if it exists.
+    bool deleteItem(const std::string& item) {
+        auto it = std::find(_deque.begin(), _deque.end(), item);
+        if (it != _deque.end()) {
+            _deque.erase(it);
+            _set.erase(item);
+            return true;
         }
-        set.erase(it);
-        deque.erase(std::remove(deque.begin(), deque.end(), item), deque.end());
-        return true;
+        return false;
     }
 
-    bool contains(int item) const {
-        return set.find(item) != set.end();
+    // Check if an item is present in the deque.
+    bool contains(const std::string& item) const {
+        return _set.find(item) != _set.end();
     }
 
-    size_t length() const {
-        return set.size();
+    // Get the number of elements in the deque.
+    size_t size() const {
+        return _deque.size();
     }
 
-    void print() const {
-        for (const auto &item : deque) {
-            std::cout << item << " ";
+    // Create an iterator for the deque.
+    std::deque<std::string>::iterator begin() {
+        return _deque.begin();
+    }
+
+    std::deque<std::string>::const_iterator begin() const {
+        return _deque.begin();
+    }
+
+    std::deque<std::string>::iterator end() {
+        return _deque.end();
+    }
+
+    std::deque<std::string>::const_iterator end() const {
+        return _deque.end();
+    }
+
+    // Get a string representation of the UniqueDeque.
+    std::string repr() const {
+        std::stringstream ss;
+        ss << "UniqueDeque([";
+        for (auto it = _deque.begin(); it != _deque.end(); ++it) {
+            if (it != _deque.begin()) {
+                ss << ", ";
+            }
+            ss << *it;
         }
-        std::cout << std::endl;
+        ss << "])";
+        return ss.str();
     }
+
+private:
+    std::deque<std::string> _deque; // Stores elements in order.
+    std::unordered_set<std::string> _set; // Ensures uniqueness.
 };
 
 int main() {
     UniqueDeque ud;
-    ud.add(1);
-    ud.add(2);
-    ud.add(3);
-    ud.print(); // Output: 1 2 3
+    ud.add("apple");
+    ud.add("banana");
+    ud.add("cherry");
+    ud.deleteItem("banana");
+    std::cout << ud.repr() << std::endl;
 
-    ud.deleteItem(2);
-    ud.print(); // Output: 1 3
-
-    std::cout << "Contains 1: " << ud.contains(1) << std::endl; // Output: 1
-    std::cout << "Contains 2: " << ud.contains(2) << std::endl; // Output: 0
-
-    std::cout << "Length: " << ud.length() << std::endl; // Output: 2
+    for (const auto& item : ud) {
+        std::cout << item << std::endl;
+    }
 
     return 0;
 }
 ```
 
-This C++ code defines a class `UniqueDeque` that maintains a collection of unique integers using an `std::unordered_set` for fast lookup and insertion, and an `std::deque` to preserve the order of elements. The `add`, `deleteItem`, `contains`, and `length` methods correspond to the Python methods you provided. The `print` method is included for demonstration purposes to show how you can iterate over the deque.
+### Explanation:
+1. **Initialization**: The `UniqueDeque` class is initialized with a `std::deque<std::string>` and a `std::unordered_set<std::string>` to store elements in order and ensure uniqueness, respectively.
+2. **Add Method**: The `add` method checks if the item is already in the set before adding it to the deque and set.
+3. **Delete Method**: The `deleteItem` method removes the item from both the deque and the set if it exists.
+4. **Contains Method**: The `contains` method checks if the item is present in the set.
+5. **Size Method**: The `size` method returns the number of elements in the deque.
+6. **Iterator Methods**: The `begin` and `end` methods provide iterators for iterating over the elements in the deque.
+7. **Representation Method**: The `repr` method provides a string representation of the `UniqueDeque`.
+
+This C++ code maintains the same functionality and structure as the original Python code.

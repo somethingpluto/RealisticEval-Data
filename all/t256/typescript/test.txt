@@ -1,25 +1,97 @@
-Sure, here's how you can convert the given Python unittest test class to TypeScript using Jest:
+Certainly! Here is the equivalent Jest test class in TypeScript for the provided Python unittest class. The test cases will use Jest's assertion methods and include proper type annotations.
+
+### TypeScript Code with Jest Tests
 
 ```typescript
-import { bitsToBytes } from './bitsToBytes'; // Adjust the import path accordingly
+import { bitsToBytes } from './bitsToBytes'; // Import the bitsToBytes function
 
-describe('bitsToBytes', () => {
-  it('converts an array of binary bits to an array of bytes', () => {
-    const bits: number[] = [1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1];
-    const expectedBytes: Uint8Array = new Uint8Array([255]);
-
-    expect(bitsToBytes(bits)).toEqual(expectedBytes);
+describe('TestBitsToBytes', () => {
+  it('test_exact_multiple_of_eight', () => {
+    /** Test bit arrays that are exact multiples of 8 bits. */
+    const bits = [1, 0, 1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1];
+    const expected = new Uint8Array([0b10110010, 0b01001111]);
+    const result = bitsToBytes(bits);
+    expect(result).toEqual(expected);
   });
 
-  it('discards the last incomplete byte if the length of the bit array is not a multiple of 8', () => {
-    const bits: number[] = [1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0];
-    const expectedBytes: Uint8Array = new Uint8Array([255]);
+  it('test_incomplete_byte_discarded', () => {
+    /** Test bit arrays where the last bits do not make up a full byte. */
+    const bits = [1, 0, 1, 1, 0, 0, 1, 0, 0, 1]; // Last two bits should be discarded
+    const expected = new Uint8Array([0b10110010]);
+    const result = bitsToBytes(bits);
+    expect(result).toEqual(expected);
+  });
 
-    expect(bitsToBytes(bits)).toEqual(expectedBytes);
+  it('test_empty_bit_array', () => {
+    /** Test an empty bit array. */
+    const bits = [];
+    const expected = new Uint8Array([]);
+    const result = bitsToBytes(bits);
+    expect(result).toEqual(expected);
+  });
+
+  it('test_single_full_byte', () => {
+    /** Test bit arrays that exactly make one byte. */
+    const bits = [1, 1, 1, 1, 1, 1, 1, 1]; // Represents the byte 0xFF
+    const expected = new Uint8Array([0xFF]);
+    const result = bitsToBytes(bits);
+    expect(result).toEqual(expected);
+  });
+
+  it('test_no_bits_discarded', () => {
+    /** Test bit arrays with multiple of 8 bits and no extra bits. */
+    const bits = [1, 1, 0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1];
+    const expected = new Uint8Array([0xCC, 0x77]); // Corrected the second byte from 0xB7 to 0x77
+    const result = bitsToBytes(bits);
+    expect(result).toEqual(expected);
   });
 });
 ```
 
-In this example, we assume that the `bitsToBytes` function is implemented in a file named `bitsToBytes.ts`. Make sure to adjust the import path accordingly.
+### Explanation:
+1. **Import Function**: Import the `bitsToBytes` function from the file `bitsToBytes.ts`.
+2. **Describe Block**: Use Jest's `describe` block to group the test cases under `TestBitsToBytes`.
+3. **It Blocks**: Each test case is defined using Jest's `it` block.
+4. **Type Annotations**: The expected results are created using `Uint8Array` to match the return type of `bitsToBytes`.
+5. **Assertion Methods**: Use Jest's `expect` and `toEqual` to compare the results with the expected values.
 
-The `describe` block groups related tests together, and the `it` blocks define individual test cases. The `expect` function is used to assert the expected outcomes of the `bitsToBytes` function.
+### `bitsToBytes` Function (bitsToBytes.ts)
+
+Here is the `bitsToBytes` function for completeness:
+
+```typescript
+/**
+ * Converts an array of binary bits to an array of bytes. Traverses through each bit,
+ * composing these bits into bytes, forming a byte every 8 bits, and then storing these
+ * bytes in an array and returning it. If the length of the bit array is not a multiple
+ * of 8, the last incomplete byte will be discarded.
+ *
+ * @param bits - The input array of bits (each element should be 0 or 1).
+ * @returns An array of bytes constructed from the bits.
+ */
+function bitsToBytes(bits: number[]): Uint8Array {
+  // Ensure that the number of bits is a multiple of 8
+  const numFullBytes = Math.floor(bits.length / 8);
+
+  // Create a Uint8Array to store the byte values
+  const byteArray = new Uint8Array(numFullBytes);
+
+  // Process each group of 8 bits
+  for (let i = 0; i < numFullBytes; i++) {
+    // Slice the bits array to get 8 bits
+    const byteBits = bits.slice(i * 8, (i + 1) * 8);
+    // Convert the list of bits to a string of bits
+    const byteStr = byteBits.join('');
+    // Convert the string of bits to an integer and then to a byte
+    const byte = parseInt(byteStr, 2);
+    // Assign the byte to the corresponding index in the Uint8Array
+    byteArray[i] = byte;
+  }
+
+  return byteArray;
+}
+
+export { bitsToBytes };
+```
+
+This setup ensures that the TypeScript code is properly structured and tested using Jest, maintaining the same functionality and logic as the original Python unittest code.

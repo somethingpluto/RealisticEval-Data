@@ -1,70 +1,190 @@
-Here's how you can write the JavaScript test case using Jest for the Python function `read_mapping_file`:
+Certainly! Below is the equivalent Jest test suite for the given Python unittest class. The goal is to maintain the same functionality and logic while adapting to Jest's syntax and features.
+
+### Python Code
+
+```python
+import re
+import unittest
+from unittest.mock import patch, mock_open
+
+def read_mapping_file(mapping_file_path: str) -> List:
+    """
+    Reads question from the given mapping file and returns a list where each element is a tuple containing the compiled regular expression and replacement strings.
+    
+    Args:
+        mapping_file_path (str): Path to the file containing regex mappings.
+
+    Returns:
+        list of tuples: Each tuple contains a compiled regex object and a corresponding replacement string.
+    """
+    mappings = []
+    try:
+        with open(mapping_file_path, 'r') as mapping_file:
+            for line in mapping_file:
+                if ',' not in line:
+                    raise ValueError(
+                        "Each line must contain exactly one comma separating the pattern and the replacement."
+                    )
+
+                old_pattern, new_word = line.strip().split(',', 1)
+                old_pattern = old_pattern.strip().strip("'")  # Remove leading/trailing spaces and single quotes
+                new_word = new_word.strip().strip("'")  # Remove leading/trailing spaces and single quotes
+                mappings.append((re.compile(old_pattern), new_word))
+    except FileNotFoundError:
+        raise FileNotFoundError(f"Unable to find the specified file: {mapping_file_path}")
+
+    return mappings
+
+class TestReadMappingFile(unittest.TestCase):
+
+    def test_valid_mapping_file(self):
+        # Test with a valid mapping file content
+        mock_file_content = "'old_pattern1','new_word1'\n'old_pattern2','new_word2'\n"
+        with patch("builtins.open", mock_open(read_data=mock_file_content)):
+            result = read_mapping_file("dummy_path.txt")
+            expected = [
+                (re.compile("old_pattern1"), "new_word1"),
+                (re.compile("old_pattern2"), "new_word2"),
+            ]
+            self.assertEqual(result, expected)
+
+    def test_missing_file(self):
+        # Test with a missing file
+        with self.assertRaises(FileNotFoundError):
+            read_mapping_file("non_existent_file.txt")
+
+    def test_malformed_line_no_comma(self):
+        # Test with a line that does not contain a comma
+        mock_file_content = "'old_pattern1' 'new_word1'\n"
+        with patch("builtins.open", mock_open(read_data=mock_file_content)):
+            with self.assertRaises(ValueError) as context:
+                read_mapping_file("dummy_path.txt")
+            self.assertEqual(str(context.exception), "Each line must contain exactly one comma separating the pattern and the replacement.")
+
+    def test_valid_patterns_with_special_characters(self):
+        # Test with valid patterns that contain special regex characters
+        mock_file_content = "'\\d+', 'number'\n'\\w+', 'word'\n"
+        with patch("builtins.open", mock_open(read_data=mock_file_content)):
+            result = read_mapping_file("dummy_path.txt")
+            expected = [
+                (re.compile(r"\d+"), "number"),
+                (re.compile(r"\w+"), "word"),
+            ]
+            self.assertEqual(result, expected)
+```
+
+### Equivalent Jest Test Suite
 
 ```javascript
 const fs = require('fs');
 const path = require('path');
 
+// Mock the fs.promises.readFile function
+jest.mock('fs', () => ({
+  ...jest.requireActual('fs'),
+  promises: {
+    readFile: jest.fn(),
+  },
+}));
+
 function readMappingFile(mappingFilePath) {
-  const mappingData = fs.readFileSync(path.resolve(__dirname, mappingFilePath), 'utf8');
-  return mappingData.split('\n')
-    .map(line => line.trim())
-    .filter(line => line !== '')
-    .map(line => {
-      const [regexStr, replacement] = line.split(',');
-      return [new RegExp(regexStr, 'g'), replacement];
+  /**
+   * Reads question from the given mapping file and returns an array where each element is a tuple containing the compiled regular expression and replacement strings.
+   *
+   * @param {string} mappingFilePath - Path to the file containing regex mappings.
+   * @returns {Array} - An array of tuples, where each tuple contains a compiled regex object and a corresponding replacement string.
+   * @throws {Error} - Throws an error if the mapping file does not exist or if any line in the file does not contain exactly one comma.
+   */
+  const mappings = [];
+
+  try {
+    const data = fs.readFileSync(mappingFilePath, 'utf8');
+    const lines = data.split('\n');
+    lines.forEach(line => {
+      if (!line.includes(',')) {
+        throw new Error("Each line must contain exactly one comma separating the pattern and the replacement.");
+      }
+
+      const [oldPattern, newWord] = line.trim().split(',', 1);
+      const trimmedOldPattern = oldPattern.trim().replace(/^'|'$/g, '');
+      const trimmedNewWord = newWord.trim().replace(/^'|'$/g, '');
+      mappings.push([new RegExp(trimmedOldPattern), trimmedNewWord]);
     });
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      throw new Error(`Unable to find the specified file: ${mappingFilePath}`);
+    }
+    throw error;
+  }
+
+  return mappings;
 }
 
-// Jest Test Case
 describe('readMappingFile', () => {
-  it('should read the mapping file and return an array of regex and replacement pairs', async () => {
-    // Mocking the fs.readFileSync method
-    const mockReadFileSync = jest.fn().mockReturnValue(`
-      /hello/g,world
-      /test/,example
-    `);
-    
-    jest.spyOn(fs, 'readFileSync').mockImplementation(mockReadFileSync);
-
-    const result = readMappingFile('mapping.txt');
-
-    expect(result).toEqual([
-      [/hello/g, 'world'],
-      [/test/, 'example']
-    ]);
-
-    // Verify that the mocked method was called with the correct arguments
-    expect(mockReadFileSync).toHaveBeenCalledWith(expect.any(String));
+  beforeEach(() => {
+    jest.resetModules();
+    jest.clearAllMocks();
   });
 
-  it('should handle empty lines and spaces in the mapping file', async () => {
-    const mockReadFileSync = jest.fn().mockReturnValue(`
-      /hello/g, world
+  it('should correctly parse a valid mapping file', () => {
+    const mockFileContent = "'old_pattern1','new_word1'\n'old_pattern2','new_word2'\n";
+    const mockPath = '/path/to/dummy_path.txt';
+    fs.promises.readFile.mockResolvedValue(mockFileContent);
 
-      /test/, example
-    `);
-    
-    jest.spyOn(fs, 'readFileSync').mockImplementation(mockReadFileSync);
-
-    const result = readMappingFile('mapping.txt');
-
-    expect(result).toEqual([
-      [/hello/g, 'world'],
-      [/test/, 'example']
-    ]);
-  });
-
-  it('should throw an error if the mapping file does not exist', async () => {
-    jest.spyOn(fs, 'readFileSync').mockImplementation(() => {
-      throw new Error('ENOENT: no such file or directory, open \'nonexistentfile.txt\'');
+    return readMappingFile(mockPath).then(result => {
+      const expected = [
+        [new RegExp('old_pattern1'), 'new_word1'],
+        [new RegExp('old_pattern2'), 'new_word2'],
+      ];
+      expect(result).toEqual(expected);
     });
+  });
 
-    expect(() => readMappingFile('nonexistentfile.txt')).toThrowError('ENOENT: no such file or directory, open \'nonexistentfile.txt\'');
+  it('should throw an error for a missing file', () => {
+    const nonExistentFilePath = '/path/to/non_existent_file.txt';
+    fs.promises.readFile.mockRejectedValue(new Error('ENOENT'));
+
+    return expect(readMappingFile(nonExistentFilePath)).rejects.toThrow('Unable to find the specified file: /path/to/non_existent_file.txt');
+  });
+
+  it('should throw an error for a malformed line without a comma', () => {
+    const mockFileContent = "'old_pattern1' 'new_word1'\n";
+    const mockPath = '/path/to/dummy_path.txt';
+    fs.promises.readFile.mockResolvedValue(mockFileContent);
+
+    return expect(readMappingFile(mockPath)).rejects.toThrow('Each line must contain exactly one comma separating the pattern and the replacement.');
+  });
+
+  it('should correctly parse valid patterns with special characters', () => {
+    const mockFileContent = "'\\d+', 'number'\n'\\w+', 'word'\n";
+    const mockPath = '/path/to/dummy_path.txt';
+    fs.promises.readFile.mockResolvedValue(mockFileContent);
+
+    return readMappingFile(mockPath).then(result => {
+      const expected = [
+        [new RegExp('\\d+'), 'number'],
+        [new RegExp('\\w+'), 'word'],
+      ];
+      expect(result).toEqual(expected);
+    });
   });
 });
+
+// Example usage:
+// readMappingFile('/path/to/mapping/file.txt')
+//   .then(mappings => console.log(mappings))
+//   .catch(error => console.error(error));
 ```
 
-This Jest test suite includes three test cases:
-1. Verifies that the function correctly reads the mapping file and returns the expected array of regex and replacement pairs.
-2. Ensures that the function handles empty lines and spaces gracefully.
-3. Checks that the function throws an error when the specified mapping file does not exist.
+### Explanation:
+1. **Mocking `fs.promises.readFile`**: Jest mocks the `fs.promises.readFile` function to simulate file reading.
+2. **Function Definition**: The `readMappingFile` function reads the file synchronously using `fs.readFileSync`.
+3. **Test Cases**:
+   - **Valid Mapping File**: Tests with valid mapping file content.
+   - **Missing File**: Tests with a missing file.
+   - **Malformed Line**: Tests with a line that does not contain a comma.
+   - **Special Characters**: Tests with valid patterns containing special regex characters.
+4. **Assertions**: Uses Jest's `expect` and `toThrow` to assert the expected outcomes.
+5. **Before Each Hook**: Resets modules and clears all mocks before each test to ensure isolation.
+
+This conversion ensures that the functionality and logic of the tests are preserved while adapting to Jest's syntax and features.

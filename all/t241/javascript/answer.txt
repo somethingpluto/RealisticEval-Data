@@ -1,34 +1,72 @@
-Here is the JavaScript version of your Python code:
+Certainly! Below is the equivalent JavaScript code that maintains the same functionality, logic, and structure as the provided Python code:
 
 ```javascript
-const fs = require('fs');
-
 function getMinSeqNumAndDistance(filePath, word1, word2) {
-    let minLine = null;
+    /**
+     * Finds the minimum distance between two words in a text file, considering each line as a separate sequence.
+     *
+     * @param {string} filePath - The path to the file to read.
+     * @param {string} word1 - The first word to search for.
+     * @param {string} word2 - The second word to search for.
+     *
+     * @returns {Array} An array containing the line number with the minimum distance and the minimum distance itself.
+     *                  Returns [null, Infinity] if one or both words are not found in any line.
+     */
     let minDistance = Infinity;
+    let minSeqNum = null;
+    let currentLineNumber = 0;
 
-    const lines = fs.readFileSync(filePath, 'utf8').split('\n');
-    for(let i = 0; i < lines.length; i++) {
-        const words = lines[i].split(/\s+/);
-        let index1 = -1;
-        let index2 = -1;
-        words.forEach((word, j) => {
-            if(word === word1) index1 = j;
-            if(word === word2) index2 = j;
-        });
-        if(index1 !== -1 && index2 !== -1) {
-            const distance = Math.abs(index1 - index2);
-            if(distance < minDistance) {
-                minDistance = distance;
-                minLine = i + 1;
+    try {
+        const fs = require('fs');
+        const fileContent = fs.readFileSync(filePath, 'utf8');
+        const lines = fileContent.split('\n');
+
+        for (let line of lines) {
+            const words = line.trim().split(/\s+/);
+            const word1Indices = [];
+            const word2Indices = [];
+
+            for (let i = 0; i < words.length; i++) {
+                if (words[i] === word1) {
+                    word1Indices.push(i);
+                }
+                if (words[i] === word2) {
+                    word2Indices.push(i);
+                }
             }
+
+            for (let index1 of word1Indices) {
+                for (let index2 of word2Indices) {
+                    const distance = Math.abs(index1 - index2);
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        minSeqNum = currentLineNumber;
+                    }
+                }
+            }
+
+            currentLineNumber += 1;
+        }
+
+    } catch (error) {
+        if (error.code === 'ENOENT') {
+            console.log(`Error: The file ${filePath} does not exist.`);
+            return [null, Infinity];
+        } else {
+            console.log(`An error occurred: ${error.message}`);
+            return [null, Infinity];
         }
     }
 
-    return [minLine, minDistance];
+    return [minSeqNum, minDistance];
 }
 ```
 
-This function reads the content of the file synchronously using `fs.readFileSync`, splits it into lines, then for each line it further splits it into words. It checks for the presence of `word1` and `word2` in the current line and calculates their indices. If both words are present, it calculates the absolute difference between their indices which gives us the distance. If this distance is less than the previously recorded minimum distance, it updates the minimum distance and line number. 
+### Explanation:
+1. **File Reading**: The `fs` module is used to read the file synchronously using `fs.readFileSync`.
+2. **Line Splitting**: The file content is split into lines using `split('\n')`.
+3. **Word Indexing**: For each line, the words are split and their indices are collected for `word1` and `word2`.
+4. **Distance Calculation**: The distances between the indices of `word1` and `word2` are calculated and the minimum distance is updated accordingly.
+5. **Error Handling**: File not found and other errors are caught and handled appropriately.
 
-Please note that in JavaScript, array indices start at 0, so we add 1 to `i` to get the line number starting from 1. Also, JavaScript uses `Infinity` instead of `float('inf')`.
+This JavaScript function should provide the same functionality as the Python code.

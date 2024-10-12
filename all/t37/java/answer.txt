@@ -1,40 +1,126 @@
-Here's how you can translate your Python code into Java:
+Certainly! Below is the equivalent Java code for the given Python script, organized within the `org.real.temp` package and the `Answer` class:
 
 ```java
 package org.real.temp;
 
 public class Answer {
-    public static class QuadratureRule {
-        private double[] x;
-        private double[] w;
+
+    static class QuadratureRule {
+        double[] x;
+        double[] w;
 
         public QuadratureRule(double[] x, double[] w) {
             this.x = x;
             this.w = w;
         }
+    }
 
-        public double[] getX() {
-            return x;
-        }
+    static class OrthogonalPolynomial {
+        double[] alpha;
+        double[] beta;
+        double[] gamma;
+        QuadratureRule quadratureRule;
 
-        public void setX(double[] x) {
-            this.x = x;
-        }
-
-        public double[] getW() {
-            return w;
-        }
-
-        public void setW(double[] w) {
-            this.w = w;
+        public OrthogonalPolynomial(double[] alpha, double[] beta, double[] gamma, QuadratureRule quadratureRule) {
+            this.alpha = alpha;
+            this.beta = beta;
+            this.gamma = gamma;
+            this.quadratureRule = quadratureRule;
         }
     }
 
-    public static double[][][] lanczos(int n, QuadratureRule quadratureRule) {
-        // TODO: Implement the Lanczos function here
-        return new double[0][0][0];
+    public static OrthogonalPolynomial lanczos(int n, QuadratureRule quadratureRule) {
+        if (n <= 0 || n > quadratureRule.x.length) {
+            throw new IllegalArgumentException("n must be between 1 and " + quadratureRule.x.length + ".");
+        }
+
+        double[] x = quadratureRule.x;
+        double[] w = quadratureRule.w;
+        double[] alpha = new double[n];
+        double[] beta = new double[Math.max(0, n - 1)];
+        double[] gamma = new double[n];
+
+        // Initial polynomial p_0(x) = 1, p_-1(x) = 0 (non-existent, thus ignored in calculations)
+        double[] p0 = new double[x.length];
+        Arrays.fill(p0, 1);
+        double[] p1 = new double[x.length];
+
+        for (int i = 0; i < n; i++) {
+            // Compute new polynomial p_i
+            double[] pi;
+            if (i > 0) {
+                pi = new double[x.length];
+                for (int j = 0; j < x.length; j++) {
+                    pi[j] = (x[j] - alpha[i - 1]) * p0[j];
+                }
+            } else {
+                pi = p0;
+            }
+
+            if (i > 1) {
+                for (int j = 0; j < x.length; j++) {
+                    pi[j] -= beta[i - 2] * p1[j];
+                }
+            }
+
+            gamma[i] = dotProduct(w, pi, pi);
+            alpha[i] = dotProduct(w, x, pi, pi) / gamma[i];
+
+            if (i < n - 1) {
+                beta[i] = dotProduct(w, pi, pi) / gamma[i];
+                double[] temp = p0;
+                p0 = pi;
+                p1 = temp;  // Update polynomials for next iteration
+            }
+        }
+
+        return new OrthogonalPolynomial(alpha, beta, gamma, quadratureRule);
+    }
+
+    private static double dotProduct(double[] w, double[]... arrays) {
+        double result = 0.0;
+        for (int i = 0; i < w.length; i++) {
+            double product = 1.0;
+            for (double[] array : arrays) {
+                product *= array[i];
+            }
+            result += w[i] * product;
+        }
+        return result;
+    }
+
+    public static void main(String[] args) {
+        double[] x = {1.0, 2.0, 3.0};
+        double[] w = {0.5, 0.3, 0.2};
+        QuadratureRule quadratureRule = new QuadratureRule(x, w);
+
+        OrthogonalPolynomial result = lanczos(2, quadratureRule);
+        System.out.println("Alpha: " + Arrays.toString(result.alpha));
+        System.out.println("Beta: " + Arrays.toString(result.beta));
+        System.out.println("Gamma: " + Arrays.toString(result.gamma));
     }
 }
 ```
 
-Please note that I've translated the `QuadratureRule` class into a nested class inside `Answer`, as it seems like it's closely related to the `lanczos` method. The `lanczos` method currently returns a 3D array, but you need to implement its logic according to your needs.
+### Explanation:
+1. **Classes**: 
+   - `QuadratureRule`: Represents the quadrature rule with `x` and `w` arrays.
+   - `OrthogonalPolynomial`: Represents the orthogonal polynomial with `alpha`, `beta`, `gamma`, and `quadratureRule`.
+
+2. **Methods**:
+   - `lanczos`: Computes the Lanczos algorithm and returns an instance of `OrthogonalPolynomial`.
+   - `dotProduct`: Computes the dot product of multiple arrays weighted by `w`.
+
+3. **Main Method**:
+   - Demonstrates how to use the `lanczos` method with sample data.
+
+4. **Type Declarations**:
+   - All variables and arrays are explicitly typed according to Java conventions.
+
+5. **Error Handling**:
+   - Throws an `IllegalArgumentException` if `n` is out of bounds.
+
+6. **Array Initialization and Manipulation**:
+   - Uses loops and array operations to compute the polynomials and dot products.
+
+This Java code maintains the functionality and logic of the original Python script while adhering to Java's syntax and best practices.

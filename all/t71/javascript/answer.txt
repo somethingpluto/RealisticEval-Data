@@ -1,38 +1,80 @@
-Here is your Python code converted into JavaScript:
+Sure, here's the equivalent JavaScript code that maintains the same functionality, logic, and structure as the provided Python code:
 
 ```javascript
 const fs = require('fs');
-const readline = require('readline');
 
 function readColumns(fileName) {
-    return new Promise((resolve, reject) => {
-        const stream = fs.createReadStream(fileName);
-        let lines = [];
-        let index = -1;
-        
-        const rl = readline.createInterface({
-            input: stream,
-            crlfDelay: Infinity
-        });
+    /**
+     * Reads numerical columns from a file starting from the line after the last line containing '/'.
+     *
+     * @param {string} fileName - The name of the file to read.
+     * @returns {Array<Array<number>>} - A 2D array containing the numerical data.
+     * @throws {Error} - If the file does not contain any '/' character.
+     */
 
-        rl.on('line', (line) => {
-            if (index === -1 && line.includes('/')) {
-                index = lines.length;
-            }
-            lines.push(line.trim());
-        });
+    // Initialize a variable to track the last slash line index
+    let lastSlashIndex = null;
 
-        rl.on('close', () => {
-            if (index === -1) {
-                reject(new Error("File does not contain any '/' character"));
-            } else {
-                resolve(lines.slice(index + 1).map(line => line.split(/\s+/).map(Number)));
-            }
-        });
-    });
+    const lines = fs.readFileSync(fileName, 'utf8').split('\n');
+
+    // Find the index of the last line that contains the "/" character
+    for (let i = 0; i < lines.length; i++) {
+        if (lines[i].includes('/')) {
+            lastSlashIndex = i;
+        }
+    }
+
+    // If no "/" character was found, throw an error
+    if (lastSlashIndex === null) {
+        throw new Error("File does not contain '/' character");
+    }
+
+    // Read the remaining lines in the file, starting from the line after the last "/"
+    const dataLines = lines.slice(lastSlashIndex + 1);
+
+    // Remove any empty lines or lines that start with a comment character
+    const filteredDataLines = dataLines.filter(line => line.trim() && !line.trim().startsWith('!'));
+
+    // If no valid lines remain, return an empty array
+    if (filteredDataLines.length === 0) {
+        return [];
+    }
+
+    // Get the row and column count by counting the number of columns in the first line
+    const colCount = filteredDataLines[0].split(' ').length;
+
+    // Create an empty array of the required size
+    const arr = new Array(filteredDataLines.length).fill(null).map(() => new Array(colCount).fill(0));
+
+    // Loop through the lines in the file
+    for (let i = 0; i < filteredDataLines.length; i++) {
+        // Split the line into numbers and convert them to floats
+        const nums = filteredDataLines[i].split(' ').map(Number);
+
+        // Store the numbers in the array
+        arr[i] = nums;
+    }
+
+    // Return the array
+    return arr;
 }
 
-module.exports = readColumns;
+// Example usage
+try {
+    const result = readColumns('example.txt');
+    console.log(result);
+} catch (error) {
+    console.error(error.message);
+}
 ```
 
-This JavaScript function uses Node.js's built-in `fs` and `readline` modules to read the file asynchronously. It keeps track of the number of lines read before encountering a line with a '/' character. Once it finds such a line, it resolves the promise with an array of arrays representing the numerical values in each subsequent line. If no '/' character is found, it rejects the promise with an error message.
+### Explanation:
+1. **Importing `fs` Module**: The `fs` module is used to read files synchronously.
+2. **Reading File**: The file is read using `fs.readFileSync`, and the content is split into lines.
+3. **Finding Last Slash Index**: Iterate over the lines to find the index of the last line containing `/`.
+4. **Filtering Data Lines**: Filter out empty lines and lines starting with `!`.
+5. **Creating 2D Array**: Initialize a 2D array based on the number of rows and columns.
+6. **Populating Array**: Parse each line into numbers and store them in the array.
+7. **Returning Result**: Return the resulting 2D array.
+
+This JavaScript code should provide the same functionality as the original Python code.

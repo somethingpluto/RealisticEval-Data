@@ -1,43 +1,75 @@
-Here's how you can convert your Python function into TypeScript:
+Certainly! Below is the TypeScript code that is equivalent to the provided Python code. The TypeScript version will include proper type definitions and handle the same functionality:
 
 ```typescript
-import fs from 'fs';
-import path from 'path';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as re from 'xregexp';
 
-function readMappingFile(mappingFilePath: string): Array<[RegExp, string]> {
-    /**
-     * Reads question from the given mapping file and returns an array where each element is a tuple containing the compiled regular expression and replacement strings
-     * @param {string} mappingFilePath - Path to the file containing regex mappings.
-     * 
-     * @returns {Array<[RegExp, string]>} - An array of tuples, each containing a compiled regex object and a corresponding replacement string.
-     */
-    
-    // Read the content of the mapping file
-    const data = fs.readFileSync(path.resolve(__dirname, mappingFilePath), 'utf8');
+interface Mapping {
+    regex: RegExp;
+    replacement: string;
+}
 
-    // Split the content into lines
-    const lines = data.split('\n');
+function readMappingFile(mappingFilePath: string): Mapping[] {
+    const mappings: Mapping[] = [];
 
-    // Initialize an empty array for storing the results
-    let result: Array<[RegExp, string]> = [];
+    try {
+        const data = fs.readFileSync(mappingFilePath, 'utf-8');
+        const lines = data.split('\n');
 
-    // Iterate over the lines
-    for(let line of lines) {
-        // Ignore empty lines or lines that start with '#'
-        if(line.trim() === '' || line.startsWith('#')) continue;
+        for (const line of lines) {
+            if (!line.includes(',')) {
+                throw new Error("Each line must contain exactly one comma separating the pattern and the replacement.");
+            }
 
-        // Split the line into regex pattern and replacement string
-        const [pattern, replacement] = line.split('=');
+            const [oldPattern, newWord] = line.trim().split(',', 1);
+            const trimmedOldPattern = oldPattern.trim().replace(/^'|'$/g, '');
+            const trimmedNewWord = newWord.trim().replace(/^'|'$/g, '');
 
-        // Compile the regex pattern
-        const regex = new RegExp(pattern.trim());
-
-        // Add the regex and replacement string to the result array
-        result.push([regex, replacement.trim()]);
+            mappings.push({
+                regex: re(trimmedOldPattern),
+                replacement: trimmedNewWord
+            });
+        }
+    } catch (error) {
+        if (error.code === 'ENOENT') {
+            throw new Error(`Unable to find the specified file: ${mappingFilePath}`);
+        } else {
+            throw error;
+        }
     }
 
-    return result;
+    return mappings;
+}
+
+// Example usage
+try {
+    const mappings = readMappingFile('path/to/mapping/file.txt');
+    console.log(mappings);
+} catch (error) {
+    console.error(error.message);
 }
 ```
 
-This TypeScript function reads a file, splits its contents into lines, iterates over those lines, compiles regex patterns, and adds them along with their replacement strings to an array. The array is then returned. Please ensure to handle exceptions and errors according to your needs, as shown in the original Python code.
+### Explanation:
+1. **Imports**: 
+   - `fs` and `path` are imported from Node.js standard library for file system operations.
+   - `xregexp` is used as a substitute for Python's `re` module. Note that you need to install `xregexp` using npm or yarn (`npm install xregexp`).
+
+2. **Type Definition**:
+   - `Mapping` interface defines the structure of each mapping object.
+
+3. **Function Definition**:
+   - `readMappingFile` function reads the file synchronously and processes each line.
+   - It checks for the presence of a comma in each line and splits accordingly.
+   - It trims the patterns and replacements and removes leading/trailing single quotes.
+   - It compiles the regular expressions using `xregexp`.
+
+4. **Error Handling**:
+   - It catches `FileNotFoundError` by checking the error code `ENOENT`.
+   - It throws custom errors for missing commas or other issues.
+
+5. **Example Usage**:
+   - Demonstrates how to call the function and handle potential errors.
+
+This TypeScript code maintains the same functionality and logic as the original Python code while adapting to TypeScript's static type system and idiomatic practices.

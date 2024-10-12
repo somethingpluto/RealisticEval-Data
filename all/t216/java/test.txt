@@ -1,75 +1,129 @@
-To convert your Python unittest test class into a Java JUnit test case, you need to follow these steps:
+Certainly! Here is the equivalent Java test class using JUnit, placed in the package `org.real.temp` and named `Tester`. The test class will include the necessary setup and mocking using JUnit and Mockito.
 
-1. Define the package and class structure in Java.
-2. Convert the Python function `get_local_ip` into a Java method.
-3. Create a JUnit test class to test the `get_local_ip` method.
-
-Here's how you can do it:
-
-### Step 1: Define the Package and Class Structure
-
-Create a new Java file named `Tester.java` under the package `org.real.temp`.
+### Java Code
 
 ```java
 package org.real.temp;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.PrintStream;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doThrow;
 
 public class Tester {
-    public static String getLocalIp(String interfaceName) {
-        // Implement the logic to get the local IP address here
-        return ""; // Placeholder return value
+
+    @Mock
+    private Process processMock;
+
+    private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+
+    @BeforeEach
+    public void setUp() {
+        MockitoAnnotations.openMocks(this);
+        System.setOut(new PrintStream(outContent));
     }
-}
-```
-
-### Step 2: Create a JUnit Test Class
-
-Create another Java file named `TestTester.java` under the same package `org.real.temp`.
-
-```java
-package org.real.temp;
-
-import static org.junit.Assert.assertEquals;
-import org.junit.Test;
-
-public class TestTester {
 
     @Test
-    public void testGetLocalIp() {
-        String expectedIp = "192.168.1.1"; // Replace with the expected IP address
-        String actualIp = Tester.getLocalIp("wlan0");
-        
-        assertEquals(expectedIp, actualIp);
+    public void testSuccessfulIpRetrieval() {
+        // Sample IP command output for a wlan0 interface
+        String sampleOutput = "3: wlan0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP group default qlen 1000\n" +
+                              "    inet 192.168.1.100/24 brd 192.168.1.255 scope global dynamic wlan0\n" +
+                              "       valid_lft 86394sec preferred_lft 86394sec\n";
+
+        when(processMock.getInputStream()).thenReturn(new ByteArrayInputStream(sampleOutput.getBytes()));
+        when(processMock.exitValue()).thenReturn(0);
+
+        String ip = getLocalIp("wlan0");
+        assertEquals("192.168.1.100", ip);
+    }
+
+    @Test
+    public void testCommandFailure() {
+        when(processMock.exitValue()).thenReturn(1);
+
+        assertThrows(RuntimeException.class, () -> getLocalIp("wlan0"));
+    }
+
+    @Test
+    public void testDifferentInterface() {
+        // Sample IP command output for a different interface
+        String sampleOutput = "3: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500\n" +
+                              "    inet 10.0.0.1/24";
+
+        when(processMock.getInputStream()).thenReturn(new ByteArrayInputStream(sampleOutput.getBytes()));
+        when(processMock.exitValue()).thenReturn(0);
+
+        String ip = getLocalIp("eth0");
+        assertEquals("10.0.0.1", ip);
+    }
+
+    // Helper method to simulate the process execution
+    private String getLocalIp(String interfaceName) {
+        try {
+            ProcessBuilder pb = new ProcessBuilder("ip", "addr", "show", interfaceName);
+            Process process = pb.start();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            StringBuilder output = new StringBuilder();
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                output.append(line).append("\n");
+            }
+
+            int exitCode = process.waitFor();
+            if (exitCode != 0) {
+                throw new RuntimeException("Failed to retrieve IP address: Exit code " + exitCode);
+            }
+
+            // Regular expression to match IPv4 addresses, excluding the loopback address
+            Pattern ipPattern = Pattern.compile("inet (\\d+\\.\\d+\\.\\d+\\.\\d+)/\\d+");
+            Matcher matcher = ipPattern.matcher(output.toString());
+
+            // Find the first valid IP address
+            while (matcher.find()) {
+                return matcher.group(1); // Return the first valid IP found
+            }
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException("Failed to retrieve IP address: " + e.getMessage());
+        }
+
+        throw new RuntimeException("No local IP found");
     }
 }
 ```
 
-### Explanation
+### Explanation:
+1. **Package and Class Declaration**:
+   - The Java test class is placed in the package `org.real.temp` and named `Tester`.
 
-- **Package Declaration**: The `package org.real.temp;` statement at the top of each file specifies the package name.
-- **Class Definition**: The `Tester` class contains the `getLocalIp` method, which should be implemented to retrieve the local IP address.
-- **JUnit Test Class**: The `TestTester` class contains a single test method `testGetLocalIp`. This method uses JUnit assertions to verify that the `getLocalIp` method returns the expected IP address.
+2. **JUnit Annotations**:
+   - `@BeforeEach`: Used to set up mocks and system streams before each test.
+   - `@Test`: Used to mark test methods.
 
-### Running the Tests
+3. **Mockito Setup**:
+   - `@Mock`: Used to create mock objects.
+   - `MockitoAnnotations.openMocks(this)`: Initializes mocks.
 
-To run the tests, you can use a Java IDE like IntelliJ IDEA or Eclipse, or you can use a build tool like Maven or Gradle. Here’s an example using Maven:
+4. **Test Methods**:
+   - `testSuccessfulIpRetrieval`: Configures the mock to return a successful output and verifies the IP address.
+   - `testCommandFailure`: Configures the mock to simulate a command failure and asserts that an exception is thrown.
+   - `testDifferentInterface`: Configures the mock for a different interface and verifies the IP address.
 
-1. Add JUnit dependency to your `pom.xml` if not already present:
+5. **Helper Method**:
+   - `getLocalIp`: This method simulates the process execution and extracts the IP address. It is used by the test methods.
 
-    ```xml
-    <dependencies>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.13.2</version>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
-    ```
+6. **Assertions**:
+   - `assertEquals`: Used to verify the expected IP address.
+   - `assertThrows`: Used to verify that an exception is thrown.
 
-2. Run the tests using Maven:
-
-    ```sh
-    mvn test
-    ```
-
-This will execute the `testGetLocalIp` method and report whether the test passes or fails based on the comparison between the expected and actual IP addresses.
+This Java code preserves the original functionality and structure of the Python unittests while adhering to Java conventions and best practices.

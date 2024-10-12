@@ -1,50 +1,104 @@
-Sure! Below is the equivalent C++ unit test case using Catch2 for the provided Python `unittest` function `haversine_distance`. Note that you need to include the necessary libraries and define the `haversine_distance` function in your C++ code before running these tests.
+Certainly! Below is the equivalent C++ test class using the Catch2 testing framework. This conversion ensures that the functionality and logic of the tests are preserved, with appropriate assertions and setup.
 
-First, ensure you have Catch2 installed. If not, you can install it via vcpkg or download it from [Catch2's GitHub repository](https://github.com/catchorg/Catch2).
-
-Here is the C++ test case:
+First, make sure you have Catch2 installed and included in your project. You can include Catch2 using the following headers:
 
 ```cpp
-#define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
+#include <catch2/catch_test_macros.hpp>
+#include <cmath>
+```
 
-#include <catch2/catch.hpp>
-#include <cmath>  // For sin, cos, acos, pow, M_PI
+Here is the complete C++ test class:
 
-// Define the haversine_distance function here
+```cpp
+#include <catch2/catch_test_macros.hpp>
+#include <cmath>
+
+// Function to calculate the Haversine distance between two points on the Earth
 double haversine_distance(double lat1, double lon1, double lat2, double lon2) {
-    const double R = 6371.0;  // Radius of the Earth in kilometers
-    double dLat = (lat2 - lat1) * M_PI / 180.0;
-    double dLon = (lon2 - lon1) * M_PI / 180.0;
+    // Radius of the Earth in kilometers
+    const double R = 6371.0;
 
-    double a = sin(dLat / 2) * sin(dLat / 2) +
-               cos(lat1 * M_PI / 180.0) * cos(lat2 * M_PI / 180.0) *
-               sin(dLon / 2) * sin(dLon / 2);
-    double c = 2 * atan2(sqrt(a), sqrt(1 - a));
+    // Convert latitude and longitude from degrees to radians
+    double lat1_rad = lat1 * M_PI / 180.0;
+    double lon1_rad = lon1 * M_PI / 180.0;
+    double lat2_rad = lat2 * M_PI / 180.0;
+    double lon2_rad = lon2 * M_PI / 180.0;
 
-    return R * c;
+    // Differences in coordinates
+    double dlat = lat2_rad - lat1_rad;
+    double dlon = lon2_rad - lon1_rad;
+
+    // Haversine formula
+    double a = std::sin(dlat / 2) * std::sin(dlat / 2) +
+               std::cos(lat1_rad) * std::cos(lat2_rad) * std::sin(dlon / 2) * std::sin(dlon / 2);
+    double c = 2 * std::atan2(std::sqrt(a), std::sqrt(1 - a));
+
+    // Distance in kilometers
+    double distance = R * c;
+
+    return distance;
 }
 
-TEST_CASE("Haversine Distance Calculation", "[distance]") {
-    REQUIRE(abs(haversine_distance(52.2296756, 21.0122287, 41.8919300, 12.5113300) - 1317.504) < 1e-3);
-    REQUIRE(abs(haversine_distance(0.0, 0.0, 0.0, 0.0) - 0.0) < 1e-3);
-    REQUIRE(abs(haversine_distance(0.0, 0.0, 90.0, 0.0) - 6371.0) < 1e-3);
-    REQUIRE(abs(haversine_distance(0.0, 0.0, 0.0, 180.0) - 12742.0) < 1e-3);
+TEST_CASE("Test Haversine Distance", "[haversine_distance]") {
+    SECTION("Same point should return a distance of 0") {
+        double lat = 52.2296756;
+        double lon = 21.0122287;
+        double result = haversine_distance(lat, lon, lat, lon);
+        REQUIRE(std::abs(result - 0.0) < 1e-6);
+    }
+
+    SECTION("Points that are very close together (few meters apart)") {
+        double lat1 = 52.2296756;
+        double lon1 = 21.0122287;  // Warsaw, Poland
+        double lat2 = 52.2296756;
+        double lon2 = 21.0122297;  // Very close to the previous point
+        double result = haversine_distance(lat1, lon1, lat2, lon2);
+        REQUIRE(std::abs(result - 0.0001) < 1e-4);
+    }
+
+    SECTION("Points that are far apart") {
+        double lat1 = 52.2296756;
+        double lon1 = 21.0122287;  // Warsaw, Poland
+        double lat2 = 41.8919300;
+        double lon2 = 12.5113300;  // Rome, Italy
+        double result = haversine_distance(lat1, lon1, lat2, lon2);
+        REQUIRE(std::abs(result - 1315.514) < 1e-2);
+    }
+
+    SECTION("Points on the equator") {
+        double lat1 = 0.0;
+        double lon1 = 0.0;  // Gulf of Guinea (Equator and Prime Meridian intersection)
+        double lat2 = 0.0;
+        double lon2 = 90.0;  // On the Equator, 90 degrees east
+        double result = haversine_distance(lat1, lon1, lat2, lon2);
+        REQUIRE(std::abs(result - 10007.54) < 1e-2);
+    }
+
+    SECTION("Distance from North Pole to South Pole") {
+        double lat1 = 90.0;
+        double lon1 = 0.0;  // North Pole
+        double lat2 = -90.0;
+        double lon2 = 0.0;  // South Pole
+        double result = haversine_distance(lat1, lon1, lat2, lon2);
+        REQUIRE(std::abs(result - 20015.09) < 1e-2);
+    }
 }
 ```
 
 ### Explanation:
-1. **CATCH_CONFIG_MAIN**: This macro tells Catch to generate a main function automatically.
-2. **#include <catch2/catch.hpp>**: This includes the Catch2 header file.
-3. **#include <cmath>**: This includes the standard math library for trigonometric functions.
-4. **haversine_distance Function**: This function calculates the distance between two points on the Earth using the Haversine formula.
-5. **TEST_CASE Macro**: This defines a test case named "Haversine Distance Calculation".
-6. **REQUIRE Macro**: This checks if the calculated distance is close to the expected value within a small tolerance (1e-3).
+1. **Header Files**:
+   - `#include <catch2/catch_test_macros.hpp>` for Catch2 test macros.
+   - `#include <cmath>` for mathematical functions like `sin`, `cos`, `atan2`, and `sqrt`.
 
-Make sure to compile your C++ code with the Catch2 library linked. For example, using g++, you can compile the code like this:
+2. **Function Definition**:
+   - The `haversine_distance` function is defined similarly to the Python version, converting latitudes and longitudes from degrees to radians and applying the Haversine formula.
 
-```sh
-g++ -std=c++11 -o test_haversine test_haversine.cpp -lc++ -pthread
-./test_haversine
-```
+3. **Test Class**:
+   - The `TEST_CASE` macro defines a test case named "Test Haversine Distance".
+   - Each `SECTION` within the test case corresponds to a specific test scenario.
+   - Assertions are made using `REQUIRE` to check the results against expected values with appropriate tolerances.
 
-This will run the test cases and output the results.
+4. **Assertions**:
+   - `REQUIRE(std::abs(result - expected_value) < tolerance)` is used to compare the calculated distance with the expected value within a specified tolerance.
+
+This C++ code preserves the functionality and logic of the original Python unittests while adapting them to the Catch2 testing framework.

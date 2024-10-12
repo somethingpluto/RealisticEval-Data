@@ -1,37 +1,48 @@
-Here is your Python function translated into JavaScript:
+Sure! Below is the equivalent JavaScript code that matches the functionality, logic, and structure of the provided Python code:
 
 ```javascript
+const fs = require('fs');
+
 function readLog(logFilePath) {
-    /*
-    Reads a log file containing JSON entries and extracts training loss and test accuracy.
-    Json entries such as {"test_acc1": 88.5, "train_loss": 0.75}
+    try {
+        const fileContent = fs.readFileSync(logFilePath, 'utf8');
+        const lines = fileContent.split('\n');
 
-    Parameters:
-        logFilePath (string): The path to the log file to be read.
+        let dataEntries = lines.map(line => {
+            try {
+                return JSON.parse(line);
+            } catch (error) {
+                console.error(`Error: The file ${logFilePath} contains invalid JSON.`);
+                return null;
+            }
+        }).filter(entry => entry !== null);
 
-    Returns:
-        object: An object containing two arrays:
-            - trainLossList (array): An array of training loss values extracted from the log.
-            - testAcc1List (array): An array of test accuracy values extracted from the log.
-    */
-    
-    // Assume we have some way to read files in Node.js or use an API in browser
-    let fileContent = fs.readFileSync(logFilePath, 'utf-8'); 
-    let jsonEntries = fileContent.split('\n');
-    let trainLossList = [];
-    let testAcc1List = [];
+        // Using optional chaining to handle missing keys
+        const trainLossList = dataEntries.filter(entry => 'train_loss' in entry).map(entry => entry.train_loss);
+        const testAcc1List = dataEntries.filter(entry => 'test_acc1' in entry).map(entry => entry.test_acc1);
 
-    for(let entry of jsonEntries){
-        if(entry.trim() !== ''){ // Check if it's not just whitespace
-            let parsedEntry = JSON.parse(entry);
-            trainLossList.push(parsedEntry.train_loss);
-            testAcc1List.push(parsedEntry.test_acc1);
+        return [trainLossList, testAcc1List];
+    } catch (error) {
+        if (error.code === 'ENOENT') {
+            console.error(`Error: The file ${logFilePath} does not exist.`);
+        } else {
+            console.error(`An unexpected error occurred: ${error.message}`);
         }
+        return [[], []];
     }
-
-    return { trainLossList, testAcc1List };
 }
-```
-This JavaScript function does exactly what your Python function does. It reads a log file line by line, parses each line as a JSON object, and pushes the `train_loss` and `test_acc1` values into separate arrays which are then returned as an object. 
 
-Note that you need to replace `fs.readFileSync(logFilePath, 'utf-8')` with your own method of reading the file depending on whether you're using Node.js or another environment where there isn't built-in support for synchronous file reading.
+// Example usage
+const logFilePath = 'path/to/your/logfile.log';
+const [trainLossList, testAcc1List] = readLog(logFilePath);
+console.log(trainLossList, testAcc1List);
+```
+
+### Explanation:
+1. **File Reading**: `fs.readFileSync` is used to read the contents of the file synchronously.
+2. **JSON Parsing**: Each line is parsed using `JSON.parse`. If parsing fails, an error message is printed, and the entry is set to `null`.
+3. **Filtering Null Entries**: `filter` is used to remove any `null` entries from the list.
+4. **Handling Missing Keys**: `filter` and `map` are used to extract the required keys (`train_loss` and `test_acc1`) from the entries.
+5. **Error Handling**: A `try-catch` block is used to handle file reading errors and JSON parsing errors.
+
+This JavaScript code maintains the same functionality and logic as the original Python code.

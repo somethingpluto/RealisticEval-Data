@@ -1,53 +1,136 @@
-Here is how you might translate your Python unittest test case into a Jest test case for TypeScript:
+Certainly! Here is the equivalent TypeScript test class using Jest, along with the necessary setup and imports. The provided Python unittest class will be converted to a Jest test suite, ensuring that the functionality and logic of the tests are preserved.
+
+### TypeScript Code
+
+First, ensure you have Jest installed in your project:
+```sh
+npm install --save-dev jest @types/jest
+```
+
+Then, create the TypeScript test file:
 
 ```typescript
 import * as fs from 'fs';
-import { parseXamlToDict } from './path-to-your-parse-function'; // Adjust this path accordingly
+import * as xml2js from 'xml2js';
+import { parseXamlToDict } from './path/to/parseXamlToDict'; // Import the parseXamlToDict function
 
-describe('parseXamlToDict', () => {
-  it('should parse XAML and return correct dictionary', async () => {
-    const xamlContent = `
+describe('TestParseXamlToDict', () => {
+  it('should correctly parse valid strings', () => {
+    const xamlData = `
       <root>
-        <String key="key1">value1</String>
-        <String key="key2">value2</String>
+        <String Key="Username">Alice</String>
+        <String Key="Password">secret</String>
       </root>
     `;
-
-    // Write the mock XAML content to a temporary file
-    const tempFilePath = '/tmp/temp.xaml';
-    fs.writeFileSync(tempFilePath, xamlContent);
-
-    try {
-      const result = await parseXamlToDict(tempFilePath);
-      expect(result).toEqual({ key1: 'value1', key2: 'value2' });
-    } finally {
-      // Clean up the temporary file
-      fs.unlinkSync(tempFilePath);
-    }
+    const expected = { Username: 'Alice', Password: 'secret' };
+    const result = parseXamlToDict(xamlData);
+    expect(result).toEqual(expected);
   });
 
-  it('should handle empty XAML', async () => {
-    const xamlContent = '<root></root>';
-
-    // Write the mock XAML content to a temporary file
-    const tempFilePath = '/tmp/temp-empty.xaml';
-    fs.writeFileSync(tempFilePath, xamlContent);
-
-    try {
-      const result = await parseXamlToDict(tempFilePath);
-      expect(result).toEqual({});
-    } finally {
-      // Clean up the temporary file
-      fs.unlinkSync(tempFilePath);
-    }
+  it('should handle missing key attribute', () => {
+    const xamlData = `
+      <root>
+        <String>Alice</String>
+      </root>
+    `;
+    const expected = {};
+    const result = parseXamlToDict(xamlData);
+    expect(result).toEqual(expected);
   });
 
-  it('should throw an error if file does not exist', async () => {
-    const nonExistentFilePath = '/non-existent-file.xaml';
+  it('should handle no string tags', () => {
+    const xamlData = `
+      <root>
+        <Data>Some question</Data>
+      </root>
+    `;
+    const expected = {};
+    const result = parseXamlToDict(xamlData);
+    expect(result).toEqual(expected);
+  });
 
-    await expect(parseXamlToDict(nonExistentFilePath)).rejects.toThrow();
+  it('should correctly parse nested string tags', () => {
+    const xamlData = `
+      <root>
+        <Container>
+          <String Key="Username">Bob</String>
+        </Container>
+        <String Key="Location">Earth</String>
+      </root>
+    `;
+    const expected = { Username: 'Bob', Location: 'Earth' };
+    const result = parseXamlToDict(xamlData);
+    expect(result).toEqual(expected);
   });
 });
+
+// Utility function to parse XAML data
+function parseXamlToDict(xamlData: string): Record<string, string> {
+  try {
+    // Parse the XAML content
+    const parser = new xml2js.Parser();
+    let result: any;
+    parser.parseString(xamlData, (err, res) => {
+      if (err) {
+        console.error(`Error parsing the XAML file: ${err}`);
+        result = {};
+      } else {
+        result = res;
+      }
+    });
+
+    // Wait for the asynchronous parsing to complete
+    while (!result) {}
+
+    // Dictionary to hold the key-value pairs
+    const resultDict: Record<string, string> = {};
+
+    // Iterate through all 'String' elements in the XAML file
+    if (result.root && result.root.String) {
+      const stringElements = Array.isArray(result.root.String)
+        ? result.root.String
+        : [result.root.String];
+
+      for (const stringElement of stringElements) {
+        const key = stringElement['@_Key'];
+        if (key) {
+          const value = stringElement._ ? String(stringElement._) : '';
+          resultDict[key] = value;
+        }
+      }
+    }
+
+    return resultDict;
+
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      console.error(`Error: The file does not exist.`);
+      return {};
+    } else {
+      console.error(`Error parsing the XAML file: ${error}`);
+      return {};
+    }
+  }
+}
 ```
 
-Please note that this assumes that `parseXamlToDict` function is asynchronous and returns a promise. If it's synchronous, remove the `await` keyword and the `.then()` method. Also, replace `'./path-to-your-parse-function'` with the actual path where your `parseXamlToDict` function resides.
+### Explanation:
+1. **Imports**:
+   - `fs` and `xml2js` are imported for file system operations and XML parsing.
+   - `parseXamlToDict` is imported from the relevant module.
+
+2. **Jest Test Suite**:
+   - The `describe` block sets up the test suite named `TestParseXamlToDict`.
+   - Each `it` block defines a specific test case with a descriptive message.
+
+3. **Test Cases**:
+   - Each test case provides a sample XAML data string and checks the result against the expected output using `expect(result).toEqual(expected)`.
+
+4. **Utility Function `parseXamlToDict`**:
+   - This function parses the XAML data and extracts key-value pairs.
+   - It handles asynchronous parsing and populates the result dictionary accordingly.
+
+5. **Error Handling**:
+   - Errors during parsing are caught and logged appropriately.
+
+This TypeScript code preserves the original functionality and logic of the Python unittest class while adapting it to Jest conventions and TypeScript syntax.

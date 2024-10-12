@@ -1,87 +1,169 @@
-Sure! Below is the equivalent JavaScript test case using Jest for the provided Python `unittest` test class. Note that since the original Python code uses `networkx`, we'll need to use a similar library in JavaScript, such as `js-networkx`.
+Certainly! I will convert the given Python `unittest` test class into an equivalent Jest test suite, ensuring that the functionality and logic of the tests are maintained. I will also document any necessary changes due to language differences between Python and JavaScript.
 
-First, ensure you have `js-networkx` installed:
+### Python Code
 
-```bash
-npm install js-networkx
+```python
+import unittest
+from collections import defaultdict
+
+class Graph:
+    def __init__(self, edges):
+        self.graph = defaultdict(list)
+        for edge in edges:
+            self.graph[edge[0]].append(edge[1])
+
+    def cycles_by_size(self, filter_repeat_nodes=True) -> defaultdict:
+        # Implementation of cycles_by_size method
+        pass
+
+class TestGraphCycles(unittest.TestCase):
+    def test_empty_graph(self):
+        g = Graph([])
+        self.assertEqual(g.cycles_by_size(), defaultdict(list),
+                         "Failed: Expected an empty defaultdict for an empty graph.")
+
+    def test_graph_no_cycles(self):
+        g = Graph([(1, 2), (2, 3)])
+        self.assertEqual(g.cycles_by_size(), defaultdict(list),
+                         "Failed: Expected an empty defaultdict for a graph with no cycles.")
+
+    def test_simple_cycles(self):
+        g = Graph([(1, 2), (2, 3), (3, 1)])
+        results = g.cycles_by_size()
+        self.assertEqual(len(results[3]), 1, "Failed: Expected one cycle of length 3.")
+        self.assertIn(list(results[3][0].nodes()), [[1, 2, 3]], "Failed: Expected cycle nodes to match.")
+
+    def test_multiple_cycles(self):
+        g = Graph([(1, 2), (2, 3), (3, 1), (3, 4), (4, 1)])
+        results = g.cycles_by_size()
+        self.assertEqual(len(results[3]), 1, "Failed: Expected one cycle of length 3.")
+        self.assertEqual(len(results[4]), 1, "Failed: Expected one cycle of length 4.")
 ```
 
-Then, create your JavaScript test file (e.g., `testGraph.js`):
+### Equivalent Jest Test Suite
+
+Here is the equivalent Jest test suite:
+
+1. **Install Required Libraries**:
+   ```sh
+   npm install graphology
+   ```
+
+2. **JavaScript Code**
 
 ```javascript
-const { DiGraph } = require('js-networkx');
-const { describe, it, expect } = require('@jest/globals');
+const { Graph } = require('graphology');
 
 class Graph {
-    constructor(edges) {
-        this.graph = new DiGraph();
-        this.graph.addEdgesFrom(edges);
+  constructor(edges) {
+    this.graph = new Graph({ type: 'directed' });
+    edges.forEach(([source, target]) => {
+      this.graph.addEdge(source, target);
+    });
+  }
+
+  cyclesBySize(filterRepeatNodes = true) {
+    const allCycles = this.findAllSimpleCycles();
+    const cycles = allCycles.filter(cycle => cycle.length > 2);
+
+    if (filterRepeatNodes) {
+      cycles.filter(cycle => new Set(cycle).size === cycle.length);
     }
 
-    cyclesBySize(filterRepeatNodes = true) {
-        const cycles = [];
-        const cycleFinder = (node, path = []) => {
-            if (this.graph.hasNode(node)) {
-                path.push(node);
-                if (!filterRepeatNodes || [...new Set(path)].length === path.length) {
-                    if (path.length > 2 && !cycles.some(cycle => cycle.every((n, i) => n === path[i]))) {
-                        cycles.push([...path]);
-                    }
-                }
-                this.graph.successors(node).forEach(successor => {
-                    if (!path.includes(successor)) {
-                        cycleFinder(successor, [...path]);
-                    }
-                });
-            }
-        };
+    const uniqueCycles = Array.from(new Set(cycles.map(cycle => JSON.stringify(cycle)))).map(strCycle => JSON.parse(strCycle));
+    const uniqueCyclesBySize = {};
 
-        this.graph.nodes().forEach(node => cycleFinder(node));
-        return cycles.reduce((acc, cycle) => {
-            const size = cycle.length;
-            if (!acc[size]) acc[size] = [];
-            acc[size].push(new DiGraph());
-            acc[size][acc[size].length - 1].addEdgesFrom(cycle.map((n, i) => [cycle[(i + 1) % cycle.length], n]));
-            return acc;
-        }, {});
-    }
+    uniqueCycles.forEach(cycle => {
+      const size = cycle.length;
+      if (!uniqueCyclesBySize[size]) {
+        uniqueCyclesBySize[size] = [];
+      }
+      uniqueCyclesBySize[size].push(this.graph.subgraph(cycle));
+    });
+
+    return uniqueCyclesBySize;
+  }
+
+  findAllSimpleCycles() {
+    const cycles = [];
+    const stack = [];
+    const onCycle = cycle => cycles.push(cycle);
+    this.graph.forEachNode(node => {
+      this.graph.forEachOutgoingEdge(node, edge => {
+        const target = this.graph.getOpposite(node, edge);
+        if (!stack.includes(target)) {
+          stack.push(target);
+          this.graph.traverseSimplePaths(node, target, onCycle);
+          stack.pop();
+        }
+      });
+    });
+    return cycles;
+  }
 }
 
-describe('Graph', () => {
-    let graph;
+describe('TestGraphCycles', () => {
+  it('test_empty_graph', () => {
+    const g = new Graph([]);
+    expect(g.cyclesBySize()).toEqual({});
+    expect(g.cyclesBySize()).toStrictEqual({});
+  });
 
-    beforeEach(() => {
-        graph = new Graph([
-            ['A', 'B'],
-            ['B', 'C'],
-            ['C', 'D'],
-            ['D', 'A'],
-            ['E', 'F'],
-            ['F', 'G']
-        ]);
-    });
+  it('test_graph_no_cycles', () => {
+    const g = new Graph([[1, 2], [2, 3]]);
+    expect(g.cyclesBySize()).toEqual({});
+    expect(g.cyclesBySize()).toStrictEqual({});
+  });
 
-    it('should find cycles by size without filtering repeat nodes', () => {
-        const result = graph.cyclesBySize(false);
-        expect(result[4]).toEqual([['A', 'B', 'C', 'D', 'A']]);
-        expect(result[3]).toEqual([['E', 'F', 'G'], ['B', 'C', 'D', 'A']]);
-    });
+  it('test_simple_cycles', () => {
+    const g = new Graph([[1, 2], [2, 3], [3, 1]]);
+    const results = g.cyclesBySize();
+    expect(Object.keys(results).length).toBe(1);
+    expect(results[3]).toHaveLength(1);
+    expect(results[3][0].nodes()).toEqual([1, 2, 3]);
+  });
 
-    it('should find cycles by size with filtering repeat nodes', () => {
-        const result = graph.cyclesBySize(true);
-        expect(result[4]).toEqual([['A', 'B', 'C', 'D', 'A']]);
-        expect(result[3]).toEqual([]);
-    });
+  it('test_multiple_cycles', () => {
+    const g = new Graph([[1, 2], [2, 3], [3, 1], [3, 4], [4, 1]]);
+    const results = g.cyclesBySize();
+    expect(Object.keys(results).length).toBe(2);
+    expect(results[3]).toHaveLength(1);
+    expect(results[4]).toHaveLength(1);
+  });
 });
+
+// Example usage
+const edges = [
+  [1, 2],
+  [2, 3],
+  [3, 1],
+  [3, 4],
+  [4, 1]
+];
+
+const graph = new Graph(edges);
+console.log(graph.cyclesBySize());
 ```
 
 ### Explanation:
+1. **Class Definition**:
+   - The `Graph` class is defined with methods to construct the graph and find cycles.
 
-1. **Class Definition**: The `Graph` class is defined similarly to the Python version, but using `js-networkx`.
-2. **Cycle Finder**: The `cyclesBySize` method finds all cycles in the graph and returns them grouped by their size.
-3. **Testing with Jest**:
-   - We use Jest's `describe`, `it`, and `expect` functions to write our tests.
-   - We initialize the `Graph` instance before each test using `beforeEach`.
-   - We then test two scenarios: one with filtering repeat nodes (`false`) and one without (`true`).
+2. **Jest Test Suite**:
+   - The `describe` block defines the test suite `TestGraphCycles`.
+   - Each `it` block represents a test case.
 
-This should give you a good starting point for testing your JavaScript code using Jest. Adjust the test cases as needed based on your specific requirements.
+3. **Test Cases**:
+   - `test_empty_graph`: Tests an empty graph.
+   - `test_graph_no_cycles`: Tests a graph with no cycles.
+   - `test_simple_cycles`: Tests a graph with a single cycle.
+   - `test_multiple_cycles`: Tests a graph with multiple cycles.
+
+4. **Assertions**:
+   - `expect(g.cyclesBySize()).toEqual({})` checks if the result is an empty object.
+   - `expect(g.cyclesBySize()).toStrictEqual({})` ensures deep equality.
+   - `expect(Object.keys(results).length).toBe(1)` checks the number of keys in the result.
+   - `expect(results[3]).toHaveLength(1)` checks the length of the cycles.
+   - `expect(results[3][0].nodes()).toEqual([1, 2, 3])` checks the nodes of the cycle.
+
+This conversion maintains the functionality and logic of the original Python tests while adapting them to Jest's syntax and assertions.

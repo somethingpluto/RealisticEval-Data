@@ -1,92 +1,138 @@
-Sure! Below is the equivalent TypeScript test case using Jest for the `UniqueDeque` class you provided. Note that I'll also provide a basic implementation of the `UniqueDeque` class in TypeScript for completeness.
+Certainly! Here is the equivalent TypeScript test class using Jest, ensuring that the functionality and logic of the tests are preserved. The necessary type annotations and Jest assertions are included:
+
+### TypeScript Code
+
+First, let's define the `UniqueDeque` class in TypeScript:
 
 ```typescript
-import { describe, expect, test } from '@jest/globals';
+import { Deque } from 'collections/deque';
 
-class UniqueDeque {
-    private items: Set<any>;
+class UniqueDeque<T> {
+  private deque: Deque<T>;
+  private set: Set<T>;
 
-    constructor() {
-        this.items = new Set();
+  constructor() {
+    this.deque = new Deque<T>();
+    this.set = new Set<T>();
+  }
+
+  add(item: T): boolean {
+    if (!this.set.has(item)) {
+      this.deque.push(item);
+      this.set.add(item);
+      return true;
     }
+    return false;
+  }
 
-    add(item: any): boolean {
-        if (this.contains(item)) {
-            return false;
-        }
-        this.items.add(item);
-        return true;
+  delete(item: T): boolean {
+    if (this.set.has(item)) {
+      const index = this.deque.toArray().findIndex((x) => x === item);
+      if (index !== -1) {
+        this.deque.deleteAt(index);
+      }
+      this.set.delete(item);
+      return true;
     }
+    return false;
+  }
 
-    delete(item: any): boolean {
-        if (!this.contains(item)) {
-            return false;
-        }
-        this.items.delete(item);
-        return true;
-    }
+  contains(item: T): boolean {
+    return this.set.has(item);
+  }
 
-    contains(item: any): boolean {
-        return this.items.has(item);
-    }
+  length(): number {
+    return this.deque.length;
+  }
 
-    get length(): number {
-        return this.items.size;
+  *[Symbol.iterator](): Iterator<T> {
+    for (const item of this.deque) {
+      yield item;
     }
+  }
 
-    [Symbol.iterator](): Iterator<any> {
-        return this.items.values();
-    }
+  toString(): string {
+    return `UniqueDeque(${Array.from(this.deque).toString()})`;
+  }
 }
+```
+
+### Jest Test Class
+
+Now, let's write the Jest test class:
+
+```typescript
+import { UniqueDeque } from './UniqueDeque'; // Import the UniqueDeque class
 
 describe('UniqueDeque', () => {
-    let deque: UniqueDeque;
-
-    beforeEach(() => {
-        deque = new UniqueDeque();
+  describe('testAddUniqueElements', () => {
+    it('should add unique elements and maintain the correct size and order', () => {
+      const ud = new UniqueDeque<number>();
+      expect(ud.add(1)).toBe(true);
+      expect(ud.add(2)).toBe(true);
+      expect(ud.add(3)).toBe(true);
+      expect(ud.length()).toBe(3);
+      expect(Array.from(ud)).toEqual([1, 2, 3]);
     });
+  });
 
-    test('should add items only once', () => {
-        expect(deque.add(1)).toBe(true);
-        expect(deque.add(2)).toBe(true);
-        expect(deque.add(1)).toBe(false); // Duplicate item
-        expect(deque.length).toBe(2);
+  describe('testAddDuplicateElements', () => {
+    it('should not add duplicate elements and maintain the correct size', () => {
+      const ud = new UniqueDeque<number>();
+      expect(ud.add(1)).toBe(true);
+      expect(ud.add(1)).toBe(false); // Duplicate add should return false
+      expect(ud.length()).toBe(1);
+      expect(Array.from(ud)).toEqual([1]);
     });
+  });
 
-    test('should delete existing items', () => {
-        deque.add(3);
-        expect(deque.delete(3)).toBe(true);
-        expect(deque.delete(4)).toBe(false); // Non-existing item
-        expect(deque.length).toBe(0);
+  describe('testDeleteElements', () => {
+    it('should delete elements and maintain the correct size and order', () => {
+      const ud = new UniqueDeque<number>();
+      ud.add(1);
+      ud.add(2);
+      ud.add(3);
+      expect(ud.delete(2)).toBe(true);
+      expect(ud.delete(2)).toBe(false); // Deleting non-existing element should return false
+      expect(ud.length()).toBe(2);
+      expect(Array.from(ud)).toEqual([1, 3]);
     });
+  });
 
-    test('should contain items correctly', () => {
-        deque.add(5);
-        expect(deque.contains(5)).toBe(true);
-        expect(deque.contains(6)).toBe(false); // Non-existing item
+  describe('testContains', () => {
+    it('should correctly identify the presence of elements', () => {
+      const ud = new UniqueDeque<number>();
+      ud.add(1);
+      expect(ud.contains(1)).toBe(true);
+      expect(ud.contains(2)).toBe(false);
+      ud.delete(1);
+      expect(ud.contains(1)).toBe(false);
     });
+  });
 
-    test('should iterate over items', () => {
-        deque.add(7);
-        deque.add(8);
-
-        const iterator = deque[Symbol.iterator]();
-        expect(iterator.next().value).toBe(7);
-        expect(iterator.next().value).toBe(8);
-        expect(iterator.next().done).toBe(true);
+  describe('testIterAndLen', () => {
+    it('should correctly iterate and provide the correct length', () => {
+      const ud = new UniqueDeque<number>();
+      ud.add(1);
+      ud.add(2);
+      expect(ud.length()).toBe(2);
+      const items = Array.from(ud);
+      expect(items).toEqual([1, 2]);
+      ud.delete(1);
+      expect(ud.length()).toBe(1);
+      expect(Array.from(ud)).toEqual([2]);
     });
+  });
 });
 ```
 
 ### Explanation:
+1. **Import Statements**: The `UniqueDeque` class is imported at the beginning.
+2. **Test Descriptions**: Each test case is described using `describe` blocks.
+3. **Assertions**:
+   - `expect(ud.add(1)).toBe(true)` checks if adding an element returns `true`.
+   - `expect(ud.length()).toBe(3)` checks the length of the deque.
+   - `expect(Array.from(ud)).toEqual([1, 2, 3])` checks the contents of the deque.
+4. **Type Annotations**: The `UniqueDeque` class uses a generic type `T`, and the test cases use `number` as the type for simplicity.
 
-1. **Class Definition**: The `UniqueDeque` class is defined with methods to add, delete, and check for the presence of items. It uses a `Set` to ensure uniqueness.
-
-2. **Jest Tests**:
-   - `beforeEach`: Initializes a new instance of `UniqueDeque` before each test.
-   - `test('should add items only once')`: Checks that adding duplicate items returns `false`.
-   - `test('should delete existing items')`: Checks that deleting non-existent items returns `false`.
-   - `test('should contain items correctly')`: Checks the `contains` method.
-   - `test('should iterate over items')`: Checks that iterating over the deque works correctly.
-
-This setup ensures that your `UniqueDeque` class behaves as expected under various conditions.
+This setup ensures that the tests are equivalent to the Python unittests and cover all the required functionality.

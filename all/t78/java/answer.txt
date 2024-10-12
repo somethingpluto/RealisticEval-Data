@@ -1,36 +1,103 @@
-Here is your Python code converted into Java:
+Here is the equivalent Java code for the provided Python code, organized within the package `org.real.temp` and the class `Answer`. This Java code includes the necessary imports, method signatures, and object-oriented principles:
 
 ```java
 package org.real.temp;
 
 public class Answer {
 
+    /**
+     * Convert Euler angles (roll, pitch, yaw) to a rotation matrix.
+     *
+     * @param roll  Rotation around the x-axis in degrees.
+     * @param pitch Rotation around the y-axis in degrees.
+     * @param yaw   Rotation around the z-axis in degrees.
+     * @return A 3x3 rotation matrix.
+     */
     public static double[][] eulerToRotationMatrix(double roll, double pitch, double yaw) {
-        // Convert from degrees to radians
+        // Convert degrees to radians
         roll = Math.toRadians(roll);
         pitch = Math.toRadians(pitch);
         yaw = Math.toRadians(yaw);
 
-        // Compute individual components of the rotation matrix
-        double cosRoll = Math.cos(roll), sinRoll = Math.sin(roll);
-        double cosPitch = Math.cos(pitch), sinPitch = Math.sin(pitch);
-        double cosYaw = Math.cos(yaw), sinYaw = Math.sin(yaw);
+        // Rotation matrix around x-axis (roll)
+        double[][] Rx = {
+            {1, 0, 0},
+            {0, Math.cos(roll), -Math.sin(roll)},
+            {0, Math.sin(roll), Math.cos(roll)}
+        };
 
-        // Create and return the rotation matrix
-        double[][] R = new double[3][3];
-        R[0][0] = cosPitch * cosYaw;
-        R[0][1] = cosPitch * sinYaw;
-        R[0][2] = -sinPitch;
-        R[1][0] = sinRoll * sinPitch * cosYaw - cosRoll * sinYaw;
-        R[1][1] = sinRoll * sinPitch * sinYaw + cosRoll * cosYaw;
-        R[1][2] = sinRoll * cosPitch;
-        R[2][0] = cosRoll * sinPitch * cosYaw + sinRoll * sinYaw;
-        R[2][1] = cosRoll * sinPitch * sinYaw - sinRoll * cosYaw;
-        R[2][2] = cosRoll * cosPitch;
+        // Rotation matrix around y-axis (pitch)
+        double[][] Ry = {
+            {Math.cos(pitch), 0, Math.sin(pitch)},
+            {0, 1, 0},
+            {-Math.sin(pitch), 0, Math.cos(pitch)}
+        };
+
+        // Rotation matrix around z-axis (yaw)
+        double[][] Rz = {
+            {Math.cos(yaw), -Math.sin(yaw), 0},
+            {Math.sin(yaw), Math.cos(yaw), 0},
+            {0, 0, 1}
+        };
+
+        // Combined rotation matrix, R = Rz * Ry * Rx
+        double[][] R = multiplyMatrices(multiplyMatrices(Rz, Ry), Rx);
 
         return R;
+    }
+
+    /**
+     * Multiplies two matrices.
+     *
+     * @param a First matrix.
+     * @param b Second matrix.
+     * @return The result of multiplying the two matrices.
+     */
+    private static double[][] multiplyMatrices(double[][] a, double[][] b) {
+        int rowsA = a.length;
+        int colsA = a[0].length;
+        int rowsB = b.length;
+        int colsB = b[0].length;
+
+        if (colsA != rowsB) {
+            throw new IllegalArgumentException("The number of columns in the first matrix must equal the number of rows in the second matrix.");
+        }
+
+        double[][] result = new double[rowsA][colsB];
+
+        for (int i = 0; i < rowsA; i++) {
+            for (int j = 0; j < colsB; j++) {
+                for (int k = 0; k < colsA; k++) {
+                    result[i][j] += a[i][k] * b[k][j];
+                }
+            }
+        }
+
+        return result;
+    }
+
+    public static void main(String[] args) {
+        double roll = 45; // Example angle in degrees
+        double pitch = 30; // Example angle in degrees
+        double yaw = 60; // Example angle in degrees
+
+        double[][] rotationMatrix = eulerToRotationMatrix(roll, pitch, yaw);
+
+        // Print the rotation matrix
+        for (double[] row : rotationMatrix) {
+            for (double value : row) {
+                System.out.printf("%.2f ", value);
+            }
+            System.out.println();
+        }
     }
 }
 ```
 
-This Java method `eulerToRotationMatrix` does the same thing as your Python function `euler_to_rotation_matrix`. It takes three Euler angles (roll, pitch, yaw) in degrees, converts them to radians, computes the components of the rotation matrix, and returns the rotation matrix as a 2D array of doubles.
+### Explanation:
+1. **Method Signature**: The method `eulerToRotationMatrix` is defined with the appropriate parameter types (`double`) and returns a `double[][]` array representing the rotation matrix.
+2. **Conversion to Radians**: The angles are converted from degrees to radians using `Math.toRadians`.
+3. **Matrix Multiplication**: A helper method `multiplyMatrices` is used to perform matrix multiplication since Java does not have a built-in operator for matrix multiplication like NumPy's `@`.
+4. **Main Method**: A `main` method is included to demonstrate how to call the `eulerToRotationMatrix` method and print the resulting rotation matrix.
+
+This Java code maintains the functionality and logic of the original Python code while adhering to Java's syntax and best practices.

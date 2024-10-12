@@ -1,84 +1,156 @@
-Sure! Below is the equivalent JavaScript test case using Jest for the given Python function:
+Certainly! Here’s the equivalent Jest test suite for the given Python unittest class. We will maintain the same functionality and logic, ensuring that all assertions are appropriately mapped to Jest equivalents.
 
+### Python Code:
+```python
+import unittest
+import numpy as np
+
+def get_3d_coordinates(K, d, x, y):
+    """Converts 2D pixel coordinates into 3D world coordinates using camera intrinsic parameters and depth."""
+    cx = K[0, 2]
+    cy = K[1, 2]
+    fx = K[0, 0]
+    fy = K[1, 1]
+
+    NDC_x = (x - cx) / fx
+    NDC_y = (y - cy) / fy
+
+    W_x = NDC_x * d
+    W_y = NDC_y * d
+    W_z = d
+    return np.array([W_x, W_y, W_z])
+
+class TestGet3DCoordinates(unittest.TestCase):
+    def setUp(self):
+        # Define a common intrinsic matrix for testing
+        self.K = np.array([[1000, 0, 320],
+                           [0, 1000, 240],
+                           [0, 0, 1]])
+
+    def test_center_coordinates(self):
+        """Test with center pixel coordinates where x and y should map to zero in NDC."""
+        result = get_3d_coordinates(self.K, 100, 320, 240)
+        np.testing.assert_array_almost_equal(result, np.array([0.0, 0.0, 100]))
+
+    def test_boundary_coordinates(self):
+        """Test with boundary values in the image frame."""
+        result = get_3d_coordinates(self.K, 50, 640, 480)
+        expected_x = (640 - 320) / 1000 * 50
+        expected_y = (480 - 240) / 1000 * 50
+        np.testing.assert_array_almost_equal(result, np.array([expected_x, expected_y, 50]))
+
+    def test_negative_depth(self):
+        """Test with a negative depth to see if it handles incorrect input properly."""
+        result = get_3d_coordinates(self.K, -100, 320, 240)
+        np.testing.assert_array_almost_equal(result, np.array([0.0, 0.0, -100]))
+
+    def test_zero_depth(self):
+        """Test with zero depth which should lead to a zero-length vector."""
+        result = get_3d_coordinates(self.K, 0, 320, 240)
+        np.testing.assert_array_almost_equal(result, np.array([0.0, 0.0, 0.0]))
+
+    def test_non_integer_values(self):
+        """Test with non-integer pixel coordinates."""
+        result = get_3d_coordinates(self.K, 100, 320.5, 240.5)
+        expected_x = (320.5 - 320) / 1000 * 100
+        expected_y = (240.5 - 240) / 1000 * 100
+        np.testing.assert_array_almost_equal(result, np.array([expected_x, expected_y, 100]))
+
+if __name__ == '__main__':
+    unittest.main()
+```
+
+### Equivalent Jest Test Suite:
 ```javascript
-const np = require('numpy');
+const assert = require('assert');
 
-function get_3d_coordinates(K, d, x, y) {
-    /**
-     * Converts 2D pixel coordinates into 3D world coordinates using camera intrinsic parameters and depth.
-     * @param {Array} K - Camera intrinsic matrix (3x3)
-     * @param {number} d - Depth (distance along z-axis)
-     * @param {number} x - Pixel x coordinate
-     * @param {number} y - Pixel y coordinate
-     * @returns {Array} - 3D point coordinates [x, y, z] in camera RDF coordinates
-     */
-    
-    // Example implementation (replace with actual logic)
-    const fx = K[0][0];
-    const fy = K[1][1];
+function get3DCoordinates(K, d, x, y) {
+    // Step 1: Convert pixel coordinates to normalized device coordinates (NDC)
     const cx = K[0][2];
     const cy = K[1][2];
+    const fx = K[0][0];
+    const fy = K[1][1];
 
-    const X = (x - cx) * d / fx;
-    const Y = (y - cy) * d / fy;
-    const Z = d;
+    const NDC_x = (x - cx) / fx;
+    const NDC_y = (y - cy) / fy;
 
-    return [X, Y, Z];
+    // Step 2: Get the 3D world coordinates (W)
+    const W_x = NDC_x * d;
+    const W_y = NDC_y * d;
+    const W_z = d;
+
+    return [W_x, W_y, W_z];
 }
 
-// Test cases using Jest
-describe('get_3d_coordinates', () => {
-    it('should convert 2D pixel coordinates to 3D world coordinates', () => {
-        const K = [
-            [500, 0, 320],
-            [0, 500, 240],
+describe('TestGet3DCoordinates', () => {
+    let K;
+
+    beforeEach(() => {
+        // Define a common intrinsic matrix for testing
+        K = [
+            [1000, 0, 320],
+            [0, 1000, 240],
             [0, 0, 1]
         ];
-        const d = 10;
-        const x = 320;
-        const y = 240;
-
-        const result = get_3d_coordinates(K, d, x, y);
-        expect(result).toEqual([0, 0, 10]);
     });
 
-    it('should handle different depths correctly', () => {
-        const K = [
-            [500, 0, 320],
-            [0, 500, 240],
-            [0, 0, 1]
-        ];
-        const d1 = 10;
-        const d2 = 20;
-        const x = 320;
-        const y = 240;
+    it('test center coordinates', () => {
+        // Test with center pixel coordinates where x and y should map to zero in NDC.
+        const result = get3DCoordinates(K, 100, 320, 240);
+        assert.deepStrictEqual(result, [0.0, 0.0, 100]);
+    });
 
-        const result1 = get_3d_coordinates(K, d1, x, y);
-        const result2 = get_3d_coordinates(K, d2, x, y);
+    it('test boundary coordinates', () => {
+        // Test with boundary values in the image frame.
+        const result = get3DCoordinates(K, 50, 640, 480);
+        const expected_x = (640 - 320) / 1000 * 50;
+        const expected_y = (480 - 240) / 1000 * 50;
+        assert.deepStrictEqual(result, [expected_x, expected_y, 50]);
+    });
 
-        expect(result1).toEqual([0, 0, 10]);
-        expect(result2).toEqual([0, 0, 20]);
+    it('test negative depth', () => {
+        // Test with a negative depth to see if it handles incorrect input properly.
+        const result = get3DCoordinates(K, -100, 320, 240);
+        assert.deepStrictEqual(result, [0.0, 0.0, -100]);
+    });
+
+    it('test zero depth', () => {
+        // Test with zero depth which should lead to a zero-length vector.
+        const result = get3DCoordinates(K, 0, 320, 240);
+        assert.deepStrictEqual(result, [0.0, 0.0, 0.0]);
+    });
+
+    it('test non-integer values', () => {
+        // Test with non-integer pixel coordinates.
+        const result = get3DCoordinates(K, 100, 320.5, 240.5);
+        const expected_x = (320.5 - 320) / 1000 * 100;
+        const expected_y = (240.5 - 240) / 1000 * 100;
+        assert.deepStrictEqual(result, [expected_x, expected_y, 100]);
     });
 });
+
+// Example usage:
+const K = [
+    [500, 0, 320],
+    [0, 500, 240],
+    [0, 0, 1]
+];
+const d = 100;
+const x = 350;
+const y = 200;
+
+console.log(get3DCoordinates(K, d, x, y));
 ```
 
-In this JavaScript code:
-- We define the `get_3d_coordinates` function similar to the Python version.
-- We use Jest's `describe` and `it` functions to create test cases.
-- The `expect` function is used to assert that the results of the function calls match the expected values.
+### Explanation:
+1. **Function Definition**: The `get3DCoordinates` function is defined to perform the same calculations as the Python function.
+2. **Jest Test Suite**:
+   - The `describe` block defines the test suite.
+   - The `beforeEach` hook sets up the common intrinsic matrix `K` for each test.
+   - Each `it` block represents a specific test case.
+3. **Assertions**:
+   - The `assert.deepStrictEqual` method is used to check the equality of arrays, similar to `np.testing.assert_array_almost_equal` in Python.
+4. **Documentation**:
+   - Each test case is documented with a descriptive comment.
 
-Make sure you have Jest installed in your project and properly configured. You can install it using npm or yarn if you haven't already:
-
-```sh
-npm install --save-dev jest
-# or
-yarn add --dev jest
-```
-
-Then, you can run the tests using:
-
-```sh
-npx jest
-# or
-yarn jest
-```
+This ensures that the Jest test suite maintains the same functionality and structure as the original Python unittest class.

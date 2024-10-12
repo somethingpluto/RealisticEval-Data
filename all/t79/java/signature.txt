@@ -1,62 +1,84 @@
-Sure! Below is the equivalent Java code with the same function signature and comments:
+Certainly! Below is the equivalent Java method for the given Python function, including appropriate Javadoc comments and Java conventions:
 
 ```java
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
-/**
- * Generates a string based on the entered start and end dates. If the start date and end date are in the same month,
- * only one month will be displayed. If not, the start and end months will be displayed separately. For example, if you
- * enter the start date and end date as, "2023-08-01" and "2023-08-15" respectively, you will finally output
- * "August 1 to 15, 2023".
- *
- * Example:
- *      Input:
- *          start_date: 2023-08-01
- *          end_date: 2023-08-15
- *      Output:
- *          August 1 to 15, 2023
- *
- * @param startDate The start date in 'YYYY-MM-DD' format.
- * @param endDate   The end date in 'YYYY-MM-DD' format.
- * @return A string representing the date range in a human-readable format.
- */
-public class DateRangeString {
+public class Answer {
 
-    public static String dateRangeString(String startDate, String endDate) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDate start = LocalDate.parse(startDate, formatter);
-        LocalDate end = LocalDate.parse(endDate, formatter);
+    /**
+     * Generates a string based on the entered start and end dates. If the start date and end date are in the same month,
+     * only one month will be displayed. If not, the start and end months will be displayed separately. For example, if you
+     * enter the start date and end date as "2023-08-01" and "2023-08-15" respectively, you will finally output "August 1 to 15, 2023".
+     *
+     * Example:
+     *     Input:
+     *         start_date: 2023-08-01
+     *         end_date: 2023-08-15
+     *     Output:
+     *         August 1 to 15, 2023
+     *
+     * @param startDate The start date in 'YYYY-MM-DD' format.
+     * @param endDate The end date in 'YYYY-MM-DD' format.
+     * @return A string representing the date range in a human-readable format.
+     * @throws IllegalArgumentException If the startDate or endDate are not in the correct format or if startDate is after endDate.
+     */
+    public static String dateRangeString(String startDate, String endDate) throws IllegalArgumentException {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        Date startDt, endDt;
 
-        String startMonth = start.getMonth().toString();
-        int startDay = start.getDayOfMonth();
-        int endDay = end.getDayOfMonth();
-        int startYear = start.getYear();
+        try {
+            startDt = dateFormat.parse(startDate);
+            endDt = dateFormat.parse(endDate);
 
-        if (start.isEqual(end)) {
-            return startMonth + " " + startDay + ", " + startYear;
-        } else if (start.withDayOfMonth(1).isEqual(end.withDayOfMonth(1))) {
-            return startMonth + " " + startDay + " to " + endDay + ", " + startYear;
+            if (startDt.after(endDt)) {
+                throw new IllegalArgumentException("startDate cannot be after endDate.");
+            }
+        } catch (ParseException e) {
+            throw new IllegalArgumentException("Date must be in 'YYYY-MM-DD' format.", e);
+        }
+
+        SimpleDateFormat monthFormat = new SimpleDateFormat("MMMM");
+        SimpleDateFormat dayFormat = new SimpleDateFormat("dd");
+        SimpleDateFormat yearFormat = new SimpleDateFormat("yyyy");
+
+        String startMonth = monthFormat.format(startDt);
+        String endMonth = monthFormat.format(endDt);
+        String startDay = dayFormat.format(startDt);
+        String endDay = dayFormat.format(endDt);
+        String startYear = yearFormat.format(startDt);
+        String endYear = yearFormat.format(endDt);
+
+        // Format output based on whether dates are within the same month and/or year
+        if (!startYear.equals(endYear)) {
+            return String.format("%s %s, %s to %s %s, %s", startMonth, startDay, startYear, endMonth, endDay, endYear);
+        } else if (startMonth.equals(endMonth)) {
+            return String.format("%s %s to %s, %s", startMonth, startDay, endDay, startYear);
         } else {
-            String endMonth = end.getMonth().toString();
-            int endYear = end.getYear();
-            return startMonth + " " + startDay + " to " + endMonth + " " + endDay + ", " + startYear;
+            return String.format("%s %s to %s %s, %s", startMonth, startDay, endMonth, endDay, startYear);
         }
     }
 
+    // Example usage
     public static void main(String[] args) {
-        System.out.println(dateRangeString("2023-08-01", "2023-08-15")); // Output: August 1 to 15, 2023
+        try {
+            System.out.println(dateRangeString("2023-08-01", "2023-08-15")); // Expected output: August 1 to 15, 2023
+            System.out.println(dateRangeString("2023-08-01", "2023-09-15")); // Expected output: August 1 to September 15, 2023
+            System.out.println(dateRangeString("2023-08-01", "2024-09-15")); // Expected output: August 1, 2023 to September 15, 2024
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        }
     }
 }
 ```
 
 ### Explanation:
-1. **Imports**: We import necessary classes from `java.time` for handling dates and `java.time.format` for formatting dates.
-2. **Class Definition**: We define a class `DateRangeString`.
-3. **Method Signature**: The method `dateRangeString` takes two strings (`startDate` and `endDate`) as parameters and returns a string.
-4. **Formatting Dates**: We use `DateTimeFormatter` to parse the input strings into `LocalDate` objects.
-5. **Conditional Logic**:
-   - If the start and end dates are the same, we return just the month and day along with the year.
-   - If the start and end dates are in the same month but different days, we return the start day, end day, and year.
-   - Otherwise, we return both the start and end dates in their respective formats.
-6. **Main Method**: A simple test case is provided to demonstrate the usage of the method.
+1. **Javadoc Comments**: The Python docstring has been converted into Javadoc comments, providing a detailed description of the method, its parameters, and expected behavior.
+2. **Method Signature**: The method `dateRangeString` is defined with the appropriate signature and throws an `IllegalArgumentException` for invalid input.
+3. **Date Parsing**: The `SimpleDateFormat` class is used to parse the input strings into `Date` objects.
+4. **Validation**: Checks are performed to ensure the start date is not after the end date and that the dates are in the correct format.
+5. **Formatting**: Different formats are applied based on the relationship between the start and end dates.
+6. **Main Method**: An example usage is provided in the `main` method to demonstrate how the `dateRangeString` method can be called.
+
+This Java code preserves the original functionality and structure of the Python code while adhering to Java conventions and best practices.

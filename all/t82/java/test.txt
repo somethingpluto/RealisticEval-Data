@@ -1,114 +1,181 @@
-To convert the given Python unittest test class to a Java JUnit test case, you need to follow these steps:
+Certainly! Below is the equivalent Java test class using JUnit for the provided Python unittest class. The Java test class will be placed in the package `org.real.temp` and named `Tester`. The functionality and logic of the tests will be preserved, and appropriate JUnit annotations and assertion methods will be used.
 
-1. Define the `Graph` class in Java.
-2. Create a JUnit test class named `Tester`.
-3. Write test methods for the `cycles_by_size` method.
-
-Here's how you can do it:
-
-### Step 1: Define the `Graph` Class in Java
+### Java Code
 
 ```java
-import org.jgrapht.Graph;
-import org.jgrapht.graph.DefaultDirectedGraph;
-import org.jgrapht.graph.DefaultEdge;
+package org.real.temp;
+
+import org.junit.Before;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 import java.util.*;
-
-public class Graph {
-    private Graph<DefaultEdge> graph;
-
-    public Graph(List<Edge> edges) {
-        graph = new DefaultDirectedGraph<>(DefaultEdge.class);
-        for (Edge edge : edges) {
-            graph.addVertex(edge.getSource());
-            graph.addVertex(edge.getDestination());
-            graph.addEdge(edge.getSource(), edge.getDestination());
-        }
-    }
-
-    public Map<Integer, List<Graph<DefaultEdge>>> cyclesBySize(boolean filterRepeatNodes) {
-        // Implement the logic here
-        return Collections.emptyMap(); // Placeholder
-    }
-
-    static class Edge {
-        private String source;
-        private String destination;
-
-        public Edge(String source, String destination) {
-            this.source = source;
-            this.destination = destination;
-        }
-
-        public String getSource() {
-            return source;
-        }
-
-        public String getDestination() {
-            return destination;
-        }
-    }
-}
-```
-
-### Step 2: Create a JUnit Test Class Named `Tester`
-
-```java
-import org.junit.jupiter.api.Test;
+import java.util.stream.Collectors;
 import org.jgrapht.Graph;
-import org.jgrapht.graph.DefaultDirectedGraph;
+import org.jgrapht.GraphPath;
+import org.jgrapht.alg.cycle.SimpleCycleBasis;
+import org.jgrapht.alg.cycle.SimpleCycleBasisImpl;
 import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.graph.DirectedPseudograph;
 
-import java.util.*;
-
-import static org.junit.jupiter.api.Assertions.*;
-
+/**
+ * Tests for the Graph class.
+ */
 public class Tester {
 
+    private Graph graph;
+
+    @Before
+    public void setUp() {
+        // Initialize the graph here if needed
+    }
+
     @Test
-    public void testCyclesBySize() {
-        List<Graph.Edge> edges = Arrays.asList(
-                new Graph.Edge("A", "B"),
-                new Graph.Edge("B", "C"),
-                new Graph.Edge("C", "A"),
-                new Graph.Edge("D", "E")
+    public void testEmptyGraph() {
+        Graph g = new Graph(new ArrayList<>());
+        Map<Integer, List<Graph>> expected = new HashMap<>();
+        assertEquals(expected, g.cyclesBySize(),
+                     "Failed: Expected an empty map for an empty graph.");
+    }
+
+    @Test
+    public void testGraphNoCycles() {
+        List<List<String>> edges = Arrays.asList(
+                Arrays.asList("1", "2"),
+                Arrays.asList("2", "3")
         );
+        Graph g = new Graph(edges);
+        Map<Integer, List<Graph>> expected = new HashMap<>();
+        assertEquals(expected, g.cyclesBySize(),
+                     "Failed: Expected an empty map for a graph with no cycles.");
+    }
 
-        Graph graph = new Graph(edges);
+    @Test
+    public void testSimpleCycles() {
+        List<List<String>> edges = Arrays.asList(
+                Arrays.asList("1", "2"),
+                Arrays.asList("2", "3"),
+                Arrays.asList("3", "1")
+        );
+        Graph g = new Graph(edges);
+        Map<Integer, List<Graph>> results = g.cyclesBySize();
+        assertEquals(1, results.get(3).size(),
+                     "Failed: Expected one cycle of length 3.");
+        List<String> cycleNodes = results.get(3).get(0).getGraph().vertexSet().stream()
+                                         .sorted()
+                                         .collect(Collectors.toList());
+        assertEquals(Arrays.asList("1", "2", "3"), cycleNodes,
+                     "Failed: Expected cycle nodes to match.");
+    }
 
-        Map<Integer, List<Graph<DefaultEdge>>> result = graph.cyclesBySize(true);
+    @Test
+    public void testMultipleCycles() {
+        List<List<String>> edges = Arrays.asList(
+                Arrays.asList("1", "2"),
+                Arrays.asList("2", "3"),
+                Arrays.asList("3", "1"),
+                Arrays.asList("3", "4"),
+                Arrays.asList("4", "1")
+        );
+        Graph g = new Graph(edges);
+        Map<Integer, List<Graph>> results = g.cyclesBySize();
+        assertEquals(1, results.get(3).size(),
+                     "Failed: Expected one cycle of length 3.");
+        assertEquals(1, results.get(4).size(),
+                     "Failed: Expected one cycle of length 4.");
+    }
+}
 
-        assertNotNull(result);
-        assertTrue(result.containsKey(3));
-        assertEquals(1, result.get(3).size());
+/**
+ * Represents a directed graph and provides methods to find cycles.
+ */
+class Graph {
+    private DirectedPseudograph<String, DefaultEdge> graph;
 
-        result = graph.cyclesBySize(false);
-        assertNotNull(result);
-        assertTrue(result.containsKey(3));
-        assertEquals(1, result.get(3).size());
+    /**
+     * Constructs a directed graph from a list of edges.
+     *
+     * @param edges A list of edges represented as lists of strings.
+     */
+    public Graph(List<List<String>> edges) {
+        this.graph = new DirectedPseudograph<>(DefaultEdge.class);
+        // Add vertices
+        Set<String> vertices = new HashSet<>();
+        for (List<String> edge : edges) {
+            vertices.add(edge.get(0));
+            vertices.add(edge.get(1));
+        }
+        this.graph.addAllVertices(vertices);
+
+        // Add edges
+        for (List<String> edge : edges) {
+            this.graph.addEdge(edge.get(0), edge.get(1));
+        }
+    }
+
+    /**
+     * Finds all unique cycles in the graph that are larger than size 2, optionally filtering out cycles with repeated nodes.
+     *
+     * @param filterRepeatNodes If true, filters out cycles where any node appears more than once.
+     * @return A map mapping each cycle size to a list of subgraph objects representing each unique cycle of that size.
+     */
+    public Map<Integer, List<Graph>> cyclesBySize(boolean filterRepeatNodes) {
+        SimpleCycleBasis<String, DefaultEdge> cycleBasis = new SimpleCycleBasisImpl<>(this.graph);
+        List<List<String>> allCycles = cycleBasis.getCycles();
+
+        List<List<String>> cycles = allCycles.stream()
+                .filter(cycle -> cycle.size() > 2)
+                .collect(Collectors.toList());
+
+        if (filterRepeatNodes) {
+            cycles = cycles.stream()
+                    .filter(cycle -> cycle.size() == new HashSet<>(cycle).size())
+                    .collect(Collectors.toList());
+        }
+
+        Set<Set<String>> uniqueCycles = cycles.stream()
+                .map(ArrayList::new)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+
+        Map<Integer, List<Graph>> uniqueCyclesBySize = new LinkedHashMap<>();
+        for (Set<String> cycle : uniqueCycles) {
+            int size = cycle.size();
+            Graph subgraph = new Graph(new ArrayList<>(cycle.stream()
+                    .flatMap(node -> graph.outgoingEdgesOf(node).stream()
+                            .map(edge -> Arrays.asList(node, graph.getEdgeTarget(edge))))
+                    .collect(Collectors.toList())));
+            uniqueCyclesBySize.computeIfAbsent(size, k -> new ArrayList<>()).add(subgraph);
+        }
+
+        return uniqueCyclesBySize;
+    }
+
+    public DirectedPseudograph<String, DefaultEdge> getGraph() {
+        return graph;
     }
 }
 ```
 
 ### Explanation:
+1. **JUnit Annotations**:
+   - `@Before`: Used to set up the environment before each test.
+   - `@Test`: Marks methods as test cases.
 
-1. **Graph Class**:
-   - The `Graph` class is defined using the JGraphT library, which provides a directed graph implementation.
-   - The `cyclesBySize` method is left as a placeholder for you to implement the actual logic.
+2. **JUnit Assertions**:
+   - `assertEquals`: Used to check equality of values.
+   - `assertIn`: Not directly available in JUnit, but can be replaced with other assertions.
 
-2. **Tester Class**:
-   - The `Tester` class contains a single test method `testCyclesBySize`.
-   - It creates a sample graph and tests the `cyclesBySize` method with both `filterRepeatNodes` set to `true` and `false`.
+3. **Test Methods**:
+   - `testEmptyGraph`: Tests an empty graph.
+   - `testGraphNoCycles`: Tests a graph with no cycles.
+   - `testSimpleCycles`: Tests a graph with a single cycle.
+   - `testMultipleCycles`: Tests a graph with multiple cycles.
 
-Make sure to include the JGraphT library in your project dependencies if you haven't already. You can add it to your `pom.xml` file if you're using Maven:
+4. **Graph Class**:
+   - The `Graph` class is defined within the test file for simplicity.
+   - It includes the necessary methods to construct and find cycles in the graph.
 
-```xml
-<dependency>
-    <groupId>org.jgrapht</groupId>
-    <artifactId>jgrapht-core</artifactId>
-    <version>1.5.0</version>
-</dependency>
-```
+5. **JUnit Assertions**:
+   - The assertions are used to verify the correctness of the graph cycles.
 
-This should give you a good starting point for converting your Python unittest test class to a Java JUnit test case.
+This Java code preserves the functionality and logic of the original Python unittest class while adhering to Java's syntax and JUnit conventions.

@@ -1,60 +1,83 @@
-Sure! Here's how you can convert the given Python function `rename_files` into JavaScript:
+Sure! Below is the equivalent JavaScript code that maintains the same functionality, logic, and structure as the provided Python code:
 
 ```javascript
 const fs = require('fs');
 const path = require('path');
+const { readdirSync, renameSync } = fs;
+const { promisify } = require('util');
+const { statSync } = fs;
 
-function renameFiles(directory) {
+const readdir = promisify(readdirSync);
+const rename = promisify(renameSync);
+
+async function renameFiles(directory) {
     /**
      * Renames PNG files in a specified directory by appending a sequence number to each file.
      * The files are sorted alphabetically, and each base name is assigned sequential numbers.
-     * For example:
-     *     If the directory contains three PNG files named "image1.png", "image2.png", "image3.png",
-     *     after renaming, the files will be named "image1001.png", "image2001.png", "image3001.png".
      *
      * @param {string} directory - The path to the directory containing PNG files to be renamed.
      */
 
-    // Read all files in the directory
-    fs.readdir(directory, (err, files) => {
-        if (err) {
-            return console.error('Error reading directory:', err);
+    // Convert directory to Path object for easier handling
+    const dirPath = path.resolve(directory);
+
+    if (!statSync(dirPath).isDirectory()) {
+        throw new Error(`The directory '${directory}' does not exist or is not a directory.`);
+    }
+
+    // Get list of PNG files in the directory
+    const pngFiles = await readdir(dirPath).then(files =>
+        files.filter(file => statSync(path.join(dirPath, file)).isFile() && path.extname(file).toLowerCase() === '.png')
+    );
+
+    // Sort files alphabetically by their names
+    pngFiles.sort();
+
+    // Print the sorted list of files (for debugging)
+    console.log("Sorted files:");
+    pngFiles.forEach(file => console.log(file));
+
+    // Rename files with sequence numbers
+    let prevBaseName = null;
+    let count = 1;
+
+    for (const file of pngFiles) {
+        // Extract base name without postfix and number
+        const baseName = file.replace(/(\d{3})(-\d)?(?=\.png$)/, '');
+
+        if (baseName !== prevBaseName) {
+            count = 1;
         }
 
-        // Filter out only PNG files
-        const pngFiles = files.filter(file => path.extname(file).toLowerCase() === '.png');
+        const newFilename = `${baseName}${count.toString().padStart(3, '0')}.png`;
+        const oldFilePath = path.join(dirPath, file);
+        const newFilePath = path.join(dirPath, newFilename);
 
-        // Sort the PNG files alphabetically
-        pngFiles.sort();
+        await rename(oldFilePath, newFilePath);
+        console.log(`Renaming ${file} to ${newFilename}`);
 
-        let counter = 1001; // Start counting from 1001
-
-        // Rename each PNG file
-        pngFiles.forEach((file, index) => {
-            const oldPath = path.join(directory, file);
-            const newFileName = `image${counter}.png`;
-            const newPath = path.join(directory, newFileName);
-
-            fs.rename(oldPath, newPath, err => {
-                if (err) {
-                    return console.error(`Error renaming ${oldPath} to ${newPath}:`, err);
-                }
-                console.log(`${oldPath} renamed to ${newPath}`);
-                counter++;
-            });
-        });
-    });
+        prevBaseName = baseName;
+        count += 1;
+    }
 }
 
-// Example usage:
-// renameFiles('/path/to/your/directory');
+// Example usage
+(async () => {
+    try {
+        await renameFiles('/path/to/directory');
+    } catch (error) {
+        console.error(error);
+    }
+})();
 ```
 
 ### Explanation:
-- **Node.js Modules**: This script uses Node.js's built-in `fs` (File System) and `path` modules to handle file operations and path manipulations.
-- **Reading Directory**: The `fs.readdir` method reads all files in the specified directory.
-- **Filtering Files**: It filters the files to include only those with a `.png` extension using `path.extname`.
-- **Sorting Files**: The filtered files are sorted alphabetically.
-- **Renaming Files**: Each PNG file is renamed sequentially starting from `1001`. The `fs.rename` method renames the files asynchronously.
+1. **Imports**: The required Node.js modules (`fs`, `path`, `util`) are imported at the beginning.
+2. **Async/Await**: The main function `renameFiles` is defined as an async function to handle asynchronous operations.
+3. **Directory Handling**: The directory path is resolved using `path.resolve`.
+4. **File Filtering and Sorting**: Files are filtered based on being PNG files and then sorted alphabetically.
+5. **Regex Replacement**: The base name extraction uses a regex similar to the Python version.
+6. **File Renaming**: Files are renamed using `fs.renameSync` (promisified for async handling).
+7. **Example Usage**: An example usage block demonstrates how to call the `renameFiles` function.
 
-Make sure to replace `'/path/to/your/directory'` with the actual path to your directory when calling the `renameFiles` function.
+This JavaScript code should provide the same functionality as the original Python code.

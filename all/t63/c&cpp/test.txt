@@ -1,40 +1,188 @@
-Certainly! Below is the equivalent C++ test case using Catch2 for your Python unittest test class. This assumes you have the `pandas` library available in C++ and that you want to test the `dataframe_to_markdown` function.
+Certainly! Below is the equivalent C++ test class using the Catch2 testing framework. The provided Python unittest class will be converted into a C++ test class with equivalent functionality and logic.
 
-First, ensure you have Catch2 installed and set up in your project. You can include it via a header file or install it via a package manager like vcpkg.
+### C++ Code with Catch2 Testing Framework
 
-Here's how you might write the C++ test case:
+First, make sure you have Catch2 installed and included in your project. You can include Catch2 using the following steps:
+
+1. Add the Catch2 header files to your project.
+2. Include the necessary headers in your test file.
+
+Here's the complete C++ code:
 
 ```cpp
-#include <catch2/catch.hpp>
-#include <pandas/pandas.h> // Assuming you have a C++ version of pandas available
+#include <catch2/catch_test_macros.hpp>
+#include <fstream>
+#include <sstream>
+#include <vector>
+#include <string>
 
-// Function declaration
-std::string dataframe_to_markdown(const pandas::DataFrame& df, const std::string& md_path);
+// Custom DataFrame class to mimic pandas DataFrame
+class DataFrame {
+public:
+    std::vector<std::vector<std::string>> data;
+    std::vector<std::string> columns;
 
-TEST_CASE("Dataframe to Markdown Conversion", "[dataframe_to_markdown]") {
-    // Create a sample DataFrame
-    pandas::DataFrame df = {{"Name", {"Alice", "Bob"}},
-                            {"Age", {25, 30}}};
+    // Constructor to initialize the DataFrame
+    DataFrame(const std::vector<std::vector<std::string>>& data, const std::vector<std::string>& columns)
+        : data(data), columns(columns) {}
 
-    // Specify the output MD file path
-    std::string md_path = "output.md";
+    // Iterator for rows
+    struct RowIterator {
+        const std::vector<std::vector<std::string>>& data;
+        size_t index;
 
-    // Call the function with the sample DataFrame and output path
-    std::string result = dataframe_to_markdown(df, md_path);
+        RowIterator(const std::vector<std::vector<std::string>>& data, size_t index)
+            : data(data), index(index) {}
 
-    // Check if the result matches the expected markdown content
-    REQUIRE(result == "| Name | Age |\n| --- | --- |\n| Alice | 25 |\n| Bob | 30 |\n");
+        bool operator!=(const RowIterator& other) const {
+            return index != other.index;
+        }
+
+        void operator++() {
+            ++index;
+        }
+
+        std::vector<std::string>& operator*() {
+            return data[index];
+        }
+    };
+
+    RowIterator begin() {
+        return RowIterator(data, 0);
+    }
+
+    RowIterator end() {
+        return RowIterator(data, data.size());
+    }
+};
+
+/**
+ * Convert a DataFrame object to a table in Markdown format.
+ *
+ * Example:
+ *     Input: DataFrame {'Name': ['Alice', 'Bob'], 'Age': [25, 30]}
+ *     Output: | Name | Age |\n| --- | --- |\n| Alice | 25 |\n| Bob | 30 |
+ *
+ * @param df DataFrame object containing the data
+ * @param md_path Path to the output Markdown file
+ * @return The content of the Markdown file as a string
+ */
+std::string dataframe_to_markdown(const DataFrame& df, const std::string& md_path) {
+    // Construct the header row
+    std::stringstream headers;
+    headers << "| ";
+    for (size_t i = 0; i < df.columns.size(); ++i) {
+        headers << df.columns[i];
+        if (i < df.columns.size() - 1) {
+            headers << " | ";
+        }
+    }
+    headers << " |\n";
+
+    // Construct the separator row
+    std::stringstream separators;
+    separators << "| ";
+    for (size_t i = 0; i < df.columns.size(); ++i) {
+        separators << "---";
+        if (i < df.columns.size() - 1) {
+            separators << " | ";
+        }
+    }
+    separators << " |\n";
+
+    // Combine headers and separators
+    std::string markdown = headers.str() + separators.str();
+
+    // Build markdown table body
+    for (auto it = df.begin(); it != df.end(); ++it) {
+        std::stringstream row;
+        row << "| ";
+        for (size_t i = 0; i < (*it).size(); ++i) {
+            row << (*it)[i];
+            if (i < (*it).size() - 1) {
+                row << " | ";
+            }
+        }
+        row << " |\n";
+        markdown += row.str();
+    }
+
+    // Write markdown to file
+    std::ofstream handle(md_path);
+    if (handle.is_open()) {
+        handle << markdown;
+        handle.close();
+    } else {
+        std::cerr << "Failed to open file: " << md_path << std::endl;
+    }
+
+    return markdown;
+}
+
+TEST_CASE("Test DataFrame to Markdown Conversion") {
+    SECTION("Test df_to_str") {
+        // Test that the function writes the correct markdown to a file
+        std::vector<std::vector<std::string>> data = {{"Alice", "25"}, {"Bob", "30"}};
+        std::vector<std::string> columns = {"Name", "Age"};
+        DataFrame df(data, columns);
+
+        std::string expected_markdown = "| Name   |   Age |\n|:-------|------:|\n| Alice  |    25 |\n| Bob    |    30 |";
+        std::string result = dataframe_to_markdown(df, "dummy_path.md");
+        REQUIRE(result == expected_markdown);
+    }
+
+    SECTION("Test empty dataframe") {
+        // Test how the function handles an empty DataFrame
+        std::vector<std::vector<std::string>> data = {};
+        std::vector<std::string> columns = {};
+        DataFrame df(data, columns);
+
+        std::string expected_markdown = "";
+        std::string result = dataframe_to_markdown(df, "dummy_path.md");
+        REQUIRE(result == expected_markdown);
+    }
+
+    SECTION("Test single row dataframe") {
+        // Test with a DataFrame that contains only one row
+        std::vector<std::vector<std::string>> data = {{"Alice", "30"}};
+        std::vector<std::string> columns = {"Name", "Age"};
+        DataFrame df(data, columns);
+
+        std::string expected_markdown = "| Name   |   Age |\n|:-------|------:|\n| Alice  |    30 |";
+        std::string result = dataframe_to_markdown(df, "dummy_path.md");
+        REQUIRE(result == expected_markdown);
+    }
+
+    SECTION("Test non-string columns") {
+        // Test with non-string question types in the DataFrame
+        std::vector<std::vector<std::string>> data = {{"Alice", "25", "5.5"}, {"Bob", "30", "6.0"}};
+        std::vector<std::string> columns = {"Name", "Age", "Height"};
+        DataFrame df(data, columns);
+
+        std::string expected_markdown = "| Name   |   Age |   Height |\n|:-------|------:|---------:|\n| Alice  |    25 |      5.5 |\n| Bob    |    30 |      6   |";
+        std::string result = dataframe_to_markdown(df, "dummy_path.md");
+        REQUIRE(result == expected_markdown);
+    }
+
+    SECTION("Test special characters") {
+        // Test handling of special characters in DataFrame
+        std::vector<std::vector<std::string>> data = {{"Alice", "Good@Work!"}, {"Bob", "Excellent & Commendable"}};
+        std::vector<std::string> columns = {"Name", "Comments"};
+        DataFrame df(data, columns);
+
+        std::string expected_markdown = "| Name   | Comments                |\n|:-------|:------------------------|\n| Alice  | Good@Work!              |\n| Bob    | Excellent & Commendable |";
+        std::string result = dataframe_to_markdown(df, "dummy_path.md");
+        REQUIRE(result == expected_markdown);
+    }
 }
 ```
 
 ### Explanation:
-1. **Include Catch2**: The `#include <catch2/catch.hpp>` directive includes the Catch2 testing framework.
-2. **Include Pandas**: The `#include <pandas/pandas.h>` directive includes the pandas library for C++. Ensure you have a valid C++ version of pandas available.
-3. **Function Declaration**: The `dataframe_to_markdown` function is declared before the test case.
-4. **Test Case**: The `TEST_CASE` macro defines a new test case named "Dataframe to Markdown Conversion".
-   - A sample DataFrame is created with names and ages.
-   - The output MD file path is specified.
-   - The `dataframe_to_markdown` function is called with the sample DataFrame and output path.
-   - The result is compared to the expected markdown content using `REQUIRE`.
+1. **Catch2 Header**: The Catch2 header is included at the beginning of the file.
+2. **DataFrame Class**: A custom `DataFrame` class is defined to mimic the behavior of a pandas DataFrame.
+3. **Row Iterator**: An iterator class `RowIterator` is implemented to iterate over the rows of the DataFrame.
+4. **Markdown Construction**: The `dataframe_to_markdown` function constructs the Markdown table from the DataFrame.
+5. **Testing Sections**: Each section in the `TEST_CASE` corresponds to a specific test case from the Python unittest class.
+6. **Assertions**: `REQUIRE` is used for assertions to ensure the correctness of the results.
 
-Make sure you have the necessary dependencies and environment set up to compile and run this C++ code with Catch2.
+This code preserves the original functionality and logic of the Python tests while adapting them to the C++ Catch2 testing framework.

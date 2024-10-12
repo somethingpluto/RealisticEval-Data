@@ -1,54 +1,90 @@
-Here is the C++ version of your Python function:
+Certainly! Below is the equivalent C++ code for the provided Python function, including the conversion of function signatures, comments, and documentation:
 
 ```cpp
-#include <ctime>
+#include <iostream>
+#include <map>
 #include <string>
+#include <ctime>
 
-struct DateInfo {
-    int year;
-    std::string month;
-    int weekOfMonth;
-    std::string dayOfWeek;
-};
+// Function to get the English name of the day of the week
+std::string getDayName(int dayOfWeek) {
+    const std::string daysOfWeek[] = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
+    return daysOfWeek[dayOfWeek];
+}
 
-DateInfo getCurrentDateInfo(std::tm* testDate = nullptr) {
-    /*
-    Returns the current time information including year, month, week of the month, and day of. eg {
-            'year': 2024,
-            'month': 'February',
-            'week_of_the_month': 5,
-            'day_of_the_week': 'Thursday'
-        }
+// Function to get the English name of the month
+std::string getMonthName(int month) {
+    const std::string months[] = {"January", "February", "March", "April", "May", "June", 
+                                  "July", "August", "September", "October", "November", "December"};
+    return months[month - 1]; // Arrays are zero-indexed
+}
 
-    Args:
-        testDate (std::tm*): The date to compute information for, defaults to today's date if not provided.
+// Function to calculate the week of the month
+int getWeekOfMonth(const std::tm& date) {
+    int day = date.tm_mday;
+    int firstDayOfWeek = date.tm_wday; // Sunday is 0, Monday is 1, etc.
+    return (day + firstDayOfWeek - 1) / 7 + 1;
+}
 
-    Returns:
-        DateInfo: A struct containing the year, month, week of the month, and day of the week.
-    */
-
-    std::time_t now = std::time(nullptr);
-    std::tm localTime = *std::localtime(&now);
-
-    if (testDate != nullptr) {
-        localTime = *testDate;
+/**
+ * Returns the current time information including year, month, week of the month, and day of the week.
+ *
+ * Example output:
+ * {
+ *     'year': 2024,
+ *     'month': 'February',
+ *     'week_of_the_month': 5,
+ *     'day_of_the_week': 'Thursday'
+ * }
+ *
+ * @param test_date The date to compute information for, defaults to today's date if not provided.
+ * @return A map containing the year, month, week of the month, and day of the week.
+ */
+std::map<std::string, std::string> getCurrentDateInfo(const std::tm* test_date = nullptr) {
+    std::tm today;
+    if (test_date == nullptr) {
+        time_t rawTime;
+        time(&rawTime);
+        today = *localtime(&rawTime);
+    } else {
+        today = *test_date;
     }
 
-    DateInfo info;
-    info.year = localTime.tm_year + 1900;
+    int year = today.tm_year + 1900;
+    int month = today.tm_mon + 1;
+    std::string dayOfWeek = getDayName(today.tm_wday);
+    std::string monthName = getMonthName(month);
+    int weekOfMonth = getWeekOfMonth(today);
 
-    char buffer[80];
-    std::strftime(buffer, sizeof(buffer), "%B", &localTime);
-    info.month = std::string(buffer);
+    std::map<std::string, std::string> result = {
+        {"year", std::to_string(year)},
+        {"month", monthName},
+        {"week_of_the_month", std::to_string(weekOfMonth)},
+        {"day_of_the_week", dayOfWeek}
+    };
 
-    info.weekOfMonth = ((localTime.tm_mday - 1) / 7) + 1;
+    return result;
+}
 
-    std::strftime(buffer, sizeof(buffer), "%A", &localTime);
-    info.dayOfWeek = std::string(buffer);
-
-    return info;
+int main() {
+    // Example usage
+    auto currentDateInfo = getCurrentDateInfo();
+    for (const auto& info : currentDateInfo) {
+        std::cout << info.first << ": " << info.second << std::endl;
+    }
+    return 0;
 }
 ```
-Note that in C++, we don't have built-in support for date manipulation like Python does. So, we use the `<ctime>` library which provides functions such as `std::localtime` to convert a time value into broken-down time. We also define a `DateInfo` structure to store the result, similar to how you would return a dictionary in Python. 
 
-Also note that the `std::tm` struct is used instead of `datetime.date` in Python. This struct represents a calendar date (year, month, day) plus time (hour, minute, second).
+### Explanation:
+1. **Header Files**: The necessary header files (`<iostream>`, `<map>`, `<string>`, `<ctime>`) are included.
+2. **Helper Functions**:
+   - `getDayName`: Converts the numeric day of the week to its English name.
+   - `getMonthName`: Converts the numeric month to its English name.
+   - `getWeekOfMonth`: Calculates the week of the month based on the given date.
+3. **Function Documentation**:
+   - The function `getCurrentDateInfo` is documented using multi-line comments (`/* ... */`) to explain its purpose, arguments, and return value.
+4. **Main Function**:
+   - In the `main` function, we demonstrate how to use `getCurrentDateInfo` and print the results.
+
+This C++ code preserves the original functionality and structure of the Python code while adhering to C++ conventions and documentation standards.

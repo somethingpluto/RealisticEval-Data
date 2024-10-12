@@ -1,29 +1,24 @@
-Sure! Here is the equivalent TypeScript code for your Python function:
+Sure! Here is the equivalent TypeScript code for the provided Python function:
 
 ```typescript
-interface Record {
-    ticker: string;
-    exDividendDate: string;
-    dividendAmount: number;
-}
+function checkDividendVariances(records: [string, string, number][]): [string, string][] {
+    // Dictionary to store dividend amounts by (ticker, exDividendDate)
+    const dividendDict: Map<[string, string], Set<number>> = new Map();
 
-function checkDividendVariances(records: Record[]): Record[] {
-    const result: Record[] = [];
-    const map = new Map<string, { dates: Set<string>, amounts: Set<number> }>();
-
-    for (const record of records) {
-        const key = `${record.ticker}-${record.exDividendDate}`;
-        if (!map.has(key)) {
-            map.set(key, { dates: new Set(), amounts: new Set() });
+    // Iterate through the records
+    for (const [ticker, exDividendDate, dividendAmount] of records) {
+        const key: [string, string] = [ticker, exDividendDate];
+        if (!dividendDict.has(key)) {
+            dividendDict.set(key, new Set());
         }
-        map.get(key).dates.add(record.exDividendDate);
-        map.get(key).amounts.add(record.dividendAmount);
+        dividendDict.get(key)?.add(dividendAmount);
     }
 
-    for (const [key, value] of map.entries()) {
-        if (value.dates.size === 1 && value.amounts.size > 1) {
-            const [ticker, exDividendDate] = key.split('-');
-            result.push({ ticker, exDividendDate, dividendAmount: NaN }); // Assuming dividend amount is not relevant here
+    // Find entries with more than one unique dividend amount
+    const result: [string, string][] = [];
+    for (const [key, amounts] of dividendDict) {
+        if (amounts.size > 1) {
+            result.push([key[0], key[1]]);
         }
     }
 
@@ -32,10 +27,19 @@ function checkDividendVariances(records: Record[]): Record[] {
 ```
 
 ### Explanation:
-1. **Interface Definition**: The `Record` interface defines the structure of each item in the input list.
-2. **Map Usage**: A `Map` is used to group records by their combination of `ticker` and `exDividendDate`. This helps in identifying duplicates based on these fields.
-3. **Loop Through Records**: For each record, we create a unique key (`ticker-exDividendDate`) and add it to the map. We also store the distinct `exDividendDate` and `dividendAmount` values for each key.
-4. **Check Conditions**: After populating the map, we iterate through its entries. If an entry has only one distinct `exDividendDate` but multiple distinct `dividendAmount` values, it means there's a variance in dividends for the same ex-dividend date.
-5. **Result Construction**: For each variance found, we construct a result object and push it into the `result` array.
+1. **Type Definitions**:
+   - The `records` parameter is defined as an array of tuples `[string, string, number][]`.
+   - The return type is an array of tuples `[string, string][]`.
 
-This TypeScript code should behave similarly to your original Python function.
+2. **Dictionary Initialization**:
+   - A `Map` is used to store the dividend amounts by `(ticker, exDividendDate)`.
+
+3. **Iteration**:
+   - The `for...of` loop is used to iterate over the records.
+   - The `Set` is used to store unique dividend amounts for each `(ticker, exDividendDate)` pair.
+
+4. **Result Construction**:
+   - A new array `result` is created to store the ticker symbols and ex-dividend dates with more than one unique dividend amount.
+   - The `for...of` loop iterates over the `Map` entries to find keys with more than one unique dividend amount.
+
+This TypeScript code maintains the same functionality and logic as the original Python code, while adapting to TypeScript's static type system and idiomatic practices.

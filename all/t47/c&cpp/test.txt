@@ -1,62 +1,98 @@
-To convert the Python unittest test class to a C++ test case using Catch2, you'll need to create a new C++ file with the appropriate test cases. Below is an example of how you can write a test case for the `find_nth_weekday_of_specific_year` function using Catch2:
+Certainly! Below is the equivalent C++ test class using the Catch2 testing framework. The provided Python unittest class will be converted into a Catch2 test suite, ensuring that the functionality and logic of the tests are preserved.
 
-### C++ Code Example
+### C++ Code with Catch2 Testing Framework
+
+First, make sure you have Catch2 installed and included in your project. You can include Catch2 via a header-only library or through a package manager like vcpkg.
+
+Here’s the complete C++ code:
 
 ```cpp
-#include <catch2/catch.hpp>
 #include <iostream>
 #include <chrono>
+#include <catch2/catch_test_macros.hpp>
 
-// Assuming find_nth_weekday_of_specific_year is defined here or included from another header
-datetime::date find_nth_weekday_of_specific_year(int y, int m, int n, int k);
+// Function to calculate the nth occurrence of a specific weekday in a given month and year
+std::chrono::sys_days find_nth_weekday_of_specific_year(int y, int m, int n, int k) {
+    /**
+     * Calculates the date of the nth occurrence of a specific weekday (k) in a given month (m) and year (y).
+     * If the nth occurrence does not exist within the month, it returns the last occurrence of that weekday in the month.
+     * This function extends the capability to handle edge cases where the nth weekday might not be present,
+     * by providing the closest previous weekday in such cases.
+     *
+     * @param y The year for which the date is to be calculated.
+     * @param m The month for which the date is to be calculated, where January is 1 and December is 12.
+     * @param n The nth occurrence of the weekday within the month. For example, 1 for the first occurrence, 2 for the second, etc.
+     * @param k The weekday, where Monday is 0 and Sunday is 6.
+     *
+     * @return The calculated date of the nth occurrence of the weekday in the given month and year.
+     *         If the nth occurrence does not exist, returns the date of the last occurrence of that weekday in the month.
+     */
 
-TEST_CASE("Find Nth Weekday of Specific Year", "[weekday]") {
-    // Test Case 1: First Monday of April 2023
-    SECTION("First Monday of April 2023") {
-        auto result = find_nth_weekday_of_specific_year(2023, 4, 1, 0);
-        REQUIRE(result == datetime::date(2023, 4, 3)); // April 3, 2023 is the first Monday
+    // First day of the month
+    auto first_day_of_month = std::chrono::sys_days{std::chrono::year_month_day{std::chrono::year{y}, std::chrono::month{m}, std::chrono::day{1}}};
+
+    // Day difference to the first occurrence of the specified weekday
+    int day_difference = (k - first_day_of_month.day_of_week().c_encoding() + 7) % 7;
+    auto first_k_weekday_of_month = first_day_of_month + std::chrono::days(day_difference);
+    auto nth_k_weekday_of_month = first_k_weekday_of_month + std::chrono::weeks(n - 1);
+
+    // Last day of the month
+    auto next_month_first_day = (m == 12) ? std::chrono::sys_days{std::chrono::year_month_day{std::chrono::year{y + 1}, std::chrono::month{1}, std::chrono::day{1}}} :
+                                           std::chrono::sys_days{std::chrono::year_month_day{std::chrono::year{y}, std::chrono::month{m + 1}, std::chrono::day{1}}};
+    auto last_day_of_month = next_month_first_day - std::chrono::days(1);
+
+    if (nth_k_weekday_of_month > last_day_of_month) {
+        // Find the last occurrence of the specified weekday in the month
+        auto last_k_weekday_of_month = last_day_of_month - std::chrono::days((last_day_of_month.day_of_week().c_encoding() - k + 7) % 7);
+        return last_k_weekday_of_month;
     }
 
-    // Test Case 2: Second Wednesday of May 2023
-    SECTION("Second Wednesday of May 2023") {
-        auto result = find_nth_weekday_of_specific_year(2023, 5, 2, 2);
-        REQUIRE(result == datetime::date(2023, 5, 17)); // May 17, 2023 is the second Wednesday
+    return nth_k_weekday_of_month;
+}
+
+TEST_CASE("Test find_nth_weekday_of_specific_year", "[find_nth_weekday_of_specific_year]") {
+    SECTION("Regular occurrence") {
+        // Test for the 2nd Monday of May 2023
+        auto result = find_nth_weekday_of_specific_year(2023, 5, 2, 0);  // Monday is 0
+        auto expected = std::chrono::sys_days{std::chrono::year_month_day{std::chrono::year{2023}, std::chrono::month{5}, std::chrono::day{8}}};
+        REQUIRE(result == expected);
     }
 
-    // Test Case 3: Third Friday of June 2023
-    SECTION("Third Friday of June 2023") {
-        auto result = find_nth_weekday_of_specific_year(2023, 6, 3, 4);
-        REQUIRE(result == datetime::date(2023, 6, 16)); // June 16, 2023 is the third Friday
+    SECTION("Last occurrence") {
+        // Test for the 5th Monday of May 2023, which doesn't exist, should return the last Monday
+        auto result = find_nth_weekday_of_specific_year(2023, 5, 5, 0);  // Monday is 0
+        auto expected = std::chrono::sys_days{std::chrono::year_month_day{std::chrono::year{2023}, std::chrono::month{5}, std::chrono::day{29}}};
+        REQUIRE(result == expected);
     }
 
-    // Test Case 4: Fourth Saturday of July 2023
-    SECTION("Fourth Saturday of July 2023") {
-        auto result = find_nth_weekday_of_specific_year(2023, 7, 4, 5);
-        REQUIRE(result == datetime::date(2023, 7, 29)); // July 29, 2023 is the fourth Saturday
+    SECTION("First day is weekday") {
+        // Test for when the first day of the month is the weekday in question, 1st Tuesday of August 2023
+        auto result = find_nth_weekday_of_specific_year(2023, 8, 1, 1);  // Tuesday is 1
+        auto expected = std::chrono::sys_days{std::chrono::year_month_day{std::chrono::year{2023}, std::chrono::month{8}, std::chrono::day{1}}};
+        REQUIRE(result == expected);
     }
 
-    // Test Case 5: Fifth Sunday of August 2023
-    SECTION("Fifth Sunday of August 2023") {
-        auto result = find_nth_weekday_of_specific_year(2023, 8, 5, 6);
-        REQUIRE(result == datetime::date(2023, 8, 27)); // August 27, 2023 is the fifth Sunday
+    SECTION("Edge year transition") {
+        // Test for the 1st Friday of December 2023
+        auto result = find_nth_weekday_of_specific_year(2023, 12, 1, 4);  // Friday is 4
+        auto expected = std::chrono::sys_days{std::chrono::year_month_day{std::chrono::year{2023}, std::chrono::month{12}, std::chrono::day{1}}};
+        REQUIRE(result == expected);
     }
+}
 
-    // Test Case 6: Non-existent occurrence, should return the last occurrence
-    SECTION("Non-existent occurrence, should return the last occurrence") {
-        auto result = find_nth_weekday_of_specific_year(2023, 2, 5, 0); // February 2023 has only 4 Mondays
-        REQUIRE(result == datetime::date(2023, 2, 20)); // Last Monday in February 2023
-    }
+int main(int argc, char* argv[]) {
+    // Initialize and run Catch2
+    int result = Catch::Session().run(argc, argv);
+    return result;
 }
 ```
 
-### Explanation
+### Explanation:
+1. **Imports**: The C++ code includes the necessary headers (`<iostream>`, `<chrono>`, `<catch2/catch_test_macros.hpp>`).
+2. **Function Definition**: The function `find_nth_weekday_of_specific_year` is defined with appropriate parameter types and return type.
+3. **Documentation**: Multi-line comments (`/* ... */`) are used to document the function, parameters, and return value.
+4. **Test Class**: The `TEST_CASE` macro from Catch2 is used to define the test suite, and each test case is defined using the `SECTION` macro.
+5. **Assertions**: The `REQUIRE` macro is used to assert the correctness of the results.
+6. **Main Function**: The `main` function initializes and runs the Catch2 test suite.
 
-- **Catch2**: A modern, C++-native testing framework for unit tests, property-based testing, and BDD-style testing.
-- **Sections**: Each section represents a different scenario or test case.
-- **REQUIRE**: Asserts that the condition is true; if false, the test fails.
-
-### Running the Tests
-
-To run these tests, ensure you have Catch2 installed and properly set up in your project. Then compile and execute the C++ test file. Catch2 will automatically discover and run all the tests defined in the file.
-
-This example demonstrates how to translate a Python unittest into C++ using Catch2. Adjustments may be needed based on the actual implementation details and dependencies of your project.
+This conversion ensures that the functionality and logic of the tests are preserved while adapting to the syntax and conventions of C++ and the Catch2 testing framework.

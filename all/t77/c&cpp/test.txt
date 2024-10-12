@@ -1,39 +1,104 @@
-Certainly! Below is the equivalent C++ test case using Catch2 for the provided Python `unittest` test class:
+Certainly! Below is the equivalent C++ test class using the Catch2 testing framework. The provided Python unittest class will be converted to a Catch2 test suite, ensuring that the functionality and logic of the tests are preserved.
+
+### C++ Code with Catch2 Testing Framework
 
 ```cpp
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <chrono>
-#include <iomanip>
-#include <sstream>
 #include <ctime>
+#include <stdexcept>
+#include <optional>
+#include <string>
 
-std::string format_timestamp_to_string(double timestamp, const std::string& date_format = "%a %b %d %I:%M:%S %p %z %Y") {
-    std::time_t t = static_cast<std::time_t>(timestamp);
-    std::tm tm = *std::localtime(&t);
-
-    std::ostringstream oss;
-    oss << std::put_time(&tm, date_format.c_str());
-
-    return oss.str();
+// Utility function to get the local timezone
+std::optional<std::string> get_local_timezone() {
+    // For simplicity, we assume "localtime" is the local timezone.
+    return "localtime";
 }
 
-TEST_CASE("Format Timestamp to String", "[format_timestamp]") {
-    // Test with default date format
-    double timestamp1 = 1672531200.0; // Example timestamp
-    REQUIRE(format_timestamp_to_string(timestamp1) == "Fri Jan 20 00:00:00 PM -0800 2023");
+/**
+ * Formats the given timestamp as a string according to the specified format, using the system's local time zone.
+ *
+ * @param timestamp The time value representing the seconds since the epoch.
+ * @param date_format The format string to use for formatting the timestamp.
+ *                    Defaults to '%a %b %d %I:%M:%S %p %z %Y'.
+ * @return The formatted date and time string.
+ */
+std::string format_timestamp_to_string(double timestamp, std::optional<std::string> date_format = std::nullopt) {
+    if (timestamp < 0) {
+        throw std::invalid_argument("error timestamp");
+    }
 
-    // Test with custom date format
-    double timestamp2 = 1672531200.0; // Same example timestamp
-    std::string custom_format = "%Y-%m-%d %H:%M:%S";
-    REQUIRE(format_timestamp_to_string(timestamp2, custom_format) == "2023-01-20 12:00:00");
+    std::optional<std::string> local_tz = get_local_timezone();
+    if (!local_tz.has_value()) {
+        // Fallback to UTC if the local timezone is not found
+        local_tz = "UTC";
+    }
+
+    try {
+        // Convert the UNIX timestamp to a time_t value
+        std::time_t raw_time = static_cast<std::time_t>(timestamp);
+        std::tm* ptm;
+
+        // Use local time if the timezone is "localtime", otherwise use UTC
+        if (local_tz.value() == "localtime") {
+            ptm = std::localtime(&raw_time);
+        } else {
+            ptm = std::gmtime(&raw_time);
+        }
+
+        // Default format string
+        std::string format = date_format.has_value() ? date_format.value() : "%a %b %d %I:%M:%S %p %z %Y";
+
+        // Format the datetime string
+        char buffer[128];
+        if (std::strftime(buffer, sizeof(buffer), format.c_str(), ptm) == 0) {
+            throw std::runtime_error("Error formatting the datetime");
+        }
+
+        return std::string(buffer);
+    } catch (const std::exception& e) {
+        // Handle any other unexpected errors
+        throw std::invalid_argument("Error formatting the datetime: " + std::string(e.what()));
+    }
+}
+
+TEST_CASE("TestFormatTimestampToString", "[format_timestamp_to_string]") {
+    SECTION("test_basic_functionality") {
+        double timestamp = 1655364000.0; // Corresponds to Thu Jun 16 12:00:00 PM UTC 2022
+        std::string expected_date_str = "Thu Jun 16 03:20:00 PM +0800 2022";
+        REQUIRE(format_timestamp_to_string(timestamp) == expected_date_str);
+    }
+
+    SECTION("test_default_format") {
+        double timestamp = 1655364000.0;
+        std::string expected_date_str = "Thu Jun 16 03:20:00 PM +0800 2022";
+        REQUIRE(format_timestamp_to_string(timestamp) == expected_date_str);
+    }
+
+    SECTION("test_custom_format") {
+        double timestamp = 1655364000.0;
+        std::string custom_format = "%Y-%m-%d %H:%M:%S";
+        std::string expected_date_str = "2022-06-16 15:20:00";
+        REQUIRE(format_timestamp_to_string(timestamp, custom_format) == expected_date_str);
+    }
+
+    SECTION("test_edge_case_boundary_value") {
+        double timestamp = 0.0; // Unix epoch start
+        std::string expected_date_str = "Thu Jan 01 08:00:00 AM +0800 1970";
+        REQUIRE(format_timestamp_to_string(timestamp) == expected_date_str);
+    }
 }
 ```
 
 ### Explanation:
-1. **Include Necessary Headers**: We include the necessary headers for handling dates and times in C++.
-2. **Function Implementation**: The `format_timestamp_to_string` function converts a Unix timestamp to a formatted string using `std::put_time`.
-3. **Catch2 Test Case**:
-   - `TEST_CASE` defines a new test case named "Format Timestamp to String".
-   - `REQUIRE` statements are used to assert that the output of the function matches the expected values.
+1. **Catch2 Test Class**: The `TEST_CASE` macro is used to define the test suite, and each `SECTION` corresponds to a specific test case.
+2. **Function Signature**: The `format_timestamp_to_string` function is defined with the appropriate C++ types and default values.
+3. **Type Annotations**: The Python `Optional[str]` is translated to `std::optional<std::string>` in C++.
+4. **Assertions**: The `REQUIRE` macro is used for assertions, which is equivalent to `assertEqual` in Python.
+5. **Timestamp Conversion**: The UNIX timestamp is converted to a `std::time_t` value.
+6. **Timezone Handling**: The function `get_local_timezone` returns an optional string representing the local timezone.
+7. **Formatting**: The `std::strftime` function is used to format the datetime string according to the specified format.
+8. **Error Handling**: Exceptions are caught and re-thrown with appropriate error messages.
 
-This C++ code uses Catch2, which is a modern, C++-native testing framework, to write unit tests for the `format_timestamp_to_string` function.
+This code preserves the original functionality and structure of the Python unittest class while adhering to C++ conventions and best practices using the Catch2 testing framework.

@@ -1,41 +1,58 @@
-Certainly! Below is the equivalent C++ test case using Catch2 for the provided Python unittest function `contains_phone_number`. Note that the actual implementation of `contains_phone_number` in C++ would need to be provided or assumed based on the context.
+Certainly! Below is the equivalent C++ test class using the Catch2 testing framework. The provided Python unittest class will be converted into a Catch2 test suite, ensuring that the functionality and logic of the tests are preserved.
 
-First, ensure you have Catch2 installed and set up in your project. If you're using CMake, you can add Catch2 as a subdirectory:
+First, make sure you have Catch2 installed and included in your project. You can include Catch2 by adding the header file and using the `CATCH_TEST_CASE` macro for each test case.
 
-```cmake
-add_subdirectory(path/to/catch2)
-```
-
-Then, create a C++ test file (e.g., `test_contains_phone_number.cpp`) with the following content:
+Here’s the C++ code:
 
 ```cpp
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <string>
+#include <regex>
 
-// Assuming contains_phone_number is implemented somewhere in your project
-bool contains_phone_number(const std::string& s);
+// Function to check if the string contains a phone number
+// Possible formats for a phone number are: +1-800-555-1234, 555-555-1234, 555 555 1234
+// Args:
+//     s (std::string): Input string that may contain a phone number
+// Returns:
+//     bool: Whether the string contains a phone number
+bool contains_phone_number(const std::string& s) {
+    // Regex pattern to identify phone numbers
+    std::regex pattern(R"((\+\d{1,3}[- ]?)?(\d{3}[- ]\d{3}[- ]\d{4}))");
 
-TEST_CASE("Contains Phone Number", "[phone]") {
-    REQUIRE(contains_phone_number("+1-800-555-1234") == true);
-    REQUIRE(contains_phone_number("555-555-1234") == true);
-    REQUIRE(contains_phone_number("555 555 1234") == true);
-    REQUIRE(contains_phone_number("This is not a phone number") == false);
-    REQUIRE(contains_phone_number("") == false);
+    // Use std::regex_search to find a match
+    return std::regex_search(s, pattern);
+}
+
+TEST_CASE("Test PhoneNumber Detection", "[PhoneNumberDetection]") {
+    SECTION("with international prefix") {
+        REQUIRE(contains_phone_number("+1-800-555-1234"));
+    }
+
+    SECTION("with standard dashes") {
+        REQUIRE(contains_phone_number("800-555-1234"));
+    }
+
+    SECTION("with spaces") {
+        REQUIRE(contains_phone_number("800 555 1234"));
+    }
+
+    SECTION("without phone number") {
+        REQUIRE_FALSE(contains_phone_number("Hello, world!"));
+    }
+
+    SECTION("with text containing numbers") {
+        REQUIRE(contains_phone_number("Call me at 800-555-1234 today!"));
+    }
 }
 ```
 
-In this example:
-- The `TEST_CASE` macro defines a new test case named "Contains Phone Number".
-- The `REQUIRE` macro is used to assert that the `contains_phone_number` function returns the expected results for various inputs.
-- Replace the `contains_phone_number` function with the actual implementation if it's different from what you intended.
+### Explanation:
+1. **Header Files**: Include the necessary headers (`<catch2/catch_test_macros.hpp>`, `<string>`, `<regex>`).
+2. **Function Definition**: The `contains_phone_number` function is defined with a regex pattern and uses `std::regex_search` to find matches.
+3. **Test Suite**: The `TEST_CASE` macro defines the test suite named "Test PhoneNumber Detection".
+4. **Sections**: Each `SECTION` corresponds to a specific test case from the Python unittest class.
+5. **Assertions**:
+   - `REQUIRE` is used to assert that a condition is true.
+   - `REQUIRE_FALSE` is used to assert that a condition is false.
 
-To run the tests, compile your test file along with any other source files and link against Catch2. For example, using g++ and CMake:
-
-```sh
-mkdir build && cd build
-cmake ..
-make
-./tests
-```
-
-This will execute the tests and output the results.
+This C++ code preserves the functionality and logic of the original Python unittest class, ensuring that all test cases are properly implemented and tested using Catch2.

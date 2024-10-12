@@ -1,310 +1,89 @@
-Sure! Below is an example of how you might translate your Python `unittest` test class into a C++ `Catch2` test case. Note that I'll assume you have some test cases for the `convert_hms_to_milliseconds` function.
+Certainly! Here is the equivalent C++ test class using the Catch2 testing framework. The provided Python unittest class will be translated into a set of Catch2 test cases, ensuring that the functionality and logic of the tests are preserved.
 
-First, let's define the function in C++:
+### C++ Code Using Catch2
+
+First, make sure you have Catch2 installed and included in your project. You can include Catch2 by adding the header file and using the `CATCH_TEST_CASE` macro for each test case.
+
+Here is the complete C++ code:
 
 ```cpp
+#include <iostream>
+#include <regex>
 #include <string>
 #include <optional>
+#include <catch2/catch_test_macros.hpp>
 
+// Function to convert a time duration string in the format 'XhYminZs' to milliseconds.
+// This function takes a string representing a time duration, where hours, minutes, and seconds
+// are optionally provided, and converts this duration into the equivalent number of milliseconds.
+//
+// Args:
+//     time_str (const std::string&): A string representing the time duration, e.g., '1h20min30s'.
+//
+// Returns:
+//     std::optional<int>: The equivalent duration in milliseconds, or std::nullopt if the input is invalid.
 std::optional<int> convert_hms_to_milliseconds(const std::string& time_str) {
-    // Implementation of the function goes here
+    // Regex to match hours, minutes, and seconds
+    std::regex regex("^(?:(\\d+)h)?(?:(\\d+)min)?(?:(\\d+)s)?$");
+    std::smatch match;
+
+    if (!std::regex_search(time_str, match, regex)) {
+        std::cout << "remindme.cpp: Cannot convert time string \"" << time_str << "\" to milliseconds!" << std::endl;
+        return std::nullopt;
+    }
+
+    // Extract hours, minutes, and seconds from the regex groups, defaulting to 0 if not present
+    int hours = match[1].matched ? std::stoi(match[1]) : 0;
+    int minutes = match[2].matched ? std::stoi(match[2]) : 0;
+    int seconds = match[3].matched ? std::stoi(match[3]) : 0;
+
+    // Calculate the total duration in milliseconds
+    int total_milliseconds = (hours * 3600 + minutes * 60 + seconds) * 1000;
+
+    return total_milliseconds;
+}
+
+TEST_CASE("Test basic conversion", "[basic_conversion]") {
+    REQUIRE(convert_hms_to_milliseconds("1h20min30s").value() == 4830000);
+}
+
+TEST_CASE("Test no hours or minutes", "[no_hours_or_minutes]") {
+    REQUIRE(convert_hms_to_milliseconds("30s").value() == 30000);
+}
+
+TEST_CASE("Test invalid format", "[invalid_format]") {
+    REQUIRE(!convert_hms_to_milliseconds("1hour20minutes").has_value());
+}
+
+TEST_CASE("Test edge case max one day", "[edge_case_max_one_day]") {
+    REQUIRE(convert_hms_to_milliseconds("23h59min59s").value() == 86399000);
+}
+
+TEST_CASE("Test exceeding one day", "[exceeding_one_day]") {
+    REQUIRE(convert_hms_to_milliseconds("24h1min").value() == 86460000);
+}
+
+int main(int argc, char* argv[]) {
+    // Run all the Catch2 tests
+    return Catch::Session().run(argc, argv);
 }
 ```
 
-Now, let's write the corresponding Catch2 test cases:
+### Explanation:
+1. **Headers**: The required headers (`<iostream>`, `<regex>`, `<string>`, `<optional>`, `<catch2/catch_test_macros.hpp>`) are included at the beginning.
+2. **Function Definition**: The function `convert_hms_to_milliseconds` is defined with a `const std::string&` parameter and returns `std::optional<int>`.
+3. **Catch2 Test Cases**:
+   - Each test case is defined using the `TEST_CASE` macro.
+   - The test cases are named and tagged appropriately.
+   - Assertions are made using `REQUIRE` to check the expected behavior.
+4. **Main Function**: The `main` function runs all the Catch2 tests.
 
-```cpp
-#define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
-#include "catch.hpp"
+### Running the Tests:
+To run the tests, you need to compile the code with Catch2 support. Here is an example command to compile the code using g++:
 
-// Assuming the implementation of convert_hms_to_milliseconds is available here
+```sh
+g++ -o test_convert_hms_to_milliseconds test_convert_hms_to_milliseconds.cpp -lcatch2
+./test_convert_hms_to_milliseconds
+```
 
-TEST_CASE("Convert time durations to milliseconds", "[time_conversion]") {
-    SECTION("Valid time strings") {
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("20min") == 1200000);
-        REQUIRE(convert_hms_to_milliseconds("30s") == 30000);
-        REQUIRE(convert_hms_to_milliseconds("1h") == 3600000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30s") == 5430000);
-        REQUIRE(convert_hms_to_milliseconds("1h20min30
+This setup ensures that the functionality and logic of the tests are preserved while adhering to C++ syntax and conventions.

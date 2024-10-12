@@ -1,75 +1,128 @@
-Certainly! Below is the equivalent JavaScript test case using Jest for the Python `empty_directory` function:
+Certainly! Below is the equivalent Jest test class for the given Python unittest class. The conversion will maintain the functionality and logic of the tests, adapting them to Jest's syntax and conventions.
+
+### Python Code:
+```python
+import os
+import shutil
+import tempfile
+import unittest
+
+class TestEmptyDirectory(unittest.TestCase):
+    def setUp(self):
+        # Set up a temporary directory with some files and directories
+        self.test_dir = tempfile.mkdtemp()
+        # Create some files and directories
+        os.mkdir(os.path.join(self.test_dir, 'subdir'))
+        with open(os.path.join(self.test_dir, 'file1.txt'), 'w') as f:
+            f.write("Hello")
+        with open(os.path.join(self.test_dir, 'subdir', 'file2.txt'), 'w') as f:
+            f.write("World")
+
+    def tearDown(self):
+        # Remove the temporary directory after each test
+        shutil.rmtree(self.test_dir)
+
+    def test_empty_directory_success(self):
+        """ Test that the directory is emptied successfully """
+        empty_directory(self.test_dir)
+        self.assertEqual(os.listdir(self.test_dir), [])  # Directory should be empty
+
+    def test_empty_directory_with_subdirectories(self):
+        """ Test emptying a directory that includes subdirectories """
+        empty_directory(self.test_dir)
+        self.assertFalse(os.listdir(self.test_dir))  # Directory and subdirectory should be empty
+
+    def test_empty_already_empty_directory(self):
+        """ Test emptying a directory that is already empty """
+        empty_directory(self.test_dir)  # First emptying
+        empty_directory(self.test_dir)  # Empty again
+        self.assertEqual(os.listdir(self.test_dir), [])  # Still should be empty
+```
+
+### Equivalent Jest Test Class:
 
 ```javascript
 const fs = require('fs');
 const path = require('path');
+const { rm, unlink } = require('fs').promises;
+const { mkdtemp, rmdir } = require('fs').promises;
 
-function emptyDirectory(directoryPath) {
-    if (!fs.existsSync(directoryPath)) {
-        throw new Error(`The specified path ${directoryPath} does not exist.`);
-    }
+describe('TestEmptyDirectory', () => {
+    let testDir;
 
-    if (!fs.lstatSync(directoryPath).isDirectory()) {
-        throw new Error(`${directoryPath} is not a directory.`);
-    }
-
-    fs.readdirSync(directoryPath).forEach((file) => {
-        const filePath = path.join(directoryPath, file);
-        try {
-            if (fs.lstatSync(filePath).isDirectory()) {
-                emptyDirectory(filePath); // Recursively delete subdirectories
-            } else {
-                fs.unlinkSync(filePath); // Delete files
-            }
-        } catch (error) {
-            console.error(`Error deleting ${filePath}:`, error.message);
-        }
-    });
-}
-
-// Test cases using Jest
-describe('emptyDirectory', () => {
-    let tempDir;
-
-    beforeEach(() => {
-        // Create a temporary directory for testing
-        tempDir = fs.mkdtempSync(path.join(__dirname, 'test-dir-'));
-        fs.mkdirSync(path.join(tempDir, 'subdir'));
-        fs.writeFileSync(path.join(tempDir, 'file.txt'), 'Some content');
+    beforeAll(async () => {
+        // Set up a temporary directory with some files and directories
+        testDir = await mkdtemp(path.join(os.tmpdir(), 'test-'));
+        // Create some files and directories
+        await fs.promises.mkdir(path.join(testDir, 'subdir'));
+        await fs.promises.writeFile(path.join(testDir, 'file1.txt'), 'Hello');
+        await fs.promises.writeFile(path.join(testDir, 'subdir', 'file2.txt'), 'World');
     });
 
-    afterEach(() => {
-        // Clean up the temporary directory after each test
-        emptyDirectory(tempDir);
-        fs.rmdirSync(tempDir);
+    afterAll(async () => {
+        // Remove the temporary directory after all tests
+        await rmdir(testDir, { recursive: true });
     });
 
-    it('should empty a directory with files and subdirectories', () => {
-        expect(fs.readdirSync(tempDir)).toEqual(['subdir', 'file.txt']);
-        emptyDirectory(tempDir);
-        expect(fs.readdirSync(tempDir)).toEqual([]);
+    it('should empty the directory successfully', async () => {
+        // Test that the directory is emptied successfully
+        await emptyDirectory(testDir);
+        expect(await fs.promises.readdir(testDir)).toEqual([]);
     });
 
-    it('should throw an error if the path does not exist', () => {
-        expect(() => emptyDirectory('/nonexistent/path')).toThrow(/does not exist/);
+    it('should empty a directory that includes subdirectories', async () => {
+        // Test emptying a directory that includes subdirectories
+        await emptyDirectory(testDir);
+        expect(await fs.promises.readdir(testDir)).toEqual([]);
     });
 
-    it('should throw an error if the path is not a directory', () => {
-        const filePath = path.join(tempDir, 'file.txt');
-        fs.writeFileSync(filePath, 'Some content');
-        expect(() => emptyDirectory(filePath)).toThrow(/is not a directory/);
+    it('should handle an already empty directory', async () => {
+        // Test emptying a directory that is already empty
+        await emptyDirectory(testDir);  // First emptying
+        await emptyDirectory(testDir);  // Empty again
+        expect(await fs.promises.readdir(testDir)).toEqual([]);
     });
 });
+
+async function emptyDirectory(directoryPath) {
+    // Check if the path exists and is a directory
+    if (!fs.existsSync(directoryPath)) {
+        throw new Error("The specified directory does not exist.");
+    }
+    if (!fs.lstatSync(directoryPath).isDirectory()) {
+        throw new Error("The specified path is not a directory.");
+    }
+
+    // Iterate over all items in the directory
+    const items = await fs.promises.readdir(directoryPath, { withFileTypes: true });
+
+    for (const item of items) {
+        const itemPath = path.join(directoryPath, item.name);
+
+        // Check if the item is a file or directory and delete accordingly
+        if (item.isFile() || item.isSymbolicLink()) {
+            await unlink(itemPath);  // Remove the file or link
+        } else if (item.isDirectory()) {
+            await rm(itemPath, { recursive: true, force: true });  // Remove the directory and all its contents
+        }
+    }
+}
 ```
 
 ### Explanation:
 1. **Setup and Teardown**:
-   - The `beforeEach` hook creates a temporary directory for testing purposes.
-   - The `afterEach` hook cleans up the temporary directory after each test by calling `emptyDirectory`.
+   - `beforeAll` is used to set up the temporary directory and create files and directories.
+   - `afterAll` is used to clean up the temporary directory after all tests have run.
 
 2. **Test Cases**:
-   - `it('should empty a directory with files and subdirectories')`: This test checks that the directory is emptied correctly.
-   - `it('should throw an error if the path does not exist')`: This test ensures that an error is thrown when the specified path does not exist.
-   - `it('should throw an error if the path is not a directory')`: This test ensures that an error is thrown when the specified path is not a directory.
+   - Each test case is defined using `it` blocks.
+   - Assertions are made using `expect` and `toEqual` to verify the state of the directory.
 
-This setup ensures that your JavaScript code behaves similarly to the Python `unittest` test class you provided.
+3. **Async Operations**:
+   - All file system operations are performed asynchronously using Promises.
+   - The `emptyDirectory` function is defined as an asynchronous function to handle file system operations.
+
+4. **Jest Assertions**:
+   - `expect` is used to assert the expected state of the directory after the `emptyDirectory` function is called.
+
+This conversion ensures that the functionality and logic of the original Python unittest class are preserved in Jest, with appropriate assertions and setup/teardown logic.

@@ -1,29 +1,64 @@
-Here's how you might translate that Python function into C++ using standard libraries:
+Here’s the equivalent C++ code for the provided Python function `empty_directory`. This C++ version uses the `<filesystem>` library for handling paths and directories, which is available in C++17 and later:
 
-```c++
+```cpp
 #include <iostream>
 #include <filesystem>
+#include <stdexcept>
 
-void emptyDirectory(const std::string &directoryPath) {
-    try {
-        for(auto &entry : std::filesystem::directory_iterator(directoryPath)) {
-            if(entry.is_regular_file()) {
-                std::filesystem::remove(entry.path());
-            } else if(entry.is_directory()) {
-                emptyDirectory(entry.path().string()); // Recursive call
-                std::filesystem::remove_all(entry.path());
-            }
+namespace fs = std::filesystem;
+
+void empty_directory(const std::string& directory_path) {
+    /**
+     * Empties all files and subdirectories in the specified directory, but keeps the directory itself.
+     *
+     * Args:
+     * directory_path (std::string): Path to the directory whose contents are to be emptied.
+     *
+     * Throws:
+     * std::invalid_argument: If the specified path does not exist or is not a directory.
+     */
+    
+    // Check if the path exists and is a directory
+    if (!fs::exists(directory_path)) {
+        throw std::invalid_argument("The specified directory does not exist.");
+    }
+    if (!fs::is_directory(directory_path)) {
+        throw std::invalid_argument("The specified path is not a directory.");
+    }
+
+    // Iterate over all items in the directory
+    for (const auto& entry : fs::directory_iterator(directory_path)) {
+        const std::string item_path = entry.path().string();
+
+        // Check if the item is a file or directory and delete accordingly
+        if (fs::is_regular_file(item_path) || fs::is_symlink(item_path)) {
+            fs::remove(item_path);  // Remove the file or link
+        } else if (fs::is_directory(item_path)) {
+            fs::remove_all(item_path);  // Remove the directory and all its contents
         }
-    } catch(std::filesystem::filesystem_error &e) {
-        std::cerr << "Error occurred while processing directory: " << e.what() << '\n';
     }
 }
 
 int main() {
-    std::string dirPath = "/path/to/directory"; // replace with your directory path
-    emptyDirectory(dirPath);
+    try {
+        std::string directory_path = "path/to/your/directory";
+        empty_directory(directory_path);
+        std::cout << "Directory emptied successfully." << std::endl;
+    } catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+    }
+
     return 0;
 }
 ```
 
-Note: The above C++ code uses the `<filesystem>` library which is available from C++17 onwards. This code will remove all files and directories within the specified directory recursively. Also, it doesn't check whether the given path exists or not before attempting to empty the directory. Make sure to include error handling according to your needs.
+### Explanation:
+1. **Headers**: The `<filesystem>` header is included to provide filesystem operations.
+2. **Namespace**: `std::filesystem` is aliased as `fs` for convenience.
+3. **Function Definition**: The `empty_directory` function takes a string argument representing the directory path.
+4. **Existence and Type Check**: The function checks if the path exists and is a directory using `fs::exists` and `fs::is_directory`.
+5. **Directory Iteration**: A `for` loop with `fs::directory_iterator` iterates over all items in the directory.
+6. **Item Handling**: Depending on whether the item is a regular file, symlink, or directory, it is removed using `fs::remove` or `fs::remove_all`.
+7. **Exception Handling**: In the `main` function, exceptions are caught and handled to ensure robustness.
+
+This C++ code provides the same functionality as the original Python code, ensuring that the directory is emptied while keeping the directory itself intact.

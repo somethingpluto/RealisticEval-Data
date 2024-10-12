@@ -1,63 +1,106 @@
-Certainly! Below is the equivalent TypeScript test case using Jest for the provided Python `unittest` test class:
+Certainly! Here’s the equivalent TypeScript test class using Jest, ensuring that the functionality and logic of the tests are preserved. The Python unittest assertions will be mapped to the appropriate Jest assertions.
+
+### TypeScript Code
+
+First, let's define the `findDuplicateIPs` function in TypeScript:
 
 ```typescript
-import { findDuplicateIPs } from './findDuplicateIPs'; // Adjust the import path accordingly
+/**
+ * Find duplicate IPs in the given IP list excluding specified IPs to ignore.
+ *
+ * @param ipList - List of IP addresses.
+ * @param ignoreList - List of IP addresses to ignore.
+ * @returns A list of duplicate IPs excluding those in the ignore list.
+ */
+function findDuplicateIPs(ipList: string[], ignoreList: string[]): string[] {
+    // Convert ignoreList to a Set for faster lookups
+    const ignoreSet = new Set(ignoreList);
 
-describe('findDuplicateIPs', () => {
-  it('should return duplicates excluding those in the ignore list', () => {
-    const ipList = ['192.168.1.1', '10.0.0.1', '192.168.1.1', '172.16.0.1'];
-    const ignoreList = ['10.0.0.1'];
+    // Object to count occurrences of each IP
+    const ipCount: Record<string, number> = {};
 
-    const result = findDuplicateIPs(ipList, ignoreList);
+    // Count occurrences of each IP, excluding ignored IPs
+    for (const ip of ipList) {
+        if (!ignoreSet.has(ip)) {
+            if (ip in ipCount) {
+                ipCount[ip] += 1;
+            } else {
+                ipCount[ip] = 1;
+            }
+        }
+    }
 
-    expect(result).toEqual(['192.168.1.1']);
-  });
+    // Collect duplicate IPs
+    const duplicates = Object.entries(ipCount).filter(([ip, count]) => count > 1).map(([ip]) => ip);
 
-  it('should handle empty input lists', () => {
-    const ipList: string[] = [];
-    const ignoreList: string[] = [];
-
-    const result = findDuplicateIPs(ipList, ignoreList);
-
-    expect(result).toEqual([]);
-  });
-
-  it('should handle no duplicates', () => {
-    const ipList = ['192.168.1.1', '10.0.0.1', '172.16.0.1'];
-    const ignoreList = ['10.0.0.1'];
-
-    const result = findDuplicateIPs(ipList, ignoreList);
-
-    expect(result).toEqual([]);
-  });
-});
-```
-
-In this example:
-- The `describe` function groups related tests together.
-- Each `it` function represents an individual test case.
-- The `expect` function along with matchers like `.toEqual` is used to assert the expected outcomes.
-
-Make sure you have Jest installed and properly configured in your project. If not, you can install it using npm or yarn:
-
-```sh
-npm install --save-dev jest
-# or
-yarn add --dev jest
-```
-
-And then update your `package.json` to include a test script:
-
-```json
-"scripts": {
-  "test": "jest"
+    return duplicates;
 }
 ```
 
-You can run the tests using:
+### Jest Test Class
 
-```sh
-npm test
-# or
-yarn test
+Now, let's write the Jest test class:
+
+```typescript
+import { findDuplicateIPs } from './path/to/findDuplicateIPs'; // Adjust the path as needed
+
+describe('findDuplicateIPs', () => {
+    it('should handle basic duplicates', () => {
+        const ipList = ["192.168.1.1", "192.168.1.2", "192.168.1.1"];
+        const ignoreList = [];
+        expect(findDuplicateIPs(ipList, ignoreList)).toEqual(["192.168.1.1"]);
+    });
+
+    it('should handle ignored duplicates', () => {
+        const ipList = ["192.168.1.1", "192.168.1.1", "192.168.1.2"];
+        const ignoreList = ["192.168.1.1"];
+        expect(findDuplicateIPs(ipList, ignoreList)).toEqual([]);
+    });
+
+    it('should handle no duplicates', () => {
+        const ipList = ["192.168.1.1", "192.168.1.2", "192.168.1.3"];
+        const ignoreList = [];
+        expect(findDuplicateIPs(ipList, ignoreList)).toEqual([]);
+    });
+
+    it('should handle mixed duplicates', () => {
+        const ipList = ["192.168.1.1", "192.168.1.1", "10.0.0.1", "192.168.1.2"];
+        const ignoreList = ["192.168.1.2"];
+        expect(findDuplicateIPs(ipList, ignoreList)).toEqual(["192.168.1.1"]);
+    });
+
+    it('should handle empty input', () => {
+        const ipList = [];
+        const ignoreList = [];
+        expect(findDuplicateIPs(ipList, ignoreList)).toEqual([]);
+    });
+
+    it('should handle only ignored IPs', () => {
+        const ipList = ["192.168.1.1", "192.168.1.1"];
+        const ignoreList = ["192.168.1.1"];
+        expect(findDuplicateIPs(ipList, ignoreList)).toEqual([]);
+    });
+
+    it('should handle all duplicates', () => {
+        const ipList = ["192.168.1.1", "192.168.1.1", "192.168.1.1"];
+        const ignoreList = [];
+        expect(findDuplicateIPs(ipList, ignoreList)).toEqual(["192.168.1.1"]);
+    });
+});
 ```
+
+### Explanation:
+1. **Import Function**:
+   - Import the `findDuplicateIPs` function from the appropriate module.
+
+2. **Test Suite**:
+   - Use `describe` to group the tests under the `findDuplicateIPs` function.
+
+3. **Test Cases**:
+   - Each test case uses `it` to describe the test scenario.
+   - `expect` is used to assert the expected outcome using `toEqual`.
+
+4. **Data Points**:
+   - The test cases use the same data points as the Python unittest to ensure consistency.
+
+This TypeScript code preserves the original functionality and logic of the Python unittest while adapting it to Jest's syntax and conventions.

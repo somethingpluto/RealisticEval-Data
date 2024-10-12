@@ -1,58 +1,73 @@
-Here’s how you can translate the provided Python code into C++:
+Certainly! Below is the equivalent C++ code for the provided Python function. This code will attempt to convert a string to either an integer or a floating-point number, and if neither conversion is possible, it will return the original string.
 
 ```cpp
-#include <iostream>
 #include <string>
 #include <sstream>
-#include <variant>
+#include <iostream>
 
-std::variant<int, float, std::string> numericalStrConvert(const std::string& value) {
+// Define a union to hold either an int, float, or std::string
+union ConvertResult {
+    int intValue;
+    float floatValue;
+    std::string stringValue;
+
+    // Destructor to handle cleanup
+    ~ConvertResult() {
+        // Free memory if stringValue is used
+        if (stringValue.data() != nullptr) {
+            stringValue.~basic_string();
+        }
+    }
+
+    // Equality operator to compare union values
+    bool operator==(const int& other) const {
+        return intValue == other;
+    }
+
+    bool operator==(const float& other) const {
+        return floatValue == other;
+    }
+
+    bool operator==(const std::string& other) const {
+        return stringValue == other;
+    }
+};
+
+// Function to convert a string to either an int, float, or return the original string
+ConvertResult numericalStrConvert(const std::string& value) {
+    std::istringstream iss(value);
+    ConvertResult result;
+
     // Try to convert to an integer
-    try {
-        size_t idx;
-        int intValue = std::stoi(value, &idx);
-        // Ensure the entire string was consumed
-        if (idx == value.length()) {
-            return intValue;
-        }
-    } catch (const std::invalid_argument&) {
-        // Not an integer
-    } catch (const std::out_of_range&) {
-        // Integer out of range
+    if (iss >> result.intValue && iss.eof()) {
+        return result;
     }
 
-    // Try to convert to a float
-    try {
-        size_t idx;
-        float floatValue = std::stof(value, &idx);
-        // Ensure the entire string was consumed
-        if (idx == value.length()) {
-            return floatValue;
-        }
-    } catch (const std::invalid_argument&) {
-        // Not a float
-    } catch (const std::out_of_range&) {
-        // Float out of range
+    // Clear the error flags and try to convert to a float
+    iss.clear();
+    iss.str(value);
+    if (iss >> result.floatValue && iss.eof()) {
+        return result;
     }
 
-    // Return the original string if neither conversion succeeded
-    return value;
+    // If neither conversion is possible, return the original string
+    result.stringValue = value;
+    return result;
 }
 
 int main() {
-    std::string input;
-    std::cout << "Enter a value: ";
-    std::cin >> input;
+    std::string testValues[] = {"123", "45.67", "hello"};
 
-    auto result = numericalStrConvert(input);
+    for (const auto& val : testValues) {
+        ConvertResult result = numericalStrConvert(val);
 
-    // Check the type of the result and print it
-    if (std::holds_alternative<int>(result)) {
-        std::cout << "Converted to int: " << std::get<int>(result) << std::endl;
-    } else if (std::holds_alternative<float>(result)) {
-        std::cout << "Converted to float: " << std::get<float>(result) << std::endl;
-    } else {
-        std::cout << "Original string: " << std::get<std::string>(result) << std::endl;
+        if (result == 123) {
+            std::cout << "Converted to int: " << result.intValue << std::endl;
+        } else if (result == 45.67f) {
+            std::cout << "Converted to float: " << result.floatValue << std::endl;
+        } else {
+            std::cout << "Original string: " << result.stringValue << std::endl;
+        }
     }
 
     return 0;
@@ -60,8 +75,9 @@ int main() {
 ```
 
 ### Explanation:
-1. **Function Signature**: In C++, we use `std::variant` to return multiple types (int, float, or string).
-2. **String to Number Conversion**: We use `std::stoi` and `std::stof` for converting strings to integers and floats, respectively, along with error handling.
-3. **Main Function**: It reads input from the user, calls the conversion function, and prints the result based on its type.
+1. **Union Definition**: The `ConvertResult` union holds either an `int`, `float`, or `std::string`. The destructor ensures proper cleanup of the `std::string` if it is used.
+2. **Equality Operators**: Overloaded equality operators are defined to compare the union with `int`, `float`, and `std::string`.
+3. **Conversion Function**: The `numericalStrConvert` function attempts to convert the input string to an integer or a float using `std::istringstream`. If neither conversion is possible, it returns the original string.
+4. **Main Function**: Demonstrates usage of the `numericalStrConvert` function with sample test cases.
 
-Make sure to include the necessary headers and to compile with a C++17 or later standard due to the use of `std::variant`.
+This approach maintains the functionality and logic of the original Python code while adapting to C++ syntax and features.

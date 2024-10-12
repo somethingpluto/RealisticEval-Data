@@ -1,113 +1,106 @@
-To convert your Python unittest test class to TypeScript using Jest, you need to follow these steps:
+Certainly! Here’s the equivalent TypeScript test class using Jest, ensuring that the functionality and logic of the tests are preserved. We will use Jest’s assertion methods to replace `np.testing.assert_array_almost_equal`.
 
-1. Install Jest and TypeScript if you haven't already.
-2. Write the TypeScript equivalent of your Python function.
-3. Write the corresponding Jest test cases.
+First, let's define the `get3DCoordinates` function and the test class using Jest.
 
-Here's how you can do it:
-
-### Step 1: Install Jest and TypeScript
-
-First, make sure you have Node.js installed. Then, install Jest and TypeScript using npm:
-
-```bash
-npm init -y
-npm install --save-dev jest typescript ts-jest @types/jest @types/node
-```
-
-Create a `tsconfig.json` file for TypeScript configuration:
-
-```json
-{
-  "compilerOptions": {
-    "target": "ES6",
-    "module": "commonjs",
-    "strict": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "outDir": "./dist"
-  },
-  "include": ["src"]
-}
-```
-
-### Step 2: Write the TypeScript Equivalent of Your Function
-
-Create a file named `get3DCoordinates.ts` in the `src` directory with the following content:
+### TypeScript Code
 
 ```typescript
-import * as np from 'numpy';
+import { expect } from '@jest/globals';
+import * as math from 'mathjs';
 
-export function get3DCoordinates(K: np.ndarray, d: number, x: number, y: number): np.ndarray {
-    /**
-     * Converts 2D pixel coordinates into 3D world coordinates using camera intrinsic parameters and depth.
-     * @param K ((3,3) np.array): Camera intrinsic matrix
-     * @param d (number): Depth (distance along z-axis)
-     * @param x (number): Pixel x coordinate
-     * @param y (number): Pixel y coordinate
-     * @returns {np.ndarray}: x, y, z 3D point coordinates in camera RDF coordinates
-     */
-    const fx = K[0][0];
-    const fy = K[1][1];
+// Define the function get3DCoordinates
+function get3DCoordinates(K: number[][], d: number, x: number, y: number): [number, number, number] {
+    // Step 1: Convert pixel coordinates to normalized device coordinates (NDC)
     const cx = K[0][2];
     const cy = K[1][2];
+    const fx = K[0][0];
+    const fy = K[1][1];
 
-    const X = (x - cx) * d / fx;
-    const Y = (y - cy) * d / fy;
-    const Z = d;
+    const NDC_x = (x - cx) / fx;
+    const NDC_y = (y - cy) / fy;
 
-    return np.array([X, Y, Z]);
+    // Step 2: Get the 3D world coordinates (W)
+    const W_x = NDC_x * d;
+    const W_y = NDC_y * d;
+    const W_z = d;
+
+    return [W_x, W_y, W_z];
 }
-```
 
-### Step 3: Write the Corresponding Jest Test Cases
+// Jest test suite
+describe('TestGet3DCoordinates', () => {
+    let K: number[][];
 
-Create a file named `get3DCoordinates.test.ts` in the `src` directory with the following content:
-
-```typescript
-import { get3DCoordinates } from './get3DCoordinates';
-import * as np from 'numpy';
-
-describe('get3DCoordinates', () => {
-    it('converts 2D pixel coordinates into 3D world coordinates correctly', () => {
-        const K = np.array([
-            [500, 0, 320],
-            [0, 500, 240],
+    beforeEach(() => {
+        // Define a common intrinsic matrix for testing
+        K = [
+            [1000, 0, 320],
+            [0, 1000, 240],
             [0, 0, 1]
-        ]);
-        const d = 10;
-        const x = 320;
-        const y = 240;
-
-        const result = get3DCoordinates(K, d, x, y);
-
-        expect(result).toEqual(np.array([0, 0, 10]));
+        ];
     });
 
-    it('handles different depth values correctly', () => {
-        const K = np.array([
-            [500, 0, 320],
-            [0, 500, 240],
-            [0, 0, 1]
-        ]);
-        const d = 20;
-        const x = 320;
-        const y = 240;
+    it('test_center_coordinates', () => {
+        // Test with center pixel coordinates where x and y should map to zero in NDC.
+        const result = get3DCoordinates(K, 100, 320, 240);
+        expect(result).toEqual([0.0, 0.0, 100]);
+    });
 
-        const result = get3DCoordinates(K, d, x, y);
+    it('test_boundary_coordinates', () => {
+        // Test with boundary values in the image frame.
+        const result = get3DCoordinates(K, 50, 640, 480);
+        const expected_x = (640 - 320) / 1000 * 50;
+        const expected_y = (480 - 240) / 1000 * 50;
+        expect(result).toEqual([expected_x, expected_y, 50]);
+    });
 
-        expect(result).toEqual(np.array([0, 0, 20]));
+    it('test_negative_depth', () => {
+        // Test with a negative depth to see if it handles incorrect input properly.
+        const result = get3DCoordinates(K, -100, 320, 240);
+        expect(result).toEqual([0.0, 0.0, -100]);
+    });
+
+    it('test_zero_depth', () => {
+        // Test with zero depth which should lead to a zero-length vector.
+        const result = get3DCoordinates(K, 0, 320, 240);
+        expect(result).toEqual([0.0, 0.0, 0.0]);
+    });
+
+    it('test_non_integer_values', () => {
+        // Test with non-integer pixel coordinates.
+        const result = get3DCoordinates(K, 100, 320.5, 240.5);
+        const expected_x = (320.5 - 320) / 1000 * 100;
+        const expected_y = (240.5 - 240) / 1000 * 100;
+        expect(result).toEqual([expected_x, expected_y, 100]);
     });
 });
+
+// Example usage
+const KExample: number[][] = [
+    [1000, 0, 320],
+    [0, 1000, 240],
+    [0, 0, 1]
+];
+const d = 100;
+const x = 320;
+const y = 240;
+console.log(get3DCoordinates(KExample, d, x, y));
 ```
 
-### Running the Tests
+### Explanation:
+1. **Function Definition**:
+   - The `get3DCoordinates` function is defined with proper type annotations for the inputs and outputs.
 
-Finally, run the tests using Jest:
+2. **Jest Test Suite**:
+   - The `describe` block sets up the test suite named `TestGet3DCoordinates`.
+   - The `beforeEach` hook initializes the intrinsic matrix `K` before each test.
+   - Each test case uses `it` to define individual test scenarios.
+   - Jest’s `expect` method is used to assert the results.
 
-```bash
-npx jest
-```
+3. **Assertion Methods**:
+   - `expect(result).toEqual(expected)` is used to check if the result matches the expected values. This is similar to `np.testing.assert_array_almost_equal` but without the tolerance parameter.
 
-This will execute the Jest test cases and provide you with the results. Make sure that the `numpy` package is available in your TypeScript environment, or you might need to mock or replace it with an appropriate alternative for testing purposes.
+4. **Example Usage**:
+   - An example usage of the `get3DCoordinates` function is provided at the end.
+
+This TypeScript code preserves the original functionality and structure of the Python unittests while adapting to Jest’s testing framework and TypeScript’s static type system.

@@ -1,59 +1,129 @@
-Sure! Below is an equivalent C++ test case using Catch2 for the provided Python unittest test class. Note that I'll assume you want to test a function `extractCharacterBits` that behaves similarly to your Python function.
+Certainly! Below is the equivalent C++ test class using the Catch2 testing framework. The provided Python unittest class is converted into a Catch2 test suite, ensuring that the functionality and logic of the tests are preserved.
 
-First, let's define the C++ function signature:
+### C++ Code with Catch2 Testing Framework
 
 ```cpp
+#include <catch2/catch_test_macros.hpp>
 #include <vector>
 #include <string>
-#include <optional>
+#include <utility> // For std::pair
 
-std::optional<std::pair<int, std::string>> extractCharacterBits(const std::vector<unsigned char>& byteArray, const std::string& charStr, const std::string& charset = "utf-8");
-```
+// Assuming extract_character_bits is defined in your_module.cpp
+#include "your_module.h"
 
-Now, let's write the test cases using Catch2:
-
-```cpp
-#define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
-#include "catch.hpp"
-
-// Assuming the implementation of extractCharacterBits is already available
-#include "extract_character_bits.h"  // Replace with the actual header file where extractCharacterBits is defined
-
-TEST_CASE("Extract character bits", "[extractCharacterBits]") {
-    SECTION("Character found") {
-        std::vector<unsigned char> byteArray = {0x68, 0x65, 0x6c, 0x6c, 0x6f};  // "hello"
-        std::string charStr = "l";
-        auto result = extractCharacterBits(byteArray, charStr);
-        
-        REQUIRE(result.has_value());
-        REQUIRE(result->first == 3);  // Position of 'l' in the byte array
-        REQUIRE(result->second == "110111");  // Binary representation of 'l'
+TEST_CASE("Test extract_character_bits function", "[extract_character_bits]") {
+    SECTION("test_case_1_valid_utf8") {
+        std::vector<unsigned char> byte_array = {'H', 'e', 'l', 'l', 'o', ',', ' ', 'W', 'o', 'r', 'l', 'd', '!'};
+        char char_to_find = 'W';
+        auto result = extract_character_bits(byte_array, char_to_find, "utf-8");
+        auto expected_result = std::make_pair(7, "01010111");
+        REQUIRE(result == expected_result);
     }
 
-    SECTION("Character not found") {
-        std::vector<unsigned char> byteArray = {0x68, 0x65, 0x6c, 0x6c, 0x6f};  // "hello"
-        std::string charStr = "z";
-        auto result = extractCharacterBits(byteArray, charStr);
-        
-        REQUIRE(!result.has_value());
+    SECTION("test_case_2_non_existent_character") {
+        std::vector<unsigned char> byte_array = {'T', 'h', 'i', 's', ' ', 'i', 's', ' ', 'a', ' ', 't', 'e', 's', 't', '.'};
+        char char_to_find = 'z';
+        auto result = extract_character_bits(byte_array, char_to_find, "utf-8");
+        REQUIRE(result.first == -1 && result.second.empty());
     }
+
+    SECTION("test_case_3_invalid_encoding") {
+        std::vector<unsigned char> byte_array = {0xff, 0xfe};
+        char char_to_find = 'A';
+        auto result = extract_character_bits(byte_array, char_to_find, "ascii");
+        REQUIRE(result.first == -1 && result.second.empty());
+    }
+
+    SECTION("test_case_4_valid_utf16") {
+        std::vector<unsigned char> byte_array = {
+            0xff, 0xfe, 0x00, 0x48, 0x00, 0x65, 0x00, 0x6c,
+            0x00, 0x6c, 0x00, 0x6f, 0x00, 0x2c, 0x00, 0x20,
+            0x00, 0x57, 0x00, 0x6f, 0x00, 0x72, 0x00, 0x6c,
+            0x00, 0x64, 0x00, 0x21
+        };
+        char char_to_find = '!';
+        auto result = extract_character_bits(byte_array, char_to_find, "utf-16");
+        auto expected_result = std::make_pair(12, "00100001 00000000");
+        REQUIRE(result == expected_result);
+    }
+
+    SECTION("test_case_5_special_characters_utf8") {
+        std::vector<unsigned char> byte_array = {
+            'P', 'y', 't', 'h', 'o', 'n', 0xf0, 0x9f, 0x90, 0xb0, ' ', 'i', 's', ' ', 'f', 'u', 'n', '!'
+        };
+        char char_to_find = '\xf0\x9f\x90\xb0'; // Unicode character 🐍 in UTF-8
+        auto result = extract_character_bits(byte_array, char_to_find, "utf-8");
+        auto expected_result = std::make_pair(7, "11110000 10011111 10010000 10001101");
+        REQUIRE(result == expected_result);
+    }
+}
+
+// Example implementation of extract_character_bits (for demonstration purposes)
+std::pair<int, std::string> extract_character_bits(const std::vector<unsigned char>& byte_array, char char_to_find, const std::string& charset = "utf-8") {
+    try {
+        std::string string(reinterpret_cast<const char*>(byte_array.data()), byte_array.size());
+
+        size_t position = string.find(char_to_find);
+        if (position != std::string::npos) {
+            size_t byte_position = 0;
+            for (size_t i = 0; i < position; ++i) {
+                byte_position += static_cast<size_t>(std::strlen(std::string(1, string[i]).c_str()));
+            }
+
+            size_t char_length = static_cast<size_t>(std::strlen(std::string(1, char_to_find).c_str()));
+
+            std::vector<unsigned char> bits(byte_array.begin() + byte_position, byte_array.begin() + byte_position + char_length);
+
+            std::stringstream bits_as_string;
+            for (auto byte : bits) {
+                bits_as_string << std::bitset<8>(byte) << " ";
+            }
+            std::string result = bits_as_string.str();
+            result.pop_back(); // Remove the trailing space
+
+            return std::make_pair(static_cast<int>(position), result);
+        } else {
+            std::cerr << "The character '" << char_to_find << "' is not in the byte array." << std::endl;
+            return std::make_pair(-1, "");
+        }
+    } catch (const std::exception& e) {
+        std::cerr << "Failed to decode the byte array: " << e.what() << std::endl;
+        return std::make_pair(-1, "");
+    }
+}
+
+int main() {
+    // Run Catch2 tests
+    int result = Catch::Session().run();
+    return result;
 }
 ```
 
 ### Explanation:
+1. **Header Inclusions**:
+   - `#include <catch2/catch_test_macros.hpp>` for Catch2 testing macros.
+   - `#include <vector>` for vector manipulation.
+   - `#include <string>` for string manipulation.
+   - `#include <utility>` for `std::pair`.
 
-1. **Include Catch2**: We include the Catch2 library using `#include "catch.hpp"`.
+2. **Test Class**:
+   - The `TEST_CASE` macro is used to define a test case.
+   - Each `SECTION` corresponds to a specific test case from the Python unittest class.
 
-2. **Define Test Cases**: We use the `TEST_CASE` macro to define test cases. Each `SECTION` inside a `TEST_CASE` represents a sub-test.
+3. **Test Cases**:
+   - `test_case_1_valid_utf8`: Tests a valid UTF-8 byte array.
+   - `test_case_2_non_existent_character`: Tests a non-existent character in the byte array.
+   - `test_case_3_invalid_encoding`: Tests invalid encoding.
+   - `test_case_4_valid_utf16`: Tests a valid UTF-16 byte array.
+   - `test_case_5_special_characters_utf8`: Tests special characters in UTF-8.
 
-3. **Test Case for Character Found**:
-   - We create a byte array representing the string "hello".
-   - We call `extractCharacterBits` with the byte array and the character "l".
-   - We check if the result is valid (`has_value()`), and then we verify the position and binary representation of the character.
+4. **Assertions**:
+   - `REQUIRE` is used for assertions in Catch2.
 
-4. **Test Case for Character Not Found**:
-   - We create a byte array representing the string "hello".
-   - We call `extractCharacterBits` with the byte array and the character "z".
-   - We check if the result is invalid (`!has_value()`).
+5. **Example Implementation**:
+   - An example implementation of `extract_character_bits` is provided for demonstration purposes. This should be replaced with the actual implementation from your module.
 
-Make sure to replace `"extract_character_bits.h"` with the actual header file where your `extractCharacterBits` function is defined. Also, ensure that the function correctly handles the character extraction based on the specified character set.
+6. **Main Function**:
+   - The `main` function runs the Catch2 tests and returns the test results.
+
+This C++ code preserves the functionality and logic of the original Python unittest class while adapting to the Catch2 testing framework.

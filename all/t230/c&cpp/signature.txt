@@ -1,40 +1,80 @@
-Here's how you could write the equivalent C++ function using regex:
+Certainly! Below is the equivalent C++ code that preserves the original purpose and structure of the Python function, including comments and documentation:
 
 ```cpp
+#include <iostream>
 #include <regex>
 #include <string>
 
-std::string moveEmojisToEnd(const std::string& text) {
-    /*
-    Move the emoj expression in the string to the end of the text
+/**
+ * Move the emoji expressions in the string to the end of the text.
+ *
+ * @param text The input string containing text and possibly emojis.
+ * @return The modified string with all emojis moved to the end.
+ */
+std::string move_emojis_to_end(const std::string& text) {
+    // Regular expression pattern for capturing emojis
+    std::regex emoji_pattern(
+        u"[\u2702-\u27B0"  // Dingbats
+        u"\u24C2-\u1F251"  // Enclosed characters
+        u"\u1F600-\u1F64F"  // Emoticons
+        u"\u1F300-\u1F5FF"  // Symbols & Pictographs
+        u"\u1F680-\u1F6FF"  // Transport & Map Symbols
+        u"\u1F700-\u1F77F"  // Alchemical Symbols
+        u"\u1F780-\u1F7FF"  // Geometric Shapes Extended
+        u"\u1F800-\u1F8FF"  // Supplemental Arrows-C
+        u"\u1F900-\u1F9FF"  // Supplemental Symbols and Pictographs
+        u"\u1FA00-\u1FA6F"  // Chess Symbols
+        u"\u1FA70-\u1FAFF"  // Symbols and Pictographs Extended-A
+        "]+", std::regex::ECMAScript | std::regex::icase);
 
-    Args:
-        text (const std::string&): The input string containing text and possibly emojis.
-
-    Returns:
-        std::string: The modified string with all emojis moved to the end.
-    */
-
-    // Regex pattern to match any emoji character
-    std::regex emojiPattern(R"([\x{1F600}-\x{1F64F}\x{1F300}-\x{1F5FF}\x{1F680}-\x{1F6FF}\x{2600}-\x{26FF}\x{2700}-\x{27BF}])", std::regex_constants::icase);
-
-    // Find all matches in the string
-    std::sregex_iterator iter(text.begin(), text.end(), emojiPattern);
-    std::sregex_iterator end;
-
-    // Create a new string with only non-emoji characters
-    std::string result;
-    for (; iter != end; ++iter)
-        result += text.substr(iter->position() + iter->length());
-
-    // Append all found emojis at the end
-    while (iter != end) {
-        result += (*iter)[0];
-        ++iter;
+    // Find all emojis in the text
+    std::smatch matches;
+    std::string emojis;
+    std::string::const_iterator searchStart(text.cbegin());
+    while (std::regex_search(searchStart, text.cend(), matches, emoji_pattern)) {
+        emojis += matches[0];
+        searchStart = matches.suffix().first;
     }
 
-    return result;
+    // Remove emojis from the text
+    std::string text_without_emojis = std::regex_replace(text, emoji_pattern, "");
+
+    // Concatenate non-emoji text with extracted emojis
+    return text_without_emojis + emojis;
+}
+
+int main() {
+    std::string input = "Hello, 😊 world! 🌍";
+    std::string result = move_emojis_to_end(input);
+    std::cout << "Original: " << input << std::endl;
+    std::cout << "Modified: " << result << std::endl;
+
+    return 0;
 }
 ```
 
-This function uses regular expressions to find all emojis in the given string, then constructs a new string without them, appending the emojis to the end of the new string. Please note that the range for emojis is simplified and might not cover all possible emojis. Also, it assumes that your environment supports UTF-8 encoding.
+### Explanation:
+1. **Function Signature**:
+   - The Python function signature `def move_emojis_to_end(text: str)` is translated to `std::string move_emojis_to_end(const std::string& text)` in C++.
+   - The parameter `text` is passed by reference (`const std::string& text`) to avoid unnecessary copying.
+
+2. **Documentation Comments**:
+   - The Python docstring is converted to a multi-line comment block in C++ using `/* */`.
+   - Single-line comments are used for inline explanations.
+
+3. **Regular Expression Pattern**:
+   - The regular expression pattern is defined using Unicode ranges for emojis. The `std::regex` constructor is used with the `ECMAScript` and `icase` flags to support Unicode and case-insensitive matching.
+
+4. **Finding Emojis**:
+   - The `std::regex_search` function is used to find all occurrences of emojis in the input text. These emojis are concatenated into the `emojis` string.
+
+5. **Removing Emojis**:
+   - The `std::regex_replace` function is used to remove all emojis from the input text.
+
+6. **Concatenation**:
+   - The resulting text without emojis is concatenated with the extracted emojis at the end.
+
+7. **Main Function**:
+   - A sample input is provided, and the function is called to demonstrate its usage. The original and modified strings are printed to the console.
+
+This C++ code should provide the same functionality as the Python code, moving all emojis to the end of the text.

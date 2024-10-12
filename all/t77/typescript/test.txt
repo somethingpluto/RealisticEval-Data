@@ -1,45 +1,98 @@
-Sure! Below is the equivalent TypeScript test case using Jest:
+Certainly! Here is the equivalent Jest test class in TypeScript, ensuring that the functionality and logic of the tests are preserved. The Python unittest assertions are mapped to the appropriate Jest assertions.
+
+### TypeScript Code
+
+First, let's define the `formatTimestampToString` function in TypeScript:
 
 ```typescript
-import { format } from 'date-fns';
-import { formatTimestampToString } from './path-to-your-function'; // Adjust the path accordingly
+import { DateTime, Zone } from 'luxon';
 
-describe('formatTimestampToString', () => {
-  it('should format timestamp to default date format', () => {
-    const timestamp = Date.now() / 1000; // Current timestamp in seconds
-    const expectedFormat = '%a %b %d %I:%M:%S %p %z %Y';
-    const result = formatTimestampToString(timestamp);
+/**
+ * Formats the given timestamp as a string according to the specified format, using the system's local time zone.
+ *
+ * @param timestamp - The time value representing the seconds since the epoch.
+ * @param date_format - The format string to use for formatting the timestamp. Defaults to '%a %b %d %I:%M:%S %p %z %Y'.
+ * @returns The formatted date and time string.
+ */
+function formatTimestampToString(timestamp: number, date_format: string = 'ccc LLL d hh:mm:ss a zzzz yyyy'): string {
+    if (timestamp < 0) {
+        throw new Error('Error: timestamp must be non-negative');
+    }
 
-    expect(result).toMatch(new RegExp(expectedFormat));
-  });
+    try {
+        // Get the local system timezone
+        const localTz = Zone.local;
 
-  it('should format timestamp to custom date format', () => {
-    const timestamp = Date.now() / 1000; // Current timestamp in seconds
-    const customFormat = 'yyyy-MM-dd HH:mm:ss.SSS zzz';
-    const result = formatTimestampToString(timestamp, customFormat);
+        // Convert the UNIX timestamp to a DateTime object with timezone
+        const dt = DateTime.fromMillis(timestamp * 1000).setZone(localTz);
 
-    expect(result).toMatch(new RegExp(customFormat.replace(/y+/g, '\\d+').replace(/M+/g, '\\d+').replace(/d+/g, '\\d+').replace(/H+/g, '\\d+').replace(/m+/g, '\\d+').replace(/s+/g, '\\d+').replace(/z+/g, '[+-]\\d{4}')));
-  });
+        // Return the formatted datetime string
+        return dt.toFormat(date_format);
+    } catch (e) {
+        // Handle any other unexpected errors
+        throw new Error(`Error formatting the datetime: ${e}`);
+    }
+}
+```
+
+Next, let's define the Jest test class:
+
+```typescript
+import { formatTimestampToString } from './path/to/formatTimestampToString'; // Import the function
+
+describe('TestFormatTimestampToString', () => {
+    describe('test_basic_functionality', () => {
+        it('should correctly format the timestamp', () => {
+            const timestamp = 1655364000.0; // Corresponds to Thu Jun 16 12:00:00 PM UTC 2022
+            const expectedDateStr = 'Thu Jun 16 03:20:00 PM +0800 2022';
+            expect(formatTimestampToString(timestamp)).toBe(expectedDateStr);
+        });
+    });
+
+    describe('test_default_format', () => {
+        it('default format should match the expected date string', () => {
+            const timestamp = 1655364000.0;
+            const expectedDateStr = 'Thu Jun 16 03:20:00 PM +0800 2022';
+            expect(formatTimestampToString(timestamp)).toBe(expectedDateStr);
+        });
+    });
+
+    describe('test_custom_format', () => {
+        it('should correctly format the timestamp using the custom format', () => {
+            const timestamp = 1655364000.0;
+            const customFormat = 'yyyy-MM-dd HH:mm:ss';
+            const expectedDateStr = '2022-06-16 15:20:00';
+            expect(formatTimestampToString(timestamp, customFormat)).toBe(expectedDateStr);
+        });
+    });
+
+    describe('test_edge_case_boundary_value', () => {
+        it('should correctly format the Unix epoch start time', () => {
+            const timestamp = 0.0; // Unix epoch start
+            const expectedDateStr = 'Thu Jan 01 08:00:00 AM +0800 1970';
+            expect(formatTimestampToString(timestamp)).toBe(expectedDateStr);
+        });
+    });
 });
 ```
 
 ### Explanation:
-1. **Importing `format` function**: We import the `format` function from the `date-fns` library, which will help us format the timestamp into a string.
-2. **Test Suite (`describe`)**: We create a test suite named `formatTimestampToString`.
-3. **First Test Case (`it`)**: This test checks if the function formats the timestamp using the default date format.
-   - `timestamp`: We get the current timestamp in seconds.
-   - `expectedFormat`: The default format string.
-   - `result`: Call the `formatTimestampToString` function with the timestamp.
-   - `expect(result).toMatch(...)`: Check if the result matches the expected format using a regular expression.
-4. **Second Test Case (`it`)**: This test checks if the function formats the timestamp using a custom date format.
-   - `customFormat`: A custom format string.
-   - `result`: Call the `formatTimestampToString` function with the timestamp and custom format.
-   - `expect(result).toMatch(...)`: Check if the result matches the expected format using a regular expression.
+1. **Imports**:
+   - We import the `formatTimestampToString` function from the appropriate module.
 
-Make sure you have `date-fns` installed in your project:
+2. **Describe Blocks**:
+   - Each test method is wrapped in a `describe` block to provide a clear description of the test suite.
 
-```sh
-npm install date-fns
-```
+3. **It Blocks**:
+   - Each test case is defined using `it` blocks, which include a description and the actual test assertion.
 
-And adjust the import statement in the TypeScript file to match the actual path where your `formatTimestampToString` function is located.
+4. **Assertions**:
+   - The `expect` function is used with `toBe` to check that the output matches the expected values.
+
+5. **Custom Format**:
+   - The custom format string is adjusted to match Luxon's format strings.
+
+6. **Edge Case**:
+   - The edge case test checks the Unix epoch start time.
+
+This TypeScript code preserves the original functionality and logic of the Python unittest tests, adapting them to Jest's syntax and assertions.

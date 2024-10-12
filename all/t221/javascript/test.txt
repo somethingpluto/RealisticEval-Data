@@ -1,45 +1,113 @@
-Certainly! Below is the equivalent JavaScript test case using Jest for the provided Python unittest test class. Note that I'll assume you want to test the `extract_parse_dicts` function, but since it's not implemented in your example, I'll provide a mock implementation for demonstration purposes.
+Certainly! Below is the equivalent Jest test class for the given Python unittest class. The conversion will maintain the functionality and logic of the tests, adapting them to Jest's syntax and conventions.
 
-Here's how you can write the Jest test case:
+### Python Code
+
+```python
+import unittest
+from unittest.mock import mock_open, patch
+
+class TestExtractParseDicts(unittest.TestCase):
+    def test_extract_single_valid_dictionary(self):
+        mock_content = '{"name": "John", "age": 30}'
+        with patch('builtins.open', mock_open(read_data=mock_content)):
+            result = extract_parse_dicts('dummy_path')
+            self.assertEqual(result, [{"name": "John", "age": 30}])
+
+    def test_extract_multiple_dictionaries(self):
+        mock_content = '{"name": "John", "age": 30}\n{"city": "New York", "country": "USA"}'
+        with patch('builtins.open', mock_open(read_data=mock_content)):
+            result = extract_parse_dicts('dummy_path')
+            self.assertEqual(result, [{"name": "John", "age": 30}, {"city": "New York", "country": "USA"}])
+
+    def test_invalid_dictionary_format(self):
+        mock_content = '{"name": "John", "age": "thirty"}'
+        with patch('builtins.open', mock_open(read_data=mock_content)):
+            result = extract_parse_dicts('dummy_path')
+            self.assertEqual(result, [{'name': 'John', 'age': 'thirty'}])
+
+    def test_empty_file(self):
+        with patch('builtins.open', mock_open(read_data='')):
+            result = extract_parse_dicts('dummy_path')
+            self.assertEqual(result, [])
+```
+
+### JavaScript Code (Using Jest)
 
 ```javascript
-// Assuming extract_parse_dicts is defined somewhere in your codebase
-const { extract_parse_dicts } = require('./path_to_your_module');
+const fs = require('fs').promises;
+const { mock } = require('jest-mock-extended');
 
-describe('extract_parse_dicts', () => {
-  test('should return an empty array if the file does not contain any valid dictionary strings', async () => {
-    const filePath = 'path/to/file_that_does_not_contain_dictionaries.txt';
-    const result = await extract_parse_dicts(filePath);
-    expect(result).toEqual([]);
-  });
+describe('TestExtractParseDicts', () => {
+    const extractParseDicts = require('./extractParseDicts'); // Import the function to be tested
 
-  test('should return a list of dictionaries extracted from the file', async () => {
-    // Mock the fs module to read a file with dictionary strings
-    const fs = require('fs');
-    const mockReadFileSync = jest.spyOn(fs, 'readFileSync').mockImplementation(() => 
-      '[{"key1": "value1"}, {"key2": "value2"}]'
-    );
+    beforeEach(() => {
+        jest.resetAllMocks();
+    });
 
-    const filePath = 'path/to/file_with_dictionaries.txt';
-    const result = await extract_parse_dicts(filePath);
-    
-    expect(mockReadFileSync).toHaveBeenCalledWith(filePath, 'utf8');
-    expect(result).toEqual([{ key1: 'value1' }, { key2: 'value2' }]);
-    mockReadFileSync.mockRestore();
-  });
+    it('should extract a single valid dictionary', async () => {
+        const mockContent = '{"name": "John", "age": 30}';
+        const mockFs = mock(fs);
+        mockFs.readFile.mockResolvedValue(mockContent);
+
+        const result = await extractParseDicts('dummy_path');
+        expect(result).toEqual([{ name: 'John', age: 30 }]);
+    });
+
+    it('should extract multiple dictionaries', async () => {
+        const mockContent = '{"name": "John", "age": 30}\n{"city": "New York", "country": "USA"}';
+        const mockFs = mock(fs);
+        mockFs.readFile.mockResolvedValue(mockContent);
+
+        const result = await extractParseDicts('dummy_path');
+        expect(result).toEqual([
+            { name: 'John', age: 30 },
+            { city: 'New York', country: 'USA' }
+        ]);
+    });
+
+    it('should handle invalid dictionary format', async () => {
+        const mockContent = '{"name": "John", "age": "thirty"}';
+        const mockFs = mock(fs);
+        mockFs.readFile.mockResolvedValue(mockContent);
+
+        const result = await extractParseDicts('dummy_path');
+        expect(result).toEqual([{ name: 'John', age: 'thirty' }]);
+    });
+
+    it('should handle empty file', async () => {
+        const mockFs = mock(fs);
+        mockFs.readFile.mockResolvedValue('');
+
+        const result = await extractParseDicts('dummy_path');
+        expect(result).toEqual([]);
+    });
 });
 ```
 
 ### Explanation:
+1. **Importing Modules**:
+   - `fs.promises` is imported to handle asynchronous file operations.
+   - `jest-mock-extended` is used to create mock objects for `fs.promises`.
 
-1. **Mocking the File Reading Function**:
-   - We're mocking the `readFileSync` method from Node.js's `fs` module using Jest's `spyOn`. This allows us to control what the function returns without actually reading a file.
+2. **Describe Block**:
+   - The `describe` block is used to group the tests under a common description.
 
-2. **Test Cases**:
-   - The first test checks that the function returns an empty array when the file does not contain any valid dictionary strings.
-   - The second test mocks a file content with valid dictionary strings and verifies that the function correctly parses these strings into a list of dictionaries.
+3. **Before Each Hook**:
+   - `beforeEach` is used to reset all mocks before each test to ensure clean state.
 
-3. **Restoring the Original Function**:
-   - After each test, we restore the original `readFileSync` function using `mockRestore()` to ensure that subsequent tests do not rely on our mocked behavior.
+4. **Mocking File System**:
+   - `mock(fs)` creates a mock object for `fs.promises`.
+   - `mockFs.readFile.mockResolvedValue` is used to simulate the file content returned by `fs.readFile`.
 
-Make sure to adjust the file paths and module imports according to your actual project structure.
+5. **Test Cases**:
+   - Each test case uses `it` to describe the behavior being tested.
+   - `expect` is used to assert the expected results.
+
+6. **Function Import**:
+   - The `extractParseDicts` function is imported at the beginning of the test file.
+
+### Additional Notes:
+- **File Path**: Ensure that the `extractParseDicts` function is correctly imported from the appropriate module.
+- **Mocking**: Jest provides powerful mocking capabilities, and `jest-mock-extended` is used here to create more flexible mocks.
+
+This conversion ensures that the functionality and logic of the tests are preserved, and the structure is clear and follows Jest conventions.

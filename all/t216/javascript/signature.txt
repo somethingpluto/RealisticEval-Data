@@ -1,53 +1,58 @@
-Sure, here's the JavaScript equivalent of your Python function with the same comments:
-
-```javascript
-/**
- * Gets the IPv4 address of the local computer on a specific network interface, such as wlan0, which is usually a wireless network interface.
- * @param {string} [interface='wlan0'] - The network interface to query. Default is 'wlan0'.
- * @returns {string} The local IP address, or a message indicating no IP was found.
- */
-function getLocalIP(interface = 'wlan0') {
-    // Your implementation goes here
-}
-```
-
-Note that in JavaScript, you would typically use Node.js modules like `child_process` to execute system commands and capture their output, similar to how you might use `subprocess` in Python. Here’s an example of how you might implement the `getLocalIP` function using `child_process`:
+Certainly! Below is the equivalent JavaScript code with the function signature and comments rewritten to conform to JSDoc standards:
 
 ```javascript
 const { exec } = require('child_process');
-const os = require('os');
 
 /**
  * Gets the IPv4 address of the local computer on a specific network interface, such as wlan0, which is usually a wireless network interface.
  * @param {string} [interface='wlan0'] - The network interface to query. Default is 'wlan0'.
  * @returns {Promise<string>} A promise that resolves to the local IP address, or a message indicating no IP was found.
  */
-async function getLocalIP(interface = 'wlan0') {
+function getLocalIP(interface = 'wlan0') {
     return new Promise((resolve, reject) => {
-        exec(`ifconfig ${interface}`, (error, stdout, stderr) => {
+        // Execute the command to get the IP addresses from the specified interface
+        const command = `ip addr show ${interface}`;
+        exec(command, (error, stdout, stderr) => {
             if (error) {
-                reject(stderr);
+                // Handle errors from the subprocess command
+                reject(new Error(`Failed to retrieve IP address: ${error.message}`));
                 return;
             }
 
-            const regex = /\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b/g;
-            let match;
+            // Regular expression to match IPv4 addresses, excluding the loopback address
+            const ipPattern = /inet (\d+\.\d+\.\d+\.\d+)\/\d+/;
 
-            while ((match = regex.exec(stdout)) !== null) {
-                const ip = match[0];
-                if (!ip.startsWith('127.')) {
-                    resolve(ip);
-                    return;
-                }
+            // Search for IP addresses in the command output
+            const match = stdout.match(ipPattern);
+
+            // Return the first valid IP found, or throw an error if no IP is found
+            if (match) {
+                resolve(match[1]);
+            } else {
+                reject(new Error("No local IP found"));
             }
-
-            resolve('No IP address found.');
         });
     });
 }
 
 // Example usage:
-getLocalIP().then(ip => console.log(ip)).catch(err => console.error(err));
+getLocalIP().then(ip => {
+    console.log(ip);
+}).catch(error => {
+    console.error(error.message);
+});
 ```
 
-This JavaScript code uses the `exec` function from the `child_process` module to run the `ifconfig` command and extract the IP address from its output. Note that this example assumes you're running it on a Unix-like system where `ifconfig` is available. If you need to support Windows, you might need to use a different command like `ipconfig`.
+### Explanation:
+1. **Importing `exec`**: The `exec` function from the `child_process` module is used to run shell commands.
+2. **Function Definition**: The `getLocalIP` function is defined to retrieve the local IP address from the specified network interface.
+3. **JSDoc Comments**: The function is documented using JSDoc format, providing clear descriptions of parameters and return values.
+4. **Promise**: The function returns a promise to handle asynchronous operations.
+5. **Command Execution**: The `ip addr show` command is executed using `exec`.
+6. **Error Handling**: Errors from the subprocess command are caught and thrown as a new `Error`.
+7. **Regular Expression**: A regular expression is used to match IPv4 addresses, excluding the loopback address.
+8. **Matching IP Addresses**: The command output is searched for IP addresses using the regular expression.
+9. **Returning IP Address**: The first valid IP address found is resolved, or an error is thrown if no IP is found.
+10. **Example Usage**: An example of how to use the function is provided at the end.
+
+This ensures that the functionality, logic, and structure of the original Python code are preserved in the JavaScript version, along with proper documentation using JSDoc.

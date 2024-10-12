@@ -1,15 +1,100 @@
-Sure! Here is the equivalent TypeScript function signature with comments:
+Certainly! Here is the equivalent TypeScript code for the provided Python function, including appropriate JSDoc-style documentation comments:
 
 ```typescript
+import * as fs from 'fs';
+import * as xml2js from 'xml2js';
+
 /**
- * Parses an XAML file, extracts key-value pairs within the String element, and returns them in a dictionary.
+ * Parses a XAML file, extracts the key-value pairs within the 'String' elements,
+ * and returns the result in a dictionary.
  * 
- * @param {string} xamlFile - The path to the XAML file.
- * @returns {Record<string, string>} - A dictionary containing the key-value pairs extracted from 'String' elements.
+ * @param xamlFile - Path to the XAML file.
+ * @returns A dictionary containing the key-value pairs extracted from 'String' elements.
  */
 function parseXamlToDict(xamlFile: string): Record<string, string> {
-    // Function implementation goes here
+    try {
+        // Read the XAML file
+        const xamlContent = fs.readFileSync(xamlFile, 'utf-8');
+
+        // Parse the XAML content
+        const parser = new xml2js.Parser();
+        let result: any;
+        parser.parseString(xamlContent, (err, res) => {
+            if (err) {
+                console.error(`Error parsing the XAML file: ${err}`);
+                result = {};
+            } else {
+                result = res;
+            }
+        });
+
+        // Wait for the asynchronous parsing to complete
+        while (!result) {}
+
+        // Dictionary to hold the key-value pairs
+        const resultDict: Record<string, string> = {};
+
+        // Iterate through all 'String' elements in the XAML file
+        if (result.ResourceDictionary && result.ResourceDictionary.String) {
+            const stringElements = Array.isArray(result.ResourceDictionary.String)
+                ? result.ResourceDictionary.String
+                : [result.ResourceDictionary.String];
+
+            for (const stringElement of stringElements) {
+                const key = stringElement['@_Key'];
+                if (key) {
+                    const value = stringElement._ ? String(stringElement._) : '';
+                    resultDict[key] = value;
+                }
+            }
+        }
+
+        return resultDict;
+
+    } catch (error) {
+        if (error.code === 'ENOENT') {
+            console.error(`Error: The file ${xamlFile} does not exist.`);
+            return {};
+        } else {
+            console.error(`Error parsing the XAML file: ${error}`);
+            return {};
+        }
+    }
 }
+
+// Example usage
+const xamlFilePath = './example.xaml';
+const parsedDict = parseXamlToDict(xamlFilePath);
+console.log(parsedDict);
 ```
 
-In TypeScript, `Record<string, string>` is used to represent a dictionary where keys and values are both strings. This is equivalent to the Python `Dict[str, str]`.
+### Explanation:
+1. **Imports**:
+   - `fs` for file system operations.
+   - `xml2js` for XML parsing.
+
+2. **Function Definition**:
+   - The function `parseXamlToDict` takes a path to a XAML file and returns a dictionary of key-value pairs.
+   - The function signature includes the type `Record<string, string>` which is equivalent to `Dict[str, str]` in Python.
+
+3. **Documentation Comments**:
+   - The JSDoc-style comments provide clear documentation for the function, its arguments, and its return type.
+
+4. **Reading the File**:
+   - The XAML file is read synchronously using `fs.readFileSync`.
+
+5. **Parsing the XML**:
+   - The `xml2js.Parser` is used to parse the XML content asynchronously.
+   - The parsing result is stored in the `result` variable.
+
+6. **Handling Parsing Results**:
+   - If there is an error during parsing, it is logged and an empty object is returned.
+   - Otherwise, the parsed result is processed to extract key-value pairs.
+
+7. **Iterating Through Elements**:
+   - The function iterates through the 'String' elements and populates the dictionary with key-value pairs.
+
+8. **Error Handling**:
+   - Errors related to file reading and parsing are caught and appropriate error messages are logged.
+
+This TypeScript code preserves the original functionality and structure of the Python code while adapting it to TypeScript conventions and libraries.

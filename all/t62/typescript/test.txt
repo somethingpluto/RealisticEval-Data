@@ -1,130 +1,169 @@
-Sure, here is how you can convert the given Python `unittest` test class to a TypeScript test case using Jest:
+Certainly! Below is the equivalent TypeScript test class using Jest, which preserves the functionality and logic of the provided Python unittest class. The code includes appropriate Jest assertions and type annotations.
+
+### TypeScript Code with Jest Testing
 
 ```typescript
 import { describe, it, expect } from '@jest/globals';
-import { TreeNode, BinaryTree } from './binaryTree'; // Adjust the import path accordingly
 
+// TreeNode class definition
+class TreeNode {
+    left: TreeNode | null;
+    right: TreeNode | null;
+    val: number;
+
+    constructor(key: number) {
+        this.left = null;
+        this.right = null;
+        this.val = key;
+    }
+}
+
+// BinaryTree class definition
+class BinaryTree {
+    root: TreeNode | null;
+
+    constructor() {
+        this.root = null;
+    }
+
+    insert(key: number): void {
+        if (this.root === null) {
+            this.root = new TreeNode(key);
+        } else {
+            this._insert(this.root, key);
+        }
+    }
+
+    private _insert(node: TreeNode, key: number): void {
+        if (key < node.val) {
+            if (node.left === null) {
+                node.left = new TreeNode(key);
+            } else {
+                this._insert(node.left, key);
+            }
+        } else {
+            if (node.right === null) {
+                node.right = new TreeNode(key);
+            } else {
+                this._insert(node.right, key);
+            }
+        }
+    }
+
+    inorderTraversal(): number[] {
+        const result: number[] = [];
+        this._inorderTraversal(this.root, result);
+        return result;
+    }
+
+    private _inorderTraversal(node: TreeNode | null, result: number[]): void {
+        if (node !== null) {
+            this._inorderTraversal(node.left, result);
+            result.push(node.val);
+            this._inorderTraversal(node.right, result);
+        }
+    }
+
+    preorderTraversal(): number[] {
+        const result: number[] = [];
+        this._preorderTraversal(this.root, result);
+        return result;
+    }
+
+    private _preorderTraversal(node: TreeNode | null, result: number[]): void {
+        if (node !== null) {
+            result.push(node.val);
+            this._preorderTraversal(node.left, result);
+            this._preorderTraversal(node.right, result);
+        }
+    }
+
+    postorderTraversal(): number[] {
+        const result: number[] = [];
+        this._postorderTraversal(this.root, result);
+        return result;
+    }
+
+    private _postorderTraversal(node: TreeNode | null, result: number[]): void {
+        if (node !== null) {
+            this._postorderTraversal(node.left, result);
+            this._postorderTraversal(node.right, result);
+            result.push(node.val);
+        }
+    }
+}
+
+// Jest test suite
 describe('BinaryTree', () => {
-  let binaryTree: BinaryTree;
-
-  beforeEach(() => {
-    binaryTree = new BinaryTree();
-  });
-
-  describe('insert method', () => {
-    it('should insert a node correctly', () => {
-      binaryTree.insert(10);
-      expect(binaryTree.root).not.toBeNull();
-      expect(binaryTree.root.val).toBe(10);
+    it('should handle an empty tree', () => {
+        const bt = new BinaryTree();
+        expect(bt.inorderTraversal()).toEqual([]);
+        expect(bt.preorderTraversal()).toEqual([]);
+        expect(bt.postorderTraversal()).toEqual([]);
     });
 
-    it('should insert nodes correctly with left and right children', () => {
-      binaryTree.insert(10);
-      binaryTree.insert(5);
-      binaryTree.insert(15);
-
-      expect(binaryTree.root.val).toBe(10);
-      expect(binaryTree.root.left.val).toBe(5);
-      expect(binaryTree.root.right.val).toBe(15);
-    });
-  });
-
-  describe('inorder traversal', () => {
-    it('should return correct inorder traversal for an empty tree', () => {
-      const result: number[] = [];
-      binaryTree.inorderTraversal(result);
-      expect(result).toEqual([]);
+    it('should handle a single node tree', () => {
+        const bt = new BinaryTree();
+        bt.insert(10);
+        expect(bt.inorderTraversal()).toEqual([10]);
+        expect(bt.preorderTraversal()).toEqual([10]);
+        expect(bt.postorderTraversal()).toEqual([10]);
     });
 
-    it('should return correct inorder traversal for a single node', () => {
-      binaryTree.insert(10);
-      const result: number[] = [];
-      binaryTree.inorderTraversal(result);
-      expect(result).toEqual([10]);
+    it('should handle a balanced tree', () => {
+        const bt = new BinaryTree();
+        const elements = [8, 3, 10, 1, 6, 9, 14];
+        elements.forEach((elem) => bt.insert(elem));
+        expect(bt.inorderTraversal()).toEqual([1, 3, 6, 8, 9, 10, 14]);
+        expect(bt.preorderTraversal()).toEqual([8, 3, 1, 6, 10, 9, 14]);
+        expect(bt.postorderTraversal()).toEqual([1, 6, 3, 9, 14, 10, 8]);
     });
 
-    it('should return correct inorder traversal for multiple nodes', () => {
-      binaryTree.insert(10);
-      binaryTree.insert(5);
-      binaryTree.insert(15);
-      binaryTree.insert(3);
-      binaryTree.insert(7);
-      binaryTree.insert(12);
-      binaryTree.insert(18);
-
-      const result: number[] = [];
-      binaryTree.inorderTraversal(result);
-      expect(result).toEqual([3, 5, 7, 10, 12, 15, 18]);
-    });
-  });
-
-  describe('preorder traversal', () => {
-    it('should return correct preorder traversal for an empty tree', () => {
-      const result: number[] = [];
-      binaryTree.preorderTraversal(result);
-      expect(result).toEqual([]);
+    it('should handle a left-heavy tree', () => {
+        const bt = new BinaryTree();
+        for (let i = 10; i >= 1; i--) {
+            bt.insert(i);
+        }
+        expect(bt.inorderTraversal()).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+        expect(bt.preorderTraversal()).toEqual([10, 9, 8, 7, 6, 5, 4, 3, 2, 1]);
+        expect(bt.postorderTraversal()).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
     });
 
-    it('should return correct preorder traversal for a single node', () => {
-      binaryTree.insert(10);
-      const result: number[] = [];
-      binaryTree.preorderTraversal(result);
-      expect(result).toEqual([10]);
+    it('should handle a right-heavy tree', () => {
+        const bt = new BinaryTree();
+        for (let i = 1; i <= 10; i++) {
+            bt.insert(i);
+        }
+        expect(bt.inorderTraversal()).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+        expect(bt.preorderTraversal()).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+        expect(bt.postorderTraversal()).toEqual([10, 9, 8, 7, 6, 5, 4, 3, 2, 1]);
     });
-
-    it('should return correct preorder traversal for multiple nodes', () => {
-      binaryTree.insert(10);
-      binaryTree.insert(5);
-      binaryTree.insert(15);
-      binaryTree.insert(3);
-      binaryTree.insert(7);
-      binaryTree.insert(12);
-      binaryTree.insert(18);
-
-      const result: number[] = [];
-      binaryTree.preorderTraversal(result);
-      expect(result).toEqual([10, 5, 3, 7, 15, 12, 18]);
-    });
-  });
-
-  describe('postorder traversal', () => {
-    it('should return correct postorder traversal for an empty tree', () => {
-      const result: number[] = [];
-      binaryTree.postorderTraversal(result);
-      expect(result).toEqual([]);
-    });
-
-    it('should return correct postorder traversal for a single node', () => {
-      binaryTree.insert(10);
-      const result: number[] = [];
-      binaryTree.postorderTraversal(result);
-      expect(result).toEqual([10]);
-    });
-
-    it('should return correct postorder traversal for multiple nodes', () => {
-      binaryTree.insert(10);
-      binaryTree.insert(5);
-      binaryTree.insert(15);
-      binaryTree.insert(3);
-      binaryTree.insert(7);
-      binaryTree.insert(12);
-      binaryTree.insert(18);
-
-      const result: number[] = [];
-      binaryTree.postorderTraversal(result);
-      expect(result).toEqual([3, 7, 5, 12, 18, 15, 10]);
-    });
-  });
 });
 ```
 
 ### Explanation:
-1. **Imports**: The `describe`, `it`, and `expect` functions are imported from `@jest/globals`.
-2. **Setup**: A `beforeEach` hook initializes a new instance of `BinaryTree` before each test.
-3. **Tests**:
-   - **Insert Method**: Tests inserting nodes into the tree and verifying the structure.
-   - **Inorder Traversal**: Tests the inorder traversal method.
-   - **Preorder Traversal**: Tests the preorder traversal method.
-   - **Postorder Traversal**: Tests the postorder traversal method.
+1. **Class Definitions**:
+   - `TreeNode` class has properties `left`, `right`, and `val`.
+   - `BinaryTree` class has a property `root`.
 
-Make sure that your `TreeNode` and `BinaryTree` classes are implemented correctly in the specified file (`./binaryTree`). This example assumes that these classes have been defined elsewhere in your project.
+2. **Constructor Initialization**:
+   - The `TreeNode` constructor initializes `left` and `right` to `null` and sets the value of `val`.
+   - The `BinaryTree` constructor initializes `root` to `null`.
+
+3. **Insertion Method**:
+   - The `insert` method checks if the tree is empty and inserts a new node at the root.
+   - If the tree is not empty, it calls the `_insert` method to find the correct position to insert the new node.
+
+4. **Traversal Methods**:
+   - The `inorderTraversal`, `preorderTraversal`, and `postorderTraversal` methods perform the respective traversals and return the result.
+   - Each traversal method has a corresponding private helper method (`_inorderTraversal`, `_preorderTraversal`, `_postorderTraversal`) that performs the actual traversal logic.
+
+5. **Jest Test Suite**:
+   - The `describe` block defines the test suite for `BinaryTree`.
+   - Each `it` block represents a test case.
+   - Jest assertions (`expect`) are used to verify the expected behavior of the tree methods.
+
+6. **Type Annotations**:
+   - All variables and function parameters are annotated with their respective types to ensure type safety.
+
+This TypeScript code preserves the original functionality and logic of the Python unittest code, with appropriate adjustments for Jest's testing framework and TypeScript's static type system.

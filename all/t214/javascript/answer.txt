@@ -1,34 +1,60 @@
-Here's how you can write the JavaScript equivalent for your Python function:
+Certainly! Below is the equivalent JavaScript code that maintains the same functionality, logic, and structure as the provided Python code:
 
 ```javascript
 const fs = require('fs');
-const path = require('path');
 
 function readMappingFile(mappingFilePath) {
-  return new Promise((resolve, reject) => {
-    fs.readFile(path.resolve(__dirname, mappingFilePath), 'utf8', (err, data) => {
-      if (err) {
-        reject(err);
-      } else {
-        const lines = data.split('\n').map(line => line.trim());
-        const result = lines.map(line => {
-          const [regexStr, replaceStr] = line.split(',');
-          try {
-            const regex = new RegExp(regexStr);
-            return { regex, replaceStr };
-          } catch(e) {
-            console.error(`Error parsing regex ${regexStr}:`, e);
-            return null;
-          }
-        }).filter(Boolean); // Remove any null entries due to error
+    /**
+     * Read a mapping file and return an array of tuples with compiled regex and replacement strings.
+     *
+     * @param {string} mappingFilePath - Path to the file containing regex mappings.
+     * @returns {Array} - Each tuple contains a compiled regex object and a corresponding replacement string.
+     * @throws {Error} - Throws an error if the mapping file does not exist or if any line in the file does not contain exactly one comma.
+     *
+     * Example of file format:
+     * 'old_pattern1','new_word1'
+     * 'old_pattern2','new_word2'
+     */
 
-        resolve(result);
-      }
-    });
-  });
+    const mappings = [];
+
+    try {
+        fs.readFile(mappingFilePath, 'utf8', (err, data) => {
+            if (err) {
+                throw new Error(`Unable to find the specified file: ${mappingFilePath}`);
+            }
+
+            const lines = data.split('\n');
+            lines.forEach(line => {
+                if (!line.includes(',')) {
+                    throw new Error("Each line must contain exactly one comma separating the pattern and the replacement.");
+                }
+
+                const [oldPattern, newWord] = line.trim().split(',', 1);
+                const trimmedOldPattern = oldPattern.trim().replace(/^'|'$/g, '');
+                const trimmedNewWord = newWord.trim().replace(/^'|'$/g, '');
+                mappings.push([new RegExp(trimmedOldPattern), trimmedNewWord]);
+            });
+        });
+    } catch (error) {
+        throw error;
+    }
+
+    return mappings;
 }
 
-module.exports = readMappingFile;
+// Example usage:
+readMappingFile('/path/to/mapping/file.txt')
+    .then(mappings => console.log(mappings))
+    .catch(error => console.error(error));
 ```
 
-This JavaScript function reads the file asynchronously using Node.js's `fs` module, parses each line into a regular expression and its replacement string, and then returns a promise that resolves with an array of objects containing the compiled regex and replacement string. Note that this assumes the input file has one mapping per line in the format "regex,replacement". If your actual file format differs, you'll need to adjust the parsing logic accordingly.
+### Explanation:
+1. **Importing `fs` Module**: The `fs` module is used to handle file system operations in Node.js.
+2. **Function Definition**: The `readMappingFile` function reads the file and processes each line.
+3. **Reading File**: The `fs.readFile` method is used to read the contents of the file asynchronously.
+4. **Error Handling**: Errors are caught and re-thrown to maintain consistency with the Python code's behavior.
+5. **Processing Lines**: Each line is split by commas, trimmed, and compiled into a regex object.
+6. **Returning Mappings**: The processed mappings are returned as an array of tuples.
+
+This JavaScript code uses asynchronous file reading, which is typical in Node.js applications. If you need a synchronous version, let me know, and I can provide that as well.

@@ -1,15 +1,81 @@
+Certainly! Below is the equivalent JavaScript code with the function signature and comments rewritten to conform to JSDoc standards:
+
 ```javascript
+const fs = require('fs');
+const diff = require('diff');
+
 /**
- * Compare the contents of two files and return the differences in unified diff format.
+ * Compare the contents of two files and print the differences in unified diff format.
  *
  * @param {string} file1Path - Path to the first file.
  * @param {string} file2Path - Path to the second file.
- * @returns {Promise<Array<string>>} - A promise that resolves with a list of difference lines, if any.
- * @throws {Error} - Throws an error if either file does not exist or there's an issue reading the files.
+ * @returns {Promise<Array<string>>} A promise that resolves to a list containing the lines of differences, if any.
+ * @throws {Error} If either file does not exist.
+ * @throws {Error} If there is an error reading the files.
  */
 async function compareFiles(file1Path, file2Path) {
-  // Implementation here...
+    try {
+        const file1Content = await fs.promises.readFile(file1Path, 'utf8');
+        const file2Content = await fs.promises.readFile(file2Path, 'utf8');
+
+        const lines1 = file1Content.split('\n');
+        const lines2 = file2Content.split('\n');
+
+        const diffResult = diff.unifiedDiff({
+            fromLines: lines1,
+            toLines: lines2,
+            fromFile: file1Path,
+            toFile: file2Path
+        });
+
+        const diffLines = diffResult.split('\n').filter(line => line.trim() !== '');
+
+        diffLines.forEach(line => console.log(line));
+
+        return diffLines;
+    } catch (error) {
+        if (error.code === 'ENOENT') {
+            throw new Error('One of the files was not found.');
+        }
+        throw new Error(`Error reading files: ${error.message}`);
+    }
 }
+
+// Example usage:
+(async () => {
+    try {
+        const differences = await compareFiles('path/to/file1.txt', 'path/to/file2.txt');
+        console.log(differences);
+    } catch (error) {
+        console.error(error);
+    }
+})();
 ```
 
-This JavaScript version maintains the structure and intent of the original Python docstring while adapting it for JavaScript syntax and conventions. Note that in JavaScript, we typically use Promises for handling asynchronous operations, so the `compareFiles` function returns a Promise instead of directly returning the result. Error handling is also done using try-catch blocks when calling this function.
+### Explanation:
+1. **Function Signature**:
+   - The function `compareFiles` is defined with the same parameters and return type.
+   - The JSDoc comments provide detailed information about the function, arguments, return value, and possible exceptions.
+
+2. **File Reading**:
+   - `fs.promises.readFile` is used to read the contents of the files asynchronously.
+   - The file contents are split into lines using `split('\n')`.
+
+3. **Differences Calculation**:
+   - The `diff.unifiedDiff` method from the `diff` library is used to generate the unified diff.
+   - The resulting diff is split into lines and filtered to remove empty lines.
+
+4. **Error Handling**:
+   - Proper error handling is implemented to catch `ENOENT` errors (file not found) and other IO errors.
+   - Custom error messages are thrown based on the caught errors.
+
+5. **Output**:
+   - The differences are printed to the console and returned as a list of strings.
+
+### Installation:
+Make sure you have the `diff` package installed by running:
+```sh
+npm install diff
+```
+
+This ensures that the functionality and structure of the original Python code are preserved in the JavaScript version.

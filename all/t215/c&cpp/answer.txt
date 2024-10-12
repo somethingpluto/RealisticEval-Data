@@ -1,43 +1,73 @@
-Sure, here is how you can convert the given Python function into C++ code:
+Here’s the equivalent C++ code that reads a text file, replaces words according to a dictionary map, and returns the modified text:
 
-```c++
+```cpp
 #include <iostream>
 #include <fstream>
-#include <sstream>
+#include <unordered_map>
 #include <string>
-#include <map>
 
-std::string replaceWordsInFile(const std::string& filePath, const std::map<std::string, std::string>& replacementDict) {
-    std::ifstream file(filePath);
-    if (!file.is_open()) {
-        throw std::runtime_error("Unable to open file");
-    }
-
-    std::stringstream buffer;
-    buffer << file.rdbuf();
-    std::string content = buffer.str();
-
-    for (const auto& pair : replacementDict) {
-        size_t pos = 0;
-        while ((pos = content.find(pair.first, pos)) != std::string::npos) {
-            content.replace(pos, pair.first.length(), pair.second);
-            pos += pair.second.length();
+// Function to replace words in a file based on a dictionary map
+std::string replaceWordsInFile(const std::string& filePath, const std::unordered_map<std::string, std::string>& replacementDict) {
+    try {
+        // Read the content of the file
+        std::ifstream file(filePath);
+        if (!file.is_open()) {
+            throw std::runtime_error("The file was not found.");
         }
-    }
 
-    file.close();
-    return content;
+        std::string text((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+        file.close();
+
+        // Replace words according to the replacement dictionary
+        for (const auto& pair : replacementDict) {
+            size_t startPos = 0;
+            while ((startPos = text.find(pair.first, startPos)) != std::string::npos) {
+                text.replace(startPos, pair.first.length(), pair.second);
+                startPos += pair.second.length();
+            }
+        }
+
+        return text;
+
+    } catch (const std::exception& e) {
+        return "Error: " + std::string(e.what());
+    }
+}
+
+int main() {
+    // Example usage
+    std::unordered_map<std::string, std::string> replacementDict = {
+        {"old_word", "new_word"},
+        {"another_old", "another_new"}
+    };
+
+    std::string filePath = "example.txt";
+    std::string modifiedText = replaceWordsInFile(filePath, replacementDict);
+
+    std::cout << modifiedText << std::endl;
+
+    return 0;
 }
 ```
 
-This C++ code does exactly what your Python function does. It reads the content of a file, replaces words according to a dictionary, and returns the modified text.
-
 ### Explanation:
-- **`std::ifstream file(filePath);`**: Opens the file specified by `filePath`.
-- **`if (!file.is_open()) { ... }`**: Checks if the file was successfully opened. If not, it throws an exception.
-- **`std::stringstream buffer; buffer << file.rdbuf(); std::string content = buffer.str();`**: Reads the entire content of the file into a string.
-- **`for (const auto& pair : replacementDict) { ... }`**: Iterates over each key-value pair in the replacement dictionary.
-- **`while ((pos = content.find(pair.first, pos)) != std::string::npos) { ... }`**: Finds the position of the word to be replaced and replaces it with the corresponding value from the dictionary.
-- **`file.close();`**: Closes the file after reading its contents.
+1. **Header Files**: 
+   - `#include <iostream>` for input/output operations.
+   - `#include <fstream>` for file handling.
+   - `#include <unordered_map>` for dictionary mapping.
+   - `#include <string>` for string manipulation.
 
-Make sure to include error handling and proper resource management in production-quality code. This example is kept simple for clarity.
+2. **Function Definition**:
+   - `replaceWordsInFile` takes a file path and a dictionary (`std::unordered_map<std::string, std::string>`) as parameters.
+   - It reads the content of the file using `std::ifstream`.
+   - If the file cannot be opened, it throws a `std::runtime_error`.
+   - It uses `std::string::find` and `std::string::replace` to replace words according to the dictionary.
+
+3. **Exception Handling**:
+   - Uses a try-catch block to handle exceptions, specifically catching `std::exception` to provide error messages.
+
+4. **Main Function**:
+   - Demonstrates how to use the `replaceWordsInFile` function with an example dictionary and file path.
+   - Prints the modified text to the console.
+
+This C++ code maintains the same functionality and logic as the original Python code, adapting to C++ syntax and features.

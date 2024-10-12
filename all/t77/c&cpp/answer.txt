@@ -1,47 +1,74 @@
-Here is an equivalent C++ code using `<chrono>` and `<iomanip>` libraries:
+Certainly! Below is the equivalent C++ code that maintains the same functionality, logic, and structure as the provided Python code. This includes handling UNIX timestamps, timezone conversions, and formatting the datetime string.
 
 ```cpp
 #include <iostream>
-#include <iomanip>
+#include <chrono>
 #include <ctime>
+#include <stdexcept>
+#include <string>
+#include <optional>
 
-std::string format_timestamp_to_string(double timestamp, const std::string &date_format = "%a %b %d %I:%M:%S %p %z %Y") {
-    std::time_t t = static_cast<std::time_t>(timestamp);
-    char buffer[80];
-    strftime(buffer, sizeof(buffer), date_format.c_str(), localtime(&t));
-    return std::string(buffer);
+// Utility function to get the local timezone
+std::optional<std::string> get_local_timezone() {
+    // In C++, getting the local timezone name is not straightforward.
+    // For simplicity, we assume "localtime" is the local timezone.
+    return "localtime";
+}
+
+std::string format_datetime_str(double mtime, const std::string& format = "%a %b %d %I:%M:%S %p %z %Y") {
+    if (mtime < 0) {
+        throw std::invalid_argument("error mtime");
+    }
+
+    std::optional<std::string> local_tz = get_local_timezone();
+    if (!local_tz.has_value()) {
+        // Fallback to UTC if the local timezone is not found
+        local_tz = "UTC";
+    }
+
+    try {
+        // Convert the UNIX timestamp to a time_t value
+        std::time_t raw_time = static_cast<std::time_t>(mtime);
+        std::tm* ptm;
+
+        // Use local time if the timezone is "localtime", otherwise use UTC
+        if (local_tz.value() == "localtime") {
+            ptm = std::localtime(&raw_time);
+        } else {
+            ptm = std::gmtime(&raw_time);
+        }
+
+        // Format the datetime string
+        char buffer[128];
+        if (std::strftime(buffer, sizeof(buffer), format.c_str(), ptm) == 0) {
+            throw std::runtime_error("Error formatting the datetime");
+        }
+
+        return std::string(buffer);
+    } catch (const std::exception& e) {
+        // Handle any other unexpected errors
+        throw std::invalid_argument("Error formatting the datetime: " + std::string(e.what()));
+    }
 }
 
 int main() {
-    double timestamp = 1633072800; // Example timestamp
-    std::cout << format_timestamp_to_string(timestamp) << std::endl;
+    try {
+        double mtime = 1697753448.0; // Example UNIX timestamp
+        std::string formatted_datetime = format_datetime_str(mtime);
+        std::cout << "Formatted datetime: " << formatted_datetime << std::endl;
+    } catch (const std::exception& e) {
+        std::cerr << "Exception: " << e.what() << std::endl;
+    }
+
     return 0;
 }
 ```
 
-And here is an equivalent C code using `<time.h>` library:
+### Explanation:
+1. **Utility Function**: The `get_local_timezone` function returns an optional string representing the local timezone. For simplicity, it assumes "localtime" as the local timezone.
+2. **Timestamp Conversion**: The `format_datetime_str` function converts the UNIX timestamp to a `time_t` value.
+3. **Timezone Handling**: It uses `std::localtime` for local time and `std::gmtime` for UTC.
+4. **Formatting**: The `std::strftime` function is used to format the datetime string according to the specified format.
+5. **Error Handling**: Exceptions are caught and re-thrown with appropriate error messages.
 
-```c
-#include <stdio.h>
-#include <time.h>
-
-char* format_timestamp_to_string(double timestamp, const char *date_format) {
-    struct tm tm_struct;
-    time_t t = (time_t)timestamp;
-    localtime_r(&t, &tm_struct);
-
-    static char buffer[80];
-    strftime(buffer, sizeof(buffer), date_format, &tm_struct);
-    return buffer;
-}
-
-int main() {
-    double timestamp = 1633072800; // Example timestamp
-    printf("%s\n", format_timestamp_to_string(timestamp, "%a %b %d %I:%M:%S %p %z %Y"));
-    return 0;
-}
-```
-
-Please note that in both C and C++, the `localtime` function is used to convert the time_t object to a broken-down time. The result is stored in a `struct tm`. Then, the `strftime` function formats the broken-down time into a string. 
-
-Also, please make sure to handle errors properly in your production code. This example doesn't include error handling for simplicity.
+This code should provide the same functionality as the Python version but adapted to C++ conventions and libraries.

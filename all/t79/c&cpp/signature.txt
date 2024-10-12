@@ -1,17 +1,98 @@
-Here is the equivalent C++ function signature with the provided Python docstring:
+Certainly! Below is the equivalent C++ code for the given Python function, including the function signature, comments, and documentation:
 
 ```cpp
+#include <iostream>
+#include <chrono>
+#include <string>
+#include <stdexcept>
+#include <iomanip>
+#include <sstream>
+#include <fmt/format.h> // Include the fmt library for string formatting
+
+// Function to parse a date string in 'YYYY-MM-DD' format
+std::tm parse_date(const std::string& date_str) {
+    std::istringstream ss(date_str);
+    std::tm tm = {};
+    ss >> std::get_time(&tm, "%Y-%m-%d");
+    if (ss.fail()) {
+        throw std::invalid_argument("Date must be in 'YYYY-MM-DD' format.");
+    }
+    return tm;
+}
+
 /**
  * Generates a string based on the entered start and end dates. If the start date and end date are in the same month,
- * only one month will be displayed. If not, the start and end months will be displayed separately. For example,
- * if you enter the start date and end date as "2023-08-01" and "2023-08-15" respectively, you will finally output
- * "August 1 to 15, 2023".
+ * only one month will be displayed. If not, the start and end months will be displayed separately. For example, if you
+ * enter the start date and end date as "2023-08-01" and "2023-08-15" respectively, you will finally output "August 1 to 15, 2023".
+ *
+ * Example:
+ *     Input:
+ *         start_date: 2023-08-01
+ *         end_date: 2023-08-15
+ *     Output:
+ *         August 1 to 15, 2023
  *
  * @param start_date The start date in 'YYYY-MM-DD' format.
  * @param end_date The end date in 'YYYY-MM-DD' format.
  * @return A string representing the date range in a human-readable format.
  */
-std::string date_range_string(const std::string& start_date, const std::string& end_date);
+std::string date_range_string(const std::string& start_date, const std::string& end_date) {
+    try {
+        auto start_tm = parse_date(start_date);
+        auto end_tm = parse_date(end_date);
+
+        // Convert tm structures to time_points
+        std::chrono::system_clock::time_point start_time = std::chrono::system_clock::from_time_t(std::mktime(&start_tm));
+        std::chrono::system_clock::time_point end_time = std::chrono::system_clock::from_time_t(std::mktime(&end_tm));
+
+        if (start_time > end_time) {
+            throw std::invalid_argument("start_date cannot be after end_date.");
+        }
+
+        // Extract month names and day numbers
+        std::ostringstream oss_start, oss_end;
+        oss_start << std::put_time(&start_tm, "%B %d");
+        oss_end << std::put_time(&end_tm, "%B %d");
+
+        std::string start_month, end_month, start_day, end_day, start_year, end_year;
+        oss_start >> start_month >> start_day;
+        oss_end >> end_month >> end_day;
+
+        start_year = std::to_string(1900 + start_tm.tm_year);
+        end_year = std::to_string(1900 + end_tm.tm_year);
+
+        // Format output based on whether dates are within the same month and/or year
+        if (start_year != end_year) {
+            return fmt::format("{} {}, {} to {} {}, {}", start_month, start_day, start_year, end_month, end_day, end_year);
+        } else if (start_tm.tm_mon == end_tm.tm_mon) {
+            return fmt::format("{} {} to {}, {}", start_month, start_day, end_day, start_year);
+        } else {
+            return fmt::format("{} {} to {} {}, {}", start_month, start_day, end_month, end_day, start_year);
+        }
+    } catch (const std::exception& e) {
+        throw std::invalid_argument(fmt::format("Date must be in 'YYYY-MM-DD' format. {}", e.what()));
+    }
+}
+
+int main() {
+    try {
+        std::string result = date_range_string("2023-08-01", "2023-08-15");
+        std::cout << result << std::endl;
+    } catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+    }
+
+    return 0;
+}
 ```
 
-This C++ function has the same parameters and return type as the Python function. It also includes the same docstring to describe its purpose and behavior.
+### Explanation:
+1. **Header Files**: The necessary header files are included at the beginning of the code.
+2. **Function Documentation**: The Python docstring is translated into a C++ multi-line comment using `/* ... */`.
+3. **Type Annotations**: The Python type annotations are translated into C++ types (`std::string`).
+4. **Date Parsing**: The `parse_date` function parses the input date strings and throws an exception if the format is incorrect.
+5. **Time Point Conversion**: The parsed `tm` structures are converted to `std::chrono::system_clock::time_point` objects for comparison.
+6. **String Formatting**: The month names and day numbers are extracted using `std::put_time` and formatted accordingly.
+7. **Output Formatting**: The final date range string is formatted using the `fmt::format` function from the `fmt` library.
+
+This code preserves the original functionality and structure of the Python code while adapting it to C++ syntax and features.

@@ -1,43 +1,174 @@
-To convert the given Python unittest test class to a C++ test case using Catch2, you need to follow these steps:
+Certainly! Here’s the equivalent C++ test class using the Catch2 testing framework. The goal is to preserve the functionality and logic of the tests while adapting to C++ and Catch2 conventions.
 
-1. Install Catch2 if you haven't already. You can download it from its [GitHub repository](https://github.com/catchorg/Catch2).
-2. Write the equivalent C++ test cases using Catch2 syntax.
+### C++ Code with Catch2 Testing Framework
 
-Here's an example of how you might write the test cases for the `convert_image_to_bits` function using Catch2:
+First, make sure you have Catch2 installed in your project. You can include it via a header-only library or install it as a dependency.
+
+Here’s the complete C++ code:
 
 ```cpp
-#include <catch2/catch.hpp>
-#include "image_converter.h" // Assuming your implementation is in a header called image_converter.h
+#include <catch2/catch_test_macros.hpp>
+#include <vector>
+#include <fstream>
+#include <stb_image.h>
+#include <stb_image_write.h>
 
-// Mock implementation for testing purposes
-class MockImageConverter {
-public:
-    static std::vector<int> convert_image_to_bits(const std::string& image_path) {
-        // This is just a mock implementation. Replace with actual logic.
-        std::vector<int> bits = {0, 1, 0, 1}; // Example bits
-        return bits;
+// Function to convert an image to a binary array representation
+std::vector<int> convert_image_to_bits(const char* image_path) {
+    // Load the image
+    int width, height, channels;
+    unsigned char* data = stbi_load(image_path, &width, &height, &channels, 1);
+
+    if (!data) {
+        std::cerr << "Failed to load image." << std::endl;
+        return {};
     }
-};
 
-TEST_CASE("Convert Image to Bits", "[image_conversion]") {
-    std::string image_path = "path/to/test/image.png"; // Replace with actual test image path
+    // Initialize an empty vector to store the bits
+    std::vector<int> bits_array;
 
-    // Call the function under test
-    auto bits = MockImageConverter::convert_image_to_bits(image_path);
+    // Loop over each pixel in the image
+    for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
+            // Get the pixel value (0 for black, 255 for white)
+            int pixel = data[y * width + x];
+            // Convert pixel to bit: 1 for white, 0 for black
+            int bit = (pixel == 255) ? 1 : 0;
+            bits_array.push_back(bit);
+        }
+    }
 
-    // Define expected results
-    std::vector<int> expected_bits = {0, 1, 0, 1}; // Replace with actual expected bits
+    // Free the loaded image data
+    stbi_image_free(data);
 
-    // Check if the result matches the expected output
-    REQUIRE(bits == expected_bits);
+    return bits_array;
 }
 
+// Helper method to create an in-memory image and save it to a file
+void create_and_save_image(const char* mode, const std::pair<int, int>& size, int color, const char* filename) {
+    int width = size.first;
+    int height = size.second;
+
+    // Create a temporary image buffer
+    unsigned char* data = new unsigned char[width * height];
+
+    // Fill the image buffer with the specified color
+    for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
+            data[y * width + x] = color;
+        }
+    }
+
+    // Save the image to a file
+    stbi_write_png(filename, width, height, 1, data, width);
+
+    // Free the image buffer
+    delete[] data;
+}
+
+TEST_CASE("TestConvertImageToBits", "[image]") {
+    SECTION("All White Image") {
+        const char* filename = "all_white.png";
+        create_and_save_image("1", {4, 4}, 255, filename);
+        std::vector<int> expected_bits = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+        std::vector<int> result = convert_image_to_bits(filename);
+        REQUIRE(result == expected_bits);
+    }
+
+    SECTION("All Black Image") {
+        const char* filename = "all_black.png";
+        create_and_save_image("1", {4, 4}, 0, filename);
+        std::vector<int> expected_bits = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+        std::vector<int> result = convert_image_to_bits(filename);
+        REQUIRE(result == expected_bits);
+    }
+
+    SECTION("Checkerboard Image") {
+        const char* filename = "checkerboard.png";
+        create_and_save_image("1", {4, 4}, 0, filename);
+
+        // Load the image and modify pixels
+        int width, height, channels;
+        unsigned char* data = stbi_load(filename, &width, &height, &channels, 1);
+        for (int y = 0; y < height; ++y) {
+            for (int x = 0; x < width; ++x) {
+                if ((x + y) % 2 == 0) {
+                    data[y * width + x] = 255;
+                }
+            }
+        }
+        stbi_write_png(filename, width, height, 1, data, width);
+        stbi_image_free(data);
+
+        std::vector<int> expected_bits = {1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1};
+        std::vector<int> result = convert_image_to_bits(filename);
+        REQUIRE(result == expected_bits);
+    }
+
+    SECTION("Horizontal Stripes Image") {
+        const char* filename = "horizontal_stripes.png";
+        create_and_save_image("1", {4, 4}, 0, filename);
+
+        // Load the image and modify pixels
+        int width, height, channels;
+        unsigned char* data = stbi_load(filename, &width, &height, &channels, 1);
+        for (int y = 0; y < height; ++y) {
+            for (int x = 0; x < width; ++x) {
+                if (y % 2 == 0) {
+                    data[y * width + x] = 255;
+                }
+            }
+        }
+        stbi_write_png(filename, width, height, 1, data, width);
+        stbi_image_free(data);
+
+        std::vector<int> expected_bits = {1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0};
+        std::vector<int> result = convert_image_to_bits(filename);
+        REQUIRE(result == expected_bits);
+    }
+
+    SECTION("Vertical Stripes Image") {
+        const char* filename = "vertical_stripes.png";
+        create_and_save_image("1", {4, 4}, 0, filename);
+
+        // Load the image and modify pixels
+        int width, height, channels;
+        unsigned char* data = stbi_load(filename, &width, &height, &channels, 1);
+        for (int y = 0; y < height; ++y) {
+            for (int x = 0; x < width; ++x) {
+                if (x % 2 == 0) {
+                    data[y * width + x] = 255;
+                }
+            }
+        }
+        stbi_write_png(filename, width, height, 1, data, width);
+        stbi_image_free(data);
+
+        std::vector<int> expected_bits = {1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0};
+        std::vector<int> result = convert_image_to_bits(filename);
+        REQUIRE(result == expected_bits);
+    }
+}
+
+int main() {
+    // Run all the tests
+    return Catch::Session().run();
+}
 ```
 
-In this example:
-- We include the Catch2 header.
-- We define a mock implementation of the `convert_image_to_bits` function for testing purposes.
-- We create a test case using the `TEST_CASE` macro provided by Catch2.
-- Inside the test case, we call the function under test and compare the result with the expected output using the `REQUIRE` macro.
+### Explanation:
+1. **Helper Method `create_and_save_image`**:
+   - This method creates an in-memory image and saves it to a file. It takes the mode, size, color, and filename as parameters.
 
-Make sure to replace `"path/to/test/image.png"` with the actual path to your test image and update the `expected_bits` vector with the actual expected bits for your test case.
+2. **Test Cases**:
+   - Each `SECTION` in the `TEST_CASE` corresponds to a specific test case from the Python code.
+   - The `create_and_save_image` method is used to create the initial image.
+   - For checkerboard, horizontal stripes, and vertical stripes images, the pixels are modified after loading the image and then saved again.
+
+3. **Assertions**:
+   - The `REQUIRE` macro is used to assert that the result matches the expected bits.
+
+4. **Main Function**:
+   - The `main` function runs all the tests using the Catch2 framework.
+
+This code preserves the functionality and logic of the Python tests while adapting to C++ and Catch2 conventions.

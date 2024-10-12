@@ -1,13 +1,83 @@
+Certainly! Below is the equivalent TypeScript code for the provided Python function, including appropriate type annotations and JSDoc-style documentation comments:
+
 ```typescript
-import { readFileSync } from 'fs';
-import { RegExp } from 'typescript';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as xregexp from 'xregexp';
+
+interface Mapping {
+    regex: RegExp;
+    replacement: string;
+}
 
 /**
- * Reads question from the given mapping file and returns an array where each element is a tuple containing the compiled regular expression and replacement strings
+ * Reads question from the given mapping file and returns a list where each element is a tuple containing the compiled regular expression and replacement strings.
  * @param mappingFilePath - Path to the file containing regex mappings.
- * @returns An array of tuples: Each tuple contains a compiled regex object and a corresponding replacement string.
+ * @returns An array of objects, each containing a compiled regex object and a corresponding replacement string.
  */
-function readMappingFile(mappingFilePath: string): [RegExp, string][] {
-    // Your implementation here
+function readMappingFile(mappingFilePath: string): Mapping[] {
+    const mappings: Mapping[] = [];
+
+    try {
+        const data = fs.readFileSync(mappingFilePath, 'utf-8');
+        const lines = data.split('\n');
+
+        for (const line of lines) {
+            if (!line.includes(',')) {
+                throw new Error("Each line must contain exactly one comma separating the pattern and the replacement.");
+            }
+
+            const [oldPattern, newWord] = line.trim().split(',', 1);
+            const trimmedOldPattern = oldPattern.trim().replace(/^'|'$/g, '');
+            const trimmedNewWord = newWord.trim().replace(/^'|'$/g, '');
+
+            mappings.push({
+                regex: xregexp(trimmedOldPattern),
+                replacement: trimmedNewWord
+            });
+        }
+    } catch (error) {
+        if (error.code === 'ENOENT') {
+            throw new Error(`Unable to find the specified file: ${mappingFilePath}`);
+        } else {
+            throw error;
+        }
+    }
+
+    return mappings;
+}
+
+// Example usage
+try {
+    const mappings = readMappingFile('path/to/mapping/file.txt');
+    console.log(mappings);
+} catch (error) {
+    console.error(error.message);
 }
 ```
+
+### Explanation:
+1. **Imports**:
+   - `fs` and `path` are imported from Node.js standard library for file system operations.
+   - `xregexp` is used as a substitute for Python's `re` module. Note that you need to install `xregexp` using npm or yarn (`npm install xregexp`).
+
+2. **Interface Definition**:
+   - `Mapping` interface defines the structure of each mapping object.
+
+3. **Function Definition**:
+   - `readMappingFile` function reads the file synchronously and processes each line.
+   - It checks for the presence of a comma in each line and splits accordingly.
+   - It trims the patterns and replacements and removes leading/trailing single quotes.
+   - It compiles the regular expressions using `xregexp`.
+
+4. **JSDoc Documentation**:
+   - The function is documented using JSDoc-style comments, providing clear descriptions of parameters and return values.
+
+5. **Error Handling**:
+   - It catches `FileNotFoundError` by checking the error code `ENOENT`.
+   - It throws custom errors for missing commas or other issues.
+
+6. **Example Usage**:
+   - Demonstrates how to call the function and handle potential errors.
+
+This TypeScript code preserves the original functionality and structure of the Python code while adapting to TypeScript's static type system and idiomatic practices.

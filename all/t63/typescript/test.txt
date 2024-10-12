@@ -1,91 +1,86 @@
-Sure, I can help you convert the Python unittest test class to a TypeScript test case using Jest. Here's how you might write it:
+Certainly! Here is the equivalent Jest test suite in TypeScript for the provided Python unittest class. The test cases will be converted to Jest’s assertion methods and will include proper type annotations and setup.
 
-First, ensure you have Jest installed in your project. If not, you can install it using npm or yarn:
-
-```bash
-npm install --save-dev jest
-```
-
-or
-
-```bash
-yarn add --dev jest
-```
-
-Next, create a new TypeScript file for your test cases. Let's call it `dataframeToMarkdown.test.ts`.
-
-Here is an example of what the TypeScript test case might look like:
+### TypeScript Code
 
 ```typescript
-import { describe, expect, test } from '@jest/globals';
 import * as fs from 'fs';
-import * as path from 'path';
-import { dataframe_to_markdown } from './your_module'; // Adjust the import path accordingly
+import { DataFrame } from 'some-dataframe-library'; // Replace with the actual library you're using
+import { dataframeToMarkdown } from './path-to-your-function'; // Import your function
 
-describe('dataframe_to_markdown function', () => {
-    const testData = [
-        {
-            input: {
-                df: new Map([
-                    ['Name', ['Alice', 'Bob']],
-                    ['Age', [25, 30]]
-                ]),
-                md_path: '/tmp/test_output.md'
-            },
-            expected: '| Name | Age |\n| --- | --- |\n| Alice | 25 |\n| Bob | 30 |\n'
-        }
-    ];
+describe('TestDataframeToMarkdown', () => {
+  let data: Record<string, any>;
+  let df: DataFrame;
 
-    testData.forEach(({ input, expected }, index) => {
-        test(`should convert dataframe to markdown correctly for test case ${index + 1}`, async () => {
-            // Mocking the fs.writeFile method
-            const mockWriteFile = jest.spyOn(fs, 'writeFileSync');
-            mockWriteFile.mockImplementation(() => {});
+  beforeEach(() => {
+    // Create a sample DataFrame
+    data = { Name: ['Alice', 'Bob'], Age: [25, 30] };
+    df = new DataFrame(data);
+  });
 
-            // Call the function with the test data
-            await dataframe_to_markdown(input.df, input.md_path);
+  it('should write the correct markdown to a file', () => {
+    const expectedMarkdown = `| Name   |   Age |\n|:-------|------:|\n| Alice  |    25 |\n| Bob    |    30 |`;
+    const result = dataframeToMarkdown(df, 'dummy_path.md');
+    expect(result).toEqual(expectedMarkdown);
+  });
 
-            // Check if the function was called with the correct arguments
-            expect(mockWriteFile).toHaveBeenCalledWith(
-                input.md_path,
-                expected
-            );
+  it('should handle an empty DataFrame correctly', () => {
+    const dfEmpty = new DataFrame({});
+    const expectedMarkdown = '';
+    const result = dataframeToMarkdown(dfEmpty, 'dummy_path.md');
+    expect(result).toEqual(expectedMarkdown);
+  });
 
-            // Clean up the mock
-            mockWriteFile.mockRestore();
-        });
+  it('should handle a single-row DataFrame correctly', () => {
+    const dfSingleRow = new DataFrame({ Name: ['Alice'], Age: [30] });
+    const expectedMarkdown = `| Name   |   Age |\n|:-------|------:|\n| Alice  |    30 |`;
+    const result = dataframeToMarkdown(dfSingleRow, 'dummy_path.md');
+    expect(result).toEqual(expectedMarkdown);
+  });
+
+  it('should handle non-string columns correctly', () => {
+    const dfNonString = new DataFrame({ Name: ['Alice', 'Bob'], Age: [25, 30], Height: [5.5, 6.0] });
+    const expectedMarkdown = `| Name   |   Age |   Height |\n|:-------|------:|---------:|\n| Alice  |    25 |      5.5 |\n| Bob    |    30 |      6   |`;
+    const result = dataframeToMarkdown(dfNonString, 'dummy_path.md');
+    expect(result).toEqual(expectedMarkdown);
+  });
+
+  it('should handle special characters in DataFrame correctly', () => {
+    const dfSpecialChars = new DataFrame({
+      Name: ['Alice', 'Bob'],
+      Comments: ['Good@Work!', 'Excellent & Commendable']
     });
+    const expectedMarkdown = `| Name   | Comments                |\n|:-------|:------------------------|\n| Alice  | Good@Work!              |\n| Bob    | Excellent & Commendable |`;
+    const result = dataframeToMarkdown(dfSpecialChars, 'dummy_path.md');
+    expect(result).toEqual(expectedMarkdown);
+  });
 });
+
+// Example usage of the function
+// const df = new DataFrame({ Name: ['Alice', 'Bob'], Age: [25, 30] });
+// const markdown = dataframeToMarkdown(df, 'output.md');
 ```
 
-In this example:
+### Explanation:
+1. **Imports**:
+   - `fs` is used for file system operations.
+   - `DataFrame` is assumed to be part of some library (replace `'some-dataframe-library'` with the actual library you are using).
+   - `dataframeToMarkdown` is imported from the file where the function is defined.
 
-1. We use `@jest/globals` to import the necessary functions (`describe`, `expect`, and `test`) from Jest.
-2. We mock the `fs.writeFileSync` method to avoid writing files during tests.
-3. We define a `testData` array containing test cases, each with an `input` object and an `expected` string.
-4. We loop through the `testData` array and create a test case for each item.
-5. Inside each test case, we call the `dataframe_to_markdown` function with the test data and check if the `fs.writeFileSync` method was called with the correct arguments.
+2. **Describe Block**:
+   - The `describe` block groups all the test cases under `TestDataframeToMarkdown`.
 
-Make sure to adjust the import path in the `import { dataframe_to_markdown } from './your_module';` line to match where your `dataframe_to_markdown` function is located.
+3. **BeforeEach Hook**:
+   - The `beforeEach` hook sets up a common DataFrame for each test case.
 
-Finally, you can run your tests using Jest by adding a script to your `package.json`:
+4. **Test Cases**:
+   - Each `it` block represents a test case.
+   - The test cases use Jest’s `expect` assertions to verify the correctness of the function.
 
-```json
-"scripts": {
-    "test": "jest"
-}
-```
+5. **Example Usage**:
+   - An example usage of the `dataframeToMarkdown` function is provided at the end.
 
-Then run:
+### Notes:
+- Make sure to replace `DataFrame` and its methods (`new DataFrame`, etc.) with the actual methods provided by the DataFrame library you are using.
+- Adjust the import paths and the actual DataFrame library according to your project setup.
 
-```bash
-npm test
-```
-
-or
-
-```bash
-yarn test
-```
-
-This will execute your TypeScript test cases using Jest.
+This TypeScript code preserves the original functionality and logic of the Python unittest class while adapting it to Jest’s testing framework.

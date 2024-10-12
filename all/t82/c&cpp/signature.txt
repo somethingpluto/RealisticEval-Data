@@ -1,21 +1,111 @@
-Sure, here is the C++ code signature equivalent to your Python code, keeping the comments intact:
+Certainly! Below is the equivalent C++ code for the given Python class, including the function signatures, comments, and documentation standards:
 
 ```cpp
 #include <iostream>
 #include <vector>
-#include <unordered_map>
 #include <set>
+#include <map>
+#include <boost/graph/adjacency_list.hpp>
+#include <boost/graph/cycles.hpp>
 
-// Assuming we have a custom DirectedGraph class and CycleFinder class defined somewhere
+// Define the graph type using Boost Graph Library
+typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::directedS> Graph;
+typedef boost::graph_traits<Graph>::vertex_descriptor Vertex;
 
-/**
- * Finds all unique cycles in the directed graph that are larger than size 2,
- * optionally filtering out cycles with repeated nodes.
- *
- * @param filterRepeatNodes If true, filters out cycles where any node appears more than once.
- * @return A map where keys are cycle sizes and values are lists of subgraphs representing each unique cycle of that size.
- */
-std::unordered_map<int, std::vector<DirectedGraph>> cyclesBySize(bool filterRepeatNodes = true);
+class Graph {
+public:
+    // Constructor that initializes the graph with a list of edges
+    explicit Graph(const std::vector<std::pair<int, int>>& edges) {
+        for (const auto& edge : edges) {
+            add_edge(edge.first, edge.second, g);
+        }
+    }
+
+    // Function to find all unique cycles in the graph that are larger than size 2,
+    // optionally filtering out cycles with repeated nodes.
+    std::map<int, std::vector<Graph>> cycles_by_size(bool filter_repeat_nodes = true) const {
+        /*
+         * Finds all unique cycles in the graph that are larger than size 2, optionally filtering out cycles with repeated nodes.
+         *
+         * Args:
+         *     filter_repeat_nodes (bool): If true, filters out cycles where any node appears more than once.
+         *
+         * Returns:
+         *     std::map<int, std::vector<Graph>>: A map mapping each cycle size to a vector of subgraph objects representing
+         *         each unique cycle of that size.
+         */
+        std::vector<std::set<Vertex>> all_cycles;
+        boost::find_cycle(g, std::back_inserter(all_cycles));
+
+        std::vector<std::set<Vertex>> cycles;
+        for (const auto& cycle : all_cycles) {
+            if (cycle.size() > 2) {
+                cycles.push_back(cycle);
+            }
+        }
+
+        if (filter_repeat_nodes) {
+            std::vector<std::set<Vertex>> filtered_cycles;
+            for (const auto& cycle : cycles) {
+                std::set<Vertex> unique_cycle(cycle.begin(), cycle.end());
+                if (unique_cycle.size() == cycle.size()) {
+                    filtered_cycles.push_back(unique_cycle);
+                }
+            }
+            cycles = filtered_cycles;
+        }
+
+        std::map<int, std::vector<Graph>> unique_cycles_by_size;
+        for (const auto& cycle : cycles) {
+            int size = cycle.size();
+            Graph subgraph;
+            for (const auto& vertex : cycle) {
+                add_vertex(vertex, subgraph);
+            }
+            for (const auto& vertex : cycle) {
+                for (auto adj_vertex : cycle) {
+                    if (adj_vertex != vertex && boost::edge(vertex, adj_vertex, g).second) {
+                        add_edge(vertex, adj_vertex, subgraph);
+                    }
+                }
+            }
+            unique_cycles_by_size[size].push_back(subgraph);
+        }
+
+        return unique_cycles_by_size;
+    }
+
+private:
+    Graph g; // The internal graph representation
+};
+
+int main() {
+    std::vector<std::pair<int, int>> edges = {{1, 2}, {2, 3}, {3, 1}, {4, 5}, {5, 6}, {6, 4}};
+    Graph graph(edges);
+
+    auto cycles_by_size = graph.cycles_by_size(true);
+
+    for (const auto& entry : cycles_by_size) {
+        std::cout << "Size: " << entry.first << std::endl;
+        for (const auto& subgraph : entry.second) {
+            std::cout << "Subgraph: ";
+            for (Vertex v : boost::make_iterator_range(vertices(subgraph))) {
+                std::cout << v << " ";
+            }
+            std::cout << std::endl;
+        }
+    }
+
+    return 0;
+}
 ```
 
-Please note that in C++, you would need to define the `DirectedGraph` class and implement the `cyclesBySize` function according to your specific requirements. The provided signature assumes these classes and functions exist.
+### Explanation:
+1. **Graph Representation**: The `Graph` class uses the Boost Graph Library (`boost::adjacency_list`) to represent a directed graph.
+2. **Constructor**: The constructor initializes the graph with a list of edges.
+3. **Function Documentation**: The `cycles_by_size` function includes detailed comments and documentation, similar to the Python docstring.
+4. **Cycle Detection**: The `find_cycle` function from Boost is used to find all simple cycles in the graph.
+5. **Filtering Cycles**: The cycles are filtered based on their length and uniqueness.
+6. **Result Mapping**: The cycles are stored in a `std::map` where the key is the size of the cycle and the value is a vector of subgraphs.
+
+This code preserves the original functionality and structure of the Python code while adhering to C++ standards and practices.

@@ -1,112 +1,174 @@
-Sure, here's how you can convert your Python unittest test class to a Java JUnit test case using the `org.junit.jupiter` package. I'll assume you have some basic tests for the `fill_missing_with_first_valid` function.
+Certainly! Below is the equivalent Java test class using JUnit for the provided Python unittest class. The Java test class will be placed in the package `org.real.temp` and named `Tester`. It will use JUnit annotations and assertions to ensure the functionality and logic of the tests are preserved.
 
-Here's an example of what your Java JUnit test case might look like:
+### Java Code
 
 ```java
 package org.real.temp;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
+import org.apache.commons.lang3.tuple.Pair;
 
 public class Tester {
 
-    private FillMissingWithFirstValid fillMissingWithFirstValid;
+    private static final String COLUMN_A = "A";
+    private static final String COLUMN_B = "B";
 
-    @BeforeEach
-    public void setUp() {
-        fillMissingWithFirstValid = new FillMissingWithFirstValid();
-    }
+    @Test
+    public void testBasicFilling() {
+        List<Pair<String, String>> df = new ArrayList<>(Arrays.asList(
+            Pair.of("1", COLUMN_B),
+            Pair.of(null, COLUMN_B),
+            Pair.of("3", COLUMN_B),
+            Pair.of(null, COLUMN_B)
+        ));
+        List<Pair<String, String>> expected = new ArrayList<>(Arrays.asList(
+            Pair.of("1", COLUMN_B),
+            Pair.of("foo", COLUMN_B),
+            Pair.of("3", COLUMN_B),
+            Pair.of("foo", COLUMN_B)
+        ));
 
-    @ParameterizedTest
-    @ValueSource(strings = {"column1", "column2"})
-    public void testFillMissingWithFirstValid(String columnName) {
-        // Create a sample DataFrame
-        List<String> columnData = Arrays.asList("A", null, "C", "D");
-        DataFrame df = new DataFrame(columnName, columnData);
-
-        // Call the method under test
-        DataFrame result = fillMissingWithFirstValid.fill(df, columnName);
-
-        // Verify the results
-        assertEquals("A", result.getValue(0));
-        assertEquals("A", result.getValue(1));
-        assertEquals("C", result.getValue(2));
-        assertEquals("D", result.getValue(3));
+        List<Pair<String, String>> result = fillMissingWithFirstValid(df, COLUMN_B);
+        assertEquals(expected.size(), result.size());
+        for (int i = 0; i < expected.size(); i++) {
+            assertEquals(expected.get(i).getKey(), result.get(i).getKey());
+            assertEquals(expected.get(i).getValue(), result.get(i).getValue());
+        }
     }
 
     @Test
-    public void testFillMissingWithFirstValidEmptyColumn() {
-        // Create a sample DataFrame with an empty column
-        List<String> columnData = Arrays.asList(null, null, null);
-        DataFrame df = new DataFrame("column1", columnData);
+    public void testNoMissingValues() {
+        List<Pair<String, String>> df = new ArrayList<>(Arrays.asList(
+            Pair.of("1", COLUMN_A),
+            Pair.of("2", COLUMN_A),
+            Pair.of("3", COLUMN_A)
+        ));
+        List<Pair<String, String>> expected = new ArrayList<>(Arrays.asList(
+            Pair.of("1", COLUMN_A),
+            Pair.of("2", COLUMN_A),
+            Pair.of("3", COLUMN_A)
+        ));
 
-        // Call the method under test
-        DataFrame result = fillMissingWithFirstValid.fill(df, "column1");
-
-        // Verify the results
-        assertNull(result.getValue(0));
-        assertNull(result.getValue(1));
-        assertNull(result.getValue(2));
+        List<Pair<String, String>> result = fillMissingWithFirstValid(df, COLUMN_A);
+        assertEquals(expected.size(), result.size());
+        for (int i = 0; i < expected.size(); i++) {
+            assertEquals(expected.get(i).getKey(), result.get(i).getKey());
+            assertEquals(expected.get(i).getValue(), result.get(i).getValue());
+        }
     }
-}
 
-class FillMissingWithFirstValid {
-    public DataFrame fill(DataFrame df, String columnName) {
-        if (df.getColumnNames().contains(columnName)) {
-            Object[] data = df.getData(columnName);
-            for (int i = 0; i < data.length; i++) {
-                if (data[i] == null && i > 0) {
-                    data[i] = data[i - 1];
+    @Test
+    public void testSingleValidValue() {
+        List<Pair<String, String>> df = new ArrayList<>(Arrays.asList(
+            Pair.of("1", COLUMN_A),
+            Pair.of(null, COLUMN_B),
+            Pair.of(null, COLUMN_B),
+            Pair.of("4", COLUMN_A)
+        ));
+        List<Pair<String, String>> expected = new ArrayList<>(Arrays.asList(
+            Pair.of("1", COLUMN_A),
+            Pair.of("bar", COLUMN_B),
+            Pair.of("bar", COLUMN_B),
+            Pair.of("4", COLUMN_A)
+        ));
+
+        List<Pair<String, String>> result = fillMissingWithFirstValid(df, COLUMN_B);
+        assertEquals(expected.size(), result.size());
+        for (int i = 0; i < expected.size(); i++) {
+            assertEquals(expected.get(i).getKey(), result.get(i).getKey());
+            assertEquals(expected.get(i).getValue(), result.get(i).getValue());
+        }
+    }
+
+    @Test
+    public void testMultipleValidValues() {
+        List<Pair<String, String>> df = new ArrayList<>(Arrays.asList(
+            Pair.of("1", COLUMN_A),
+            Pair.of(null, COLUMN_B),
+            Pair.of("3", COLUMN_A),
+            Pair.of("4", COLUMN_A)
+        ));
+        List<Pair<String, String>> expected = new ArrayList<>(Arrays.asList(
+            Pair.of("1", COLUMN_A),
+            Pair.of("bar", COLUMN_B),
+            Pair.of("3", COLUMN_A),
+            Pair.of("4", COLUMN_A)
+        ));
+
+        List<Pair<String, String>> result = fillMissingWithFirstValid(df, COLUMN_B);
+        assertEquals(expected.size(), result.size());
+        for (int i = 0; i < expected.size(); i++) {
+            assertEquals(expected.get(i).getKey(), result.get(i).getKey());
+            assertEquals(expected.get(i).getValue(), result.get(i).getValue());
+        }
+    }
+
+    // Utility method to fill missing values
+    private List<Pair<String, String>> fillMissingWithFirstValid(List<Pair<String, String>> dataFrame, String columnName) {
+        if (dataFrame == null || dataFrame.isEmpty()) {
+            throw new IllegalArgumentException("DataFrame cannot be null or empty.");
+        }
+
+        boolean columnExists = false;
+        String firstValidValue = null;
+
+        // Check if the column exists and find the first valid value
+        for (Pair<String, String> row : dataFrame) {
+            if (columnName.equals(row.getValue())) {
+                columnExists = true;
+                if (firstValidValue == null && row.getKey() != null) {
+                    firstValidValue = row.getKey();
                 }
             }
         }
-        return df;
-    }
-}
 
-class DataFrame {
-    private String columnName;
-    private Object[] data;
-
-    public DataFrame(String columnName, List<String> data) {
-        this.columnName = columnName;
-        this.data = data.toArray();
-    }
-
-    public String getColumnName() {
-        return columnName;
-    }
-
-    public Object[] getData(String columnName) {
-        if (!this.columnName.equals(columnName)) {
-            throw new IllegalArgumentException("Column not found: " + columnName);
+        if (!columnExists) {
+            throw new IllegalArgumentException("Column '" + columnName + "' does not exist in the DataFrame.");
         }
-        return data;
-    }
 
-    public Object getValue(int index) {
-        if (index >= data.length || index < 0) {
-            throw new IndexOutOfBoundsException("Index out of bounds: " + index);
+        // Fill missing values in the specified column with the first valid value
+        List<Pair<String, String>> updatedDataFrame = new ArrayList<>();
+        for (Pair<String, String> row : dataFrame) {
+            if (columnName.equals(row.getValue()) && row.getKey() == null) {
+                updatedDataFrame.add(Pair.of(firstValidValue, row.getValue()));
+            } else {
+                updatedDataFrame.add(row);
+            }
         }
-        return data[index];
+
+        return updatedDataFrame;
     }
 }
 ```
 
 ### Explanation:
-1. **Package Declaration**: The package declaration is set to `org.real.temp`.
-2. **Class Declaration**: The class `Tester` is declared and annotated with `@Test` to indicate it contains test methods.
-3. **Setup Method**: A `@BeforeEach` method is used to initialize any necessary objects before each test method runs.
-4. **Parameterized Test**: A `@ParameterizedTest` method is used to test the `fill_missing_with_first_valid` function with different column names.
-5. **Single Test Case**: A single test method `testFillMissingWithFirstValidEmptyColumn` is provided to test the scenario where the column has no valid values.
-6. **Helper Classes**: Two helper classes, `FillMissingWithFirstValid` and `DataFrame`, are implemented to mimic the functionality of your Python code.
+1. **Imports**:
+   - `org.junit.jupiter.api.Test`: Used for defining test methods.
+   - `static org.junit.jupiter.api.Assertions.assertEquals`: Used for asserting equality.
+   - `static org.junit.jupiter.api.Assertions.assertThrows`: Used for asserting exceptions.
+   - `java.util.ArrayList`: Used to create lists.
+   - `java.util.List`: Used to define the type of the list.
+   - `org.apache.commons.lang3.tuple.Pair`: Used to represent the DataFrame rows.
 
-Make sure to adjust the implementation details according to your specific requirements and the actual structure of your project.
+2. **Class Definition**:
+   - The class `Tester` contains the test methods.
+
+3. **JUnit Annotations**:
+   - `@Test`: Used to mark methods as test cases.
+
+4. **Test Methods**:
+   - Each test method is annotated with `@Test`.
+   - The test methods create the initial DataFrame and the expected DataFrame, then call the `fillMissingWithFirstValid` method and assert the results.
+
+5. **Utility Method**:
+   - The `fillMissingWithFirstValid` method is defined to handle the filling of missing values in the DataFrame.
+
+6. **Assertions**:
+   - The `assertEquals` method is used to compare the size and individual elements of the expected and actual DataFrames.
+
+This Java code preserves the functionality and logic of the original Python unittest class while adhering to JUnit conventions and best practices.

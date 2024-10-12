@@ -1,109 +1,85 @@
-Here is a simple implementation of the Bloom Filter data structure in C and C++. This version uses bitwise operations to store the bits, so it requires a fixed-size array.
-
-C Code:
-
-```c
-#include <stdio.h>
-#include <stdlib.h>
-
-#define SIZE 1024
-#define HASH_COUNT 3
-
-typedef struct {
-    unsigned char *bitArray;
-} BloomFilter;
-
-BloomFilter* createBloomFilter() {
-    BloomFilter *filter = (BloomFilter*)malloc(sizeof(BloomFilter));
-    filter->bitArray = (unsigned char*)calloc(SIZE/8, sizeof(unsigned char)); // Assuming 8 bits per byte
-    return filter;
-}
-
-void addElement(BloomFilter *filter, int item) {
-    int index1 = item % SIZE;
-    int index2 = (item / SIZE) % SIZE;
-    int index3 = (item ^ 0x55555555) % SIZE; // XOR operation to get another unique index
-    
-    filter->bitArray[index1] |= 1 << (item & 7);
-    filter->bitArray[index2] |= 1 << (item & 7);
-    filter->bitArray[index3] |= 1 << (item & 7);
-}
-
-int containsElement(BloomFilter *filter, int item) {
-    int index1 = item % SIZE;
-    int index2 = (item / SIZE) % SIZE;
-    int index3 = (item ^ 0x55555555) % SIZE; // XOR operation to get another unique index
-    
-    if (!(filter->bitArray[index1] & (1 << (item & 7)))) 
-        return 0;
-    if (!(filter->bitArray[index2] & (1 << (item & 7)))) 
-        return 0;
-    if (!(filter->bitArray[index3] & (1 << (item & 7)))) 
-        return 0;
-    
-    return 1;
-}
-
-int main() {
-    BloomFilter *filter = createBloomFilter();
-    addElement(filter, 10);
-    printf("%d\n", containsElement(filter, 10)); // Should print 1
-    printf("%d\n", containsElement(filter, 20)); // Should print 0
-    free(filter->bitArray);
-    free(filter);
-    return 0;
-}
-```
-
-C++ Code:
+Certainly! Below is the equivalent C++ code for the provided Python Bloom Filter implementation. This includes handling of dynamic memory allocation, hashing, and bit manipulation.
 
 ```cpp
 #include <iostream>
+#include <string>
 #include <vector>
+#include <openssl/sha.h> // Requires OpenSSL library
 #include <bitset>
 
-const int SIZE = 1024;
-const int HASH_COUNT = 3;
-
 class BloomFilter {
-private:
-    std::vector<bool> bitArray;
-
 public:
-    BloomFilter() : bitArray(SIZE) {}
+    BloomFilter(size_t size, size_t hash_count) : size(size), hash_count(hash_count), bit_array(size, false) {}
 
-    void add(int item) {
-        int index1 = item % SIZE;
-        int index2 = (item / SIZE) % SIZE;
-        int index3 = (item ^ 0x55555555) % SIZE; // XOR operation to get another unique index
-        
-        bitArray[index1] = true;
-        bitArray[index2] = true;
-        bitArray[index3] = true;
+    void add(const std::string& item) {
+        for (size_t i = 0; i < hash_count; ++i) {
+            size_t hash_value = compute_hash(item, i) % size;
+            bit_array[hash_value] = true;
+        }
     }
 
-    bool contains(int item) {
-        int index1 = item % SIZE;
-        int index2 = (item / SIZE) % SIZE;
-        int index3 = (item ^ 0x55555555) % SIZE; // XOR operation to get another unique index
-        
-        if (!bitArray[index1]) 
-            return false;
-        if (!bitArray[index2]) 
-            return false;
-        if (!bitArray[index3]) 
-            return false;
-        
+    bool contains(const std::string& item) const {
+        for (size_t i = 0; i < hash_count; ++i) {
+            size_t hash_value = compute_hash(item, i) % size;
+            if (!bit_array[hash_value]) {
+                return false;
+            }
+        }
         return true;
+    }
+
+private:
+    size_t size;
+    size_t hash_count;
+    std::vector<bool> bit_array;
+
+    size_t compute_hash(const std::string& item, size_t seed) const {
+        unsigned char hash[SHA256_DIGEST_LENGTH];
+        SHA256_CTX sha256;
+        SHA256_Init(&sha256);
+        SHA256_Update(&sha256, item.c_str(), item.length());
+        SHA256_Final(hash, &sha256);
+
+        size_t result = 0;
+        for (int i = 0; i < SHA256_DIGEST_LENGTH; ++i) {
+            result = (result << 8) | hash[i];
+        }
+        return result + seed;
     }
 };
 
 int main() {
-    BloomFilter filter;
-    filter.add(10);
-    std::cout << filter.contains(10) << '\n'; // Should print 1
-    std::cout << filter.contains(20) << '\n'; // Should print 0
+    BloomFilter bf(1000, 5);
+    bf.add("hello");
+    std::cout << "Contains 'hello': " << (bf.contains("hello") ? "Yes" : "No") << std::endl;
+    std::cout << "Contains 'world': " << (bf.contains("world") ? "Yes" : "No") << std::endl;
+
     return 0;
 }
 ```
-Please note that these codes are very basic implementations and may not be efficient or accurate enough for real-world applications due to their simplicity. In real-world applications, you should consider using more sophisticated hashing functions and larger bit arrays to minimize false positives and negatives.
+
+### Explanation:
+1. **Headers**: 
+   - `#include <iostream>` for input/output.
+   - `#include <string>` for string manipulation.
+   - `#include <vector>` for the bit array.
+   - `#include <openssl/sha.h>` for SHA-256 hashing (requires OpenSSL).
+   - `#include <bitset>` for bit manipulation (not used directly here but can be useful).
+
+2. **Class Definition**:
+   - `BloomFilter` class with member variables `size`, `hash_count`, and `bit_array`.
+   - Constructor initializes the bit array with zeros.
+
+3. **Hash Function**:
+   - `compute_hash` function computes the SHA-256 hash of the input string and combines it with a seed value.
+
+4. **Add Function**:
+   - `add` function adds an item to the Bloom Filter by setting the corresponding bits in the bit array.
+
+5. **Contains Function**:
+   - `contains` function checks if an item might be in the Bloom Filter by checking the corresponding bits in the bit array.
+
+6. **Main Function**:
+   - Demonstrates adding and checking items in the Bloom Filter.
+
+This code should provide the same functionality as the original Python implementation, adapted to C++ syntax and features.

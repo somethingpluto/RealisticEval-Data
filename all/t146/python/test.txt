@@ -1,0 +1,65 @@
+To convert the provided TypeScript Jest test cases into Python's unittest framework, we can follow these steps:
+Define a test class that inherits from unittest.TestCase.
+Use the self.assertIn method to check if the result is within a list of expected values.
+Use the self.assertEqual method to directly compare the expected output.
+Here’s how the converted code looks in Python using the unittest framework:
+python
+import unittest
+
+def format_bytes(bytes: int, options: dict = None) -> str:
+    if options is None:
+        options = {}
+
+    decimals = options.get('decimals', 0)
+    size_type = options.get('sizeType', 'normal')
+
+    size_units = ["Bytes", "KiB", "MiB", "GiB", "TiB"] if size_type == "accurate" else ["Bytes", "KB", "MB", "GB", "TB"]
+
+    if bytes == 0:
+        return "0 Byte"
+
+    unit_index = 0
+    if bytes > 0:
+        unit_index = int(math.floor(math.log(bytes, 1024)))
+
+    formatted_size = f"{bytes / (1024 ** unit_index):.{decimals}f}"
+
+    return f"{formatted_size} {size_units[unit_index] if unit_index < len(size_units) else 'Bytes'}"
+
+class TestFormatBytes(unittest.TestCase):
+
+    def test_zero_bytes(self):
+        result = format_bytes(0)
+        self.assertIn(result, ['0 B', '0 Byte'])
+
+    def test_two_kb(self):
+        result = format_bytes(2048)
+        self.assertIn(result, ['2 KB', '2.0 KB'])
+
+    def test_two_kib(self):
+        result = format_bytes(2048, {'sizeType': 'accurate'})
+        self.assertIn(result, ['2 KiB', '2.0 KiB'])
+
+    def test_five_mb(self):
+        result = format_bytes(5242880)
+        self.assertIn(result, ['5 MB', '5.0 MB'])
+
+    def test_five_mib_with_decimals(self):
+        result = format_bytes(5242880, {'decimals': 2, 'sizeType': 'accurate'})
+        self.assertEqual(result, '5.00 MiB')
+
+if __name__ == '__main__':
+    unittest.main()
+Explanation of Changes
+Import Statements:
+The unittest module is imported to enable testing capabilities.
+The format_bytes function definition is included for completeness.
+Test Class:
+A class named TestFormatBytes inherits from unittest.TestCase, encapsulating all the test cases.
+Test Methods:
+Each test case is defined as a method within the test class, prefixed with test_ to ensure they are recognized by the testing framework.
+The self.assertIn method checks if the result is within the list of expected values, similar to expect(...).toContain(...) in Jest.
+The self.assertEqual method is used for cases where the expected result is a single string, similar to expect(...).toBe(...) in Jest.
+Running the Tests:
+The if __name__ == '__main__': unittest.main() statement allows the tests to be run when the script is executed directly.
+This conversion provides a direct one-to-one mapping from the TypeScript Jest tests to Python's unittest, maintaining the same logic and expectations.

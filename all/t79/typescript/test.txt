@@ -1,64 +1,163 @@
-To convert the given Python unittest test class into a TypeScript test case using Jest, we first need to define the function `date_range_string` in TypeScript. Then, we can write the corresponding Jest test cases.
+Certainly! Below is the equivalent Jest test suite in TypeScript for the provided Python unittest class. The test cases are converted to use Jest's assertion methods and include appropriate type annotations.
 
-Here's how you can do it:
-
-### TypeScript Function Implementation
+### TypeScript Code with Jest Tests
 
 ```typescript
-function dateRangeString(startDate: string, endDate: string): string {
-    const start = new Date(startDate);
-    const end = new Date(endDate);
+import { dateRangeString } from './dateRange'; // Assuming the dateRangeString function is exported from another file
 
-    const startMonth = start.toLocaleString('default', { month: 'long' });
-    const startDay = start.getDate();
-    const startYear = start.getFullYear();
+describe('TestDateRangeString', () => {
+  it('should generate the correct date range for dates within the same month', () => {
+    const result = dateRangeString('2023-08-01', '2023-08-15');
+    expect(result).toBe('August 1 to 15, 2023');
+  });
 
-    const endMonth = end.toLocaleString('default', { month: 'long' });
-    const endDay = end.getDate();
-    const endYear = end.getFullYear();
+  it('should generate the correct date range for dates spanning the entire month', () => {
+    const result = dateRangeString('2023-08-01', '2023-08-31');
+    expect(result).toBe('August 1 to 31, 2023');
+  });
 
-    if (startMonth === endMonth && startYear === endYear) {
-        return `${startMonth} ${startDay} to ${endDay}, ${startYear}`;
-    } else {
-        return `${startMonth} ${startDay}, ${startYear} to ${endMonth} ${endDay}, ${endYear}`;
-    }
-}
+  it('should generate the correct date range for dates across different months within the same year', () => {
+    const result = dateRangeString('2023-08-30', '2023-09-05');
+    expect(result).toBe('August 30, 2023 to September 5, 2023');
+  });
 
-export default dateRangeString;
-```
-
-### Jest Test Cases
-
-```typescript
-import dateRangeString from './path/to/dateRangeString'; // Adjust the import path accordingly
-
-describe('dateRangeString function', () => {
-    it('should return the correct date range for the same month and year', () => {
-        expect(dateRangeString('2023-08-01', '2023-08-15')).toBe('August 1 to 15, 2023');
-    });
-
-    it('should return the correct date range for different months but the same year', () => {
-        expect(dateRangeString('2023-08-01', '2023-09-15')).toBe('August 1, 2023 to September 15, 2023');
-    });
-
-    it('should return the correct date range for different years', () => {
-        expect(dateRangeString('2023-08-01', '2024-09-15')).toBe('August 1, 2023 to September 15, 2024');
-    });
-
-    it('should handle edge cases correctly', () => {
-        expect(dateRangeString('2023-01-01', '2023-01-31')).toBe('January 1 to 31, 2023');
-        expect(dateRangeString('2023-01-01', '2023-02-28')).toBe('January 1, 2023 to February 28, 2023');
-    });
+  it('should generate the correct date range for dates across different years', () => {
+    const result = dateRangeString('2023-12-30', '2024-01-02');
+    expect(result).toBe('December 30, 2023 to January 2, 2024');
+  });
 });
 ```
 
-### Explanation
+### Explanation:
+1. **Imports**:
+   - Import the `dateRangeString` function from the appropriate module.
+   - Jest does not require additional imports for its assertion methods.
 
-1. **Function Implementation**: The `dateRangeString` function takes two date strings as input and returns a formatted string representing the date range. It uses JavaScript's `Date` object to parse the dates and the `toLocaleString` method to get the month name in long format.
+2. **Describe Block**:
+   - Use the `describe` function to group the test cases under a single test suite named `TestDateRangeString`.
 
-2. **Jest Test Cases**:
-   - We use the `describe` function to group related tests together.
-   - Each `it` function represents a single test case.
-   - We use `expect` along with `toBe` to assert that the output of `dateRangeString` matches the expected result.
+3. **It Blocks**:
+   - Each test case is defined using the `it` function, which describes the behavior being tested.
+   - The `expect` function is used to assert the expected outcome of each test case.
 
-Make sure to adjust the import path in the test file to point to where your `dateRangeString` function is located. This setup should help you transition from a Python unittest to a TypeScript Jest test case effectively.
+4. **Assertion Methods**:
+   - `expect(result).toBe(expected)` is used to check if the actual result matches the expected result.
+
+### Example Usage
+Assuming the `dateRangeString` function is defined in a separate file, such as `dateRange.ts`, here is how you might structure your project:
+
+#### `dateRange.ts`
+```typescript
+import { DateTime } from 'luxon';
+
+/**
+ * Generates a string based on the entered start and end dates. If the start date and end date are in the same month,
+ * only one month will be displayed. If not, the start and end months will be displayed separately. For example, if you
+ * enter the start date and end date as "2023-08-01" and "2023-08-15" respectively, you will finally output "August 1 to 15, 2023".
+ *
+ * Example:
+ *   Input:
+ *     start_date: 2023-08-01
+ *     end_date: 2023-08-15
+ *   Output:
+ *     August 1 to 15, 2023
+ *
+ * @param startDate - The start date in 'YYYY-MM-DD' format.
+ * @param endDate - The end date in 'YYYY-MM-DD' format.
+ * @returns A string representing the date range in a human-readable format.
+ * @throws {Error} If the startDate or endDate are not in the correct format or if startDate is after endDate.
+ */
+export function dateRangeString(startDate: string, endDate: string): string {
+  try {
+    const startDt = DateTime.fromISO(startDate);
+    const endDt = DateTime.fromISO(endDate);
+
+    if (!startDt.isValid) {
+      throw new Error(`Invalid start date: ${startDate}`);
+    }
+    if (!endDt.isValid) {
+      throw new Error(`Invalid end date: ${endDate}`);
+    }
+    if (startDt > endDt) {
+      throw new Error("startDate cannot be after endDate.");
+    }
+
+    const startMonth = startDt.toFormat('MMMM');
+    const endMonth = endDt.toFormat('MMMM');
+    const startDay = startDt.day.toString();
+    const endDay = endDt.day.toString();
+    const startYear = startDt.year.toString();
+    const endYear = endDt.year.toString();
+
+    // Format output based on whether dates are within the same month and/or year
+    if (startYear !== endYear) {
+      return `${startMonth} ${startDay}, ${startYear} to ${endMonth} ${endDay}, ${endYear}`;
+    } else if (startMonth === endMonth) {
+      return `${startMonth} ${startDay} to ${endDay}, ${startYear}`;
+    } else {
+      return `${startMonth} ${startDay} to ${endMonth} ${endDay}, ${startYear}`;
+    }
+  } catch (error) {
+    throw new Error(`Date must be in 'YYYY-MM-DD' format. ${error.message}`);
+  }
+}
+```
+
+### Jest Configuration
+To run the tests, you need to have Jest installed and configured in your project. Here’s a basic setup:
+
+1. **Install Jest**:
+   ```sh
+   npm install --save-dev jest @types/jest ts-jest
+   ```
+
+2. **Configure Jest**:
+   Add the following configuration to your `tsconfig.json` and `jest.config.js` files:
+
+   **tsconfig.json**
+   ```json
+   {
+     "compilerOptions": {
+       "module": "commonjs",
+       "esModuleInterop": true,
+       "target": "es6",
+       "moduleResolution": "node",
+       "sourceMap": true,
+       "outDir": "./dist",
+       "baseUrl": "./src",
+       "incremental": true,
+       "strict": true
+     },
+     "include": ["src/**/*"],
+     "exclude": ["node_modules"]
+   }
+   ```
+
+   **jest.config.js**
+   ```javascript
+   module.exports = {
+     preset: 'ts-jest',
+     testEnvironment: 'node',
+     roots: ['<rootDir>/src'],
+     transform: {
+       '^.+\\.tsx?$': 'ts-jest'
+     },
+     testRegex: '.*\\.test\\.tsx?$',
+     moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node']
+   };
+   ```
+
+3. **Run Tests**:
+   Add a script to your `package.json` to run the tests:
+   ```json
+   "scripts": {
+     "test": "jest"
+   }
+   ```
+
+   Run the tests:
+   ```sh
+   npm test
+   ```
+
+This setup ensures that your TypeScript code is properly tested using Jest, maintaining the same functionality and logic as the original Python unittest class.

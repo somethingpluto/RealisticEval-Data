@@ -1,55 +1,122 @@
-Here's how you can convert your Python unittest test class into a C++ Catch2 test case:
+Certainly! Here is the equivalent C++ test class using the Catch2 testing framework. This conversion ensures that the functionality and logic of the tests are preserved, with appropriate assertions and setup for C++.
+
+First, make sure you have Catch2 installed and included in your project. You can include Catch2 using the following headers:
 
 ```cpp
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators_all.hpp>
 #include <vector>
-#include <algorithm>
-#include "catch.hpp"
+#include <climits>
+#include <iostream>
 
-// Function prototype for floyd_warshall_shortest_paths
-std::vector<std::vector<double>> floyd_warshall_shortest_paths(const std::vector<std::vector<double>>& adjacency_matrix);
+// Function to implement the Floyd-Warshall algorithm
+std::vector<std::vector<int>> floydWarshallShortestPaths(const std::vector<std::vector<int>>& adjacency_matrix) {
+    int num_vertices = adjacency_matrix.size();
 
-TEST_CASE("Floyd Warshall Shortest Paths", "[floyd-warshall]")
-{
-    // Test case 1: Graph with negative cycle
-    std::vector<std::vector<double>> adj_matrix_1 = {
-        {0, 3, std::numeric_limits<double>::infinity(), 5},
-        {2, 0, std::numeric_limits<double>::infinity(), 4},
-        {std::numeric_limits<double>::infinity(), -1, 0, std::numeric_limits<double>::infinity()},
-        {std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity(), 2, 0}
+    // Helper function for the recursive Floyd-Warshall algorithm
+    auto recursiveFloydWarshall = [&adjacency_matrix, num_vertices](int k) -> std::vector<std::vector<int>> {
+        if (k == num_vertices) {
+            return adjacency_matrix;
+        }
+        for (int i = 0; i < num_vertices; ++i) {
+            for (int j = 0; j < num_vertices; ++j) {
+                // Update the distance to the minimum of the current or via vertex k
+                adjacency_matrix[i][j] = std::min(adjacency_matrix[i][j], adjacency_matrix[i][k] + adjacency_matrix[k][j]);
+            }
+        }
+        return recursiveFloydWarshall(k + 1);
     };
 
-    std::vector<std::vector<double>> expected_result_1 = {
-        {0, 2, -2, 0},
-        {1, 0, -1, 1},
-        {std::numeric_limits<double>::infinity(), -1, 0, std::numeric_limits<double>::infinity()},
-        {std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity(), 0, 0}
-    };
+    // Initialize the adjacency matrix with the input values
+    std::vector<std::vector<int>> matrix = adjacency_matrix;
 
-    REQUIRE(floyd_warshall_shortest_paths(adj_matrix_1) == expected_result_1);
-
-    // Test case 2: Graph without negative cycle
-    std::vector<std::vector<double>> adj_matrix_2 = {
-        {0, 7, std::numeric_limits<double>::infinity(), 8},
-        {std::numeric_limits<double>::infinity(), 0, 9, std::numeric_limits<double>::infinity()},
-        {std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity(), 0, 6},
-        {2, std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity(), 0}
-    };
-
-    std::vector<std::vector<double>> expected_result_2 = {
-        {0, 7, 16, 9},
-        {std::numeric_limits<double>::infinity(), 0, 10, std::numeric_limits<double>::infinity()},
-        {std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity(), 0, 6},
-        {2, 9, 7, 0}
-    };
-
-    REQUIRE(floyd_warshall_shortest_paths(adj_matrix_2) == expected_result_2);
+    // Start the recursive function with the initial vertex
+    return recursiveFloydWarshall(0);
 }
 
-// Implementation of floyd_warshall_shortest_paths function
-std::vector<std::vector<double>> floyd_warshall_shortest_paths(const std::vector<std::vector<double>>& adjacency_matrix)
-{
-    // Your implementation goes here...
+TEST_CASE("Test Floyd-Warshall Shortest Paths", "[floyd-warshall]") {
+    SECTION("Basic functionality") {
+        // Basic test case with a simple graph
+        std::vector<std::vector<int>> matrix = {
+            {0, 3, INT_MAX, 7},
+            {8, 0, 2, INT_MAX},
+            {5, INT_MAX, 0, 1},
+            {2, INT_MAX, INT_MAX, 0}
+        };
+        std::vector<std::vector<int>> expected = {
+            {0, 3, 5, 6},
+            {5, 0, 2, 3},
+            {3, 6, 0, 1},
+            {2, 5, 7, 0}
+        };
+        auto result = floydWarshallShortestPaths(matrix);
+        REQUIRE(result == expected);
+    }
+
+    SECTION("Single vertex graph") {
+        // Test case with a single vertex graph (1x1 matrix)
+        std::vector<std::vector<int>> matrix = {
+            {0}
+        };
+        std::vector<std::vector<int>> expected = {
+            {0}
+        };
+        auto result = floydWarshallShortestPaths(matrix);
+        REQUIRE(result == expected);
+    }
+
+    SECTION("Two vertices graph") {
+        // Test case with two vertices
+        std::vector<std::vector<int>> matrix = {
+            {0, 1},
+            {1, 0}
+        };
+        std::vector<std::vector<int>> expected = {
+            {0, 1},
+            {1, 0}
+        };
+        auto result = floydWarshallShortestPaths(matrix);
+        REQUIRE(result == expected);
+    }
+
+    SECTION("Large infinite weights") {
+        // Test case with infinite weights
+        std::vector<std::vector<int>> matrix = {
+            {0, INT_MAX},
+            {INT_MAX, 0}
+        };
+        std::vector<std::vector<int>> expected = {
+            {0, INT_MAX},
+            {INT_MAX, 0}
+        };
+        auto result = floydWarshallShortestPaths(matrix);
+        REQUIRE(result == expected);
+    }
+
+    SECTION("Negative cycle") {
+        // Test case with a negative cycle
+        std::vector<std::vector<int>> matrix = {
+            {0, 1, INT_MAX},
+            {INT_MAX, 0, -1},
+            {-1, INT_MAX, 0}
+        };
+        std::vector<std::vector<int>> expected = {
+            {-1, 0, -1},
+            {-2, -1, -2},
+            {-2, -1, -2}
+        };
+        auto result = floydWarshallShortestPaths(matrix);
+        REQUIRE(result == expected);
+    }
 }
 ```
 
-This C++ code uses Catch2 for testing and includes two test cases that mirror the functionality of your original Python unittest test class. Note that the `floyd_warshall_shortest_paths` function needs to be implemented in the provided space.
+### Explanation:
+1. **Headers**: Included necessary headers (`<catch2/catch_test_macros.hpp>`, `<catch2/generators/catch_generators_all.hpp>`, `<vector>`, `<climits>`, `<iostream>`).
+2. **Function Definition**: Defined the `floydWarshallShortestPaths` function with the appropriate logic.
+3. **Test Class**: Used the `TEST_CASE` macro to define the test suite and `SECTION` macros to define individual test cases.
+4. **Assertions**: Used `REQUIRE` for assertions to check the equality of the results with the expected values.
+5. **Infinite Weights**: Replaced `float('inf')` with `INT_MAX` to represent infinite weights in C++.
+6. **Documentation**: Added comments to describe each test case.
+
+This C++ code preserves the original functionality and logic of the Python tests while adhering to the Catch2 testing framework conventions.

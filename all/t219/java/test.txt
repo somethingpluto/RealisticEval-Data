@@ -1,108 +1,187 @@
-Sure! Below is the equivalent Java JUnit test case for your Python `unittest` class. The package name is `org.real.temp`, and the class name is `Tester`.
+Certainly! Here is the equivalent Java test class using JUnit, placed in the package `org.real.temp` and named `Tester`. The test cases are converted to use JUnit annotations and assertions, ensuring that the functionality and logic of the tests are preserved.
 
 ```java
 package org.real.temp;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import org.junit.jupiter.api.Test;
-import java.util.Arrays;
+import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Tester {
 
+    /**
+     * Test case for no inconsistencies in the records.
+     */
     @Test
-    public void testCheckDividendVariances() {
-        // Test data
-        List<Tuple<String, String, Double>> records = Arrays.asList(
-            new Tuple<>("AAPL", "2023-10-05", 4.75),
-            new Tuple<>("GOOGL", "2023-10-05", 199.99),
-            new Tuple<>("AAPL", "2023-10-05", 4.80),
-            new Tuple<>("MSFT", "2023-10-06", 2.99)
-        );
+    public void testNoInconsistencies() {
+        List<Tuple<String, String, Double>> records = new ArrayList<>();
+        records.add(new Tuple<>("AAPL", "2023-09-01", 0.22));
+        records.add(new Tuple<>("AAPL", "2023-09-01", 0.22));
+        records.add(new Tuple<>("MSFT", "2023-09-01", 0.56));
+        records.add(new Tuple<>("GOOG", "2023-09-02", 0.00));
 
-        // Expected result
-        List<Tuple<String, String>> expected = Arrays.asList(
-            new Tuple<>("AAPL", "2023-10-05")
-        );
+        List<Tuple<String, String>> expectedOutput = new ArrayList<>();
+        List<Tuple<String, String>> actualOutput = checkDividendVariances(records);
 
-        // Actual result
-        List<Tuple<String, String>> actual = checkDividendVariances(records);
-
-        // Assert the results
-        assertEquals(expected, actual);
+        assertEquals(expectedOutput, actualOutput);
     }
 
-    private List<Tuple<String, String>> checkDividendVariances(List<Tuple<String, String, Double>> records) {
-        List<Tuple<String, String>> result = new ArrayList<>();
-        Map<String, Set<Double>> tickerToAmounts = new HashMap<>();
+    /**
+     * Test case for one inconsistency in the records.
+     */
+    @Test
+    public void testOneInconsistency() {
+        List<Tuple<String, String, Double>> records = new ArrayList<>();
+        records.add(new Tuple<>("AAPL", "2023-09-01", 0.22));
+        records.add(new Tuple<>("AAPL", "2023-09-01", 0.23));  // Different amount
+        records.add(new Tuple<>("MSFT", "2023-09-01", 0.56));
+        records.add(new Tuple<>("GOOG", "2023-09-02", 0.00));
 
-        for (Tuple<String, String, Double> record : records) {
-            String ticker = record.getFirst();
-            String date = record.getSecond();
-            double amount = record.getThird();
+        List<Tuple<String, String>> expectedOutput = new ArrayList<>();
+        expectedOutput.add(new Tuple<>("AAPL", "2023-09-01"));
+        List<Tuple<String, String>> actualOutput = checkDividendVariances(records);
 
-            tickerToAmounts.putIfAbsent(ticker + "-" + date, new HashSet<>());
-            if (!tickerToAmounts.get(ticker + "-" + date).add(amount)) {
-                result.add(new Tuple<>(ticker, date));
-            }
-        }
-
-        return result;
+        assertEquals(expectedOutput, actualOutput);
     }
 
-    // Helper class for tuples
-    public static class Tuple<X, Y, Z> {
-        private final X first;
-        private final Y second;
-        private final Z third;
+    /**
+     * Test case for multiple inconsistencies in the records.
+     */
+    @Test
+    public void testMultipleInconsistencies() {
+        List<Tuple<String, String, Double>> records = new ArrayList<>();
+        records.add(new Tuple<>("AAPL", "2023-09-01", 0.22));
+        records.add(new Tuple<>("AAPL", "2023-09-01", 0.23));  // Different amount
+        records.add(new Tuple<>("MSFT", "2023-09-01", 0.56));
+        records.add(new Tuple<>("MSFT", "2023-09-01", 0.60));  // Different amount
+        records.add(new Tuple<>("GOOG", "2023-09-02", 0.00));
+        records.add(new Tuple<>("TSLA", "2023-09-03", 0.10));
+        records.add(new Tuple<>("TSLA", "2023-09-03", 0.10));  // Same amount, no inconsistency
+        records.add(new Tuple<>("TSLA", "2023-09-03", 0.15));  // Different amount
 
-        public Tuple(X first, Y second, Z third) {
+        List<Tuple<String, String>> expectedOutput = new ArrayList<>();
+        expectedOutput.add(new Tuple<>("AAPL", "2023-09-01"));
+        expectedOutput.add(new Tuple<>("MSFT", "2023-09-01"));
+        expectedOutput.add(new Tuple<>("TSLA", "2023-09-03"));
+        List<Tuple<String, String>> actualOutput = checkDividendVariances(records);
+
+        assertEquals(expectedOutput, actualOutput);
+    }
+
+    /**
+     * Test case for a single record.
+     */
+    @Test
+    public void testSingleRecord() {
+        List<Tuple<String, String, Double>> records = new ArrayList<>();
+        records.add(new Tuple<>("AAPL", "2023-09-01", 0.22));
+
+        List<Tuple<String, String>> expectedOutput = new ArrayList<>();
+        List<Tuple<String, String>> actualOutput = checkDividendVariances(records);
+
+        assertEquals(expectedOutput, actualOutput);
+    }
+
+    /**
+     * Test case for an empty list of records.
+     */
+    @Test
+    public void testEmptyList() {
+        List<Tuple<String, String, Double>> records = new ArrayList<>();
+
+        List<Tuple<String, String>> expectedOutput = new ArrayList<>();
+        List<Tuple<String, String>> actualOutput = checkDividendVariances(records);
+
+        assertEquals(expectedOutput, actualOutput);
+    }
+
+    // Helper class to represent a tuple
+    public static class Tuple<T1, T2, T3> {
+        private T1 first;
+        private T2 second;
+        private T3 third;
+
+        public Tuple(T1 first, T2 second, T3 third) {
             this.first = first;
             this.second = second;
             this.third = third;
         }
 
-        public X getFirst() {
+        public T1 getFirst() {
             return first;
         }
 
-        public Y getSecond() {
+        public T2 getSecond() {
             return second;
         }
 
-        public Z getThird() {
+        public T3 getThird() {
             return third;
         }
+    }
 
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof Tuple)) return false;
-            Tuple<?, ?, ?> tuple = (Tuple<?, ?, ?>) o;
-            return Objects.equals(first, tuple.first) &&
-                   Objects.equals(second, tuple.second);
+    // Helper class to represent a tuple with two elements
+    public static class Tuple<T1, T2> {
+        private T1 first;
+        private T2 second;
+
+        public Tuple(T1 first, T2 second) {
+            this.first = first;
+            this.second = second;
         }
 
-        @Override
-        public int hashCode() {
-            return Objects.hash(first, second);
+        public T1 getFirst() {
+            return first;
         }
 
-        @Override
-        public String toString() {
-            return "(" + first + ", " + second + ")";
+        public T2 getSecond() {
+            return second;
         }
+    }
+
+    // Method to check for dividend variances
+    public static List<Tuple<String, String>> checkDividendVariances(List<Tuple<String, String, Double>> records) {
+        // Map to store dividend amounts by (ticker, exDividendDate)
+        Map<Tuple<String, String>, Set<Double>> dividendMap = new HashMap<>();
+
+        // Iterate through the records
+        for (Tuple<String, String, Double> record : records) {
+            String ticker = record.getFirst();
+            String exDividendDate = record.getSecond();
+            double dividendAmount = record.getThird();
+
+            Tuple<String, String> key = new Tuple<>(ticker, exDividendDate);
+            dividendMap.computeIfAbsent(key, k -> new HashSet<>()).add(dividendAmount);
+        }
+
+        // Find entries with more than one unique dividend amount
+        List<Tuple<String, String>> result = new ArrayList<>();
+        for (Map.Entry<Tuple<String, String>, Set<Double>> entry : dividendMap.entrySet()) {
+            if (entry.getValue().size() > 1) {
+                result.add(entry.getKey());
+            }
+        }
+
+        return result;
     }
 }
 ```
 
 ### Explanation:
-1. **Package Declaration**: The package declaration is set to `org.real.temp`.
-2. **Class Declaration**: The class `Tester` contains a single test method `testCheckDividendVariances`.
-3. **Test Data**: Test data is defined using a list of `Tuple` objects.
-4. **Expected Result**: The expected result is also defined using a list of `Tuple` objects.
-5. **Actual Result**: The actual result is obtained by calling the `checkDividendVariances` method.
-6. **Assertion**: The `assertEquals` method is used to compare the expected and actual results.
-7. **Helper Class**: A helper class `Tuple` is provided to create tuple-like objects.
+1. **JUnit Annotations**:
+   - Each test method is annotated with `@Test` to indicate that it is a test case.
 
-This Java code should be placed in a file named `Tester.java` within the `org.real.temp` package. Make sure you have the necessary imports and dependencies for JUnit and any other required libraries.
+2. **Assertions**:
+   - The `assertEquals` method is used to assert the equality of the expected and actual outputs.
+
+3. **Helper Classes**:
+   - Two helper classes `Tuple<T1, T2>` and `Tuple<T1, T2, T3>` are defined to represent tuples in Java.
+
+4. **Test Methods**:
+   - Each test method sets up the records, calls the `checkDividendVariances` method, and asserts the expected output.
+
+5. **Method Implementation**:
+   - The `checkDividendVariances` method is implemented to process the records and find inconsistencies.
+
+This Java code preserves the original functionality and structure of the Python test cases while adhering to JUnit conventions and best practices.

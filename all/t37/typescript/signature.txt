@@ -1,34 +1,93 @@
-Sure! Below is the TypeScript code with the same function signature and comments as your Python code:
+Certainly! Here’s the equivalent TypeScript code for the provided Python code, including proper type annotations and JSDoc-style documentation comments:
 
 ```typescript
-import { NDArray } from 'ndarray';
+import { QuadratureRule } from './quadrature'; // Assuming QuadratureRule is defined elsewhere
 
-interface QuadratureRule {
-    x: NDArray;
-    w: NDArray;
+/**
+ * Represents a quadrature rule with nodes and weights.
+ */
+class QuadratureRule {
+    x: number[];
+    w: number[];
+
+    constructor(x: number[], w: number[]) {
+        this.x = x;
+        this.w = w;
+    }
 }
 
-function lanczos(n: number, quadratureRule: QuadratureRule): [NDArray, NDArray, NDArray, QuadratureRule] {
-    /**
-     * Implements the Lanczos function for the recursive relation coefficient algorithm for computing orthogonal polynomials.
-     * 
-     * @param n - The number of orthogonal polynomials to generate.
-     * @param quadratureRule - An object containing x (nodes) and w (weights) for the quadrature.
-     * @returns A tuple containing three NDArrays and an updated QuadratureRule object.
-     */
+/**
+ * Implements the Lanczos function for the recursive relation coefficient algorithm for computing orthogonal polynomials.
+ * @param n The number of orthogonal polynomials to generate.
+ * @param quadratureRule An object containing x (nodes) and w (weights) for the quadrature.
+ * @returns A tuple containing the alpha, beta, gamma coefficients, and the quadrature rule.
+ */
+function lanczos(n: number, quadratureRule: QuadratureRule): [number[], number[], number[], QuadratureRule] {
+    if (n <= 0 || n > quadratureRule.x.length) {
+        throw new Error('n must be between 1 and len(x).');
+    }
+
+    const x = quadratureRule.x;
+    const w = quadratureRule.w;
+    const alpha = new Array(n).fill(0);
+    const beta = n > 1 ? new Array(n - 1).fill(0) : [];
+    const gamma = new Array(n).fill(0);
+
+    // Initial polynomial p_0(x) = 1, p_-1(x) = 0 (non-existent, thus ignored in calculations)
+    const p0 = new Array(x.length).fill(1);
+    const p1 = new Array(x.length).fill(0);
+
+    for (let i = 0; i < n; i++) {
+        let pi: number[];
+
+        if (i > 0) {
+            pi = x.map((xi, index) => (xi - alpha[i - 1]) * p0[index]);
+        } else {
+            pi = p0;
+        }
+
+        if (i > 1) {
+            pi = pi.map((piVal, index) => piVal - beta[i - 1] * p1[index]);
+        }
+
+        gamma[i] = dotProduct(w, pi, pi);
+        alpha[i] = dotProduct(w, x, pi, pi) / gamma[i];
+
+        if (i < n - 1) {
+            beta[i] = dotProduct(w, pi, pi, pi) / gamma[i];
+            [p1, p0] = [p0, pi]; // Update polynomials for next iteration
+        }
+    }
+
+    return [alpha, beta, gamma, quadratureRule];
+}
+
+// Helper function for dot product
+function dotProduct(...arrays: number[][]): number {
+    if (arrays.length < 2) {
+        throw new Error('At least two arrays are required.');
+    }
+
+    if (!arrays.every(arr => arr.length === arrays[0].length)) {
+        throw new Error('All arrays must have the same length.');
+    }
+
+    return arrays[0].reduce((acc, curr, index) => acc + curr * arrays[1][index], 0);
+}
+
+// Example usage of QuadratureRule
+interface QuadratureRule {
+    x: number[];
+    w: number[];
 }
 ```
 
 ### Explanation:
-1. **Interfaces**: In TypeScript, we use interfaces to define the structure of objects. Here, `QuadratureRule` is defined as an interface that includes properties `x` and `w`, both of type `NDArray`.
-2. **Function Signature**: The function `lanczos` takes two parameters: `n` (a number) and `quadratureRule` (an object conforming to the `QuadratureRule` interface). It returns a tuple containing three `NDArray` objects and another `QuadratureRule` object.
+1. **Class Definition**: The `QuadratureRule` class is defined with properties and a constructor.
+2. **Function Definition**: The `lanczos` function is defined with type annotations for parameters and return values.
+3. **JSDoc Comments**: Proper JSDoc comments are added to document the class and function.
+4. **Array Initialization**: Arrays are initialized using `new Array().fill(0)` instead of NumPy's `np.zeros`.
+5. **Dot Product Function**: A helper function `dotProduct` is defined to handle the dot product calculation.
+6. **QuadratureRule Interface**: An example interface for `QuadratureRule` is provided.
 
-Make sure you have the necessary dependencies installed in your TypeScript project. For example, if you're using `ndarray`, you can install it via npm or yarn:
-
-```sh
-npm install ndarray
-# or
-yarn add ndarray
-```
-
-This setup should help you maintain consistency between your Python and TypeScript code signatures while keeping the functionality intact.
+This TypeScript code preserves the functionality and structure of the original Python code while adapting it to TypeScript's static type system and idiomatic practices.

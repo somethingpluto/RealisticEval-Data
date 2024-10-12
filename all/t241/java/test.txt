@@ -1,64 +1,187 @@
-Sure! Below is the equivalent Java JUnit test case for your Python unittest test class. Note that I'll assume you have a method `getMinSeqNumAndDistance` in a class named `TextFileProcessor`.
+Certainly! Below is the equivalent Java test class using JUnit for the provided Python unittest class. The Java test class will be placed in the package `org.real.temp` and named `Tester`.
+
+### Java Code Using JUnit
 
 ```java
-package org.real.temp;
-
-import static org.junit.jupiter.api.Assertions.*;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.io.TempDir;
+import java.nio.file.Path;
+import java.nio.file.Files;
+import java.io.IOException;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class Tester {
 
-    private TextFileProcessor processor;
+    private Path tempFile;
 
     @BeforeEach
-    public void setUp() {
-        processor = new TextFileProcessor();
+    public void setUp(@TempDir Path tempDir) throws IOException {
+        tempFile = tempDir.resolve("dummy_file.txt");
     }
 
     @Test
-    public void testGetMinSeqNumAndDistance() {
-        String filePath = "path/to/your/file.txt";
-        String word1 = "word1";
-        String word2 = "word2";
+    public void testBasicFunctionality() throws IOException {
+        """ Test basic functionality with expected input """
+        String mockContent = "hello world\napple banana apple\norange apple banana";
+        Files.write(tempFile, List.of(mockContent.split("\n")));
+        
+        Tuple result = Answer.getMinSeqNumAndDistance(tempFile.toString(), "apple", "banana");
+        assertEquals(new Tuple(2, 1), result);
+    }
 
-        // Assuming the method returns a Pair<Integer, Integer>
-        Pair<Integer, Integer> result = processor.getMinSeqNumAndDistance(filePath, word1, word2);
+    @Test
+    public void testWordsNotPresent() throws IOException {
+        """ Test case where one or both words are not present """
+        String mockContent = "apple orange pear\norange pear apple";
+        Files.write(tempFile, List.of(mockContent.split("\n")));
+        
+        Tuple result = Answer.getMinSeqNumAndDistance(tempFile.toString(), "apple", "banana");
+        assertEquals(new Tuple(null, Integer.MAX_VALUE), result);
+    }
 
-        assertNotNull(result);
-        assertTrue(result.getFirst() != null && result.getSecond() != null);
-        System.out.println("Line Number: " + result.getFirst());
-        System.out.println("Minimum Distance: " + result.getSecond());
+    @Test
+    public void testEmptyFile() throws IOException {
+        """ Test an empty file """
+        Files.write(tempFile, List.of(""));
+        
+        Tuple result = Answer.getMinSeqNumAndDistance(tempFile.toString(), "apple", "banana");
+        assertEquals(new Tuple(null, Integer.MAX_VALUE), result);
+    }
+
+    @Test
+    public void testMultipleLinesWithVaryingDistances() throws IOException {
+        """ Test multiple lines with varying distances between words """
+        String mockContent = "apple banana\napple orange orange banana\napple orange orange orange banana";
+        Files.write(tempFile, List.of(mockContent.split("\n")));
+        
+        Tuple result = Answer.getMinSeqNumAndDistance(tempFile.toString(), "apple", "banana");
+        assertEquals(new Tuple(1, 1), result);
     }
 }
 
-// Assuming a simple Pair class for demonstration purposes
-class Pair<T1, T2> {
-    private T1 first;
-    private T2 second;
+// The Answer class remains the same as before
+public class Answer {
 
-    public Pair(T1 first, T2 second) {
-        this.first = first;
-        this.second = second;
+    /**
+     * Finds the minimum distance between two words in a text file, considering each line as a separate sequence.
+     *
+     * @param filePath The path to the file to read.
+     * @param word1    The first word to search for.
+     * @param word2    The second word to search for.
+     * @return A tuple containing the line number with the minimum distance and the minimum distance itself.
+     *         Returns (null, Integer.MAX_VALUE) if one or both words are not found in any line.
+     */
+    public static Tuple getMinSeqNumAndDistance(String filePath, String word1, String word2) {
+        int minDistance = Integer.MAX_VALUE;
+        Integer minSeqNum = null;
+        int currentLineNumber = 0;
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] words = line.trim().split("\\s+");
+                int[] word1Indices = findIndices(words, word1);
+                int[] word2Indices = findIndices(words, word2);
+
+                for (int index1 : word1Indices) {
+                    for (int index2 : word2Indices) {
+                        int distance = Math.abs(index1 - index2);
+                        if (distance < minDistance) {
+                            minDistance = distance;
+                            minSeqNum = currentLineNumber;
+                        }
+                    }
+                }
+
+                currentLineNumber++;
+            }
+        } catch (IOException e) {
+            System.out.println("Error: The file " + filePath + " does not exist.");
+            return new Tuple(null, Integer.MAX_VALUE);
+        } catch (Exception e) {
+            System.out.println("An error occurred: " + e.getMessage());
+            return new Tuple(null, Integer.MAX_VALUE);
+        }
+
+        return new Tuple(minSeqNum, minDistance);
     }
 
-    public T1 getFirst() {
-        return first;
+    /**
+     * Finds the indices of a given word in an array of words.
+     *
+     * @param words   The array of words.
+     * @param target  The target word to find.
+     * @return An array of indices where the target word is found.
+     */
+    private static int[] findIndices(String[] words, String target) {
+        int[] indices = new int[words.length];
+        int count = 0;
+
+        for (int i = 0; i < words.length; i++) {
+            if (words[i].equals(target)) {
+                indices[count++] = i;
+            }
+        }
+
+        return java.util.Arrays.copyOf(indices, count);
     }
 
-    public T2 getSecond() {
-        return second;
+    /**
+     * A simple Tuple class to hold the line number and distance.
+     */
+    public static class Tuple {
+        private final Integer lineNumber;
+        private final int distance;
+
+        public Tuple(Integer lineNumber, int distance) {
+            this.lineNumber = lineNumber;
+            this.distance = distance;
+        }
+
+        public Integer getLineNumber() {
+            return lineNumber;
+        }
+
+        public int getDistance() {
+            return distance;
+        }
+
+        @Override
+        public String toString() {
+            return "(" + lineNumber + ", " + distance + ")";
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null || getClass() != obj.getClass()) {
+                return false;
+            }
+            Tuple other = (Tuple) obj;
+            return lineNumber == other.lineNumber && distance == other.distance;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = lineNumber == null ? 0 : lineNumber.hashCode();
+            result = 31 * result + distance;
+            return result;
+        }
     }
 }
 ```
 
 ### Explanation:
-
-1. **Package Declaration**: The package declaration is set to `org.real.temp`.
-2. **Class Declaration**: The class name is `Tester`, which matches your Python unittest test class.
-3. **Setup Method**: The `@BeforeEach` annotation is used to initialize the `processor` instance before each test method runs.
-4. **Test Method**: The `@Test` annotation marks the `testGetMinSeqNumAndDistance` method as a test case.
-5. **Assertions**: The assertions ensure that the returned result is not null and contains valid values.
-6. **Pair Class**: A simple generic `Pair` class is used to simulate the return type of the Python function.
-
-Make sure to replace `"path/to/your/file.txt"`, `"word1"`, and `"word2"` with actual values relevant to your test case. Also, adjust the `TextFileProcessor` class and its `getMinSeqNumAndDistance` method according to your implementation details.
+1. **JUnit Annotations**: The `@Test` annotation is used to mark test methods.
+2. **Temporary File Handling**: The `@TempDir` annotation is used to create a temporary directory for the test files.
+3. **Setup**: The `setUp` method initializes the temporary file before each test.
+4. **Mock Content**: The test methods write the mock content to the temporary file.
+5. **Assertions**: The `assertEquals` method is used to verify the results.
+6. **Answer Class**: The `Answer` class remains the same as before, providing the functionality for finding the minimum distance between words in a file.
+7. **Tuple Class**: The `Tuple` class is defined to hold the line number and distance, with appropriate `equals` and `hashCode` methods for comparison.

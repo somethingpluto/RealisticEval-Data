@@ -1,42 +1,63 @@
-Sure, here is the equivalent JavaScript code using the `pandas` library and `fs` module for file operations:
+Sure, I can help you convert the given Python code into JavaScript while maintaining the same functionality, logic, and structure. The Python code reads a TSV file, converts each row into a JSON object, and writes these objects into a JSON Lines (JSONL) file.
+
+Here’s the equivalent JavaScript code using Node.js:
 
 ```javascript
 const fs = require('fs');
-const { readFileSync, writeFileSync } = fs;
-const csv = require('csvtojson');
+const csvParser = require('csv-parser');
+const { promisify } = require('util');
 
-async function tsvToJsonl(tsvFile, jsonlFile) {
-  try {
-    // Read TSV file content
-    const tsvContent = readFileSync(tsvFile, 'utf8');
+// Promisify the fs.writeFile method
+const writeFileAsync = promisify(fs.writeFile);
 
-    // Convert TSV to JSON
-    const jsonData = await csv({ delimiter: '\t' }).fromString(tsvContent);
+async function tsvToJSONL(tsvFile, jsonlFile) {
+    // Read the TSV file
+    const results = [];
+    return new Promise((resolve, reject) => {
+        fs.createReadStream(tsvFile)
+            .pipe(csvParser({ delimiter: '\t' }))
+            .on('data', (row) => {
+                results.push(row);
+            })
+            .on('end', () => {
+                resolve(results);
+            })
+            .on('error', (err) => {
+                reject(err);
+            });
+    }).then(async (results) => {
+        // Open the JSONL file for writing
+        const writeStream = fs.createWriteStream(jsonlFile, { encoding: 'utf-8' });
 
-    // Convert JSON to JSONL format
-    const jsonlContent = jsonData.map(JSON.stringify).join('\n');
+        // Write each row as a JSON object to the JSONL file
+        for (const row of results) {
+            const jsonLine = JSON.stringify(row) + '\n';
+            await writeFileAsync(writeStream.path, jsonLine, { flag: 'a' });
+        }
 
-    // Write JSONL content to file
-    writeFileSync(jsonlFile, jsonlContent, 'utf8');
-
-    console.log(`Successfully converted ${tsvFile} to ${jsonlFile}`);
-  } catch (error) {
-    console.error('Error converting TSV to JSONL:', error);
-  }
+        // Close the write stream
+        writeStream.end();
+    }).catch((error) => {
+        console.error('Error processing the files:', error);
+    });
 }
 
 // Example usage
-tsvToJsonl('input.tsv', 'output.jsonl');
+tsvToJSONL('input.tsv', 'output.jsonl');
 ```
 
 ### Explanation:
-1. **Reading the TSV File**: The `readFileSync` function reads the entire content of the TSV file into memory.
-2. **Converting TSV to JSON**: The `csvtojson` library is used to convert the TSV content to JSON. It specifies the tab character (`\t`) as the delimiter.
-3. **Converting JSON to JSONL**: The JSON data is then mapped to a stringified version and joined with newline characters (`\n`) to form the JSONL content.
-4. **Writing the JSONL File**: The `writeFileSync` function writes the JSONL content to the specified output file.
+1. **Dependencies**:
+   - `fs`: For file system operations.
+   - `csv-parser`: To parse CSV/TSV files.
+   - `util.promisify`: To convert callback-based functions to promises.
 
-Make sure you have the necessary dependencies installed:
-- `pandas`: This can be installed via npm using `npm install pandas`.
-- `csvtojson`: This can be installed via npm using `npm install csvtojson`.
+2. **Function `tsvToJSONL`**:
+   - Reads the TSV file using `fs.createReadStream` and pipes it through `csvParser`.
+   - Collects all rows in an array.
+   - Converts each row to a JSON string and writes it to the JSONL file.
 
-If you don't want to use `pandas`, you can replace it with other libraries like `fast-csv` or `node-csv-parser`.
+3. **Example Usage**:
+   - Calls the `tsvToJSONL` function with the input TSV file and output JSONL file paths.
+
+This JavaScript code should perform the same operations as the provided Python code.

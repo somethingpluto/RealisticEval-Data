@@ -1,53 +1,143 @@
-To convert the Python unittest test class to a C++ test case using Catch2, you need to follow these steps:
+Certainly! Here is the equivalent C++ test class using the Catch2 testing framework. The provided Python unittest class will be converted into a Catch2 test suite, ensuring that the functionality and logic of the tests are preserved.
 
-1. Install Catch2 if you haven't already. You can download it from its official GitHub repository or include it via your package manager.
-2. Create a new C++ source file for your tests.
-3. Write the equivalent test cases in C++ using Catch2's syntax.
-
-Here's an example of how you might write the test cases for the `read_mapping_file` function in C++ using Catch2:
+### C++ Code with Catch2 Testing Framework
 
 ```cpp
-#include <catch2/catch.hpp>
-#include <iostream>
+#include <catch2/catch_test_macros.hpp>
 #include <fstream>
+#include <vector>
 #include <regex>
 #include <string>
-#include <vector>
+#include <stdexcept>
+#include <sstream>
 
-// Assuming the implementation of read_mapping_file is available here
+// Define a struct to hold the compiled regex and replacement string
+struct Mapping {
+    std::regex pattern;
+    std::string replacement;
+};
 
-std::vector<std::pair<std::regex, std::string>> read_mapping_file(const std::string& mapping_file_path);
+std::vector<Mapping> read_mapping_file(const std::string& mapping_file_path) {
+    std::vector<Mapping> mappings;
 
-TEST_CASE("Read Mapping File", "[read_mapping_file]") {
-    // Test with an existing valid mapping file
-    SECTION("Valid Mapping File") {
-        auto result = read_mapping_file("path/to/valid/mapping/file.txt");
-        REQUIRE(result.size() == 2); // Example expectation based on the content of the file
-        CHECK(std::get<0>(result[0]) == std::regex(R"(\bhello\b)")); // Check regex pattern
-        CHECK(std::get<1>(result[0]) == "hi"); // Check replacement string
-        CHECK(std::get<0>(result[1]) == std::regex(R"(\bgoodbye\b)"));
-        CHECK(std::get<1>(result[1]) == "farewell");
+    // Open the file
+    std::ifstream mapping_file(mapping_file_path);
+    if (!mapping_file.is_open()) {
+        throw std::runtime_error("Unable to find the specified file: " + mapping_file_path);
     }
 
-    // Test with an invalid mapping file path
-    SECTION("Invalid Mapping File Path") {
-        try {
-            auto result = read_mapping_file("path/to/nonexistent/file.txt");
-            FAIL("Expected exception not thrown");
-        } catch (const std::ifstream::failure& e) {
-            INFO("Caught expected exception: " << e.what());
+    std::string line;
+    while (std::getline(mapping_file, line)) {
+        size_t comma_pos = line.find(',');
+        if (comma_pos == std::string::npos) {
+            throw std::runtime_error("Each line must contain exactly one comma separating the pattern and the replacement.");
         }
+
+        std::string old_pattern = line.substr(0, comma_pos);
+        std::string new_word = line.substr(comma_pos + 1);
+
+        // Trim leading and trailing spaces and single quotes
+        old_pattern.erase(0, old_pattern.find_first_not_of(" '"));
+        old_pattern.erase(old_pattern.find_last_not_of(" '") + 1);
+        new_word.erase(0, new_word.find_first_not_of(" '"));
+        new_word.erase(new_word.find_last_not_of(" '") + 1);
+
+        // Compile the regex pattern
+        mappings.emplace_back(Mapping{std::regex(old_pattern), new_word});
     }
 
-    // Add more test cases as needed
+    return mappings;
+}
+
+TEST_CASE("Test read_mapping_file function", "[read_mapping_file]") {
+    SECTION("Test with a valid mapping file content") {
+        // Test with a valid mapping file content
+        const std::string mock_file_content = "'old_pattern1','new_word1'\n'old_pattern2','new_word2'\n";
+        std::istringstream mock_stream(mock_file_content);
+
+        // Redirect std::ifstream to use the mock stream
+        std::istringstream* original_ifstream_open = std::ifstream::open;
+        std::ifstream::open = [&mock_stream](const std::string&, std::ios_base::openmode) {
+            return &mock_stream;
+        };
+
+        std::vector<Mapping> result = read_mapping_file("dummy_path.txt");
+        std::vector<Mapping> expected = {
+            {std::regex("old_pattern1"), "new_word1"},
+            {std::regex("old_pattern2"), "new_word2"}
+        };
+
+        REQUIRE(result.size() == expected.size());
+        for (size_t i = 0; i < result.size(); ++i) {
+            REQUIRE(result[i].pattern.mark_count() == expected[i].pattern.mark_count());
+            REQUIRE(result[i].replacement == expected[i].replacement);
+        }
+
+        // Restore the original ifstream::open
+        std::ifstream::open = original_ifstream_open;
+    }
+
+    SECTION("Test with a missing file") {
+        // Test with a missing file
+        REQUIRE_THROWS_AS(read_mapping_file("non_existent_file.txt"), std::runtime_error);
+    }
+
+    SECTION("Test with a line that does not contain a comma") {
+        // Test with a line that does not contain a comma
+        const std::string mock_file_content = "'old_pattern1' 'new_word1'\n";
+        std::istringstream mock_stream(mock_file_content);
+
+        // Redirect std::ifstream to use the mock stream
+        std::istringstream* original_ifstream_open = std::ifstream::open;
+        std::ifstream::open = [&mock_stream](const std::string&, std::ios_base::openmode) {
+            return &mock_stream;
+        };
+
+        REQUIRE_THROWS_AS(read_mapping_file("dummy_path.txt"), std::runtime_error);
+
+        // Restore the original ifstream::open
+        std::ifstream::open = original_ifstream_open;
+    }
+
+    SECTION("Test with valid patterns that contain special regex characters") {
+        // Test with valid patterns that contain special regex characters
+        const std::string mock_file_content = "'\\d+', 'number'\n'\\w+', 'word'\n";
+        std::istringstream mock_stream(mock_file_content);
+
+        // Redirect std::ifstream to use the mock stream
+        std::istringstream* original_ifstream_open = std::ifstream::open;
+        std::ifstream::open = [&mock_stream](const std::string&, std::ios_base::openmode) {
+            return &mock_stream;
+        };
+
+        std::vector<Mapping> result = read_mapping_file("dummy_path.txt");
+        std::vector<Mapping> expected = {
+            {std::regex("\\d+"), "number"},
+            {std::regex("\\w+"), "word"}
+        };
+
+        REQUIRE(result.size() == expected.size());
+        for (size_t i = 0; i < result.size(); ++i) {
+            REQUIRE(result[i].pattern.mark_count() == expected[i].pattern.mark_count());
+            REQUIRE(result[i].replacement == expected[i].replacement);
+        }
+
+        // Restore the original ifstream::open
+        std::ifstream::open = original_ifstream_open;
+    }
 }
 ```
 
 ### Explanation:
-- **Catch2 Headers**: The `<catch2/catch.hpp>` header includes all necessary Catch2 functionalities.
-- **Test Case**: The `TEST_CASE` macro defines a test suite named "Read Mapping File".
-- **Sections**: The `SECTION` macro defines individual test cases within the test suite.
-- **Assertions**: Catch2 provides various assertion macros like `REQUIRE`, `CHECK`, and `FAIL`. These are used to validate the behavior of the `read_mapping_file` function.
-- **Exception Handling**: The test case for an invalid file path demonstrates how to handle exceptions using a try-catch block.
+1. **Struct Definition**: A `Mapping` struct is defined to hold the compiled regex and the replacement string.
+2. **Function Definition**: The `read_mapping_file` function is defined to read the mapping file and return a vector of `Mapping` structs.
+3. **Catch2 Test Suite**: The `TEST_CASE` macro defines the test suite for `read_mapping_file`.
+4. **Test Sections**:
+   - **Valid Mapping File Content**: Tests the function with valid mapping file content.
+   - **Missing File**: Tests the function with a non-existent file path.
+   - **Malformed Line No Comma**: Tests the function with a malformed line that does not contain a comma.
+   - **Valid Patterns with Special Characters**: Tests the function with valid patterns that contain special regex characters.
+5. **Mocking File Stream**: The `std::istringstream` is used to simulate file content by redirecting `std::ifstream::open` to use the mock stream.
+6. **Assertions**: Catch2 assertions (`REQUIRE`) are used to verify the correctness of the function results.
 
-Make sure to replace `"path/to/valid/mapping/file.txt"` and other paths with actual file paths that exist on your system for testing purposes.
+This code ensures that the functionality and logic of the tests are preserved while adhering to C++ and Catch2 standards.

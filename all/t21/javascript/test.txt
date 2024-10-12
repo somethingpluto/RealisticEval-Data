@@ -1,87 +1,198 @@
-To convert the given Python unittest test class to a Jest test case in JavaScript, we need to create a new file for the tests and write the Jest test cases using the `describe` and `test` functions. Here's how you can do it:
+Certainly! Below is the equivalent Jest test class for the given Python unittest class. The conversion will maintain the functionality and logic of the tests, ensuring that all assertions are mapped appropriately to Jest equivalents.
 
-First, ensure you have Jest installed in your project. If not, you can install it using npm:
+### Python Code
 
-```sh
-npm install --save-dev jest
+```python
+import os
+import unittest
+from unittest.mock import mock_open, patch
+
+def compare_files(file1_path: str, file2_path: str) -> List[str]:
+    try:
+        with open(file1_path, 'r') as file1, open(file2_path, 'r') as file2:
+            lines1 = file1.readlines()
+            lines2 = file2.readlines()
+    except FileNotFoundError:
+        raise FileNotFoundError("One of the files was not found.")
+    except IOError as e:
+        raise IOError(f"Error reading files: {e}")
+
+    diff = difflib.unified_diff(lines1, lines2, fromfile=file1_path, tofile=file2_path)
+    diff_lines = list(diff)
+
+    return diff_lines
+
+class TestCompareFiles(unittest.TestCase):
+
+    def setUp(self):
+        # Create files for testing
+        self.file1_path = 'file1.txt'
+        self.file2_path = 'file2.txt'
+
+    def tearDown(self):
+        # Remove created files
+        if os.path.exists(self.file1_path):
+            os.remove(self.file1_path)
+        if os.path.exists(self.file2_path):
+            os.remove(self.file2_path)
+
+    def test_identical_files(self):
+        # Mock question for two identical files
+        file1_content = "Line1\nLine2\nLine3\n"
+        file2_content = "Line1\nLine2\nLine3\n"
+
+        with open(self.file1_path, 'w') as f1, open(self.file2_path, 'w') as f2:
+            f1.write(file1_content)
+            f2.write(file2_content)
+
+        result = compare_files(self.file1_path, self.file2_path)
+        self.assertEqual(len(result), 0, "There should be no differences detected")
+
+    def test_files_with_differences(self):
+        # Mock question for two different files
+        file1_content = "Line1\nLine2\nLine3\n"
+        file2_content = "Line1\nLineChanged\nLine3\n"
+
+        with open(self.file1_path, 'w') as f1, open(self.file2_path, 'w') as f2:
+            f1.write(file1_content)
+            f2.write(file2_content)
+
+        result = compare_files(self.file1_path, self.file2_path)
+        self.assertNotEqual(len(result), 0, "There should be differences detected")
+
+    def test_nonexistent_file(self):
+        # Test when one of the files does not exist
+        with patch('builtins.open', side_effect=FileNotFoundError("File not found")):
+            with self.assertRaises(FileNotFoundError):
+                compare_files('nonexistent.txt', 'file2.txt')
+
+    def test_file_reading_error(self):
+        # Test when there's an error reading the file
+        with patch('builtins.open', side_effect=IOError("Error reading file")):
+            with self.assertRaises(IOError):
+                compare_files('file1.txt', 'file2.txt')
 ```
 
-Next, create a new file named `compareFiles.test.js` and add the following Jest test cases:
+### Equivalent Jest Test Class
 
 ```javascript
 const fs = require('fs');
 const path = require('path');
-const { compareFiles } = require('./compareFiles'); // Adjust the path according to your project structure
+const { unifiedDiff } = require('diff');
 
-// Mock the fs module for testing
-jest.mock('fs', () => ({
-  readFileSync: jest.fn(),
-}));
+function compareFiles(file1Path, file2Path) {
+    try {
+        const file1Content = fs.readFileSync(file1Path, 'utf8');
+        const file2Content = fs.readFileSync(file2Path, 'utf8');
 
-describe('compareFiles function', () => {
-  const file1Path = 'path/to/file1.txt';
-  const file2Path = 'path/to/file2.txt';
+        const lines1 = file1Content.split('\n');
+        const lines2 = file2Content.split('\n');
 
-  beforeEach(() => {
-    fs.readFileSync.mockReset();
-  });
+        const diffResult = unifiedDiff({
+            fromLines: lines1,
+            toLines: lines2,
+            fromFile: file1Path,
+            toFile: file2Path
+        });
 
-  test('should return an empty array if both files are identical', () => {
-    const content1 = 'Hello World\nThis is a test.\nEnd of file.';
-    const content2 = 'Hello World\nThis is a test.\nEnd of file.';
+        const diffLines = diffResult.split('\n').filter(line => line.trim() !== '');
 
-    fs.readFileSync.mockImplementation((filePath) => {
-      if (filePath === file1Path) return content1;
-      if (filePath === file2Path) return content2;
-      throw new Error(`File not found: ${filePath}`);
+        return diffLines;
+    } catch (error) {
+        if (error.code === 'ENOENT') {
+            throw new Error('One of the files was not found.');
+        }
+        throw new Error(`Error reading files: ${error.message}`);
+    }
+}
+
+describe('TestCompareFiles', () => {
+    let file1Path;
+    let file2Path;
+
+    beforeEach(() => {
+        // Create files for testing
+        file1Path = 'file1.txt';
+        file2Path = 'file2.txt';
     });
 
-    expect(compareFiles(file1Path, file2Path)).toEqual([]);
-  });
-
-  test('should return differences if files are different', () => {
-    const content1 = 'Hello World\nThis is a test.\nEnd of file.';
-    const content2 = 'Hello World\nThis is a different test.\nEnd of file.';
-
-    fs.readFileSync.mockImplementation((filePath) => {
-      if (filePath === file1Path) return content1;
-      if (filePath === file2Path) return content2;
-      throw new Error(`File not found: ${filePath}`);
+    afterEach(() => {
+        // Remove created files
+        if (fs.existsSync(file1Path)) {
+            fs.unlinkSync(file1Path);
+        }
+        if (fs.existsSync(file2Path)) {
+            fs.unlinkSync(file2Path);
+        }
     });
 
-    expect(compareFiles(file1Path, file2Path)).toEqual([
-      '- This is a test.',
-      '+ This is a different test.',
-    ]);
-  });
+    it('should detect no differences in identical files', () => {
+        const file1Content = "Line1\nLine2\nLine3\n";
+        const file2Content = "Line1\nLine2\nLine3\n";
 
-  test('should throw an error if file1 does not exist', () => {
-    fs.readFileSync.mockImplementationOnce((filePath) => {
-      if (filePath === file1Path) throw new Error(`File not found: ${file1Path}`);
-      if (filePath === file2Path) return 'Some content';
-      throw new Error(`File not found: ${filePath}`);
+        fs.writeFileSync(file1Path, file1Content);
+        fs.writeFileSync(file2Path, file2Content);
+
+        const result = compareFiles(file1Path, file2Path);
+        expect(result.length).toBe(0, "There should be no differences detected");
     });
 
-    expect(() => compareFiles(file1Path, file2Path)).toThrowError(/File not found/);
-  });
+    it('should detect differences in different files', () => {
+        const file1Content = "Line1\nLine2\nLine3\n";
+        const file2Content = "Line1\nLineChanged\nLine3\n";
 
-  test('should throw an error if file2 does not exist', () => {
-    fs.readFileSync.mockImplementationOnce((filePath) => {
-      if (filePath === file1Path) return 'Some content';
-      if (filePath === file2Path) throw new Error(`File not found: ${file2Path}`);
-      throw new Error(`File not found: ${filePath}`);
+        fs.writeFileSync(file1Path, file1Content);
+        fs.writeFileSync(file2Path, file2Content);
+
+        const result = compareFiles(file1Path, file2Path);
+        expect(result.length).not.toBe(0, "There should be differences detected");
     });
 
-    expect(() => compareFiles(file1Path, file2Path)).toThrowError(/File not found/);
-  });
+    it('should throw an error when one of the files does not exist', () => {
+        const mockOpen = jest.fn().mockImplementation(() => {
+            throw new Error('File not found');
+        });
+
+        global.open = mockOpen;
+
+        expect(() => compareFiles('nonexistent.txt', 'file2.txt')).toThrow('One of the files was not found.');
+
+        delete global.open;
+    });
+
+    it('should throw an error when there is an error reading the file', () => {
+        const mockOpen = jest.fn().mockImplementation(() => {
+            throw new Error('Error reading file');
+        });
+
+        global.open = mockOpen;
+
+        expect(() => compareFiles('file1.txt', 'file2.txt')).toThrow('Error reading files: Error reading file');
+
+        delete global.open;
+    });
 });
 ```
 
-In this example, we've created four test cases:
+### Explanation:
+1. **Function Definition**:
+   - The `compareFiles` function is defined to match the Python function's behavior.
+   - It reads the files synchronously using `fs.readFileSync` and calculates the differences using `unifiedDiff` from the `diff` library.
 
-1. **Test Case 1**: Checks if the function returns an empty array when both files are identical.
-2. **Test Case 2**: Checks if the function returns the correct differences when the files are different.
-3. **Test Case 3**: Checks if the function throws an error when the first file does not exist.
-4. **Test Case 4**: Checks if the function throws an error when the second file does not exist.
+2. **Test Setup and Teardown**:
+   - `beforeEach` and `afterEach` hooks are used to create and clean up test files.
+   - Files are created and removed using `fs.writeFileSync` and `fs.unlinkSync`.
 
-Make sure to adjust the `require` paths according to your project structure. Also, ensure that the `compareFiles` function is correctly exported from its module.
+3. **Test Cases**:
+   - Each test case is defined using `it` blocks.
+   - Assertions are made using Jest's `expect` function.
+   - File content is written to the test files using `fs.writeFileSync`.
+
+4. **Mocking**:
+   - Jest's `jest.fn()` is used to create mock implementations for `open` to simulate file not found and reading errors.
+   - The global `open` function is mocked to simulate these scenarios.
+
+5. **Error Handling**:
+   - Errors are caught and rethrown with custom messages to match the Python behavior.
+
+This conversion ensures that the functionality and logic of the Python unittest class are preserved in the Jest test class.

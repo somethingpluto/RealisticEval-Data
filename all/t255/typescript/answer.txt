@@ -1,72 +1,70 @@
-Sure! Here is the equivalent TypeScript code for the provided Python function:
+Sure! Here’s the equivalent TypeScript code, including the necessary adjustments for TypeScript's static typing and library imports:
+
+First, you'll need to install the `jimp` package, which is a popular image processing library for Node.js that can handle image operations similar to what `PIL` does in Python. You can install it using npm:
+
+```sh
+npm install jimp
+```
+
+Now, here’s the TypeScript code:
 
 ```typescript
-import { createCanvas, loadImage } from 'canvas';
+import Jimp from 'jimp';
 
-interface BitArray {
-  [index: number]: number;
-}
+/**
+ * Converts an image to a binary array representation.
+ *
+ * @param {string} imagePath - The path to the image file.
+ * @returns {Promise<number[]>} A promise that resolves to a list of bits (0 or 1) representing the image.
+ */
+async function convertImageToBits(imagePath: string): Promise<number[]> {
+    // Load the image using Jimp
+    const image = await Jimp.read(imagePath);
 
-async function convertImageToBits(imagePath: string): Promise<BitArray> {
-  /**
-   * Convert a picture to an array of binary bits. Convert it to black and white mode (only 0s and 1s, corresponding to black and white),
-   * convert the white pixel (value 255) to 1, convert the black pixel to 0, and finally store these bits in an array and return.
-   *
-   * @param imagePath - The path to the image file.
-   * @returns A promise that resolves with a list of bits (0 or 1) representing the image.
-   */
+    // Convert the image to black and white (1-bit pixels)
+    image.color([{ apply: 'greyscale', params: [] }]);
 
-  const canvas = createCanvas(1, 1);
-  const ctx = canvas.getContext('2d');
+    // Get the width and height of the image
+    const w = image.bitmap.width;
+    const h = image.bitmap.height;
 
-  try {
-    const img = await loadImage(imagePath);
-    canvas.width = img.width;
-    canvas.height = img.height;
-    ctx.drawImage(img, 0, 0);
+    // Initialize an empty array to store the bits
+    const bitsArray: number[] = [];
 
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const data = imageData.data;
+    // Loop over each pixel in the image
+    for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+            // Get the pixel value (0 for black, 255 for white)
+            const pixel = image.getPixelColor(x, y);
+            const r = (pixel >> 16) & 0xff; // Extract red channel
+            const g = (pixel >> 8) & 0xff;  // Extract green channel
+            const b = pixel & 0xff;         // Extract blue channel
 
-    const bitArray: BitArray = [];
-
-    for (let i = 0; i < data.length; i += 4) {
-      // Each pixel has 4 values (RGBA)
-      const r = data[i];
-      const g = data[i + 1];
-      const b = data[i + 2];
-
-      // Convert to grayscale by averaging RGB values
-      const gray = Math.round((r + g + b) / 3);
-
-      // Convert to binary bit
-      const bit = gray > 127 ? 1 : 0;
-
-      bitArray.push(bit);
+            // Convert pixel to bit: 1 for white, 0 for black
+            const bit = (r + g + b > 0) ? 1 : 0;
+            bitsArray.push(bit);
+        }
     }
 
-    return bitArray;
-  } catch (error) {
-    throw new Error(`Error converting image to bits: ${error}`);
-  }
+    return bitsArray;
 }
+
+// Example usage
+(async () => {
+    try {
+        const bits = await convertImageToBits('path/to/image.jpg');
+        console.log(bits);
+    } catch (error) {
+        console.error('Error converting image:', error);
+    }
+})();
 ```
 
 ### Explanation:
-1. **Imports**: We use `createCanvas` and `loadImage` from the `canvas` package to handle image processing.
-2. **Type Definitions**: We define an interface `BitArray` to represent the array of bits.
-3. **Function Definition**: The `convertImageToBits` function is defined as asynchronous to handle the asynchronous nature of loading images.
-4. **Image Loading and Processing**:
-   - Load the image using `loadImage`.
-   - Draw the image onto a canvas.
-   - Get the image data using `getImageData`.
-   - Iterate through each pixel's RGBA values, calculate the average (grayscale value), and convert it to a binary bit (1 if greater than 127, otherwise 0).
-5. **Return Value**: The function returns a promise that resolves with the array of bits.
+1. **Importing Jimp**: We use the `Jimp` library to handle image operations.
+2. **Async/Await**: Since `Jimp.read` returns a promise, we use `async/await` to handle asynchronous operations.
+3. **Greyscale Conversion**: We convert the image to greyscale as a proxy for black and white conversion.
+4. **Pixel Extraction**: We extract the RGB values of each pixel and determine the bit based on the sum of these values.
+5. **Example Usage**: An example usage block demonstrates how to call the function and handle the result.
 
-Make sure you have the `canvas` package installed in your project. You can install it using npm:
-
-```sh
-npm install canvas
-```
-
-This TypeScript code should work similarly to the original Python function, converting an image to an array of binary bits.
+This TypeScript code maintains the same functionality as the Python code but adapts it to TypeScript's syntax and the capabilities of the `Jimp` library.

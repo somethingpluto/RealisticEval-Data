@@ -1,18 +1,83 @@
-Sure! Here's how you can convert the Python function signature to a C++ function signature while keeping the comments intact:
+Certainly! Here is the equivalent C++ code for the provided Python function, including comments and documentation adapted to C++ standards:
 
 ```cpp
+#include <iostream>
+#include <fstream>
 #include <vector>
-#include <string>
 #include <regex>
+#include <string>
+#include <stdexcept>
+
+// Define a struct to hold the compiled regex and replacement string
+struct Mapping {
+    std::regex pattern;
+    std::string replacement;
+};
 
 /**
- * Reads question from the given mapping file and returns a vector where each element is a pair containing the compiled regular expression and replacement strings
+ * Reads question from the given mapping file and returns a list where each element is a tuple containing the compiled regular expression and replacement strings.
  *
- * @param mapping_file_path The path to the file containing regex mappings.
- *
- * @return A vector of pairs. Each pair contains a compiled regex object and a corresponding replacement string.
+ * @param mapping_file_path Path to the file containing regex mappings.
+ * @return A vector of Mapping structs, each containing a compiled regex object and a corresponding replacement string.
  */
-std::vector<std::pair<std::regex, std::string>> readMappingFile(const std::string& mappingFilePath);
+std::vector<Mapping> read_mapping_file(const std::string& mapping_file_path) {
+    std::vector<Mapping> mappings;
+
+    // Open the file
+    std::ifstream mapping_file(mapping_file_path);
+    if (!mapping_file.is_open()) {
+        throw std::runtime_error("Unable to find the specified file: " + mapping_file_path);
+    }
+
+    std::string line;
+    while (std::getline(mapping_file, line)) {
+        size_t comma_pos = line.find(',');
+        if (comma_pos == std::string::npos) {
+            throw std::runtime_error("Each line must contain exactly one comma separating the pattern and the replacement.");
+        }
+
+        std::string old_pattern = line.substr(0, comma_pos);
+        std::string new_word = line.substr(comma_pos + 1);
+
+        // Trim leading and trailing spaces and single quotes
+        old_pattern.erase(0, old_pattern.find_first_not_of(" '"));
+        old_pattern.erase(old_pattern.find_last_not_of(" '") + 1);
+        new_word.erase(0, new_word.find_first_not_of(" '"));
+        new_word.erase(new_word.find_last_not_of(" '") + 1);
+
+        // Compile the regex pattern
+        mappings.emplace_back(Mapping{std::regex(old_pattern), new_word});
+    }
+
+    return mappings;
+}
+
+int main() {
+    try {
+        std::string mapping_file_path = "path/to/mapping_file.txt";
+        auto mappings = read_mapping_file(mapping_file_path);
+
+        // Print the mappings
+        for (const auto& mapping : mappings) {
+            std::cout << "Pattern: " << mapping.pattern.mark_count() << ", Replacement: " << mapping.replacement << std::endl;
+        }
+    } catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+    }
+
+    return 0;
+}
 ```
 
-In C++, we use `std::vector` instead of `List`, `std::pair` for the tuple, and `std::regex` for the compiled regular expressions. The function parameters and return type are specified using C++ syntax.
+### Explanation:
+1. **Struct Definition**: A `Mapping` struct is defined to hold the compiled regex and the replacement string.
+2. **Function Documentation**: The function `read_mapping_file` is documented using C++ style comments.
+3. **File Handling**: The file is opened using `std::ifstream`. If the file cannot be opened, a `std::runtime_error` is thrown.
+4. **Reading Lines**: Each line is read using `std::getline`.
+5. **Comma Position Check**: The position of the comma is checked. If it is not found, a `std::runtime_error` is thrown.
+6. **Trimming Strings**: Leading and trailing spaces and single quotes are removed from the pattern and replacement strings.
+7. **Compiling Regex**: The regex pattern is compiled and stored in the `Mapping` struct.
+8. **Returning Mappings**: The vector of mappings is returned.
+9. **Main Function**: In the `main` function, the mappings are printed, and exceptions are caught and handled.
+
+This code preserves the original functionality and structure of the Python code while adhering to C++ standards and practices.

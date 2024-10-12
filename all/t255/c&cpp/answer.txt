@@ -1,32 +1,70 @@
-Here is a possible C++ version of your Python function:
+Sure! Here’s the equivalent C++ code that converts an image to a binary array representation. This code uses the `stb_image.h` library to load images and assumes you have it included in your project.
 
-```c++
+First, make sure you have `stb_image.h` in your project. You can download it from [here](https://github.com/nothings/stb/blob/master/stb_image.h).
+
+Here’s the C++ code:
+
+```cpp
 #include <iostream>
 #include <vector>
-#include <fstream>
+#include <stb_image.h>
 
-std::vector<int> convertImageToBits(const std::string &imagePath) {
-    // Open the file
-    std::ifstream file(imagePath);
-    if (!file.is_open()) {
-        throw std::runtime_error("Could not open image file");
+// Function to convert an image to a binary array representation
+std::vector<int> convert_image_to_bits(const char* image_path) {
+    // Load the image
+    int width, height, channels;
+    unsigned char* data = stbi_load(image_path, &width, &height, &channels, 1);
+
+    if (!data) {
+        std::cerr << "Failed to load image." << std::endl;
+        return {};
     }
 
-    std::vector<int> bits;
+    // Initialize an empty vector to store the bits
+    std::vector<int> bits_array;
 
-    // Read the file
-    char c;
-    while (file.get(c)) {
-        // Convert character to bit
-        int bit = static_cast<int>(c - '0');
-        bits.push_back(bit);
+    // Loop over each pixel in the image
+    for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
+            // Get the pixel value (0 for black, 255 for white)
+            int pixel = data[y * width + x];
+            // Convert pixel to bit: 1 for white, 0 for black
+            int bit = (pixel == 255) ? 1 : 0;
+            bits_array.push_back(bit);
+        }
     }
 
-    file.close();
-    return bits;
+    // Free the loaded image data
+    stbi_image_free(data);
+
+    return bits_array;
+}
+
+int main() {
+    const char* image_path = "path/to/your/image.png"; // Replace with your image path
+    std::vector<int> bits = convert_image_to_bits(image_path);
+
+    // Print the bits array
+    for (int bit : bits) {
+        std::cout << bit << " ";
+    }
+    std::cout << std::endl;
+
+    return 0;
 }
 ```
 
-This code assumes that the image data is stored as a text file where each line represents a row of pixels and each character represents a pixel's value. It reads the file, converts each character to a bit, and stores them in a vector.
+### Explanation:
+1. **Loading the Image**:
+   - We use `stbi_load` from `stb_image.h` to load the image. We specify `1` as the number of channels to ensure the image is loaded as grayscale.
+   
+2. **Converting to Binary Array**:
+   - We loop through each pixel in the image and check its value. If the pixel value is 255 (white), we set the bit to 1; otherwise, we set it to 0.
+   
+3. **Memory Management**:
+   - After processing the image, we free the allocated memory using `stbi_image_free`.
 
-Please note that this is just one way to implement this functionality in C++. Depending on how you want to handle the image data, you may need to adjust this code accordingly.
+4. **Output**:
+   - In the `main` function, we call `convert_image_to_bits` and print the resulting bits array.
+
+Make sure to include `stb_image.h` in your project and link against the necessary libraries when compiling your program.

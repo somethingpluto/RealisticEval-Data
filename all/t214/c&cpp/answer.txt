@@ -1,124 +1,74 @@
-To convert the Python code snippet into C/C++ code, we need to consider that C/C++ does not have built-in support for regular expressions like Python does with `re` module. Therefore, we will use a third-party library such as PCRE (Perl Compatible Regular Expressions).
+Here’s the equivalent C++ code for the provided Python function:
 
-Here's how you can implement the same functionality in C:
+```cpp
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <regex>
+#include <string>
+#include <stdexcept>
 
-### Dependencies
-First, ensure you have the PCRE library installed on your system. On Ubuntu, you can install it using:
-```sh
-sudo apt-get install libpcre3-dev
-```
+// Define a struct to hold the compiled regex and replacement string
+struct Mapping {
+    std::regex pattern;
+    std::string replacement;
+};
 
-### C Code
+std::vector<Mapping> read_mapping_file(const std::string& mapping_file_path) {
+    std::vector<Mapping> mappings;
 
-```c
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <pcre.h>
-
-typedef struct {
-    pcre *regex;
-    char *replacement;
-} RegexMapping;
-
-RegexMapping* read_mapping_file(const char* mapping_file_path, int *mapping_count) {
-    FILE *file = fopen(mapping_file_path, "r");
-    if (!file) {
-        perror("Failed to open file");
-        return NULL;
+    // Open the file
+    std::ifstream mapping_file(mapping_file_path);
+    if (!mapping_file.is_open()) {
+        throw std::runtime_error("Unable to find the specified file: " + mapping_file_path);
     }
 
-    // Estimate initial number of mappings (can be adjusted)
-    *mapping_count = 100;
-    RegexMapping *mappings = malloc(*mapping_count * sizeof(RegexMapping));
-    if (!mappings) {
-        perror("Failed to allocate memory");
-        fclose(file);
-        return NULL;
+    std::string line;
+    while (std::getline(mapping_file, line)) {
+        size_t comma_pos = line.find(',');
+        if (comma_pos == std::string::npos) {
+            throw std::runtime_error("Each line must contain exactly one comma separating the pattern and the replacement.");
+        }
+
+        std::string old_pattern = line.substr(0, comma_pos);
+        std::string new_word = line.substr(comma_pos + 1);
+
+        // Trim leading and trailing spaces and single quotes
+        old_pattern.erase(0, old_pattern.find_first_not_of(" '"));
+        old_pattern.erase(old_pattern.find_last_not_of(" '") + 1);
+        new_word.erase(0, new_word.find_first_not_of(" '"));
+        new_word.erase(new_word.find_last_not_of(" '") + 1);
+
+        // Compile the regex pattern
+        mappings.emplace_back(Mapping{std::regex(old_pattern), new_word});
     }
 
-    char line[256];
-    int count = 0;
-    while (fgets(line, sizeof(line), file)) {
-        if (count >= *mapping_count) {
-            *mapping_count *= 2;
-            mappings = realloc(mappings, *mapping_count * sizeof(RegexMapping));
-            if (!mappings) {
-                perror("Failed to reallocate memory");
-                fclose(file);
-                return NULL;
-            }
-        }
-
-        char *pattern_end = strchr(line, ' ');
-        if (!pattern_end) {
-            fprintf(stderr, "Invalid format in line: %s", line);
-            continue;
-        }
-
-        *pattern_end = '\0';
-        pattern_end++;
-
-        const char *error;
-        int erroffset;
-        mappings[count].regex = pcre_compile(pattern_end, 0, &error, &erroffset, NULL);
-        if (!mappings[count].regex) {
-            fprintf(stderr, "PCRE compilation failed at offset %d: %s\n", erroffset, error);
-            free(mappings);
-            fclose(file);
-            return NULL;
-        }
-
-        size_t len = strlen(line) - (pattern_end - line);
-        mappings[count].replacement = malloc(len + 1);
-        if (!mappings[count].replacement) {
-            perror("Failed to allocate memory for replacement");
-            pcre_free(mappings[count].regex);
-            free(mappings);
-            fclose(file);
-            return NULL;
-        }
-        strncpy(mappings[count].replacement, line, len);
-        mappings[count].replacement[len] = '\0';
-
-        count++;
-    }
-
-    fclose(file);
-    *mapping_count = count;
     return mappings;
 }
 
-void free_mappings(RegexMapping *mappings, int count) {
-    for (int i = 0; i < count; i++) {
-        pcre_free(mappings[i].regex);
-        free(mappings[i].replacement);
-    }
-    free(mappings);
-}
-
 int main() {
-    const char *mapping_file_path = "path/to/mapping/file.txt";
-    int mapping_count;
-    RegexMapping *mappings = read_mapping_file(mapping_file_path, &mapping_count);
+    try {
+        std::string mapping_file_path = "path/to/mapping_file.txt";
+        auto mappings = read_mapping_file(mapping_file_path);
 
-    if (mappings) {
-        printf("Read %d mappings.\n", mapping_count);
-        free_mappings(mappings, mapping_count);
-    } else {
-        printf("Failed to read mappings.\n");
+        // Print the mappings
+        for (const auto& mapping : mappings) {
+            std::cout << "Pattern: " << mapping.pattern.mark_count() << ", Replacement: " << mapping.replacement << std::endl;
+        }
+    } catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
     }
 
     return 0;
 }
 ```
 
-### Explanation
-1. **Reading File**: The function `read_mapping_file` reads the file line by line.
-2. **Pattern and Replacement Extraction**: For each line, it extracts the regex pattern and replacement string.
-3. **Compiling Regex**: It uses `pcre_compile` to compile the regex pattern.
-4. **Memory Management**: It dynamically allocates memory for storing the regex patterns and replacements.
-5. **Error Handling**: It handles errors during file reading and regex compilation.
-6. **Freeing Memory**: The `free_mappings` function frees the allocated memory for regex objects and replacement strings.
-
-This C code provides a similar functionality to the provided Python code but uses PCRE for handling regular expressions. Make sure to adjust the path to the mapping file accordingly.
+### Explanation:
+1. **Struct Definition**: A `Mapping` struct is defined to hold the compiled regex and the replacement string.
+2. **File Handling**: The file is opened using `std::ifstream`. If the file cannot be opened, a `std::runtime_error` is thrown.
+3. **Reading Lines**: Each line is read using `std::getline`.
+4. **Comma Position Check**: The position of the comma is checked. If it is not found, a `std::runtime_error` is thrown.
+5. **Trimming Strings**: Leading and trailing spaces and single quotes are removed from the pattern and replacement strings.
+6. **Compiling Regex**: The regex pattern is compiled and stored in the `Mapping` struct.
+7. **Returning Mappings**: The vector of mappings is returned.
+8. **Main Function**: In the `main` function, the mappings are printed, and exceptions are caught and handled.

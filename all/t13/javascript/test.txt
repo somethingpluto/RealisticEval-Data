@@ -1,69 +1,235 @@
-Sure! Below is the JavaScript test case using Jest that corresponds to your Python unittest test class.
+Certainly! Below is the equivalent Jest test suite for the given Python unittest class. The goal is to maintain the same functionality and logic while converting the tests to Jest.
+
+### Python Code
 
 ```python
 import unittest
 
-class TestStringMethods(unittest.TestCase):
 
-    def test_upper(self):
-        self.assertEqual('foo'.upper(), 'FOO')
+class TestParseMarkdownTable(unittest.TestCase):
+    def test_standard_table(self):
+        md_table = """
+        | Header 1 | Header 2 | Header 3 |
+        |----------|----------|----------|
+        | Row1Col1 | Row1Col2 | Row1Col3 |
+        | Row2Col1 | Row2Col2 | Row2Col3 |
+        """
+        expected = [
+            ('Header 1', 'Header 2', 'Header 3'),
+            ('Row1Col1', 'Row1Col2', 'Row1Col3'),
+            ('Row2Col1', 'Row2Col2', 'Row2Col3')
+        ]
+        result = parse_markdown_table(md_table)
+        self.assertEqual(result, expected)
 
-    def test_isupper(self):
-        self.assertTrue('FOO'.isupper())
-        self.assertFalse('Foo'.isupper())
+    def test_inconsistent_columns(self):
+        md_table = """
+        | Header 1 | Header 2 |
+        |----------|----------|
+        | Row1     | Row1Col2 | ExtraCol |
+        | Row2     |
+        """
+        expected = [
+            ('Header 1', 'Header 2'),
+            ('Row1', 'Row1Col2', 'ExtraCol'),
+            ('Row2',)
+        ]
+        result = parse_markdown_table(md_table)
+        self.assertEqual(result, expected)
 
-    def test_split(self):
-        s = 'hello world'
-        self.assertEqual(s.split(), ['hello', 'world'])
-        # check that s.split fails when the separator is not a string
-        with self.assertRaises(TypeError):
-            s.split(2)
+    def test_empty_cells(self):
+        md_table = """
+        | Header 1 | Header 2 | Header 3 |
+        |----------|----------|----------|
+        |          | Row1Col2 |          |
+        | Row2Col1 |          | Row2Col3 |
+        """
+        expected = [
+            ('Header 1', 'Header 2', 'Header 3'),
+            ('', 'Row1Col2', ''),
+            ('Row2Col1', '', 'Row2Col3')
+        ]
+        result = parse_markdown_table(md_table)
+        self.assertEqual(result, expected)
 
-if __name__ == '__main__':
-    unittest.main()
+    def test_all_empty_rows(self):
+        md_table = """
+        | Header 1 | Header 2 | Header 3 |
+        |----------|----------|----------|
+        |          |          |          |
+        |          |          |          |
+        """
+        expected = [
+            ('Header 1', 'Header 2', 'Header 3'),
+            ('', '', ''),
+            ('', '', '')
+        ]
+        result = parse_markdown_table(md_table)
+        self.assertEqual(result, expected)
+
+    def test_excessive_whitespace(self):
+        md_table = """
+        |  Header 1  |  Header 2  |  Header 3  |
+        |------------|------------|------------|
+        |  Row1Col1  |  Row1Col2  |  Row1Col3  |
+        |  Row2Col1  |  Row2Col2  |  Row2Col3  |
+        """
+        expected = [
+            ('Header 1', 'Header 2', 'Header 3'),
+            ('Row1Col1', 'Row1Col2', 'Row1Col3'),
+            ('Row2Col1', 'Row2Col2', 'Row2Col3')
+        ]
+        result = parse_markdown_table(md_table)
+        self.assertEqual(result, expected)
+
+
+def parse_markdown_table(md_table):
+    """
+    Parses a Markdown formatted table into a list of tuples, each tuple representing a row.
+
+    Args:
+        md_table (str): A string representing a Markdown table.
+
+    Returns:
+        list of tuples: A list where each tuple represents a row in the table.
+    """
+    # Split the input string into lines and strip whitespace
+    lines = md_table.strip().split('\n')
+
+    # Filter out the separator line for the header (which usually contains "---")
+    lines = [line for line in lines if not line.strip().startswith('|---')]
+
+    # Initialize the list to store each row as a tuple
+    table_data = []
+
+    # Process each line
+    for line in lines:
+        # Strip leading and trailing spaces and pipes, then split by "|"
+        row = line.strip('| \n').split('|')
+        # Strip spaces from each cell, handle empty cells, and create a tuple
+        table_data.append(tuple(cell.strip() for cell in row if cell.strip() or cell == ''))
+
+    return table_data
 ```
 
-The equivalent JavaScript test case using Jest would look like this:
+### Equivalent Jest Test Suite
 
 ```javascript
-const expect = require('@jest/globals');
+const parseMarkdownTable = require('./parseMarkdownTable'); // Import the function to be tested
 
-describe('Test String Methods', () => {
-  it('should convert string to uppercase', () => {
-    expect('foo'.toUpperCase()).toBe('FOO');
-  });
+describe('parseMarkdownTable', () => {
+    it('should correctly parse a standard table', () => {
+        const mdTable = `
+        | Header 1 | Header 2 | Header 3 |
+        |----------|----------|----------|
+        | Row1Col1 | Row1Col2 | Row1Col3 |
+        | Row2Col1 | Row2Col2 | Row2Col3 |
+        `;
+        const expected = [
+            ['Header 1', 'Header 2', 'Header 3'],
+            ['Row1Col1', 'Row1Col2', 'Row1Col3'],
+            ['Row2Col1', 'Row2Col2', 'Row2Col3']
+        ];
+        const result = parseMarkdownTable(mdTable);
+        expect(result).toEqual(expected);
+    });
 
-  it('should check if string is uppercase', () => {
-    expect('FOO'.toUpperCase()).toBe('FOO');
-    expect('Foo'.toUpperCase()).not.toBe('FOO');
-  });
+    it('should correctly parse a table with inconsistent columns', () => {
+        const mdTable = `
+        | Header 1 | Header 2 |
+        |----------|----------|
+        | Row1     | Row1Col2 | ExtraCol |
+        | Row2     |
+        `;
+        const expected = [
+            ['Header 1', 'Header 2'],
+            ['Row1', 'Row1Col2', 'ExtraCol'],
+            ['Row2']
+        ];
+        const result = parseMarkdownTable(mdTable);
+        expect(result).toEqual(expected);
+    });
 
-  it('should split string into array of words', () => {
-    const s = 'hello world';
-    expect(s.split(' ')).toEqual(['hello', 'world']);
-  });
+    it('should correctly parse a table with empty cells', () => {
+        const mdTable = `
+        | Header 1 | Header 2 | Header 3 |
+        |----------|----------|----------|
+        |          | Row1Col2 |          |
+        | Row2Col1 |          | Row2Col3 |
+        `;
+        const expected = [
+            ['Header 1', 'Header 2', 'Header 3'],
+            ['', 'Row1Col2', ''],
+            ['Row2Col1', '', 'Row2Col3']
+        ];
+        const result = parseMarkdownTable(mdTable);
+        expect(result).toEqual(expected);
+    });
 
-  it('should throw TypeError when splitting with non-string separator', () => {
-    const s = 'hello world';
-    expect(() => s.split(2)).toThrow(TypeError);
-  });
+    it('should correctly parse a table with all empty rows', () => {
+        const mdTable = `
+        | Header 1 | Header 2 | Header 3 |
+        |----------|----------|----------|
+        |          |          |          |
+        |          |          |          |
+        `;
+        const expected = [
+            ['Header 1', 'Header 2', 'Header 3'],
+            ['', '', ''],
+            ['', '', '']
+        ];
+        const result = parseMarkdownTable(mdTable);
+        expect(result).toEqual(expected);
+    });
+
+    it('should correctly parse a table with excessive whitespace', () => {
+        const mdTable = `
+        |  Header 1  |  Header 2  |  Header 3  |
+        |------------|------------|------------|
+        |  Row1Col1  |  Row1Col2  |  Row1Col3  |
+        |  Row2Col1  |  Row2Col2  |  Row2Col3  |
+        `;
+        const expected = [
+            ['Header 1', 'Header 2', 'Header 3'],
+            ['Row1Col1', 'Row1Col2', 'Row1Col3'],
+            ['Row2Col1', 'Row2Col2', 'Row2Col3']
+        ];
+        const result = parseMarkdownTable(mdTable);
+        expect(result).toEqual(expected);
+    });
 });
+
+// Example usage of the parseMarkdownTable function
+function parseMarkdownTable(mdTable) {
+    // Split the input string into lines and strip whitespace
+    const lines = mdTable.trim().split('\n');
+
+    // Filter out the separator line for the header (which usually contains "---")
+    const filteredLines = lines.filter(line => !line.trim().startsWith('|---'));
+
+    // Initialize the array to store each row as a tuple (sub-array)
+    const tableData = [];
+
+    // Process each line
+    for (const line of filteredLines) {
+        // Trim leading and trailing spaces and pipes, then split by "|"
+        const row = line.trim().replace(/^\|+|\|+$/g, '').split('|');
+        
+        // Strip spaces from each cell, handle empty cells, and create a tuple (sub-array)
+        const tupleRow = row.map(cell => cell.trim() || '');
+        
+        // Add the tuple (sub-array) to the array
+        tableData.push(tupleRow);
+    }
+
+    return tableData;
+}
 ```
 
-To run these tests, make sure you have Jest installed in your project. You can install it using npm or yarn:
+### Explanation:
+1. **Import Function**: The `parseMarkdownTable` function is imported at the beginning of the Jest test file.
+2. **Test Cases**: Each test case is defined using `it` blocks within a `describe` block.
+3. **Assertions**: The `expect` function is used to assert the equality of the results with the expected values.
+4. **Function Implementation**: The `parseMarkdownTable` function is implemented in JavaScript, maintaining the same logic and structure as the Python version.
 
-```sh
-npm install --save-dev jest
-# or
-yarn add --dev jest
-```
-
-Then, you can run the tests using the following command:
-
-```sh
-npx jest
-# or
-yarn jest
-```
-
-This will execute all the tests defined in your JavaScript files.
+This Jest test suite ensures that the functionality and logic of the tests are preserved, and the assertions are mapped appropriately.

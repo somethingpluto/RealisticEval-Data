@@ -1,112 +1,204 @@
-Sure! Below is the equivalent Java JUnit test case for your Python unittest test class. Note that I'll assume you want to test the `renameFiles` method from the provided Python code.
+Certainly! Below is the equivalent Java test class using JUnit for the provided Python unittest class. The Java test class is placed in the package `org.real.temp` and named `Tester`. It includes appropriate JUnit annotations and assertion methods to ensure the functionality and logic of the tests are preserved.
 
-First, let's define the `Tester` class in Java:
-
-```java
-package org.real.temp;
-
-import java.io.File;
-import java.util.Arrays;
-
-public class Tester {
-    public static void renameFiles(String directory) {
-        File dir = new File(directory);
-        File[] files = dir.listFiles((d, name) -> name.endsWith(".png"));
-        
-        if (files != null && files.length > 0) {
-            Arrays.sort(files);
-            
-            int count = 1001; // Start counting from 1001
-            for (File file : files) {
-                String fileName = file.getName();
-                String baseName = fileName.substring(0, fileName.lastIndexOf('.'));
-                String extension = ".png";
-                
-                String newName = baseName + count + extension;
-                File newFile = new File(dir, newName);
-                
-                if (!file.renameTo(newFile)) {
-                    System.out.println("Failed to rename file: " + file.getName());
-                }
-                
-                count++;
-            }
-        }
-    }
-
-    public static void main(String[] args) {
-        renameFiles("path/to/your/directory");
-    }
-}
-```
-
-Next, we will write the JUnit test case for this `Tester` class:
+### Java Test Class
 
 ```java
 package org.real.temp;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import java.io.File;
+import org.junit.jupiter.api.io.TempDir;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
-public class TesterTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-    private Path tempDir;
+public class Tester {
+
+    private Path testDir;
 
     @BeforeEach
-    public void setUp() throws IOException {
-        tempDir = Files.createTempDirectory("testdir");
-    }
-
-    @Test
-    public void testRenameFiles() throws IOException {
-        // Create some test files
-        Path pngFile1 = tempDir.resolve("image1.png");
-        Path pngFile2 = tempDir.resolve("image2.png");
-        Path pngFile3 = tempDir.resolve("image3.png");
-
-        Files.createFile(pngFile1);
-        Files.createFile(pngFile2);
-        Files.createFile(pngFile3);
-
-        // Call the method under test
-        Tester.renameFiles(tempDir.toString());
-
-        // Check if the files were renamed correctly
-        assertTrue(Files.exists(tempDir.resolve("image1001.png")));
-        assertTrue(Files.exists(tempDir.resolve("image2001.png")));
-        assertTrue(Files.exists(tempDir.resolve("image3001.png")));
-
-        // Clean up
-        Files.deleteIfExists(pngFile1);
-        Files.deleteIfExists(pngFile2);
-        Files.deleteIfExists(pngFile3);
-        Files.deleteIfExists(tempDir.resolve("image1001.png"));
-        Files.deleteIfExists(tempDir.resolve("image2001.png"));
-        Files.deleteIfExists(tempDir.resolve("image3001.png"));
+    public void setUp(@TempDir Path tempDir) {
+        this.testDir = tempDir;
     }
 
     @AfterEach
-    public void tearDown() throws IOException {
-        Files.walk(tempDir)
-             .sorted(java.util.Comparator.reverseOrder())
-             .map(Path::toFile)
-             .forEach(File::delete);
+    public void tearDown() {
+        // The @TempDir annotation automatically cleans up the directory after each test
+    }
+
+    private void createPngFiles(List<String> filenames) throws IOException {
+        for (String filename : filenames) {
+            Path filePath = testDir.resolve(filename);
+            Files.createFile(filePath);  // Create an empty file
+        }
+    }
+
+    @Test
+    public void testBasicRenaming() throws IOException {
+        // Test renaming in a basic scenario with simple filenames
+        List<String> filenames = Arrays.asList("image1.png", "image2.png", "image3.png");
+        createPngFiles(filenames);
+
+        renameFiles(testDir.toString());
+
+        List<String> expectedFiles = Arrays.asList("image1001.png", "image2001.png", "image3001.png");
+        List<String> resultFiles = Files.list(testDir)
+                                        .map(Path::getFileName)
+                                        .map(Path::toString)
+                                        .sorted()
+                                        .collect(Collectors.toList());
+        assertEquals(expectedFiles, resultFiles);
+    }
+
+    @Test
+    public void testResetCounterForDifferentBaseNames() throws IOException {
+        // Test that the counter resets for different base names
+        List<String> filenames = Arrays.asList("image1.png", "picture1.png", "image2.png", "picture2.png");
+        createPngFiles(filenames);
+
+        renameFiles(testDir.toString());
+
+        List<String> expectedFiles = Arrays.asList("image1001.png", "image2001.png", "picture1001.png", "picture2001.png");
+        List<String> resultFiles = Files.list(testDir)
+                                        .map(Path::getFileName)
+                                        .map(Path::toString)
+                                        .sorted()
+                                        .collect(Collectors.toList());
+        assertEquals(expectedFiles, resultFiles);
+    }
+
+    @Test
+    public void testNoPngFiles() throws IOException {
+        // Test handling of directories with no PNG files
+        List<String> filenames = Arrays.asList("file1.txt", "file2.jpg");
+        createPngFiles(filenames);
+
+        renameFiles(testDir.toString());
+
+        List<String> expectedFiles = filenames;  // No changes expected
+        List<String> resultFiles = Files.list(testDir)
+                                        .map(Path::getFileName)
+                                        .map(Path::toString)
+                                        .sorted()
+                                        .collect(Collectors.toList());
+        assertEquals(expectedFiles, resultFiles);
+    }
+
+    @Test
+    public void testEmptyDirectory() throws IOException {
+        // Test handling of an empty directory
+        renameFiles(testDir.toString());
+
+        List<String> expectedFiles = Arrays.asList();  // No files to rename
+        List<String> resultFiles = Files.list(testDir)
+                                        .map(Path::getFileName)
+                                        .map(Path::toString)
+                                        .collect(Collectors.toList());
+        assertEquals(expectedFiles, resultFiles);
+    }
+
+    @Test
+    public void testFilesWithExistingNumbers() throws IOException {
+        // Test renaming files that already have numbers in their names
+        List<String> filenames = Arrays.asList("file001.png", "file002.png", "file003.png");
+        createPngFiles(filenames);
+
+        renameFiles(testDir.toString());
+
+        List<String> expectedFiles = Arrays.asList("file001001.png", "file002001.png", "file003001.png");
+        List<String> resultFiles = Files.list(testDir)
+                                        .map(Path::getFileName)
+                                        .map(Path::toString)
+                                        .sorted()
+                                        .collect(Collectors.toList());
+        assertEquals(expectedFiles, resultFiles);
+    }
+
+    // The renameFiles method from the Answer class
+    public static void renameFiles(String directory) {
+        Path dirPath = Paths.get(directory);
+
+        if (!Files.isDirectory(dirPath)) {
+            throw new IllegalArgumentException("The directory '" + directory + "' does not exist or is not a directory.");
+        }
+
+        File[] pngFiles = dirPath.toFile().listFiles((dir, name) -> name.toLowerCase().endsWith(".png"));
+
+        if (pngFiles == null || pngFiles.length == 0) {
+            throw new IllegalArgumentException("No PNG files found in the directory '" + directory + "'.");
+        }
+
+        Arrays.sort(pngFiles, Comparator.comparing(File::getName));
+
+        System.out.println("Sorted files:");
+        for (File file : pngFiles) {
+            System.out.println(file.getName());
+        }
+
+        String prevBaseName = null;
+        int count = 1;
+
+        Pattern pattern = Pattern.compile("(\\d{3})(-\\d)?(?=\\.png$)");
+
+        for (File file : pngFiles) {
+            String fileName = file.getName();
+            String baseName = fileName.substring(0, fileName.lastIndexOf('.'));
+            Matcher matcher = pattern.matcher(baseName);
+            if (matcher.find()) {
+                baseName = matcher.replaceAll("");
+            }
+
+            if (!baseName.equals(prevBaseName)) {
+                count = 1;
+            }
+
+            String newFileName = baseName + String.format("%03d", count) + ".png";
+            Path newFilePath = dirPath.resolve(newFileName);
+
+            try {
+                Files.move(file.toPath(), newFilePath);
+                System.out.println("Renaming " + fileName + " to " + newFileName);
+            } catch (IOException e) {
+                System.err.println("Failed to rename " + fileName + " to " + newFileName);
+                e.printStackTrace();
+            }
+
+            prevBaseName = baseName;
+            count++;
+        }
     }
 }
 ```
 
-This JUnit test case does the following:
+### Explanation:
+1. **JUnit Annotations**:
+   - `@BeforeEach`: Sets up the temporary directory before each test.
+   - `@AfterEach`: Cleans up the temporary directory after each test (automatically handled by `@TempDir`).
+   - `@Test`: Marks methods as test cases.
 
-1. Creates a temporary directory before each test using `@BeforeEach`.
-2. Creates some test PNG files in the temporary directory.
-3. Calls the `renameFiles` method with the path of the temporary directory.
-4. Checks if the files were renamed correctly.
-5. Cleans up the temporary directory after each test using `@AfterEach`.
+2. **Temporary Directory**:
+   - `@TempDir Path tempDir`: Creates a temporary directory for each test.
+   - `setUp` method initializes the `testDir` with the temporary directory.
 
-Make sure to replace `"path/to/your/directory"` with the actual path where you want to run the tests.
+3. **File Creation**:
+   - `createPngFiles` method creates empty PNG files in the temporary directory.
+
+4. **Test Methods**:
+   - Each test method performs specific checks and assertions.
+   - `renameFiles` method is called with the temporary directory path.
+
+5. **Assertions**:
+   - `assertEquals` is used to compare the expected and actual lists of filenames.
+
+6. **File Handling**:
+   - `Files.list` and `Files.createFile` are used to work with files and directories.
+
+This setup ensures that the tests are structured and executed correctly, maintaining the functionality and logic of the original Python unittest class.

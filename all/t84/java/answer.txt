@@ -1,60 +1,90 @@
-Here's how you can convert your Python code into Java:
+Here’s the equivalent Java code for the given Python code, organized within the package `org.real.temp` and the class `Answer`. This Java code maintains the same functionality and logic as the original Python code:
 
 ```java
+package org.real.temp;
+
 import java.util.HashMap;
 import java.util.Map;
 
 public class Answer {
-    public static String findMinWindowSubstring(String source, String target) {
-        Map<Character, Integer> targetCount = new HashMap<>();
-        Map<Character, Integer> currentCount = new HashMap<>();
 
-        // Count the frequency of each character in the target string
-        for(char c : target.toCharArray()) {
-            targetCount.put(c, targetCount.getOrDefault(c, 0) + 1);
+    /**
+     * Finds the smallest window in the source string that contains all characters of the target string.
+     *
+     * @param source The source string in which to search for the window.
+     * @param target The target string containing the characters to be matched.
+     * @return The smallest window in the source string that contains all characters of the target string.
+     *         Returns an empty string if no such window exists.
+     */
+    public static String findMinWindowSubstring(String source, String target) {
+        if (source == null || target == null || source.isEmpty() || target.isEmpty()) {
+            return "";
         }
 
-        int left = 0, right = 0, formed = 0;
-        String minWindow = "";
+        Map<Character, Integer> requiredChars = new HashMap<>();
+        for (char c : target.toCharArray()) {
+            requiredChars.put(c, requiredChars.getOrDefault(c, 0) + 1);
+        }
 
-        while(right < source.length()) {
-            char c = source.charAt(right);
+        Map<Character, Integer> windowChars = new HashMap<>();
 
-            // Update the count of the current character
-            currentCount.put(c, currentCount.getOrDefault(c, 0) + 1);
+        int left = 0; // Left boundary of the window
+        int minLength = Integer.MAX_VALUE; // Initialize the minimum length as infinity
+        String minWindow = ""; // Initialize the minimum window string
 
-            // If the current character matches the required character and its count matches,
-            // increment the 'formed' counter
-            if(targetCount.containsKey(c) && currentCount.get(c).equals(targetCount.get(c))) {
-                formed++;
-            }
+        // Iterate over the source string with the right boundary of the window
+        for (int right = 0; right < source.length(); right++) {
+            char charAtRight = source.charAt(right);
+            if (requiredChars.containsKey(charAtRight)) {
+                windowChars.put(charAtRight, windowChars.getOrDefault(charAtRight, 0) + 1);
 
-            // Try to minimize the window size
-            while(left <= right && formed == targetCount.size()) {
-                char lChar = source.charAt(left);
+                // Check if the current window contains all characters of the target string
+                while (isWindowValid(requiredChars, windowChars)) {
+                    int windowSize = right - left + 1;
+                    if (windowSize < minLength) {
+                        minLength = windowSize;
+                        minWindow = source.substring(left, right + 1);
+                    }
 
-                // Update the minimum window if the current window is smaller than the previous one
-                if(minWindow.isEmpty() || right - left + 1 < minWindow.length()) {
-                    minWindow = source.substring(left, right + 1);
+                    // Attempt to shrink the window from the left
+                    char leftChar = source.charAt(left);
+                    if (requiredChars.containsKey(leftChar)) {
+                        windowChars.put(leftChar, windowChars.get(leftChar) - 1);
+                    }
+                    left++;
                 }
-
-                // Shrink the window from the left side
-                currentCount.put(lChar, currentCount.get(lChar) - 1);
-
-                // If the removed character was part of the target string and its count becomes less than the required count,
-                // decrement the 'formed' counter
-                if(targetCount.containsKey(lChar) && currentCount.get(lChar) < targetCount.get(lChar)) {
-                    formed--;
-                }
-
-                left++;
             }
-
-            right++;
         }
 
         return minWindow;
     }
+
+    private static boolean isWindowValid(Map<Character, Integer> requiredChars, Map<Character, Integer> windowChars) {
+        for (Map.Entry<Character, Integer> entry : requiredChars.entrySet()) {
+            char key = entry.getKey();
+            int value = entry.getValue();
+            if (windowChars.getOrDefault(key, 0) < value) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static void main(String[] args) {
+        // Example usage
+        String source = "ADOBECODEBANC";
+        String target = "ABC";
+        System.out.println(findMinWindowSubstring(source, target));
+    }
 }
 ```
-This Java code does the same thing as your Python code: it finds the shortest substring in `source` that contains all the characters in `target`. It uses two pointers (`left` and `right`) to keep track of the current window, and a map (`currentCount`) to keep track of the number of times each character appears in the current window. When the current window contains all the characters in `target`, it tries to make the window smaller by moving the `left` pointer to the right.
+
+### Explanation:
+1. **Imports**: Added necessary imports (`HashMap`, `Map`) to handle character frequency counts.
+2. **Method Signature**: Defined the method `findMinWindowSubstring` with appropriate parameters and return type.
+3. **Initialization**: Initialized maps (`requiredChars` and `windowChars`) to track character frequencies.
+4. **Looping and Conditions**: Used loops and conditions to iterate over the source string and check if the current window is valid.
+5. **Helper Method**: Created a helper method `isWindowValid` to check if the current window contains all characters of the target string.
+6. **Main Method**: Provided an example usage in the `main` method to demonstrate how to call the method.
+
+This Java code closely mirrors the functionality and logic of the original Python code while adhering to Java's syntax and conventions.

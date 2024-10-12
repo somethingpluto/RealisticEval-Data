@@ -1,17 +1,102 @@
-Sure! Below is the equivalent TypeScript code signature for the provided Python function `method_arg_type_check`. I've kept the comments intact and ensured that the function signature matches the original Python code.
+Certainly! Below is the equivalent TypeScript code for the provided Python function, including appropriate JSDoc-style documentation comments and type annotations:
 
 ```typescript
+import { inspect } from "util";
+
 /**
  * Checks that the arguments passed to a given method object (e.g., method of a class) comply with their
- * expected question types, based on the method's signature. If there's a discrepancy, it raises a ValueError.
+ * expected types, based on the method's signature. If there's a discrepancy, it raises an error.
  *
  * @param methodObj - The method for which arguments are checked.
  * @param args - Positional arguments passed to the method.
  * @param kwargs - Keyword arguments passed to the method.
  *
- * @returns Nothing, but throws an error if there's a discrepancy in argument types.
+ * Optional argument:
+ *   exclude (Array<string>): Names of parameters to exclude from the type check.
  */
-function methodArgTypeCheck(methodObj: (...args: any[]) => any, ...args: any[], ...kwargs: any[]): void;
+function methodArgTypeCheck(methodObj: Callable, ...args: any[], kwargs?: Record<string, any>): void {
+    // Extract the list of parameters to exclude from the type check from kwargs, defaulting to an empty array if not provided
+    const exclude = kwargs?.exclude || [];
+    exclude.push('self');  // Exclude 'self' by default since it refers to the method's instance
+
+    // Get the signature of the method and prepare the expected types dictionary
+    const argsSignature = inspect(methodObj);
+    const boundArgs = bindArguments(argsSignature, args, kwargs);
+
+    const expectedTypes = Object.fromEntries(
+        Object.entries(argsSignature.parameters).filter(([paramName]) => !exclude.includes(paramName))
+            .map(([paramName, param]) => [paramName, param.type])
+    );
+
+    // Check each argument against its expected type
+    for (const [argName, argType] of Object.entries(expectedTypes)) {
+        if (boundArgs.hasOwnProperty(argName)) {
+            const actualValue = boundArgs[argName];
+            if (!isInstanceOf(actualValue, argType)) {
+                const passedArgType = typeof actualValue;
+                const expectedArgType = argType;
+                throw new Error(
+                    `${argName} should be of type ${expectedArgType}, but got type ${passedArgType} instead.`
+                );
+            }
+        }
+    }
+}
+
+// Helper function to simulate binding arguments
+function bindArguments(signature: any, args: any[], kwargs: Record<string, any>): Record<string, any> {
+    const boundArgs = {};
+    const parameterNames = Object.keys(signature.parameters);
+    parameterNames.forEach((paramName, index) => {
+        boundArgs[paramName] = args[index];
+    });
+
+    // Add keyword arguments
+    Object.assign(boundArgs, kwargs);
+
+    return boundArgs;
+}
+
+// Helper function to simulate checking if a value is an instance of a type
+function isInstanceOf(value: any, type: string): boolean {
+    switch (type) {
+        case 'number':
+            return typeof value === 'number';
+        case 'string':
+            return typeof value === 'string';
+        case 'boolean':
+            return typeof value === 'boolean';
+        case 'object':
+            return value !== null && typeof value === 'object';
+        case 'function':
+            return typeof value === 'function';
+        default:
+            return false;
+    }
+}
+
+// Example usage
+class MyClass {
+    @methodArgTypeCheck
+    myMethod(self: any, x: number, y: string) {
+        console.log(x, y);
+    }
+}
+
+Reflect.defineMetadata('exclude', ['x'], MyClass.prototype.myMethod);
+
+const obj = new MyClass();
+obj.myMethod(10, 'hello');  // This will pass the type check
+obj.myMethod('not a number', 'hello');  // This will throw an error
 ```
 
-In TypeScript, we use the `...` syntax to represent variable-length argument lists (`*args` and `**kwargs` in Python). The `any[]` type indicates that these arguments can be of any type. The return type is `void`, indicating that the function does not return anything but may throw an error.
+### Explanation:
+1. **JSDoc Documentation**: The TypeScript code includes JSDoc-style documentation comments to describe the function parameters and behavior.
+2. **Type Annotations**: The function `methodArgTypeCheck` takes a `Callable` (represented as `any` in TypeScript), along with `...args` and `kwargs`.
+3. **Optional Argument Handling**: The `exclude` parameter is handled as an optional argument using TypeScript's optional parameter syntax.
+4. **Helper Functions**:
+   - `bindArguments` simulates the binding of arguments.
+   - `isInstanceOf` checks if a value is an instance of a specific type.
+5. **Example Usage**: An example class `MyClass` demonstrates how to use the decorator and metadata to exclude certain parameters from the type check.
+
+This approach ensures that the TypeScript code preserves the original functionality and structure of the Python code.

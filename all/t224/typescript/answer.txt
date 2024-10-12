@@ -1,63 +1,67 @@
-Sure! Below is the equivalent TypeScript code for your Python function:
+Sure! Here is the equivalent TypeScript code:
 
 ```typescript
-import fs from 'fs';
-import path from 'path';
+import * as os from 'os';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as fsExtra from 'fs-extra';
 
-function emptyDirectory(directoryPath: string): void | Error {
+function emptyDirectory(directoryPath: string): void {
     /**
-     * Empties all files and subdirectories in the specified directory.
-     * 
-     * @param {string} directoryPath - The path to the directory whose contents are to be emptied.
-     * @returns {void | Error} - Returns nothing if successful, otherwise returns an Error.
+     * Empties all files and subdirectories in the specified directory, but keeps the directory itself.
+     *
+     * @param directoryPath - Path to the directory whose contents are to be emptied.
+     *
+     * @throws {Error} If the specified path does not exist or is not a directory.
      */
-    
-    try {
-        // Check if the directory exists
-        if (!fs.existsSync(directoryPath)) {
-            throw new Error(`The specified path ${directoryPath} does not exist.`);
-        }
+    // Check if the path exists and is a directory
+    if (!fs.existsSync(directoryPath)) {
+        throw new Error("The specified directory does not exist.");
+    }
+    if (!fs.lstatSync(directoryPath).isDirectory()) {
+        throw new Error("The specified path is not a directory.");
+    }
 
-        // Read the directory contents
-        const files = fs.readdirSync(directoryPath);
+    // Iterate over all items in the directory
+    const items = fs.readdirSync(directoryPath);
+    for (const item of items) {
+        const itemPath = path.join(directoryPath, item);
 
-        // Loop through each file and remove it
-        for (const file of files) {
-            const filePath = path.join(directoryPath, file);
-            
-            // Check if the item is a file or directory and remove accordingly
-            if (fs.lstatSync(filePath).isFile()) {
-                fs.unlinkSync(filePath);
-            } else if (fs.lstatSync(filePath).isDirectory()) {
-                emptyDirectory(filePath); // Recursively empty subdirectories
-                fs.rmdirSync(filePath);
-            }
+        // Check if the item is a file or directory and delete accordingly
+        if (fs.lstatSync(itemPath).isFile() || fs.lstatSync(itemPath).isSymbolicLink()) {
+            fs.unlinkSync(itemPath);  // Remove the file or link
+        } else if (fs.lstatSync(itemPath).isDirectory()) {
+            fsExtra.removeSync(itemPath);  // Remove the directory and all its contents
         }
-        
-        console.log('Directory has been emptied successfully.');
-    } catch (error) {
-        return error;
     }
 }
 
-// Example usage:
-const dirPath = './your-directory-path';
-const result = emptyDirectory(dirPath);
-
-if (result instanceof Error) {
-    console.error(result.message);
-} else {
-    console.log('Directory emptied successfully.');
+// Example usage
+try {
+    emptyDirectory('/path/to/directory');
+} catch (error) {
+    console.error(error.message);
 }
 ```
 
 ### Explanation:
-1. **Imports**: The `fs` module provides file system operations and the `path` module provides utilities for working with file and directory paths.
-2. **Function Definition**: The `emptyDirectory` function takes a single argument `directoryPath` which is a string representing the path to the directory.
-3. **Error Handling**:
-   - Checks if the directory exists using `fs.existsSync`.
-   - Reads the directory contents using `fs.readdirSync`.
-   - Iterates over each file and removes it using `fs.unlinkSync` for files and recursively calls `emptyDirectory` for directories followed by removing them using `fs.rmdirSync`.
-4. **Example Usage**: Demonstrates how to call the `emptyDirectory` function and handle its output.
+1. **Imports**:
+   - `os` is not used in this particular function, so it is omitted.
+   - `fs` (Node.js filesystem module) is used for file operations.
+   - `path` is used for joining paths.
+   - `fs-extra` is used for removing directories and their contents (`fsExtra.removeSync`).
 
-This TypeScript code should work similarly to your original Python function.
+2. **Function Definition**:
+   - The function `emptyDirectory` is defined with a single parameter `directoryPath` of type `string`.
+   - It throws an error if the directory does not exist or is not a directory.
+
+3. **Directory Content Removal**:
+   - The function iterates over all items in the directory using `fs.readdirSync`.
+   - For each item, it checks if it is a file, symbolic link, or directory using `fs.lstatSync`.
+   - Files and symbolic links are removed using `fs.unlinkSync`.
+   - Directories are removed using `fsExtra.removeSync`.
+
+4. **Example Usage**:
+   - An example usage is provided at the end, demonstrating how to call the function and handle errors.
+
+This TypeScript code maintains the same functionality and logic as the original Python code, with appropriate adjustments for TypeScript and Node.js.

@@ -1,67 +1,91 @@
-Sure! Here is the equivalent TypeScript test case using Jest for the given Python unittest test class:
+Certainly! Here’s the equivalent TypeScript test class using Jest, ensuring that the functionality and logic of the tests are preserved. We’ll use Jest’s assertion methods to match the behavior of Python’s `unittest` framework.
+
+First, let's include the necessary imports and define the `probabilityRedBalls` function and the `comb` utility function:
 
 ```typescript
 import { describe, it, expect } from '@jest/globals';
+import { comb } from './utils'; // Assuming the comb function is defined in a separate file
 
+/**
+ * Calculate the probability that x balls will be randomly drawn from a jar containing
+ * n red balls and m blue balls, and all of them will be red balls.
+ * 
+ * @param x - Number of balls to draw.
+ * @param n - Number of red balls in the jar.
+ * @param m - Number of blue balls in the jar.
+ * @returns The probability that all x drawn balls are red.
+ */
 function probabilityRedBalls(x: number, n: number, m: number): number {
-    /**
-     * Calculate the probability that x balls will be randomly drawn from a jar containing n red balls and m blue balls, and all of them will be red balls
-     * @param x - Number of balls to draw.
-     * @param n - Number of red balls in the jar.
-     * @param m - Number of blue balls in the jar.
-     * @returns The probability that all x drawn balls are red.
-     */
-    if (x > n || x > n + m) return 0;
-    const totalWays = factorial(n + m) / (factorial(x) * factorial(n + m - x));
-    const waysToDrawRed = factorial(n) / (factorial(x) * factorial(n - x));
-    return waysToDrawRed / totalWays;
+    if (x > n) {
+        return 0; // Not enough red balls to draw x red balls
+    }
+    const totalBalls = n + m;
+    if (x > totalBalls) {
+        return 0; // Not enough balls to draw x balls of any color
+    }
+
+    // Number of ways to choose x red balls from n red balls
+    const waysToChooseRed = comb(n, x);
+    // Total number of ways to choose x balls from all balls
+    const totalWaysToChooseBalls = comb(totalBalls, x);
+
+    // Probability that all chosen balls are red
+    const probability = waysToChooseRed / totalWaysToChooseBalls;
+
+    return probability;
 }
 
-function factorial(num: number): number {
-    if (num === 0 || num === 1) return 1;
+// Utility function to calculate combinations (n choose k)
+function comb(n: number, k: number): number {
     let result = 1;
-    for (let i = 2; i <= num; i++) {
-        result *= i;
+    for (let i = 0; i < k; i++) {
+        result *= (n - i);
+        result /= (i + 1);
     }
     return result;
 }
 
-describe('probabilityRedBalls', () => {
-    it('should calculate the probability correctly when all drawn balls are red', () => {
-        expect(probabilityRedBalls(3, 5, 2)).toBeCloseTo(0.4667);
+// Jest test suite
+describe('TestProbabilityRedBalls', () => {
+    it('should return 1 when all balls are red', () => {
+        // Case where all balls are red
+        expect(probabilityRedBalls(5, 5, 0)).toBe(1);
     });
 
-    it('should calculate the probability correctly when no balls are drawn', () => {
-        expect(probabilityRedBalls(0, 5, 2)).toBeCloseTo(1);
+    it('should return 0 when no red balls are available', () => {
+        // Case where no red balls are available
+        expect(probabilityRedBalls(1, 0, 5)).toBe(0);
     });
 
-    it('should return 0 when more balls are drawn than available red balls', () => {
-        expect(probabilityRedBalls(6, 5, 2)).toBeCloseTo(0);
+    it('should return the correct probability in a typical scenario', () => {
+        // Typical scenario
+        const expectedProbability = comb(10, 2) / comb(15, 2);
+        expect(probabilityRedBalls(2, 10, 5)).toBeCloseTo(expectedProbability, 6);
     });
 
-    it('should return 0 when more balls are drawn than available total balls', () => {
-        expect(probabilityRedBalls(8, 5, 2)).toBeCloseTo(0);
+    it('should return 0 when more balls are requested than available', () => {
+        // More balls requested than available
+        expect(probabilityRedBalls(6, 5, 4)).toBe(0);
+    });
+
+    it('should return the correct probability with higher number of combinations', () => {
+        // Test with higher number of combinations
+        const expectedProbability = comb(20, 3) / comb(50, 3);
+        expect(probabilityRedBalls(3, 20, 30)).toBeCloseTo(expectedProbability, 6);
     });
 });
 ```
 
-In this TypeScript code:
-- We define the `probabilityRedBalls` function which calculates the probability based on the given formula.
-- We also define a helper function `factorial` to compute factorials.
-- We use Jest's `describe`, `it`, and `expect` functions to create test cases for our function.
+### Explanation:
+1. **Imports**: We import `describe`, `it`, and `expect` from `@jest/globals` to use Jest's testing utilities.
+2. **Function Definition**: The `probabilityRedBalls` function is defined with proper type annotations.
+3. **Utility Function**: The `comb` function is defined to calculate combinations.
+4. **Test Suite**: The `describe` block defines the test suite `TestProbabilityRedBalls`.
+5. **Test Cases**:
+   - `test_all_red`: Uses `toBe` to check if the probability is 1 when all balls are red.
+   - `test_no_red`: Uses `toBe` to check if the probability is 0 when no red balls are available.
+   - `test_typical_case`: Uses `toBeCloseTo` to check the probability in a typical scenario.
+   - `test_impossible_case`: Uses `toBe` to check if the probability is 0 when more balls are requested than available.
+   - `test_high_combinations`: Uses `toBeCloseTo` to check the probability with higher numbers of combinations.
 
-Make sure you have Jest installed in your project. If not, you can install it using npm or yarn:
-
-```sh
-npm install --save-dev jest
-# or
-yarn add --dev jest
-```
-
-Then, you can run the tests using the following command:
-
-```sh
-npx jest
-# or
-yarn jest
-```
+This TypeScript code preserves the original functionality and logic of the Python tests while adapting to Jest's assertion methods.

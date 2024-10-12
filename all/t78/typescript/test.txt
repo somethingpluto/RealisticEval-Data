@@ -1,82 +1,142 @@
-Sure! Here is how you can convert your Python unittest test class to a TypeScript test case using Jest:
+Certainly! Below is the equivalent TypeScript test class using Jest. This includes the necessary imports, type annotations, and Jest assertions to match the functionality and logic of the provided Python unittest class.
+
+First, ensure you have Jest and the necessary dependencies installed:
+
+```bash
+npm install --save-dev jest @types/jest mathjs
+```
+
+Then, configure Jest in your project by adding a `jest.config.js` file if you haven't already:
+
+```javascript
+module.exports = {
+  preset: 'ts-jest',
+  testEnvironment: 'node',
+};
+```
+
+Now, here is the TypeScript code for the test class:
 
 ```typescript
-import { describe, it, expect } from '@jest/globals';
-import * as math from 'mathjs';
+import { Matrix, math } from 'mathjs';
 
-function eulerToRotationMatrix(roll: number, pitch: number, yaw: number): math.Matrix {
-    /**
-     * Convert Euler angles (roll, pitch, yaw) to a rotation matrix.
-     *
-     * @param {number} roll - Rotation around the x-axis in degrees.
-     * @param {number} pitch - Rotation around the y-axis in degrees.
-     * @param {number} yaw - Rotation around the z-axis in degrees.
-     * @returns {math.Matrix} - A 3x3 rotation matrix.
-     */
-    const radRoll = math.rad(roll);
-    const radPitch = math.rad(pitch);
-    const radYaw = math.rad(yaw);
+/**
+ * Convert Euler angles (roll, pitch, yaw) to a rotation matrix.
+ *
+ * @param roll - Rotation around the x-axis in degrees.
+ * @param pitch - Rotation around the y-axis in degrees.
+ * @param yaw - Rotation around the z-axis in degrees.
+ * @returns A 3x3 rotation matrix.
+ */
+function eulerToRotationMatrix(roll: number, pitch: number, yaw: number): Matrix {
+    // Convert degrees to radians
+    const rollRad = math.unit(roll, 'deg').toNumber('rad');
+    const pitchRad = math.unit(pitch, 'deg').toNumber('rad');
+    const yawRad = math.unit(yaw, 'deg').toNumber('rad');
 
-    const cosRoll = math.cos(radRoll);
-    const sinRoll = math.sin(radRoll);
-    const cosPitch = math.cos(radPitch);
-    const sinPitch = math.sin(radPitch);
-    const cosYaw = math.cos(radYaw);
-    const sinYaw = math.sin(radYaw);
+    // Rotation matrix around x-axis (roll)
+    const Rx = math.matrix([
+        [1, 0, 0],
+        [0, math.cos(rollRad), -math.sin(rollRad)],
+        [0, math.sin(rollRad), math.cos(rollRad)]
+    ]);
 
+    // Rotation matrix around y-axis (pitch)
+    const Ry = math.matrix([
+        [math.cos(pitchRad), 0, math.sin(pitchRad)],
+        [0, 1, 0],
+        [-math.sin(pitchRad), 0, math.cos(pitchRad)]
+    ]);
+
+    // Rotation matrix around z-axis (yaw)
     const Rz = math.matrix([
-        [cosYaw, -sinYaw, 0],
-        [sinYaw, cosYaw, 0],
+        [math.cos(yawRad), -math.sin(yawRad), 0],
+        [math.sin(yawRad), math.cos(yawRad), 0],
         [0, 0, 1]
     ]);
 
-    const Ry = math.matrix([
-        [cosPitch, 0, sinPitch],
-        [0, 1, 0],
-        [-sinPitch, 0, cosPitch]
-    ]);
+    // Combined rotation matrix, R = Rz * Ry * Rx
+    const R = math.multiply(Rz, math.multiply(Ry, Rx));
 
-    const Rx = math.matrix([
-        [1, 0, 0],
-        [0, cosRoll, -sinRoll],
-        [0, sinRoll, cosRoll]
-    ]);
-
-    return math.multiply(Rz, math.multiply(Ry, Rx));
+    return R;
 }
 
-describe('eulerToRotationMatrix', () => {
-    it('should correctly convert Euler angles to a rotation matrix', () => {
-        const roll = 45;
-        const pitch = 30;
-        const yaw = 60;
-
-        const expectedMatrix = math.matrix([
-            [0.25, -0.866, 0.433],
-            [0.966, 0.25, 0.134],
-            [-0.0, 0.433, 0.866]
+describe('TestEulerToRotationMatrix', () => {
+    it('test_zero_rotation', () => {
+        // Test with zero rotation for all axes
+        const R = eulerToRotationMatrix(0, 0, 0);
+        const identityMatrix = math.matrix([
+            [1, 0, 0],
+            [0, 1, 0],
+            [0, 0, 1]
         ]);
+        expect(math.equal(R, identityMatrix)).toBe(true);
+    });
 
-        const resultMatrix = eulerToRotationMatrix(roll, pitch, yaw);
+    it('test_rotation_about_x', () => {
+        // Test rotation about the x-axis
+        const R = eulerToRotationMatrix(90, 0, 0);
+        const expected = math.matrix([
+            [1, 0, 0],
+            [0, 0, -1],
+            [0, 1, 0]
+        ]);
+        expect(math.equal(R, expected)).toBe(true);
+    });
 
-        // Check if the matrices are equal within a small tolerance
-        for (let i = 0; i < 3; i++) {
-            for (let j = 0; j < 3; j++) {
-                expect(math.abs(resultMatrix.subset(math.index(i, j)) - expectedMatrix.subset(math.index(i, j)))).toBeLessThan(1e-5);
-            }
-        }
+    it('test_rotation_about_y', () => {
+        // Test rotation about the y-axis
+        const R = eulerToRotationMatrix(0, 90, 0);
+        const expected = math.matrix([
+            [0, 0, 1],
+            [0, 1, 0],
+            [-1, 0, 0]
+        ]);
+        expect(math.equal(R, expected)).toBe(true);
+    });
+
+    it('test_rotation_about_z', () => {
+        // Test rotation about the z-axis
+        const R = eulerToRotationMatrix(0, 0, 90);
+        const expected = math.matrix([
+            [0, -1, 0],
+            [1, 0, 0],
+            [0, 0, 1]
+        ]);
+        expect(math.equal(R, expected)).toBe(true);
+    });
+
+    it('test_combined_rotation', () => {
+        // Test combined rotation
+        const R = eulerToRotationMatrix(30, 45, 60);
+        const expected = math.matrix([
+            [0.35355339, -0.5732233, 0.73919892],
+            [0.61237244, 0.73919892, 0.28033009],
+            [-0.70710678, 0.35355339, 0.61237244]
+        ]);
+        expect(math.equal(R, expected, { relTol: 1e-5 })).toBe(true);
     });
 });
+
+// Example usage
+const roll = 45; // Degrees
+const pitch = 30; // Degrees
+const yaw = 60; // Degrees
+
+const rotationMatrix = eulerToRotationMatrix(roll, pitch, yaw);
+console.log(rotationMatrix.toString());
 ```
 
 ### Explanation:
-1. **Importing Dependencies**: We use `@jest/globals` for Jest's testing utilities and `mathjs` for mathematical operations.
-2. **Function Definition**: The `eulerToRotationMatrix` function is defined similarly to your Python version, but it uses `mathjs` for calculations.
-3. **Test Suite**: We define a test suite using `describe`.
-4. **Individual Test Case**: Inside the suite, we define an individual test case using `it`. We check if the resulting rotation matrix matches the expected one within a small tolerance.
-5. **Matrix Comparison**: We compare each element of the resulting matrix with the expected matrix using `expect` and `toBeLessThan`.
+1. **Imports**: We import `Matrix` and `math` from the `mathjs` library to handle matrix operations and trigonometric functions.
+2. **Function Definition**: The `eulerToRotationMatrix` function takes three parameters (`roll`, `pitch`, `yaw`) and returns a 3x3 rotation matrix.
+3. **Jest Test Suite**: We use `describe` to define a test suite named `TestEulerToRotationMatrix`.
+4. **Test Cases**:
+   - `test_zero_rotation`: Tests with zero rotation for all axes.
+   - `test_rotation_about_x`: Tests rotation about the x-axis.
+   - `test_rotation_about_y`: Tests rotation about the y-axis.
+   - `test_rotation_about_z`: Tests rotation about the z-axis.
+   - `test_combined_rotation`: Tests combined rotation.
+5. **Assertions**: We use `expect` and `math.equal` to compare the resulting matrices with the expected matrices. The `relTol` parameter is used to specify the relative tolerance for floating-point comparisons.
 
-Make sure to install the necessary dependencies by running:
-```bash
-npm install --save-dev @jest/globals mathjs
-```
+This TypeScript code preserves the original functionality and logic of the Python unittest class while adapting it to Jest's testing framework and using `mathjs` for matrix operations.

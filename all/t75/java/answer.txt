@@ -1,66 +1,96 @@
-Sure, here's the equivalent Java code for your Python function:
+Certainly! Below is the equivalent Java code for the provided Python script, organized within the `org.real.temp` package and the `Answer` class:
 
 ```java
 package org.real.temp;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Answer {
-    public static void renameFiles(String directory) {
-        File dir = new File(directory);
-        File[] pngFiles = dir.listFiles((dir1, name) -> name.endsWith(".png"));
-
-        if (pngFiles != null && pngFiles.length > 0) {
-            Arrays.sort(pngFiles, Comparator.comparingInt(Answer::getNumericPart));
-
-            int count = 1001; // Starting from 1001 as per the requirement
-
-            for (File file : pngFiles) {
-                String fileName = file.getName();
-                String baseName = fileName.substring(0, fileName.lastIndexOf('.'));
-                String extension = ".png";
-
-                String newFileName = baseName + count + extension;
-                File newFile = new File(dir, newFileName);
-
-                if (!file.renameTo(newFile)) {
-                    System.err.println("Failed to rename file: " + fileName);
-                }
-
-                count++;
-            }
-        } else {
-            System.out.println("No PNG files found in the directory.");
-        }
-    }
-
-    private static int getNumericPart(File file) {
-        String fileName = file.getName();
-        String baseName = fileName.substring(0, fileName.lastIndexOf('.'));
-        try {
-            return Integer.parseInt(baseName.replaceAll("[^0-9]", ""));
-        } catch (NumberFormatException e) {
-            return 0; // In case there's no numeric part, treat it as 0
-        }
-    }
 
     public static void main(String[] args) {
-        // Example usage
-        renameFiles("/path/to/directory");
+        renameFiles("path/to/directory");
+    }
+
+    /**
+     * Renames PNG files in a specified directory by appending a sequence number to each file.
+     * The files are sorted alphabetically, and each base name is assigned sequential numbers.
+     *
+     * @param directory The path to the directory containing PNG files to be renamed.
+     */
+    public static void renameFiles(String directory) {
+        // Convert directory to Path object for easier handling
+        Path dirPath = Paths.get(directory);
+
+        if (!Files.isDirectory(dirPath)) {
+            throw new IllegalArgumentException("The directory '" + directory + "' does not exist or is not a directory.");
+        }
+
+        // Get list of PNG files in the directory
+        File[] pngFiles = dirPath.toFile().listFiles((dir, name) -> name.toLowerCase().endsWith(".png"));
+
+        if (pngFiles == null) {
+            throw new IllegalArgumentException("No PNG files found in the directory '" + directory + "'.");
+        }
+
+        // Sort files alphabetically by their names
+        Arrays.sort(pngFiles, Comparator.comparing(File::getName));
+
+        // Print the sorted list of files (for debugging)
+        System.out.println("Sorted files:");
+        for (File file : pngFiles) {
+            System.out.println(file.getName());
+        }
+
+        // Rename files with sequence numbers
+        String prevBaseName = null;
+        int count = 1;
+
+        Pattern pattern = Pattern.compile("(\\d{3})(-\\d)?(?=\\.png$)");
+
+        for (File file : pngFiles) {
+            // Extract base name without postfix and number
+            String fileName = file.getName();
+            String baseName = fileName.substring(0, fileName.lastIndexOf('.'));
+            Matcher matcher = pattern.matcher(baseName);
+            if (matcher.find()) {
+                baseName = matcher.replaceAll("");
+            }
+
+            if (!baseName.equals(prevBaseName)) {
+                count = 1;
+            }
+
+            String newFileName = baseName + String.format("%03d", count) + ".png";
+            Path newFilePath = dirPath.resolve(newFileName);
+
+            try {
+                Files.move(file.toPath(), newFilePath);
+                System.out.println("Renaming " + fileName + " to " + newFileName);
+            } catch (IOException e) {
+                System.err.println("Failed to rename " + fileName + " to " + newFileName);
+                e.printStackTrace();
+            }
+
+            prevBaseName = baseName;
+            count++;
+        }
     }
 }
 ```
 
 ### Explanation:
-1. **Package and Class**: The Java code is placed inside the `org.real.temp` package and named `Answer`.
-2. **Method Signature**: The method `renameFiles` takes a single argument of type `String`, which is the path to the directory containing the PNG files.
-3. **File Filtering**: The `listFiles` method filters out only the `.png` files using a lambda expression.
-4. **Sorting**: The files are sorted alphabetically using a custom comparator that extracts the numeric part of the file names.
-5. **Renaming Files**: Each file is renamed by appending a sequential number starting from 1001.
-6. **Error Handling**: If a file fails to rename, an error message is printed.
-7. **Utility Method**: `getNumericPart` extracts the numeric part from the file name, which is used for sorting.
-8. **Main Method**: An example usage of the `renameFiles` method is provided in the `main` method.
-
-Make sure to replace `"/path/to/directory"` with the actual path to the directory containing your PNG files when running the program.
+1. **Package and Class Definition**: The code is defined within the `org.real.temp` package and the `Answer` class.
+2. **Main Method**: A `main` method is included to demonstrate how to call the `renameFiles` method.
+3. **Directory Handling**: The directory path is converted to a `Path` object using `Paths.get(directory)`.
+4. **File Filtering and Sorting**: The `listFiles` method filters PNG files, and `Arrays.sort` sorts them alphabetically.
+5. **Regex Pattern**: A regex pattern is used to extract the base name without the sequence number.
+6. **File Renaming**: Files are renamed using `Files.move`, and error handling is added for potential IO exceptions.
+7. **Debugging Output**: Sorted files and renaming actions are printed to the console for debugging purposes.

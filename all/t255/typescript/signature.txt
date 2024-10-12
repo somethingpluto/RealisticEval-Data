@@ -1,16 +1,66 @@
+Certainly! Here’s the equivalent TypeScript code with proper type annotations and JSDoc-style documentation comments:
+
 ```typescript
-import { Buffer } from 'buffer';
+import Jimp from 'jimp';
 
 /**
- * Converts a picture to an array of binary bits. Converts it to black and white mode (only 0s and 1s, corresponding to black and white),
- * converts the white pixel (value 255) to 1, converts the black pixel to 0, and finally stores these bits in an array and returns.
+ * Converts an image to an array of binary bits.
+ * Converts the image to black and white mode (only 0s and 1s, corresponding to black and white),
+ * converts the white pixel (value 255) to 1, converts the black pixel to 0,
+ * and finally stores these bits in an array and returns it.
  *
- * @param image_path - The path to the image file.
- * @returns A Promise that resolves with a list of bits (0 or 1) representing the image.
+ * @param {string} imagePath - The path to the image file.
+ * @returns {Promise<number[]>} A promise that resolves to a list of bits (0 or 1) representing the image.
  */
 async function convertImageToBits(imagePath: string): Promise<number[]> {
-    // Your implementation here
+    // Load the image using Jimp
+    const image = await Jimp.read(imagePath);
+
+    // Convert the image to black and white (1-bit pixels)
+    image.color([{ apply: 'greyscale', params: [] }]);
+
+    // Get the width and height of the image
+    const w = image.bitmap.width;
+    const h = image.bitmap.height;
+
+    // Initialize an empty array to store the bits
+    const bitsArray: number[] = [];
+
+    // Loop over each pixel in the image
+    for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+            // Get the pixel value (0 for black, 255 for white)
+            const pixel = image.getPixelColor(x, y);
+            const r = (pixel >> 16) & 0xff; // Extract red channel
+            const g = (pixel >> 8) & 0xff;  // Extract green channel
+            const b = pixel & 0xff;         // Extract blue channel
+
+            // Convert pixel to bit: 1 for white, 0 for black
+            const bit = (r + g + b > 0) ? 1 : 0;
+            bitsArray.push(bit);
+        }
+    }
+
+    return bitsArray;
 }
+
+// Example usage
+(async () => {
+    try {
+        const bits = await convertImageToBits('path/to/image.jpg');
+        console.log(bits);
+    } catch (error) {
+        console.error('Error converting image:', error);
+    }
+})();
 ```
 
-In TypeScript, we use `Promise` to handle asynchronous operations, and `number[]` is used instead of `List`. Also, since TypeScript does not have built-in support for images like Python's PIL, you would need to use a library like `sharp` or `jimp` to read the image file.
+### Explanation:
+1. **Importing Jimp**: We use the `Jimp` library to handle image operations.
+2. **Async/Await**: Since `Jimp.read` returns a promise, we use `async/await` to handle asynchronous operations.
+3. **JSDoc Documentation**: The function is documented using JSDoc-style comments.
+4. **Type Annotations**: The function signature includes proper TypeScript type annotations.
+5. **Pixel Extraction**: We extract the RGB values of each pixel and determine the bit based on the sum of these values.
+6. **Example Usage**: An example usage block demonstrates how to call the function and handle the result.
+
+This TypeScript code preserves the original functionality and structure of the Python code while adapting it to TypeScript's syntax and conventions.

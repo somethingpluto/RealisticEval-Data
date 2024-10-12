@@ -1,70 +1,158 @@
-Sure! Below is an example of how you might convert your Python unittest test class to a Jest test case in JavaScript using the `describe` and `it` functions:
+Certainly! Below is the equivalent Jest test suite for the given Python unittest class. The goal is to maintain the functionality and logic of the tests while adapting them to Jest's syntax and conventions.
+
+### Python Code
+
+```python
+import json
+import unittest
+from unittest.mock import mock_open, patch
+
+def read_log(log_file_path):
+    try:
+        with open(log_file_path, "r") as file:
+            data_entries = [json.loads(line) for line in file]
+    except FileNotFoundError:
+        print(f"Error: The file {log_file_path} does not exist.")
+        return [], []
+    except json.JSONDecodeError:
+        print(f"Error: The file {log_file_path} contains invalid JSON.")
+        return [], []
+
+    train_loss_list = [entry.get("train_loss") for entry in data_entries if "train_loss" in entry]
+    test_acc1_list = [entry.get("test_acc1") for entry in data_entries if "test_acc1" in entry]
+
+    return train_loss_list, test_acc1_list
+
+class TestReadLog(unittest.TestCase):
+
+    def test_read_correct_data(self):
+        """ Test reading correctly formatted JSON lines """
+        mock_file_content = '{"test_acc1": 88.5, "train_loss": 0.75}\n' \
+                            '{"test_acc1": 89.0, "train_loss": 0.70}'
+        with patch('builtins.open', mock_open(read_data=mock_file_content)):
+            train_loss, test_acc1 = read_log("dummy_path.json")
+            self.assertEqual(train_loss, [0.75, 0.70])
+            self.assertEqual(test_acc1, [88.5, 89.0])
+
+    def test_read_correct_data_single(self):
+        """ Test reading correctly formatted JSON lines """
+        mock_file_content = '{"test_acc1": 88.5, "train_loss": 0.75}'
+        with patch('builtins.open', mock_open(read_data=mock_file_content)):
+            train_loss, test_acc1 = read_log("dummy_path.json")
+            self.assertEqual(train_loss, [0.75])
+            self.assertEqual(test_acc1, [88.5])
+
+    def test_empty_file(self):
+        """ Test reading an empty file """
+        with patch('builtins.open', mock_open(read_data="")):
+            train_loss, test_acc1 = read_log("empty_file.json")
+            self.assertEqual(train_loss, [])
+            self.assertEqual(test_acc1, [])
+
+    def test_partial_data_entries(self):
+        """ Test file with missing fields in some entries """
+        mock_file_content = '{"test_acc1": 88.5, "train_loss": 0.75}\n' \
+                            '{"test_acc1": 90.0,"train_loss": 0.75,"f1":0.91}'  # Missing train_loss
+        with patch('builtins.open', mock_open(read_data=mock_file_content)):
+            train_loss, test_acc1 = read_log("partial_data_file.json")
+            self.assertEqual(train_loss, [0.75, 0.75])  # Only one complete entry
+            self.assertEqual(test_acc1, [88.5, 90.0])
+```
+
+### Equivalent Jest Test Suite
 
 ```javascript
 const fs = require('fs');
-const path = require('path');
+const { mock } = require('jest-mock-extended');
 
 function readLog(logFilePath) {
-    /**
-     * Reads a log file containing JSON entries and extracts training loss and test accuracy.
-     * Json entries such as {"test_acc1": 88.5, "train_loss": 0.75}
-     * Args:
-     *     logFilePath (string): The path to the log file to be read.
-     *
-     * Returns:
-     *     Array: An array containing two lists:
-     *         - trainLossList (Array): A list of training loss values extracted from the log.
-     *         - testAcc1List (Array): A list of test accuracy values extracted from the log.
-     */
-    const data = fs.readFileSync(logFilePath, 'utf-8');
-    const lines = data.split('\n').filter(line => line.trim() !== '');
-    const trainLossList = [];
-    const testAcc1List = [];
+    try {
+        const fileContent = fs.readFileSync(logFilePath, 'utf8');
+        const lines = fileContent.split('\n');
 
-    for (const line of lines) {
-        try {
-            const jsonEntry = JSON.parse(line);
-            if ('train_loss' in jsonEntry && typeof jsonEntry.train_loss === 'number') {
-                trainLossList.push(jsonEntry.train_loss);
+        let dataEntries = lines.map(line => {
+            try {
+                return JSON.parse(line);
+            } catch (error) {
+                console.error(`Error: The file ${logFilePath} contains invalid JSON.`);
+                return null;
             }
-            if ('test_acc1' in jsonEntry && typeof jsonEntry.test_acc1 === 'number') {
-                testAcc1List.push(jsonEntry.test_acc1);
-            }
-        } catch (e) {
-            console.error(`Error parsing line: ${line}`, e);
+        }).filter(entry => entry !== null);
+
+        const trainLossList = dataEntries.filter(entry => 'train_loss' in entry).map(entry => entry.train_loss);
+        const testAcc1List = dataEntries.filter(entry => 'test_acc1' in entry).map(entry => entry.test_acc1);
+
+        return [trainLossList, testAcc1List];
+    } catch (error) {
+        if (error.code === 'ENOENT') {
+            console.error(`Error: The file ${logFilePath} does not exist.`);
+        } else {
+            console.error(`An unexpected error occurred: ${error.message}`);
         }
+        return [[], []];
     }
-
-    return [trainLossList, testAcc1List];
 }
 
-// Jest test cases
-describe('readLog function', () => {
-    it('should extract training loss and test accuracy from a valid log file', () => {
-        const logFilePath = path.join(__dirname, 'example.log'); // Replace with actual log file path
-        const expectedTrainLossList = [0.75]; // Replace with expected training loss values
-        const expectedTestAcc1List = [88.5]; // Replace with expected test accuracy values
+describe('TestReadLog', () => {
+    it('test_read_correct_data', () => {
+        const mockFileContent = '{"test_acc1": 88.5, "train_loss": 0.75}\n{"test_acc1": 89.0, "train_loss": 0.70}';
+        const mockFs = mock(fs);
+        mockFs.readFileSync.mockReturnValue(mockFileContent);
 
-        const [trainLossList, testAcc1List] = readLog(logFilePath);
-
-        expect(trainLossList).toEqual(expectedTrainLossList);
-        expect(testAcc1List).toEqual(expectedTestAcc1List);
+        const [trainLoss, testAcc1] = readLog('dummy_path.json');
+        expect(trainLoss).toEqual([0.75, 0.70]);
+        expect(testAcc1).toEqual([88.5, 89.0]);
     });
 
-    it('should handle empty or invalid log files gracefully', () => {
-        const logFilePath = path.join(__dirname, 'empty.log'); // Replace with actual log file path
-        const [trainLossList, testAcc1List] = readLog(logFilePath);
+    it('test_read_correct_data_single', () => {
+        const mockFileContent = '{"test_acc1": 88.5, "train_loss": 0.75}';
+        const mockFs = mock(fs);
+        mockFs.readFileSync.mockReturnValue(mockFileContent);
 
-        expect(trainLossList).toEqual([]);
-        expect(testAcc1List).toEqual([]);
+        const [trainLoss, testAcc1] = readLog('dummy_path.json');
+        expect(trainLoss).toEqual([0.75]);
+        expect(testAcc1).toEqual([88.5]);
+    });
+
+    it('test_empty_file', () => {
+        const mockFileContent = '';
+        const mockFs = mock(fs);
+        mockFs.readFileSync.mockReturnValue(mockFileContent);
+
+        const [trainLoss, testAcc1] = readLog('empty_file.json');
+        expect(trainLoss).toEqual([]);
+        expect(testAcc1).toEqual([]);
+    });
+
+    it('test_partial_data_entries', () => {
+        const mockFileContent = '{"test_acc1": 88.5, "train_loss": 0.75}\n{"test_acc1": 90.0,"train_loss": 0.75,"f1":0.91}';
+        const mockFs = mock(fs);
+        mockFs.readFileSync.mockReturnValue(mockFileContent);
+
+        const [trainLoss, testAcc1] = readLog('partial_data_file.json');
+        expect(trainLoss).toEqual([0.75, 0.75]);
+        expect(testAcc1).toEqual([88.5, 90.0]);
     });
 });
 ```
 
 ### Explanation:
-1. **Function Definition**: The `readLog` function reads a log file, parses each line as JSON, and extracts the training loss and test accuracy values into separate arrays.
-2. **Jest Test Cases**:
-   - **First Test Case**: Checks that the function correctly extracts training loss and test accuracy from a valid log file.
-   - **Second Test Case**: Ensures that the function handles empty or invalid log files gracefully by returning empty arrays.
+1. **Import Statements**:
+   - Import `fs` for file system operations.
+   - Import `mock` from `jest-mock-extended` to create mocked versions of `fs`.
 
-Make sure to replace `'example.log'` and `'empty.log'` with the actual paths to your log files. Also, adjust the `expectedTrainLossList` and `expectedTestAcc1List` with the expected values based on your test scenarios.
+2. **Function Definition**:
+   - The `readLog` function reads the file synchronously and processes the JSON content.
+
+3. **Test Suite**:
+   - Use `describe` to group the tests under `TestReadLog`.
+   - Each test case uses `it` to define individual test scenarios.
+   - Mock `fs.readFileSync` to simulate different file contents for each test case.
+
+4. **Assertions**:
+   - Use `expect` to assert the expected outcomes of the `readLog` function.
+
+5. **Mocking**:
+   - Use `mock` to create a mocked version of `fs` and set the return value of `readFileSync` to simulate different file contents.
+
+This Jest test suite maintains the functionality and logic of the original Python unittest class while adapting to Jest's syntax and conventions.

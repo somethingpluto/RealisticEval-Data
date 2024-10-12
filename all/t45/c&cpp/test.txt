@@ -1,45 +1,150 @@
-Sure! Below is an equivalent C++ test case using Catch2 for the given Python unittest test function. Note that I'll provide a mock implementation for `get_current_date_info` since the original Python function does not include any actual logic.
+Certainly! Below is the equivalent C++ test class using the Catch2 testing framework. I will ensure that the functionality and logic of the tests are preserved, making any necessary adjustments for language differences between Python and C++, and using appropriate assertions in Catch2.
+
+### C++ Code with Catch2 Testing Framework
 
 ```cpp
-#include <catch2/catch.hpp>
-#include <iostream>
+#include <catch2/catch_test_macros.hpp>
+#include <map>
 #include <string>
 #include <ctime>
 
-struct DateInfo {
-    int year;
-    std::string month;
-    int weekOfTheMonth;
-    std::string dayOfWeek;
-};
-
-DateInfo get_current_date_info(const std::tm& test_date = *std::localtime(nullptr)) {
-    // Mock implementation
-    return {
-        test_date.tm_year + 1900, // Year since 1900
-        { "January", "February", "March", "April", "May", "June",
-          "July", "August", "September", "October", "November", "December" }[test_date.tm_mon],
-        (test_date.tm_mday - 1) / 7 + 1, // Week of the month
-        { "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" }[test_date.tm_wday]
-    };
+// Helper functions to get the English names of the day of the week and month
+std::string getDayName(int dayOfWeek) {
+    const std::string daysOfWeek[] = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
+    return daysOfWeek[dayOfWeek];
 }
 
-TEST_CASE("Get Current Date Info") {
-    auto now = std::localtime(nullptr);
-    DateInfo result = get_current_date_info(*now);
+std::string getMonthName(int month) {
+    const std::string months[] = {"January", "February", "March", "April", "May", "June", 
+                                  "July", "August", "September", "October", "November", "December"};
+    return months[month - 1]; // Arrays are zero-indexed
+}
 
-    REQUIRE(result.year == now->tm_year + 1900); // Year since 1900
-    REQUIRE(result.month == { "January", "February", "March", "April", "May", "June",
-                              "July", "August", "September", "October", "November", "December" }[now->tm_mon]);
-    REQUIRE(result.weekOfTheMonth == ((now->tm_mday - 1) / 7) + 1);
-    REQUIRE(result.dayOfWeek == { "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" }[now->tm_wday]);
+int getWeekOfMonth(const std::tm& date) {
+    int day = date.tm_mday;
+    int firstDayOfWeek = date.tm_wday; // Sunday is 0, Monday is 1, etc.
+    return (day + firstDayOfWeek - 1) / 7 + 1;
+}
+
+// Function to get current date information
+std::map<std::string, std::string> getCurrentDateInfo(const std::tm* test_date = nullptr) {
+    std::tm today;
+    if (test_date == nullptr) {
+        time_t rawTime;
+        time(&rawTime);
+        today = *localtime(&rawTime);
+    } else {
+        today = *test_date;
+    }
+
+    int year = today.tm_year + 1900;
+    int month = today.tm_mon + 1;
+    std::string dayOfWeek = getDayName(today.tm_wday);
+    std::string monthName = getMonthName(month);
+    int weekOfMonth = getWeekOfMonth(today);
+
+    std::map<std::string, std::string> result = {
+        {"year", std::to_string(year)},
+        {"month", monthName},
+        {"week_of_the_month", std::to_string(weekOfMonth)},
+        {"day_of_the_week", dayOfWeek}
+    };
+
+    return result;
+}
+
+TEST_CASE("TestGetCurrentDateInfo") {
+    SECTION("Beginning of the month") {
+        std::tm date = {};
+        date.tm_year = 2023 - 1900; // Year since 1900
+        date.tm_mon = 0; // Month (0-based)
+        date.tm_mday = 1; // Day of the month
+        date.tm_isdst = -1; // Daylight saving time flag
+
+        auto result = getCurrentDateInfo(&date);
+        std::map<std::string, std::string> expected = {
+            {"year", "2023"},
+            {"month", "January"},
+            {"week_of_the_month", "1"},
+            {"day_of_the_week", "Sunday"}
+        };
+
+        REQUIRE(result == expected);
+    }
+
+    SECTION("Middle of the month") {
+        std::tm date = {};
+        date.tm_year = 2023 - 1900; // Year since 1900
+        date.tm_mon = 0; // Month (0-based)
+        date.tm_mday = 15; // Day of the month
+        date.tm_isdst = -1; // Daylight saving time flag
+
+        auto result = getCurrentDateInfo(&date);
+        std::map<std::string, std::string> expected = {
+            {"year", "2023"},
+            {"month", "January"},
+            {"week_of_the_month", "3"},
+            {"day_of_the_week", "Sunday"}
+        };
+
+        REQUIRE(result == expected);
+    }
+
+    SECTION("Leap year") {
+        std::tm date = {};
+        date.tm_year = 2024 - 1900; // Year since 1900
+        date.tm_mon = 1; // Month (0-based)
+        date.tm_mday = 29; // Day of the month
+        date.tm_isdst = -1; // Daylight saving time flag
+
+        auto result = getCurrentDateInfo(&date);
+        std::map<std::string, std::string> expected = {
+            {"year", "2024"},
+            {"month", "February"},
+            {"week_of_the_month", "5"},
+            {"day_of_the_week", "Thursday"}
+        };
+
+        REQUIRE(result == expected);
+    }
+
+    SECTION("Change of year") {
+        std::tm date = {};
+        date.tm_year = 2022 - 1900; // Year since 1900
+        date.tm_mon = 11; // Month (0-based)
+        date.tm_mday = 31; // Day of the month
+        date.tm_isdst = -1; // Daylight saving time flag
+
+        auto result = getCurrentDateInfo(&date);
+        std::map<std::string, std::string> expected = {
+            {"year", "2022"},
+            {"month", "December"},
+            {"week_of_the_month", "5"},
+            {"day_of_the_week", "Saturday"}
+        };
+
+        REQUIRE(result == expected);
+    }
+}
+
+int main(int argc, char* argv[]) {
+    return Catch::Session().run(argc, argv);
 }
 ```
 
 ### Explanation:
+1. **Header Files**: The necessary header files (`<catch2/catch_test_macros.hpp>`, `<map>`, `<string>`, `<ctime>`) are included.
+2. **Helper Functions**:
+   - `getDayName`: Converts the numeric day of the week to its English name.
+   - `getMonthName`: Converts the numeric month to its English name.
+   - `getWeekOfMonth`: Calculates the week of the month based on the given date.
+3. **Function Implementation**:
+   - `getCurrentDateInfo`: This function replicates the functionality of the Python function. It uses the `std::tm` structure to represent dates and times.
+4. **Test Class**:
+   - The `TEST_CASE` macro is used to define a test case.
+   - Each `SECTION` corresponds to a specific test case from the Python unittest.
+   - The `REQUIRE` macro is used for assertions.
+5. **Main Function**:
+   - The `main` function initializes and runs the Catch2 test session.
 
-1. **Struct Definition**: We define a `DateInfo` struct to hold the date information.
-2. **Mock Implementation**: The `get_current_date_info` function uses the `std::localtime` function to get the current local time and returns a `DateInfo` object with mock values.
-3. **Catch2 Test Case**: We create a Catch2 test case named "Get Current Date Info". Inside the test case, we call `get_current_date_info` and check the returned values against the expected values using `REQUIRE`.
-
-This C++ test case should work similarly to your Python unittest test class, ensuring that the `get_current_date_info` function behaves as expected.
+This C++ code preserves the original functionality and structure of the Python unittest while adhering to C++ conventions and using the Catch2 testing framework.

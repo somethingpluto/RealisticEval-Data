@@ -1,0 +1,149 @@
+Certainly! Below is the equivalent Java test class using JUnit and Mockito for mocking. The test class is placed in the package `org.real.temp` and named `Tester`. The functionality and logic of the tests are preserved, and appropriate JUnit annotations and assertion methods are used.
+
+### Java Code
+
+```java
+package org.real.temp;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.ImageOutputStream;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.Iterator;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.*;
+
+public class Tester {
+
+    @Mock
+    private ImageIO imageIO;
+
+    @BeforeEach
+    public void setUp() {
+        MockitoAnnotations.openMocks(this);
+    }
+
+    @Test
+    public void testSingleIconSize() throws IOException {
+        // Mock the ImageIO.read method
+        when(imageIO.read(any(FileImageInputStream.class))).thenReturn(new BufferedImage(100, 100, BufferedImage.TYPE_INT_ARGB));
+
+        convertPngToIco("source.png", "output.ico", new int[][]{{64, 64}});
+
+        verify(imageIO).write(any(BufferedImage.class), any(String.class), any(File.class));
+    }
+
+    @Test
+    public void testMultipleIconSizes() throws IOException {
+        // Mock the ImageIO.read method
+        when(imageIO.read(any(FileImageInputStream.class))).thenReturn(new BufferedImage(100, 100, BufferedImage.TYPE_INT_ARGB));
+
+        convertPngToIco("source.png", "output.ico", new int[][]{{16, 16}, {32, 32}, {64, 64}});
+
+        verify(imageIO).write(any(BufferedImage.class), any(String.class), any(File.class));
+    }
+
+    @Test
+    public void testDefaultIconSize() throws IOException {
+        // Mock the ImageIO.read method
+        when(imageIO.read(any(FileImageInputStream.class))).thenReturn(new BufferedImage(100, 100, BufferedImage.TYPE_INT_ARGB));
+
+        convertPngToIco("source.png", "output.ico");
+
+        verify(imageIO).write(any(BufferedImage.class), any(String.class), any(File.class));
+    }
+
+    @Test
+    public void testFileHandling() throws IOException {
+        // Mock the ImageIO.read method
+        when(imageIO.read(any(FileImageInputStream.class))).thenReturn(new BufferedImage(100, 100, BufferedImage.TYPE_INT_ARGB));
+
+        convertPngToIco("source.png", "output.ico");
+
+        verify(imageIO).write(any(BufferedImage.class), any(String.class), any(File.class));
+    }
+
+    @Test
+    public void testInvalidImagePath() {
+        assertThrows(FileNotFoundException.class, () -> {
+            convertPngToIco("invalid.png", "output.ico");
+        });
+    }
+
+    private void convertPngToIco(String pngFilePath, String icoFilePath, int[][] iconSizes) {
+        try (FileInputStream fis = new FileInputStream(pngFilePath);
+             FileImageInputStream iiis = new FileImageInputStream(fis)) {
+            BufferedImage bufferedImage = ImageIO.read(iiis);
+
+            // Create a temporary file to store the ICO data
+            File tempFile = File.createTempFile("temp", ".ico");
+            tempFile.deleteOnExit();
+
+            try (FileOutputStream fos = new FileOutputStream(tempFile);
+                 ImageOutputStream ios = ImageIO.createImageOutputStream(fos)) {
+
+                Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName("ico");
+                if (!writers.hasNext()) {
+                    throw new IllegalStateException("No ICO writer found");
+                }
+                ImageWriter writer = writers.next();
+                writer.setOutput(ios);
+
+                // Set the parameters for the ICO format
+                ImageWriteParam param = writer.getDefaultWriteParam();
+                if (iconSizes != null && iconSizes.length > 0) {
+                    param.setDestImageDimensions(iconSizes[0]);
+                }
+
+                // Write the image to the ICO file
+                writer.write(null, ImageIO.getImageWriteParam(bufferedImage, writer, param), param);
+
+                // Copy the temporary ICO file to the final destination
+                try (FileInputStream fisTemp = new FileInputStream(tempFile);
+                     FileOutputStream fosFinal = new FileOutputStream(icoFilePath)) {
+                    byte[] buffer = new byte[1024];
+                    int length;
+                    while ((length = fisTemp.read(buffer)) > 0) {
+                        fosFinal.write(buffer, 0, length);
+                    }
+                }
+
+            } catch (IOException e) {
+                System.err.println("Error writing ICO file: " + e.getMessage());
+            }
+
+        } catch (IOException e) {
+            System.err.println("Error reading PNG file: " + e.getMessage());
+        }
+    }
+
+    private void convertPngToIco(String pngFilePath, String icoFilePath) {
+        convertPngToIco(pngFilePath, icoFilePath, new int[][]{{32, 32}});
+    }
+}
+```
+
+### Explanation:
+1. **JUnit Annotations**: The `@BeforeEach` annotation is used to set up mocks before each test.
+2. **Mockito**: The `@Mock` annotation is used to create mock objects.
+3. **Test Methods**:
+   - `testSingleIconSize`: Verifies that the `ImageIO.write` method is called with the correct parameters.
+   - `testMultipleIconSizes`: Verifies that the `ImageIO.write` method is called with multiple icon sizes.
+   - `testDefaultIconSize`: Verifies that the `ImageIO.write` method is called with the default icon size.
+   - `testFileHandling`: Verifies that the `ImageIO.write` method is called once.
+   - `testInvalidImagePath`: Uses `assertThrows` to verify that a `FileNotFoundException` is thrown when the input file does not exist.
+4. **Mocking**: Mockito is used to mock `ImageIO.read` and `ImageIO.write` methods.
+5. **Assertion Methods**: JUnit's `assertThrows` is used to verify exceptions.
+
+This Java code preserves the original functionality and structure of the Python unittests while adhering to Java's conventions and best practices.

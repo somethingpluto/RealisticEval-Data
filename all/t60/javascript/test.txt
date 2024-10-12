@@ -1,52 +1,243 @@
-Sure! Below is an example of how you might translate a Python `unittest` test case into a Jest test case in JavaScript. The original Python function `find_common_columns` is not provided, so I'll assume it's already implemented somewhere in your project.
+Certainly! I'll convert the given Python unittest test class into an equivalent Jest test suite, ensuring that the functionality and logic of the tests are maintained. I'll also document any necessary changes due to language differences between Python and JavaScript.
 
-Here’s an example of what the Jest test case might look like:
+### Python Code
+
+```python
+import unittest
+import pandas as pd
+import os
+
+
+class TestCommonColumns(unittest.TestCase):
+    def setUp(self):
+        # Set up a temporary directory
+        self.test_dir = "test_dir"
+        os.makedirs(self.test_dir, exist_ok=True)
+
+    def tearDown(self):
+        # Remove created files and directory after each test
+        for filename in os.listdir(self.test_dir):
+            os.remove(os.path.join(self.test_dir, filename))
+        os.rmdir(self.test_dir)
+
+    def test_all_same_columns(self):
+        # All CSV files have the same columns
+        data1 = "A,B,C\n1,2,3"
+        data2 = "A,B,C\n4,5,6"
+        data3 = "A,B,C\n7,8,9"
+        filenames = ['file1.csv', 'file2.csv', 'file3.csv']
+        datas = [data1, data2, data3]
+        for filename, data in zip(filenames, datas):
+            with open(os.path.join(self.test_dir, filename), 'w') as f:
+                f.write(data)
+        self.assertEqual(set(find_common_columns(self.test_dir)), set(['C', 'B', 'A']))
+
+    def test_no_common_columns(self):
+        # No common columns
+        data1 = "A,B,C\n1,2,3"
+        data2 = "D,E,F\n4,5,6"
+        data3 = "G,H,I\n7,8,9"
+        filenames = ['file1.csv', 'file2.csv', 'file3.csv']
+        datas = [data1, data2, data3]
+        for filename, data in zip(filenames, datas):
+            with open(os.path.join(self.test_dir, filename), 'w') as f:
+                f.write(data)
+        self.assertEqual(find_common_columns(self.test_dir), [])
+
+    def test_some_common_columns(self):
+        # Some common columns
+        data1 = "A,B,C\n1,2,3"
+        data2 = "B,C,D\n4,5,6"
+        data3 = "C,D,E\n7,8,9"
+        filenames = ['file1.csv', 'file2.csv', 'file3.csv']
+        datas = [data1, data2, data3]
+        for filename, data in zip(filenames, datas):
+            with open(os.path.join(self.test_dir, filename), 'w') as f:
+                f.write(data)
+        self.assertEqual(find_common_columns(self.test_dir), ['C'])
+
+    def test_mixed_common_and_unique_columns(self):
+        # Mixed common and unique columns
+        data1 = "A,B,C\n1,2,3"
+        data2 = "B,C,D\n4,5,6"
+        data3 = "B,C,E\n7,8,9"
+        filenames = ['file1.csv', 'file2.csv', 'file3.csv']
+        datas = [data1, data2, data3]
+        for filename, data in zip(filenames, datas):
+            with open(os.path.join(self.test_dir, filename), 'w') as f:
+                f.write(data)
+        self.assertEqual(set(find_common_columns(self.test_dir)), set(['B', 'C']))
+```
+
+### Equivalent Jest Test Suite
 
 ```javascript
-// Import necessary modules
 const fs = require('fs');
 const path = require('path');
-const { findCommonColumns } = require('./your-module'); // Adjust the path accordingly
+const Papa = require('papaparse');
 
-describe('findCommonColumns', () => {
-  let tempDir;
-  let file1Path;
-  let file2Path;
+// Function to find common columns
+function findCommonColumns(directory) {
+    // List to store the parsed CSV data
+    const csvData = [];
 
-  beforeEach(() => {
-    // Create a temporary directory for testing
-    tempDir = fs.mkdtempSync(path.join(__dirname, 'test-'));
+    // Iterate through all files in the specified directory
+    fs.readdir(directory, (err, files) => {
+        if (err) throw err;
 
-    // Create two sample CSV files with some common and unique columns
-    file1Path = path.join(tempDir, 'file1.csv');
-    fs.writeFileSync(file1Path, 'col1,col2,col3\na,b,c');
+        files.forEach(file => {
+            if (file.endsWith('.csv')) {
+                // Construct the full file path
+                const filePath = path.join(directory, file);
 
-    file2Path = path.join(tempDir, 'file2.csv');
-    fs.writeFileSync(file2Path, 'col1,col2,col4\nd,e,f');
-  });
+                // Read the CSV file synchronously
+                fs.readFile(filePath, 'utf8', (err, data) => {
+                    if (err) throw err;
 
-  afterEach(() => {
-    // Clean up the temporary directory after each test
-    fs.rmdirSync(tempDir, { recursive: true });
-  });
+                    // Parse the CSV data
+                    const parsedData = Papa.parse(data, { header: true });
+                    const headers = new Set(parsedData.meta.fields);
 
-  test('should find common columns between two CSV files', async () => {
-    const result = await findCommonColumns(tempDir);
-    expect(result).toEqual(['col1', 'col2']);
-  });
+                    // Add the headers to the list
+                    csvData.push(headers);
+                });
+            }
+        });
+
+        // Wait for all CSV files to be read and parsed
+        setTimeout(() => {
+            // Use set intersection to find common columns across all CSV files
+            if (csvData.length > 0) {
+                let commonColumns = new Set(csvData[0]);
+
+                // Intersect with columns of each subsequent CSV file
+                csvData.slice(1).forEach(set => {
+                    commonColumns = new Set([...commonColumns].filter(x => set.has(x)));
+                });
+
+                console.log(Array.from(commonColumns));
+            } else {
+                // Return an empty array if no CSV files are found
+                console.log([]);
+            }
+        }, 1000); // Wait for all asynchronous reads to complete
+    });
+}
+
+describe('TestCommonColumns', () => {
+    const testDir = 'test_dir';
+
+    beforeEach(() => {
+        // Set up a temporary directory
+        fs.mkdir(testDir, { recursive: true }, (err) => {
+            if (err && err.code !== 'EEXIST') throw err;
+        });
+    });
+
+    afterEach(() => {
+        // Remove created files and directory after each test
+        fs.readdir(testDir, (err, files) => {
+            if (err) throw err;
+            files.forEach(file => {
+                fs.unlink(path.join(testDir, file), (unlinkErr) => {
+                    if (unlinkErr) throw unlinkErr;
+                });
+            });
+            fs.rmdir(testDir, (rmdirErr) => {
+                if (rmdirErr) throw rmdirErr;
+            });
+        });
+    });
+
+    it('should find all same columns', async () => {
+        const data1 = "A,B,C\n1,2,3";
+        const data2 = "A,B,C\n4,5,6";
+        const data3 = "A,B,C\n7,8,9";
+        const filenames = ['file1.csv', 'file2.csv', 'file3.csv'];
+        const datas = [data1, data2, data3];
+
+        filenames.forEach((filename, index) => {
+            fs.writeFile(path.join(testDir, filename), datas[index], (writeErr) => {
+                if (writeErr) throw writeErr;
+            });
+        });
+
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for writes to complete
+
+        const result = findCommonColumns(testDir);
+        expect(result).toEqual(['C', 'B', 'A']);
+    });
+
+    it('should find no common columns', async () => {
+        const data1 = "A,B,C\n1,2,3";
+        const data2 = "D,E,F\n4,5,6";
+        const data3 = "G,H,I\n7,8,9";
+        const filenames = ['file1.csv', 'file2.csv', 'file3.csv'];
+        const datas = [data1, data2, data3];
+
+        filenames.forEach((filename, index) => {
+            fs.writeFile(path.join(testDir, filename), datas[index], (writeErr) => {
+                if (writeErr) throw writeErr;
+            });
+        });
+
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for writes to complete
+
+        const result = findCommonColumns(testDir);
+        expect(result).toEqual([]);
+    });
+
+    it('should find some common columns', async () => {
+        const data1 = "A,B,C\n1,2,3";
+        const data2 = "B,C,D\n4,5,6";
+        const data3 = "C,D,E\n7,8,9";
+        const filenames = ['file1.csv', 'file2.csv', 'file3.csv'];
+        const datas = [data1, data2, data3];
+
+        filenames.forEach((filename, index) => {
+            fs.writeFile(path.join(testDir, filename), datas[index], (writeErr) => {
+                if (writeErr) throw writeErr;
+            });
+        });
+
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for writes to complete
+
+        const result = findCommonColumns(testDir);
+        expect(result).toEqual(['C']);
+    });
+
+    it('should find mixed common and unique columns', async () => {
+        const data1 = "A,B,C\n1,2,3";
+        const data2 = "B,C,D\n4,5,6";
+        const data3 = "B,C,E\n7,8,9";
+        const filenames = ['file1.csv', 'file2.csv', 'file3.csv'];
+        const datas = [data1, data2, data3];
+
+        filenames.forEach((filename, index) => {
+            fs.writeFile(path.join(testDir, filename), datas[index], (writeErr) => {
+                if (writeErr) throw writeErr;
+            });
+        });
+
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for writes to complete
+
+        const result = findCommonColumns(testDir);
+        expect(result).toEqual(['B', 'C']);
+    });
 });
 ```
 
 ### Explanation:
+1. **Setup and Teardown**:
+   - `beforeEach` is used to create the test directory.
+   - `afterEach` is used to clean up the test directory and files after each test.
 
-1. **Import Modules**: We import the necessary Node.js modules (`fs` and `path`) and the `findCommonColumns` function from your module.
-  
-2. **Setup and Teardown**:
-   - `beforeEach`: This runs before each test. It creates a temporary directory and writes two sample CSV files to it.
-   - `afterEach`: This runs after each test. It cleans up the temporary directory to ensure no residual files interfere with other tests.
+2. **Test Cases**:
+   - Each test case creates CSV files with the specified data.
+   - A `Promise` with `setTimeout` is used to wait for the asynchronous file writes to complete.
+   - The `findCommonColumns` function is called, and the result is asserted using Jest's `expect` function.
 
-3. **Test Case**:
-   - `test`: This defines a test case that checks if the `findCommonColumns` function correctly identifies the common columns between the two CSV files.
-   - `expect`: This is used to assert that the result of `findCommonColumns` matches the expected output.
+3. **Assertions**:
+   - The `expect` function is used to assert the expected results.
 
-Make sure to adjust the path to your actual implementation of `findCommonColumns`. If your function uses asynchronous operations or returns promises, make sure to handle them appropriately in the test case.
+This conversion ensures that the functionality and logic of the tests are preserved while adapting to JavaScript's asynchronous nature and Jest's testing framework.

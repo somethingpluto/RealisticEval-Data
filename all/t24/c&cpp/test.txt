@@ -1,63 +1,177 @@
-Sure! Below is the equivalent C++ test case using Catch2 for the provided Python unittest test class. This example assumes that you have a function `convert_yaml_to_json` that converts YAML files to JSON files, similar to what your Python function does.
+Certainly! Below is the equivalent C++ test class using the Catch2 testing framework. The provided Python unittest class will be converted into a C++ test class with equivalent functionality and logic.
 
-First, ensure you have Catch2 installed in your project. If not, you can add it via a package manager or download it manually.
+### C++ Code Using Catch2
 
-Here's the C++ test case using Catch2:
+First, make sure you have Catch2 installed and included in your project. You can include Catch2 via a header-only library or through a package manager.
+
+#### CMake Configuration (if using CMake):
+
+```cmake
+cmake_minimum_required(VERSION 3.10)
+project(YamlToJsonTest)
+
+# Add Catch2
+include(FetchContent)
+FetchContent_Declare(
+    catch2
+    GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+    GIT_TAG v2.13.8
+)
+FetchContent_MakeAvailable(catch2)
+
+add_executable(YamlToJsonTest YamlToJsonTest.cpp)
+
+target_link_libraries(YamlToJsonTest PRIVATE catch2)
+target_include_directories(YamlToJsonTest PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/path/to/yaml-cpp/include)
+target_include_directories(YamlToJsonTest PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/path/to/nlohmann/json/include)
+```
+
+#### C++ Code
 
 ```cpp
-#include <catch2/catch.hpp>
-#include <yaml-cpp/yaml.h>
+#include <catch2/catch_test_macros.hpp>
 #include <fstream>
-#include <string>
+#include <iostream>
+#include <yaml-cpp/yaml.h>
+#include <nlohmann/json.hpp>
+
+using json = nlohmann::json;
 
 // Function to convert YAML to JSON
-void convert_yaml_to_json(const std::string& yaml_file, const std::string& json_file) {
-    // Implementation of converting YAML to JSON
-    // For simplicity, let's assume we're just reading and writing the same content
-    YAML::Node config = YAML::LoadFile(yaml_file);
-    std::ofstream ofs(json_file);
-    ofs << YAML::Dump(config);
+void convertYamlToJson(const std::string& yaml_file, const std::string& json_file) {
+    try {
+        // Read the YAML file
+        YAML::Node yaml_data = YAML::LoadFile(yaml_file);
+
+        // Convert YAML data to JSON
+        json json_data = yaml_data;
+
+        // Write the JSON data to a file
+        std::ofstream outputFile(json_file);
+        if (!outputFile.is_open()) {
+            throw std::runtime_error("Failed to open JSON file.");
+        }
+        outputFile << std::setw(4) << json_data << std::endl;
+        outputFile.close();
+    } catch (const YAML::Exception& e) {
+        std::cerr << "Error loading YAML file: " << e.what() << std::endl;
+        throw;
+    } catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+        throw;
+    }
 }
 
-TEST_CASE("Convert YAML to JSON", "[conversion]") {
-    // Create temporary YAML and JSON files for testing
-    const std::string temp_yaml_path = "temp.yaml";
-    const std::string temp_json_path = "temp.json";
+TEST_CASE("Test conversion of YAML files to JSON") {
+    // Create temporary YAML files for testing
+    const std::string simple_yaml = "simple.yaml";
+    const std::string nested_yaml = "nested.yaml";
+    const std::string empty_yaml = "empty.yaml";
+    const std::string list_yaml = "list.yaml";
+    const std::string invalid_yaml = "invalid.yaml";
 
-    // Write some sample YAML content to the temporary file
-    std::ofstream yaml_ofs(temp_yaml_path);
-    yaml_ofs << R"(
-name: John Doe
-age: 30
-)";
+    SECTION("Setup temporary files") {
+        // Write simple YAML file
+        std::ofstream simpleFile(simple_yaml);
+        simpleFile << "name: John Doe\nage: 30\n";
+        simpleFile.close();
 
-    REQUIRE(yaml_ofs);
+        // Write nested YAML file
+        std::ofstream nestedFile(nested_yaml);
+        nestedFile << "person:\n  name: Jane Doe\n  age: 25\n  address:\n    city: New York\n    zip: 10001\n";
+        nestedFile.close();
 
-    // Call the conversion function
-    convert_yaml_to_json(temp_yaml_path, temp_json_path);
+        // Write empty YAML file
+        std::ofstream emptyFile(empty_yaml);
+        emptyFile.close();
 
-    // Read back the JSON content from the temporary file
-    std::ifstream json_ifs(temp_json_path);
-    std::string json_content((std::istreambuf_iterator<char>(json_ifs)), std::istreambuf_iterator<char>());
+        // Write list YAML file
+        std::ofstream listFile(list_yaml);
+        listFile << "- item1\n- item2\n- item3\n";
+        listFile.close();
 
-    // Check if the JSON content matches the expected output
-    REQUIRE(json_content == R"({"age":30,"name":"John Doe"})");
+        // Write invalid YAML file
+        std::ofstream invalidFile(invalid_yaml);
+        invalidFile << "{ invalid: YAML: structure }\n";
+        invalidFile.close();
+    }
 
-    // Clean up temporary files
-    std::remove(temp_yaml_path.c_str());
-    std::remove(temp_json_path.c_str());
+    SECTION("Test simple YAML conversion") {
+        convertYamlToJson(simple_yaml, "output.json");
+        std::ifstream jsonFile("output.json");
+        REQUIRE(jsonFile.is_open());
+        json jsonData;
+        jsonFile >> jsonData;
+        REQUIRE(jsonData == (json{{"name", "John Doe"}, {"age", 30}}));
+    }
+
+    SECTION("Test nested YAML conversion") {
+        convertYamlToJson(nested_yaml, "output.json");
+        std::ifstream jsonFile("output.json");
+        REQUIRE(jsonFile.is_open());
+        json jsonData;
+        jsonFile >> jsonData;
+        REQUIRE(jsonData == (json{
+            {"person", {
+                {"name", "Jane Doe"},
+                {"age", 25},
+                {"address", {
+                    {"city", "New York"},
+                    {"zip", 10001}
+                }}
+            }}
+        }));
+    }
+
+    SECTION("Test empty YAML conversion") {
+        convertYamlToJson(empty_yaml, "output.json");
+        std::ifstream jsonFile("output.json");
+        REQUIRE(jsonFile.is_open());
+        json jsonData;
+        jsonFile >> jsonData;
+        REQUIRE(jsonData.is_null());
+    }
+
+    SECTION("Test list YAML conversion") {
+        convertYamlToJson(list_yaml, "output.json");
+        std::ifstream jsonFile("output.json");
+        REQUIRE(jsonFile.is_open());
+        json jsonData;
+        jsonFile >> jsonData;
+        REQUIRE(jsonData == (json{"item1", "item2", "item3"}));
+    }
+
+    SECTION("Test invalid YAML conversion") {
+        REQUIRE_THROWS_AS(convertYamlToJson(invalid_yaml, "output.json"), YAML::Exception);
+    }
+
+    SECTION("Teardown temporary files") {
+        std::remove(simple_yaml.c_str());
+        std::remove(nested_yaml.c_str());
+        std::remove(empty_yaml.c_str());
+        std::remove(list_yaml.c_str());
+        std::remove(invalid_yaml.c_str());
+        if (std::ifstream("output.json").is_open()) {
+            std::remove("output.json");
+        }
+    }
 }
 ```
 
 ### Explanation:
-1. **Include Necessary Headers**: We include the necessary headers for Catch2 and YAML-CPP.
-2. **Function Definition**: The `convert_yaml_to_json` function is defined to simulate the conversion process. In a real-world scenario, you would implement the actual conversion logic here.
-3. **Test Case**:
-   - **Temporary Files**: We create temporary YAML and JSON files for testing purposes.
-   - **Write Sample YAML Content**: We write some sample YAML content to the temporary YAML file.
-   - **Call Conversion Function**: We call the `convert_yaml_to_json` function with the temporary files.
-   - **Read Back JSON Content**: We read back the JSON content from the temporary JSON file.
-   - **Check Content**: We check if the JSON content matches the expected output.
-   - **Clean Up**: Finally, we clean up the temporary files.
+1. **Catch2 Setup**:
+   - The `#include <catch2/catch_test_macros.hpp>` header is included to use Catch2's test macros.
+   - The `TEST_CASE` macro is used to define a test case.
 
-Make sure you have the YAML-CPP library installed and properly linked in your C++ project. You can install YAML-CPP via vcpkg, conan, or build it manually.
+2. **Temporary Files**:
+   - Temporary YAML files are created and written using `std::ofstream`.
+   - The `SECTION` macro is used to group related setup and teardown steps.
+
+3. **Assertions**:
+   - `REQUIRE` is used for assertions to check the correctness of the JSON output.
+   - `REQUIRE_THROWS_AS` is used to verify that the function throws a specific exception (`YAML::Exception`).
+
+4. **Teardown**:
+   - Temporary files are removed using `std::remove` to clean up after each test section.
+
+This code ensures that the functionality and logic of the original Python unittest class are preserved while adapting to C++ syntax and conventions using the Catch2 testing framework.

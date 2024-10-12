@@ -1,68 +1,99 @@
-To convert the provided Python unittest test class to a C++ test case using Catch2, you need to follow these steps:
+Certainly! Here’s the equivalent C++ test class using the Catch2 testing framework. The goal is to preserve the functionality and logic of the tests while adapting them to C++ and Catch2.
 
-1. Install Catch2 if you haven't already.
-2. Write the equivalent C++ test cases for your Python functions.
+First, make sure you have the Catch2 library included in your project. You can download it from [here](https://github.com/catchorg/Catch2).
 
-Here's an example of how you can write the C++ test cases using Catch2:
+### C++ Code with Catch2 Testing Framework
 
 ```cpp
-#include <catch2/catch.hpp>
-#include <iostream>
-#include <map>
+#include <catch2/catch_test_macros.hpp>
+#include <unordered_map>
 #include <vector>
+#include <string>
 
-// Function to be tested
-std::map<std::string, std::string> sanitizeData(const std::map<std::string, std::string>& data, const std::vector<std::string>& keyToRemove = {}) {
-    std::map<std::string, std::string> sanitizedData;
-    for (const auto& pair : data) {
-        if (std::find(keyToRemove.begin(), keyToRemove.end(), pair.first) == keyToRemove.end()) {
-            sanitizedData.insert(pair);
+// Function to sanitize a dictionary by removing specific keys.
+std::unordered_map<std::string, std::string> sanitize_data(
+    const std::unordered_map<std::string, std::string>& data,
+    const std::vector<std::string>* key_to_remove = nullptr
+) {
+    /*
+     * Remove the corresponding sensitive questions in the given dictionary based on the given key_to_remove list.
+     *
+     * Args:
+     *     data (std::unordered_map<std::string, std::string>): Original question dictionary.
+     *     key_to_remove (std::vector<std::string>*): Key-to-remove list.
+     *
+     * Returns:
+     *     std::unordered_map<std::string, std::string>: Sanitized dictionary.
+     */
+
+    static const std::vector<std::string> default_keys_to_remove = {
+        "email", "pc_conflicts", "metadata", "eligible_student_paper_prize", "talk_poster",
+        "submitted_at", "decision", "status", "submitted", "submission"
+    };
+
+    const std::vector<std::string>& keys_to_remove = (key_to_remove == nullptr) ? default_keys_to_remove : *key_to_remove;
+
+    std::unordered_map<std::string, std::string> sanitized;
+    for (const auto& item : data) {
+        if (std::find(keys_to_remove.begin(), keys_to_remove.end(), item.first) == keys_to_remove.end()) {
+            sanitized[item.first] = item.second;
         }
     }
-    return sanitizedData;
+
+    return sanitized;
 }
 
-TEST_CASE("sanitizeData removes specified keys", "[sanitizeData]") {
-    // Test case 1: No keys to remove
-    std::map<std::string, std::string> input1 = {{"name", "John"}, {"age", "30"}, {"city", "New York"}};
-    std::vector<std::string> keysToRemove1 = {};
-    std::map<std::string, std::string> expectedOutput1 = input1;
-    REQUIRE(sanitizeData(input1, keysToRemove1) == expectedOutput1);
+TEST_CASE("TestSanitizeData", "[SanitizeData]") {
+    SECTION("test_empty_dict") {
+        // Test with an empty dictionary.
+        std::unordered_map<std::string, std::string> data = {};
+        std::vector<std::string> key_to_remove = {"email", "metadata"};
 
-    // Test case 2: Single key to remove
-    std::map<std::string, std::string> input2 = {{"name", "John"}, {"age", "30"}, {"city", "New York"}};
-    std::vector<std::string> keysToRemove2 = {"age"};
-    std::map<std::string, std::string> expectedOutput2 = {{"name", "John"}, {"city", "New York"}};
-    REQUIRE(sanitizeData(input2, keysToRemove2) == expectedOutput2);
+        std::unordered_map<std::string, std::string> expected = {};
+        REQUIRE(sanitize_data(data, &key_to_remove) == expected);
+    }
 
-    // Test case 3: Multiple keys to remove
-    std::map<std::string, std::string> input3 = {{"name", "John"}, {"age", "30"}, {"city", "New York"}, {"email", "john@example.com"}};
-    std::vector<std::string> keysToRemove3 = {"age", "email"};
-    std::map<std::string, std::string> expectedOutput3 = {{"name", "John"}, {"city", "New York"}};
-    REQUIRE(sanitizeData(input3, keysToRemove3) == expectedOutput3);
+    SECTION("test_remove_default_keys") {
+        // Test removing default keys from a nested structure.
+        std::unordered_map<std::string, std::string> data = {
+            {"name", "John Doe"},
+            {"email", "johndoe@example.com"},
+            {"metadata", "version: 1, timestamp: 2021-07-10, status: pending"},
+            {"comments", "Good, Needs review"}
+        };
+        std::vector<std::string> key_to_remove = {"email", "metadata"};
+        std::unordered_map<std::string, std::string> expected = {
+            {"name", "John Doe"},
+            {"comments", "Good, Needs review"}
+        };
+        REQUIRE(sanitize_data(data, &key_to_remove) == expected);
+    }
 
-    // Test case 4: Key not present in input
-    std::map<std::string, std::string> input4 = {{"name", "John"}, {"age", "30"}, {"city", "New York"}};
-    std::vector<std::string> keysToRemove4 = {"address"};
-    std::map<std::string, std::string> expectedOutput4 = input4;
-    REQUIRE(sanitizeData(input4, keysToRemove4) == expectedOutput4);
+    SECTION("test_specified_key_to_remove") {
+        // Test removing a specified key from the dictionary.
+        std::unordered_map<std::string, std::string> data = {
+            {"name", "John Doe"},
+            {"location", "Earth"},
+            {"email", "johndoe@example.com"}
+        };
+        std::unordered_map<std::string, std::string> expected = {
+            {"name", "John Doe"},
+            {"location", "Earth"}
+        };
+        REQUIRE(sanitize_data(data, &std::vector<std::string>{"email"}) == expected);
+    }
 }
 ```
 
 ### Explanation:
+1. **Headers**: The code includes necessary headers (`<catch2/catch_test_macros.hpp>`, `<unordered_map>`, `<vector>`, `<string>`).
+2. **Function Definition**: The `sanitize_data` function is defined with appropriate C++ types and logic.
+3. **Catch2 Test Class**:
+   - The `TEST_CASE` macro defines the test suite.
+   - Each `SECTION` within the test case corresponds to a specific test case in the Python code.
+4. **Assertions**:
+   - `REQUIRE` is used to assert the equality of the sanitized dictionary with the expected result.
+5. **Test Data**:
+   - The test data is structured similarly to the Python code, ensuring that the tests cover the same scenarios.
 
-1. **Include Catch2 Header**: The `#include <catch2/catch.hpp>` directive includes the Catch2 header file which is necessary for writing tests.
-  
-2. **Function Implementation**: The `sanitizeData` function is implemented similarly to your Python function but uses C++ standard library containers (`std::map` and `std::vector`).
-
-3. **Test Cases**:
-   - Each test case is defined within a `TEST_CASE` block.
-   - The `REQUIRE` macro is used to assert that the output of `sanitizeData` matches the expected result.
-   
-4. **Test Case Details**:
-   - **Test case 1**: No keys to remove.
-   - **Test case 2**: Single key to remove.
-   - **Test case 3**: Multiple keys to remove.
-   - **Test case 4**: Key not present in input.
-
-Make sure you have Catch2 installed and properly set up in your project environment before running these tests. If you're using a build system like CMake, you can add Catch2 as a subdirectory or link it to your project accordingly.
+This code preserves the functionality and logic of the original Python tests while adapting them to the Catch2 testing framework in C++.

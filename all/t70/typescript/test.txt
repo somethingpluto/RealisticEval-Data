@@ -1,72 +1,119 @@
-Certainly! Below is the equivalent TypeScript test case using Jest for the provided Python `unittest` test class:
+Certainly! Here is the equivalent Jest test suite in TypeScript, including the necessary type annotations and Jest assertions:
 
 ```typescript
-import { describe, it, expect } from '@jest/globals';
-import { codeBlockRemover } from './path-to-your-code-block-remover'; // Adjust the path accordingly
+import { codeBlockRemover } from './codeBlockRemover'; // Import the codeBlockRemover function
 
-describe('codeBlockRemover', () => {
-  it('should extract the contents of the code block from the given Markdown string', () => {
-    const markdownString = `
-This is some text.
+describe('TestCodeBlockRemover', () => {
+  it('should handle a single code block correctly', () => {
+    const markdown = `
+      This is a markdown with a code block.
 
-\`\`\`
-This is a code block.
-It can contain multiple lines.
-\`\`\`
+      \`\`\`python
+      print("Hello, World!")
+      \`\`\`
 
-And more text after the code block.
+      End of markdown.
     `;
-    const expectedOutput: string[] = [
-      'This is a code block.\nIt can contain multiple lines.'
-    ];
-
-    const result = codeBlockRemover(markdownString);
-    expect(result).toEqual(expectedOutput);
+    const expected = ['print("Hello, World!")'];
+    const result = codeBlockRemover(markdown);
+    expect(result).toEqual(expected);
   });
 
-  it('should return an empty list if no code blocks are found', () => {
-    const markdownString = `
-This is some text without any code blocks.
-`;
-    const expectedOutput: string[] = [];
+  it('should handle multiple code blocks correctly', () => {
+    const markdown = `
+      First code block:
 
-    const result = codeBlockRemover(markdownString);
-    expect(result).toEqual(expectedOutput);
+      \`\`\`python
+      print("Hello, World!")
+      \`\`\`
+
+      Second code block:
+
+      \`\`\`javascript
+      console.log("Hello, World!");
+      \`\`\`
+    `;
+    const expected = [
+      'print("Hello, World!")',
+      'console.log("Hello, World!");'
+    ];
+    const result = codeBlockRemover(markdown);
+    expect(result).toEqual(expected);
+  });
+
+  it('should return an empty array when there are no code blocks', () => {
+    const markdown = `
+      This markdown has no code blocks.
+
+      Just some plain text.
+    `;
+    const expected = [];
+    const result = codeBlockRemover(markdown);
+    expect(result).toEqual(expected);
+  });
+
+  it('should handle an empty code block correctly', () => {
+    const markdown = `
+      Here is an empty code block:
+
+      \`\`\`python
+      \`\`\`
+
+      End of markdown.
+    `;
+    const expected = [''];
+    const result = codeBlockRemover(markdown);
+    expect(result).toEqual(expected);
+  });
+
+  it('should not extract malformed code blocks', () => {
+    const markdown = `
+      This code block is missing ending:
+
+      \`\`\`python
+      print("Hello, World!")
+
+      And some more text.
+    `;
+    const expected = [];
+    const result = codeBlockRemover(markdown);
+    expect(result).toEqual(expected);
   });
 });
 ```
 
 ### Explanation:
-1. **Importing Jest Functions**: We import `describe`, `it`, and `expect` from `@jest/globals`.
-2. **Describing the Test Suite**: We use `describe` to group related tests together.
-3. **Writing Individual Tests**: Each test case is written using `it`. We provide a description for each test and use `expect` to assert the expected output.
-4. **Mocking the Function**: Ensure that you have the `codeBlockRemover` function available in your TypeScript project. If it's in a different file, adjust the import path accordingly.
+1. **Import Statement**: The `codeBlockRemover` function is imported at the beginning of the test file.
+2. **Describe Block**: The `describe` block is used to group the test cases under a common description.
+3. **It Blocks**: Each `it` block represents a specific test case.
+4. **Markdown Strings**: The markdown strings are defined using template literals (`\``) for better readability.
+5. **Expect Assertions**: The `expect` function is used with `toEqual` to compare the results with the expected values.
 
-Make sure you have Jest installed in your project. If not, you can install it using npm or yarn:
+### CodeBlockRemover Function (For Reference)
+Ensure that the `codeBlockRemover` function is defined in a separate file (e.g., `codeBlockRemover.ts`):
 
-```bash
-npm install --save-dev jest
-# or
-yarn add --dev jest
-```
+```typescript
+/**
+ * Extracts the contents of the code block from the given Markdown string.
+ *
+ * @param markdownString - The input Markdown string.
+ * @returns An array of strings, each representing the content of a code block.
+ *          Returns an empty array if no code blocks are found.
+ */
+function codeBlockRemover(markdownString: string): string[] {
+  // Define a pattern that captures content within triple backticks, with optional language specifier
+  const pattern = /```[a-zA-Z]*\n([\s\S]*?)```/g;
 
-Then, configure Jest in your `package.json`:
+  // Use String.match() to find all occurrences of the pattern
+  const matches = markdownString.match(pattern);
 
-```json
-{
-  "scripts": {
-    "test": "jest"
-  },
-  "jest": {
-    "testEnvironment": "node"
-  }
+  // Extract the content of each code block
+  const codeBlocks = matches ? matches.map(match => match.replace(/```[a-zA-Z]*\n|```/g, '')) : [];
+
+  return codeBlocks;
 }
+
+export { codeBlockRemover };
 ```
 
-Finally, run your tests with:
-
-```bash
-npm test
-# or
-yarn test
-```
+This setup ensures that the Jest tests are structured similarly to the Python unittests and maintain the same functionality and logic.

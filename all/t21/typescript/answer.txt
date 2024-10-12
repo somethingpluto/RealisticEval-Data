@@ -1,34 +1,72 @@
-Here's how you could translate that Python code into TypeScript:
+Here is the equivalent TypeScript code:
 
 ```typescript
-import fs from 'fs';
-import { difference } from 'lodash';
+import * as fs from 'fs';
+import * as diff from 'diff';
 
-interface FileCompareResult {
-  differences: string[];
-}
+function compareFiles(file1Path: string, file2Path: string): string[] {
+    /**
+     * Compare the contents of two files and print the differences in unified diff format.
+     *
+     * @param file1Path - Path to the first file.
+     * @param file2Path - Path to the second file.
+     * @returns A list containing the lines of differences, if any.
+     * @throws {Error} If either file does not exist or there is an error reading the files.
+     */
+    let lines1: string[];
+    let lines2: string[];
 
-export function compareFiles(file1Path: string, file2Path: string): Promise<FileCompareResult> {
-  return new Promise((resolve, reject) => {
-    fs.readFile(file1Path, 'utf8', (err, data1) => {
-      if (err) {
-        return reject(err);
-      }
-
-      fs.readFile(file2Path, 'utf8', (err, data2) => {
-        if (err) {
-          return reject(err);
+    try {
+        lines1 = fs.readFileSync(file1Path, 'utf8').split('\n');
+        lines2 = fs.readFileSync(file2Path, 'utf8').split('\n');
+    } catch (error) {
+        if (error.code === 'ENOENT') {
+            throw new Error('One of the files was not found.');
         }
+        throw new Error(`Error reading files: ${error.message}`);
+    }
 
-        const differences = difference(data1.split('\n'), data2.split('\n'));
-        
-        resolve({differences});
-      });
+    const diffLines = diff.unifiedDiff({
+        fromFile: file1Path,
+        toFile: file2Path,
+        fromFileContent: lines1.join('\n'),
+        toFileContent: lines2.join('\n')
     });
-  });
+
+    if (diffLines) {
+        diffLines.split('\n').forEach(line => console.log(line));
+    }
+
+    return diffLines ? diffLines.split('\n') : [];
 }
+
+// Example usage
+const file1Path = 'path/to/file1.txt';
+const file2Path = 'path/to/file2.txt';
+compareFiles(file1Path, file2Path);
 ```
 
-Please note that in TypeScript, we need to use promises instead of exceptions for handling errors, so I've converted your function to return a promise. Also, because TypeScript doesn't have built-in support for unified diff format, I've used lodash's `difference` method to find the differences between the two files' content line-by-line. 
+### Explanation:
+1. **Imports**: 
+   - `fs` is used for file system operations.
+   - `diff` is a library similar to `difflib` in Python for generating diffs.
 
-Make sure to install lodash before running this code with `npm install lodash`.
+2. **Function Definition**:
+   - The function `compareFiles` takes two strings (`file1Path` and `file2Path`) and returns an array of strings representing the differences between the files.
+
+3. **Reading Files**:
+   - `fs.readFileSync` is used to read the content of the files synchronously.
+   - The content is split into lines using `.split('\n')`.
+
+4. **Generating Differences**:
+   - `diff.unifiedDiff` generates the unified diff between the two sets of lines.
+   - The resulting diff is printed line by line.
+
+5. **Error Handling**:
+   - If a file is not found, an error is thrown with the message "One of the files was not found."
+   - If there is an error reading the files, an error is thrown with the message "Error reading files: {error message}".
+
+6. **Returning Differences**:
+   - The function returns the lines of differences as an array of strings.
+
+This TypeScript code maintains the same functionality and logic as the original Python code, with appropriate adjustments for TypeScript's syntax and libraries.

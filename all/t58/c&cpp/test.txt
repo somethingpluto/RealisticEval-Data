@@ -1,76 +1,97 @@
-To convert the provided Python unittest test class to a C++ test case using Catch2, you need to follow these steps:
+Certainly! Below is the equivalent C++ test class using the Catch2 testing framework. The provided Python unittest class will be converted into a Catch2 test suite, ensuring that the functionality and logic of the tests are preserved.
 
-1. **Include Catch2**: Ensure you have Catch2 installed and included in your project.
-2. **Define the Function**: Implement the `probability_of_red_balls` function in C++.
-3. **Write Test Cases**: Use Catch2's macros to write test cases for the function.
+### C++ Code with Catch2 Testing Framework
 
-Here is an example of how you can do it:
+First, make sure you have Catch2 installed and included in your project. You can include Catch2 by adding the header file and using the `CATCH_TEST_CASE` macro for each test case.
 
-### Step 1: Include Catch2
-
-First, include Catch2 in your C++ project. If you're using a build system like CMake, you might add something like this to your `CMakeLists.txt`:
-
-```cmake
-find_package(Catch2 REQUIRED)
-include_directories(${CATCH2_INCLUDE_DIRS})
-```
-
-### Step 2: Define the Function
-
-Implement the `probability_of_red_balls` function in C++. Note that C++ does not support floating-point arithmetic directly with integers, so we'll use `double` instead of `float`.
+Here’s the complete C++ code:
 
 ```cpp
 #include <iostream>
 #include <cmath>
+#include <cassert>
+#include <catch2/catch_test_macros.hpp>
 
-// Function to calculate factorial
-double factorial(int num) {
-    if (num == 0 || num == 1) return 1;
-    double result = 1;
-    for (int i = 2; i <= num; ++i) {
-        result *= i;
+// Function to calculate the binomial coefficient
+long long binomial_coefficient(int n, int k) {
+    if (k > n - k) {
+        k = n - k;
+    }
+    long long result = 1;
+    for (int i = 0; i < k; ++i) {
+        result *= (n - i);
+        result /= (i + 1);
     }
     return result;
 }
 
-// Function to calculate combinations (n choose k)
-double combination(int n, int k) {
-    return factorial(n) / (factorial(k) * factorial(n - k));
-}
-
-// Function to calculate the probability of drawing exactly n red balls
+/**
+ * Calculate the probability that n red balls will be drawn when 15 balls are randomly drawn from a jar containing x red balls and y blue balls.
+ *
+ * @param n Number of red balls to be drawn.
+ * @param x Number of red balls in the jar.
+ * @param y Number of blue balls in the jar.
+ * @return The probability of drawing exactly n red balls.
+ */
 double probability_of_red_balls(int n, int x, int y) {
-    if (n > x || n > 15 || n < 0 || x < 0 || y < 0) {
-        throw std::invalid_argument("Invalid input values");
+    const int N = 15;  // Total number of draws
+    double p = static_cast<double>(x) / (x + y);  // Probability of drawing a red ball
+
+    // Calculate the probability using the binomial formula
+    double probability = binomial_coefficient(N, n) * std::pow(p, n) * std::pow(1 - p, N - n);
+    return probability;
+}
+
+// Function to check if two floating-point numbers are close enough
+bool isclose(double a, double b, double rel_tol = 1e-9, double abs_tol = 0.0) {
+    return std::abs(a - b) <= std::max(rel_tol * std::max(std::abs(a), std::abs(b)), abs_tol);
+}
+
+// Test suite for the probability_of_red_balls function
+TEST_CASE("Test probability_of_red_balls", "[probability_of_red_balls]") {
+    SECTION("Test with half red balls") {
+        // Scenario where half of the drawn balls are expected to be red
+        double result = probability_of_red_balls(7, 10, 10);
+        double expected_result = 0.0542635;  // Manually calculated or from another tool
+        REQUIRE(isclose(result, expected_result));
     }
-    double total_ways = combination(15, n);
-    double favorable_ways = combination(x, n) * combination(y, 15 - n);
-    return favorable_ways / total_ways;
+
+    SECTION("Test with some red balls") {
+        // Scenario with some red balls in the jar, expecting a few red draws
+        double result = probability_of_red_balls(5, 5, 10);
+        double expected_result = 0.00371398;  // Manually calculated or from another tool
+        REQUIRE(isclose(result, expected_result));
+    }
+
+    SECTION("Test with extreme case") {
+        // Extreme scenario where the probability is low for the chosen n
+        double result = probability_of_red_balls(15, 1, 99);
+        double expected_result = 1.01168e-10;  // Manually calculated or from another tool
+        REQUIRE(isclose(result, expected_result));
+    }
+}
+
+int main(int argc, char* argv[]) {
+    // Run all the Catch2 tests
+    int result = Catch::Session().run(argc, argv);
+    return result;
 }
 ```
 
-### Step 3: Write Test Cases
+### Explanation:
+1. **binomial_coefficient**: This function calculates the binomial coefficient \( \binom{n}{k} \) using a loop and some optimizations to reduce the number of multiplications.
+2. **probability_of_red_balls**: This function calculates the probability of drawing exactly \( n \) red balls using the binomial formula.
+3. **isclose**: A helper function to check if two floating-point numbers are close enough, similar to Python's `math.isclose`.
+4. **Test Suite**: The `TEST_CASE` macro defines a test suite named "Test probability_of_red_balls".
+5. **Sections**: Each `SECTION` within the test suite corresponds to a specific test case.
+6. **REQUIRE**: The `REQUIRE` macro is used to assert that the results are close to the expected values.
 
-Now, write test cases using Catch2. Create a new file named `test_probability.cpp` and include the following code:
+### Running the Tests:
+To run the tests, you need to compile the code with Catch2 support. For example, using g++:
 
-```cpp
-#define CATCH_CONFIG_MAIN
-#include "catch.hpp"
-
-TEST_CASE("Probability of Red Balls", "[probability]") {
-    REQUIRE(probability_of_red_balls(0, 5, 10) == Approx(0.24609375).epsilon(1e-6));
-    REQUIRE(probability_of_red_balls(1, 5, 10) == Approx(0.390625).epsilon(1e-6));
-    REQUIRE(probability_of_red_balls(2, 5, 10) == Approx(0.234375).epsilon(1e-6));
-    REQUIRE(probability_of_red_balls(3, 5, 10) == Approx(0.0859375).epsilon(1e-6));
-    REQUIRE(probability_of_red_balls(4, 5, 10) == Approx(0.0234375).epsilon(1e-6));
-    REQUIRE_THROWS(probability_of_red_balls(-1, 5, 10)); // Invalid input
-    REQUIRE_THROWS(probability_of_red_balls(6, 5, 10)); // Invalid input
-}
+```sh
+g++ -std=c++17 -o test_probability test_probability.cpp -lcatch2
+./test_probability
 ```
 
-### Explanation
-
-- **Factorial and Combination Functions**: These helper functions are used to calculate the factorial and combinations required for the probability calculation.
-- **Test Cases**: Each `REQUIRE` macro checks if the output of `probability_of_red_balls` matches the expected value within a small epsilon margin. The `REQUIRE_THROWS` macro ensures that the function throws an exception when given invalid input.
-
-Compile and run your tests using a build system that supports Catch2, such as CMake or Makefile. This setup should allow you to verify the correctness of your C++ implementation against the Python unittests.
+This setup ensures that the functionality and logic of the tests are preserved while adhering to C++ syntax and the Catch2 testing framework.

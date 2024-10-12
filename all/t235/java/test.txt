@@ -1,77 +1,93 @@
-Sure, here's how you can convert your Python unittest test class into a Java JUnit test case for the `calculateBearing` method. The package name will be `org.real.temp`, and the class name will be `Tester`.
+Certainly! Below is the equivalent Java test class using JUnit for the provided Python unittest class. The Java test class will be placed in the package `org.real.temp` and named `Tester`. It will include appropriate JUnit annotations and assertion methods to ensure the functionality and logic of the tests are preserved.
 
-First, let's define the `calculateBearing` method in a utility class since it seems like it might not belong directly in the test class:
-
-```java
-package org.real.temp;
-
-public class GeoUtils {
-    /**
-     * Calculate the azimuth between two points on the earth.
-     * This function accepts the latitude and longitude of the two points as parameters
-     * and returns the azimuth from the first point to the second point in degrees.
-     *
-     * @param lat1 Latitude of the starting point in decimal degrees.
-     * @param lon1 Longitude of the starting point in decimal degrees.
-     * @param lat2 Latitude of the ending point in decimal degrees.
-     * @param lon2 Longitude of the ending point in decimal degrees.
-     * @return Bearing in degrees from the starting point to the ending point, ranging from 0 to 360.
-     */
-    public static double calculateBearing(double lat1, double lon1, double lat2, double lon2) {
-        // Implementation goes here
-        return 0; // Placeholder return value
-    }
-}
-```
-
-Next, we'll create the JUnit test class:
+### Java Test Class Using JUnit
 
 ```java
 package org.real.temp;
 
-import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.Assert.assertEquals;
+
+import org.junit.Test;
+import org.junit.Assert;
 
 public class Tester {
 
+    private static final double DELTA = 1e-6; // Tolerance for floating-point comparisons
+
     @Test
-    public void testCalculateBearing() {
-        double lat1 = 51.5074;
-        double lon1 = -0.1278;
-        double lat2 = 40.7128;
-        double lon2 = -74.0060;
-        
-        double expectedBearing = 99.1; // Example expected bearing, adjust as necessary
-        
-        double actualBearing = GeoUtils.calculateBearing(lat1, lon1, lat2, lon2);
-        
-        assertEquals(expectedBearing, actualBearing, "The calculated bearing should match the expected value");
+    public void testNorthBearing() {
+        // From equator directly north
+        assertEquals(0, calculateBearing(0, 0, 10, 0), DELTA);
+    }
+
+    @Test
+    public void testEastBearing() {
+        // From prime meridian directly east
+        assertEquals(90, calculateBearing(0, 0, 0, 10), DELTA);
+    }
+
+    @Test
+    public void testSouthBearing() {
+        // From a point directly south
+        assertEquals(180, calculateBearing(10, 0, 0, 0), DELTA);
+    }
+
+    @Test
+    public void testWestBearing() {
+        // From a point directly west
+        assertEquals(270, calculateBearing(0, 10, 0, 0), DELTA);
+    }
+
+    @Test
+    public void testAcrossPrimeMeridian() {
+        // From a point west of the prime meridian to a point east
+        assertEquals(90, calculateBearing(0, -1, 0, 1), DELTA);
+    }
+
+    // The calculateBearing method implementation
+    private double calculateBearing(double lat1, double lon1, double lat2, double lon2) {
+        // Convert latitude and longitude from degrees to radians
+        double lat1Rad = Math.toRadians(lat1);
+        double lon1Rad = Math.toRadians(lon1);
+        double lat2Rad = Math.toRadians(lat2);
+        double lon2Rad = Math.toRadians(lon2);
+
+        // Difference in longitude
+        double deltaLonRad = lon2Rad - lon1Rad;
+
+        // Calculate the bearing components
+        double x = Math.sin(deltaLonRad) * Math.cos(lat2Rad);
+        double y = Math.cos(lat1Rad) * Math.sin(lat2Rad) - (Math.sin(lat1Rad) * Math.cos(lat2Rad) * Math.cos(deltaLonRad));
+
+        // Calculate the initial bearing in radians
+        double initialBearingRad = Math.atan2(x, y);
+
+        // Convert the initial bearing from radians to degrees
+        double initialBearingDeg = Math.toDegrees(initialBearingRad);
+
+        // Normalize the bearing to 0-360 degrees
+        double compassBearing = (initialBearingDeg + 360) % 360;
+
+        return compassBearing;
     }
 }
 ```
 
-In this example:
-- We have a utility class `GeoUtils` with the `calculateBearing` method.
-- The `Tester` class contains a single test method `testCalculateBearing`.
-- The test method uses JUnit's `assertEquals` to verify that the calculated bearing matches the expected value.
+### Explanation:
+1. **Package Declaration**: The package declaration `package org.real.temp;` is included at the beginning of the file.
+2. **Import Statements**:
+   - `import static org.junit.Assert.assertEquals;`: Used for asserting equality with a tolerance.
+   - `import org.junit.Test;`: Used for defining test methods.
+   - `import org.junit.Assert;`: Used for assertions.
+3. **JUnit Annotations**:
+   - `@Test`: Marks each method as a test case.
+4. **Assertion Methods**:
+   - `assertEquals(expected, actual, delta)`: Used to assert that the expected value is approximately equal to the actual value within a specified tolerance (`DELTA`).
+5. **Tolerance Constant**:
+   - `private static final double DELTA = 1e-6;`: Defines the tolerance for floating-point comparisons.
+6. **Test Methods**:
+   - Each test method is annotated with `@Test` and uses `assertEquals` to verify the expected results.
+7. **Method Implementation**:
+   - The `calculateBearing` method is implemented within the test class to ensure it is accessible for testing.
 
-Make sure you have the JUnit dependency in your project if you're using Maven or Gradle. For Maven, add the following to your `pom.xml`:
-
-```xml
-<dependency>
-    <groupId>org.junit.jupiter</groupId>
-    <artifactId>junit-jupiter-engine</artifactId>
-    <version>5.8.1</version>
-    <scope>test</scope>
-</dependency>
-```
-
-For Gradle, add the following to your `build.gradle`:
-
-```groovy
-dependencies {
-    testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
-}
-```
-
-This setup should help you get started with testing your `calculateBearing` method in Java using JUnit. Adjust the expected bearing value and other parameters as needed for your specific use case.
+This setup ensures that the functionality and logic of the tests are preserved while adhering to Java's syntax and JUnit conventions.

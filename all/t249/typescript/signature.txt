@@ -1,13 +1,78 @@
-Sure! Below is the TypeScript code signature with comments that mirrors the Python function you provided:
+Certainly! Below is the equivalent TypeScript code for the provided Python function, including appropriate JSDoc-style documentation comments:
 
 ```typescript
+import { PDFDocument } from 'pdf-lib';
+import fs from 'fs';
+
 /**
  * Extracts text from a given PDF file.
  *
  * @param filePath - The path to the PDF file from which to extract text.
- * @returns The extracted text from the PDF.
+ * @returns A promise that resolves to the extracted text from the PDF.
  */
-function extractTextFromPdf(filePath: string): Promise<string>;
+async function extractTextFromPdf(filePath: string): Promise<string> {
+  // Initialize a text container
+  let extractedText = '';
+
+  // Read the PDF file
+  const fileBuffer = await readFileAsync(filePath);
+
+  // Load the PDF document
+  const pdfDoc = await PDFDocument.load(fileBuffer);
+
+  // Loop through each page in the PDF
+  for (const page of pdfDoc.getPages()) {
+    // Extract text from each page and add it to the text container
+    extractedText += page.getTextContent().items.map(item => item.str).join(' ') + '\n';
+  }
+
+  return extractedText;
+}
+
+// Helper function to read a file asynchronously
+function readFileAsync(filePath: string): Promise<Uint8Array> {
+  return new Promise((resolve, reject) => {
+    fs.readFile(filePath, (err, data) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(new Uint8Array(data));
+      }
+    });
+  });
+}
+
+// Example usage
+(async () => {
+  try {
+    const filePath = './example.pdf';
+    const extractedText = await extractTextFromPdf(filePath);
+    console.log(extractedText);
+  } catch (error) {
+    console.error('Error extracting text:', error);
+  }
+})();
 ```
 
-In TypeScript, we use `Promise` to handle asynchronous operations like reading files. If your actual implementation involves asynchronous operations, make sure to return a `Promise`.
+### Explanation:
+1. **Imports**:
+   - Import `PDFDocument` from `pdf-lib`.
+   - Import `fs` for file system operations.
+
+2. **Function Definition**:
+   - The `extractTextFromPdf` function is defined as an asynchronous function.
+   - It includes JSDoc-style documentation comments that describe the parameters and return type.
+
+3. **Reading the File**:
+   - The `readFileAsync` function reads the file asynchronously and returns a `Promise` that resolves to a `Uint8Array`.
+
+4. **Loading the PDF Document**:
+   - The PDF document is loaded using `PDFDocument.load`.
+
+5. **Extracting Text**:
+   - The function loops through each page and extracts the text content using `page.getTextContent().items.map(item => item.str).join(' ')`.
+
+6. **Example Usage**:
+   - An example usage block demonstrates how to call the `extractTextFromPdf` function and handle the result.
+
+This TypeScript code preserves the original functionality and structure of the Python code while adapting it to TypeScript's syntax and asynchronous operations.

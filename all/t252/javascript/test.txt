@@ -1,36 +1,142 @@
-Sure! Here's how you can translate the given Python `unittest` test class into a JavaScript test case using Jest:
+Certainly! Below is the equivalent Jest test suite for the given Python unittest class. The goal is to maintain the same functionality and logic while adapting to Jest's syntax and conventions.
+
+### Python Code:
+```python
+import unittest
+import json
+
+class BitSequenceEncoder(json.JSONEncoder):
+    def encode(self, obj):
+        def convert_bits(item):
+            if isinstance(item, dict):
+                return {k: convert_bits(v) if k != 'bits' else f'{v:08b}' for k, v in item.items()}
+            return item
+
+        converted_obj = convert_bits(obj)
+        return super(BitSequenceEncoder, self).encode(converted_obj)
+
+class TestBitSequenceEncoder(unittest.TestCase):
+    def test_basic_encoding(self):
+        """ Test encoding with simple dictionary containing 'bits'. """
+        data = {'name': 'Processor', 'bits': 255}
+        result = json.dumps(data, cls=BitSequenceEncoder)
+        self.assertEqual(result, '{"name": "Processor", "bits": "11111111"}')
+
+    def test_nested_encoding(self):
+        """ Test encoding with nested dictionary containing 'bits'. """
+        data = {'component': {'name': 'ALU', 'bits': 128}, 'bits': 1}
+        result = json.dumps(data, cls=BitSequenceEncoder)
+        self.assertEqual(result, '{"component": {"name": "ALU", "bits": "10000000"}, "bits": "00000001"}')
+
+    def test_non_bits_key(self):
+        """ Test encoding with dictionary not containing 'bits' key. """
+        data = {'name': 'Processor', 'value': 123}
+        result = json.dumps(data, cls=BitSequenceEncoder)
+        self.assertEqual(result, '{"name": "Processor", "value": 123}')
+
+    def test_no_bits_conversion_needed(self):
+        """ Test encoding with dictionary where 'bits' key needs no conversion. """
+        data = {'name': 'Unit', 'bits': 'Already binary'}
+        result = json.dumps(data, cls=BitSequenceEncoder)
+        self.assertEqual(result, '{"name": "Unit", "bits": "Already binary"}')
+
+    def test_complex_structure_with_bits(self):
+        """ Test encoding a complex dictionary structure containing multiple 'bits' keys. """
+        data = {
+            'processor': {'bits': 3, 'type': 'A'},
+            'memory': {'bits': 255, 'size': 16},
+            'ports': {'count': 2, 'bits': 128}
+        }
+        result = json.dumps(data, cls=BitSequenceEncoder)
+        self.assertEqual(result, '{"processor": {"bits": "00000011", "type": "A"}, "memory": {"bits": "11111111", "size": 16}, "ports": {"count": 2, "bits": "10000000"}}')
+
+if __name__ == '__main__':
+    unittest.main()
+```
+
+### Equivalent Jest Test Suite:
 
 ```javascript
-const { BitSequenceEncoder } = require('./BitSequenceEncoder'); // Adjust the path accordingly
+const { JSONEncoder } = require('json');
+const { expect } = require('@jest/globals');
+
+class BitSequenceEncoder extends JSONEncoder {
+    encode(obj) {
+        const convertBits = (item) => {
+            if (typeof item === 'object' && item !== null) {
+                if (Array.isArray(item)) {
+                    return item.map(v => convertBits(v));
+                } else {
+                    return Object.fromEntries(
+                        Object.entries(item).map(([k, v]) =>
+                            k === 'bits' && typeof v === 'number' ? [k, v.toString(2).padStart(8, '0')] : [k, convertBits(v)]
+                        )
+                    );
+                }
+            }
+            return item;
+        };
+
+        const convertedObj = convertBits(obj);
+        return JSON.stringify(convertedObj);
+    }
+}
 
 describe('BitSequenceEncoder', () => {
-  it('should convert integer values under the key "bits" to binary strings', () => {
-    const encoder = new BitSequenceEncoder();
-    const data = {
-      bits: 255,
-      otherKey: 'otherValue'
-    };
+    describe('test_basic_encoding', () => {
+        it('should encode a simple dictionary containing "bits"', () => {
+            const data = { name: 'Processor', bits: 255 };
+            const result = new BitSequenceEncoder().encode(data);
+            expect(result).toBe('{"name":"Processor","bits":"11111111"}');
+        });
+    });
 
-    const encodedData = encoder.encode(data);
-    expect(encodedData).toBe("{\"bits\":\"11111111\",\"otherKey\":\"otherValue\"}");
-  });
+    describe('test_nested_encoding', () => {
+        it('should encode a nested dictionary containing "bits"', () => {
+            const data = { component: { name: 'ALU', bits: 128 }, bits: 1 };
+            const result = new BitSequenceEncoder().encode(data);
+            expect(result).toBe('{"component":{"name":"ALU","bits":"10000000"},"bits":"00000001"}');
+        });
+    });
 
-  it('should leave non-integer values under the key "bits" unchanged', () => {
-    const encoder = new BitSequenceEncoder();
-    const data = {
-      bits: '255',
-      otherKey: 'otherValue'
-    };
+    describe('test_non_bits_key', () => {
+        it('should encode a dictionary without "bits" key', () => {
+            const data = { name: 'Processor', value: 123 };
+            const result = new BitSequenceEncoder().encode(data);
+            expect(result).toBe('{"name":"Processor","value":123}');
+        });
+    });
 
-    const encodedData = encoder.encode(data);
-    expect(encodedData).toBe("{\"bits\":\"255\",\"otherKey\":\"otherValue\"}");
-  });
+    describe('test_no_bits_conversion_needed', () => {
+        it('should encode a dictionary where "bits" key does not need conversion', () => {
+            const data = { name: 'Unit', bits: 'Already binary' };
+            const result = new BitSequenceEncoder().encode(data);
+            expect(result).toBe('{"name":"Unit","bits":"Already binary"}');
+        });
+    });
+
+    describe('test_complex_structure_with_bits', () => {
+        it('should encode a complex dictionary structure containing multiple "bits" keys', () => {
+            const data = {
+                processor: { bits: 3, type: 'A' },
+                memory: { bits: 255, size: 16 },
+                ports: { count: 2, bits: 128 }
+            };
+            const result = new BitSequenceEncoder().encode(data);
+            expect(result).toBe('{"processor":{"bits":"00000011","type":"A"},"memory":{"bits":"11111111","size":16},"ports":{"count":2,"bits":"10000000"}}');
+        });
+    });
 });
 ```
 
-In this JavaScript test case:
-- We use Jest's `describe` function to group related tests.
-- The `it` function is used to define individual test cases.
-- We create an instance of `BitSequenceEncoder` and test its `encode` method with different inputs to ensure it behaves as expected.
+### Explanation:
+1. **Class Definition**: The `BitSequenceEncoder` class is defined to extend `JSONEncoder`.
+2. **Jest Setup**:
+   - The `@jest/globals` package is imported to use `expect`.
+   - The `describe` blocks are used to group related tests.
+   - Each `it` block contains a single test case.
+3. **Test Cases**:
+   - Each test case creates an instance of `BitSequenceEncoder` and calls the `encode` method.
+   - Assertions are made using `expect` to ensure the expected JSON string is produced.
 
-Make sure to adjust the import statement according to your project structure. This assumes that the `BitSequenceEncoder` class is in a file named `BitSequenceEncoder.js`.
+This Jest test suite maintains the same functionality and logic as the original Python unittest class, ensuring that all assertions are appropriately mapped to Jest equivalents.

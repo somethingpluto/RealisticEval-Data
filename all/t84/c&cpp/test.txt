@@ -1,130 +1,125 @@
-To convert your Python unittest test class to a C++ test case using Catch2, you first need to implement the `find_min_window_substring` function and then write the corresponding test cases in C++. Below is an example of how you can do it:
+Certainly! Below is the equivalent C++ test class using the Catch2 testing framework. The provided Python unittest class will be converted into a Catch2 test suite, ensuring that the functionality and logic of the tests are preserved.
 
-### Python Implementation
+### C++ Code with Catch2 Testing Framework
 
-```python
-from collections import Counter
-from typing import Optional
+First, make sure you have Catch2 installed and included in your project. You can include Catch2 via a header-only library or through a package manager.
 
-def find_min_window_substring(source: str, target: str) -> Optional[str]:
-    """
-    Finds the smallest window in the source string that contains all characters of the target string.
-
-    Args:
-        source (str): The source string in which to search for the window.
-        target (str): The target string containing the characters to be matched.
-
-    Returns:
-        Optional[str]: The smallest window in the source string that contains all characters of the target string.
-                       Returns an empty string if no such window exists.
-    """
-    if not target or not source:
-        return ""
-
-    target_counter = Counter(target)
-    required_chars = len(target_counter)
-
-    left, right = 0, 0
-    formed_chars = 0
-    window_counter = Counter()
-
-    min_length = float('inf')
-    min_window = ""
-
-    while right < len(source):
-        character = source[right]
-        window_counter[character] += 1
-
-        if character in target_counter and window_counter[character] == target_counter[character]:
-            formed_chars += 1
-
-        while left <= right and formed_chars == required_chars:
-            current_window_length = right - left + 1
-            if current_window_length < min_length:
-                min_length = current_window_length
-                min_window = source[left:right+1]
-
-            left_char = source[left]
-            window_counter[left_char] -= 1
-            if left_char in target_counter and window_counter[left_char] < target_counter[left_char]:
-                formed_chars -= 1
-
-            left += 1
-
-        right += 1
-
-    return min_window
-```
-
-### C++ Test Case Using Catch2
-
-First, ensure you have Catch2 installed. If not, you can install it via vcpkg or manually download it.
-
-Here's the C++ implementation with the corresponding test cases using Catch2:
+Here is the complete C++ code with the Catch2 test suite:
 
 ```cpp
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <string>
 #include <unordered_map>
+#include <climits>
 
-std::string findMinWindowSubstring(const std::string& source, const std::string& target) {
-    if (target.empty() || source.empty()) {
+// Finds the smallest window in the source string that contains all characters of the target string.
+// Args:
+//     source (std::string): The source string in which to search for the window.
+//     target (std::string): The target string containing the characters to be matched.
+// Returns:
+//     std::string: The smallest window in the source string that contains all characters of the target string.
+//                  Returns an empty string if no such window exists.
+std::string find_min_window_substring(const std::string& source, const std::string& target) {
+    if (source.empty() || target.empty()) {
         return "";
     }
 
-    std::unordered_map<char, int> targetCounter;
+    // Count the frequency of characters in the target string
+    std::unordered_map<char, int> required_chars;
     for (char c : target) {
-        targetCounter[c]++;
-    }
-    int requiredChars = targetCounter.size();
-
-    int left = 0, right = 0;
-    int formedChars = 0;
-    std::unordered_map<char, int> windowCounter;
-
-    int minLength = INT_MAX;
-    std::string minWindow = "";
-
-    while (right < source.length()) {
-        char character = source[right];
-        windowCounter[character]++;
-
-        if (targetCounter.find(character) != targetCounter.end() && 
-            windowCounter[character] == targetCounter[character]) {
-            formedChars++;
-        }
-
-        while (left <= right && formedChars == requiredChars) {
-            int currentWindowLength = right - left + 1;
-            if (currentWindowLength < minLength) {
-                minLength = currentWindowLength;
-                minWindow = source.substr(left, currentWindowLength);
-            }
-
-            char leftChar = source[left];
-            windowCounter[leftChar]--;
-            if (targetCounter.find(leftChar) != targetCounter.end() && 
-                windowCounter[leftChar] < targetCounter[leftChar]) {
-                formedChars--;
-            }
-
-            left++;
-        }
-
-        right++;
+        ++required_chars[c];
     }
 
-    return minWindow;
+    // Counter to track characters in the current window of the source string
+    std::unordered_map<char, int> window_chars;
+
+    int left = 0;  // Left boundary of the window
+    int min_length = INT_MAX;  // Initialize the minimum length as infinity
+    std::string min_window = "";  // Initialize the minimum window string
+
+    // Iterate over the source string with the right boundary of the window
+    for (int right = 0; right < source.length(); ++right) {
+        char char_right = source[right];
+        if (required_chars.find(char_right) != required_chars.end()) {
+            ++window_chars[char_right];
+        }
+
+        // Check if the current window contains all characters of the target string
+        while (all_characters_match(required_chars, window_chars)) {
+            int window_size = right - left + 1;
+            if (window_size < min_length) {
+                min_length = window_size;
+                min_window = source.substr(left, window_size);
+            }
+
+            char char_left = source[left];
+            if (required_chars.find(char_left) != required_chars.end()) {
+                --window_chars[char_left];
+            }
+            ++left;
+        }
+    }
+
+    return min_window;
 }
 
-TEST_CASE("Find Min Window Substring", "[findMinWindowSubstring]") {
-    REQUIRE(findMinWindowSubstring("", "A") == "");
-    REQUIRE(findMinWindowSubstring("a", "") == "");
-    REQUIRE(findMinWindowSubstring("ADOBECODEBANC", "ABC") == "BANC");
-    REQUIRE(findMinWindowSubstring("abab", "ab") == "ab");
-    REQUIRE(findMinWindowSubstring("aa", "aa") == "aa");
-    REQUIRE(findMinWindowSubstring("abcdebdde", "bde") == "bcde");
+// Helper function to check if the current window contains all characters of the target string
+bool all_characters_match(const std::unordered_map<char, int>& required_chars, const std::unordered_map<char, int>& window_chars) {
+    for (const auto& pair : required_chars) {
+        if (window_chars[pair.first] < pair.second) {
+            return false;
+        }
+    }
+    return true;
+}
+
+TEST_CASE("Test find_min_window_substring") {
+    SECTION("Empty source string") {
+        REQUIRE(find_min_window_substring("", "abc") == "");
+        // Should return an empty string when source is empty
+    }
+
+    SECTION("Empty target string") {
+        REQUIRE(find_min_window_substring("abc", "") == "");
+        // Should return an empty string when target is empty
+    }
+
+    SECTION("No valid window") {
+        REQUIRE(find_min_window_substring("abcdef", "xyz") == "");
+        // Should return an empty string when no valid window exists
+    }
+
+    SECTION("Exact match window") {
+        REQUIRE(find_min_window_substring("abcd", "abcd") == "abcd");
+        // Should return the entire string when it is an exact match
+    }
+
+    SECTION("Minimal valid window") {
+        REQUIRE(find_min_window_substring("ADOBECODEBANC", "ABC") == "BANC");
+        // Should return 'BANC' as the smallest window containing all characters of 'ABC'
+    }
+}
+
+int main(int argc, char* argv[]) {
+    return Catch::Session().run(argc, argv);
 }
 ```
 
-This C++ code defines the `findMinWindowSubstring` function and includes a series of test cases using Catch2 to verify its correctness. Each test case checks different scenarios to ensure the function behaves as expected.
+### Explanation:
+1. **Header Files**: Included necessary header files (`<catch2/catch_test_macros.hpp>`, `<string>`, `<unordered_map>`, `<climits>`).
+2. **Function `find_min_window_substring`**:
+   - The function signature includes `const std::string& source` and `const std::string& target`.
+   - The function returns a `std::string`.
+   - The function includes a detailed comment block describing its purpose, arguments, and return value.
+   - The logic remains the same as in the Python version.
+3. **Helper Function `all_characters_match`**:
+   - This function checks if the current window contains all characters of the target string.
+   - It is used within the main function to determine if the window is valid.
+4. **Catch2 Test Suite**:
+   - The `TEST_CASE` macro defines the test suite.
+   - Each `SECTION` defines a specific test case.
+   - `REQUIRE` is used to assert the expected behavior of the function.
+5. **Main Function**:
+   - The `main` function initializes and runs the Catch2 test session.
+
+This C++ code preserves the original functionality and logic of the Python tests, ensuring that the tests are performed correctly using the Catch2 framework.

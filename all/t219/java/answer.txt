@@ -1,35 +1,111 @@
-Here's how you could write the equivalent Java code:
+Here is the Java code equivalent to the provided Python code, organized within the package `org.real.temp` and the class `Answer`. The code includes appropriate handling of types, method signatures, and object-oriented principles in Java:
 
 ```java
 package org.real.temp;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class Answer {
 
-    public static List<String[]> checkDividendVariances(List<String[]> records) {
-        Map<String, Double> map = new HashMap<>();
-        List<String[]> result = new ArrayList<>();
+    /**
+     * Check for ticker symbols with the same ex-dividend date but different dividend amounts.
+     *
+     * @param records A list of tuples where each tuple contains (ticker, exDividendDate, dividendAmount).
+     * @return A list of tuples where each tuple contains (ticker, exDividendDate) that have different dividend amounts.
+     */
+    public static List<Tuple<String, String>> checkDividendVariances(List<Tuple<String, String, Integer>> records) {
+        // Map to store dividend amounts by (ticker, exDividendDate)
+        Map<Tuple<String, String>, Set<Integer>> dividendMap = new HashMap<>();
 
-        for(String[] record : records){
-            String ticker = record[0];
-            String exDividendDate = record[1];
-            double dividendAmount = Double.parseDouble(record[2]);
+        // Iterate through the records
+        for (Tuple<String, String, Integer> record : records) {
+            String ticker = record.getFirst();
+            String exDividendDate = record.getSecond();
+            int dividendAmount = record.getThird();
 
-            if(map.containsKey(ticker + "-" + exDividendDate)){
-                if(dividendAmount != map.get(ticker + "-" + exDividendDate)){
-                    result.add(new String[]{ticker, exDividendDate});
-                }
-            } else {
-                map.put(ticker + "-" + exDividendDate, dividendAmount);
+            Tuple<String, String> key = new Tuple<>(ticker, exDividendDate);
+            dividendMap.computeIfAbsent(key, k -> new HashSet<>()).add(dividendAmount);
+        }
+
+        // Find entries with more than one unique dividend amount
+        List<Tuple<String, String>> result = new ArrayList<>();
+        for (Map.Entry<Tuple<String, String>, Set<Integer>> entry : dividendMap.entrySet()) {
+            if (entry.getValue().size() > 1) {
+                result.add(entry.getKey());
             }
         }
 
         return result;
     }
+
+    // Helper class to represent a tuple
+    public static class Tuple<T1, T2> {
+        private T1 first;
+        private T2 second;
+
+        public Tuple(T1 first, T2 second) {
+            this.first = first;
+            this.second = second;
+        }
+
+        public T1 getFirst() {
+            return first;
+        }
+
+        public T2 getSecond() {
+            return second;
+        }
+    }
+
+    // Helper class to represent a tuple with three elements
+    public static class Tuple<T1, T2, T3> extends Tuple<T1, T2> {
+        private T3 third;
+
+        public Tuple(T1 first, T2 second, T3 third) {
+            super(first, second);
+            this.third = third;
+        }
+
+        public T3 getThird() {
+            return third;
+        }
+    }
+
+    public static void main(String[] args) {
+        // Example usage
+        List<Tuple<String, String, Integer>> records = new ArrayList<>();
+        records.add(new Tuple<>("AAPL", "2023-01-01", 100));
+        records.add(new Tuple<>("AAPL", "2023-01-01", 150));
+        records.add(new Tuple<>("GOOGL", "2023-01-02", 200));
+        records.add(new Tuple<>("MSFT", "2023-01-01", 120));
+        records.add(new Tuple<>("MSFT", "2023-01-01", 120));
+
+        List<Tuple<String, String>> result = checkDividendVariances(records);
+        for (Tuple<String, String> tuple : result) {
+            System.out.println(tuple.getFirst() + ", " + tuple.getSecond());
+        }
+    }
 }
 ```
-This Java function works similarly to your Python function. It iterates over the input list of records and checks if there are any entries with the same ticker symbol and ex-dividend date but different dividend amounts. If such an entry is found, it adds the corresponding ticker and ex-dividend date to the output list. The results are returned in a list of string arrays, where each array contains a ticker and its corresponding ex-dividend date.
+
+### Explanation:
+1. **Helper Classes**: 
+   - `Tuple<T1, T2>` and `Tuple<T1, T2, T3>` classes are used to represent tuples in Java since Java does not have a built-in tuple class.
+   
+2. **Method Definition**:
+   - The `checkDividendVariances` method takes a list of tuples as input and returns a list of tuples containing tickers and ex-dividend dates with different dividend amounts.
+
+3. **Data Structures**:
+   - A `HashMap` is used to store dividend amounts by `(ticker, exDividendDate)` keys.
+   - A `HashSet` is used to store unique dividend amounts for each key.
+
+4. **Iterating and Processing Records**:
+   - The method iterates over the records, populates the map, and then filters out the keys with more than one unique dividend amount.
+
+5. **Example Usage**:
+   - The `main` method demonstrates how to use the `checkDividendVariances` method with sample data.

@@ -1,30 +1,98 @@
-Here's how you could write your Python unittest test class in TypeScript using Jest:
+Certainly! Here is the equivalent Jest test class in TypeScript, including the necessary imports, type annotations, and Jest assertions to preserve the functionality and logic of the Python unittest class:
 
 ```typescript
-import { describe, it, expect } from '@jest/globals';
-import { getMinSeqNumAndDistance } from './your_module'; // replace 'your_module' with the actual module name
+import * as fs from 'fs';
+import { getMinSeqNumAndDistance } from './path/to/getMinSeqNumAndDistance'; // Import your function
 
-describe('getMinSeqNumAndDistance', () => {
-  it('should return the correct min seq num and distance', async () => {
-    const filePath = 'path_to_your_file.txt'; // replace with your file path
-    const word1 = 'word1';
-    const word2 = 'word2';
+describe('TestGetMinDistance', () => {
+    it('test basic functionality with expected input', () => {
+        const mockContent = "hello world\napple banana apple\norange apple banana";
+        const mockOpen = jest.fn().mockImplementation(() => ({
+            readFileSync: jest.fn().mockReturnValue(mockContent),
+        }));
 
-    const result = await getMinSeqNumAndDistance(filePath, word1, word2);
+        // Mock the fs.readFileSync method
+        jest.spyOn(fs, 'readFileSync').mockImplementation(mockOpen);
 
-    expect(result).toEqual([expectedLineNumber, expectedMinDistance]); // replace with the expected values
-  });
+        const [lineNumber, distance] = getMinSeqNumAndDistance('dummy_file.txt', 'apple', 'banana');
+        expect([lineNumber, distance]).toEqual([2, 1]);
 
-  it('should return (null, Infinity) when one of the words is not found', async () => {
-    const filePath = 'path_to_your_file.txt'; // replace with your file path
-    const word1 = 'word1';
-    const word2 = 'non_existent_word';
+        // Restore the original implementation after the test
+        jest.restoreAllMocks();
+    });
 
-    const result = await getMinSeqNumAndDistance(filePath, word1, word2);
+    it('test case where one or both words are not present', () => {
+        const mockContent = "apple orange pear\norange pear apple";
+        const mockOpen = jest.fn().mockImplementation(() => ({
+            readFileSync: jest.fn().mockReturnValue(mockContent),
+        }));
 
-    expect(result).toEqual([null, Infinity]);
-  });
+        // Mock the fs.readFileSync method
+        jest.spyOn(fs, 'readFileSync').mockImplementation(mockOpen);
+
+        const [lineNumber, distance] = getMinSeqNumAndDistance('dummy_file.txt', 'apple', 'banana');
+        expect([lineNumber, distance]).toEqual([null, Infinity]);
+
+        // Restore the original implementation after the test
+        jest.restoreAllMocks();
+    });
+
+    it('test an empty file', () => {
+        const mockContent = '';
+        const mockOpen = jest.fn().mockImplementation(() => ({
+            readFileSync: jest.fn().mockReturnValue(mockContent),
+        }));
+
+        // Mock the fs.readFileSync method
+        jest.spyOn(fs, 'readFileSync').mockImplementation(mockOpen);
+
+        const [lineNumber, distance] = getMinSeqNumAndDistance('dummy_file.txt', 'apple', 'banana');
+        expect([lineNumber, distance]).toEqual([null, Infinity]);
+
+        // Restore the original implementation after the test
+        jest.restoreAllMocks();
+    });
+
+    it('test multiple lines with varying distances between words', () => {
+        const mockContent = "apple banana\napple orange orange banana\napple orange orange orange banana";
+        const mockOpen = jest.fn().mockImplementation(() => ({
+            readFileSync: jest.fn().mockReturnValue(mockContent),
+        }));
+
+        // Mock the fs.readFileSync method
+        jest.spyOn(fs, 'readFileSync').mockImplementation(mockOpen);
+
+        const [lineNumber, distance] = getMinSeqNumAndDistance('dummy_file.txt', 'apple', 'banana');
+        expect([lineNumber, distance]).toEqual([1, 1]);
+
+        // Restore the original implementation after the test
+        jest.restoreAllMocks();
+    });
 });
 ```
 
-Please note that this is just an example. You'll need to replace `'path_to_your_file.txt'`, `'word1'`, `'word2'`, `expectedLineNumber`, and `expectedMinDistance` with your actual data. Also, make sure that `getMinSeqNumAndDistance` function returns a promise, otherwise you should remove the `await` keyword.
+### Explanation:
+1. **Imports**:
+   - Import the `fs` module to mock `readFileSync`.
+   - Import the `getMinSeqNumAndDistance` function from the appropriate path.
+
+2. **Describe Block**:
+   - Use `describe` to group the test cases under a single test suite named `TestGetMinDistance`.
+
+3. **It Blocks**:
+   - Each `it` block represents a specific test case.
+   - Use `jest.fn()` to create a mock function for `fs.readFileSync`.
+   - Use `jest.spyOn` to replace the actual `fs.readFileSync` with the mock function.
+   - Use `expect` to assert the expected results.
+
+4. **Mock Implementation**:
+   - The mock function `mockOpen` simulates the behavior of reading file content.
+   - The `readFileSync` method is mocked to return the desired content.
+
+5. **Assertions**:
+   - Use `expect` with `toEqual` to check the equality of the returned tuple.
+
+6. **Restore Original Implementation**:
+   - After each test, use `jest.restoreAllMocks()` to restore the original implementation of `fs.readFileSync`.
+
+This TypeScript code preserves the functionality and logic of the original Python unittest class, with appropriate adjustments for Jest's testing framework.

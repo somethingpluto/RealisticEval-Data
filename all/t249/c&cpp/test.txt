@@ -1,50 +1,91 @@
-Certainly! Below is an example of how you might convert a Python unittest test case to a C++ Catch2 test case for a hypothetical function `extract_text_from_pdf`. Note that in this example, I'll assume the function `extract_text_from_pdf` is implemented and available in your C++ codebase.
+Certainly! Below is the equivalent C++ test class using the Catch2 testing framework. I will ensure that the functionality and logic of the tests are preserved, and I will use appropriate assertions in Catch2.
 
-### Python Unittest Test Case Example
+First, make sure you have Catch2 installed and included in your project. You can typically install Catch2 via a package manager or include it directly in your project.
 
-```python
-import unittest
-from pdf_utils import extract_text_from_pdf  # Assuming the function is defined here
-
-class TestExtractTextFromPDF(unittest.TestCase):
-    def test_extract_text_from_pdf(self):
-        file_path = "test.pdf"
-        expected_text = "This is a test PDF."
-        
-        result = extract_text_from_pdf(file_path)
-        
-        self.assertEqual(result, expected_text)
-
-if __name__ == '__main__':
-    unittest.main()
-```
-
-### Equivalent C++ Catch2 Test Case
+Here is the C++ code:
 
 ```cpp
-#include <catch2/catch.hpp>
-#include "pdf_utils.h"  // Assuming the function is declared here
+#include <catch2/catch_test_macros.hpp>
+#include <string>
+#include <iostream>
+#include <poppler/cpp/poppler-document.h>
+#include <poppler/cpp/poppler-page.h>
 
-TEST_CASE("Extract Text From PDF", "[pdf]") {
-    std::string file_path = "test.pdf";
-    std::string expected_text = "This is a test PDF.";
-    
-    std::string result = extract_text_from_pdf(file_path);
-    
-    REQUIRE(result == expected_text);
+// Function to extract text from a given PDF file
+std::string extract_text_from_pdf(const std::string& file_path) {
+    std::string extracted_text;
+
+    try {
+        poppler::document* doc = poppler::document::load_from_file(file_path);
+
+        if (!doc || doc->is_locked()) {
+            std::cerr << "Error loading or opening the PDF file." << std::endl;
+            return "";
+        }
+
+        for (int i = 0; i < doc->pages(); ++i) {
+            poppler::page* page = doc->create_page(i);
+
+            if (!page) {
+                std::cerr << "Failed to create page." << std::endl;
+                continue;
+            }
+
+            extracted_text += page->text().to_utf8() + "\n";
+
+            delete page;
+        }
+
+        delete doc;
+    } catch (const std::exception& e) {
+        std::cerr << "Exception caught: " << e.what() << std::endl;
+        return "";
+    }
+
+    return extracted_text;
+}
+
+TEST_CASE("TestExtractTextFromPDF", "[PDF]") {
+    SECTION("test_empty_file") {
+        std::string pdf_path = R"(E:\code\code_back\python_project\RealisticEval-Data\envs\python\test_case\t249\testcase01.pdf)";
+        std::string expected = " \n";
+        std::string output = extract_text_from_pdf(pdf_path);
+        REQUIRE(output == expected);
+    }
+
+    SECTION("test_normal_file") {
+        std::string pdf_path = R"(E:\code\code_back\python_project\RealisticEval-Data\envs\python\test_case\t249\testcase02.pdf)";
+        std::string expected = "11111  \n";
+        std::string output = extract_text_from_pdf(pdf_path);
+        REQUIRE(output == expected);
+    }
+
+    SECTION("test_more_text_file") {
+        std::string pdf_path = R"(E:\code\code_back\python_project\RealisticEval-Data\envs\python\test_case\t249\testcase03.pdf)";
+        std::string expected = "11111  \n22222  \n33333  \n44444  \n";
+        std::string output = extract_text_from_pdf(pdf_path);
+        REQUIRE(output == expected);
+    }
+}
+
+int main(int argc, char* argv[]) {
+    // Run Catch2 tests
+    int result = Catch::Session().run(argc, argv);
+    return result;
 }
 ```
 
-### Explanation
+### Explanation:
+1. **Headers**: Include necessary headers for Catch2, strings, and the `poppler` library.
+2. **Function Definition**: Define the `extract_text_from_pdf` function, which extracts text from a PDF file.
+3. **Test Class**: Use the `TEST_CASE` macro to define the test suite.
+4. **Sections**: Use `SECTION` macros to define individual test cases.
+5. **Assertions**: Use `REQUIRE` for assertions to check the equality of the extracted text with the expected values.
+6. **Main Function**: Run the Catch2 tests using the `Catch::Session().run()` method.
 
-1. **Include Catch2 Header**: The first line includes the Catch2 header file, which provides the necessary macros and utilities for writing tests.
-   
-2. **Test Case Declaration**: The `TEST_CASE` macro is used to declare a new test case. It takes two arguments: the name of the test case and a tag or category for filtering.
-   
-3. **File Path and Expected Result**: Similar to the Python code, we define the file path and the expected text.
-   
-4. **Function Call**: We call the `extract_text_from_pdf` function with the provided file path and store the result.
-   
-5. **Assertion**: The `REQUIRE` macro is used to assert that the result matches the expected text. If the assertion fails, the test will fail and provide an error message.
+### Notes:
+- **Path Handling**: The paths are specified using raw string literals (`R"(...)`), which handle backslashes correctly.
+- **Assertions**: `REQUIRE` is used for assertions, which is equivalent to `self.assertEqual` in Python's `unittest` framework.
+- **Catch2 Installation**: Ensure that Catch2 is properly installed and included in your project. You can typically install it via a package manager or include it directly in your project.
 
-Make sure that the `pdf_utils.h` header file is correctly set up and contains the declaration of the `extract_text_from_pdf` function. This setup assumes that the function is already implemented and compiled into your project.
+This code preserves the original functionality and logic of the Python tests while translating them into idiomatic C++ using the Catch2 testing framework.

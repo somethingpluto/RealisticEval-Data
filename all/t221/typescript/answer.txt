@@ -1,40 +1,47 @@
-Here is the equivalent TypeScript code for your Python function:
+Here’s the equivalent TypeScript code, including necessary type definitions and adjustments:
 
 ```typescript
-interface Dictionary {
-  [key: string]: any;
-}
+import * as fs from 'fs';
+import * as regex from 'regex';
 
-function extractParseDictionaries(filePath: string): Promise<Dictionary[]> {
-  return new Promise((resolve, reject) => {
-    const fs = require('fs');
-    const readline = require('readline');
+function extractParseDicts(filePath: string): Record<string, any>[] {
+    /**
+     * Extracts and parses strings containing Python dictionary syntax from a given file.
+     *
+     * @param filePath - The path to the file from which to extract dictionary strings.
+     * @returns An array of dictionaries extracted and parsed from the file.
+     */
+    // This regex pattern is designed to match simple dictionary structures
+    const dictPattern = /\{[^\{]*?\}/g;
+    const extractedDicts: Record<string, any>[] = [];
 
-    let dictionaries: Dictionary[] = [];
-    const rl = readline.createInterface({
-      input: fs.createReadStream(filePath),
-      crlfDelay: Infinity,
-    });
+    const fileContents = fs.readFileSync(filePath, 'utf-8');
+    const matches = fileContents.matchAll(dictPattern);
 
-    rl.on('line', (line) => {
-      try {
-        // Parse line as JSON assuming it's a valid dictionary
-        const dict = JSON.parse(line);
-        if (typeof dict === 'object' && dict !== null) {
-          dictionaries.push(dict);
+    for (const match of matches) {
+        try {
+            // Use JSON.parse to safely parse the string that looks like a dictionary
+            const parsedDict = JSON.parse(match[0]);
+            extractedDicts.push(parsedDict);
+        } catch (error) {
+            // Handle the case where the string is not a valid JSON object
+            console.log(`Skipping invalid dictionary: ${match[0]}`);
         }
-      } catch (error) {
-        console.error(`Error parsing line "${line}":`, error);
-      }
-    });
+    }
 
-    rl.on('close', () => {
-      resolve(dictionaries);
-    });
-  });
+    return extractedDicts;
 }
+
+// Example usage
+const filePath = './example.txt';
+console.log(extractParseDicts(filePath));
 ```
 
-This TypeScript function reads a file line-by-line using Node.js's `readline` module and attempts to parse each line as a JSON object. If successful, it adds the resulting dictionary to an array. The function returns a promise that resolves with the array of dictionaries once all lines have been processed.
+### Notes:
+1. **File System**: In TypeScript/Node.js, we use `fs` (file system) module to read files synchronously using `fs.readFileSync`.
+2. **Regular Expressions**: TypeScript uses JavaScript's regular expression syntax.
+3. **JSON Parsing**: Instead of `ast.literal_eval`, we use `JSON.parse` to safely parse JSON strings.
+4. **Type Definitions**: The function returns an array of objects (`Record<string, any>[]`) to represent dictionaries.
+5. **Error Handling**: Error handling is done using a `try-catch` block, similar to Python.
 
-Please note that this assumes that the input file contains valid JSON objects on each line. If your actual data format differs, you may need to adjust the parsing logic accordingly.
+This TypeScript code maintains the same functionality and logic as the original Python code but adapts it to TypeScript's static type system and Node.js environment.

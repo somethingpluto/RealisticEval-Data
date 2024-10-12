@@ -1,32 +1,118 @@
-Here is how you can convert your Python unittest test class into a TypeScript Jest test case:
+Certainly! Here’s the equivalent TypeScript test class using Jest, ensuring that the functionality and logic of the tests are preserved. The necessary type annotations and Jest assertions are included.
+
+### TypeScript Code with Jest Testing
+
+First, ensure you have Jest installed in your TypeScript project:
+```sh
+npm install --save-dev jest @types/jest ts-jest
+```
+
+Add Jest configuration to your `tsconfig.json`:
+```json
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "target": "es6",
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "outDir": "./dist",
+    "baseUrl": "./src",
+    "incremental": true,
+    "strict": true,
+    "skipLibCheck": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "**/*.spec.ts"],
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node"
+  }
+}
+```
+
+Now, let’s write the TypeScript test class using Jest:
 
 ```typescript
-import { describe, it, expect } from '@jest/globals';
-import { get_current_date_info } from './path_to_your_function'; // Change with your actual path
+import { DateTime } from 'luxon';
+import { getCurrentDateInfo } from './path/to/getCurrentDateInfo'; // Import the function to test
 
-describe('get_current_date_info', () => {
-    it('should return correct date info for a given date', () => {
-        const testDate = new Date(2024, 1, 29); // February 29, 2024
-        const result = get_current_date_info(testDate);
-        expect(result).toEqual({
-            'year': 2024,
-            'month': 'February',
-            'week_of_the_month': 5,
-            'day_of_the_week': 'Wednesday'
-        });
-    });
+describe('TestGetCurrentDateInfo', () => {
+  it('should return correct info for the beginning of the month', () => {
+    const result = getCurrentDateInfo(DateTime.fromJSDate(new Date(2023, 0, 1)));
+    const expected = {
+      year: 2023,
+      month: 'January',
+      weekOfTheMonth: 1,
+      dayOfWeek: 'Sunday'
+    };
+    expect(result).toEqual(expected);
+  });
 
-    it('should return correct date info for today\'s date', () => {
-        const today = new Date();
-        const result = get_current_date_info(today);
-        expect(result.year).toBe(today.getFullYear());
-        expect(result.month).toBe(today.toLocaleString('default', { month: 'long' }));
-        expect(result.week_of_the_month).toBe(Math.ceil(today.getDate() / 7));
-        expect(result.day_of_the_week).toBe(today.toLocaleString('default', { weekday: 'long' }));
-    });
+  it('should return correct info for the middle of the month', () => {
+    const result = getCurrentDateInfo(DateTime.fromJSDate(new Date(2023, 0, 15)));
+    const expected = {
+      year: 2023,
+      month: 'January',
+      weekOfTheMonth: 3,
+      dayOfWeek: 'Sunday'
+    };
+    expect(result).toEqual(expected);
+  });
+
+  it('should return correct info for a leap year', () => {
+    const result = getCurrentDateInfo(DateTime.fromJSDate(new Date(2024, 1, 29)));
+    const expected = {
+      year: 2024,
+      month: 'February',
+      weekOfTheMonth: 5,
+      dayOfWeek: 'Thursday'
+    };
+    expect(result).toEqual(expected);
+  });
+
+  it('should return correct info for the change of year', () => {
+    const result = getCurrentDateInfo(DateTime.fromJSDate(new Date(2022, 11, 31)));
+    const expected = {
+      year: 2022,
+      month: 'December',
+      weekOfTheMonth: 5,
+      dayOfWeek: 'Saturday'
+    };
+    expect(result).toEqual(expected);
+  });
 });
 ```
 
-Please replace `./path_to_your_function` with the actual path where your `get_current_date_info` function is located. 
+### Explanation:
+1. **Imports**:
+   - Import `DateTime` from `luxon` to handle dates.
+   - Import the `getCurrentDateInfo` function from the file where it is defined.
 
-Note that JavaScript (and therefore TypeScript) does not have built-in support for week of the month like Python. The calculation in the second test case is an approximation based on the number of days since the start of the month divided by 7. This may need to be adjusted depending on your specific requirements.
+2. **Describe Block**:
+   - Use `describe` to group the test cases under a descriptive name.
+
+3. **Test Cases**:
+   - Each test case is defined using `it` and includes a description and the actual test logic.
+   - The `expect` function is used to assert the expected results.
+
+4. **Date Creation**:
+   - Use `DateTime.fromJSDate(new Date(...))` to create Luxon `DateTime` objects from JavaScript `Date` objects.
+
+5. **Expected Results**:
+   - Define the expected results as objects and compare them using `expect(result).toEqual(expected)`.
+
+### Running the Tests
+To run the tests, add a script to your `package.json`:
+```json
+"scripts": {
+  "test": "jest"
+}
+```
+
+Then run the tests:
+```sh
+npm test
+```
+
+This setup ensures that the tests are equivalent to the Python unittests and that they are properly structured and annotated in TypeScript using Jest.

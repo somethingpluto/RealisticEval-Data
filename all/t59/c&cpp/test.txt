@@ -1,74 +1,76 @@
-To convert your Python unittest test class into a C++ Catch2 test case, you first need to implement the `probability_red_balls` function in C++. After that, you can write a corresponding Catch2 test case for it. Below is an example of how you might do this:
+Certainly! Here is the equivalent C++ test class using the Catch2 testing framework. I'll include the necessary imports, the test cases, and the appropriate assertions to ensure the functionality and logic are preserved.
 
-### Step 1: Implement the Function in C++
+First, make sure you have Catch2 installed and included in your project. You can download it from [here](https://github.com/catchorg/Catch2).
+
+Here is the C++ code:
+
 ```cpp
+#include <catch2/catch_test_macros.hpp>
 #include <cmath>
 
+// Function to calculate the binomial coefficient (n choose k)
+long long binomial_coefficient(int n, int k) {
+    if (k > n - k) {
+        k = n - k;
+    }
+    long long result = 1;
+    for (int i = 0; i < k; ++i) {
+        result *= (n - i);
+        result /= (i + 1);
+    }
+    return result;
+}
+
+// Function to calculate the probability that x balls will be randomly drawn from a jar containing
+// n red balls and m blue balls, and all of them will be red balls.
 double probability_red_balls(int x, int n, int m) {
-    // Calculate the total number of balls
+    if (x > n) {
+        return 0; // Not enough red balls to draw x red balls
+    }
     int total_balls = n + m;
-    
-    // Check if the number of balls to draw exceeds the available balls
-    if (x > total_balls || x < 0) {
-        return 0.0;
-    }
-    
-    // Calculate combinations using double to avoid integer overflow issues
-    double nCr_n = 1.0;
-    for (int i = 1; i <= x; ++i) {
-        nCr_n *= (n - i + 1);
-        nCr_n /= i;
+    if (x > total_balls) {
+        return 0; // Not enough balls to draw x balls of any color
     }
 
-    double nCr_m = 1.0;
-    for (int i = 1; i <= (total_balls - x); ++i) {
-        nCr_m *= (m - i + 1);
-        nCr_m /= i;
-    }
+    // Number of ways to choose x red balls from n red balls
+    long long ways_to_choose_red = binomial_coefficient(n, x);
+    // Total number of ways to choose x balls from all balls
+    long long total_ways_to_choose_balls = binomial_coefficient(total_balls, x);
 
-    double nCr_total = 1.0;
-    for (int i = 1; i <= total_balls; ++i) {
-        nCr_total *= (total_balls - i + 1);
-        nCr_total /= i;
-    }
-
-    // Calculate the probability
-    double probability = (nCr_n * nCr_m) / nCr_total;
+    // Probability that all chosen balls are red
+    double probability = static_cast<double>(ways_to_choose_red) / total_ways_to_choose_balls;
 
     return probability;
 }
-```
 
-### Step 2: Write the Catch2 Test Case
-Here's an example of how you might write a Catch2 test case for the `probability_red_balls` function:
+TEST_CASE("Test Probability Red Balls") {
+    SECTION("All balls are red") {
+        REQUIRE(probability_red_balls(5, 5, 0) == Approx(1));
+    }
 
-```cpp
-#define CATCH_CONFIG_MAIN
-#include "catch.hpp"
+    SECTION("No red balls are available") {
+        REQUIRE(probability_red_balls(1, 0, 5) == Approx(0));
+    }
 
-// Forward declaration of the function
-double probability_red_balls(int x, int n, int m);
+    SECTION("Typical scenario") {
+        REQUIRE(probability_red_balls(2, 10, 5) == Approx(static_cast<double>(binomial_coefficient(10, 2)) / binomial_coefficient(15, 2)));
+    }
 
-TEST_CASE("Probability of drawing red balls", "[probability]") {
-    REQUIRE(probability_red_balls(0, 5, 3) == Approx(1.0)); // No balls drawn, so the probability is 1
-    REQUIRE(probability_red_balls(1, 5, 3) == Approx(0.625)); // Drawing 1 red ball out of 8 total
-    REQUIRE(probability_red_balls(2, 5, 3) == Approx(0.1875)); // Drawing 2 red balls out of 8 total
-    REQUIRE(probability_red_balls(3, 5, 3) == Approx(0.0416667)); // Drawing 3 red balls out of 8 total
-    REQUIRE(probability_red_balls(4, 5, 3) == Approx(0.0)); // Not possible to draw 4 red balls with only 5 red balls
+    SECTION("More balls requested than available") {
+        REQUIRE(probability_red_balls(6, 5, 4) == Approx(0));
+    }
 
-    // Additional edge cases
-    REQUIRE(probability_red_balls(-1, 5, 3) == Approx(0.0)); // Invalid number of balls to draw
-    REQUIRE(probability_red_balls(6, 5, 3) == Approx(0.0)); // Drawing more balls than available
-}
-
-int main() {
-    return Catch::Session().run();
+    SECTION("High combinations") {
+        REQUIRE(probability_red_balls(3, 20, 30) == Approx(static_cast<double>(binomial_coefficient(20, 3)) / binomial_coefficient(50, 3)));
+    }
 }
 ```
 
-In this example:
-- We define the `probability_red_balls` function in C++.
-- We then write a Catch2 test case named `Probability of drawing red balls`.
-- Inside the test case, we use various `REQUIRE` statements to check if the function returns the correct probabilities for different scenarios.
+### Explanation:
+1. **Imports**: The `Catch2` header is included at the beginning.
+2. **binomial_coefficient**: This function calculates the binomial coefficient (n choose k) using a loop and integer arithmetic.
+3. **probability_red_balls**: This function implements the logic to calculate the probability that all `x` drawn balls are red, following the same steps as the Python version.
+4. **TEST_CASE and SECTION**: These macros define the test cases and sections within the test case. Each section corresponds to a specific test scenario.
+5. **REQUIRE**: This macro is used for assertions. `Approx` is used for floating-point comparisons to handle small rounding errors.
 
-Make sure to have the Catch2 library installed and properly configured in your project environment to compile and run these tests.
+This C++ code preserves the original functionality and logic of the Python tests while adhering to the Catch2 testing framework.

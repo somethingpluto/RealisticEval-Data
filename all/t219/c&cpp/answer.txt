@@ -1,55 +1,76 @@
-Here is how you can convert your Python function into C++:
+Here’s the equivalent C++ code for the provided Python function. The code maintains the same functionality and logic, using C++ syntax and features:
 
-```c++
+```cpp
 #include <iostream>
 #include <vector>
-#include <map>
+#include <string>
+#include <unordered_map>
+#include <set>
 
-using namespace std;
+// Function to check for ticker symbols with the same ex-dividend date but different dividend amounts
+std::vector<std::pair<std::string, std::string>> checkDividendVariances(const std::vector<std::tuple<std::string, std::string, int>>& records) {
+    // Dictionary to store dividend amounts by (ticker, ex_dividend_date)
+    std::unordered_map<std::pair<std::string, std::string>, std::set<int>> dividendDict;
 
-struct Record {
-    string ticker;
-    string exDividendDate;
-    double dividendAmount;
-};
+    // Iterate through the records
+    for (const auto& record : records) {
+        const std::string& ticker = std::get<0>(record);
+        const std::string& exDividendDate = std::get<1>(record);
+        int dividendAmount = std::get<2>(record);
 
-vector<Record> checkDividendVariances(vector<Record>& records) {
-    map<string, vector<pair<string, double>>> recordMap;
-
-    for(auto& record : records){
-        recordMap[record.exDividendDate].push_back({record.ticker, record.dividendAmount});
+        std::pair<std::string, std::string> key(ticker, exDividendDate);
+        dividendDict[key].insert(dividendAmount);
     }
 
-    vector<Record> result;
-    
-    for(auto& [key, value] : recordMap){
-        if(value.size() > 1){
-            for(int i = 0; i < value.size(); ++i){
-                for(int j = i + 1; j < value.size(); ++j){
-                    if(value[i].second != value[j].second){
-                        result.push_back(Record{value[i].first, key});
-                        break;
-                    }
-                }
-            }
+    // Find entries with more than one unique dividend amount
+    std::vector<std::pair<std::string, std::string>> result;
+    for (const auto& entry : dividendDict) {
+        if (entry.second.size() > 1) {
+            result.push_back(entry.first);
         }
     }
 
     return result;
 }
 
-int main(){
-    // test the function
-    vector<Record> records = {{"AAPL", "2023-05-09", 4.0}, {"GOOG", "2023-05-09", 76.0}, 
-                             {"AAPL", "2023-05-09", 4.5}, {"AMZN", "2023-05-09", 180.0}};
+int main() {
+    // Example usage
+    std::vector<std::tuple<std::string, std::string, int>> records = {
+        {"AAPL", "2023-06-01", 100},
+        {"AAPL", "2023-06-01", 150},
+        {"GOOGL", "2023-06-01", 200},
+        {"MSFT", "2023-06-01", 120},
+        {"AAPL", "2023-06-02", 100}
+    };
+
     auto result = checkDividendVariances(records);
-    for(auto& r : result){
-        cout << r.ticker << ", " << r.exDividendDate << endl;
+
+    // Print the result
+    for (const auto& entry : result) {
+        std::cout << "(" << entry.first << ", " << entry.second << ")" << std::endl;
     }
+
     return 0;
 }
 ```
 
-Please note that in C++, we use `std::map` instead of Python's dictionary and `std::pair` instead of Python's tuple. Also, since C++ does not support list comprehension like Python, we need to manually loop through the vectors. The `main` function here tests the `checkDividendVariances` function.
+### Explanation:
+1. **Data Structures**:
+   - `std::unordered_map` is used to store the dividend amounts by `(ticker, ex_dividend_date)`.
+   - `std::set` is used to store unique dividend amounts for each key.
+   - `std::vector` is used to store the final result.
 
-Also, make sure to handle memory management properly when dealing with dynamic data structures in C++. In this case, all strings are stored on the stack and do not require manual deallocation. However, if you were using dynamically allocated strings or other resources, you would need to manage their lifetimes appropriately.
+2. **Iterating Through Records**:
+   - A range-based for loop is used to iterate through the input `records`.
+   - The `std::get` function is used to access elements from the tuple.
+
+3. **Finding Entries with More Than One Unique Dividend Amount**:
+   - Another range-based for loop iterates through the `dividendDict` to find keys with more than one unique dividend amount.
+   - These keys are added to the `result` vector.
+
+4. **Example Usage**:
+   - An example `records` vector is provided in the `main` function.
+   - The `checkDividendVariances` function is called with this data.
+   - The results are printed to the console.
+
+This C++ code provides the same functionality as the original Python code, adapted to C++ syntax and features.

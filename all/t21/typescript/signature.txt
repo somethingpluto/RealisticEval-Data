@@ -1,9 +1,11 @@
+Certainly! Here is the equivalent TypeScript code with proper type annotations and JSDoc-style documentation comments:
+
 ```typescript
-import fs from 'fs';
-import { difference } from 'lodash';
+import * as fs from 'fs';
+import * as diff from 'diff';
 
 /**
- * Compare the contents of two files and return the differences in unified diff format.
+ * Compare the contents of two files and print the differences in unified diff format.
  *
  * @param file1Path - Path to the first file.
  * @param file2Path - Path to the second file.
@@ -11,32 +13,65 @@ import { difference } from 'lodash';
  * @throws {Error} If either file does not exist or there is an error reading the files.
  */
 function compareFiles(file1Path: string, file2Path: string): string[] {
-    // Read the contents of both files
-    let file1Content = '';
-    let file2Content = '';
+    let lines1: string[];
+    let lines2: string[];
 
     try {
-        file1Content = fs.readFileSync(file1Path, 'utf8');
-        file2Content = fs.readFileSync(file2Path, 'utf8');
+        const file1Content = fs.readFileSync(file1Path, 'utf8');
+        const file2Content = fs.readFileSync(file2Path, 'utf8');
+        lines1 = file1Content.split('\n');
+        lines2 = file2Content.split('\n');
     } catch (error) {
-        throw new Error(`Failed to read one or both files: ${error.message}`);
+        if (error.code === 'ENOENT') {
+            throw new Error('One of the files was not found.');
+        }
+        throw new Error(`Error reading files: ${error.message}`);
     }
 
-    // Split the content into lines
-    const lines1 = file1Content.split('\n');
-    const lines2 = file2Content.split('\n');
+    const diffLines = diff.unifiedDiff({
+        fromFile: file1Path,
+        toFile: file2Path,
+        fromFileContent: lines1.join('\n'),
+        toFileContent: lines2.join('\n')
+    });
 
-    // Find the differences using lodash's difference function
-    const diffLines = difference(lines1, lines2);
+    if (diffLines) {
+        diffLines.split('\n').forEach(line => console.log(line));
+    }
 
-    return diffLines;
+    return diffLines ? diffLines.split('\n') : [];
 }
+
+// Example usage
+const file1Path = 'path/to/file1.txt';
+const file2Path = 'path/to/file2.txt';
+compareFiles(file1Path, file2Path);
 ```
 
 ### Explanation:
-- **Imports**: The `fs` module is used for file system operations, and `difference` from `lodash` is used to find the differences between arrays.
-- **Function Signature**: The TypeScript function signature matches the Python function signature closely, including parameter types and return type.
-- **File Reading**: The `fs.readFileSync` method reads the content of the files synchronously. If an error occurs during reading, it throws an error with a descriptive message.
-- **Line Splitting**: The file content is split into lines using the `split('\n')` method.
-- **Finding Differences**: The `difference` function from `lodash` is used to find the lines that are present in `lines1` but not in `lines2`.
-- **Return Value**: The function returns an array of strings representing the lines of differences.
+1. **Imports**:
+   - `fs` is used for file system operations.
+   - `diff` is a library similar to `difflib` in Python for generating diffs.
+
+2. **Function Definition**:
+   - The function `compareFiles` takes two strings (`file1Path` and `file2Path`) and returns an array of strings representing the differences between the files.
+
+3. **Reading Files**:
+   - `fs.readFileSync` is used to read the content of the files synchronously.
+   - The content is split into lines using `.split('\n')`.
+
+4. **Generating Differences**:
+   - `diff.unifiedDiff` generates the unified diff between the two sets of lines.
+   - The resulting diff is printed line by line.
+
+5. **Error Handling**:
+   - If a file is not found, an error is thrown with the message "One of the files was not found."
+   - If there is an error reading the files, an error is thrown with the message "Error reading files: {error message}".
+
+6. **Returning Differences**:
+   - The function returns the lines of differences as an array of strings.
+
+7. **JSDoc Comments**:
+   - The JSDoc comments provide detailed documentation for the function parameters, return type, and possible exceptions.
+
+This TypeScript code preserves the original functionality and structure of the Python code, with appropriate translations for TypeScript's syntax and conventions.

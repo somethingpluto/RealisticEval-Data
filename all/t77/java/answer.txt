@@ -1,26 +1,66 @@
 Here is the equivalent Java code:
 
 ```java
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.TimeZone;
+package org.real.temp;
+
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.Locale;
 
 public class Answer {
 
-    public static String formatTimestampToString(double timestamp, String dateFormat) {
-        SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);
-        sdf.setTimeZone(TimeZone.getDefault());
-        return sdf.format(new Date((long)(timestamp * 1000)));
+    /**
+     * Convert a UNIX timestamp to a formatted datetime string using the system's local timezone.
+     *
+     * @param mtime UNIX timestamp.
+     * @param format Format string for `DateTimeFormatter`.
+     * @return Formatted datetime string.
+     */
+    public static String formatDateTimeStr(long mtime, String format) {
+        if (mtime < 0) {
+            throw new IllegalArgumentException("mtime cannot be negative");
+        }
+
+        ZoneId localTz;
+        try {
+            // Get the local system timezone
+            localTz = ZoneId.systemDefault();
+        } catch (Exception e) {
+            // Fallback to UTC if the local timezone is not found
+            localTz = ZoneId.of("UTC");
+        }
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format, Locale.US);
+
+        try {
+            // Convert the UNIX timestamp to a ZonedDateTime object with timezone
+            ZonedDateTime dateTime = ZonedDateTime.ofInstant(ZonedDateTime.ofInstant(
+                    java.time.Instant.ofEpochSecond(mtime), localTz).toInstant(), localTz);
+            // Return the formatted datetime string
+            return dateTime.format(formatter);
+        } catch (DateTimeParseException e) {
+            // Handle any other unexpected errors
+            throw new IllegalArgumentException("Error formatting the datetime: " + e.getMessage());
+        }
+    }
+
+    public static void main(String[] args) {
+        // Example usage
+        long mtime = 1688235600L; // Example UNIX timestamp
+        String format = "%a %b %d %I:%M:%S %p %z %Y"; // Example format string
+        System.out.println(formatDateTimeStr(mtime, format));
     }
 }
 ```
 
-This function takes a `double` instead of a `float`, because in Java there is no native support for floating-point timestamps. Instead, it multiplies the timestamp by 1000 to convert it into milliseconds, which is what the `Date` constructor expects.
+### Explanation:
+1. **Imports**: Added necessary imports for handling dates and time in Java.
+2. **Method Signature**: Changed the method signature to match Java's conventions, including type declarations.
+3. **Exception Handling**: Used `IllegalArgumentException` instead of `ValueError` to indicate invalid arguments.
+4. **Timezone Handling**: Used `ZoneId.systemDefault()` to get the local system timezone and `ZoneId.of("UTC")` as a fallback.
+5. **Formatting**: Used `DateTimeFormatter` to format the date-time string according to the specified format.
+6. **Main Method**: Provided an example usage of the method within a `main` method for demonstration purposes.
 
-Also, note that the `formatTimestampToString` method in Java does not have an optional parameter like in Python. If you want to make the `dateFormat` parameter optional, you can provide a default value when calling the method. For example:
-
-```java
-String formattedTime = formatTimestampToString(1633072800.0, "%a %b %d %I:%M:%S %p %z %Y");
-```
-
-If you don't provide the `dateFormat` argument, the method will use the default format `"%a %b %d %I:%M:%S %p %z %Y"`.
+This Java code maintains the functionality and logic of the original Python code while adhering to Java's syntax and best practices.

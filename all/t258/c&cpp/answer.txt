@@ -1,15 +1,80 @@
-Here's how you might translate the Python function `extract_character_bits` into C++:
+Certainly! Below is the equivalent C++ code for the provided Python function. This code will extract the position and bits of a specific character from a byte array, ensuring that the functionality, logic, and structure remain consistent with the original Python code.
 
-```c++
+```cpp
 #include <iostream>
-#include <vector>
 #include <string>
+#include <vector>
+#include <sstream>
 
-std::pair<int, std::string> extractCharacterBits(const std::vector<unsigned char>& byteArray, const std::string& charStr, const std::string& charset = "UTF-8") {
-    // Implementation goes here
+// Function to extract the position and bits of a specific character from a byte array
+std::pair<int, std::string> extract_character_bits(const std::vector<unsigned char>& byte_array, char char_to_find, const std::string& charset = "utf-8") {
+    try {
+        // Decode byte array to string using the specified character set
+        std::string string;
+        if (charset == "utf-8") {
+            string = std::string(byte_array.begin(), byte_array.end());
+        } else {
+            std::cerr << "Unsupported charset: " << charset << std::endl;
+            return std::make_pair(-1, "");
+        }
+
+        // Check if the character is in the decoded string
+        size_t position = string.find(char_to_find);
+        if (position != std::string::npos) {
+            // Find the byte position of the character
+            size_t byte_position = 0;
+            for (size_t i = 0; i < position; ++i) {
+                byte_position += static_cast<size_t>(std::strlen(std::string(1, string[i]).c_str()));
+            }
+
+            // Determine the length of the character in bytes
+            size_t char_length = static_cast<size_t>(std::strlen(std::string(1, char_to_find).c_str()));
+
+            // Extract the bits corresponding to the character
+            std::vector<unsigned char> bits(byte_array.begin() + byte_position, byte_array.begin() + byte_position + char_length);
+
+            // Convert bits to a human-readable binary string
+            std::stringstream bits_as_string;
+            for (auto byte : bits) {
+                bits_as_string << std::bitset<8>(byte) << " ";
+            }
+            std::string result = bits_as_string.str();
+            result.pop_back(); // Remove the trailing space
+
+            return std::make_pair(static_cast<int>(position), result);
+        } else {
+            std::cerr << "The character '" << char_to_find << "' is not in the byte array." << std::endl;
+            return std::make_pair(-1, "");
+        }
+    } catch (const std::exception& e) {
+        std::cerr << "Failed to decode the byte array: " << e.what() << std::endl;
+        return std::make_pair(-1, "");
+    }
+}
+
+int main() {
+    // Example usage
+    std::vector<unsigned char> byte_array = {'H', 'e', 'l', 'l', 'o', ',', ' ', 'W', 'o', 'r', 'l', 'd'};
+    char char_to_find = 'l';
+    auto result = extract_character_bits(byte_array, char_to_find);
+
+    if (result.first != -1) {
+        std::cout << "Position: " << result.first << ", Bits: " << result.second << std::endl;
+    } else {
+        std::cout << "Character not found." << std::endl;
+    }
+
+    return 0;
 }
 ```
 
-Note that there isn't an exact translation because Python strings are Unicode by default, while C++ strings are not. In C++, you would need to use a library like `iconv` or `icu` for string conversion between different encodings. Also, C++ does not have a built-in way to convert between bytes and characters like Python does with its `encode()` and `decode()` methods.
+### Explanation:
+1. **Function Definition**: The `extract_character_bits` function takes a `std::vector<unsigned char>` representing the byte array, a `char` to find, and an optional `std::string` for the charset (defaulted to "utf-8").
+2. **Decoding Byte Array**: The byte array is converted to a string assuming UTF-8 encoding.
+3. **Character Position**: The position of the character in the string is determined using `std::string::find`.
+4. **Byte Position Calculation**: The byte position of the character is calculated by iterating through the string and summing the lengths of characters before the target character.
+5. **Extracting Bits**: The bits corresponding to the character are extracted from the byte array.
+6. **Binary String Conversion**: The bits are converted to a human-readable binary string using `std::bitset<8>`.
+7. **Error Handling**: Exception handling is included to catch any decoding errors and provide appropriate feedback.
 
-The implementation of the actual logic will depend on your specific needs and what exactly constitutes a "bit" in your context. This might involve converting the character to its binary representation and then finding the corresponding bit in the byte array.
+This C++ code maintains the functionality and logic of the original Python code while adapting to C++ syntax and features.

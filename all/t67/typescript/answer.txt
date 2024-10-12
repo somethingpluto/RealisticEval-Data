@@ -1,46 +1,87 @@
-Sure! Below is the equivalent TypeScript code for your Python function:
+To convert the provided Python code into TypeScript, we need to ensure that the functionality remains consistent. We will use the `xml2js` library to parse XML files in TypeScript since TypeScript does not have a built-in XML parsing library like Python’s `xml.etree.ElementTree`. 
+
+Here is the equivalent TypeScript code:
+
+1. Install the `xml2js` library:
+   ```sh
+   npm install xml2js
+   ```
+
+2. TypeScript code:
 
 ```typescript
 import * as fs from 'fs';
-import * as path from 'path';
+import * as xml2js from 'xml2js';
 
-interface Dictionary {
-  [key: string]: string;
+/**
+ * Parse a XAML file and extract key-value pairs from 'String' elements.
+ *
+ * @param xamlFile - Path to the XAML file.
+ * @returns A dictionary containing the key-value pairs extracted from 'String' elements.
+ */
+function parseXamlToDict(xamlFile: string): Record<string, string> {
+    try {
+        // Read the XAML file
+        const xamlContent = fs.readFileSync(xamlFile, 'utf-8');
+
+        // Parse the XAML content
+        const parser = new xml2js.Parser();
+        let result: any;
+        parser.parseString(xamlContent, (err, res) => {
+            if (err) {
+                console.error(`Error parsing the XAML file: ${err}`);
+                result = {};
+            } else {
+                result = res;
+            }
+        });
+
+        // Wait for the asynchronous parsing to complete
+        while (!result) {}
+
+        // Dictionary to hold the key-value pairs
+        const resultDict: Record<string, string> = {};
+
+        // Iterate through all 'String' elements in the XAML file
+        if (result.ResourceDictionary && result.ResourceDictionary.String) {
+            const stringElements = Array.isArray(result.ResourceDictionary.String)
+                ? result.ResourceDictionary.String
+                : [result.ResourceDictionary.String];
+
+            for (const stringElement of stringElements) {
+                const key = stringElement['@_Key'];
+                if (key) {
+                    const value = stringElement._ ? String(stringElement._) : '';
+                    resultDict[key] = value;
+                }
+            }
+        }
+
+        return resultDict;
+
+    } catch (error) {
+        if (error.code === 'ENOENT') {
+            console.error(`Error: The file ${xamlFile} does not exist.`);
+            return {};
+        } else {
+            console.error(`Error parsing the XAML file: ${error}`);
+            return {};
+        }
+    }
 }
 
-function parseXamlToDict(xamlFilePath: string): Dictionary {
-  /**
-   * Parses the XAML file, extracts the key-value pairs within the String element, and returns the model_answer_result in a dictionary
-   * @param {string} xamlFilePath - Path to the XAML file.
-   * @returns {Dictionary} - A dictionary containing the key-value pairs extracted from 'String' elements.
-   */
-  
-  // Read the content of the XAML file
-  const xamlContent = fs.readFileSync(xamlFilePath, 'utf8');
-
-  // Regular expression to match <String> tags with key-value pairs
-  const regex = /<String\s+Key="([^"]+)"\s*Value="([^"]+)"/g;
-
-  let match;
-  const result: Dictionary = {};
-
-  // Extract key-value pairs using the regular expression
-  while ((match = regex.exec(xamlContent)) !== null) {
-    const key = match[1];
-    const value = match[2];
-    result[key] = value;
-  }
-
-  return result;
-}
+// Example usage
+const xamlFilePath = './example.xaml';
+const parsedDict = parseXamlToDict(xamlFilePath);
+console.log(parsedDict);
 ```
 
 ### Explanation:
-1. **Importing Modules**: We use `fs` for file system operations and `path` for handling file paths.
-2. **Interface Definition**: We define an interface `Dictionary` to represent the structure of the returned object.
-3. **Function Definition**: The function `parseXamlToDict` takes a file path as input and returns a dictionary.
-4. **Reading File Content**: We read the content of the XAML file using `fs.readFileSync`.
-5. **Regular Expression**: We use a regular expression to match `<String>` tags and extract the `Key` and `Value` attributes.
-6. **Extracting Key-Value Pairs**: We loop through all matches found by the regular expression and store them in the result dictionary.
+1. **Import Libraries**: We import `fs` for file system operations and `xml2js` for XML parsing.
+2. **Function Definition**: The function `parseXamlToDict` takes a path to a XAML file and returns a dictionary of key-value pairs.
+3. **Reading the File**: We read the XAML file using `fs.readFileSync`.
+4. **Parsing the XML**: We use `xml2js.Parser` to parse the XML content asynchronously.
+5. **Handling Parsing Results**: We handle the parsing results and populate the dictionary with key-value pairs.
+6. **Error Handling**: We catch errors related to file reading and parsing and provide appropriate error messages.
 
-This TypeScript code should perform the same functionality as your original Python function.
+This TypeScript code maintains the same functionality and logic as the original Python code but uses TypeScript-specific libraries and constructs.

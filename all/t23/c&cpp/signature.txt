@@ -1,20 +1,101 @@
-Here is the C++ version of your Python function signature:
+Certainly! Below is the equivalent C++ code for the given Python function, including the translation of the function signature, comments, and documentation:
 
 ```cpp
-#include <utility> // for std::pair
-#include <optional> // for std::optional
+#include <iostream>
+#include <utility>
+#include <cmath>
+
+// Define a union type for the return value
+union IntersectionResult {
+    std::pair<double, double> point;
+    bool isNone;
+
+    IntersectionResult() : isNone(true) {}
+    IntersectionResult(double x, double y) : point(x, y), isNone(false) {}
+
+    // Destructor
+    ~IntersectionResult() {}
+
+    // Equality operator for checking if the result is None
+    bool operator==(const std::pair<double, double>& p) const {
+        return !isNone && point == p;
+    }
+
+    // Equality operator for checking if the result is None
+    bool operator==(bool none) const {
+        return isNone == none;
+    }
+};
 
 /**
  * Calculate the intersection point of two line segments, if it exists.
  *
- * @param seg1 The first line segment, represented as a pair of pairs where each inner pair contains x and y coordinates.
- * @param seg2 The second line segment, represented as a pair of pairs where each inner pair contains x and y coordinates.
- * @return An optional containing the (x, y) coordinates of the intersection point if the line segments intersect,
- *         otherwise an empty optional.
+ * @param seg1 Coordinates of the first line segment, defined as ((x1, y1), (x2, y2)).
+ * @param seg2 Coordinates of the second line segment, defined as ((x3, y3), (x4, y4)).
+ * @return The (x, y) coordinates of the intersection point if the line segments intersect,
+ *         otherwise an empty IntersectionResult indicating no intersection.
  */
-std::optional<std::pair<double, double>> getLineSegmentIntersection(std::pair<std::pair<double, double>, std::pair<double, double>> seg1, std::pair<std::pair<double, double>, std::pair<double, double>> seg2);
+IntersectionResult getLineSegmentIntersection(const std::pair<std::pair<double, double>, std::pair<double, double>>& seg1,
+                                              const std::pair<std::pair<double, double>, std::pair<double, double>>& seg2) {
+    // Unpack segment points
+    auto [p1, p2] = seg1;
+    auto [p3, p4] = seg2;
+
+    double x1 = p1.first, y1 = p1.second;
+    double x2 = p2.first, y2 = p2.second;
+    double x3 = p3.first, y3 = p3.second;
+    double x4 = p4.first, y4 = p4.second;
+
+    // Compute direction vectors and determinant
+    double dx1 = x2 - x1, dy1 = y2 - y1;
+    double dx2 = x4 - x3, dy2 = y4 - y3;
+    double determinant = dx1 * dy2 - dx2 * dy1;
+
+    // Check for parallel lines or identical segments
+    if (std::abs(determinant) < 1e-10) {
+        return {};
+    }
+
+    // Calculate intersection parameters
+    double t1 = ((x3 - x1) * dy2 - (y3 - y1) * dx2) / determinant;
+    double t2 = ((x3 - x1) * dy1 - (y3 - y1) * dx1) / determinant;
+
+    // Allow for a small tolerance in the intersection check
+    double tolerance = 1e-10;
+
+    // Check if intersection is within the bounds of the line segments
+    if (0 - tolerance <= t1 && t1 <= 1 + tolerance && 0 - tolerance <= t2 && t2 <= 1 + tolerance) {
+        double x = x1 + t1 * dx1;
+        double y = y1 + t1 * dy1;
+        return {round(x * 1e7) / 1e7, round(y * 1e7) / 1e7};
+    }
+
+    return {};
+}
+
+int main() {
+    // Example usage
+    auto seg1 = std::make_pair(std::make_pair(0.0, 0.0), std::make_pair(1.0, 1.0));
+    auto seg2 = std::make_pair(std::make_pair(0.0, 1.0), std::make_pair(1.0, 0.0));
+
+    auto result = getLineSegmentIntersection(seg1, seg2);
+
+    if (result.isNone) {
+        std::cout << "No Intersection" << std::endl;
+    } else {
+        std::cout << "Intersection Point: (" << result.point.first << ", " << result.point.second << ")" << std::endl;
+    }
+
+    return 0;
+}
 ```
 
-Note that in C++, we use `std::pair` instead of tuples, and `std::optional` instead of `Union`. Also, we use `double` instead of `float` for floating-point numbers, as `double` has more precision than `float`. If you want to use `float`, just replace all instances of `double` with `float`.
+### Explanation:
+1. **Union Type**: The `IntersectionResult` union is used to represent the `Union[tuple, None]` behavior from Python. It can either hold a pair of doubles or indicate no intersection.
+2. **Function Definition**: The function `getLineSegmentIntersection` takes two pairs of pairs representing the line segments and returns an `IntersectionResult`.
+3. **Comments and Documentation**: The Python docstring is translated into a C++ multi-line comment using `/** */`, and the parameter and return descriptions are included.
+4. **Unpacking Points**: We unpack the points from the input pairs.
+5. **Tolerance Check**: We use a tolerance value (`1e-10`) to handle floating-point arithmetic inaccuracies.
+6. **Main Function**: An example usage of the function is provided in the `main` function, demonstrating how to check and print the result.
 
-Please make sure that the rest of your code adheres to these changes when converting it from Python to C++.
+This C++ code preserves the original functionality and structure of the Python code while adhering to C++ standards and practices.

@@ -1,39 +1,52 @@
-Here is the equivalent TypeScript code:
+Here is the equivalent TypeScript code for the provided Python function:
 
 ```typescript
-import fs from 'fs';
-import { promisify } from 'util';
+function getMinSeqNumAndDistance(filePath: string, word1: string, word2: string): [number | null, number] {
+    let minDistance = Infinity;
+    let minSeqNum: number | null = null;
+    let currentLineNumber = 0;
 
-const readFile = promisify(fs.readFile);
-
-async function getMinSeqNumAndDistance(filePath: string, word1: string, word2: string): Promise<[number | null, number]> {
     try {
-        const data = await readFile(filePath, 'utf8');
-        const lines = data.split('\n');
+        const fileContent = require('fs').readFileSync(filePath, 'utf8');
+        const lines = fileContent.split('\n');
 
-        let minLine: number | null = null;
-        let minDist: number = Infinity;
+        for (const line of lines) {
+            const words = line.trim().split(/\s+/);
+            const word1Indices = words.map((word, index) => word === word1 ? index : -1).filter(index => index !== -1);
+            const word2Indices = words.map((word, index) => word === word2 ? index : -1).filter(index => index !== -1);
 
-        for (let i = 0; i < lines.length; i++) {
-            const words = lines[i].split(/\s+/);
-            const idx1 = words.indexOf(word1);
-            const idx2 = words.indexOf(word2);
-
-            if (idx1 !== -1 && idx2 !== -1) {
-                const dist = Math.abs(idx1 - idx2);
-                if (dist < minDist) {
-                    minDist = dist;
-                    minLine = i + 1;
+            for (const index1 of word1Indices) {
+                for (const index2 of word2Indices) {
+                    const distance = Math.abs(index1 - index2);
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        minSeqNum = currentLineNumber;
+                    }
                 }
             }
-        }
 
-        return [minLine, minDist];
+            currentLineNumber += 1;
+        }
     } catch (error) {
-        console.error(`Error reading file ${filePath}:`, error);
+        if (error instanceof Error && error.code === 'ENOENT') {
+            console.error(`Error: The file ${filePath} does not exist.`);
+        } else {
+            console.error(`An error occurred: ${error}`);
+        }
         return [null, Infinity];
     }
+
+    return [minSeqNum, minDistance];
 }
 ```
 
-This TypeScript function reads a file asynchronously using Node.js's `fs` module, splits it into lines, and then iterates over each line to find the minimum distance between the two specified words. It returns a promise that resolves to a tuple containing the line number with the minimum distance and the minimum distance itself. If an error occurs while reading the file or if one or both of the specified words are not found in any line, it returns `[null, Infinity]`.
+### Explanation:
+1. **Function Signature**: The function `getMinSeqNumAndDistance` is defined with explicit types for parameters and return values.
+2. **File Reading**: The `fs` module is used to read the file synchronously (`readFileSync`). This requires importing the `fs` module at the beginning.
+3. **Line Splitting**: The file content is split into lines using `split('\n')`.
+4. **Word Indices**: The indices of `word1` and `word2` in each line are calculated using `map` and `filter`.
+5. **Distance Calculation**: The distances between the indices of `word1` and `word2` are calculated and compared to find the minimum distance.
+6. **Error Handling**: Error handling is implemented using a `try-catch` block. Specific error codes are checked to provide meaningful error messages.
+7. **Return Values**: The function returns a tuple `[minSeqNum, minDistance]`, where `minSeqNum` can be `null` if the words are not found.
+
+This TypeScript code maintains the same functionality and logic as the original Python code, with appropriate adjustments for TypeScript's static type system and idiomatic practices.

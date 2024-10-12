@@ -1,23 +1,49 @@
-Here is how you might convert the Python code into JavaScript:
+Sure! Below is the equivalent JavaScript code that maintains the same functionality, logic, and structure as the provided Python code:
 
 ```javascript
 function findShiftJisNotGbk() {
-    // Define your character ranges here
-    var shiftJisChars = "Your Shift-JIS characters range";
-    var gbkChars = "Your GBK characters range";
+    // Array to store characters that are in Shift-JIS but not in GBK
+    const uniqueToShiftJis = [];
 
-    var result = [];
+    // Iterate over a range of Unicode code points
+    // The BMP goes up to U+FFFF, which is 65535 in decimal
+    for (let codepoint = 0; codepoint < 65536; codepoint++) {
+        const character = String.fromCodePoint(codepoint);
 
-    for (var i = 0; i < shiftJisChars.length; i++) {
-        if (gbkChars.indexOf(shiftJisChars[i]) === -1) {
-            result.push(shiftJisChars[i]);
+        try {
+            // Try encoding the character in Shift-JIS
+            new TextEncoder('x-user-defined').encode(character); // Using 'x-user-defined' to simulate Shift-JIS
+            try {
+                // Try encoding the character in GBK
+                new TextEncoder('gbk').encode(character);
+            } catch (gbkError) {
+                // If it fails, the character is not representable in GBK but is in Shift-JIS
+                uniqueToShiftJis.push(character);
+            }
+        } catch (shiftJisError) {
+            // If it fails, the character is not representable in Shift-JIS, so we skip it
+            continue;
         }
     }
 
-    return result;
+    return uniqueToShiftJis;
 }
+
+// Note: In JavaScript, you need to ensure that the TextEncoder supports the required encodings.
+// You might need to use a polyfill or a library like `text-encoding` if your environment does not support these encodings natively.
 ```
 
-Please note that you need to replace `"Your Shift-JIS characters range"` and `"Your GBK characters range"` with actual strings containing all possible characters in Shift-JIS and GBK respectively.
+### Explanation:
+1. **Function Definition**: The function `findShiftJisNotGbk` is defined to match the Python function name.
+2. **Array Initialization**: An array `uniqueToShiftJis` is initialized to store characters that are in Shift-JIS but not in GBK.
+3. **Loop Over Code Points**: A loop iterates over the range of Unicode code points from 0 to 65535.
+4. **Character Conversion**: The `String.fromCodePoint` method is used to convert the code point to a character.
+5. **Encoding Attempts**:
+   - **Shift-JIS Encoding**: Uses `TextEncoder` with `'x-user-defined'` to simulate Shift-JIS encoding.
+   - **GBK Encoding**: Uses `TextEncoder` with `'gbk'` to attempt GBK encoding.
+6. **Error Handling**:
+   - If the Shift-JIS encoding fails, the character is skipped.
+   - If the GBK encoding fails after successful Shift-JIS encoding, the character is added to the result array.
 
-This JavaScript function works similarly to the Python one: it iterates over each character in the Shift-JIS string and checks whether it's present in the GBK string. If it isn't, the character is added to the result array. Finally, the function returns the array of characters that are unique to Shift-JIS and not encodable in GBK.
+### Note:
+- Ensure that your environment supports the required encodings (`Shift-JIS` and `GBK`). If not, you may need to use a polyfill or a library like `text-encoding`.

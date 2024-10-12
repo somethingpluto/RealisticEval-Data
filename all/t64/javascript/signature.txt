@@ -1,13 +1,77 @@
-Here is the equivalent JavaScript code signature for your Python function:
+Certainly! Below is the equivalent JavaScript code with the function signature and comments rewritten to conform to JSDoc standards:
 
 ```javascript
+const fs = require('fs');
+const path = require('path');
+const csvParser = require('csv-parser');
+
 /**
- * Converts the contents of a csv file into an SQL insert statement with a table name with the suffix removed.
- *
- * @param {string} csvFilePath - csv file path
- * @returns {string} parsed sql string
+ * Converts the contents of a CSV file into an SQL insert statement with a table name with the suffix removed.
+ * 
+ * @param {string} csvFilePath - The path to the CSV file.
+ * @returns {Promise<string>} A promise that resolves to the parsed SQL insert statements.
  */
 function csvToSqlInsert(csvFilePath) {
+    // Extract the table name from the CSV file name, removing the suffix
+    const tableName = path.parse(path.basename(csvFilePath)).name;
+
+    // Initialize variables to store the headers and the insert statements
+    let headers = [];
+    const insertStatements = [];
+
+    return new Promise((resolve, reject) => {
+        fs.createReadStream(csvFilePath)
+            .on('data', (row) => {
+                if (!headers.length) {
+                    headers = Object.keys(row);
+                    return;
+                }
+
+                const values = [];
+                for (const [key, value] of Object.entries(row)) {
+                    // Handle different types of values (e.g., strings, numbers)
+                    if (!isNaN(value)) {  // If value is a number, no quotes needed
+                        values.push(value);
+                    } else {  // Assume it's a string otherwise
+                        const escapedValue = value.replace(/'/g, "''");  // Escape single quotes
+                        values.push(`'${escapedValue}'`);  // Use double quotes outside
+                    }
+                }
+
+                // Join column names and values to form an INSERT statement
+                const insertStatement = `INSERT INTO ${tableName} (${headers.join(', ')}) VALUES (${values.join(', ')});`;
+                insertStatements.push(insertStatement);
+            })
+            .on('end', () => {
+                // Combine all insert statements into a single output
+                resolve(insertStatements.join('\n'));
+            })
+            .on('error', (err) => {
+                reject(err);
+            })
+            .pipe(csvParser());
+    });
+}
+
+// Example usage
+csvToSqlInsert('example.csv')
+    .then(sqlStatements => {
+        console.log(sqlStatements);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
 ```
 
-This JavaScript version maintains the same structure and documentation style as your original Python code, including the JSDoc comment format which is commonly used in JavaScript projects to document functions and their parameters.
+### Explanation:
+1. **Imports**: The required Node.js modules (`fs`, `path`, `csv-parser`) are imported at the beginning.
+2. **JSDoc Comments**: The function is documented using JSDoc comments to describe the purpose, arguments, and return type.
+3. **Function Definition**: The `csvToSqlInsert` function is defined to handle the conversion of CSV data to SQL insert statements.
+4. **File Reading**: The `fs.createReadStream` method is used to read the CSV file. The `csvParser` module is piped to parse the CSV data.
+5. **Header Extraction**: The first row of the CSV is used to extract the headers.
+6. **Value Handling**: Each row is processed to handle different types of values (numbers and strings). Strings are escaped and quoted appropriately.
+7. **SQL Insert Statement Construction**: An `INSERT` statement is constructed for each row and added to the `insertStatements` array.
+8. **Output**: The final `insertStatements` array is combined and returned as a promise that resolves to the concatenated SQL statements.
+9. **Example Usage**: An example usage demonstrates how to call the function and handle the result or any errors.
+
+This JavaScript code preserves the functionality and structure of the original Python code while adhering to JSDoc documentation standards.

@@ -1,50 +1,113 @@
-Sure! Below is the equivalent C++ test case using Catch2 for your Python `unittest` test class. Note that I'll assume you want to test the `move_emojis_to_end` function, which moves emojis to the end of a given string.
+Certainly! Below is the equivalent C++ test class using the Catch2 testing framework. The provided Python unittest class will be converted into a set of Catch2 test cases, ensuring that the functionality and logic of the tests are preserved.
 
-First, ensure you have Catch2 installed. If not, you can install it via vcpkg or download it directly from [Catch2's GitHub repository](https://github.com/catchorg/Catch2).
+### C++ Code with Catch2 Testing Framework
 
-Here's how you can write the C++ test case:
+First, make sure you have Catch2 installed and included in your project. You can include Catch2 via a header-only library or through a package manager like vcpkg.
+
+Here’s the complete C++ code with the Catch2 test cases:
 
 ```cpp
-#include <catch2/catch.hpp>
-#include <string>
+#include <catch2/catch_test_macros.hpp>
+#include <iostream>
 #include <regex>
+#include <string>
 
-// Function to move emojis to the end of the string
+// Function to move emojis to the end of the text
 std::string move_emojis_to_end(const std::string& text) {
-    // Regular expression to match emojis
-    static const std::regex emoji_regex(R"([\x{1F600}-\x{1F64F}\x{1F300}-\x{1F5FF}\x{1F680}-\x{1F6FF}\x{1F700}-\x{1F77F}\x{1F780}-\x{1F7FF}\x{1F800}-\x{1F8FF}\x{1F900}-\x{1F9FF}\x{1FA00}-\x{1FA6F}\x{1FA70}-\x{1FAFF}\x{2600}-\x{26FF}\x{2700}-\x{27BF}])", std::regex_constants::icase);
-    
+    // Regular expression pattern for capturing emojis
+    std::regex emoji_pattern(
+        u"[\u2702-\u27B0"  // Dingbats
+        u"\u24C2-\u1F251"  // Enclosed characters
+        u"\u1F600-\u1F64F"  // Emoticons
+        u"\u1F300-\u1F5FF"  // Symbols & Pictographs
+        u"\u1F680-\u1F6FF"  // Transport & Map Symbols
+        u"\u1F700-\u1F77F"  // Alchemical Symbols
+        u"\u1F780-\u1F7FF"  // Geometric Shapes Extended
+        u"\u1F800-\u1F8FF"  // Supplemental Arrows-C
+        u"\u1F900-\u1F9FF"  // Supplemental Symbols and Pictographs
+        u"\u1FA00-\u1FA6F"  // Chess Symbols
+        u"\u1FA70-\u1FAFF"  // Symbols and Pictographs Extended-A
+        "]+", std::regex::ECMAScript | std::regex::icase);
+
+    // Find all emojis in the text
+    std::smatch matches;
     std::string emojis;
-    std::string non_emojis;
-    
-    // Separate emojis and non-emoji characters
-    for (char c : text) {
-        if (emoji_regex.match(std::string(1, c))) {
-            emojis += c;
-        } else {
-            non_emojis += c;
-        }
+    std::string::const_iterator searchStart(text.cbegin());
+    while (std::regex_search(searchStart, text.cend(), matches, emoji_pattern)) {
+        emojis += matches[0];
+        searchStart = matches.suffix().first;
     }
-    
-    return non_emojis + emojis;
+
+    // Remove emojis from the text
+    std::string text_without_emojis = std::regex_replace(text, emoji_pattern, "");
+
+    // Concatenate non-emoji text with extracted emojis
+    return text_without_emojis + emojis;
 }
 
-TEST_CASE("Move Emojis to End", "[move_emojis_to_end]") {
-    REQUIRE(move_emojis_to_end("") == "");
-    REQUIRE(move_emojis_to_end("Hello World!") == "Hello World!");
-    REQUIRE(move_emojis_to_end("Hello 🌍!") == "Hello !🌍");
-    REQUIRE(move_emojis_to_end("👋 Hello 🌍!") == "Hello !👋🌍");
-    REQUIRE(move_emojis_to_end("Hello 🌍👋!") == "Hello !👋🌍");
+TEST_CASE("Test move_emojis_to_end function") {
+    SECTION("No emojis") {
+        // Case: String with no emojis
+        std::string input_text = "This is a test.";
+        std::string expected_output = "This is a test.";
+        REQUIRE(move_emojis_to_end(input_text) == expected_output);
+    }
+
+    SECTION("All emojis") {
+        // Case: String with only emojis
+        std::string input_text = "😀😃😄😁";
+        std::string expected_output = "😀😃😄😁";
+        REQUIRE(move_emojis_to_end(input_text) == expected_output);
+    }
+
+    SECTION("Emojis at the start") {
+        // Case: Emojis at the start of the text
+        std::string input_text = "😀😃Hello world!";
+        std::string expected_output = "Hello world!😀😃";
+        REQUIRE(move_emojis_to_end(input_text) == expected_output);
+    }
+
+    SECTION("Emojis at the end") {
+        // Case: Emojis already at the end of the text
+        std::string input_text = "Hello world!😀😃";
+        std::string expected_output = "Hello world!😀😃";
+        REQUIRE(move_emojis_to_end(input_text) == expected_output);
+    }
+
+    SECTION("Emojis in the middle") {
+        // Case: Emojis in the middle of the text
+        std::string input_text = "Hello 😀world😃!";
+        std::string expected_output = "Hello world!😀😃";
+        REQUIRE(move_emojis_to_end(input_text) == expected_output);
+    }
+
+    SECTION("Mixed characters") {
+        // Case: Text with mixed characters and emojis
+        std::string input_text = "Hi! 😀 How are you? 😃";
+        std::string expected_output = "Hi!  How are you? 😀😃";
+        REQUIRE(move_emojis_to_end(input_text) == expected_output);
+    }
+}
+
+int main(int argc, char* argv[]) {
+    int result = Catch::Session().run(argc, argv);
+    return result;
 }
 ```
 
 ### Explanation:
-1. **Function Definition**: The `move_emojis_to_end` function uses a regular expression to identify emojis and separates them from the rest of the text.
-2. **Regular Expression**: The regex pattern covers most Unicode emoji ranges.
-3. **Test Cases**:
-   - Empty string should return an empty string.
-   - A string without emojis should remain unchanged.
-   - A string with emojis at the beginning and middle should move the emojis to the end.
-   - A string with multiple emojis in different positions should correctly separate and append them.
+1. **Header Inclusion**:
+   - Include the Catch2 header file `#include <catch2/catch_test_macros.hpp>` to use the testing macros.
 
-Make sure to include the Catch2 header file (`#include <catch2/catch.hpp>`) and link against the Catch2 library when compiling your program.
+2. **Function Definition**:
+   - The `move_emojis_to_end` function is defined as before, with the regular expression pattern and logic for moving emojis to the end of the text.
+
+3. **Test Class**:
+   - The `TEST_CASE` macro is used to define a test case named "Test move_emojis_to_end function".
+   - Each `SECTION` within the test case corresponds to a specific test scenario.
+   - The `REQUIRE` macro is used for assertions to check if the output matches the expected result.
+
+4. **Main Function**:
+   - The `main` function runs the Catch2 test suite and returns the result.
+
+This C++ code with Catch2 ensures that the functionality and logic of the tests are preserved, and it uses appropriate assertions to validate the behavior of the `move_emojis_to_end` function.

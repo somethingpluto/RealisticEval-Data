@@ -1,80 +1,77 @@
-Here's the equivalent TypeScript code for the given Python class `UniqueDeque`:
+Here’s the equivalent TypeScript code for the provided Python class `UniqueDeque`. This TypeScript version includes proper type definitions and follows TypeScript conventions:
 
 ```typescript
 import { Deque } from 'collections/deque';
 
-class UniqueDeque {
-  private deque: Deque<any>;
+class UniqueDeque<T> {
+  private deque: Deque<T>;
+  private set: Set<T>;
 
   constructor() {
-    this.deque = new Deque();
+    this.deque = new Deque<T>();
+    this.set = new Set<T>();
   }
 
-  add(item: any): boolean {
-    if (this.contains(item)) {
-      return false;
+  add(item: T): boolean {
+    if (!this.set.has(item)) {
+      this.deque.push(item);
+      this.set.add(item);
+      return true;
     }
-    this.deque.addBack(item);
-    return true;
+    return false;
   }
 
-  delete(item: any): boolean {
-    const index = this.deque.toArray().indexOf(item);
-    if (index === -1) {
-      return false;
+  delete(item: T): boolean {
+    if (this.set.has(item)) {
+      const index = this.deque.toArray().findIndex((x) => x === item);
+      if (index !== -1) {
+        this.deque.deleteAt(index);
+      }
+      this.set.delete(item);
+      return true;
     }
-    this.deque.removeAt(index);
-    return true;
+    return false;
   }
 
-  contains(item: any): boolean {
-    return this.deque.toArray().includes(item);
+  contains(item: T): boolean {
+    return this.set.has(item);
   }
 
-  get length(): number {
+  length(): number {
     return this.deque.length;
   }
 
-  [Symbol.iterator](): Iterator<any> {
-    let index = 0;
-    const array = this.deque.toArray();
-    const length = array.length;
+  *[Symbol.iterator](): Iterator<T> {
+    for (const item of this.deque) {
+      yield item;
+    }
+  }
 
-    return {
-      next(): IteratorResult<any> {
-        if (index < length) {
-          return { value: array[index++], done: false };
-        } else {
-          return { value: undefined, done: true };
-        }
-      },
-    };
+  toString(): string {
+    return `UniqueDeque(${Array.from(this.deque).toString()})`;
   }
 }
+
+// Example usage
+const uniqueDeque = new UniqueDeque<number>();
+console.log(uniqueDeque.add(1)); // true
+console.log(uniqueDeque.add(2)); // true
+console.log(uniqueDeque.add(1)); // false
+console.log(uniqueDeque.toString()); // UniqueDeque(1,2)
+console.log(uniqueDeque.contains(2)); // true
+console.log(uniqueDeque.delete(2)); // true
+console.log(uniqueDeque.toString()); // UniqueDeque(1)
 ```
 
 ### Explanation:
+1. **Type Definitions**: The class `UniqueDeque` is defined with a generic type `T` to handle different types of items.
+2. **Initialization**: The constructor initializes a `Deque` and a `Set`.
+3. **Methods**:
+   - `add`: Adds an item to the deque if it is not already present.
+   - `delete`: Removes an item from the deque if it exists.
+   - `contains`: Checks if an item is present in the deque.
+   - `length`: Returns the number of elements in the deque.
+   - `*[Symbol.iterator]`: Creates an iterator for the deque.
+   - `toString`: Returns a string representation of the deque.
 
-1. **Imports**: We import the `Deque` class from the `collections/deque` module. Note that you need to install the `collections-deque` package via npm or yarn.
-
-2. **Class Definition**: The `UniqueDeque` class is defined with methods to add, delete, and check for the presence of items, as well as methods to get the length and create an iterator.
-
-3. **Constructor**: Initializes the internal `deque` property using the `Deque` class.
-
-4. **Add Method**: Adds an item to the deque if it is not already present. Returns `true` if the item was added, otherwise `false`.
-
-5. **Delete Method**: Removes an item from the deque if it exists. Returns `true` if the item was removed, otherwise `false`.
-
-6. **Contains Method**: Checks if an item is present in the deque. Returns `true` if the item is present, otherwise `false`.
-
-7. **Length Property**: Returns the number of unique elements in the deque.
-
-8. **Iterator**: Implements the `[Symbol.iterator]` method to allow iteration over the elements in the deque.
-
-Make sure you have the `collections-deque` package installed in your project before running this code. You can install it using npm or yarn:
-
-```sh
-npm install collections-deque
-# or
-yarn add collections-deque
-```
+4. **Example Usage**: Demonstrates how to use the `UniqueDeque` class with an example.

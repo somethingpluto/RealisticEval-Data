@@ -1,48 +1,121 @@
-Here is your Python unittest test class translated to JavaScript using Jest:
+Certainly! Below is the equivalent Jest test suite for the given Python unittest class. I'll ensure that the functionality and logic of the tests are maintained, and I'll document any necessary changes due to language differences between Python and JavaScript.
+
+### Python Code:
+```python
+import unittest
+from datetime import timedelta
+
+class TestGenTimeoutTimedelta(unittest.TestCase):
+    def test_single_unit_days(self):
+        self.assertEqual(gen_timeout_timedelta("5d"), timedelta(days=5))
+
+    def test_single_unit_hours(self):
+        self.assertEqual(gen_timeout_timedelta("8h"), timedelta(hours=8))
+
+    def test_single_unit_minutes(self):
+        self.assertEqual(gen_timeout_timedelta("45m"), timedelta(minutes=45))
+
+    def test_single_unit_seconds(self):
+        self.assertEqual(gen_timeout_timedelta("30s"), timedelta(seconds=30))
+
+    def test_complex_mix(self):
+        self.assertEqual(gen_timeout_timedelta("2d 20h 30m"), timedelta(days=2, hours=20, minutes=30))
+
+    def test_no_units(self):
+        self.assertEqual(gen_timeout_timedelta(""), timedelta(0))
+```
+
+### JavaScript Code with Jest Testing Framework:
+
+First, let's define the `genTimeoutDuration` function in JavaScript:
 
 ```javascript
-const { genTimeoutTimedelta } = require('./your_module_path'); // replace with actual path to your module
+const { Duration } = require('luxon');
 
-describe('genTimeoutTimedelta', () => {
-  it('should convert "1d 2h 3m 4s 500ms" to correct timedelta', () => {
-    const result = genTimeoutTimedelta("1d 2h 3m 4s 500ms");
-    expect(result).toEqual({
-      days: 1,
-      hours: 2,
-      minutes: 3,
-      seconds: 4,
-      milliseconds: 500
+function genTimeoutDuration(timeString) {
+    // Define an object to hold all our values
+    const timeValues = { days: 0, hours: 0, minutes: 0, seconds: 0, milliseconds: 0 };
+
+    // Regular expression to find all parts of the time string
+    const parts = timeString.match(/(\d+)([dhms]{1,2})/g);
+
+    // Process each found part
+    parts?.forEach(part => {
+        const match = part.match(/(\d+)([dhms]{1,2})/);
+        const amount = parseInt(match[1], 10);
+        const unit = match[2];
+
+        if (unit === 'd') {
+            timeValues.days += amount;
+        } else if (unit === 'h') {
+            timeValues.hours += amount;
+        } else if (unit === 'm') {
+            timeValues.minutes += amount;
+        } else if (unit === 's') {
+            timeValues.seconds += amount;
+        } else if (unit === 'ms') {
+            timeValues.milliseconds += amount;
+        }
     });
-  });
 
-  it('should handle negative values correctly', () => {
-    const result = genTimeoutTimedelta("-1d -2h -3m -4s -500ms");
-    expect(result).toEqual({
-      days: -1,
-      hours: -2,
-      minutes: -3,
-      seconds: -4,
-      milliseconds: -500
+    // Create a Luxon Duration object using the extracted values
+    return Duration.fromObject(timeValues);
+}
+```
+
+Now, let's write the Jest test suite:
+
+```javascript
+const { Duration } = require('luxon');
+const genTimeoutDuration = require('./path/to/genTimeoutDuration'); // Adjust the path accordingly
+
+describe('genTimeoutDuration', () => {
+    it('should handle single unit days', () => {
+        const result = genTimeoutDuration("5d");
+        expect(result.as('days')).toBeCloseTo(5);
     });
-  });
 
-  it('should handle fractional values correctly', () => {
-    const result = genTimeoutTimedelta("0.5d 1.5h 2.5m 3.5s 4.5ms");
-    expect(result).toEqual({
-      days: 0.5,
-      hours: 1.5,
-      minutes: 2.5,
-      seconds: 3.5,
-      milliseconds: 4.5
+    it('should handle single unit hours', () => {
+        const result = genTimeoutDuration("8h");
+        expect(result.as('hours')).toBeCloseTo(8);
     });
-  });
 
-  it('should throw error for invalid input', () => {
-    expect(() => genTimeoutTimedelta("invalid_input")).toThrow();
-  });
+    it('should handle single unit minutes', () => {
+        const result = genTimeoutDuration("45m");
+        expect(result.as('minutes')).toBeCloseTo(45);
+    });
+
+    it('should handle single unit seconds', () => {
+        const result = genTimeoutDuration("30s");
+        expect(result.as('seconds')).toBeCloseTo(30);
+    });
+
+    it('should handle complex mix of units', () => {
+        const result = genTimeoutDuration("2d 20h 30m");
+        expect(result.as('days')).toBeCloseTo(2);
+        expect(result.as('hours')).toBeCloseTo(20);
+        expect(result.as('minutes')).toBeCloseTo(30);
+    });
+
+    it('should handle no units', () => {
+        const result = genTimeoutDuration("");
+        expect(result.as('milliseconds')).toBeCloseTo(0);
+    });
 });
 ```
 
-Please note that in JavaScript, there's no built-in `timedelta` equivalent like in Python, so I've represented it as an object with properties `days`, `hours`, etc., instead. If you want to compare these objects accurately, consider writing a custom equality function or using a library that supports deep comparison. 
+### Notes:
+1. **Dependencies**: Ensure you have `luxon` installed:
+   ```bash
+   npm install luxon
+   ```
 
-Also, make sure to replace `'./your_module_path'` with the actual path where your `genTimeoutTimedelta` function is located.
+2. **Jest Assertions**:
+   - We use `expect(result.as('unit')).toBeCloseTo(value)` to compare the duration values. Since Luxon returns floating-point numbers, we use `toBeCloseTo` for approximate comparisons.
+
+3. **Test Structure**:
+   - The `describe` block groups the tests together.
+   - Each `it` block represents a specific test case.
+   - The `genTimeoutDuration` function is imported from the file where it is defined.
+
+This conversion ensures that the Jest test suite closely mirrors the functionality and structure of the original Python unittest class, maintaining the same test cases and assertions.

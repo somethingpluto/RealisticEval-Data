@@ -1,59 +1,104 @@
-Sure, here's how you can convert your Python unittest test class into a TypeScript Jest test case:
+Certainly! Here is the equivalent TypeScript code using Jest for testing the `log` function. The provided Python unittest class will be converted into a Jest test suite with the appropriate assertions.
+
+### TypeScript Code with Jest Testing
+
+First, let's define the `log` function in TypeScript:
 
 ```typescript
-import { describe, it, expect } from '@jest/globals';
+import * as JSON from 'json';
 
-function log(item: any): any {
+/**
+ * Logs an item by printing it. Handles strings, numbers, arrays, and objects by printing
+ * them directly or as a JSON-formatted string. Other types are reported as errors.
+ * 
+ * @param item - The item to be logged. Can be of any type.
+ */
+function log(item: any): void {
+    // Handling for strings, numbers
     if (typeof item === 'string' || typeof item === 'number') {
         console.log(item);
-    } else if (Array.isArray(item)) {
-        console.log(item);
-    } else if (typeof item === 'object' && item !== null) {
-        console.log(JSON.stringify(item));
-    } else {
-        throw new Error(`Unsupported type: ${typeof item}`);
     }
-    return item;
+    // Handling for arrays and objects to convert to JSON string
+    else if (Array.isArray(item) || (typeof item === 'object' && item !== null)) {
+        try {
+            console.log(JSON.stringify(item, null, 4));  // Pretty print JSON for better readability
+        } catch (error) {
+            console.log(`Error: Failed to serialize item to JSON. ${error}`);
+        }
+    } else {
+        // Print an informative error message for unsupported types
+        console.log(`Error: Unsupported type ${typeof item} for logging.`);
+    }
 }
 
-describe('log function', () => {
-    it('logs a string', () => {
-        const mockConsoleLog = jest.spyOn(console, 'log');
-        log('Hello, world!');
-        expect(mockConsoleLog).toHaveBeenCalledWith('Hello, world!');
-        mockConsoleLog.mockRestore();
+export { log };
+```
+
+### Jest Test Suite
+
+Now, let's create the Jest test suite for the `log` function:
+
+```typescript
+import { log } from './path/to/log'; // Replace with the actual path to the log function
+
+describe('TestLogFunction', () => {
+    it('test_log_string', () => {
+        const mockPrint = jest.spyOn(console, 'log').mockImplementation(() => {});
+
+        log("Hello, world!");
+
+        expect(mockPrint).toHaveBeenCalledWith("Hello, world!");
+        mockPrint.mockRestore();
     });
 
-    it('logs a number', () => {
-        const mockConsoleLog = jest.spyOn(console, 'log');
-        log(42);
-        expect(mockConsoleLog).toHaveBeenCalledWith(42);
-        mockConsoleLog.mockRestore();
+    it('test_log_number', () => {
+        const mockPrint = jest.spyOn(console, 'log').mockImplementation(() => {});
+
+        log(123.456);
+
+        expect(mockPrint).toHaveBeenCalledWith(123.456);
+        mockPrint.mockRestore();
     });
 
-    it('logs a list', () => {
-        const mockConsoleLog = jest.spyOn(console, 'log');
-        log([1, 2, 3]);
-        expect(mockConsoleLog).toHaveBeenCalledWith([1, 2, 3]);
-        mockConsoleLog.mockRestore();
+    it('test_log_dictionary', () => {
+        const mockPrint = jest.spyOn(console, 'log').mockImplementation(() => {});
+
+        log({ key: "value", number: 42 });
+
+        const expectedJsonOutput = JSON.stringify({ key: "value", number: 42 }, null, 4);
+        expect(mockPrint).toHaveBeenCalledWith(expectedJsonOutput);
+        mockPrint.mockRestore();
     });
 
-    it('logs a dictionary', () => {
-        const mockConsoleLog = jest.spyOn(console, 'log');
-        log({ key: 'value' });
-        expect(mockConsoleLog).toHaveBeenCalledWith('{"key":"value"}');
-        mockConsoleLog.mockRestore();
-    });
+    it('test_log_list', () => {
+        const mockPrint = jest.spyOn(console, 'log').mockImplementation(() => {});
 
-    it('throws an error for unsupported type', () => {
-        expect(() => log(undefined)).toThrowError('Unsupported type: undefined');
+        log([1, 2, 3, 4, 5]);
+
+        const expectedJsonOutput = JSON.stringify([1, 2, 3, 4, 5], null, 4);
+        expect(mockPrint).toHaveBeenCalledWith(expectedJsonOutput);
+        mockPrint.mockRestore();
     });
 });
 ```
 
-In this TypeScript Jest test case:
-- We import `describe`, `it`, and `expect` from `@jest/globals`.
-- We define the `log` function similarly to your original Python function.
-- We use `jest.spyOn` to spy on the `console.log` method so we can check if it was called with the correct arguments.
-- We write several tests to ensure that the `log` function behaves as expected for different types of inputs.
-- We also include a test to verify that the function throws an error when encountering an unsupported type.
+### Explanation:
+1. **Import Statements**:
+   - Import the `log` function from the file where it is defined.
+   - Import `jest` for mocking and assertions.
+
+2. **Test Suite**:
+   - Use `describe` to group the tests under a single suite named `TestLogFunction`.
+
+3. **Mocking `console.log`**:
+   - Use `jest.spyOn` to mock `console.log` and capture its calls.
+   - `mockImplementation(() => {})` ensures that the actual `console.log` is not called during the test.
+
+4. **Assertions**:
+   - Use `expect(mockPrint).toHaveBeenCalledWith(...)` to verify that `console.log` was called with the expected arguments.
+   - `mockPrint.mockRestore()` restores the original implementation of `console.log` after each test.
+
+5. **Expected JSON Output**:
+   - For dictionaries and lists, use `JSON.stringify` with indentation to generate the expected JSON output.
+
+This setup ensures that the tests are equivalent to the Python unittest tests, preserving the functionality and logic while adapting to Jest's syntax and conventions.

@@ -1,69 +1,171 @@
-Certainly! Below is an equivalent C++ test case using Catch2 for the given Python unittest test function `read_log`. Note that Catch2 uses a different syntax compared to Python's unittest framework.
+Certainly! Here’s the equivalent C++ test class using the Catch2 testing framework. We will preserve the functionality and logic of the tests while making necessary adjustments for language differences between Python and C++.
 
-First, ensure you have Catch2 installed in your project. If not, you can install it via vcpkg or manually download it from [Catch2 GitHub repository](https://github.com/catchorg/Catch2).
+### C++ Code with Catch2 Testing Framework
 
-Here is the equivalent C++ test case:
+First, make sure you have Catch2 installed in your project. You can include it via package managers like vcpkg or Conan, or simply download the single header file and include it in your project.
+
+Here’s the complete C++ code:
 
 ```cpp
-#define CATCH_CONFIG_MAIN
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <fstream>
 #include <sstream>
-#include <string>
 #include <vector>
 #include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
 
+// Function to read log file and process JSON entries
 std::pair<std::vector<double>, std::vector<double>> read_log(const std::string& log_file_path) {
-    std::ifstream file(log_file_path);
-    if (!file.is_open()) {
-        throw std::runtime_error("Failed to open log file");
-    }
-
     std::vector<double> train_loss_list;
     std::vector<double> test_acc1_list;
 
+    // Attempt to open the file
+    std::ifstream file(log_file_path);
+    if (!file.is_open()) {
+        std::cout << "Error: The file " << log_file_path << " does not exist." << std::endl;
+        return {train_loss_list, test_acc1_list};
+    }
+
     std::string line;
-    while (getline(file, line)) {
+    while (std::getline(file, line)) {
         try {
             json entry = json::parse(line);
-            train_loss_list.push_back(entry["train_loss"].get<double>());
-            test_acc1_list.push_back(entry["test_acc1"].get<double>());
-        } catch (const json::parse_error& e) {
-            // Handle parsing error, e.g., skip invalid lines
+
+            if (entry.contains("train_loss")) {
+                train_loss_list.push_back(entry["train_loss"]);
+            }
+            if (entry.contains("test_acc1")) {
+                test_acc1_list.push_back(entry["test_acc1"]);
+            }
+        } catch (const std::exception& e) {
+            std::cout << "Error: The file " << log_file_path << " contains invalid JSON." << std::endl;
+            return {train_loss_list, test_acc1_list};
         }
     }
 
     return {train_loss_list, test_acc1_list};
 }
 
-TEST_CASE("Read Log File", "[read_log]") {
-    // Create a temporary log file for testing
-    std::ofstream tempFile("temp_log.json");
-    tempFile << R"({"test_acc1": 88.5, "train_loss": 0.75})";
-    tempFile.close();
+TEST_CASE("Test reading correctly formatted JSON lines", "[read_log]") {
+    std::istringstream mock_file_content(R"({"test_acc1": 88.5, "train_loss": 0.75}
+                                         {"test_acc1": 89.0, "train_loss": 0.70})");
 
-    auto result = read_log("temp_log.json");
+    std::vector<double> train_loss, test_acc1;
+    std::string line;
+    while (std::getline(mock_file_content, line)) {
+        try {
+            json entry = json::parse(line);
 
-    REQUIRE(result.first.size() == 1);
-    REQUIRE(result.second.size() == 1);
+            if (entry.contains("train_loss")) {
+                train_loss.push_back(entry["train_loss"]);
+            }
+            if (entry.contains("test_acc1")) {
+                test_acc1.push_back(entry["test_acc1"]);
+            }
+        } catch (const std::exception& e) {
+            FAIL("The file contains invalid JSON.");
+        }
+    }
 
-    CHECK(result.first[0] == Approx(0.75));
-    CHECK(result.second[0] == Approx(88.5));
+    REQUIRE(train_loss == std::vector<double>({0.75, 0.70}));
+    REQUIRE(test_acc1 == std::vector<double>({88.5, 89.0}));
+}
 
-    // Clean up the temporary file
-    remove("temp_log.json");
+TEST_CASE("Test reading correctly formatted JSON lines (single entry)", "[read_log]") {
+    std::istringstream mock_file_content(R"({"test_acc1": 88.5, "train_loss": 0.75})");
+
+    std::vector<double> train_loss, test_acc1;
+    std::string line;
+    while (std::getline(mock_file_content, line)) {
+        try {
+            json entry = json::parse(line);
+
+            if (entry.contains("train_loss")) {
+                train_loss.push_back(entry["train_loss"]);
+            }
+            if (entry.contains("test_acc1")) {
+                test_acc1.push_back(entry["test_acc1"]);
+            }
+        } catch (const std::exception& e) {
+            FAIL("The file contains invalid JSON.");
+        }
+    }
+
+    REQUIRE(train_loss == std::vector<double>({0.75}));
+    REQUIRE(test_acc1 == std::vector<double>({88.5}));
+}
+
+TEST_CASE("Test reading an empty file", "[read_log]") {
+    std::istringstream mock_file_content("");
+
+    std::vector<double> train_loss, test_acc1;
+    std::string line;
+    while (std::getline(mock_file_content, line)) {
+        try {
+            json entry = json::parse(line);
+
+            if (entry.contains("train_loss")) {
+                train_loss.push_back(entry["train_loss"]);
+            }
+            if (entry.contains("test_acc1")) {
+                test_acc1.push_back(entry["test_acc1"]);
+            }
+        } catch (const std::exception& e) {
+            FAIL("The file contains invalid JSON.");
+        }
+    }
+
+    REQUIRE(train_loss.empty());
+    REQUIRE(test_acc1.empty());
+}
+
+TEST_CASE("Test file with missing fields in some entries", "[read_log]") {
+    std::istringstream mock_file_content(R"({"test_acc1": 88.5, "train_loss": 0.75}
+                                         {"test_acc1": 90.0, "train_loss": 0.75, "f1": 0.91})");
+
+    std::vector<double> train_loss, test_acc1;
+    std::string line;
+    while (std::getline(mock_file_content, line)) {
+        try {
+            json entry = json::parse(line);
+
+            if (entry.contains("train_loss")) {
+                train_loss.push_back(entry["train_loss"]);
+            }
+            if (entry.contains("test_acc1")) {
+                test_acc1.push_back(entry["test_acc1"]);
+            }
+        } catch (const std::exception& e) {
+            FAIL("The file contains invalid JSON.");
+        }
+    }
+
+    REQUIRE(train_loss == std::vector<double>({0.75, 0.75}));
+    REQUIRE(test_acc1 == std::vector<double>({88.5, 90.0}));
+}
+
+int main(int argc, char* argv[]) {
+    return Catch::Session().run(argc, argv);
 }
 ```
 
 ### Explanation:
-1. **Headers**: Include necessary headers such as `catch2/catch.hpp` for Catch2, `<fstream>` for file operations, `<sstream>` for string stream, `<string>` for string handling, `<vector>` for vector containers, `<nlohmann/json.hpp>` for JSON parsing.
-2. **Function Definition**: The `read_log` function remains the same as in the original Python code.
-3. **Test Case**:
-   - **Temporary File Creation**: Create a temporary log file with a known content for testing purposes.
-   - **Call Function**: Call the `read_log` function with the path to the temporary file.
-   - **Assertions**: Use Catch2 assertions (`REQUIRE`, `CHECK`) to verify that the function returns the expected results.
-   - **Cleanup**: Remove the temporary file after the test.
+1. **Header Files**:
+   - `#include <catch2/catch_test_macros.hpp>` for Catch2 testing macros.
+   - `#include <fstream>` for file I/O operations.
+   - `#include <sstream>` for string stream operations.
+   - `#include <vector>` for using vectors.
+   - `#include <nlohmann/json.hpp>` for JSON parsing.
 
-This C++ test case ensures that the `read_log` function works correctly by reading a log file and extracting the required data.
+2. **Using JSON Namespace**:
+   - `using json = nlohmann::json;` to simplify JSON object creation and manipulation.
+
+3. **Test Cases**:
+   - Each test case uses `std::istringstream` to simulate file content.
+   - Assertions are made using `REQUIRE` to check the correctness of the extracted data.
+
+4. **Main Function**:
+   - The `main` function runs the Catch2 test suite.
+
+This code preserves the original purpose and structure of the Python unittests while translating them into idiomatic C++ code using the Catch2 testing framework.

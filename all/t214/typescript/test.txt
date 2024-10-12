@@ -1,60 +1,131 @@
-Sure! Here's how you can convert your Python unittest test class to a TypeScript test case using Jest:
+Certainly! Below is the equivalent TypeScript test class using Jest, ensuring that the functionality and logic of the tests are preserved. The code includes appropriate Jest assertions and type annotations.
+
+### TypeScript Code
 
 ```typescript
-import { describe, it, expect } from '@jest/globals';
-import fs from 'fs';
-import path from 'path';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as xregexp from 'xregexp';
 
-function readMappingFile(mappingFilePath: string): Array<[RegExp, string]> {
-    const content = fs.readFileSync(mappingFilePath, 'utf8');
-    return content.split('\n')
-        .filter(line => line.trim() !== '')
-        .map(line => {
-            const [regexStr, replacement] = line.split(',');
-            return [new RegExp(regexStr), replacement];
-        });
+interface Mapping {
+    regex: RegExp;
+    replacement: string;
 }
 
-describe('readMappingFile', () => {
-    it('should read and parse the mapping file correctly', () => {
-        const filePath = path.join(__dirname, 'mapping.txt');
-        const expectedOutput: Array<[RegExp, string]> = [
-            [/hello/, 'hi'],
-            [/world/, 'earth']
+/**
+ * Reads question from the given mapping file and returns a list where each element is a tuple containing the compiled regular expression and replacement strings.
+ * @param mappingFilePath - Path to the file containing regex mappings.
+ * @returns An array of objects, each containing a compiled regex object and a corresponding replacement string.
+ */
+function readMappingFile(mappingFilePath: string): Mapping[] {
+    const mappings: Mapping[] = [];
+
+    try {
+        const data = fs.readFileSync(mappingFilePath, 'utf-8');
+        const lines = data.split('\n');
+
+        for (const line of lines) {
+            if (!line.includes(',')) {
+                throw new Error("Each line must contain exactly one comma separating the pattern and the replacement.");
+            }
+
+            const [oldPattern, newWord] = line.trim().split(',', 1);
+            const trimmedOldPattern = oldPattern.trim().replace(/^'|'$/g, '');
+            const trimmedNewWord = newWord.trim().replace(/^'|'$/g, '');
+
+            mappings.push({
+                regex: xregexp(trimmedOldPattern),
+                replacement: trimmedNewWord
+            });
+        }
+    } catch (error) {
+        if (error.code === 'ENOENT') {
+            throw new Error(`Unable to find the specified file: ${mappingFilePath}`);
+        } else {
+            throw error;
+        }
+    }
+
+    return mappings;
+}
+
+// Jest Test Suite
+describe('TestReadMappingFile', () => {
+    it('test_valid_mapping_file', () => {
+        // Test with a valid mapping file content
+        const mockFileContent = "'old_pattern1','new_word1'\n'old_pattern2','new_word2'\n";
+        jest.spyOn(fs, 'readFileSync').mockImplementation(() => mockFileContent);
+
+        const result = readMappingFile('dummy_path.txt');
+        const expected: Mapping[] = [
+            { regex: xregexp('old_pattern1'), replacement: 'new_word1' },
+            { regex: xregexp('old_pattern2'), replacement: 'new_word2' },
         ];
 
-        const result = readMappingFile(filePath);
-
-        expect(result).toEqual(expectedOutput);
+        expect(result).toEqual(expected);
     });
 
-    it('should handle empty lines in the mapping file', () => {
-        const filePath = path.join(__dirname, 'empty_lines_mapping.txt');
-        const expectedOutput: Array<[RegExp, string]> = [
-            [/hello/, 'hi']
+    it('test_missing_file', () => {
+        // Test with a missing file
+        jest.spyOn(fs, 'readFileSync').mockImplementation(() => {
+            throw new Error('ENOENT: no such file or directory');
+        });
+
+        expect(() => readMappingFile('non_existent_file.txt')).toThrow('Unable to find the specified file: non_existent_file.txt');
+    });
+
+    it('test_malformed_line_no_comma', () => {
+        // Test with a line that does not contain a comma
+        const mockFileContent = "'old_pattern1' 'new_word1'\n";
+        jest.spyOn(fs, 'readFileSync').mockImplementation(() => mockFileContent);
+
+        expect(() => readMappingFile('dummy_path.txt')).toThrow('Each line must contain exactly one comma separating the pattern and the replacement.');
+    });
+
+    it('test_valid_patterns_with_special_characters', () => {
+        // Test with valid patterns that contain special regex characters
+        const mockFileContent = "'\\d+', 'number'\n'\\w+', 'word'\n";
+        jest.spyOn(fs, 'readFileSync').mockImplementation(() => mockFileContent);
+
+        const result = readMappingFile('dummy_path.txt');
+        const expected: Mapping[] = [
+            { regex: xregexp('\\d+'), replacement: 'number' },
+            { regex: xregexp('\\w+'), replacement: 'word' },
         ];
 
-        const result = readMappingFile(filePath);
-
-        expect(result).toEqual(expectedOutput);
-    });
-
-    it('should throw an error if the mapping file does not exist', () => {
-        const nonExistentFilePath = path.join(__dirname, 'non_existent_mapping.txt');
-
-        expect(() => readMappingFile(nonExistentFilePath)).toThrow();
+        expect(result).toEqual(expected);
     });
 });
+
+// Example usage
+try {
+    const mappings = readMappingFile('path/to/mapping/file.txt');
+    console.log(mappings);
+} catch (error) {
+    console.error(error.message);
+}
 ```
 
 ### Explanation:
+1. **Imports**:
+   - `fs` and `path` are imported from Node.js standard library for file system operations.
+   - `xregexp` is used as a substitute for Python's `re` module. Note that you need to install `xregexp` using npm or yarn (`npm install xregexp`).
 
-1. **Imports**: We import necessary modules such as `@jest/globals` for Jest functions, `fs` for file system operations, and `path` for handling file paths.
-2. **Function Definition**: The `readMappingFile` function reads the content of the mapping file, splits it into lines, filters out any empty lines, and then maps each line to a tuple containing a compiled regular expression and its replacement string.
-3. **Describe Block**: We use `describe` to group related tests together.
-4. **It Blocks**: 
-   - The first `it` block checks if the function correctly reads and parses the mapping file.
-   - The second `it` block ensures that the function handles empty lines gracefully.
-   - The third `it` block verifies that the function throws an error when the specified mapping file does not exist.
+2. **Interface Definition**:
+   - `Mapping` interface defines the structure of each mapping object.
 
-Make sure to create the test files (`mapping.txt`, `empty_lines_mapping.txt`) in the same directory as your test file to match the file paths used in the test cases.
+3. **Function Definition**:
+   - `readMappingFile` function reads the file synchronously and processes each line.
+   - It checks for the presence of a comma in each line and splits accordingly.
+   - It trims the patterns and replacements and removes leading/trailing single quotes.
+   - It compiles the regular expressions using `xregexp`.
+
+4. **Jest Test Suite**:
+   - The test suite uses `describe` and `it` blocks to define test cases.
+   - `jest.spyOn` is used to mock `fs.readFileSync` to simulate different file contents and scenarios.
+   - Jest assertions (`expect`) are used to verify the expected behavior.
+
+5. **Example Usage**:
+   - Demonstrates how to call the function and handle potential errors.
+
+This TypeScript code preserves the original functionality and logic of the Python tests while adapting to Jest's testing framework and TypeScript's static type system.

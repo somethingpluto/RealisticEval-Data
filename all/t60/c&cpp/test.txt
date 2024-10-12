@@ -1,66 +1,152 @@
-Sure! Below is an example of how you might translate your Python `unittest` test class into a C++ `Catch2` test case. Note that I'll assume some details about the implementation of `find_common_columns`, since it's not provided in your question.
+Certainly! Here is the equivalent C++ test class using the Catch2 testing framework. The goal is to preserve the functionality and logic of the tests while making necessary adjustments for language differences between Python and C++.
 
-First, let's define the function `find_common_columns` in C++. For simplicity, I'll assume it returns a vector of strings representing the common columns:
+### C++ Code with Catch2 Testing Framework
 
 ```cpp
-#include <vector>
-#include <string>
+#include <catch2/catch_test_macros.hpp>
+#include <iostream>
 #include <filesystem>
+#include <vector>
+#include <set>
+#include <fstream>
+#include <sstream>
 
-namespace fs = std::filesystem;
+// Function to read column names from a CSV file
+std::vector<std::string> readCSVColumns(const std::string& filepath) {
+    std::ifstream file(filepath);
+    std::string line;
+    std::getline(file, line); // Read the first line which contains headers
+    std::istringstream ss(line);
+    std::string column;
+    std::vector<std::string> columns;
 
-std::vector<std::string> find_common_columns(const std::string& directory);
-```
-
-Now, let's write the Catch2 test cases for this function. We'll need to include Catch2 headers and set up the test environment.
-
-Here's the complete C++ test file using Catch2:
-
-```cpp
-#define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
-#include "catch.hpp"
-
-// Assuming the function definition is somewhere else in your project
-#include "your_function_definition.h"  // Replace with the actual header file where find_common_columns is defined
-
-TEST_CASE("Find common columns", "[common_columns]") {
-    SECTION("Directory with multiple CSV files") {
-        std::string directory = "path/to/your/directory";  // Replace with the actual directory path
-        std::vector<std::string> expected = {"column1", "column2"};  // Replace with the expected result
-
-        std::vector<std::string> result = find_common_columns(directory);
-
-        REQUIRE(result == expected);
+    while (std::getline(ss, column, ',')) {
+        columns.push_back(column);
     }
 
-    SECTION("Directory with no CSV files") {
-        std::string directory = "path/to/empty/directory";  // Replace with the actual empty directory path
-        std::vector<std::string> expected = {};  // Expected result when there are no CSV files
+    return columns;
+}
 
-        std::vector<std::string> result = find_common_columns(directory);
+// Function to find common columns of all CSV files in a directory
+std::vector<std::string> findCommonColumns(const std::string& directory) {
+    std::vector<std::set<std::string>> columnSets;
 
-        REQUIRE(result == expected);
+    // Iterate through all files in the specified directory
+    for (const auto& entry : std::filesystem::directory_iterator(directory)) {
+        if (entry.path().extension() == ".csv") {
+            std::vector<std::string> columns = readCSVColumns(entry.path().string());
+            columnSets.emplace_back(columns.begin(), columns.end());
+        }
     }
 
-    SECTION("Directory with single CSV file") {
-        std::string directory = "path/to/single_csv_file_directory";  // Replace with the actual directory path
-        std::vector<std::string> expected = {"column1", "column2"};  // Replace with the expected result
-
-        std::vector<std::string> result = find_common_columns(directory);
-
-        REQUIRE(result == expected);
+    if (!columnSets.empty()) {
+        std::set<std::string> commonColumns = columnSets[0];
+        for (size_t i = 1; i < columnSets.size(); ++i) {
+            std::set<std::string> tempSet;
+            std::set_intersection(commonColumns.begin(), commonColumns.end(),
+                                  columnSets[i].begin(), columnSets[i].end(),
+                                  std::inserter(tempSet, tempSet.begin()));
+            commonColumns = std::move(tempSet);
+        }
+        return std::vector<std::string>(commonColumns.begin(), commonColumns.end());
+    } else {
+        return {};
     }
+}
+
+TEST_CASE("Test common columns functionality", "[common-columns]") {
+    // Set up a temporary directory
+    const std::string test_dir = "test_dir";
+    std::filesystem::create_directories(test_dir);
+
+    SECTION("All CSV files have the same columns") {
+        const std::string data1 = "A,B,C\n1,2,3";
+        const std::string data2 = "A,B,C\n4,5,6";
+        const std::string data3 = "A,B,C\n7,8,9";
+        const std::vector<std::string> filenames = {"file1.csv", "file2.csv", "file3.csv"};
+        const std::vector<std::string> datas = {data1, data2, data3};
+
+        for (size_t i = 0; i < filenames.size(); ++i) {
+            const std::string filepath = test_dir + "/" + filenames[i];
+            std::ofstream file(filepath);
+            file << datas[i];
+        }
+
+        REQUIRE(findCommonColumns(test_dir) == std::vector<std::string>({"A", "B", "C"}));
+    }
+
+    SECTION("No common columns") {
+        const std::string data1 = "A,B,C\n1,2,3";
+        const std::string data2 = "D,E,F\n4,5,6";
+        const std::string data3 = "G,H,I\n7,8,9";
+        const std::vector<std::string> filenames = {"file1.csv", "file2.csv", "file3.csv"};
+        const std::vector<std::string> datas = {data1, data2, data3};
+
+        for (size_t i = 0; i < filenames.size(); ++i) {
+            const std::string filepath = test_dir + "/" + filenames[i];
+            std::ofstream file(filepath);
+            file << datas[i];
+        }
+
+        REQUIRE(findCommonColumns(test_dir).empty());
+    }
+
+    SECTION("Some common columns") {
+        const std::string data1 = "A,B,C\n1,2,3";
+        const std::string data2 = "B,C,D\n4,5,6";
+        const std::string data3 = "C,D,E\n7,8,9";
+        const std::vector<std::string> filenames = {"file1.csv", "file2.csv", "file3.csv"};
+        const std::vector<std::string> datas = {data1, data2, data3};
+
+        for (size_t i = 0; i < filenames.size(); ++i) {
+            const std::string filepath = test_dir + "/" + filenames[i];
+            std::ofstream file(filepath);
+            file << datas[i];
+        }
+
+        REQUIRE(findCommonColumns(test_dir) == std::vector<std::string>({"C"}));
+    }
+
+    SECTION("Mixed common and unique columns") {
+        const std::string data1 = "A,B,C\n1,2,3";
+        const std::string data2 = "B,C,D\n4,5,6";
+        const std::string data3 = "B,C,E\n7,8,9";
+        const std::vector<std::string> filenames = {"file1.csv", "file2.csv", "file3.csv"};
+        const std::vector<std::string> datas = {data1, data2, data3};
+
+        for (size_t i = 0; i < filenames.size(); ++i) {
+            const std::string filepath = test_dir + "/" + filenames[i];
+            std::ofstream file(filepath);
+            file << datas[i];
+        }
+
+        REQUIRE(findCommonColumns(test_dir) == std::vector<std::string>({"B", "C"}));
+    }
+
+    // Clean up the temporary directory
+    for (const auto& entry : std::filesystem::directory_iterator(test_dir)) {
+        std::filesystem::remove(entry.path());
+    }
+    std::filesystem::remove_all(test_dir);
 }
 ```
 
 ### Explanation:
-1. **Include Headers**: The `#include "catch.hpp"` directive includes the Catch2 testing framework.
-2. **Function Definition**: Ensure that the function `find_common_columns` is defined somewhere in your project. If it's not already defined, you should create or link to its implementation.
-3. **Test Cases**:
-   - **Multiple CSV Files**: Tests if the function correctly identifies common columns when there are multiple CSV files in the directory.
-   - **No CSV Files**: Tests if the function returns an empty vector when there are no CSV files in the directory.
-   - **Single CSV File**: Tests if the function correctly identifies common columns when there is only one CSV file in the directory.
+1. **Setup and Teardown**:
+   - The setup and teardown logic is handled within each section using `std::filesystem::create_directories` and `std::filesystem::remove_all`.
 
-Make sure to replace `"path/to/your/directory"`, `"path/to/empty/directory"`, and `"path/to/single_csv_file_directory"` with the actual paths on your system, and adjust the `expected` results accordingly.
+2. **Reading CSV Files**:
+   - The `readCSVColumns` function reads the first line of a CSV file and extracts the column names.
 
-This setup provides a basic structure for testing your C++ function using Catch2. You can expand upon it by adding more test cases and handling edge cases as needed.
+3. **Finding Common Columns**:
+   - The `findCommonColumns` function iterates over all CSV files in the specified directory, reads their column names, and finds the common columns using set intersection.
+
+4. **Testing Sections**:
+   - Each `SECTION` in Catch2 corresponds to a test case in the Python `unittest` framework.
+   - The `REQUIRE` macro is used for assertions.
+
+5. **File Operations**:
+   - Files are created and written to using `std::ofstream`.
+   - Files and directories are cleaned up at the end of each test section.
+
+This C++ code preserves the functionality and logic of the original Python tests while adhering to the Catch2 testing framework conventions.

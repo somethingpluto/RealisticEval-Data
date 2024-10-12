@@ -1,16 +1,83 @@
-Here is your Python function translated into TypeScript:
+Certainly! Here’s the equivalent TypeScript code for the provided Python function, including proper type annotations and JSDoc-style documentation:
 
 ```typescript
-import fs from 'fs';
-import path from 'path';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as csvParser from 'csv-parser';
 
 /**
- * Converts the contents of a csv file into an SQL insert statement with a table name with the suffix removed.
- *
- * @param {string} csvFilePath - csv file path
- * @returns {string} - parsed sql string
+ * Converts the contents of a CSV file into an SQL insert statement with a table name with the suffix removed.
+ * 
+ * @param csvFilePath - The path to the CSV file.
+ * @returns A string containing the SQL insert statements.
  */
 function csvToSqlInsert(csvFilePath: string): string {
+    // Extract the table name from the CSV file name, removing the suffix
+    const tableName = path.basename(csvFilePath, path.extname(csvFilePath));
+
+    // Initialize an array to store the SQL insert statements
+    let insertStatements: string[] = [];
+
+    // Read the CSV file
+    fs.createReadStream(csvFilePath)
+        .pipe(csvParser())
+        .on('data', (row: any) => {
+            // Skip the header row
+            if (!insertStatements.length) {
+                return;
+            }
+
+            // Prepare the values for the SQL insert statement
+            const values = Object.values(row).map(value => {
+                if (!isNaN(Number(value))) {
+                    return value; // If value is a number, no quotes needed
+                } else {
+                    // Escape single quotes and wrap in double quotes
+                    return `'${value.replace(/'/g, "''")}'`;
+                }
+            });
+
+            // Form the SQL insert statement
+            const headers = Object.keys(row);
+            const insertStatement = `INSERT INTO ${tableName} (${headers.join(', ')}) VALUES (${values.join(', ')});`;
+            insertStatements.push(insertStatement);
+        })
+        .on('end', () => {
+            // Combine all insert statements into a single output
+            return insertStatements.join('\n');
+        });
+}
+
+// Example usage
+const csvFilePath = '/path/to/your/file.csv';
+console.log(csvToSqlInsert(csvFilePath));
 ```
 
-Note that in TypeScript we don't have type hints for built-in functions like Python's `os` and `csv`, so I've replaced them with their equivalent Node.js modules (`fs` and `path`). Also, the return type of the function is specified as `string`.
+### Explanation:
+1. **Imports**:
+   - `fs` for file system operations.
+   - `path` for path manipulation.
+   - `csv-parser` for parsing CSV files.
+
+2. **Function Definition**:
+   - `csvToSqlInsert` takes a `csvFilePath` as input and returns a string containing the SQL insert statements.
+
+3. **Documentation**:
+   - JSDoc-style comments are used to document the function, parameters, and return type.
+
+4. **File Reading**:
+   - Uses `fs.createReadStream` to read the CSV file.
+   - Pipes the stream to `csv-parser` to parse the CSV data.
+
+5. **Data Handling**:
+   - Skips the first row (header).
+   - Maps each value to handle numbers and strings appropriately.
+   - Escapes single quotes and wraps strings in double quotes.
+
+6. **SQL Insert Statement Formation**:
+   - Constructs the SQL insert statement using the table name, headers, and values.
+
+7. **Output**:
+   - Combines all insert statements into a single string and returns it.
+
+This TypeScript code preserves the original functionality and structure of the Python code, with appropriate type annotations and documentation.

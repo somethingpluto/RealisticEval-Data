@@ -1,72 +1,94 @@
-Here is the Java equivalent of your Python code:
+Here is the equivalent Java code following the provided guidelines:
 
 ```java
 package org.real.temp;
 
-import java.util.BitSet;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.BitSet;
 
-public class BloomFilter {
-    private BitSet bitSet;
-    private int[] seeds;
+public class Answer {
 
-    public BloomFilter(int size, int hashCount) {
-        this.bitSet = new BitSet(size);
-        this.seeds = new int[hashCount];
-        
-        for (int i = 0; i < hashCount; i++) {
-            seeds[i] = i * 16777619 + 23333333; // Just some prime numbers
+    public static class BloomFilter {
+        private final int size;
+        private final int hashCount;
+        private final BitSet bitArray;
+
+        public BloomFilter(int size, int hashCount) {
+            this.size = size;
+            this.hashCount = hashCount;
+            this.bitArray = new BitSet(size);
+        }
+
+        private Iterable<Integer> hashes(String item) {
+            return () -> new java.util.Iterator<>() {
+                private int index = 0;
+
+                @Override
+                public boolean hasNext() {
+                    return index < hashCount;
+                }
+
+                @Override
+                public Integer next() {
+                    if (!hasNext()) {
+                        throw new java.util.NoSuchElementException();
+                    }
+                    byte[] itemBytes = item.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+                    try {
+                        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+                        byte[] hashResult = digest.digest(itemBytes);
+                        long hashValue = bytesToLong(hashResult);
+                        index++;
+                        return (int) (hashValue + index) % size;
+                    } catch (NoSuchAlgorithmException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+
+                private long bytesToLong(byte[] bytes) {
+                    long result = 0;
+                    for (byte b : bytes) {
+                        result = (result << 8) | (b & 0xFF);
+                    }
+                    return result;
+                }
+            };
+        }
+
+        public void add(String item) {
+            for (int hashValue : hashes(item)) {
+                bitArray.set(hashValue);
+            }
+        }
+
+        public boolean contains(String item) {
+            for (int hashValue : hashes(item)) {
+                if (!bitArray.get(hashValue)) {
+                    return false;
+                }
+            }
+            return true;
         }
     }
 
-    public void add(String item) {
-        byte[] bytes = item.getBytes();
-        for (int seed : seeds) {
-            MessageDigest digest = null;
-            try {
-                digest = MessageDigest.getInstance("MD5");
-            } catch (NoSuchAlgorithmException e) {
-                e.printStackTrace();
-            }
-            digest.update(bytes);
-            long hash = ((long)digest.digest()[i] & 0xFF) << 56 |
-                    ((long)digest.digest()[i+1] & 0xFF) << 48 |
-                    ((long)digest.digest()[i+2] & 0xFF) << 40 |
-                    ((long)digest.digest()[i+3] & 0xFF) << 32 |
-                    ((long)digest.digest()[i+4] & 0xFF) << 24 |
-                    ((long)digest.digest()[i+5] & 0xFF) << 16 |
-                    ((long)digest.digest()[i+6] & 0xFF) << 8 |
-                    ((long)digest.digest()[i+7] & 0xFF);
-            hash = hash % bitSet.size(); // To make sure it fits within the BitSet
-            bitSet.set((int)hash);
-        }
-    }
-
-    public boolean contains(String item) {
-        byte[] bytes = item.getBytes();
-        for (int seed : seeds) {
-            MessageDigest digest = null;
-            try {
-                digest = MessageDigest.getInstance("MD5");
-            } catch (NoSuchAlgorithmException e) {
-                e.printStackTrace();
-            }
-            digest.update(bytes);
-            long hash = ((long)digest.digest()[i] & 0xFF) << 56 |
-                    ((long)digest.digest()[i+1] & 0xFF) << 48 |
-                    ((long)digest.digest()[i+2] & 0xFF) << 40 |
-                    ((long)digest.digest()[i+3] & 0xFF) << 32 |
-                    ((long)digest.digest()[i+4] & 0xFF) << 24 |
-                    ((long)digest.digest()[i+5] & 0xFF) << 16 |
-                    ((long)digest.digest()[i+6] & 0xFF) << 8 |
-                    ((long)digest.digest()[i+7] & 0xFF);
-            hash = hash % bitSet.size();
-            if (!bitSet.get((int)hash)) return false;
-        }
-        return true;
+    public static void main(String[] args) {
+        // Example usage
+        BloomFilter bloomFilter = new BloomFilter(1000, 5);
+        bloomFilter.add("example");
+        System.out.println(bloomFilter.contains("example")); // Expected: true
+        System.out.println(bloomFilter.contains("not_in_filter")); // Expected: false
     }
 }
 ```
 
-This Java code uses a `BitSet` to store the elements and a `MessageDigest` to generate hashes from the input string. The `add` method adds an item to the Bloom filter, while the `contains` method checks for the presence of an item. Note that the actual implementation of hashing may need to be adjusted based on your specific requirements.
+### Explanation:
+1. **Class Definition**: The `BloomFilter` class is defined within the `Answer` class.
+2. **Fields**: The `size`, `hashCount`, and `bitArray` fields are declared as private final members of the `BloomFilter` class.
+3. **Constructor**: The constructor initializes the `size`, `hashCount`, and `bitArray` with the specified size.
+4. **Hash Generation**: The `hashes` method generates multiple hashes for an item using SHA-256 and a seed value.
+5. **Add Method**: The `add` method sets the corresponding bits in the `bitArray` based on the generated hashes.
+6. **Contains Method**: The `contains` method checks if all the bits corresponding to the generated hashes are set.
+7. **Main Method**: An example usage of the `BloomFilter` class is provided in the `main` method.
+
+This Java code maintains the functionality and logic of the original Python code while adhering to Java's syntax and best practices.

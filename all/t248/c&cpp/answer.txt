@@ -1,144 +1,79 @@
-Sure! Below is the equivalent C++ and C code for the provided Python function `sanitize_data`. Note that C++ does not have built-in support for dictionaries like Python, so we'll use a custom structure or a map from the `<map>` library.
-
-### C++ Code
+Here’s the equivalent C++ code for the provided Python function. This code will recursively sanitize a JSON object by removing specific keys:
 
 ```cpp
 #include <iostream>
-#include <map>
-#include <vector>
 #include <string>
+#include <vector>
+#include <nlohmann/json.hpp>
 
-std::map<std::string, std::string> sanitizeData(const std::map<std::string, std::string>& data, const std::vector<std::string>& keyToRemove = {}) {
-    std::map<std::string, std::string> sanitizedData;
-    for (const auto& pair : data) {
-        if (std::find(keyToRemove.begin(), keyToRemove.end(), pair.first) == keyToRemove.end()) {
-            sanitizedData[pair.first] = pair.second;
-        }
-    }
-    return sanitizedData;
-}
+using json = nlohmann::json;
 
-int main() {
-    std::map<std::string, std::string> data = {{"name", "John"}, {"age", "30"}, {"address", "123 Main St"}};
-    std::vector<std::string> keyToRemove = {"age"};
+// Function to sanitize a JSON object by removing specific keys.
+json sanitize_data(const json& data, const std::set<std::string>* key_to_remove = nullptr) {
+    static const std::set<std::string> default_keys_to_remove = {
+        "email", "pc_conflicts", "metadata", "eligible_student_paper_prize", "talk_poster",
+        "submitted_at", "decision", "status", "submitted", "submission"
+    };
 
-    auto sanitizedData = sanitizeData(data, keyToRemove);
+    const std::set<std::string>& keys_to_remove = (key_to_remove == nullptr) ? default_keys_to_remove : *key_to_remove;
 
-    for (const auto& pair : sanitizedData) {
-        std::cout << pair.first << ": " << pair.second << std::endl;
-    }
-
-    return 0;
-}
-```
-
-### Explanation of C++ Code
-- We define a function `sanitizeData` that takes a constant reference to a `std::map` (representing the dictionary) and a constant reference to a `std::vector` (representing the list of keys to remove).
-- We create an empty `std::map` called `sanitizedData`.
-- We iterate through each key-value pair in the input `data` map.
-- If the current key is not found in the `keyToRemove` vector, we add it to the `sanitizedData` map.
-- Finally, we return the `sanitizedData` map.
-
-### C Code
-
-In C, there is no direct equivalent to Python's dictionary or list types. However, we can simulate this using structures and linked lists. Below is a simplified example using a linked list:
-
-```c
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-typedef struct Node {
-    char* key;
-    char* value;
-    struct Node* next;
-} Node;
-
-Node* createNode(const char* key, const char* value) {
-    Node* newNode = (Node*)malloc(sizeof(Node));
-    newNode->key = strdup(key);
-    newNode->value = strdup(value);
-    newNode->next = NULL;
-    return newNode;
-}
-
-void insertNode(Node** head, const char* key, const char* value) {
-    Node* newNode = createNode(key, value);
-    if (*head == NULL) {
-        *head = newNode;
-    } else {
-        Node* temp = *head;
-        while (temp->next != NULL) {
-            temp = temp->next;
-        }
-        temp->next = newNode;
-    }
-}
-
-void freeList(Node* head) {
-    Node* temp;
-    while (head != NULL) {
-        temp = head;
-        head = head->next;
-        free(temp->key);
-        free(temp->value);
-        free(temp);
-    }
-}
-
-Node* sanitizeData(Node* data, const char* keyToRemove[], size_t keyCount) {
-    Node* sanitizedData = NULL;
-    Node* temp = data;
-
-    while (temp != NULL) {
-        int shouldRemove = 0;
-        for (size_t i = 0; i < keyCount; i++) {
-            if (strcmp(temp->key, keyToRemove[i]) == 0) {
-                shouldRemove = 1;
-                break;
+    if (data.is_object()) {
+        json sanitized;
+        for (const auto& item : data.items()) {
+            if (keys_to_remove.find(item.key()) == keys_to_remove.end()) {
+                sanitized[item.key()] = sanitize_data(item.value());
             }
         }
-        if (!shouldRemove) {
-            insertNode(&sanitizedData, temp->key, temp->value);
+        return sanitized;
+    } else if (data.is_array()) {
+        json sanitized;
+        for (const auto& value : data) {
+            sanitized.push_back(sanitize_data(value));
         }
-        temp = temp->next;
-    }
-
-    return sanitizedData;
-}
-
-void printList(Node* head) {
-    Node* temp = head;
-    while (temp != NULL) {
-        printf("%s: %s\n", temp->key, temp->value);
-        temp = temp->next;
+        return sanitized;
+    } else {
+        return data;
     }
 }
 
 int main() {
-    Node* data = NULL;
-    insertNode(&data, "name", "John");
-    insertNode(&data, "age", "30");
-    insertNode(&data, "address", "123 Main St");
+    // Example usage
+    std::string input_json = R"({
+        "name": "John Doe",
+        "email": "johndoe@example.com",
+        "metadata": {
+            "version": 1,
+            "timestamp": "2023-01-01T12:00:00Z"
+        },
+        "papers": [
+            {
+                "title": "Paper 1",
+                "submitted_at": "2023-01-01T12:00:00Z"
+            },
+            {
+                "title": "Paper 2",
+                "status": "accepted"
+            }
+        ]
+    })";
 
-    const char* keyToRemove[] = {"age"};
-    size_t keyCount = sizeof(keyToRemove) / sizeof(keyToRemove[0]);
+    json input = json::parse(input_json);
+    json sanitized = sanitize_data(input);
 
-    Node* sanitizedData = sanitizeData(data, keyToRemove, keyCount);
-
-    printList(sanitizedData);
-
-    freeList(data);
-    freeList(sanitizedData);
+    std::cout << sanitized.dump(4) << std::endl;
 
     return 0;
 }
 ```
 
-### Explanation of C Code
-- We define a `Node` structure to represent each key-value pair.
-- We implement functions to create nodes, insert nodes into a linked list, free the memory allocated for the linked list, and sanitize the data.
-- In the `main` function, we create a linked list representing the data, call the `sanitizeData` function, and print the sanitized data.
-- Finally, we free the memory allocated for both the original and sanitized linked lists.
+### Explanation:
+1. **Headers**: The code includes necessary headers (`<iostream>`, `<string>`, `<vector>`, `<nlohmann/json.hpp>`).
+2. **Using `nlohmann::json`**: The `nlohmann::json` library is used to handle JSON objects in C++.
+3. **Function Definition**: The `sanitize_data` function takes a `json` object and an optional pointer to a set of strings representing keys to remove.
+4. **Default Keys to Remove**: If no keys are provided, it uses a predefined set of keys to remove.
+5. **Recursive Sanitization**:
+   - For objects, it iterates over each key-value pair and removes the specified keys.
+   - For arrays, it applies the sanitization recursively to each element.
+6. **Example Usage**: The `main` function demonstrates parsing a JSON string, sanitizing it, and printing the result.
 
-These examples provide a basic implementation of the functionality you described in C++ and C. Depending on your specific requirements, you may need to extend these implementations further.
+This code maintains the functionality and logic of the original Python code while adapting to C++ syntax and features.

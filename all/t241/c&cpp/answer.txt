@@ -1,67 +1,91 @@
-Sure! Below is the equivalent C++ code for your Python function:
+Here’s the equivalent C++ code for the provided Python function, ensuring that the functionality, logic, and structure remain consistent:
 
 ```cpp
 #include <iostream>
 #include <fstream>
-#include <string>
 #include <sstream>
+#include <vector>
+#include <string>
 #include <limits>
+#include <cstdlib>
 
-std::pair<int, int> getMinSeqNumAndDistance(const std::string& filePath, const std::string& word1, const std::string& word2) {
-    std::ifstream file(filePath);
-    if (!file.is_open()) {
-        std::cerr << "Error opening file: " << filePath << std::endl;
-        return {0, std::numeric_limits<int>::max()};
-    }
+std::pair<int, int> get_min_seq_num_and_distance(const std::string& file_path, const std::string& word1, const std::string& word2) {
+    int min_distance = std::numeric_limits<int>::max();
+    int min_seq_num = -1;
+    int current_line_number = 0;
 
-    std::string line;
-    int lineNumber = 0;
-    int minDistance = std::numeric_limits<int>::max();
-    int minLineIndex = -1;
-
-    while (getline(file, line)) {
-        ++lineNumber;
-        std::istringstream iss(line);
-        std::string word;
-        int lastIndex1 = -1, lastIndex2 = -1;
-
-        while (iss >> word) {
-            if (word == word1) {
-                lastIndex1 = lineNumber;
-            } else if (word == word2) {
-                lastIndex2 = lineNumber;
-            }
+    try {
+        std::ifstream file(file_path);
+        if (!file.is_open()) {
+            std::cerr << "Error: The file " << file_path << " does not exist." << std::endl;
+            return std::make_pair(-1, min_distance);
         }
 
-        if (lastIndex1 != -1 && lastIndex2 != -1) {
-            int distance = abs(lastIndex1 - lastIndex2);
-            if (distance < minDistance) {
-                minDistance = distance;
-                minLineIndex = lineNumber;
+        std::string line;
+        while (std::getline(file, line)) {
+            std::istringstream iss(line);
+            std::vector<std::string> words;
+            std::string word;
+            while (iss >> word) {
+                words.push_back(word);
             }
+
+            std::vector<int> word1_indices;
+            std::vector<int> word2_indices;
+            for (int i = 0; i < words.size(); ++i) {
+                if (words[i] == word1) {
+                    word1_indices.push_back(i);
+                }
+                if (words[i] == word2) {
+                    word2_indices.push_back(i);
+                }
+            }
+
+            for (int index1 : word1_indices) {
+                for (int index2 : word2_indices) {
+                    int distance = std::abs(index1 - index2);
+                    if (distance < min_distance) {
+                        min_distance = distance;
+                        min_seq_num = current_line_number;
+                    }
+                }
+            }
+
+            ++current_line_number;
         }
+
+        file.close();
+    } catch (const std::exception& e) {
+        std::cerr << "An error occurred: " << e.what() << std::endl;
+        return std::make_pair(-1, min_distance);
     }
 
-    if (minLineIndex == -1) {
-        return {0, std::numeric_limits<int>::max()};
-    }
-
-    return {minLineIndex, minDistance};
+    return std::make_pair(min_seq_num, min_distance);
 }
 
 int main() {
-    auto result = getMinSeqNumAndDistance("example.txt", "word1", "word2");
-    std::cout << "Minimum sequence number: " << result.first << ", Minimum distance: " << result.second << std::endl;
+    std::string file_path = "example.txt";
+    std::string word1 = "word1";
+    std::string word2 = "word2";
+
+    auto result = get_min_seq_num_and_distance(file_path, word1, word2);
+    if (result.first != -1) {
+        std::cout << "Line number with minimum distance: " << result.first << std::endl;
+        std::cout << "Minimum distance: " << result.second << std::endl;
+    } else {
+        std::cout << "One or both words were not found in any line." << std::endl;
+    }
+
     return 0;
 }
 ```
 
 ### Explanation:
-1. **File Handling**: The code opens the file using `std::ifstream` and checks if it was successfully opened.
-2. **Reading Lines**: It reads each line of the file using `getline`.
-3. **Tokenization**: Each line is tokenized into words using `std::istringstream`.
-4. **Tracking Indices**: It tracks the last seen indices of `word1` and `word2`.
-5. **Calculating Distance**: If both words are found in the same line, it calculates the absolute difference between their indices and updates the minimum distance if necessary.
-6. **Returning Results**: Finally, it returns the line number with the minimum distance and the minimum distance itself. If either word is not found in any line, it returns `(0, INT_MAX)`.
-
-This C++ code should work similarly to your Python function, finding the minimum distance between two words across lines in a text file.
+1. **Headers**: The necessary headers (`<iostream>`, `<fstream>`, `<sstream>`, `<vector>`, `<string>`, `<limits>`, `<cstdlib>`) are included to handle file operations, string manipulation, and exception handling.
+2. **Function Definition**: The function `get_min_seq_num_and_distance` is defined to find the minimum distance between two words in a text file.
+3. **File Handling**: The file is opened using `std::ifstream`. If the file does not exist, an error message is printed, and the function returns a pair indicating failure.
+4. **Reading Lines**: Each line is read using `std::getline` and split into words using `std::istringstream`.
+5. **Index Tracking**: Indices of occurrences of `word1` and `word2` are stored in vectors.
+6. **Distance Calculation**: The minimum distance between the indices is calculated and updated if a new minimum is found.
+7. **Exception Handling**: Any exceptions during file operations are caught and handled.
+8. **Main Function**: A simple example usage of the function is provided in the `main` function.

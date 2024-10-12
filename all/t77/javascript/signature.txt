@@ -1,48 +1,65 @@
-Sure! Below is the JavaScript version of the provided Python function with the same functionality and comments:
+Certainly! Below is the equivalent JavaScript code with the function signature and comments rewritten to conform to JavaScript documentation standards using JSDoc format:
 
 ```javascript
+const { DateTime, ZoneInfo } = require('luxon');
+
 /**
  * Formats the given timestamp as a string according to the specified format, using the system's local time zone.
  *
  * @param {number} timestamp - The time value representing the seconds since the epoch.
  * @param {string} [dateFormat='%a %b %d %I:%M:%S %p %z %Y'] - The format string to use for formatting the timestamp.
- *                                                           Defaults to '%a %b %d %I:%M:%S %p %z %Y'.
+ *                                                          Defaults to '%a %b %d %I:%M:%S %p %z %Y'.
  * @returns {string} - The formatted date and time string.
  */
 function formatTimestampToString(timestamp, dateFormat = '%a %b %d %I:%M:%S %p %z %Y') {
-    // Convert the timestamp to a Date object
-    const date = new Date(timestamp * 1000);
-
-    // Function to pad numbers with leading zeros
-    function pad(number) {
-        return number < 10 ? '0' + number : number;
+    if (timestamp < 0) {
+        throw new Error("error timestamp");
     }
 
-    // Extract date components
-    const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const day = daysOfWeek[date.getUTCDay()];
-    const month = months[date.getUTCMonth()];
-    const dayOfMonth = date.getUTCDate();
-    const hours = date.getUTCHours();
-    const minutes = date.getUTCMinutes();
-    const seconds = date.getUTCSeconds();
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-    const hour12 = hours % 12 || 12; // Convert to 12-hour format
+    try {
+        // Get the local system timezone
+        const localTz = ZoneInfo.get('local');
+    } catch (error) {
+        // Fallback to UTC if the local timezone is not found
+        const localTz = ZoneInfo.get('UTC');
+    }
 
-    // Format the date string based on the provided format
-    let formattedString = dateFormat.replace(/%a/g, day)
-                                  .replace(/%b/g, month)
-                                  .replace(/%d/g, pad(dayOfMonth))
-                                  .replace(/%I/g, pad(hour12))
-                                  .replace(/%M/g, pad(minutes))
-                                  .replace(/%S/g, pad(seconds))
-                                  .replace(/%p/g, ampm)
-                                  .replace(/%z/g, date.getTimezoneOffset() / 60)
-                                  .replace(/%Y/g, date.getUTCFullYear());
+    try {
+        // Convert the UNIX timestamp to a DateTime object with timezone
+        const dt = DateTime.fromSeconds(timestamp).setZone(localTz);
+        // Return the formatted datetime string
+        return dt.toFormat(dateFormat);
+    } catch (error) {
+        // Handle any other unexpected errors
+        throw new Error(`Error formatting the datetime: ${error.message}`);
+    }
+}
 
-    return formattedString;
+// Example usage
+try {
+    const formattedDate = formatTimestampToString(1698423600); // Example UNIX timestamp
+    console.log(formattedDate);
+} catch (error) {
+    console.error(error.message);
 }
 ```
 
-This JavaScript function `formatTimestampToString` takes a timestamp in seconds since the epoch and an optional date format string, then returns the formatted date and time string according to the specified format. The default format is similar to the one used in the Python example.
+### Explanation:
+1. **Imports**: The `luxon` library is used to handle date-time operations in JavaScript.
+2. **Function Definition**: The function `formatTimestampToString` takes two parameters: `timestamp` (UNIX timestamp) and an optional `dateFormat` string.
+3. **JSDoc Comments**: The function is documented using JSDoc format, providing clear descriptions of the parameters and return type.
+4. **Error Handling**: If `timestamp` is negative, it throws an error.
+5. **Timezone Handling**:
+   - Attempts to get the local timezone using `ZoneInfo.get('local')`.
+   - Falls back to UTC if the local timezone is not found.
+6. **Conversion and Formatting**:
+   - Converts the UNIX timestamp to a `DateTime` object with the specified timezone.
+   - Formats the datetime using the provided format string.
+7. **Example Usage**: Demonstrates how to call the function and handle any potential errors.
+
+Make sure you have the `luxon` library installed in your project by running:
+```sh
+npm install luxon
+```
+
+This ensures that the function signature, comments, and overall structure are preserved and conform to JavaScript standards.

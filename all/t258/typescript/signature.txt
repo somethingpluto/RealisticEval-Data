@@ -1,22 +1,71 @@
-Sure, here's how you can convert the Python type annotations to TypeScript interfaces:
+Certainly! Below is the equivalent TypeScript code for the provided Python function, including appropriate JSDoc-style documentation comments and type annotations:
 
 ```typescript
 /**
  * Extracts the position and bits of a specific character from a byte array.
  *
- * @param byteArray - The byte array to search within
- * @param char - The character to find in the byte array
- * @param charset - The character encoding of the byte array
+ * @param byteArray - The byte array to search within.
+ * @param char - The character to find in the byte array.
+ * @param charset - The character encoding of the byte array.
  * @returns A tuple of (position, bits) if the character is found, otherwise null.
  */
-function extractCharacterBits(byteArray: Buffer, char: string, charset: string = 'utf-8'): [number, string] | null {
-    // Function implementation goes here
+function extractCharacterBits(byteArray: Uint8Array, char: string, charset: string = 'utf-8'): [number, string] | null {
+    try {
+        // Decode byte array to string using the specified character set
+        const string = new TextDecoder(charset).decode(byteArray);
+
+        // Check if the character is in the decoded string
+        if (string.includes(char)) {
+            const position = string.indexOf(char);
+
+            // Find the byte position of the character
+            const bytePosition = new TextEncoder().encode(string.slice(0, position)).length;
+
+            // Determine the length of the character in bytes
+            const charLength = new TextEncoder().encode(char).length;
+
+            // Extract the bits corresponding to the character
+            const bits = byteArray.subarray(bytePosition, bytePosition + charLength);
+
+            // Convert bits to a human-readable binary string
+            const bitsAsString = Array.from(bits).map(byte => `${byte.toString(2).padStart(8, '0')}`).join(' ');
+
+            return [position, bitsAsString];
+        } else {
+            console.log(`The character '${char}' is not in the byte array.`);
+            return null;
+        }
+    } catch (error) {
+        if (error instanceof Error && error.name === 'SyntaxError') {
+            console.log("Failed to decode the byte array.");
+        }
+        return null;
+    }
 }
+
+// Example usage
+const byteArray = new Uint8Array([72, 101, 108, 108, 111, 44, 32, 99, 111, 110, 115, 116, 114, 111, 100, 33]);
+console.log(extractCharacterBits(byteArray, 'l'));
 ```
 
 ### Explanation:
-1. **`Buffer`**: In Node.js, `Buffer` is used for handling binary data. This is equivalent to Python's `bytes`.
-2. **Type Annotations**: The parameters `byteArray`, `char`, and `charset` have been annotated with their respective types (`Buffer`, `string`, and `string`).
-3. **Return Type**: The return type is annotated as `[number, string] | null`, which corresponds to the Python `Tuple[int, str]` or `None`.
+1. **Function Signature**:
+   - The function signature is defined with appropriate types: `byteArray` as `Uint8Array`, `char` as `string`, and `charset` as `string` with a default value of `'utf-8'`.
+   - The return type is `[number, string] | null`, indicating that the function can return either a tuple of `[number, string]` or `null`.
 
-This should give you a good starting point for converting your Python function to TypeScript while maintaining the same type safety and documentation.
+2. **JSDoc Documentation**:
+   - The JSDoc-style comments provide clear documentation for the function parameters and return type.
+
+3. **Decoding and Encoding**:
+   - `TextDecoder` is used to decode the `byteArray` to a string.
+   - `TextEncoder` is used to encode strings back to byte arrays.
+
+4. **Error Handling**:
+   - A `try-catch` block is used to handle potential decoding errors.
+   - The error message is logged if decoding fails.
+
+5. **Bit Extraction and Conversion**:
+   - The bit extraction logic remains similar to the Python version.
+   - The bits are converted to a human-readable binary string using `Array.from` and `map`.
+
+This TypeScript code preserves the original functionality and structure of the Python code while adapting to TypeScript's syntax and features.

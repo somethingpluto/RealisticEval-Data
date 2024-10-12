@@ -1,38 +1,99 @@
-Here's how you can convert your Python unittest test class into a TypeScript Jest test case:
+Certainly! Below is the equivalent TypeScript test class using Jest, ensuring that the functionality and logic of the tests are preserved. The Python unittest assertions are mapped to the appropriate Jest assertions, and the necessary type annotations are included.
+
+### TypeScript Code with Jest Testing Framework
 
 ```typescript
-import { describe, it, expect } from '@jest/globals';
 import * as tf from '@tensorflow/tfjs';
+import { im2col } from './im2col'; // Assuming im2col is exported from another file
 
-function im2col(image: tf.Tensor4D, filterHeight: number, filterWidth: number, stride = 1, padding = 0): tf.Tensor2D {
-    // Your implementation here...
-}
+describe('TestIm2Col', () => {
+    it('test_single_channel_no_padding_stride_1', () => {
+        const image = tf.tensor3d([
+            [1, 2, 3, 4],
+            [5, 6, 7, 8],
+            [9, 10, 11, 12],
+            [13, 14, 15, 16]
+        ], [1, 4, 4]);
+        const filterHeight = 2;
+        const filterWidth = 2;
+        const stride = 1;
+        const padding = 0;
 
-describe('im2col', () => {
-    it('should correctly apply im2col operation on a single channel image with no padding and stride 1', async () => {
-        const image = tf.tensor4d([
-            [ [1], [2] ],
-            [ [3], [4] ]
-        ], [1, 2, 2, 1]);
+        const expectedOutput = tf.tensor2d([
+            [1, 2, 3, 5, 6, 7, 9, 10, 11],
+            [2, 3, 4, 6, 7, 8, 10, 11, 12],
+            [5, 6, 7, 9, 10, 11, 13, 14, 15],
+            [6, 7, 8, 10, 11, 12, 14, 15, 16]
+        ]);
 
-        const result = im2col(image, 2, 2);
+        const output = im2col(image, filterHeight, filterWidth, stride, padding);
 
-        expect(result.shape).toEqual([4, 1]);
-        await expect(result.data()).resolves.toEqual(new Float32Array([1, 2, 3, 4]));
+        expect(tf.util.arraysEqual(output.dataSync(), expectedOutput.dataSync())).toBe(true);
     });
 
-    it('should correctly apply im2col operation on a multi-channel image with padding and stride 2', async () => {
-        const image = tf.tensor4d([
-            [ [1, 2], [3, 4] ],
-            [ [5, 6], [7, 8] ]
-        ], [2, 2, 2, 1]);
+    it('test_single_channel_no_padding_stride_2', () => {
+        const image = tf.tensor3d([
+            [1, 2, 3, 4],
+            [5, 6, 7, 8],
+            [9, 10, 11, 12],
+            [13, 14, 15, 16]
+        ], [1, 4, 4]);
+        const filterHeight = 2;
+        const filterWidth = 2;
+        const stride = 2;
+        const padding = 0;
 
-        const result = im2col(image, 2, 2, 2, 1);
+        const expectedOutput = tf.tensor2d([
+            [1, 3, 9, 11],
+            [2, 4, 10, 12],
+            [5, 7, 13, 15],
+            [6, 8, 14, 16]
+        ]);
 
-        expect(result.shape).toEqual([9, 1]);
-        await expect(result.data()).resolves.toEqual(new Float32Array([0, 0, 0, 1, 2, 3, 4, 5, 6]));
+        const output = im2col(image, filterHeight, filterWidth, stride, padding);
+
+        expect(tf.util.arraysEqual(output.dataSync(), expectedOutput.dataSync())).toBe(true);
+    });
+
+    it('test_multi_channel_no_padding_stride_1', () => {
+        const image = tf.tensor3d([
+            [1, 2, 3],
+            [4, 5, 6],
+            [7, 8, 9],
+            [9, 8, 7],
+            [6, 5, 4],
+            [3, 2, 1]
+        ], [2, 3, 3]);
+        const filterHeight = 2;
+        const filterWidth = 2;
+        const stride = 1;
+        const padding = 0;
+
+        const expectedOutput = tf.tensor2d([
+            [1, 2, 4, 5],
+            [2, 3, 5, 6],
+            [4, 5, 7, 8],
+            [5, 6, 8, 9],
+            [9, 8, 6, 5],
+            [8, 7, 5, 4],
+            [6, 5, 3, 2],
+            [5, 4, 2, 1]
+        ]);
+
+        const output = im2col(image, filterHeight, filterWidth, stride, padding);
+
+        expect(tf.util.arraysEqual(output.dataSync(), expectedOutput.dataSync())).toBe(true);
     });
 });
 ```
 
-This TypeScript code uses TensorFlow.js for tensor operations and Jest for testing. The `im2col` function is assumed to be implemented in the same file or imported from another module. The tests check if the function works correctly with different inputs, including images with different numbers of channels, padding, and strides.
+### Explanation:
+1. **Imports**: We import `@tensorflow/tfjs` for tensor operations and the `im2col` function from another file.
+2. **Describe Block**: We use `describe` to group the tests under a common description.
+3. **It Blocks**: Each test case is defined using `it` blocks, which correspond to individual test functions.
+4. **Tensor Creation**: We create tensors using `tf.tensor3d` to represent the input images.
+5. **Expected Output**: We create tensors using `tf.tensor2d` to represent the expected output.
+6. **Assertions**: We use `tf.util.arraysEqual` to compare the data of the tensors. This method checks if two arrays are equal element-wise.
+7. **Data Synchronization**: We use `dataSync()` to get the underlying data arrays from the tensors for comparison.
+
+This TypeScript code preserves the functionality and logic of the original Python unittests while adapting them to Jest's testing framework.

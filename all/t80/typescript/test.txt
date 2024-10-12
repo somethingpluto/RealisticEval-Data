@@ -1,39 +1,116 @@
-Sure! Below is the equivalent TypeScript test case using Jest for the `sanitizeFilename` function:
+Certainly! Below is the equivalent Jest test class in TypeScript for the provided Python unittest class. The test cases are preserved, and the necessary type annotations and Jest assertions are included.
 
+### Python Code:
+```python
+import unittest
+
+def sanitize_filename(filename: str) -> str:
+    """
+    Remove illegal characters from Windows file path string.
+
+    Args:
+        filename (str): The original filename string to be sanitized.
+
+    Returns:
+        str: A sanitized string that is safe to use as a Windows filename.
+    """
+    illegal_chars_pattern = r'[<>:"/\\|?*\x00-\x1F]'
+    sanitized = re.sub(illegal_chars_pattern, '_', filename)
+    max_length = 255
+    if len(sanitized) > max_length:
+        sanitized = sanitized[:max_length]
+    return sanitized
+
+
+class TestSanitizeFilename(unittest.TestCase):
+
+    def test_valid_filename(self):
+        self.assertEqual(sanitize_filename("valid_filename.txt"), "valid_filename.txt")
+
+    def test_illegal_characters(self):
+        self.assertEqual(sanitize_filename("invalid<filename>.txt"), "invalid_filename_.txt")
+        self.assertEqual(sanitize_filename("file/name:with*illegal|chars?.txt"), "file_name_with_illegal_chars_.txt")
+
+    def test_long_filename(self):
+        long_filename = "a" * 300 + ".txt"
+        sanitized_filename = sanitize_filename(long_filename)
+        self.assertEqual(len(sanitized_filename), 255)
+        self.assertEqual(sanitized_filename, "a" * 255)
+
+    def test_empty_filename(self):
+        self.assertEqual(sanitize_filename(""), "")
+
+
+if __name__ == '__main__':
+    unittest.main()
+```
+
+### TypeScript Code with Jest Testing Framework:
+
+#### `sanitize-filename.ts`
 ```typescript
-import { sanitizeFilename } from './path-to-your-sanitize-filename-function'; // Adjust the import path accordingly
+import { replace } from 'lodash';
 
-describe('sanitizeFilename', () => {
-  it('should remove illegal characters from a Windows file path string', () => {
-    const filename = 'example<>"|?*:/\\filename.txt';
-    const expected = 'examplefilename.txt';
-    expect(sanitizeFilename(filename)).toBe(expected);
-  });
+/**
+ * Remove illegal characters from a Windows file path string.
+ * 
+ * @param {string} filename - The original filename string to be sanitized.
+ * @returns {string} A sanitized string that is safe to use as a Windows filename.
+ */
+function sanitizeFilename(filename: string): string {
+    const illegalCharsPattern = /[<>:"/\\|?*\x00-\x1F]/g;
+    let sanitized = filename.replace(illegalCharsPattern, '_');
+    const maxLength = 255;
+    if (sanitized.length > maxLength) {
+        sanitized = sanitized.substring(0, maxLength);
+    }
+    return sanitized;
+}
 
-  it('should handle filenames without illegal characters', () => {
-    const filename = 'valid-filename.txt';
-    const expected = 'valid-filename.txt';
-    expect(sanitizeFilename(filename)).toBe(expected);
-  });
+export default sanitizeFilename;
+```
 
-  it('should handle empty strings', () => {
-    const filename = '';
-    const expected = '';
-    expect(sanitizeFilename(filename)).toBe(expected);
-  });
+#### `test-sanitize-filename.ts`
+```typescript
+import sanitizeFilename from './sanitize-filename';
 
-  it('should handle filenames with spaces', () => {
-    const filename = 'file name.txt';
-    const expected = 'file name.txt';
-    expect(sanitizeFilename(filename)).toBe(expected);
-  });
+describe('TestSanitizeFilename', () => {
+    describe('test_valid_filename', () => {
+        it('should handle valid filenames correctly', () => {
+            expect(sanitizeFilename("valid_filename.txt")).toBe("valid_filename.txt");
+        });
+    });
+
+    describe('test_illegal_characters', () => {
+        it('should sanitize filenames with illegal characters', () => {
+            expect(sanitizeFilename("invalid<filename>.txt")).toBe("invalid_filename_.txt");
+            expect(sanitizeFilename("file/name:with*illegal|chars?.txt")).toBe("file_name_with_illegal_chars_.txt");
+        });
+    });
+
+    describe('test_long_filename', () => {
+        it('should truncate long filenames to 255 characters', () => {
+            const longFilename = "a".repeat(300) + ".txt";
+            const sanitizedFilename = sanitizeFilename(longFilename);
+            expect(sanitizedFilename.length).toBe(255);
+            expect(sanitizedFilename).toBe("a".repeat(255));
+        });
+    });
+
+    describe('test_empty_filename', () => {
+        it('should handle empty filenames correctly', () => {
+            expect(sanitizeFilename("")).toBe("");
+        });
+    });
 });
 ```
 
-In this example:
-- We import the `sanitizeFilename` function from the appropriate module.
-- We use `describe` to group related tests together.
-- We use `it` to define individual test cases.
-- We use `expect` to assert the expected behavior of the `sanitizeFilename` function.
+### Explanation:
+1. **Function Definition**: The `sanitizeFilename` function is defined with proper type annotations.
+2. **JSDoc Documentation**: The Python docstring is converted to JSDoc-style comments.
+3. **Regular Expression**: The illegal characters pattern is defined using a regular expression in TypeScript.
+4. **String Replacement**: The `replace` method is used to substitute illegal characters with an underscore.
+5. **Length Limitation**: If the sanitized string exceeds the maximum length (`maxLength`), it is truncated to fit within the limit.
+6. **Jest Testing Framework**: The test cases are written using Jest's `describe` and `it` blocks, with appropriate assertions (`toBe`).
 
-Make sure to adjust the import path (`./path-to-your-sanitize-filename-function`) to match where your `sanitizeFilename` function is located in your project.
+This TypeScript code preserves the original functionality and structure of the Python code while adhering to TypeScript and Jest conventions.

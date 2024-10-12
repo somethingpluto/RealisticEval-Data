@@ -1,87 +1,118 @@
-Certainly! Below is the equivalent C++ test case using Catch2 for your Python unittest test class. Note that Catch2 does not directly support testing functions that return `std::optional` or `std::variant`, so we'll assume the function returns a `std::optional<pd::DataFrame>` for error handling.
+Certainly! Below is the equivalent C++ test class using the Catch2 testing framework. We will convert the Python unittests into C++ tests using Catch2, ensuring that the functionality and logic of the tests are preserved.
 
-First, make sure you have Catch2 installed and set up in your project. You can install it via vcpkg or conan, or download it manually from [Catch2's GitHub repository](https://github.com/catchorg/Catch2).
-
-Here's how you might translate your Python test class to a C++ test case:
+### C++ Code
 
 ```cpp
-#include "catch.hpp"
-#include "pandas.h" // Assuming you have a header file for pandas-like operations
+#include <catch2/catch_test_macros.hpp>
 #include <fstream>
+#include <vector>
+#include <map>
 #include <string>
+#include <pugixml.hpp>
 
-// Mock implementation of xml_to_dataframe for demonstration purposes
-std::optional<pd::DataFrame> xml_to_dataframe(const std::string& xml_file) {
-    // Implement your XML parsing logic here
-    // For now, let's assume it always succeeds and returns an empty DataFrame
-    return pd::DataFrame();
-}
-
-TEST_CASE("XML to DataFrame Conversion", "[xml_to_dataframe]") {
-    SECTION("Valid XML File") {
-        std::string xml_content = R"(
-            <root>
-                <sequence id="1">
-                    <tag1>value1</tag1>
-                    <tag2>value2</tag2>
-                </sequence>
-                <sequence id="2">
-                    <tag1>value3</tag1>
-                    <tag2>value4</tag2>
-                </sequence>
-            </root>
-        )";
-
-        // Write the XML content to a temporary file
-        std::ofstream xml_file("temp.xml");
-        if (!xml_file.is_open()) {
-            FAIL("Failed to create temporary XML file");
-        }
-        xml_file << xml_content;
-        xml_file.close();
-
-        // Call the function under test
-        auto result = xml_to_dataframe("temp.xml");
-
-        // Clean up the temporary file
-        std::remove("temp.xml");
-
-        REQUIRE(result.has_value());
-        REQUIRE(result->size() == 2); // Assuming there are two sequences in the XML
+// Function to convert an XML file into a vector of maps
+std::vector<std::map<std::string, std::string>> xml_to_vector_of_maps(const std::string& xml_data) {
+    // Parse the XML data
+    pugi::xml_document doc;
+    if (!doc.load_buffer(xml_data.c_str(), xml_data.size())) {
+        std::cerr << "Failed to load XML data" << std::endl;
+        return {};
     }
 
-    SECTION("Invalid XML File") {
-        std::string invalid_xml_content = "<invalid></invalid>";
+    // Prepare a vector to hold all rows
+    std::vector<std::map<std::string, std::string>> rows;
 
-        // Write the invalid XML content to a temporary file
-        std::ofstream invalid_xml_file("temp_invalid.xml");
-        if (!invalid_xml_file.is_open()) {
-            FAIL("Failed to create temporary invalid XML file");
+    // Iterate over each <sequence> element in the XML data
+    for (pugi::xml_node sequence : doc.child("root").children("sequence")) {
+        std::map<std::string, std::string> row_data;
+
+        // Iterate over each child of the <sequence> element
+        for (pugi::xml_node child : sequence.children()) {
+            // Use the tag as the column name and the text content as the value
+            row_data[child.name()] = child.text().get();
         }
-        invalid_xml_file << invalid_xml_content;
-        invalid_xml_file.close();
 
-        // Call the function under test
-        auto result = xml_to_dataframe("temp_invalid.xml");
+        rows.push_back(row_data);
+    }
 
-        // Clean up the temporary file
-        std::remove("temp_invalid.xml");
+    return rows;
+}
 
-        REQUIRE(!result.has_value());
+TEST_CASE("Test XML to DataFrame conversion", "[xml_to_dataframe]") {
+    SECTION("Single sequence") {
+        const std::string xml_data = R"(<root>
+                                            <sequence>
+                                                <name>John</name>
+                                                <age>30</age>
+                                            </sequence>
+                                        </root>)";
+        auto result = xml_to_vector_of_maps(xml_data);
+        REQUIRE(result.size() == 1);
+        REQUIRE(result[0]["name"] == "John");
+        REQUIRE(result[0]["age"] == "30");
+    }
+
+    SECTION("Multiple sequences") {
+        const std::string xml_data = R"(<root>
+                                            <sequence>
+                                                <name>Alice</name>
+                                                <age>25</age>
+                                            </sequence>
+                                            <sequence>
+                                                <name>Bob</name>
+                                                <age>22</age>
+                                            </sequence>
+                                        </root>)";
+        auto result = xml_to_vector_of_maps(xml_data);
+        REQUIRE(result.size() == 2);
+        REQUIRE(result[0]["name"] == "Alice");
+        REQUIRE(result[0]["age"] == "25");
+        REQUIRE(result[1]["name"] == "Bob");
+        REQUIRE(result[1]["age"] == "22");
+    }
+
+    SECTION("Empty sequence") {
+        const std::string xml_data = R"(<root>
+                                            <sequence></sequence>
+                                        </root>)";
+        auto result = xml_to_vector_of_maps(xml_data);
+        REQUIRE(result.size() == 1);
+        REQUIRE(result[0].empty());
+    }
+
+    SECTION("Mixed content") {
+        const std::string xml_data = R"(<root>
+                                            <sequence>
+                                                <name>Chris</name>
+                                            </sequence>
+                                            <sequence>
+                                                <age>28</age>
+                                            </sequence>
+                                        </root>)";
+        auto result = xml_to_vector_of_maps(xml_data);
+        REQUIRE(result.size() == 2);
+        REQUIRE(result[0]["name"] == "Chris");
+        REQUIRE(!result[0].count("age"));
+        REQUIRE(!result[1].count("name"));
+        REQUIRE(result[1]["age"] == "28");
+    }
+
+    SECTION("No sequences") {
+        const std::string xml_data = R"(<root></root>)";
+        auto result = xml_to_vector_of_maps(xml_data);
+        REQUIRE(result.empty());
     }
 }
 ```
 
 ### Explanation:
+1. **Header Files**: Include necessary headers (`<catch2/catch_test_macros.hpp>`, `<fstream>`, `<vector>`, `<map>`, `<string>`, `<pugixml.hpp>`).
+2. **Function Definition**: Define a function `xml_to_vector_of_maps` that takes the XML data as a string and returns a vector of maps.
+3. **Documentation**: Use comments to describe the purpose of the function.
+4. **XML Parsing**: Use `pugixml` to parse the XML data.
+5. **Data Structure**: Use a `std::vector<std::map<std::string, std::string>>` to store the data.
+6. **Iterating Over Elements**: Iterate over `<sequence>` elements and their children to populate the map.
+7. **Catch2 Tests**: Use the `TEST_CASE` and `SECTION` macros to define test cases and sections.
+8. **Assertions**: Use `REQUIRE` to assert the correctness of the results.
 
-1. **Mock Implementation**: The `xml_to_dataframe` function is mocked to always succeed and return an empty DataFrame. In a real-world scenario, you would replace this with actual XML parsing logic.
-
-2. **Temporary Files**: We create temporary XML files to simulate input for the function. After running the tests, we clean up these files.
-
-3. **Catch2 Test Cases**:
-   - `SECTION("Valid XML File")`: Tests the function with valid XML data.
-   - `SECTION("Invalid XML File")`: Tests the function with invalid XML data to ensure it handles errors gracefully.
-
-4. **Assertions**: We use Catch2's `REQUIRE` macro to assert conditions such as the presence of a value and the size of the DataFrame.
-
-Make sure to include the appropriate headers and link against the Catch2 library when compiling your C++ code.
+This code preserves the original purpose and structure of the Python unittests while adapting them to C++ conventions and the Catch2 testing framework.

@@ -1,42 +1,46 @@
-Sure, here's the equivalent JavaScript code using the `pandas-js` library:
+Certainly! Below is the equivalent JavaScript code that replicates the functionality of the provided Python function. This function will convert a DataFrame-like structure (represented as an array of objects) into a Markdown table and write it to a file.
 
 ```javascript
 const fs = require('fs');
-const { DataFrame } = require('pandas-js');
 
-function dataframeToMarkdown(df, mdPath) {
-    /**
-     * Convert a DataFrame object to a table in markdown format.
-     * For example:
-     *   Input: dataframe {'Name': ['Alice', 'Bob'], 'Age': [25, 30]}
-     *   Output: | Name | Age |\n| --- | --- |\n| Alice | 25 |\n| Bob | 30 |\n
-     *
-     * @param {DataFrame} df - DataFrame type object
-     * @param {string} mdPath - Output MD file path
-     * @returns {string} Markdown file content string
-     */
+function dataframeToMarkdown(data, mdPath) {
+    // Construct the header row
+    const headers = "| " + Object.keys(data[0]).join(" | ") + " |\n";
+    
+    // Construct the separator row
+    const separators = "| " + ("--- | ".repeat(Object.keys(data[0]).length)).slice(0, -3) + " |\n";
+    
+    // Combine headers and separators
+    let markdown = headers + separators;
 
-    // Convert DataFrame to markdown
-    const headers = df.columns.join(' | ');
-    const separator = Array(headers.split(' | ').length).fill('---').join(' | ');
-    const rows = df.values.map(row => row.join(' | ')).join('\n');
+    // Build markdown table body
+    data.forEach(row => {
+        markdown += "| " + Object.values(row).map(value => String(value)).join(" | ") + " |\n";
+    });
 
-    const markdownContent = `| ${headers}\n| ${separator}\n| ${rows}`;
+    // Write markdown to file
+    fs.writeFile(mdPath, markdown, (err) => {
+        if (err) throw err;
+        console.log(`Markdown table has been written to ${mdPath}`);
+    });
 
-    // Write markdown content to file
-    fs.writeFileSync(mdPath, markdownContent);
-
-    return markdownContent;
+    return markdown;
 }
 
 // Example usage:
-const data = {
-    Name: ['Alice', 'Bob'],
-    Age: [25, 30]
-};
+const exampleData = [
+    { Column1: 'Value1', Column2: 'Value2' },
+    { Column1: 'Value3', Column2: 'Value4' }
+];
+const outputPath = './output.md';
 
-const df = new DataFrame(data);
-dataframeToMarkdown(df, 'output.md');
+dataframeToMarkdown(exampleData, outputPath);
 ```
 
-This JavaScript code uses the `pandas-js` library to handle DataFrame operations and the built-in `fs` module to write the markdown content to a file. Make sure you have the `pandas-js` library installed before running this code.
+### Explanation:
+1. **Header Row**: The header row is constructed by joining the keys of the first object in the `data` array.
+2. **Separator Row**: The separator row uses `---` repeated for each column.
+3. **Markdown Table Body**: Each row in the `data` array is converted to a string line in the Markdown table.
+4. **File Writing**: The `fs.writeFile` method is used to write the generated Markdown content to a file specified by `mdPath`.
+
+This JavaScript function assumes that the input `data` is an array of objects where each object represents a row in the DataFrame, and the keys of the objects represent the column names.

@@ -1,73 +1,105 @@
-Sure, here's how you can convert the Python function `rename_files` into C++ code. This version of the function assumes that the directory contains only PNG files and that the directory exists.
+Here’s the equivalent C++ code that maintains the same functionality, logic, and structure as the provided Python code:
 
 ```cpp
 #include <iostream>
-#include <fstream>
+#include <filesystem>
+#include <regex>
 #include <vector>
-#include <algorithm>
 #include <string>
-#include <dirent.h>
 
-void renameFiles(const std::string& directory) {
-    DIR* dir;
-    struct dirent* ent;
-    if ((dir = opendir(directory.c_str())) != NULL) {
-        // Collect all PNG files
-        std::vector<std::string> pngFiles;
-        while ((ent = readdir(dir)) != NULL) {
-            std::string fileName(ent->d_name);
-            if (fileName.substr(fileName.length() - 4) == ".png") {
-                pngFiles.push_back(fileName);
-            }
+namespace fs = std::filesystem;
+
+void rename_files(const std::string& directory) {
+    // Convert directory to Path object for easier handling
+    fs::path dir_path(directory);
+
+    if (!fs::exists(dir_path) || !fs::is_directory(dir_path)) {
+        throw std::invalid_argument("The directory '" + directory + "' does not exist or is not a directory.");
+    }
+
+    // Get list of PNG files in the directory
+    std::vector<fs::path> png_files;
+    for (const auto& entry : fs::directory_iterator(dir_path)) {
+        if (entry.is_regular_file() && entry.path().extension() == ".png") {
+            png_files.push_back(entry.path());
+        }
+    }
+
+    // Sort files alphabetically by their names
+    std::sort(png_files.begin(), png_files.end());
+
+    // Print the sorted list of files (for debugging)
+    std::cout << "Sorted files:" << std::endl;
+    for (const auto& file : png_files) {
+        std::cout << file.filename().string() << std::endl;
+    }
+
+    // Rename files with sequence numbers
+    std::string prev_base_name;
+    int count = 1;
+
+    std::regex re_pattern(R"((\d{3})(-\d)?(?=\.png$))");
+
+    for (const auto& file : png_files) {
+        // Extract base name without postfix and number
+        std::string base_name = std::regex_replace(file.stem().string(), re_pattern, "");
+
+        if (base_name != prev_base_name) {
+            count = 1;
         }
 
-        // Sort the PNG files alphabetically
-        std::sort(pngFiles.begin(), pngFiles.end());
+        std::string new_filename = base_name + std::to_string(count).substr(1, 3) + ".png";
+        fs::path new_file_path = file.parent_path() / new_filename;
+        fs::rename(file, new_file_path);
+        std::cout << "Renaming " << file.filename().string() << " to " << new_filename << std::endl;
 
-        // Rename files
-        int counter = 1001; // Start from 1001 as per your requirement
-        for (const auto& fileName : pngFiles) {
-            std::string oldPath = directory + "/" + fileName;
-            std::string newPath = directory + "/image" + std::to_string(counter++) + ".png";
-
-            if (std::rename(oldPath.c_str(), newPath.c_str()) != 0) {
-                perror("Error renaming file");
-            }
-        }
-
-        closedir(dir);
-    } else {
-        perror("Could not open directory");
+        prev_base_name = base_name;
+        ++count;
     }
 }
 
 int main() {
-    std::string directory = "/path/to/your/directory"; // Replace with your directory path
-    renameFiles(directory);
+    try {
+        rename_files("/path/to/directory");
+    } catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+    }
+
     return 0;
 }
 ```
 
 ### Explanation:
+1. **Header Files**: 
+   - `#include <iostream>` for input/output operations.
+   - `#include <filesystem>` for filesystem operations.
+   - `#include <regex>` for regular expressions.
+   - `#include <vector>` for using vectors.
+   - `#include <string>` for string operations.
 
-1. **Include Necessary Headers**: We include necessary headers like `<iostream>` for input/output operations, `<fstream>` for file handling, `<vector>` for storing file names, `<algorithm>` for sorting, `<string>` for string manipulation, and `<dirent.h>` for directory operations.
+2. **Namespace**: 
+   - `namespace fs = std::filesystem;` to simplify filesystem operations.
 
-2. **Function Definition**: The `renameFiles` function takes a directory path as an argument.
+3. **Function Definition**:
+   - `rename_files` function takes a directory path as a parameter and performs the renaming operation.
 
-3. **Directory Reading**:
-   - We use `opendir` to open the directory.
-   - We iterate through the directory entries using `readdir`.
-   - We collect all `.png` files into a vector.
+4. **Directory Validation**:
+   - Checks if the directory exists and is a valid directory.
 
-4. **Sorting**:
-   - We sort the vector of PNG file names alphabetically using `std::sort`.
+5. **File List Creation**:
+   - Iterates over the directory to find all PNG files and stores them in a vector.
 
-5. **Renaming Files**:
-   - We iterate over the sorted list of PNG files.
-   - We construct new file paths by appending a sequence number starting from 1001.
-   - We use `std::rename` to rename the files.
+6. **Sorting Files**:
+   - Sorts the PNG files alphabetically.
 
-6. **Main Function**:
-   - In the `main` function, we specify the directory path and call the `renameFiles` function.
+7. **Printing Sorted Files**:
+   - Prints the sorted list of files for debugging purposes.
 
-Make sure to replace `"/path/to/your/directory"` with the actual path to your directory containing the PNG files.
+8. **Renaming Files**:
+   - Uses regular expressions to extract the base name and appends a sequence number to it.
+   - Renames the files accordingly.
+
+9. **Main Function**:
+   - Calls the `rename_files` function with the directory path and handles exceptions.
+
+This C++ code should provide the same functionality as the original Python code.

@@ -1,31 +1,126 @@
-To convert the given Python unittest test class to a TypeScript test case using Jest, you need to follow these steps:
+Certainly! Here is the equivalent TypeScript code using Jest for the provided Python unittest test class. The tests will be converted to use Jest's mocking and assertion functions.
 
-1. Install Jest if you haven't already. You can do this by running `npm install --save-dev jest`.
-2. Create a new TypeScript file for your tests, e.g., `readLog.test.ts`.
-3. Write the equivalent Jest test cases in TypeScript.
+### TypeScript Code
 
-Here's an example of how you might write the Jest test cases for the `read_log` function:
+First, ensure you have the necessary imports and setup for Jest:
 
 ```typescript
-import { read_log } from './path-to-your-read-log-file'; // Adjust the import path accordingly
+import fs from 'fs';
+import { parse } from 'json5';
 
-describe('read_log', () => {
-  it('should return empty arrays when the log file is empty', async () => {
-    const logFilePath = 'path/to/empty/logfile.log';
-    const [trainLossList, testAcc1List] = await read_log(logFilePath);
-    expect(trainLossList).toEqual([]);
-    expect(testAcc1List).toEqual([]);
-  });
+/**
+ * Reads a log file containing JSON entries and extracts training loss and test accuracy.
+ * JSON entries such as {"test_acc1": 88.5, "train_loss": 0.75}.
+ * 
+ * @param logFilePath - The path to the log file to be read.
+ * @returns A tuple containing two lists:
+ *   - trainLossList: A list of training loss values extracted from the log.
+ *   - testAcc1List: A list of test accuracy values extracted from the log.
+ */
+function readLog(logFilePath: string): [number[], number[]] {
+    try {
+        const fileContent = fs.readFileSync(logFilePath, 'utf8');
+        const lines = fileContent.split('\n');
 
-  it('should correctly extract training loss and test accuracy from the log file', async () => {
-    const logFilePath = 'path/to/logfile.log'; // Adjust the path to your actual log file
-    const [trainLossList, testAcc1List] = await read_log(logFilePath);
+        let dataEntries: any[] = [];
+        for (const line of lines) {
+            try {
+                dataEntries.push(JSON.parse(line));
+            } catch (error) {
+                console.error(`Error: The file ${logFilePath} contains invalid JSON.`);
+                return [[], []];
+            }
+        }
 
-    // Assuming the log file contains at least one entry like {"test_acc1": 88.5, "train_loss": 0.75}
-    expect(trainLossList).toContain(0.75);
-    expect(testAcc1List).toContain(88.5);
-  });
+        // Using optional chaining to handle missing keys
+        const trainLossList = dataEntries.filter(entry => 'train_loss' in entry).map(entry => entry.train_loss);
+        const testAcc1List = dataEntries.filter(entry => 'test_acc1' in entry).map(entry => entry.test_acc1);
+
+        return [trainLossList, testAcc1List];
+    } catch (error) {
+        if (error.code === 'ENOENT') {
+            console.error(`Error: The file ${logFilePath} does not exist.`);
+        } else {
+            console.error(`An unexpected error occurred: ${error.message}`);
+        }
+        return [[], []];
+    }
+}
+
+// Example usage
+const logFilePath = '/path/to/log/file.log';
+const [trainLossList, testAcc1List] = readLog(logFilePath);
+console.log('Train Loss List:', trainLossList);
+console.log('Test Acc1 List:', testAcc1List);
+
+// Jest Test Suite
+describe('TestReadLog', () => {
+    beforeEach(() => {
+        jest.resetModules();
+    });
+
+    it('test_read_correct_data', () => {
+        const mockFileContent = '{"test_acc1": 88.5, "train_loss": 0.75}\n{"test_acc1": 89.0, "train_loss": 0.70}';
+        jest.spyOn(fs, 'readFileSync').mockImplementation(() => mockFileContent);
+
+        const [trainLoss, testAcc1] = readLog('dummy_path.json');
+        expect(trainLoss).toEqual([0.75, 0.70]);
+        expect(testAcc1).toEqual([88.5, 89.0]);
+    });
+
+    it('test_read_correct_data_single', () => {
+        const mockFileContent = '{"test_acc1": 88.5, "train_loss": 0.75}';
+        jest.spyOn(fs, 'readFileSync').mockImplementation(() => mockFileContent);
+
+        const [trainLoss, testAcc1] = readLog('dummy_path.json');
+        expect(trainLoss).toEqual([0.75]);
+        expect(testAcc1).toEqual([88.5]);
+    });
+
+    it('test_empty_file', () => {
+        const mockFileContent = '';
+        jest.spyOn(fs, 'readFileSync').mockImplementation(() => mockFileContent);
+
+        const [trainLoss, testAcc1] = readLog('empty_file.json');
+        expect(trainLoss).toEqual([]);
+        expect(testAcc1).toEqual([]);
+    });
+
+    it('test_partial_data_entries', () => {
+        const mockFileContent = '{"test_acc1": 88.5, "train_loss": 0.75}\n{"test_acc1": 90.0,"train_loss": 0.75,"f1":0.91}';
+        jest.spyOn(fs, 'readFileSync').mockImplementation(() => mockFileContent);
+
+        const [trainLoss, testAcc1] = readLog('partial_data_file.json');
+        expect(trainLoss).toEqual([0.75, 0.75]);
+        expect(testAcc1).toEqual([88.5, 90.0]);
+    });
 });
 ```
 
-Make sure to adjust the import statement and the paths according to your project structure. This example assumes that the `read_log` function returns a promise, which is typical for asynchronous operations in Node.js or any other environment where asynchronous I/O is used. If your `read_log` function does not return a promise, you will need to modify the test cases accordingly.
+### Explanation:
+1. **Imports**:
+   - Import `fs` and `parse` from `json5` for file operations and JSON parsing.
+   - Import Jest for testing.
+
+2. **Function Definition**:
+   - The `readLog` function is defined with proper type annotations and logic.
+
+3. **Jest Test Suite**:
+   - The `describe` block sets up the test suite named `TestReadLog`.
+   - Each `it` block defines a specific test case.
+   - `beforeEach` resets Jest modules before each test to avoid side effects.
+
+4. **Mocking `fs.readFileSync`**:
+   - Use `jest.spyOn` to mock `fs.readFileSync` and provide custom implementation for each test case.
+
+5. **Assertions**:
+   - Use `expect` to assert the expected results.
+
+### Running the Tests
+To run the tests, you can use the following command in your project directory:
+
+```sh
+npm test
+```
+
+This setup ensures that the tests are equivalent to the Python unittest tests, with proper Jest assertions and mocking.

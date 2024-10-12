@@ -1,85 +1,105 @@
-To convert the provided Python unittest test class into a Java JUnit test case, you need to create a Java class that uses JUnit annotations and methods. Below is an example of how you can achieve this for the `Tester` class in the `org.real.temp` package.
+Certainly! Here is the equivalent Java test class using JUnit, placed in the package `org.real.temp` and named `Tester`. This Java test class will capture the standard output and perform assertions similar to the Python unittest class.
 
-First, ensure you have the JUnit library included in your project. If you're using Maven, add the following dependency to your `pom.xml`:
-
-```xml
-<dependency>
-    <groupId>org.junit.jupiter</groupId>
-    <artifactId>junit-jupiter-api</artifactId>
-    <version>5.8.1</version>
-    <scope>test</scope>
-</dependency>
-```
-
-Now, here's the equivalent Java JUnit test case:
+### Java Code
 
 ```java
 package org.real.temp;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+/**
+ * Test class for verifying the correctness of the printMemoryBits method.
+ */
 public class Tester {
 
+    private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+
+    @BeforeEach
+    public void setUp() {
+        // Redirect System.out to capture the output
+        System.setOut(new PrintStream(outContent));
+    }
+
+    @AfterEach
+    public void tearDown() {
+        // Restore the normal System.out
+        System.setOut(System.out);
+    }
+
     @Test
-    public void testPrintMemoryBitsSingleByte() {
-        byte[] memorySection = {0b10101010};
+    public void testSingleByte() {
+        byte[] memorySection = new byte[]{(byte) 0b10101010};
+        printMemoryBits(memorySection);
+        String output = outContent.toString().trim();
         String expectedOutput = "10101010";
-        assertEquals(expectedOutput, printMemoryBits(memorySection));
+        assertEquals(expectedOutput, output);
     }
 
     @Test
-    public void testPrintMemoryBitsMultipleBytes() {
-        byte[] memorySection = {0b11001100, 0b11110000};
+    public void testMultipleBytes() {
+        byte[] memorySection = new byte[]{(byte) 0b11001100, (byte) 0b11110000};
+        printMemoryBits(memorySection);
+        String output = outContent.toString().trim();
         String expectedOutput = "11001100\n11110000";
-        assertEquals(expectedOutput, printMemoryBits(memorySection));
+        assertEquals(expectedOutput, output);
     }
 
     @Test
-    public void testPrintMemoryBitsEmptyArray() {
-        byte[] memorySection = {};
-        String expectedOutput = "";
-        assertEquals(expectedOutput, printMemoryBits(memorySection));
+    public void testAllZeros() {
+        byte[] memorySection = new byte[]{(byte) 0b00000000};
+        printMemoryBits(memorySection);
+        String output = outContent.toString().trim();
+        String expectedOutput = "00000000";
+        assertEquals(expectedOutput, output);
     }
 
     @Test
-    public void testPrintMemoryBitsNullInput() {
-        assertThrows(NullPointerException.class, () -> printMemoryBits(null));
+    public void testAllOnes() {
+        byte[] memorySection = new byte[]{(byte) 0b11111111};
+        printMemoryBits(memorySection);
+        String output = outContent.toString().trim();
+        String expectedOutput = "11111111";
+        assertEquals(expectedOutput, output);
     }
 
-    private String printMemoryBits(byte[] memorySection) {
-        if (memorySection == null) {
-            throw new NullPointerException("Memory section cannot be null");
-        }
-        
-        StringBuilder result = new StringBuilder();
+    /**
+     * Prints the status of each bit (0 or 1) in the given section of memory.
+     *
+     * @param memorySection A byte array representing the section of memory to be read.
+     */
+    public static void printMemoryBits(byte[] memorySection) {
         for (byte b : memorySection) {
-            result.append(String.format("%8s", Integer.toBinaryString(b & 0xFF)).replace(' ', '0'));
-            if (result.length() > 8) {
-                result.append('\n');
+            for (int i = 7; i >= 0; i--) {
+                int bit = (b >> i) & 1;
+                System.out.print(bit);
             }
+            System.out.println(); // Move to the next line after printing all bits of a byte
         }
-        return result.toString().trim();
     }
 }
 ```
 
 ### Explanation:
+1. **JUnit Annotations**:
+   - `@BeforeEach`: Used to set up the test environment before each test.
+   - `@AfterEach`: Used to clean up the test environment after each test.
+   - `@Test`: Used to mark test methods.
 
-1. **Annotations**:
-   - `@Test`: This annotation marks the method as a test method.
-   - `assertThrows`: This assertion checks if the specified exception is thrown when the lambda expression is executed.
-
-2. **Method Implementation**:
-   - The `printMemoryBits` method is implemented in Java. It handles the conversion of bytes to binary strings and formats them according to the requirements.
-   - The method throws a `NullPointerException` if the input array is `null`.
+2. **Capturing Standard Output**:
+   - `ByteArrayOutputStream` is used to capture the standard output.
+   - `System.setOut(new PrintStream(outContent))` redirects `System.out` to the `ByteArrayOutputStream`.
 
 3. **Test Methods**:
-   - `testPrintMemoryBitsSingleByte`: Tests the method with a single byte.
-   - `testPrintMemoryBitsMultipleBytes`: Tests the method with multiple bytes.
-   - `testPrintMemoryBitsEmptyArray`: Tests the method with an empty array.
-   - `testPrintMemoryBitsNullInput`: Tests the method with a `null` input to ensure it throws the correct exception.
+   - Each test method performs the necessary setup, calls the `printMemoryBits` method, captures the output, and asserts the expected result using `assertEquals`.
 
-This Java JUnit test case should cover the same functionality as your original Python unittest test class.
+4. **Method Definition**:
+   - The `printMemoryBits` method is defined within the test class for convenience. It can also be moved to a separate utility class if needed.
+
+This Java code preserves the original functionality and structure of the Python unittest class while adhering to JUnit conventions and best practices.

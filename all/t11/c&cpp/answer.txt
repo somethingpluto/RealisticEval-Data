@@ -1,83 +1,116 @@
-Sure! Below is the equivalent implementation of the Python `Trie` and `TrieNode` classes in C++.
-
-### C++ Code
+Here's the equivalent C++ code for the given Python Trie implementation:
 
 ```cpp
+#include <iostream>
 #include <unordered_map>
 #include <string>
 
+// TrieNode class
 class TrieNode {
 public:
-    // Using an unordered map to store children
     std::unordered_map<char, TrieNode*> children;
+    bool is_end_of_word;
 
-    // Constructor
-    TrieNode() {}
+    TrieNode() : is_end_of_word(false) {}
+
+    bool has_child(char ch) {
+        return children.find(ch) != children.end();
+    }
+
+    TrieNode* get_child(char ch) {
+        return children[ch];
+    }
+
+    void add_child(char ch) {
+        if (!has_child(ch)) {
+            children[ch] = new TrieNode();
+        }
+    }
+
+    void set_end_of_word() {
+        is_end_of_word = true;
+    }
+
+    bool is_end() const {
+        return is_end_of_word;
+    }
+
+    ~TrieNode() {
+        for (auto& child : children) {
+            delete child.second;
+        }
+    }
 };
 
+// Trie class
 class Trie {
 public:
     TrieNode* root;
 
-    // Constructor
-    Trie() {
-        root = new TrieNode();
-    }
+    Trie() : root(new TrieNode()) {}
 
-    // Method to insert a word into the Trie
     void insert(const std::string& word) {
         TrieNode* current = root;
         for (char ch : word) {
-            if (current->children.find(ch) == current->children.end()) {
-                current->children[ch] = new TrieNode();
-            }
-            current = current->children[ch];
+            current->add_child(ch);
+            current = current->get_child(ch);
         }
+        current->set_end_of_word();
     }
 
-    // Method to search for a word in the Trie
     bool search(const std::string& word) {
         TrieNode* current = root;
         for (char ch : word) {
-            if (current->children.find(ch) == current->children.end()) {
-                return false; // Not found
+            if (!current->has_child(ch)) {
+                return false;
             }
-            current = current->children[ch];
+            current = current->get_child(ch);
         }
-        return true; // Found
+        return current->is_end();
     }
 
-    // Method to check if any word in the Trie starts with the given prefix
     bool starts_with(const std::string& prefix) {
         TrieNode* current = root;
         for (char ch : prefix) {
-            if (current->children.find(ch) == current->children.end()) {
-                return false; // No such prefix
+            if (!current->has_child(ch)) {
+                return false;
             }
-            current = current->children[ch];
+            current = current->get_child(ch);
         }
-        return true; // Prefix found
+        return true;
     }
 
-    // Destructor to clean up memory
     ~Trie() {
-        deleteTrie(root);
-    }
-
-private:
-    // Helper function to delete the Trie nodes
-    void deleteTrie(TrieNode* node) {
-        for (auto& pair : node->children) {
-            deleteTrie(pair.second);
-        }
-        delete node;
+        delete root;
     }
 };
+
+int main() {
+    // Example usage
+    Trie trie;
+    trie.insert("apple");
+    trie.insert("app");
+    trie.insert("banana");
+
+    std::cout << "Search 'apple': " << trie.search("apple") << std::endl;
+    std::cout << "Starts with 'app': " << trie.starts_with("app") << std::endl;
+    std::cout << "Search 'ban': " << trie.search("ban") << std::endl;
+
+    return 0;
+}
 ```
 
-### Explanation
-- **TrieNode Class**: This class represents a single node in the Trie, storing its children using an unordered map.
-- **Trie Class**: This class manages the Trie structure. It provides methods for inserting words, searching for words, and checking for prefixes.
-- **Memory Management**: The destructor cleans up the allocated memory to prevent memory leaks. 
+### Explanation:
+1. **TrieNode Class**:
+   - `std::unordered_map<char, TrieNode*>` is used to store children nodes.
+   - Methods like `has_child`, `get_child`, `add_child`, `set_end_of_word`, and `is_end` are implemented similarly to the Python version.
 
-You can now use this implementation in your C++ projects. Let me know if you need further modifications!
+2. **Trie Class**:
+   - The `root` node is initialized using a `new TrieNode()` constructor.
+   - Methods like `insert`, `search`, and `starts_with` are implemented similarly to the Python version.
+   - Destructor is added to properly clean up dynamically allocated nodes.
+
+3. **Main Function**:
+   - Example usage of the Trie class is shown in the `main` function.
+
+This C++ code maintains the same functionality and logic as the original Python code but adapts to C++ syntax and features.

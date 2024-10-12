@@ -1,37 +1,110 @@
-Here's how you can write the equivalent C++ code for the provided Python code:
+Certainly! Below is the equivalent C++ code that preserves the functionality and structure of the provided Python code, including comments and documentation standards.
+
+### Python Code:
+```python
+import json
+
+class BitSequenceEncoder(json.JSONEncoder):
+    """
+    Write a JSON decoding class that inherits from json.JSONEncoder. When encoding question into json format,
+    the main functional bits of this class specifically handle keys identified as 'bits', and convert them to binary form
+    if their value is an integer.
+    For example 'bits': 255 after encoder becomes "bits": "11111111".
+    """
+
+    def encode(self, obj):
+        pass
+```
+
+### Equivalent C++ Code:
 
 ```cpp
-#include <json/json.h>
+#include <iostream>
 #include <string>
+#include <unordered_map>
+#include <nlohmann/json.hpp>
 
-class BitSequenceEncoder : public Json::StreamWriterBuilder {
+using json = nlohmann::json;
+
+/**
+ * Write a JSON encoding class that inherits from nlohmann::json::json. When encoding objects into JSON format,
+ * this class specifically handles keys identified as "bits" and converts them to binary form if their value is an integer.
+ * For example, {"bits": 255} after encoding becomes {"bits": "11111111"}.
+ */
+class BitSequenceEncoder {
 public:
-    // Override the newJsonStream method to provide custom behavior during serialization.
-    virtual std::unique_ptr<Json::StreamWriter> newStreamWriter() const override {
-        return std::unique_ptr<Json::StreamWriter>(new CustomStreamWriter);
+    /**
+     * Encode the given JSON object.
+     *
+     * @param obj The JSON object to encode.
+     * @return The encoded JSON string.
+     */
+    std::string encode(const json& obj) const {
+        auto converted_obj = convert_bits(obj);
+        return converted_obj.dump();
     }
 
 private:
-    class CustomStreamWriter : public Json::StreamWriter {
-    public:
-        // Override the write method to provide custom behavior when writing values.
-        void write(const Json::Value& root) override {
-            // Your custom logic here...
-            // For example, you might iterate over all elements in the JSON object,
-            // check if they are integers under the 'bits' key, and then convert them to binary.
-
-            Json::StreamWriterBuilder builder;
-            builder["commentStyle"] = "None";
-            builder["indentation"] = "\t";
-            std::unique_ptr<Json::StreamWriter> writer(builder.newStreamWriter());
-            writer->write(root, &std::cout);
+    /**
+     * Helper function to convert bits to binary string.
+     *
+     * @param item The JSON item to process.
+     * @return The processed JSON item.
+     */
+    json convert_bits(const json& item) const {
+        if (item.is_object()) {
+            json result;
+            for (auto it = item.begin(); it != item.end(); ++it) {
+                const std::string& key = it.key();
+                const json& value = it.value();
+                if (key == "bits") {
+                    result[key] = format_binary(value);
+                } else {
+                    result[key] = convert_bits(value);
+                }
+            }
+            return result;
         }
-    };
+        return item;
+    }
+
+    /**
+     * Format the integer value as an 8-bit binary string.
+     *
+     * @param value The JSON value to format.
+     * @return The formatted binary string.
+     */
+    std::string format_binary(const json& value) const {
+        int intValue = value.get<int>();
+        return fmt::format("{:08b}", intValue);
+    }
 };
+
+int main() {
+    // Example usage
+    json obj = {
+        {"name", "example"},
+        {"bits", 13}
+    };
+
+    BitSequenceEncoder encoder;
+    std::string encoded_json = encoder.encode(obj);
+
+    std::cout << "Encoded JSON: " << encoded_json << std::endl;
+
+    return 0;
+}
 ```
 
-In this C++ code, we define a `BitSequenceEncoder` class that inherits from `Json::StreamWriterBuilder`. We override the `newStreamWriter` method to return a new instance of our custom `CustomStreamWriter` class.
+### Explanation:
+1. **Headers**: We include the necessary headers and use `nlohmann::json` for JSON handling.
+2. **Class Definition**: We define a `BitSequenceEncoder` class that overrides the `encode` method to convert specific fields to binary representation.
+3. **Helper Functions**:
+   - `convert_bits`: Recursively processes the JSON object and converts the `"bits"` field to an 8-bit binary string.
+   - `format_binary`: Formats an integer value as an 8-bit binary string.
+4. **Comments and Documentation**:
+   - Multi-line comments (`/* ... */`) are used for class and function documentation.
+   - Single-line comments (`//`) are used for inline comments.
+5. **Main Function**: Demonstrates how to use the `BitSequenceEncoder` class to encode a sample JSON object.
 
-The `CustomStreamWriter` class overrides the `write` method to provide custom behavior when writing values. In this case, you would add your own logic to handle the 'bits' key and convert its integer value to binary before writing it out.
-
-Note: This C++ code assumes that you have the RapidJSON library installed and properly configured in your project.
+This C++ code should provide the same functionality as the original Python code, converting specific fields to binary representation when encoding JSON.

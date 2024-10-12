@@ -1,41 +1,56 @@
-Sure, here's how you can translate your Python code to TypeScript:
+Sure! Here is the equivalent TypeScript code for the provided Python code:
 
 ```typescript
-import { JSONEncoder } from 'json';
+import { JSONEncoder, JSON } from 'json-js';
 
 class BitSequenceEncoder extends JSONEncoder {
     /**
-     * Write a JSON decoding class that inherits from JSONEncoder. When encoding question into json format, 
-     * the main functional bits of this class specifically handle keys identified as bits, and convert them 
-     * to binary form if their value is an integer. For example 'bits': 255 after encoder "bits": "11111111"
+     * Class to override the default JSON encoder to show register values in binary.
+     * Note: This class was generated based on a Python implementation created using ChatGPT-4o on July 15, 24.
+     * It might behave unexpectedly.
      */
-
-    public encode(obj: any): string {
-        // Convert the object to a string
-        let jsonString = super.encode(obj);
-
-        // Parse the JSON string back into an object
-        let jsonObj = JSON.parse(jsonString);
-
-        // Iterate through each key in the object
-        for (let key in jsonObj) {
-            if (typeof jsonObj[key] === 'number' && !isNaN(Number(key))) {
-                // If the key is numeric, convert it to binary
-                jsonObj[key] = jsonObj[key].toString(2);
+    encode(obj: any): string {
+        const convertBits = (item: any): any => {
+            if (typeof item === 'object' && item !== null && !Array.isArray(item)) {
+                return Object.fromEntries(
+                    Object.entries(item).map(([k, v]) => [
+                        k,
+                        k === 'bits' ? v.toString(2).padStart(8, '0') : convertBits(v),
+                    ])
+                );
             }
-        }
+            return item;
+        };
 
-        // Convert the modified object back to a JSON string
-        return JSON.stringify(jsonObj);
+        const convertedObj = convertBits(obj);
+        return super.encode(convertedObj);
     }
 }
+
+// Example usage:
+const encoder = new BitSequenceEncoder();
+const obj = {
+    name: 'example',
+    bits: 255,
+    other: {
+        bits: 128,
+        nested: {
+            bits: 64,
+        },
+    },
+};
+
+const jsonString = encoder.encode(obj);
+console.log(jsonString);
 ```
 
-In this TypeScript version:
-- The `BitSequenceEncoder` class extends `JSONEncoder`.
-- The `encode` method first converts the input object to a JSON string using the parent class's `encode` method.
-- It then parses this JSON string back into an object.
-- It iterates through each property in the object. If the property is a number and its name is numeric, it converts the number to a binary string.
-- Finally, it converts the modified object back to a JSON string.
+### Explanation:
+1. **Import Statement**: The `JSONEncoder` and `JSON` classes are imported from the `json-js` package, which provides similar functionality to Python's `json` module.
 
-Note: TypeScript does not have a built-in `JSONEncoder` class like Python, so we use the standard `JSON` module for encoding and decoding.
+2. **Class Definition**: The `BitSequenceEncoder` class extends `JSONEncoder`.
+
+3. **Encode Method**: The `encode` method overrides the default `encode` method of `JSONEncoder`. It includes a helper function `convertBits` to recursively convert objects with a `'bits'` key to their binary representation.
+
+4. **Example Usage**: An example usage is provided at the end to demonstrate how to use the `BitSequenceEncoder` class.
+
+This TypeScript code maintains the same functionality as the Python code, converting dictionary items with a `'bits'` key to their binary representation.

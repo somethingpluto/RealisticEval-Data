@@ -1,80 +1,62 @@
-Here's how you can write the same functionality in C++:
+Here’s the equivalent C++ code for the given Python function, including necessary headers and handling of strings and regular expressions:
 
 ```cpp
 #include <iostream>
-#include <string>
 #include <regex>
+#include <string>
+#include <optional>
 
-int convertHmsToMilliseconds(const std::string& timeStr) {
+// Function to convert a time duration string in the format 'XhYminZs' to milliseconds.
+std::optional<int> convert_hms_to_milliseconds(const std::string& time_str) {
+    /**
+     * Convert a time duration string in the format 'XhYminZs' to milliseconds.
+     *
+     * This function takes a string representing a time duration, where hours, minutes, and seconds
+     * are optionally provided, and converts this duration into the equivalent number of milliseconds.
+     *
+     * Args:
+     *     time_str (const std::string&): A string representing the time duration, e.g., '1h20min30s'.
+     *
+     * Returns:
+     *     std::optional<int>: The equivalent duration in milliseconds, or std::nullopt if the input is invalid.
+     */
+    // Regex to match hours, minutes, and seconds
+    std::regex regex("^(?:(\\d+)h)?(?:(\\d+)min)?(?:(\\d+)s)?$");
     std::smatch match;
-    std::regex pattern("(\\d+)h(\\d+)min(\\d+)s");
 
-    if (std::regex_search(timeStr, match, pattern)) {
-        int hours = std::stoi(match[1]);
-        int minutes = std::stoi(match[2]);
-        int seconds = std::stoi(match[3]);
-
-        return ((hours * 60 + minutes) * 60 + seconds) * 1000;
-    } else {
-        std::cerr << "Invalid input format." << std::endl;
-        return -1; // Return an error code for invalid input
+    if (!std::regex_search(time_str, match, regex)) {
+        std::cout << "remindme.cpp: Cannot convert time string \"" << time_str << "\" to milliseconds!" << std::endl;
+        return std::nullopt;
     }
+
+    // Extract hours, minutes, and seconds from the regex groups, defaulting to 0 if not present
+    int hours = match[1].matched ? std::stoi(match[1]) : 0;
+    int minutes = match[2].matched ? std::stoi(match[2]) : 0;
+    int seconds = match[3].matched ? std::stoi(match[3]) : 0;
+
+    // Calculate the total duration in milliseconds
+    int total_milliseconds = (hours * 3600 + minutes * 60 + seconds) * 1000;
+
+    return total_milliseconds;
 }
 
 int main() {
-    std::string timeStr = "1h20min30s";
-    int milliseconds = convertHmsToMilliseconds(timeStr);
-    
-    if (milliseconds != -1) {
-        std::cout << "Time in milliseconds: " << milliseconds << std::endl;
+    // Example usage
+    auto result = convert_hms_to_milliseconds("1h20min30s");
+    if (result) {
+        std::cout << "Converted time in milliseconds: " << *result << std::endl;
+    } else {
+        std::cout << "Invalid input." << std::endl;
     }
 
     return 0;
 }
 ```
 
-And here's the equivalent C code:
-
-```c
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <regex.h>
-
-int convertHmsToMilliseconds(char* timeStr) {
-    regex_t regex;
-    regmatch_t matches[4];
-    char pattern[] = "(\\d+)h(\\d+)min(\\d+)s";
-
-    if (regcomp(&regex, pattern, REG_EXTENDED) != 0) {
-        printf("Could not compile regex.\n");
-        return -1; // Return an error code for regex compilation failure
-    }
-
-    if (regexec(&regex, timeStr, 4, matches, 0) == 0) {
-        int hours = atoi(timeStr + matches[1].rm_so);
-        int minutes = atoi(timeStr + matches[2].rm_so);
-        int seconds = atoi(timeStr + matches[3].rm_so);
-
-        regfree(&regex);
-        return ((hours * 60 + minutes) * 60 + seconds) * 1000;
-    } else {
-        printf("Invalid input format.\n");
-        regfree(&regex);
-        return -1; // Return an error code for invalid input
-    }
-}
-
-int main() {
-    char timeStr[] = "1h20min30s";
-    int milliseconds = convertHmsToMilliseconds(timeStr);
-    
-    if (milliseconds != -1) {
-        printf("Time in milliseconds: %d\n", milliseconds);
-    }
-
-    return 0;
-}
-```
-
-Note that both C++ and C codes assume that the input string will always be well-formed according to the specified format ('XhYminZs'). If you want to handle errors more gracefully when the input is invalid, you would need to add additional checks and possibly use exception handling in C++.
+### Explanation:
+1. **Headers**: The required headers (`<iostream>`, `<regex>`, `<string>`, `<optional>`) are included at the beginning.
+2. **Function Definition**: The function `convert_hms_to_milliseconds` is defined with a `const std::string&` parameter and returns `std::optional<int>`.
+3. **Regex Matching**: The regex pattern is defined using `std::regex` and matched using `std::regex_search`. The results are stored in `std::smatch`.
+4. **Extraction and Calculation**: Hours, minutes, and seconds are extracted from the regex match groups and converted to integers. If a group is not present, it defaults to 0.
+5. **Return Value**: The function returns the total duration in milliseconds wrapped in `std::optional<int>`.
+6. **Main Function**: An example usage of the function is shown in the `main` function, demonstrating how to handle the returned `std::optional<int>` value.

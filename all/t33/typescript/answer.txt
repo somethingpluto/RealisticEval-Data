@@ -1,70 +1,76 @@
-Sure! Here's how you can convert your Python function to TypeScript using `xml2js` for parsing XML files and `pandas-js` for handling DataFrames:
-
-First, install the necessary packages:
-```bash
-npm install xml2js @types/xml2js pandas-js
-```
-
-Then, here's the equivalent TypeScript code:
+Sure! Here’s the equivalent TypeScript code, including the necessary imports and type definitions:
 
 ```typescript
 import * as fs from 'fs';
-import { parseStringPromise } from 'xml2js';
-import { DataFrame, Series } from 'pandas-js';
+import * as parse5 from 'parse5';
 
-async function xmlToDataFrame(xmlFile: string): Promise<DataFrame> {
-    /**
-     * Convert the XML file into a pandas DataFrame, where each <sequence> tag is treated as a row record in the XML,
-     * and the tag and text content of each sub-element are treated as columns and values of the DataFrame.
-     *
-     * @param xmlFile - Path to the XML file.
-     * @returns DataFrame containing the data from the XML file.
-     */
-    
-    // Read the XML file
-    const xmlContent = await fs.promises.readFile(xmlFile, 'utf8');
+function xmlToDataFrame(xmlFile: string): any[][] {
+  /**
+   * Convert an XML file into a 2D array representing a DataFrame. Each <sequence> tag is treated as a row,
+   * and each sub-element within <sequence> is treated as a column.
+   *
+   * Args:
+   * xmlFile (string): Path to the XML file.
+   *
+   * Returns:
+   * any[][]: 2D array representing the DataFrame containing the data from the XML file.
+   */
 
-    // Parse the XML content
-    const parsedXml = await parseStringPromise(xmlContent);
+  // Read the XML file
+  const xmlContent = fs.readFileSync(xmlFile, 'utf-8');
 
-    // Extract data from the parsed XML
-    const sequences = parsedXml.root.sequence; // Assuming the root element contains multiple <sequence> tags
+  // Parse the XML content
+  const dom = parse5.parse(xmlContent);
+  const root = dom.childNodes.find(node => node.nodeName === 'root');
 
-    // Create an array to hold the rows of the DataFrame
-    const rows: Record<string, any>[] = [];
+  // Prepare a list to hold all rows
+  const rows: any[][] = [];
 
-    // Iterate over each <sequence> tag and extract its child elements
-    for (const sequence of sequences) {
-        const row: Record<string, any> = {};
-        for (const key in sequence) {
-            if (sequence.hasOwnProperty(key)) {
-                row[key] = sequence[key][0]; // Assuming each sub-element has only one text node
-            }
+  // Iterate over each <sequence> element in the XML file
+  root.childNodes.forEach(sequenceNode => {
+    if (sequenceNode.nodeName === 'sequence') {
+      const rowData: any[] = [];
+      sequenceNode.childNodes.forEach(childNode => {
+        if (childNode.nodeName !== '#text') {
+          // Use the tag as the column name and the text content as the value
+          rowData.push(childNode.nodeName);
+          rowData.push(childNode.childNodes.find(node => node.nodeName === '#text')?.nodeValue);
         }
-        rows.push(row);
+      });
+      rows.push(rowData);
     }
+  });
 
-    // Create a DataFrame from the rows
-    const df = new DataFrame(rows);
-
-    return df;
+  return rows;
 }
 
-// Example usage:
-(async () => {
-    try {
-        const df = await xmlToDataFrame('path/to/your/xml/file.xml');
-        console.log(df.toString());
-    } catch (error) {
-        console.error('Error reading or processing the XML file:', error);
-    }
-})();
+// Example usage
+const xmlFilePath = './example.xml';
+const data = xmlToDataFrame(xmlFilePath);
+console.log(data);
 ```
 
 ### Explanation:
-1. **Reading the XML File**: The `fs.promises.readFile` function reads the contents of the XML file asynchronously.
-2. **Parsing the XML Content**: The `parseStringPromise` function from `xml2js` parses the XML content into a JavaScript object.
-3. **Extracting Data**: The code iterates over each `<sequence>` tag and extracts the text content of its sub-elements.
-4. **Creating a DataFrame**: The extracted data is used to create a DataFrame using the `pandas-js` library.
+1. **Imports**:
+   - `fs` is used for reading the XML file.
+   - `parse5` is used for parsing the XML content.
 
-Make sure to adjust the path to your XML file and handle any specific structure of your XML file as needed.
+2. **Function Definition**:
+   - The function `xmlToDataFrame` takes the path to an XML file and returns a 2D array representing the DataFrame.
+
+3. **Reading the XML File**:
+   - The XML file is read using `fs.readFileSync`.
+
+4. **Parsing the XML Content**:
+   - The XML content is parsed using `parse5`.
+
+5. **Iterating Over `<sequence>` Elements**:
+   - The function iterates over each `<sequence>` element and extracts the data for each sub-element.
+
+6. **Preparing Rows**:
+   - Each `<sequence>` element is converted into a row, with each sub-element being a column.
+
+7. **Example Usage**:
+   - An example usage is provided at the end to demonstrate how to call the function.
+
+This approach ensures that the functionality remains consistent with the original Python code, while adapting it to TypeScript's static type system and idiomatic practices.

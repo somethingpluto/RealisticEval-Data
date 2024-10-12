@@ -1,37 +1,94 @@
-Certainly! Below is the equivalent C++ test case using Catch2 for the provided Python `unittest` function:
+Certainly! Below is the equivalent C++ test class using the Catch2 testing framework. The provided Python unittest class will be converted into a set of Catch2 test cases, ensuring that the functionality and logic of the tests are preserved.
+
+### C++ Code Using Catch2
 
 ```cpp
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <filesystem>
 #include <string>
 
-std::string renameFilePath(const std::string& path) {
-    /**
-     * Renames a Windows file path by replacing colons in the filename with underscores.
-     *
-     * @param path The original file path.
-     * @return The modified file path with colons in the filename replaced by underscores.
-     */
-    std::string result = path;
-    size_t pos = 0;
-    while ((pos = result.find(':', pos)) != std::string::npos) {
-        result.replace(pos, 1, "_");
-        pos += 1; // Move past the underscore
+// Use the filesystem namespace for convenience
+namespace fs = std::filesystem;
+
+// Function to rename a Windows file path by replacing colons in the filename with underscores
+std::string rename_file_path(const std::string& path) {
+    // Split the path into directory and filename
+    fs::path p = path;
+    std::string directory = p.parent_path().string();
+    std::string filename = p.filename().string();
+
+    // Replace colons in the filename with underscores
+    std::string sanitized_filename;
+    for (char c : filename) {
+        if (c == ':') {
+            sanitized_filename += '_';
+        } else {
+            sanitized_filename += c;
+        }
     }
-    return result;
+
+    // Reconstruct the full path with the sanitized filename
+    std::string new_path = (fs::path(directory) / sanitized_filename).string();
+
+    return new_path;
 }
 
-TEST_CASE("renameFilePath", "[file-path]") {
-    REQUIRE(renameFilePath("C:\\Users\\Username\\Documents\\example.txt") == "C:\\Users\\Username\\Documents\\example.txt");
-    REQUIRE(renameFilePath("C:\\Users\\Username\\Documents\\example:file.txt") == "C:\\Users\\Username\\Documents\\example_file.txt");
-    REQUIRE(renameFilePath("C:\\Users\\Username\\Documents\\file:with:colons.txt") == "C:\\Users\\Username\\Documents\\file_with_colons.txt");
-    REQUIRE(renameFilePath("C:\\Users\\Username\\Documents\\no_colon_in_filename.txt") == "C:\\Users\\Username\\Documents\\no_colon_in_filename.txt");
+TEST_CASE("Test rename_file_path function", "[rename_file_path]") {
+    SECTION("Test path with colon in the filename") {
+        // Test path with colon in the filename
+        std::string path = "C:\\Users\\example\\Documents\\report:2023.txt";
+        std::string expected = "C:\\Users\\example\\Documents\\report_2023.txt";
+        REQUIRE(rename_file_path(path) == expected);
+    }
+
+    SECTION("Test path without colon in the filename") {
+        // Test path without colon in the filename
+        std::string path = "C:\\Users\\example\\Documents\\report2023.txt";
+        std::string expected = "C:\\Users\\example\\Documents\\report2023.txt";
+        REQUIRE(rename_file_path(path) == expected);
+    }
+
+    SECTION("Test path with multiple colons in the filename") {
+        // Test path with multiple colons in the filename
+        std::string path = "C:\\Users\\example\\Documents\\project:report:2023.txt";
+        std::string expected = "C:\\Users\\example\\Documents\\project_report_2023.txt";
+        REQUIRE(rename_file_path(path) == expected);
+    }
+
+    SECTION("Test path with a colon at the end of the filename") {
+        // Test path with a colon at the end of the filename
+        std::string path = "C:\\Users\\example\\Documents\\backup:";
+        std::string expected = "C:\\Users\\example\\Documents\\backup_";
+        REQUIRE(rename_file_path(path) == expected);
+    }
+
+    SECTION("Test path with a colon at the start of the filename") {
+        // Test path with a colon at the start of the filename
+        std::string path = "C:\\Users\\example\\Documents\\:initial_setup.txt";
+        std::string expected = "C:\\Users\\example\\Documents\\_initial_setup.txt";
+        REQUIRE(rename_file_path(path) == expected);
+    }
 }
 ```
 
 ### Explanation:
-- **Function Definition**: The `renameFilePath` function takes a string representing a file path and replaces all occurrences of colons (`:`) with underscores (`_`).
-- **Catch2 Test Case**:
-  - `TEST_CASE("renameFilePath", "[file-path]")`: Defines a test case named "renameFilePath" and tags it with `[file-path]`.
-  - `REQUIRE(...)`: This macro asserts that the expression inside it evaluates to `true`. If it doesn't, the test will fail.
+1. **Header Files**:
+   - `#include <catch2/catch_test_macros.hpp>` for Catch2 test macros.
+   - `#include <filesystem>` for filesystem operations.
+   - `#include <string>` for string manipulation.
 
-This C++ code uses Catch2's testing framework to ensure that the `renameFilePath` function behaves correctly under various conditions.
+2. **Namespace Alias**:
+   - `namespace fs = std::filesystem;` to simplify the use of filesystem functions.
+
+3. **Function Definition**:
+   - `rename_file_path`: This function takes a `const std::string& path` and returns a `std::string`. It replaces colons in the filename with underscores and reconstructs the full path.
+
+4. **Test Class**:
+   - `TEST_CASE` macro defines a test case named "Test rename_file_path function".
+   - Each `SECTION` within the test case represents a specific test scenario.
+   - `REQUIRE` is used for assertions to check the correctness of the function.
+
+5. **Test Scenarios**:
+   - Each section tests different scenarios, such as paths with colons, without colons, with multiple colons, and with colons at the start or end of the filename.
+
+This C++ code using Catch2 ensures that the functionality and logic of the Python unittest class are preserved, providing equivalent test coverage.

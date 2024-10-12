@@ -1,49 +1,113 @@
-Sure! Below is the equivalent TypeScript test case using Jest for the provided Python function `calculate_distance`. Note that I'll assume you have a similar implementation of the `calculate_distance` function in TypeScript.
+Certainly! Here’s the equivalent TypeScript test class using Jest, including the necessary type annotations and Jest assertions to preserve the functionality and logic of the Python unittests:
+
+### TypeScript Code
+
+First, let's define the `calculateDistance` function in TypeScript:
 
 ```typescript
-import { calculateDistance } from './path-to-your-calculate-distance-file'; // Adjust the import path accordingly
+import * as math from 'mathjs';
 
-describe('calculateDistance', () => {
-  it('should calculate the Euclidean distance between two agents', () => {
-    const observations = {
-      agentA: { x: 0, y: 0 },
-      agentB: { x: 3, y: 4 }
+type ObservationData = {
+    [agentId: string]: {
+        x: number;
+        y: number;
     };
+};
 
-    const distance = calculateDistance('agentA', 'agentB', observations);
+/**
+ * Calculates the Euclidean distance between two agents based on their coordinates in the observations.
+ *
+ * @param agent1 - String representation of agent1's identifier.
+ * @param agent2 - String representation of agent2's identifier.
+ * @param observations - Dictionary containing observation data with agent identifiers as keys.
+ *                       Each value is an object with 'x' and 'y' properties representing coordinates.
+ * @returns The Euclidean distance between the two agents.
+ */
+function calculateDistance(agent1: string, agent2: string, observations: ObservationData): number {
+    // Extract coordinates of both agents
+    const { x: x1, y: y1 } = observations[agent1];
+    const { x: x2, y: y2 } = observations[agent2];
 
-    expect(distance).toBe(5); // Since the Euclidean distance between (0,0) and (3,4) is 5
-  });
+    // Calculate the Euclidean distance
+    const distance = math.sqrt(math.pow(x1 - x2, 2) + math.pow(y1 - y2, 2));
 
-  it('should handle negative coordinates correctly', () => {
-    const observations = {
-      agentC: { x: -1, y: -1 },
-      agentD: { x: 2, y: 3 }
-    };
+    return distance;
+}
 
-    const distance = calculateDistance('agentC', 'agentD', observations);
+export { calculateDistance };
+```
 
-    expect(distance).toBe(Math.sqrt(18)); // Should be approximately 4.242640687119285
-  });
+Next, let's write the Jest test class:
 
-  it('should handle zero coordinates correctly', () => {
-    const observations = {
-      agentE: { x: 0, y: 0 },
-      agentF: { x: 0, y: 0 }
-    };
+```typescript
+import { calculateDistance } from './path-to-calculate-distance'; // Adjust the path as needed
 
-    const distance = calculateDistance('agentE', 'agentF', observations);
+describe('TestCalculateDistance', () => {
+    it('should return 0.0 when both agents are at the same point', () => {
+        const observations: ObservationData = {
+            "agent1": { x: 0, y: 0 },
+            "agent2": { x: 0, y: 0 }
+        };
 
-    expect(distance).toBe(0);
-  });
+        expect(calculateDistance("agent1", "agent2", observations)).toBeCloseTo(0.0);
+    });
+
+    it('should return 3.0 when agents are horizontally apart', () => {
+        const observations: ObservationData = {
+            "agent1": { x: 0, y: 0 },
+            "agent2": { x: 3, y: 0 }
+        };
+
+        expect(calculateDistance("agent1", "agent2", observations)).toBeCloseTo(3.0);
+    });
+
+    it('should return 4.0 when agents are vertically apart', () => {
+        const observations: ObservationData = {
+            "agent1": { x: 0, y: 0 },
+            "agent2": { x: 0, y: 4 }
+        };
+
+        expect(calculateDistance("agent1", "agent2", observations)).toBeCloseTo(4.0);
+    });
+
+    it('should return the correct diagonal distance', () => {
+        const observations: ObservationData = {
+            "agent1": { x: 1, y: 2 },
+            "agent2": { x: 4, y: 6 }
+        };
+
+        const expectedDistance = Math.sqrt(Math.pow(4 - 1, 2) + Math.pow(6 - 2, 2));
+        expect(calculateDistance("agent1", "agent2", observations)).toBeCloseTo(expectedDistance);
+    });
+
+    it('should return the correct distance with negative coordinates', () => {
+        const observations: ObservationData = {
+            "agent1": { x: -1, y: -1 },
+            "agent2": { x: -4, y: -5 }
+        };
+
+        const expectedDistance = Math.sqrt(Math.pow(-4 + 1, 2) + Math.pow(-5 + 1, 2));
+        expect(calculateDistance("agent1", "agent2", observations)).toBeCloseTo(expectedDistance);
+    });
 });
 ```
 
-In this TypeScript test case:
+### Explanation:
+1. **Type Definitions**:
+   - `ObservationData` is defined as a type alias for the observation dictionary, ensuring that each agent has `x` and `y` properties.
 
-- The `calculateDistance` function is imported from the appropriate file.
-- Three tests are defined using `it` blocks within the `describe` block.
-- Each test sets up an `observations` object and calls the `calculateDistance` function with specific arguments.
-- The results are then asserted using Jest's `expect` function to ensure they match the expected values.
+2. **Importing Math Library**:
+   - The `mathjs` library is used to provide mathematical functions like `sqrt` and `pow`.
 
-Make sure to adjust the import path (`./path-to-your-calculate-distance-file`) to point to where your `calculateDistance` function is located in your project.
+3. **Function Definition**:
+   - The `calculateDistance` function is defined with proper type annotations for parameters and return type.
+
+4. **Jest Test Suite**:
+   - The `describe` block defines the test suite named `TestCalculateDistance`.
+   - Each test case uses `it` to describe the test scenario.
+   - `expect` is used with `toBeCloseTo` to check floating-point equality, which is similar to `assertAlmostEqual` in Python.
+
+5. **Example Usage**:
+   - Each test case sets up the `observations` dictionary and calls `calculateDistance` to verify the expected distance.
+
+This TypeScript code preserves the original functionality and logic of the Python unittests while adhering to Jest's testing framework and TypeScript's static type system.

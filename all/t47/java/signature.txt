@@ -1,44 +1,67 @@
-Here's the equivalent Java method with the same functionality and comments:
+Certainly! Below is the Java equivalent of the provided Python function, including appropriate Javadoc comments and Java conventions:
 
 ```java
 import java.time.LocalDate;
-import java.time.temporal.ChronoField;
-import java.time.temporal.WeekFields;
+import java.time.DayOfWeek;
+import java.time.temporal.TemporalAdjusters;
 
-public class DateUtils {
+/**
+ * Calculates the date of the nth occurrence of a specific weekday (k) in a given month (m) and year (y).
+ * If the nth occurrence does not exist within the month, it returns the last occurrence of that weekday in the month.
+ * This function extends the capability to handle edge cases where the nth weekday might not be present,
+ * by providing the closest previous weekday in such cases.
+ */
+public class Answer {
 
     /**
-     * Calculates the date of the nth occurrence of a specific weekday (k) in a given month (m) and year (y).
-     * If the nth occurrence does not exist within the month, it returns the last occurrence of that weekday in the month.
-     * This function extends the capability to handle edge cases where the nth weekday might not be present,
-     * by providing the closest previous weekday in such cases
-     *
+     * Calculates the date of the nth occurrence of a specific weekday in a given month and year.
+     * 
      * @param y The year for which the date is to be calculated.
      * @param m The month for which the date is to be calculated, where January is 1 and December is 12.
      * @param n The nth occurrence of the weekday within the month. For example, 1 for the first occurrence, 2 for the second, etc.
-     * @param k The weekday, where Monday is 1 and Sunday is 7.
-     * @return The calculated date of the nth occurrence of the weekday in the given month and year.
+     * @param k The weekday, where Monday is 0 and Sunday is 6.
+     * @return LocalDate The calculated date of the nth occurrence of the weekday in the given month and year.
      *         If the nth occurrence does not exist, returns the date of the last occurrence of that weekday in the month.
      */
     public static LocalDate findNthWeekdayOfSpecificYear(int y, int m, int n, int k) {
-        LocalDate startDate = LocalDate.of(y, m, 1);
-        LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
-        
-        long count = 0;
-        while (!startDate.isAfter(endDate)) {
-            if (startDate.getDayOfWeek().getValue() == k) {
-                count++;
-                if (count == n) {
-                    return startDate;
-                }
-            }
-            startDate = startDate.plusDays(1);
+        LocalDate firstDayOfMonth = LocalDate.of(y, m, 1);
+        DayOfWeek targetDayOfWeek = DayOfWeek.of(k);
+
+        // Calculate the first occurrence of the target weekday in the month
+        LocalDate firstKWeekdayOfMonth = firstDayOfMonth.with(TemporalAdjusters.nextOrSame(targetDayOfWeek));
+        LocalDate nthKWeekdayOfMonth = firstKWeekdayOfMonth.plusWeeks(n - 1);
+
+        // Calculate the last day of the month
+        LocalDate lastDayOfMonth = firstDayOfMonth.lengthOfMonth() == 28 ?
+                firstDayOfMonth.plusMonths(1).minusDays(1) :
+                firstDayOfMonth.with(TemporalAdjusters.lastDayOfMonth());
+
+        if (nthKWeekdayOfMonth.isAfter(lastDayOfMonth)) {
+            // Find the last occurrence of the target weekday in the month
+            LocalDate lastKWeekdayOfMonth = lastDayOfMonth.with(TemporalAdjusters.previous(targetDayOfWeek));
+            return lastKWeekdayOfMonth;
         }
 
-        // Return the last occurrence if nth doesn't exist
-        return LocalDate.of(y, m, 1).with(TemporalAdjusters.lastInMonth(DayOfWeek.of(k)));
+        return nthKWeekdayOfMonth;
+    }
+
+    public static void main(String[] args) {
+        // Example usage
+        LocalDate result = findNthWeekdayOfSpecificYear(2023, 4, 5, 1); // Example parameters
+        System.out.println(result);
     }
 }
 ```
 
-Note that in Java, we use `LocalDate` instead of `datetime.date`, and `ChronoField` and `WeekFields` to work with dates and days of the week. Also, Java uses 1-based indexing for weekdays (Monday=1, ..., Sunday=7), so the parameter `k` has been adjusted accordingly. Additionally, `TemporalAdjusters` is used to get the last occurrence of a particular day of the week in the month.
+### Explanation:
+1. **Imports**: The necessary imports for `LocalDate`, `DayOfWeek`, and `TemporalAdjusters` are included to handle dates and weekdays.
+2. **Javadoc Comments**: The Javadoc comments provide detailed documentation for the method, including the arguments and return value.
+3. **Method Signature**: The method `findNthWeekdayOfSpecificYear` takes four parameters: `y` (year), `m` (month), `n` (occurrence), and `k` (weekday), and returns a `LocalDate`.
+4. **Logic**:
+   - The first day of the specified month is calculated using `LocalDate.of`.
+   - The target weekday is determined using `DayOfWeek.of`.
+   - The first occurrence of the target weekday in the month is found using `TemporalAdjusters.nextOrSame`.
+   - The nth occurrence of the target weekday is calculated by adding weeks.
+   - The last day of the month is determined using `TemporalAdjusters.lastDayOfMonth`.
+   - If the nth occurrence is after the last day of the month, the last occurrence of the target weekday is returned.
+5. **Example Usage**: A `main` method is provided to demonstrate how to call the `findNthWeekdayOfSpecificYear` method and print the result.

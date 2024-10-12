@@ -1,41 +1,68 @@
-Here's how you can convert the Python code to C++:
+Here is the equivalent C++ code for the provided Python function:
 
-```c++
+```cpp
+#include <iostream>
 #include <vector>
-#include <algorithm>
+#include <algorithm> // For std::vector
 
-std::vector<std::vector<int>> divideList(std::vector<int> &lst, int n) {
+std::vector<std::vector<int>> divide_list(const std::vector<int>& lst, int n) {
+    /**
+     * Divide a vector into n parts as evenly as possible. Excess elements are distributed to earlier subvectors.
+     *
+     * Args:
+     * lst (std::vector<int>): The vector to be divided.
+     * n (int): The number of parts to divide the vector into.
+     *
+     * Returns:
+     * std::vector<std::vector<int>>: A vector containing n subvectors, where each subvector represents a part of the original vector.
+     */
+    // Total number of elements in the vector
+    int L = lst.size();
+    // Calculate the size of each part
+    int base_size = L / n;
+    // Calculate the number of sections that will have an additional element
+    int remainder = L % n;
+
     std::vector<std::vector<int>> result;
-    int size = lst.size();
-    for(int i=0; i<n; ++i){
-        int start = i*size/n;
-        int end = (i+1)*size/n + (i<size%n);
-        if(start>=end)
-            break;
-        result.push_back(std::vector<int>(lst.begin()+start, lst.begin()+end));
+    // Start index of the subvector
+    int start_index = 0;
+
+    for (int i = 0; i < n; ++i) {
+        // Determine the size of the current part
+        int part_size = base_size + (i < remainder ? 1 : 0);
+        // Create a new subvector from the original vector
+        std::vector<int> subvector(lst.begin() + start_index, lst.begin() + start_index + part_size);
+        // Append the subvector to the result vector
+        result.push_back(subvector);
+        // Update the start index for the next part
+        start_index += part_size;
     }
+
     return result;
 }
-```
 
-And here's how you can convert it to C:
+// Example usage
+int main() {
+    std::vector<int> lst = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+    int n = 3;
+    std::vector<std::vector<int>> result = divide_list(lst, n);
 
-```c
-#include <stdlib.h>
-#include <string.h>
-
-void divideList(int* lst, int size, int n, int*** result, int** sizes) {
-    *result = malloc(n * sizeof(int*));
-    *sizes = malloc(n * sizeof(int));
-
-    for(int i=0; i<n; ++i){
-        int start = i*size/n;
-        int end = (i+1)*size/n + (i<size%n);
-        (*sizes)[i] = end - start;
-
-        (*result)[i] = malloc((*sizes)[i] * sizeof(int));
-        memcpy((*result)[i], lst+start, (*sizes)[i]*sizeof(int));
+    // Print the result
+    for (const auto& subvector : result) {
+        for (int elem : subvector) {
+            std::cout << elem << " ";
+        }
+        std::cout << std::endl;
     }
+
+    return 0;
 }
 ```
-In both versions, `divideList` function divides the input list (`lst`) into `n` parts. In the C++ version, the function returns a vector of vectors, and in the C version, it modifies the output parameters `result` and `sizes`. Note that in C++, we use smart pointers or RAII techniques to manage memory automatically, but in C, manual memory management is necessary and must be handled carefully to avoid memory leaks.
+
+### Explanation:
+- **Function Signature**: The function `divide_list` takes a `std::vector<int>` and an `int` as arguments and returns a `std::vector<std::vector<int>>`.
+- **Calculations**: The total number of elements (`L`), the base size of each part (`base_size`), and the remainder (`remainder`) are calculated similarly to the Python code.
+- **Result Vector**: A vector of vectors (`result`) is used to store the subvectors.
+- **Loop**: A loop iterates `n` times to create subvectors and append them to the result vector.
+- **Subvector Creation**: Each subvector is created using iterators from the original vector.
+- **Example Usage**: An example usage is provided in the `main` function to demonstrate how to call the `divide_list` function and print the result.

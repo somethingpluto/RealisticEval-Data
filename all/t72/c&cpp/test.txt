@@ -1,49 +1,102 @@
-Sure! Below is an example of how you can convert your Python `unittest` test class to a C++ test case using Catch2.
+Certainly! Let's convert the provided Python unittest test class into an equivalent test class using Catch2 in C++. We will ensure that the functionality and logic of the tests are preserved, and we will use appropriate assertions in Catch2.
 
-First, let's assume that the function `get_3d_coordinates` is already implemented in C++. For the sake of completeness, I'll also provide a mock implementation of the function in C++.
+Here is the C++ version using Catch2:
 
-Here's the C++ code:
+### C++ Code with Catch2
+
+1. **Include Catch2 Headers**
+2. **Define the Test Class**
+3. **Implement the Tests**
 
 ```cpp
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <Eigen/Dense>
 
-using namespace Eigen;
+using Eigen::MatrixXd;
+using Eigen::VectorXd;
 
-Vector3d get_3d_coordinates(const Matrix3d& K, double d, double x, double y) {
-    Vector3d X;
-    X(0) = (x - K(0, 2)) * d / K(0, 0);
-    X(1) = (y - K(1, 2)) * d / K(1, 1);
-    X(2) = d;
-    return X;
+// Function to be tested
+VectorXd get_3d_coordinates(const MatrixXd& K, double d, double x, double y) {
+    // Step 1: Convert pixel coordinates to normalized device coordinates (NDC)
+    double cx = K(0, 2);
+    double cy = K(1, 2);
+    double fx = K(0, 0);
+    double fy = K(1, 1);
+
+    double NDC_x = (x - cx) / fx;
+    double NDC_y = (y - cy) / fy;
+
+    // Step 2: Get the 3D world coordinates (W)
+    double W_x = NDC_x * d;
+    double W_y = NDC_y * d;
+    double W_z = d;
+
+    return VectorXd::Map(&W_x, 3);  // Map the array to a VectorXd
 }
 
-TEST_CASE("Test get_3d_coordinates", "[get_3d_coordinates]") {
-    // Test data
-    Matrix3d K = Matrix3d::Identity();
-    K(0, 0) = 500.0; // fx
-    K(1, 1) = 500.0; // fy
-    K(0, 2) = 320.0; // cx
-    K(1, 2) = 240.0; // cy
-    double d = 10.0;  // depth
-    double x = 300.0; // pixel x coordinate
-    double y = 200.0; // pixel y coordinate
+TEST_CASE("TestGet3DCoordinates", "[get_3d_coordinates]") {
+    // Define a common intrinsic matrix for testing
+    MatrixXd K(3, 3);
+    K << 1000, 0, 320,
+         0, 1000, 240,
+         0, 0, 1;
 
-    // Expected result
-    Vector3d expected_result(200.0, 160.0, 10.0);
+    SECTION("test_center_coordinates") {
+        // Test with center pixel coordinates where x and y should map to zero in NDC.
+        VectorXd result = get_3d_coordinates(K, 100, 320, 240);
+        REQUIRE_THAT(result, Catch::Approx(VectorXd::Zero(3)).epsilon(1e-6));
+    }
 
-    // Actual result
-    Vector3d actual_result = get_3d_coordinates(K, d, x, y);
+    SECTION("test_boundary_coordinates") {
+        // Test with boundary values in the image frame.
+        VectorXd result = get_3d_coordinates(K, 50, 640, 480);
+        double expected_x = (640 - 320) / 1000 * 50;
+        double expected_y = (480 - 240) / 1000 * 50;
+        REQUIRE_THAT(result, Catch::Approx(VectorXd::Zero(3) + VectorXd({expected_x, expected_y, 50})).epsilon(1e-6));
+    }
 
-    // Check if the results match within a small tolerance
-    REQUIRE(actual_result.isApprox(expected_result, 1e-6));
+    SECTION("test_negative_depth") {
+        // Test with a negative depth to see if it handles incorrect input properly.
+        VectorXd result = get_3d_coordinates(K, -100, 320, 240);
+        REQUIRE_THAT(result, Catch::Approx(VectorXd::Zero(3) + VectorXd({0.0, 0.0, -100})).epsilon(1e-6));
+    }
+
+    SECTION("test_zero_depth") {
+        // Test with zero depth which should lead to a zero-length vector.
+        VectorXd result = get_3d_coordinates(K, 0, 320, 240);
+        REQUIRE_THAT(result, Catch::Approx(VectorXd::Zero(3)).epsilon(1e-6));
+    }
+
+    SECTION("test_non_integer_values") {
+        // Test with non-integer pixel coordinates.
+        VectorXd result = get_3d_coordinates(K, 100, 320.5, 240.5);
+        double expected_x = (320.5 - 320) / 1000 * 100;
+        double expected_y = (240.5 - 240) / 1000 * 100;
+        REQUIRE_THAT(result, Catch::Approx(VectorXd::Zero(3) + VectorXd({expected_x, expected_y, 100})).epsilon(1e-6));
+    }
+}
+
+int main(int argc, char* argv[]) {
+    return Catch::Session().run(argc, argv);
 }
 ```
 
 ### Explanation:
-1. **Include Catch2**: The `#include <catch2/catch.hpp>` line includes the Catch2 header file which provides the testing framework.
-2. **Matrix and Vector Types**: We use `Eigen::Matrix3d` for the camera intrinsic matrix and `Eigen::Vector3d` for the 3D coordinates.
-3. **Function Implementation**: The `get_3d_coordinates` function computes the 3D coordinates from the given 2D pixel coordinates, camera intrinsic parameters, and depth.
-4. **Test Case**: The `TEST_CASE` macro defines a new test case named "Test get_3d_coordinates". Inside this macro, we define the test data, call the `get_3d_coordinates` function, and check if the actual result matches the expected result using `REQUIRE`.
+1. **Include Catch2 Headers**:
+   - `#include <catch2/catch_test_macros.hpp>` for Catch2 test macros.
 
-Make sure you have Catch2 installed and properly configured in your project. If you're using a build system like CMake, you can add Catch2 as a subdirectory or find it via a package manager.
+2. **Define the Test Class**:
+   - The `TEST_CASE` macro defines a test case named `TestGet3DCoordinates`.
+   - Each `SECTION` within the test case corresponds to a specific test scenario.
+
+3. **Implement the Tests**:
+   - The `get_3d_coordinates` function is defined as before.
+   - Each `SECTION` sets up the test scenario and uses `REQUIRE_THAT` with `Catch::Approx` to assert the expected results.
+
+4. **Main Function**:
+   - The `main` function initializes and runs the Catch2 test session.
+
+### Assertions:
+- `REQUIRE_THAT` is used with `Catch::Approx` to perform approximate comparisons, which is similar to `np.testing.assert_array_almost_equal` in Python.
+
+This conversion ensures that the functionality and logic of the tests are preserved while adhering to C++ and Catch2 standards.

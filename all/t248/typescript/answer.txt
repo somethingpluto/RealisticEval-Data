@@ -1,31 +1,41 @@
 Here is the equivalent TypeScript code:
 
 ```typescript
-interface Dictionary {
-  [key: string]: any;
-}
+function sanitizeData(data: any, keyToRemove?: Set<string>): any {
+  if (!keyToRemove) {
+    keyToRemove = new Set([
+      "email",
+      "pc_conflicts",
+      "metadata",
+      "eligible_student_paper_prize",
+      "talk_poster",
+      "submitted_at",
+      "decision",
+      "status",
+      "submitted",
+      "submission"
+    ]);
+  }
 
-function sanitizeData(data: Dictionary, keyToRemove?: string[]): Dictionary {
-  // If no keys to remove were provided, return the original data
-  if (!keyToRemove || keyToRemove.length === 0) {
+  if (typeof data === 'object' && !Array.isArray(data) && data !== null) {
+    return Object.entries(data).reduce((acc, [key, value]) => {
+      if (!keyToRemove.has(key)) {
+        acc[key] = sanitizeData(value, keyToRemove);
+      }
+      return acc;
+    }, {} as Record<string, any>);
+  } else if (Array.isArray(data)) {
+    return data.map(value => sanitizeData(value, keyToRemove));
+  } else {
     return data;
   }
-
-  // Create a new object that will hold our sanitized data
-  const sanitizedData: Dictionary = {};
-
-  // Iterate over each key-value pair in the original data
-  for (const [key, value] of Object.entries(data)) {
-    // If the current key is not in the list of keys to remove, add it to the sanitized data
-    if (!keyToRemove.includes(key)) {
-      sanitizedData[key] = value;
-    }
-  }
-
-  return sanitizedData;
 }
 ```
 
-This function takes an input `data` which is an object and an optional array of keys `keyToRemove`. It returns a new object where all keys present in `keyToRemove` have been removed.
-
-Please note that TypeScript does not support default parameters for interfaces or objects like Python does. So, we use an optional parameter in the function definition (`?`) instead.
+In this TypeScript code:
+- The function `sanitizeData` is defined with explicit types for the parameters and return values.
+- A `Set` is used to store the keys to remove.
+- The `typeof` operator is used to check if `data` is an object and not an array.
+- `Object.entries` is used to iterate over the dictionary entries.
+- The `reduce` method is used to build the sanitized dictionary.
+- The `Record` utility type is used to define the type of the resulting dictionary.

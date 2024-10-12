@@ -1,32 +1,95 @@
-Here is how you can convert your Python unittest test class into a TypeScript test case using Jest:
+Certainly! Here’s the equivalent TypeScript test class using Jest, ensuring that the functionality and logic of the tests are preserved. We will map the Python `unittest` assertions to Jest assertions and include the necessary type annotations.
+
+### TypeScript Code
+
+First, let's set up the TypeScript environment by importing the necessary modules and defining the test class:
 
 ```typescript
-import { readFileSync } from 'fs';
-import { extractParseDicts } from './your_module'; // Adjust the path accordingly
+import * as fs from 'fs';
+import * as jest from 'jest';
+import * as path from 'path';
 
-describe('extractParseDicts', () => {
-  it('should return an empty array when no dict strings are found in the file', () => {
-    const filePath = 'path_to_your_file.txt'; // Replace with your actual file path
-    expect(extractParseDicts(filePath)).toEqual([]);
-  });
+// Mock the fs module for testing
+jest.mock('fs');
 
-  it('should correctly parse a single dict string from the file', () => {
-    const filePath = 'path_to_your_file.txt'; // Replace with your actual file path
-    const expectedOutput = [{ key: 'value' }];
-    writeFileSync(filePath, JSON.stringify(expectedOutput));
-    expect(extractParseDicts(filePath)).toEqual(expectedOutput);
-  });
+// Define the function to be tested
+function extractParseDicts(filePath: string): Record<string, any>[] {
+    // This regex pattern is designed to match simple dictionary structures
+    const dictPattern = /\{[^\{]*?\}/g;
+    const extractedDicts: Record<string, any>[] = [];
 
-  it('should correctly parse multiple dict strings from the file', () => {
-    const filePath = 'path_to_your_file.txt'; // Replace with your actual file path
-    const expectedOutput = [
-      { key1: 'value1' },
-      { key2: 'value2' }
-    ];
-    writeFileSync(filePath, JSON.stringify(expectedOutput));
-    expect(extractParseDicts(filePath)).toEqual(expectedOutput);
-  });
+    const fileContents = fs.readFileSync(filePath, 'utf-8');
+    const matches = fileContents.matchAll(dictPattern);
+
+    for (const match of matches) {
+        try {
+            // Use JSON.parse to safely parse the string that looks like a dictionary
+            const parsedDict = JSON.parse(match[0]);
+            extractedDicts.push(parsedDict);
+        } catch (error) {
+            // Handle the case where the string is not a valid JSON object
+            console.log(`Skipping invalid dictionary: ${match[0]}`);
+        }
+    }
+
+    return extractedDicts;
+}
+
+// Test class using Jest
+describe('TestExtractParseDicts', () => {
+    beforeEach(() => {
+        jest.resetModules();
+        jest.clearAllMocks();
+    });
+
+    it('test_extract_single_valid_dictionary', () => {
+        const mockContent = '{"name": "John", "age": 30}';
+        jest.spyOn(fs, 'readFileSync').mockImplementation(() => mockContent);
+        const result = extractParseDicts('dummy_path');
+        expect(result).toEqual([{ name: 'John', age: 30 }]);
+    });
+
+    it('test_extract_multiple_dictionaries', () => {
+        const mockContent = '{"name": "John", "age": 30}\n{"city": "New York", "country": "USA"}';
+        jest.spyOn(fs, 'readFileSync').mockImplementation(() => mockContent);
+        const result = extractParseDicts('dummy_path');
+        expect(result).toEqual([
+            { name: 'John', age: 30 },
+            { city: 'New York', country: 'USA' }
+        ]);
+    });
+
+    it('test_invalid_dictionary_format', () => {
+        const mockContent = '{"name": "John", "age": "thirty"}';
+        jest.spyOn(fs, 'readFileSync').mockImplementation(() => mockContent);
+        const result = extractParseDicts('dummy_path');
+        expect(result).toEqual([{ name: 'John', age: 'thirty' }]);
+    });
+
+    it('test_empty_file', () => {
+        jest.spyOn(fs, 'readFileSync').mockImplementation(() => '');
+        const result = extractParseDicts('dummy_path');
+        expect(result).toEqual([]);
+    });
 });
 ```
 
-Note that `writeFileSync` is used here for writing data to a file. This function comes from Node.js's built-in fs module, so make sure you have Node.js installed and properly set up in your environment. If you're working in a browser or another environment that doesn't support Node.js, you'll need to replace this with a different method for creating files in your tests.
+### Explanation:
+1. **Imports**:
+   - Import necessary modules such as `fs`, `jest`, and `path`.
+   - Mock the `fs` module using `jest.mock` to isolate the tests from the actual filesystem.
+
+2. **Function Definition**:
+   - Define the `extractParseDicts` function with proper type annotations and logic.
+
+3. **Test Class**:
+   - Use `describe` to group the tests.
+   - Use `beforeEach` to reset modules and clear mocks before each test.
+   - Use `it` to define individual test cases.
+   - Use `jest.spyOn` to mock `fs.readFileSync` and provide custom data for each test case.
+   - Use Jest assertions (`expect`) to verify the expected results.
+
+4. **Assertions**:
+   - Map Python `unittest` assertions to Jest assertions (`expect`).
+
+This TypeScript code preserves the original functionality and logic of the Python tests while adapting to Jest's testing framework and TypeScript's static type system.

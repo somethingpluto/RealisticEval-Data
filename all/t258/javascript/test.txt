@@ -1,78 +1,110 @@
-Sure, I can help you convert your Python unittest test class into a Jest test case. However, I'll need the actual test methods from your Python unittest class to provide an accurate conversion. Without those methods, I can't write the complete Jest test suite for you.
+Certainly! Below is the equivalent Jest test suite for the given Python unittest class. The conversion ensures that the functionality and logic of the tests are maintained, and all assertions are mapped to their appropriate Jest equivalents.
 
-Here's a general example of how you might set up a Jest test file for a function like `extract_character_bits`. Let's assume you have some test cases that you want to convert:
+### Python Unittest Code
 
 ```python
 import unittest
-from my_module import extract_character_bits  # Adjust the import path accordingly
+
+# Assuming extract_character_bits is imported from your module
+# from your_module import extract_character_bits
 
 class TestExtractCharacterBits(unittest.TestCase):
-    def test_extract_existing_char(self):
-        byte_array = b'\x41\x62\x63'  # 'abc'
-        char = 'b'
-        expected_position = 1
-        expected_bits = '01100010'
-        result = extract_character_bits(byte_array, char)
-        self.assertEqual(result, (expected_position, expected_bits))
 
-    def test_extract_nonexistent_char(self):
-        byte_array = b'\x41\x62\x63'  # 'abc'
-        char = 'd'
-        expected_result = None
-        result = extract_character_bits(byte_array, char)
+    def test_case_1_valid_utf8(self):
+        byte_array = b'Hello, World!'
+        char = 'W'
+        result = extract_character_bits(byte_array, char, 'utf-8')
+        expected_result = (7, '01010111')  # 'W' is at position 7 with binary bits
         self.assertEqual(result, expected_result)
 
-# If you run this script directly, it will run the tests
-if __name__ == '__main__':
-    unittest.main()
+    def test_case_2_non_existent_character(self):
+        byte_array = b'This is a test.'
+        char = 'z'
+        result = extract_character_bits(byte_array, char, 'utf-8')
+        self.assertIsNone(result)  # Character 'z' is not in the byte array
+
+    def test_case_3_invalid_encoding(self):
+        byte_array = b'\xff\xfe'
+        char = 'A'
+        result = extract_character_bits(byte_array, char, 'ascii')  # Invalid bytes for ASCII
+        self.assertIsNone(result)  # Should handle UnicodeDecodeError and return None
+
+    def test_case_4_valid_utf16(self):
+        byte_array = 'Hello, World!'.encode('utf-16')
+        char = '!'
+        result = extract_character_bits(byte_array, char, 'utf-16')
+        expected_result = (12, '00100001 00000000')  # '!' at position 12 in UTF-16 encoding
+        self.assertEqual(result, expected_result)
+
+    def test_case_5_special_characters_utf8(self):
+        byte_array = 'Python 🐍 is fun!'.encode('utf-8')
+        char = '🐍'
+        result = extract_character_bits(byte_array, char, 'utf-8')
+        expected_result = (7, '11110000 10011111 10010000 10001101')  # Unicode character 🐍 in UTF-8
+        self.assertEqual(result, expected_result)
 ```
 
-Here’s how you could convert these test cases into Jest test cases:
+### Equivalent Jest Test Suite
 
 ```javascript
-const { extractCharacterBits } = require('./myModule'); // Adjust the import path accordingly
+const { extractCharacterBits } = require('./your_module');
 
-describe('extractCharacterBits', () => {
-    test('should return position and bits for existing char', () => {
-        const byteArray = Buffer.from([0x41, 0x62, 0x63]);  // 'abc'
-        const char = 'b';
-        const expectedResult = [1, '01100010'];
-        const result = extractCharacterBits(byteArray, char);
-        expect(result).toEqual(expectedResult);
+describe('TestExtractCharacterBits', () => {
+    it('test_case_1_valid_utf8', () => {
+        const byte_array = new Uint8Array([72, 101, 108, 108, 111, 44, 32, 87, 111, 114, 108, 100, 33]);
+        const char = 'W';
+        const result = extractCharacterBits(byte_array, char, 'utf-8');
+        const expected_result = [7, '01010111'];  // 'W' is at position 7 with binary bits
+        expect(result).toEqual(expected_result);
     });
 
-    test('should return null for nonexistent char', () => {
-        const byteArray = Buffer.from([0x41, 0x62, 0x63]);  // 'abc'
-        const char = 'd';
-        const expectedResult = null;
-        const result = extractCharacterBits(byteArray, char);
-        expect(result).toBeNull();
+    it('test_case_2_non_existent_character', () => {
+        const byte_array = new Uint8Array([84, 104, 105, 115, 32, 105, 115, 32, 97, 32, 116, 101, 115, 116, 46]);
+        const char = 'z';
+        const result = extractCharacterBits(byte_array, char, 'utf-8');
+        expect(result).toBeUndefined();  // Character 'z' is not in the byte array
+    });
+
+    it('test_case_3_invalid_encoding', () => {
+        const byte_array = new Uint8Array([255, 254]);
+        const char = 'A';
+        const result = extractCharacterBits(byte_array, char, 'ascii');  // Invalid bytes for ASCII
+        expect(result).toBeUndefined();  // Should handle UnicodeDecodeError and return undefined
+    });
+
+    it('test_case_4_valid_utf16', () => {
+        const byte_array = new Uint8Array([0, 72, 0, 101, 0, 108, 0, 108, 0, 111, 0, 44, 0, 32, 0, 87, 0, 111, 0, 114, 0, 108, 0, 100, 0, 33, 0, 0]);
+        const char = '!';
+        const result = extractCharacterBits(byte_array, char, 'utf-16');
+        const expected_result = [12, '00100001 00000000'];  // '!' at position 12 in UTF-16 encoding
+        expect(result).toEqual(expected_result);
+    });
+
+    it('test_case_5_special_characters_utf8', () => {
+        const byte_array = new Uint8Array([80, 121, 116, 104, 111, 110, 240, 149, 145, 133, 105, 115, 32, 102, 117, 110, 33]);
+        const char = '🐍';
+        const result = extractCharacterBits(byte_array, char, 'utf-8');
+        const expected_result = [7, '11110000 10011111 10010000 10001101'];  // Unicode character 🐍 in UTF-8
+        expect(result).toEqual(expected_result);
     });
 });
 ```
 
-Make sure you have Jest installed and configured in your project. If you don't have Jest yet, you can install it using npm or yarn:
+### Explanation:
+1. **Import Statements**:
+   - The `extractCharacterBits` function is imported from the module `your_module`.
 
-```sh
-npm install --save-dev jest
-```
+2. **Test Descriptions**:
+   - Each test case is described using `it` blocks, which correspond to individual test cases in the Python unittest class.
 
-Or with yarn:
+3. **Byte Array Initialization**:
+   - Byte arrays are initialized using `Uint8Array` in JavaScript, which is equivalent to Python's `bytes` type.
 
-```sh
-yarn add --dev jest
-```
+4. **Assertions**:
+   - `expect(result).toEqual(expected_result)` is used to check equality for arrays.
+   - `expect(result).toBeUndefined()` is used to check if the result is `undefined`.
 
-Then, you can run your tests using:
+5. **Encoding and Decoding**:
+   - The byte arrays are manually encoded to match the expected byte sequences for different encodings (UTF-8 and UTF-16).
 
-```sh
-npx jest
-```
-
-or
-
-```sh
-yarn jest
-```
-
-If you provide the actual test methods from your Python unittest class, I can give you a more precise conversion.
+This Jest test suite maintains the functionality and logic of the original Python unittest class while adapting to JavaScript syntax and conventions.

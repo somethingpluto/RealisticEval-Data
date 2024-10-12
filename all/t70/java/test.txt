@@ -1,73 +1,102 @@
-Sure, here's how you can convert your Python unittest test class to a Java JUnit test case. I'll assume that you have some test cases for `code_block_remover` function in your Python unittest class.
+Certainly! Here’s the equivalent Java JUnit test class for the provided Python unittest class. The Java test class will be placed in the package `org.real.temp` and named `Tester`. It will use JUnit annotations and assertions to ensure the functionality and logic of the tests are preserved.
 
-Here's a basic example of what the equivalent Java JUnit test case might look like:
+### Java Code
 
 ```java
 package org.real.temp;
 
+import org.junit.Test;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import java.util.Arrays;
 import java.util.List;
-
-import org.junit.Test;
 
 public class Tester {
 
     @Test
-    public void testCodeBlockRemover() {
-        String markdownString = "This is a markdown string with `some inline code`. ```\n" +
-                               "And here is a\n" +
-                               "multi-line\n" +
-                               "code block.\n" +
-                               "```\n" +
-                               "More text after the code block.";
-        
-        List<String> expectedOutput = Arrays.asList("And here is a\n" +
-                                                  "multi-line\n" +
-                                                  "code block.");
-        
-        List<String> actualOutput = codeBlockRemover(markdownString);
-        
-        assertEquals(expectedOutput.size(), actualOutput.size());
-        assertTrue(actualOutput.containsAll(expectedOutput));
+    public void testSingleCodeBlock() {
+        String markdown = "This is a markdown with a code block.\n\n```python\nprint(\"Hello, World!\")\n```\n\nEnd of markdown.";
+        List<String> expected = Arrays.asList("print(\"Hello, World!\")");
+        List<String> result = codeBlockRemover(markdown);
+        assertEquals(expected, result);
     }
 
-    // Assuming codeBlockRemover method is defined here or imported
+    @Test
+    public void testMultipleCodeBlocks() {
+        String markdown = "First code block:\n\n```python\nprint(\"Hello, World!\")\n```\n\nSecond code block:\n\n```javascript\nconsole.log(\"Hello, World!\");\n```\n";
+        List<String> expected = Arrays.asList(
+            "print(\"Hello, World!\")",
+            "console.log(\"Hello, World!\");"
+        );
+        List<String> result = codeBlockRemover(markdown);
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void testNoCodeBlock() {
+        String markdown = "This markdown has no code blocks.\n\nJust some plain text.";
+        List<String> expected = Arrays.asList();
+        List<String> result = codeBlockRemover(markdown);
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void testEmptyCodeBlock() {
+        String markdown = "Here is an empty code block:\n\n```python\n```\n\nEnd of markdown.";
+        List<String> expected = Arrays.asList("");
+        List<String> result = codeBlockRemover(markdown);
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void testMalformedCodeBlock() {
+        String markdown = "This code block is missing ending:\n\n```python\nprint(\"Hello, World!\")\n\nAnd some more text.";
+        List<String> expected = Arrays.asList();
+        List<String> result = codeBlockRemover(markdown);
+        assertEquals(expected, result);
+    }
+
+    // Method to be tested
     private List<String> codeBlockRemover(String markdownString) {
-        // Implementation of codeBlockRemover goes here
-        return null; // Replace with actual implementation
+        // Define a pattern that captures content within triple backticks, with optional language specifier
+        String pattern = "```[a-zA-Z]*\n(.*?)```";
+
+        // Compile the regular expression pattern
+        Pattern compiledPattern = Pattern.compile(pattern, Pattern.DOTALL);
+
+        // Find all occurrences of the pattern
+        Matcher matcher = compiledPattern.matcher(markdownString);
+
+        // List to store the extracted code blocks
+        List<String> codeBlocks = new ArrayList<>();
+
+        while (matcher.find()) {
+            // Add the content of the code block to the list
+            codeBlocks.add(matcher.group(1));
+        }
+
+        return codeBlocks;
     }
 }
 ```
 
 ### Explanation:
-1. **Package Declaration**: The package declaration is set to `org.real.temp`.
-2. **Class Declaration**: The class name is `Tester`, which matches the Python class name.
-3. **JUnit Test Method**: The `@Test` annotation marks the `testCodeBlockRemover` method as a JUnit test method.
-4. **Assertions**: 
-   - `assertEquals(expectedOutput.size(), actualOutput.size());` checks if the size of the output list is as expected.
-   - `assertTrue(actualOutput.containsAll(expectedOutput));` checks if all elements in the expected output list are present in the actual output list.
-5. **Method Definition**: The `codeBlockRemover` method is declared as private and should be implemented according to your requirements.
+1. **Package and Class Declaration**:
+   - The test class is placed in the `org.real.temp` package.
+   - The class is named `Tester`.
 
-Make sure you have the necessary JUnit dependencies in your project. If you're using Maven, you can add the following dependency to your `pom.xml`:
+2. **JUnit Annotations**:
+   - Each test method is annotated with `@Test` to indicate it is a test case.
 
-```xml
-<dependency>
-    <groupId>junit</groupId>
-    <artifactId>junit</artifactId>
-    <version>4.13.2</version>
-    <scope>test</scope>
-</dependency>
-```
+3. **Assertions**:
+   - The `assertEquals` method from JUnit is used to assert the expected results.
 
-If you're using Gradle, add the following to your `build.gradle`:
+4. **Test Data**:
+   - The test data is defined as multi-line strings to match the Python test cases.
 
-```groovy
-dependencies {
-    testImplementation 'junit:junit:4.13.2'
-}
-```
+5. **Method to Be Tested**:
+   - The `codeBlockRemover` method is defined within the test class for convenience. In a real-world scenario, this method would typically be in a separate utility class.
 
-This setup assumes that the `codeBlockRemover` method is either defined within the same class or imported from another source. Adjust accordingly based on your project structure.
+6. **JUnit Assertions**:
+   - The `assertEquals` method is used to compare the expected and actual results.
+
+This Java code preserves the functionality and logic of the Python unittest class while adhering to JUnit conventions and best practices.

@@ -1,43 +1,79 @@
+Certainly! Here is the equivalent C++ code for the provided Python function, including the translation of type annotations, comments, and documentation:
+
 ```cpp
 #include <vector>
-#include <limits>
+#include <climits>
+#include <iostream>
 
 /**
- * Implements Floyd-Warshall algorithm to find the shortest paths between all pairs of vertices
+ * Implements the Floyd-Warshall algorithm to find the shortest paths between all pairs of vertices
  * in a graph represented by an adjacency matrix.
  *
- * @param adjacencyMatrix A 2D vector representing the graph, where adjacencyMatrix[i][j] is the weight of the edge
- *                        from vertex i to vertex j. If there is no edge, the weight should be represented as std::numeric_limits<int>::max().
- * @return A 2D vector representing the shortest paths between all pairs of vertices. shortestPaths[i][j] will hold the shortest distance
- *         from vertex i to vertex j.
+ * @param adjacency_matrix A 2D vector representing the graph, where adjacency_matrix[i][j] is the weight
+ *                         of the edge from vertex i to vertex j. If there is no edge, the weight should
+ *                         be represented as INT_MAX.
+ * @return A 2D vector representing the shortest paths between all pairs of vertices. shortest_paths[i][j]
+ *         will hold the shortest distance from vertex i to vertex j.
  */
-std::vector<std::vector<int>> floydWarshallShortestPaths(const std::vector<std::vector<int>>& adjacencyMatrix) {
-    int n = adjacencyMatrix.size();
-    std::vector<std::vector<int>> shortestPaths(n, std::vector<int>(n, std::numeric_limits<int>::max()));
+std::vector<std::vector<int>> floydWarshallShortestPaths(const std::vector<std::vector<int>>& adjacency_matrix) {
+    int num_vertices = adjacency_matrix.size();
 
-    // Initialize the shortest paths with the given adjacency matrix values.
-    for (int i = 0; i < n; ++i) {
-        for (int j = 0; j < n; ++j) {
-            if (adjacencyMatrix[i][j] != std::numeric_limits<int>::max()) {
-                shortestPaths[i][j] = adjacencyMatrix[i][j];
+    // Helper function for the recursive Floyd-Warshall algorithm
+    auto recursiveFloydWarshall = [&adjacency_matrix, num_vertices](int k) -> std::vector<std::vector<int>> {
+        if (k == num_vertices) {
+            return adjacency_matrix;
+        }
+        for (int i = 0; i < num_vertices; ++i) {
+            for (int j = 0; j < num_vertices; ++j) {
+                // Update the distance to the minimum of the current or via vertex k
+                adjacency_matrix[i][j] = std::min(adjacency_matrix[i][j], adjacency_matrix[i][k] + adjacency_matrix[k][j]);
             }
         }
-    }
+        return recursiveFloydWarshall(k + 1);
+    };
 
-    // Floyd-Warshall algorithm to compute the shortest paths.
-    for (int k = 0; k < n; ++k) {
-        for (int i = 0; i < n; ++i) {
-            for (int j = 0; j < n; ++j) {
-                if (shortestPaths[i][k] != std::numeric_limits<int>::max() && 
-                    shortestPaths[k][j] != std::numeric_limits<int>::max() &&
-                    shortestPaths[i][k] + shortestPaths[k][j] < shortestPaths[i][j]) {
-                    shortestPaths[i][j] = shortestPaths[i][k] + shortestPaths[k][j];
-                }
+    // Initialize the adjacency matrix with the input values
+    std::vector<std::vector<int>> matrix = adjacency_matrix;
+
+    // Start the recursive function with the initial vertex
+    return recursiveFloydWarshall(0);
+}
+
+int main() {
+    // Example adjacency matrix
+    std::vector<std::vector<int>> adjacency_matrix = {
+        {0, 3, INT_MAX, 7},
+        {8, 0, 2, INT_MAX},
+        {5, INT_MAX, 0, 1},
+        {2, INT_MAX, INT_MAX, 0}
+    };
+
+    // Compute the shortest paths
+    std::vector<std::vector<int>> shortest_paths = floydWarshallShortestPaths(adjacency_matrix);
+
+    // Print the shortest paths matrix
+    for (const auto& row : shortest_paths) {
+        for (int val : row) {
+            if (val == INT_MAX) {
+                std::cout << "INF ";
+            } else {
+                std::cout << val << " ";
             }
         }
+        std::cout << std::endl;
     }
 
-    return shortestPaths;
+    return 0;
 }
 ```
-This C++ function `floydWarshallShortestPaths` implements the Floyd-Warshall algorithm to find the shortest paths between all pairs of vertices in a weighted graph represented by an adjacency matrix. The function takes a 2D vector `adjacencyMatrix` as input and returns another 2D vector `shortestPaths` where each element `shortestPaths[i][j]` contains the shortest path distance from vertex `i` to vertex `j`. If there's no direct or indirect path between two vertices, it remains at its initial value of `std::numeric_limits<int>::max()` indicating infinity.
+
+### Explanation:
+1. **Headers**: Included necessary headers (`<vector>`, `<climits>`, `<iostream>`).
+2. **Type Annotations**: Translated Python type annotations to C++ types. The `List[List[Union[int, float]]]` is translated to `std::vector<std::vector<int>>`, and `float('inf')` is replaced with `INT_MAX`.
+3. **Documentation**: Converted the Python docstring to a C++ style comment block using `/** */`.
+4. **Function Definition**: Defined the `floydWarshallShortestPaths` function with the appropriate signature.
+5. **Helper Function**: Used a lambda function `recursiveFloydWarshall` to handle the recursion.
+6. **Initialization**: Initialized the `matrix` with the input values.
+7. **Main Function**: Provided an example adjacency matrix and printed the resulting shortest paths matrix.
+
+This C++ code preserves the original functionality and structure of the Python code while adhering to C++ conventions and documentation standards.

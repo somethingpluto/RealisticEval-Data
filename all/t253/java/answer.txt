@@ -1,39 +1,57 @@
-Here is your Python function converted into Java:
+Below is the equivalent Java code for the provided Python code, organized within the package `org.real.temp` and the class `Answer`. It includes the necessary imports and handles type checking and conversions similar to the Python version:
 
 ```java
 package org.real.temp;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.Map;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonSyntaxException;
 
 public class Answer {
 
-    public static Object log(Object item) {
-        ObjectMapper mapper = new ObjectMapper();
-
-        if (item instanceof String || item instanceof Number) {
+    /**
+     * Logs an item by printing it. Handles strings, numbers, lists, and dictionaries by printing
+     * them directly or as a JSON-formatted string. Other types are reported as errors.
+     *
+     * @param item The item to be logged. Can be of any type.
+     */
+    public static void log(Object item) {
+        // Handling for strings, integers, and floats
+        if (item instanceof String || item instanceof Integer || item instanceof Float || item instanceof Double) {
             System.out.println(item);
-        } else if (item instanceof List) {
-            System.out.println(mapper.writeValueAsString((List<?>) item));
-        } else if (item instanceof Map) {
-            System.out.println(mapper.writeValueAsString((Map<?, ?>) item));
-        } else {
-            throw new IllegalArgumentException("Unsupported type: " + item.getClass().getName());
         }
+        // Handling for dictionaries and lists to convert to JSON string
+        else if (item instanceof List || item instanceof Map) {
+            Gson gson = new GsonBuilder().setPrettyPrinting().create();
+            try {
+                String json = gson.toJson(item);
+                System.out.println(json);
+            } catch (JsonSyntaxException e) {
+                System.out.println("Error: Failed to serialize item to JSON. " + e.getMessage());
+            }
+        } else {
+            // Print an informative error message for unsupported types
+            System.out.println("Error: Unsupported type " + item.getClass().getSimpleName() + " for logging.");
+        }
+    }
 
-        return item;
+    // Example usage
+    public static void main(String[] args) {
+        log("Hello, World!");
+        log(123);
+        log(123.456);
+        log(List.of(1, 2, 3));
+        log(Map.of("key", "value"));
+        log(new Object()); // Example of an unsupported type
     }
 }
 ```
 
-Please note that for handling JSON conversion in Java, we're using Jackson library which you need to include in your project's dependencies. If you don't have it already, add the following dependency to your `pom.xml` file:
-
-```xml
-<dependency>
-    <groupId>com.fasterxml.jackson.core</groupId>
-    <artifactId>jackson-databind</artifactId>
-    <version>2.13.0</version>
-</dependency>
-```
-This will allow you to convert Java objects to JSON format.
+### Notes:
+- The `log` method is defined as a static method within the `Answer` class.
+- The `Gson` library from Google is used for JSON serialization and pretty-printing.
+- Type checking is performed using `instanceof` to determine the type of the input item.
+- Error handling is included for cases where the item cannot be serialized to JSON.
+- The `main` method provides example usages of the `log` method.

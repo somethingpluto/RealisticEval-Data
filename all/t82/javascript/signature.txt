@@ -1,34 +1,137 @@
-Here's how you can convert your Python code signature to JavaScript using TypeScript syntax:
+Certainly! I will convert the given Python code into equivalent JavaScript code, including the function/class signatures and comments rewritten in JSDoc format. Here’s the conversion:
 
-```typescript
-import * as nx from 'networkx';
+### Python Code
+```python
+from typing import List, Dict, Any
 
-interface Edge {
-    source: any;
-    target: any;
-}
+import networkx as nx
 
-class Graph {
-    private graph: nx.DiGraph;
 
-    constructor(edges: Edge[]) {
-        this.graph = new nx.DiGraph();
-        for (let edge of edges) {
-            this.graph.addEdge(edge.source, edge.target);
-        }
-    }
+class Graph:
+    def __init__(self, edges):
+        self.graph = nx.DiGraph(edges)
 
-    cyclesBySize(filterRepeatNodes: boolean = true): { [key: number]: nx.Graph[] } {
-        /**
-         * Finds all unique cycles in the graph that are larger than size 2, optionally filtering out cycles with repeated nodes.
-         *
-         * @param filterRepeatNodes - If true, filters out cycles where any node appears more than once.
-         * @returns An object mapping each cycle size to an array of subgraph objects representing each unique cycle of that size.
-         */
-        
-        // Your implementation here...
-    }
-}
+    def cycles_by_size(self, filter_repeat_nodes=True) -> Dict[Any, List]:
+        """
+        Finds all unique cycles in the graph that are larger than size 2, optionally filtering out cycles with repeated nodes.
+
+        Args:
+            filter_repeat_nodes (bool): If True, filters out cycles where any node appears more than once.
+
+        Returns:
+            Dict[int, List[nx.Graph]]: A dictionary mapping each cycle size to a list of subgraph objects representing
+                each unique cycle of that size.
+        """
 ```
 
-Please note that I've made some assumptions about what `nx.DiGraph` and its methods (`addEdge`, etc.) might look like in JavaScript/TypeScript. You would need to adjust these parts based on the actual library you're using or implement them yourself if necessary.
+### Equivalent JavaScript Code with JSDoc Comments
+
+First, you need to install the `graphology` library:
+```sh
+npm install graphology
+```
+
+Here’s the JavaScript code:
+
+```javascript
+const { Graph } = require('graphology');
+
+/**
+ * Represents a directed graph and provides methods to find cycles.
+ */
+class Graph {
+  /**
+   * Constructs a new Graph instance.
+   *
+   * @param {Array<Array<string>>} edges - An array of edges represented as tuples [source, target].
+   */
+  constructor(edges) {
+    this.graph = new Graph({ type: 'directed' });
+    edges.forEach(([source, target]) => {
+      this.graph.addEdge(source, target);
+    });
+  }
+
+  /**
+   * Finds all unique cycles in the graph that are larger than size 2, optionally filtering out cycles with repeated nodes.
+   *
+   * @param {boolean} [filterRepeatNodes=true] - If true, filters out cycles where any node appears more than once.
+   * @returns {Object} - A dictionary mapping each cycle size to a list of subgraph objects representing each unique cycle of that size.
+   */
+  cyclesBySize(filterRepeatNodes = true) {
+    const allCycles = this.findAllSimpleCycles();
+    const cycles = allCycles.filter(cycle => cycle.length > 2);
+
+    if (filterRepeatNodes) {
+      cycles.filter(cycle => new Set(cycle).size === cycle.length);
+    }
+
+    const uniqueCycles = Array.from(new Set(cycles.map(cycle => JSON.stringify(cycle)))).map(strCycle => JSON.parse(strCycle));
+    const uniqueCyclesBySize = {};
+
+    uniqueCycles.forEach(cycle => {
+      const size = cycle.length;
+      if (!uniqueCyclesBySize[size]) {
+        uniqueCyclesBySize[size] = [];
+      }
+      uniqueCyclesBySize[size].push(this.graph.subgraph(cycle));
+    });
+
+    return uniqueCyclesBySize;
+  }
+
+  /**
+   * Finds all simple cycles in the graph.
+   *
+   * @returns {Array<Array<string>>} - An array of cycles.
+   */
+  findAllSimpleCycles() {
+    const cycles = [];
+    const stack = [];
+    const onCycle = cycle => cycles.push(cycle);
+    this.graph.forEachNode(node => {
+      this.graph.forEachOutgoingEdge(node, edge => {
+        const target = this.graph.getOpposite(node, edge);
+        if (!stack.includes(target)) {
+          stack.push(target);
+          this.graph.traverseSimplePaths(node, target, onCycle);
+          stack.pop();
+        }
+      });
+    });
+    return cycles;
+  }
+}
+
+// Example usage
+const edges = [
+  ['A', 'B'],
+  ['B', 'C'],
+  ['C', 'D'],
+  ['D', 'A'],
+  ['B', 'D']
+];
+
+const graph = new Graph(edges);
+console.log(graph.cyclesBySize());
+```
+
+### Explanation:
+1. **Class Definition**:
+   - The `Graph` class is defined with JSDoc comments explaining the constructor and methods.
+
+2. **Constructor**:
+   - The `constructor` initializes the graph and adds edges.
+
+3. **`cyclesBySize` Method**:
+   - This method finds all unique cycles in the graph that are larger than size 2, optionally filtering out cycles with repeated nodes.
+   - JSDoc comments explain the parameters and return value.
+
+4. **`findAllSimpleCycles` Method**:
+   - This method finds all simple cycles in the graph.
+   - JSDoc comments explain the return value.
+
+5. **Example Usage**:
+   - An example usage demonstrates how to create a `Graph` object and call the `cyclesBySize` method.
+
+This conversion preserves the functionality, structure, and documentation of the original Python code in JavaScript.

@@ -1,4 +1,4 @@
-Here's how you can convert your Python code to Java:
+Certainly! Below is the equivalent Java code for the provided Python script, organized within the package `org.real.temp` and the class `Answer`. The Java code will follow Java's syntax and conventions, including handling type declarations, method signatures, and object-oriented principles.
 
 ```java
 package org.real.temp;
@@ -6,45 +6,71 @@ package org.real.temp;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Answer {
 
+    public static void main(String[] args) {
+        String csvFilePath = "path/to/your/csvfile.csv";
+        System.out.println(csvToSqlInsert(csvFilePath));
+    }
+
     public static String csvToSqlInsert(String csvFilePath) {
-        StringBuilder sb = new StringBuilder();
-        
-        try (BufferedReader br = new BufferedReader(new FileReader(csvFilePath))) {
-            String line;
-            
-            while ((line = br.readLine()) != null) {
-                // Assuming that the CSV has headers and each row represents a record
-                String[] values = line.split(",");
-                
-                if (sb.length() > 0)
-                    sb.append("\n");
-                
-                // Replace "table_name" with your actual table name without suffix
-                sb.append("INSERT INTO table_name VALUES (");
+        // Extract the table name from the CSV file name, removing the suffix
+        Path path = Paths.get(csvFilePath);
+        String tableName = Files.getFileStore(path).name().replaceFirst("[.][^.]+$", "");
 
-                for (int i = 0; i < values.length; ++i) {
-                    if (i > 0)
-                        sb.append(", ");
+        // Open the CSV file and read its contents
+        List<String> insertStatements = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(csvFilePath))) {
+            String line = reader.readLine(); // Skip the first line (header)
+            if (line != null) {
+                String[] headers = line.split(",");
+                
+                String currentLine;
+                while ((currentLine = reader.readLine()) != null) {
+                    String[] row = currentLine.split(",");
+                    List<String> values = new ArrayList<>();
                     
-                    // If the value contains commas or single quotes, enclose it in single quotes
-                    if (values[i].contains(",") || values[i].contains("'"))
-                        sb.append("'").append(values[i]).append("'");
-                    else
-                        sb.append(values[i]);
-                }
+                    for (String value : row) {
+                        // Handle different types of values (e.g., strings, numbers)
+                        if (value.matches("\\d+")) {  // If value is a digit, no quotes needed
+                            values.add(value);
+                        } else {  // Assume it's a string otherwise
+                            String escapedValue = value.replace("'", "''");  // Escape single quotes
+                            values.add("'" + escapedValue + "'");  // Use double quotes outside
+                        }
+                    }
 
-                sb.append(");");
+                    // Join column names and values to form an INSERT statement
+                    String insertStatement = String.format("INSERT INTO %s (%s) VALUES (%s);",
+                            tableName,
+                            String.join(", ", headers),
+                            String.join(", ", values));
+                    insertStatements.add(insertStatement);
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
-        
-        return sb.toString();
+
+        // Combine all insert statements into a single output
+        return String.join("\n", insertStatements);
     }
 }
 ```
 
-This Java function does the same thing as your Python function - reads a CSV file and converts its contents into SQL `INSERT` statements. Note that this code assumes that the first line of the CSV file contains column names, which will be used to generate the SQL statement. Also note that the table name "table_name" should be replaced with your actual table name without suffix.
+### Explanation:
+1. **Package and Class Definition**: The Java code is defined within the package `org.real.temp` and the class `Answer`.
+2. **Main Method**: A `main` method is included to demonstrate how to call the `csvToSqlInsert` method.
+3. **File Handling**: The `BufferedReader` is used to read the CSV file line by line.
+4. **Table Name Extraction**: The table name is extracted from the CSV file name using `Files.getFileStore(path).name().replaceFirst("[.][^.]+$", "")`.
+5. **CSV Parsing**: The CSV file is parsed to extract headers and rows.
+6. **SQL Insert Statement Construction**: Each row is processed to construct the SQL insert statement, handling different types of values (strings and numbers).
+7. **Exception Handling**: An exception handler is included to catch and print any `IOException`.
+
+This Java code maintains the same functionality and logic as the provided Python script while adhering to Java's syntax and conventions.

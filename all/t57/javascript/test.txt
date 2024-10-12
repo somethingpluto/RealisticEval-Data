@@ -1,63 +1,170 @@
-To convert the given Python unittest test class to a Jest test case in JavaScript, you need to first define the function `convert_png_to_ico` and then write a Jest test for it. Here's how you can do it:
+Certainly! Below is the equivalent Jest test suite for the given Python unittest class. The goal is to maintain the functionality and logic of the tests while adapting them to Jest's syntax and conventions.
 
-### Python Function Definition
+### Python Code:
 ```python
-def convert_png_to_ico(png_file_path, ico_file_path, icon_sizes=[(32, 32)]):
-    """
-    Convert PNG images to ICO files
-    Args:
-        png_file_path (str): Path to the source PNG image file.
-        ico_file_path (str): Path to save the ICO file.
-        icon_sizes (list): List of tuples specifying the sizes to include in the ICO file.
+import unittest
+from unittest.mock import patch, MagicMock
 
-    Returns:
-        None
-    """
-    # Placeholder implementation
-    pass
+class TestConvertPngToIco(unittest.TestCase):
+    @patch('PIL.Image.open')
+    def test_single_icon_size(self, mock_open):
+        mock_image = mock_open.return_value.__enter__.return_value
+        convert_png_to_ico('source.png', 'output.ico', [(64, 64)])
+        mock_image.save.assert_called_with('output.ico', format='ICO', sizes=[(64, 64)])
+
+    @patch('PIL.Image.open')
+    def test_multiple_icon_sizes(self, mock_open):
+        mock_image = mock_open.return_value.__enter__.return_value
+        convert_png_to_ico('source.png', 'output.ico', [(16, 16), (32, 32), (64, 64)])
+        mock_image.save.assert_called_with('output.ico', format='ICO', sizes=[(16, 16), (32, 32), (64, 64)])
+
+    @patch('PIL.Image.open')
+    def test_default_icon_size(self, mock_open):
+        mock_image = mock_open.return_value.__enter__.return_value
+        convert_png_to_ico('source.png', 'output.ico')
+        mock_image.save.assert_called_with('output.ico', format='ICO', sizes=[(32, 32)])
+
+    @patch('PIL.Image.open')
+    def test_file_handling(self, mock_open):
+        mock_image = MagicMock()
+        mock_open.return_value.__enter__.return_value = mock_image
+        convert_png_to_ico('source.png', 'output.ico')
+        # Check if save was called correctly
+        mock_image.save.assert_called_once_with('output.ico', format='ICO', sizes=[(32, 32)])
+
+    @patch('PIL.Image.open')
+    def test_invalid_image_path(self, mock_open):
+        mock_open.side_effect = FileNotFoundError
+        with self.assertRaises(FileNotFoundError):
+            convert_png_to_ico('invalid.png', 'output.ico')
 ```
 
-### Jest Test Case
-Assuming you have a Node.js environment with Jest installed, here is how you can write the Jest test case:
+### Equivalent Jest Test Suite:
+```javascript
+const { convertPngToIco } = require('./path/to/convertPngToIco'); // Import your function
+const fs = require('fs').promises; // Import fs.promises for mocking errors
 
-1. **Install Dependencies**: Make sure you have Jest installed in your project. If not, install it using npm or yarn:
-   ```sh
-   npm install --save-dev jest
-   ```
+describe('TestConvertPngToIco', () => {
+    beforeEach(() => {
+        jest.resetModules();
+        jest.clearAllMocks();
+    });
 
-2. **Create the Test File**: Create a new file named `convertPngToIco.test.js`.
+    describe('testSingleIconSize', () => {
+        it('should save the image with a single icon size', () => {
+            const mockImage = {
+                save: jest.fn()
+            };
 
-3. **Write the Test Case**:
-   ```javascript
-   const { convert_png_to_ico } = require('./path-to-your-function'); // Adjust the path accordingly
+            const mockOpen = jest.fn().mockReturnValue({
+                __enter__: jest.fn().mockReturnValue(mockImage),
+                __exit__: jest.fn()
+            });
 
-   describe('convert_png_to_ico', () => {
-     test('should convert PNG to ICO with default size', async () => {
-       const pngFilePath = 'path/to/source.png';
-       const icoFilePath = 'path/to/output.ico';
+            jest.doMock('sharp', () => ({
+                open: mockOpen
+            }));
 
-       await convert_png_to_ico(pngFilePath, icoFilePath);
+            convertPngToIco('source.png', 'output.ico', [[64, 64]]);
+            expect(mockImage.save).toHaveBeenCalledWith('output.ico', { format: 'ICO', sizes: [[64, 64]] });
+        });
+    });
 
-       // Assuming there's a way to check if the ICO file was created successfully
-       expect(fs.existsSync(icoFilePath)).toBe(true);
-     });
+    describe('testMultipleIconSizes', () => {
+        it('should save the image with multiple icon sizes', () => {
+            const mockImage = {
+                save: jest.fn()
+            };
 
-     test('should convert PNG to ICO with custom sizes', async () => {
-       const pngFilePath = 'path/to/source.png';
-       const icoFilePath = 'path/to/output.ico';
-       const iconSizes = [(32, 32), (64, 64)];
+            const mockOpen = jest.fn().mockReturnValue({
+                __enter__: jest.fn().mockReturnValue(mockImage),
+                __exit__: jest.fn()
+            });
 
-       await convert_png_to_ico(pngFilePath, icoFilePath, iconSizes);
+            jest.doMock('sharp', () => ({
+                open: mockOpen
+            }));
 
-       // Assuming there's a way to check if the ICO file was created successfully
-       expect(fs.existsSync(icoFilePath)).toBe(true);
-     });
-   });
-   ```
+            convertPngToIco('source.png', 'output.ico', [[16, 16], [32, 32], [64, 64]]);
+            expect(mockImage.save).toHaveBeenCalledWith('output.ico', { format: 'ICO', sizes: [[16, 16], [32, 32], [64, 64]] });
+        });
+    });
 
-### Notes:
-- Ensure that the function `convert_png_to_ico` is properly implemented and exported from the module.
-- Replace `'./path-to-your-function'` with the actual path to your Python function.
-- The test cases assume that there's a way to verify if the ICO file was created successfully. You might need to adjust this part based on how you plan to check the existence or contents of the output file.
+    describe('testDefaultIconSize', () => {
+        it('should save the image with the default icon size', () => {
+            const mockImage = {
+                save: jest.fn()
+            };
 
-This setup will help you write and run Jest tests for your Python function converted into a JavaScript function.
+            const mockOpen = jest.fn().mockReturnValue({
+                __enter__: jest.fn().mockReturnValue(mockImage),
+                __exit__: jest.fn()
+            });
+
+            jest.doMock('sharp', () => ({
+                open: mockOpen
+            }));
+
+            convertPngToIco('source.png', 'output.ico');
+            expect(mockImage.save).toHaveBeenCalledWith('output.ico', { format: 'ICO', sizes: [[32, 32]] });
+        });
+    });
+
+    describe('testFileHandling', () => {
+        it('should save the image with the correct parameters', () => {
+            const mockImage = {
+                save: jest.fn()
+            };
+
+            const mockOpen = jest.fn().mockReturnValue({
+                __enter__: jest.fn().mockReturnValue(mockImage),
+                __exit__: jest.fn()
+            });
+
+            jest.doMock('sharp', () => ({
+                open: mockOpen
+            }));
+
+            convertPngToIco('source.png', 'output.ico');
+            expect(mockImage.save).toHaveBeenCalledTimes(1);
+            expect(mockImage.save).toHaveBeenCalledWith('output.ico', { format: 'ICO', sizes: [[32, 32]] });
+        });
+    });
+
+    describe('testInvalidImagePath', () => {
+        it('should throw an error when the image path is invalid', async () => {
+            const mockOpen = jest.fn().mockRejectedValue(new Error('File not found'));
+
+            jest.doMock('sharp', () => ({
+                open: mockOpen
+            }));
+
+            await expect(convertPngToIco('invalid.png', 'output.ico')).rejects.toThrow('File not found');
+        });
+    });
+});
+```
+
+### Explanation:
+1. **Imports**:
+   - Import the `convertPngToIco` function from the relevant module.
+   - Import `fs.promises` to mock file system errors.
+
+2. **Before Each**:
+   - Reset modules and clear all mocks before each test to ensure isolation.
+
+3. **Test Cases**:
+   - Each test case is wrapped in a `describe` block for better organization.
+   - Use `it` blocks to define individual test cases.
+   - Mock the `sharp` library to simulate the behavior of `PIL.Image.open`.
+
+4. **Assertions**:
+   - Use `expect` to assert the behavior of the mocked functions.
+   - Use `toHaveBeenCalledWith` to check function calls with specific arguments.
+   - Use `toHaveBeenCalledTimes` to check the number of times a function is called.
+   - Use `rejects.toThrow` to check for thrown errors.
+
+5. **Error Handling**:
+   - Use `mockRejectedValue` to simulate file system errors.
+
+This setup ensures that the tests are equivalent in functionality and logic to the original Python unittest class, while adhering to Jest's syntax and conventions.

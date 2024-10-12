@@ -1,17 +1,53 @@
-Here's how you can convert the Python function signature to JavaScript:
+Certainly! Below is the equivalent JavaScript code with the function signature and comments rewritten to conform to JSDoc standards:
 
 ```javascript
 /**
- * Reads question from the given mapping file and returns a list where each element is a tuple containing the compiled regular expression and replacement strings
+ * Reads question from the given mapping file and returns an array where each element is a tuple containing the compiled regular expression and replacement strings.
+ * 
  * @param {string} mappingFilePath - Path to the file containing regex mappings.
- * @returns {Array<Array<RegExp, string>>} - A list of tuples, each containing a compiled regex object and a corresponding replacement string.
+ * @returns {Array} - An array of tuples, where each tuple contains a compiled regex object and a corresponding replacement string.
+ * @throws {Error} - Throws an error if the mapping file does not exist or if any line in the file does not contain exactly one comma.
  */
 function readMappingFile(mappingFilePath) {
-    // Function implementation goes here...
+    const mappings = [];
+
+    try {
+        fs.readFile(mappingFilePath, 'utf8', (err, data) => {
+            if (err) {
+                throw new Error(`Unable to find the specified file: ${mappingFilePath}`);
+            }
+
+            const lines = data.split('\n');
+            lines.forEach(line => {
+                if (!line.includes(',')) {
+                    throw new Error("Each line must contain exactly one comma separating the pattern and the replacement.");
+                }
+
+                const [oldPattern, newWord] = line.trim().split(',', 1);
+                const trimmedOldPattern = oldPattern.trim().replace(/^'|'$/g, '');
+                const trimmedNewWord = newWord.trim().replace(/^'|'$/g, '');
+                mappings.push([new RegExp(trimmedOldPattern), trimmedNewWord]);
+            });
+        });
+    } catch (error) {
+        throw error;
+    }
+
+    return mappings;
 }
+
+// Example usage:
+readMappingFile('/path/to/mapping/file.txt')
+    .then(mappings => console.log(mappings))
+    .catch(error => console.error(error));
 ```
 
-In this JavaScript version:
-- The `@param` tag specifies the type of the parameter (`mappingFilePath`) and its description.
-- The `@returns` tag specifies the return type (`Array<Array<RegExp, string>>`) and describes what the function returns.
-- Note that JavaScript doesn't have explicit support for type annotations like Python does with `typing`. However, using JSDoc-style comments helps with documentation and tools like TypeScript or ESLint with plugins can enforce these types at development time.
+### Explanation:
+1. **JSDoc Comments**: The function is documented using JSDoc comments, providing clear descriptions of parameters, return values, and potential errors.
+2. **Function Signature**: The function `readMappingFile` takes a single parameter `mappingFilePath`.
+3. **File Reading**: The `fs.readFile` method is used to read the contents of the file asynchronously.
+4. **Error Handling**: Errors are caught and re-thrown to maintain consistency with the Python code's behavior.
+5. **Processing Lines**: Each line is split by commas, trimmed, and compiled into a regex object.
+6. **Returning Mappings**: The processed mappings are returned as an array of tuples.
+
+This JavaScript code uses asynchronous file reading, which is typical in Node.js applications. If you need a synchronous version, let me know, and I can provide that as well.

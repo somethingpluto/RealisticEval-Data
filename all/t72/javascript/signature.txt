@@ -1,47 +1,58 @@
-Here is the JavaScript equivalent of your Python code:
+Certainly! Here’s the equivalent JavaScript code with the function signature and comments rewritten to conform to JSDoc standards:
 
 ```javascript
 /**
  * Converts 2D pixel coordinates into 3D world coordinates using camera intrinsic parameters and depth.
- * @param {Array<Array<number>>} K - Camera intrinsic matrix (3x3 array).
- * @param {number} d - Depth (distance along z-axis).
- * @param {number} x - Pixel x coordinate.
- * @param {number} y - Pixel y coordinate.
- * @returns {Array<number>} The x, y, z 3D point coordinates in camera RDF coordinates.
+ * 
+ * @param {Array} K - Camera intrinsic matrix (3x3 array)
+ * @param {number} d - Depth (distance along z-axis)
+ * @param {number} x - Pixel x coordinate
+ * @param {number} y - Pixel y coordinate
+ * @returns {Array} - x, y, z 3D point coordinates in camera RDF coordinates
  */
 function get3DCoordinates(K, d, x, y) {
-```
+    // Step 1: Convert pixel coordinates to normalized device coordinates (NDC)
+    const cx = K[0][2];
+    const cy = K[1][2];
+    const fx = K[0][0];
+    const fy = K[1][1];
 
-Please note that JavaScript doesn't have native support for numpy arrays like Python does. Therefore, you would need to use an external library such as math.js or ndarray to handle numerical computations. Here's how you could modify the function to work with math.js:
+    const NDC_x = (x - cx) / fx;
+    const NDC_y = (y - cy) / fy;
 
-```javascript
-const math = require('mathjs');
+    // Step 2: Get the 3D world coordinates (W)
+    const W_x = NDC_x * d;
+    const W_y = NDC_y * d;
+    const W_z = d;
 
-/**
- * Converts 2D pixel coordinates into 3D world coordinates using camera intrinsic parameters and depth.
- * @param {Array<Array<number>>} K - Camera intrinsic matrix (3x3 array).
- * @param {number} d - Depth (distance along z-axis).
- * @param {number} x - Pixel x coordinate.
- * @param {number} y - Pixel y coordinate.
- * @returns {Array<number>} The x, y, z 3D point coordinates in camera RDF coordinates.
- */
-function get3DCoordinates(K, d, x, y) {
-    // Convert input data to math.js matrices/vectors
-    let KMatrix = math.matrix(K);
-    let xVector = math.matrix([x]);
-    let yVector = math.matrix([y]);
-
-    // Perform inverse transformation
-    let invKMatrix = math.inv(KMatrix);
-    let transformedX = math.multiply(invKMatrix, xVector);
-    let transformedY = math.multiply(invKMatrix, yVector);
-
-    // Add depth value to result
-    let zValue = math.matrix([[d]]);
-    let result = math.add(math.add(transformedX, transformedY), zValue);
-
-    return math.toArray(result); // Convert back to regular array
+    return [W_x, W_y, W_z];
 }
+
+// Example usage:
+const K = [
+    [500, 0, 320],
+    [0, 500, 240],
+    [0, 0, 1]
+];
+const d = 100;
+const x = 350;
+const y = 200;
+
+console.log(get3DCoordinates(K, d, x, y));
 ```
 
-In this version of the function, we're using math.js to create matrices from our inputs, perform the necessary mathematical operations, and then convert the results back to regular JavaScript arrays. Note that this assumes you've already installed math.js via npm or another package manager.
+### Explanation:
+1. **JSDoc Comments**:
+   - The JSDoc comment block provides a description of the function and its parameters.
+   - Each parameter is documented with its type and a brief description.
+   - The return value is also documented.
+
+2. **Function Signature**:
+   - The function `get3DCoordinates` takes four parameters: `K`, `d`, `x`, and `y`.
+   - The types of these parameters are specified in the JSDoc comments.
+
+3. **Implementation**:
+   - The function performs the same calculations as the Python version.
+   - The result is returned as an array `[W_x, W_y, W_z]`.
+
+This ensures that the JavaScript code maintains the same functionality and structure as the original Python code, with proper documentation using JSDoc.

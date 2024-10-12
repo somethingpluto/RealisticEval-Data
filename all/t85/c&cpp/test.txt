@@ -1,26 +1,222 @@
-To convert the given Python unittest test class to a C++ Catch2 test case, we need to define a test function and assert the expected behavior. Below is an example of how you might write this using Catch2:
+Certainly! Here is the equivalent C++ test class using the Catch2 testing framework. The goal is to preserve the functionality and logic of the tests while adapting them to C++ and using appropriate assertions.
+
+### C++ Code Using Catch2
 
 ```cpp
-#include <catch2/catch.hpp>
-#include "pandas.h"  // Assuming you have a C++ version of pandas
+#include <catch2/catch_test_macros.hpp>
+#include <arrow/api.h>
+#include <arrow/table.h>
+#include <arrow/csv/api.h>
+#include <string>
+#include <memory>
+#include <vector>
 
-// Function to fill missing values in the specified column of the DataFrame with the first valid value in that column.
-pandas::DataFrame fill_missing_with_first_valid(pandas::DataFrame& df, const std::string& column_name) {
-    // Implementation goes here
+// Function to fill missing values in a specified column of an Arrow Table
+// with the first valid value in that column.
+//
+// Args:
+//     table (std::shared_ptr<arrow::Table>): The Arrow Table.
+//     column_name (std::string): The name of the column to fill missing values.
+//
+// Returns:
+//     std::shared_ptr<arrow::Table>: The Table with missing values filled.
+arrow::Status fill_missing_with_first_valid(
+    const std::shared_ptr<arrow::Table>& table,
+    const std::string& column_name,
+    std::shared_ptr<arrow::Table>* result)
+{
+    // Check if the column exists in the table
+    if (!table->HasColumnByName(column_name)) {
+        return arrow::Status::Invalid("Column '", column_name, "' does not exist in the table.");
+    }
+
+    // Get the column index
+    int column_index = table->GetColumnIndexByName(column_name);
+
+    // Extract the column
+    auto column = table->column(column_index);
+
+    // Create a new column with missing values filled
+    std::shared_ptr<arrow::Array> filled_column;
+    if (column->null_count() > 0) {
+        // Find the first non-null value
+        int first_non_null_index = -1;
+        for (int i = 0; i < column->length(); ++i) {
+            if (!column->IsNull(i)) {
+                first_non_null_index = i;
+                break;
+            }
+        }
+
+        // If no non-null value is found, use a default value (e.g., 0 for integers)
+        if (first_non_null_index == -1) {
+            if (column->type()->id() == arrow::Type::INT64) {
+                filled_column = std::make_shared<arrow::Int64Array>(column->length(), 0);
+            } else if (column->type()->id() == arrow::Type::FLOAT64) {
+                filled_column = std::make_shared<arrow::DoubleArray>(column->length(), 0.0);
+            } else {
+                return arrow::Status::NotImplemented("Unsupported type");
+            }
+        } else {
+            // Fill missing values with the first non-null value
+            auto first_non_null_value = column->GetView(first_non_null_index);
+            if (column->type()->id() == arrow::Type::INT64) {
+                auto int64_values = std::static_pointer_cast<arrow::Int64Array>(column)->data();
+                std::vector<int64_t> filled_data(column->length());
+                for (int i = 0; i < column->length(); ++i) {
+                    filled_data[i] = column->IsNull(i) ? int64_values[first_non_null_index] : int64_values[i];
+                }
+                filled_column = std::make_shared<arrow::Int64Array>(column->length(), filled_data.data());
+            } else if (column->type()->id() == arrow::Type::STRING) {
+                auto string_values = std::static_pointer_cast<arrow::StringArray>(column)->data();
+                std::vector<std::string> filled_data(column->length());
+                for (int i = 0; i < column->length(); ++i) {
+                    filled_data[i] = column->IsNull(i) ? string_values[first_non_null_index] : string_values[i];
+                }
+                filled_column = std::make_shared<arrow::StringArray>(column->length(), filled_data.data());
+            } else {
+                return arrow::Status::NotImplemented("Unsupported type");
+            }
+        }
+    } else {
+        // No null values, just use the original column
+        filled_column = column;
+    }
+
+    // Replace the column in the table
+    std::vector<std::shared_ptr<arrow::Field>> fields = table->schema()->fields();
+    std::vector<std::shared_ptr<arrow::Array>> columns(table->num_columns());
+    for (int i = 0; i < table->num_columns(); ++i) {
+        columns[i] = (i == column_index) ? filled_column : table->column(i);
+    }
+
+    *result = arrow::Table::Make(table->schema(), fields, columns);
+
+    return arrow::Status::OK();
 }
 
-TEST_CASE("Fill Missing Values with First Valid", "[fill_missing_with_first_valid]") {
-    // Create a sample DataFrame
-    pandas::DataFrame df = pandas::read_csv("path_to_your_sample_data.csv");
+TEST_CASE("TestFillMissingWithFirstValid") {
+    SECTION("test_basic_filling") {
+        std::string csv_data = R"(A,B
+1,,foo
+,bar,
+3,,foo
+,)";
+        std::shared_ptr<arrow::Table> table;
+        arrow::Status status = arrow::csv::ReadCSV(arrow::default_memory_pool(), csv_data, {}, &table);
+        REQUIRE(status.ok());
 
-    // Call the function to fill missing values
-    pandas::DataFrame result_df = fill_missing_with_first_valid(df, "column_name");
+        std::shared_ptr<arrow::Table> result_table;
+        arrow::Status fill_status = fill_missing_with_first_valid(table, "B", &result_table);
+        REQUIRE(fill_status.ok());
 
-    // Assert the expected behavior
-    REQUIRE(result_df.isna().sum() == 0);  // Ensure there are no missing values left after filling
+        std::string expected_csv = R"(A,B
+1,foo
+,bar
+3,foo
+,)";
+        std::shared_ptr<arrow::Table> expected_table;
+        status = arrow::csv::ReadCSV(arrow::default_memory_pool(), expected_csv, {}, &expected_table);
+        REQUIRE(status.ok());
 
-    // Optionally, add more specific assertions based on your requirements
+        arrow::PrettyPrint(*result_table, {}, &std::cout);
+        arrow::PrettyPrint(*expected_table, {}, &std::cout);
+
+        REQUIRE(result_table->Equals(expected_table));
+    }
+
+    SECTION("test_no_missing_values") {
+        std::string csv_data = R"(A,B
+1,foo
+2,bar
+3,baz)";
+        std::shared_ptr<arrow::Table> table;
+        arrow::Status status = arrow::csv::ReadCSV(arrow::default_memory_pool(), csv_data, {}, &table);
+        REQUIRE(status.ok());
+
+        std::shared_ptr<arrow::Table> result_table;
+        arrow::Status fill_status = fill_missing_with_first_valid(table, "B", &result_table);
+        REQUIRE(fill_status.ok());
+
+        std::string expected_csv = R"(A,B
+1,foo
+2,bar
+3,baz)";
+        std::shared_ptr<arrow::Table> expected_table;
+        status = arrow::csv::ReadCSV(arrow::default_memory_pool(), expected_csv, {}, &expected_table);
+        REQUIRE(status.ok());
+
+        REQUIRE(result_table->Equals(expected_table));
+    }
+
+    SECTION("test_single_valid_value") {
+        std::string csv_data = R"(A,B
+1,
+,bar,
+,)";
+        std::shared_ptr<arrow::Table> table;
+        arrow::Status status = arrow::csv::ReadCSV(arrow::default_memory_pool(), csv_data, {}, &table);
+        REQUIRE(status.ok());
+
+        std::shared_ptr<arrow::Table> result_table;
+        arrow::Status fill_status = fill_missing_with_first_valid(table, "B", &result_table);
+        REQUIRE(fill_status.ok());
+
+        std::string expected_csv = R"(A,B
+1,bar
+,bar
+,bar
+,)";
+        std::shared_ptr<arrow::Table> expected_table;
+        status = arrow::csv::ReadCSV(arrow::default_memory_pool(), expected_csv, {}, &expected_table);
+        REQUIRE(status.ok());
+
+        REQUIRE(result_table->Equals(expected_table));
+    }
+
+    SECTION("test_multiple_valid_values") {
+        std::string csv_data = R"(A,B
+1,
+,bar,
+,foo,
+)";
+        std::shared_ptr<arrow::Table> table;
+        arrow::Status status = arrow::csv::ReadCSV(arrow::default_memory_pool(), csv_data, {}, &table);
+        REQUIRE(status.ok());
+
+        std::shared_ptr<arrow::Table> result_table;
+        arrow::Status fill_status = fill_missing_with_first_valid(table, "B", &result_table);
+        REQUIRE(fill_status.ok());
+
+        std::string expected_csv = R"(A,B
+1,bar
+,bar
+,foo
+,bar
+)";
+        std::shared_ptr<arrow::Table> expected_table;
+        status = arrow::csv::ReadCSV(arrow::default_memory_pool(), expected_csv, {}, &expected_table);
+        REQUIRE(status.ok());
+
+        REQUIRE(result_table->Equals(expected_table));
+    }
+}
+
+int main(int argc, char* argv[]) {
+    // Initialize Catch2
+    int result = Catch::Session().run(argc, argv);
+    return result;
 }
 ```
 
-In this example, `pandas.h` should be replaced with the actual header file for your C++ version of pandas. The `TEST_CASE` macro is used to define a test case, and `REQUIRE` is used to assert conditions. You may need to adjust the implementation details according to your specific needs and environment.
+### Explanation:
+1. **Header Files**: Include necessary header files for Catch2 and Apache Arrow.
+2. **Function Documentation**: The function `fill_missing_with_first_valid` is documented using C++ style comments.
+3. **Function Signature**: The function takes a `std::shared_ptr<arrow::Table>` and a `std::string`, and returns a `std::shared_ptr<arrow::Table>` via a pointer.
+4. **Error Handling**: Checks if the column exists in the table and returns an error if it does not.
+5. **Finding First Non-Null Value**: Iterates through the column to find the first non-null value.
+6. **Filling Missing Values**: Replaces missing values with the first non-null value or a default value if no non-null value is found.
+7. **Replacing Column**: Creates a new table with the updated column.
+8. **Test Cases**: Each test case reads a CSV string, calls the function, and compares the result with the expected table using `REQUIRE(result_table->Equals(expected_table))`.
+
+This code preserves the original functionality and logic of the Python tests while adapting them to C++ using Catch2 and Apache Arrow for handling tabular data.
