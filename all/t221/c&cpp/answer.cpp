@@ -1,41 +1,102 @@
 #include <iostream>
 #include <fstream>
-#include <string>
-#include <vector>
 #include <regex>
-#include <nlohmann/json.hpp>
+#include <vector>
+#include <string>
 
-using json = nlohmann::json;
+// A simple class to represent a dictionary (similar to Python's dict)
+class Dict {
+public:
+    std::vector<std::pair<std::string, std::string>> items;
 
-std::vector<json> extract_parse_dicts(const std::string& file_path) {
+    // Constructor
+    Dict() {}
+
+    // Add a key-value pair to the dictionary
+    void add(const std::string& key, const std::string& value) {
+        items.emplace_back(key, value);
+    }
+
+    // Convert the dictionary to a string representation
+    std::string toString() const {
+        std::string result = "{";
+        for (size_t i = 0; i < items.size(); ++i) {
+            if (i > 0) result += ", ";
+            result += "\"" + items[i].first + "\": \"" + items[i].second + "\"";
+        }
+        result += "}";
+        return result;
+    }
+};
+
+std::vector<Dict> extract_parse_dicts(const std::string& file_path) {
+    /**
+     * Extracts and parses strings containing Python dictionary syntax from a given file.
+     *
+     * Args:
+     * file_path (std::string): The path to the file from which to extract dictionary strings.
+     *
+     * Returns:
+     * std::vector<Dict>: A vector of dictionaries extracted and parsed from the file.
+     */
+    std::regex dict_pattern(R"(\{[^\{]*?\})");
+    std::vector<Dict> extracted_dicts;
+
     std::ifstream file(file_path);
     if (!file.is_open()) {
-        throw std::runtime_error("Could not open file");
+        std::cerr << "Failed to open file: " << file_path << std::endl;
+        return extracted_dicts;
     }
 
-    std::string line;
-    std::vector<json> dicts;
+    std::string file_contents((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+    std::smatch match;
 
-    while (getline(file, line)) {
-        // Regex pattern to match Python-like dictionary syntax
-        std::regex dict_pattern(R"(\{.*?\})");
-
-        auto words_begin = std::sregex_iterator(line.begin(), line.end(), dict_pattern);
-        auto words_end = std::sregex_iterator();
-
-        for (std::sregex_iterator i = words_begin; i != words_end; ++i) {
-            std::smatch match = *i;
-            std::string dict_str = match.str();
-            try {
-                // Parse the string as JSON
-                json dict = json::parse(dict_str);
-                dicts.push_back(dict);
-            } catch (const json::parse_error& e) {
-                // Handle parsing error (e.g., invalid dictionary syntax)
-                std::cerr << "Error parsing dictionary: " << e.what() << std::endl;
+    std::string::const_iterator searchStart(file_contents.cbegin());
+    while (std::regex_search(searchStart, file_contents.cend(), match, dict_pattern)) {
+        try {
+            Dict parsed_dict;
+            std::istringstream iss(match.str());
+            char ch;
+            while (iss >> ch) {
+                if (ch == '{' || ch == '}') continue;
+                if (ch == ':') {
+                    parsed_dict.add(key, value);
+                    key.clear();
+                    value.clear();
+                } else if (ch == ',') {
+                    parsed_dict.add(key, value);
+                    key.clear();
+                    value.clear();
+                } else {
+                    if (key.empty()) {
+                        key += ch;
+                    } else if (value.empty()) {
+                        value += ch;
+                    } else {
+                        value += ch;
+                    }
+                }
             }
+            if (!key.empty() && !value.empty()) {
+                parsed_dict.add(key, value);
+            }
+            extracted_dicts.push_back(parsed_dict);
+        } catch (...) {
+            std::cerr << "Skipping invalid dictionary: " << match.str() << std::endl;
         }
+        searchStart = match.suffix().first;
     }
 
-    return dicts;
+    return extracted_dicts;
+}
+
+int main() {
+    std::string file_path = "example.txt";
+    std::vector<Dict> dicts = extract_parse_dicts(file_path);
+
+    for (const auto& dict : dicts) {
+        std::cout << dict.toString() << std::endl;
+    }
+
+    return 0;
 }

@@ -1,52 +1,37 @@
-Sure! Here is the TypeScript version of your JavaScript code:
+To convert your JavaScript code to TypeScript, you'll want to add type annotations and possibly use ES module syntax. Here’s the updated TypeScript code:
 
 ```typescript
-import fs from 'fs';
-import path from 'path';
+import * as fs from 'fs';
+import * as path from 'path';
 
 /**
- * Searches for Markdown files in the specified directory and returns the path of the files as an array
+ * Recursively searches for Markdown files in the specified directory.
  *
  * @param {string} dir - The directory path to search in.
- * @returns {Promise<string[]>} - A Promise that resolves to an array of paths to Markdown files.
+ * @returns {string[]} - An array of paths to Markdown files.
  */
-async function findMarkdownFiles(dir: string): Promise<string[]> {
-  return new Promise((resolve, reject) => {
-    fs.readdir(dir, (err, files) => {
-      if (err) {
-        reject(err);
-        return;
-      }
+function findMarkdownFiles(dir: string): string[] {
+    let markdownFiles: string[] = [];
 
-      const markdownFiles: string[] = [];
-      files.forEach(file => {
-        const filePath = path.join(dir, file);
-        fs.stat(filePath, (err, stats) => {
-          if (err) {
-            reject(err);
-            return;
-          }
+    // Read the contents of the directory
+    const files: string[] = fs.readdirSync(dir);
 
-          if (stats.isDirectory()) {
-            findMarkdownFiles(filePath).then(subFiles => {
-              markdownFiles.push(...subFiles);
-            }).catch(reject);
-          } else if (path.extname(file).toLowerCase() === '.md') {
+    files.forEach(file => {
+        const filePath: string = path.join(dir, file);
+        const stat: fs.Stats = fs.statSync(filePath);
+
+        // If it's a directory, recurse into it
+        if (stat.isDirectory()) {
+            markdownFiles = markdownFiles.concat(findMarkdownFiles(filePath));
+        }
+        // If it's a Markdown file, add it to the list
+        else if (filePath.endsWith('.md')) {
             markdownFiles.push(filePath);
-          }
-        });
-      });
-
-      resolve(markdownFiles);
+        }
     });
-  });
+
+    return markdownFiles;
 }
 ```
 
-### Explanation:
-1. **Imports**: We import `fs` and `path` modules from Node.js.
-2. **Type Annotations**: We add type annotations to the function parameters and return type.
-3. **Async/Await**: Since `fs.readdir`, `fs.stat`, and `findMarkdownFiles` are asynchronous operations, we use Promises to handle them. The `findMarkdownFiles` function now returns a `Promise`.
-4. **Recursive Search**: The function recursively searches for Markdown files in subdirectories.
-
-This TypeScript code should work similarly to your original JavaScript code but with better type safety and support for asynchronous operations.
+This code includes type annotations for the parameters and return types.

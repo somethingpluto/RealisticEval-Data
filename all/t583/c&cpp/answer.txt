@@ -1,0 +1,68 @@
+Here's how you can convert the provided TypeScript code to C++:
+
+```cpp
+#include <iostream>
+#include <string>
+#include <sstream>
+#include <map>
+#include <algorithm>
+
+std::string removeQueryParam(const std::string& url, const std::string& key) {
+    std::string modifiedUrl = url;
+    std::string::size_type queryStart = modifiedUrl.find('?');
+
+    // If there's no query string, return the original URL
+    if (queryStart == std::string::npos) {
+        return modifiedUrl;
+    }
+
+    std::string baseUrl = modifiedUrl.substr(0, queryStart);
+    std::string queryString = modifiedUrl.substr(queryStart + 1);
+    std::map<std::string, std::string> params;
+
+    std::istringstream queryStream(queryString);
+    std::string param;
+
+    // Parse the query parameters
+    while (std::getline(queryStream, param, '&')) {
+        std::string::size_type equalSign = param.find('=');
+        std::string paramKey = (equalSign == std::string::npos) ? param : param.substr(0, equalSign);
+        std::string paramValue = (equalSign == std::string::npos) ? "" : param.substr(equalSign + 1);
+        params[paramKey] = paramValue;
+    }
+
+    // Remove the specified key
+    params.erase(key);
+
+    // Reconstruct the query string
+    std::string newQueryString;
+    for (const auto& [paramKey, paramValue] : params) {
+        if (!newQueryString.empty()) {
+            newQueryString += '&';
+        }
+        newQueryString += paramKey;
+        if (!paramValue.empty()) {
+            newQueryString += '=' + paramValue;
+        }
+    }
+
+    // Return the modified URL
+    return baseUrl + (newQueryString.empty() ? "" : "?") + newQueryString;
+}
+
+int main() {
+    std::string url = "http://example.com?page=2&sort=asc&filter=active";
+    std::string key = "sort";
+
+    std::string modifiedUrl = removeQueryParam(url, key);
+    std::cout << "Modified URL: " << modifiedUrl << std::endl;
+
+    return 0;
+}
+```
+
+### Explanation:
+1. **URL Parsing**: The C++ version manually parses the URL and its query parameters since it doesn't have a built-in `URL` object like TypeScript.
+2. **Parameter Handling**: It uses a `std::map` to store key-value pairs of query parameters.
+3. **Query Reconstruction**: After removing the specified parameter, it reconstructs the query string and combines it back with the base URL.
+4. **Main Function**: An example usage is provided in the `main()` function to demonstrate how the function works.

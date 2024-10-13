@@ -1,23 +1,27 @@
-async function getLocalIp(interface: string = 'wlan0'): Promise<string> {
-    /**
-     * Gets the IPv4 address of the local computer on a specific network interface, such as wlan0,
-     * which is usually a wireless network interface.
-     *
-     * @param {string} [interface='wlan0'] - The network interface to query. Default is 'wlan0'.
-     * @returns {Promise<string>} - A promise that resolves with the local IP address, or a message indicating no IP was found.
-     */
-    
-    try {
-        const { stdout } = await execAsync(`ifconfig ${interface}`);
-        const ipMatch = stdout.match(/inet\s+(\d+\.\d+\.\d+\.\d+)/);
+import * as child_process from 'child_process';
+import * as re from 'xregexp';
+
+function getLocalIP(interface: string = 'wlan0'): Promise<string> {
+    return new Promise((resolve, reject) => {
+        const command = ['ip', 'addr', 'show', interface].join(' ');
         
-        if (ipMatch && ipMatch[1]) {
-            return ipMatch[1];
-        } else {
-            throw new Error('No IP address found');
-        }
-    } catch (error) {
-        console.error(error.message);
-        return 'No IP address found';
-    }
+        child_process.exec(command, (error, stdout, stderr) => {
+            if (error) {
+                reject(new Error(`Failed to retrieve IP address: ${error.message}`));
+                return;
+            }
+
+            // Regular expression to match IPv4 addresses, excluding the loopback address
+            const ipPattern = re('inet (\\d+\\.\\d+\\.\\d+\\.\\d+)/\\d+', 'g');
+
+            // Search for IP addresses in the command output
+            const matches = stdout.match(ipPattern);
+
+            if (matches && matches.length > 0) {
+                resolve(matches[0].match(/(\d+\.\d+\.\d+\.\d+)/)![1]);
+            } else {
+                reject(new Error('No local IP found'));
+            }
+        });
+    });
 }

@@ -1,8 +1,8 @@
 /**
  * Reads a text file, replaces words according to a dictionary map, and returns the modified text.
  *
- * @param filePath   the path to the text file
- * @param replacementDict a dictionary where the keys are words to be replaced, and the values are the replacement words
- * @return the text with the words replaced
+ * @param filePath The path to the text file.
+ * @param replacementMap A map where the keys are words to be replaced, and the values are the replacement words.
+ * @return The text with the words replaced or an error message if an exception occurs.
  */
-public String replaceWordsInFile(String filePath, Map<String, String> replacementDict);
+public static String replaceWordsInFile(String filePath, Map<String, String> replacementMap) {}

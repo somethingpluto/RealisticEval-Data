@@ -1,64 +1,53 @@
-Sure! Here's how you can translate the JavaScript function `replaceHtmlEntities` into C++ using the `pugixml` library for parsing HTML. You'll need to install and include the `pugixml` library in your project.
-
-First, make sure you have the `pugixml` library installed. You can download it from [here](https://github.com/zeux/pugixml).
-
-Here is the C++ code:
+Sure! Here’s a C++ version of your JavaScript code to decode HTML entities:
 
 ```cpp
 #include <iostream>
 #include <string>
-#include <stdexcept>
-#include <pugixml.hpp>
+#include <unordered_map>
 
-/**
- * Decodes HTML entities in a given HTML string.
- * @param htmlString The HTML string containing entities to decode.
- * @returns The decoded string with HTML entities converted back to their original characters.
- */
 std::string replaceHtmlEntities(const std::string& htmlString) {
     if (htmlString.empty()) {
         throw std::invalid_argument("Input must be a non-empty string.");
     }
 
-    pugi::xml_document doc;
-    pugi::xml_parse_result result = doc.load_string(htmlString.c_str(), pugi::parse_default | pugi::parse_declaration);
+    std::unordered_map<std::string, char> entities = {
+        {"&lt;", '<'}, {"&gt;", '>'}, {"&amp;", '&'},
+        {"&quot;", '\"'}, {"&apos;", '\''}
+    };
 
-    if (!result) {
-        throw std::runtime_error("Failed to parse HTML: " + std::string(result.description()));
+    std::string decodedString;
+    std::string currentEntity;
+
+    for (size_t i = 0; i < htmlString.length(); ++i) {
+        if (htmlString[i] == '&') {
+            currentEntity.clear();
+            while (i < htmlString.length() && htmlString[i] != ';') {
+                currentEntity += htmlString[i++];
+            }
+            currentEntity += ';';  // Add the semicolon
+            if (entities.count(currentEntity)) {
+                decodedString += entities[currentEntity];
+            } else {
+                decodedString += currentEntity;  // Add as is if not found
+            }
+        } else {
+            decodedString += htmlString[i];
+        }
     }
 
-    // Get the document element
-    pugi::xml_node docElement = doc.document_element();
-
-    // Extract the text content
-    std::string decodedText = docElement.child_value();
-
-    return decodedText;
+    return decodedString;
 }
 
 int main() {
+    std::string html = "Hello &lt;World&gt;!";
     try {
-        std::string htmlString = "<p>Hello, &amp; welcome to the &lt;world&gt; of HTML entities.</p>";
-        std::string decodedString = replaceHtmlEntities(htmlString);
-        std::cout << "Decoded String: " << decodedString << std::endl;
-    } catch (const std::exception& e) {
-        std::cerr << "Error: " << e.what() << std::endl;
+        std::string result = replaceHtmlEntities(html);
+        std::cout << result << std::endl;  // Output: Hello <World>!
+    } catch (const std::invalid_argument& e) {
+        std::cerr << e.what() << std::endl;
     }
-
     return 0;
 }
 ```
 
-### Explanation:
-1. **Include Libraries**: Include necessary headers (`iostream`, `string`, `stdexcept`, `pugixml.hpp`).
-2. **Function Definition**: Define the `replaceHtmlEntities` function that takes an HTML string and returns the decoded string.
-3. **Validation**: Check if the input string is empty and throw an exception if it is.
-4. **Parsing HTML**: Use `pugixml` to parse the HTML string.
-5. **Extract Text Content**: Retrieve the text content from the parsed HTML.
-6. **Main Function**: Demonstrate the usage of the `replaceHtmlEntities` function in the `main` function.
-
-Make sure you link against the `pugixml` library when compiling your program. For example, if you're using g++:
-
-```sh
-g++ -o main main.cpp -lpugixml
-```
+This C++ function mimics the functionality of decoding HTML entities found in the input string. Let me know if you’d like to delve deeper into any specific part!

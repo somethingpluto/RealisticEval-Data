@@ -1,37 +1,59 @@
-TEST_CASE("UniqueDeque Tests", "[UniqueDeque]") {
-    UniqueDeque uqDeq;
-
-    SECTION("Adding Items") {
-        REQUIRE(uqDeq.add(1));
-        REQUIRE_FALSE(uqDeq.add(1)); // Duplicate should not be added again
-        REQUIRE(uqDeq.contains(1));
-        REQUIRE(uqDeq.size() == 1);
-
-        uqDeq.add(2);
-        REQUIRE(uqDeq.contains(2));
-        REQUIRE(uqDeq.size() == 2);
+TEST_CASE("TestUniqueDeque") {
+    SECTION("test_add_unique_elements") {
+        UniqueDeque ud;
+        REQUIRE(ud.add(1));
+        REQUIRE(ud.add(2));
+        REQUIRE(ud.add(3));
+        REQUIRE(ud.size() == 3);
+        std::vector<int> expected = {1, 2, 3};
+        std::vector<int> actual(begin(ud), end(ud));
+        REQUIRE(actual == expected);
     }
 
-    SECTION("Deleting Items") {
-        uqDeq.add(3);
-        uqDeq.add(4);
-
-        REQUIRE(uqDeq.deleteItem(3));
-        REQUIRE_FALSE(uqDeq.contains(3));
-        REQUIRE(uqDeq.size() == 1);
-
-        REQUIRE_FALSE(uqDeq.deleteItem(5)); // Item not in deque
-        REQUIRE(uqDeq.size() == 1);
+    SECTION("test_add_duplicate_elements") {
+        UniqueDeque ud;
+        REQUIRE(ud.add(1));
+        REQUIRE_FALSE(ud.add(1));  // Duplicate add should return false
+        REQUIRE(ud.size() == 1);
+        std::vector<int> expected = {1};
+        std::vector<int> actual(begin(ud), end(ud));
+        REQUIRE(actual == expected);
     }
 
-    SECTION("Iterating Over Items") {
-        uqDeq.add(6);
-        uqDeq.add(7);
+    SECTION("test_delete_elements") {
+        UniqueDeque ud;
+        ud.add(1);
+        ud.add(2);
+        ud.add(3);
+        REQUIRE(ud.deleteItem(2));
+        REQUIRE_FALSE(ud.deleteItem(2));  // Deleting non-existing element should return false
+        REQUIRE(ud.size() == 2);
+        std::vector<int> expected = {1, 3};
+        std::vector<int> actual(begin(ud), end(ud));
+        REQUIRE(actual == expected);
+    }
 
-        int count = 0;
-        for (auto it = uqDeq.begin(); it != uqDeq.end(); ++it) {
-            ++count;
-        }
-        REQUIRE(count == 2);
+    SECTION("test_contains") {
+        UniqueDeque ud;
+        ud.add(1);
+        REQUIRE(ud.contains(1));
+        REQUIRE_FALSE(ud.contains(2));
+        ud.deleteItem(1);
+        REQUIRE_FALSE(ud.contains(1));
+    }
+
+    SECTION("test_iter_and_len") {
+        UniqueDeque ud;
+        ud.add(1);
+        ud.add(2);
+        REQUIRE(ud.size() == 2);
+        std::vector<int> expected = {1, 2};
+        std::vector<int> actual(begin(ud), end(ud));
+        REQUIRE(actual == expected);
+        ud.deleteItem(1);
+        REQUIRE(ud.size() == 1);
+        expected = {2};
+        actual = std::vector<int>(begin(ud), end(ud));
+        REQUIRE(actual == expected);
     }
 }

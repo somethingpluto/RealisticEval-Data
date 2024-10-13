@@ -1,125 +1,82 @@
-Sure! Here's how you can convert the JavaScript Jest test case to a C++ Catch2 test case:
-
-### Original JavaScript Jest Test Case
-
-```javascript
-/**
- * Iterate over list items on a web page and remove ads that contain a specific class name
- */
-function removeAds() {
-    const adClass = 'ad-class';
-    const listItems = document.querySelectorAll('li');
-    
-    listItems.forEach(item => {
-        if (item.classList.contains(adClass)) {
-            item.remove();
-        }
-    });
-}
-
-// Jest test case
-test('removes ads with specific class', () => {
-    // Mocking the DOM elements
-    const mockListItem1 = { classList: { contains: jest.fn(() => false) } };
-    const mockListItem2 = { classList: { contains: jest.fn(() => true) } };
-    global.document = {
-        querySelectorAll: jest.fn(() => [mockListItem1, mockListItem2])
-    };
-
-    removeAds();
-
-    expect(mockListItem1.classList.contains).toHaveBeenCalledWith('ad-class');
-    expect(mockListItem2.classList.contains).toHaveBeenCalledWith('ad-class');
-    expect(global.document.querySelectorAll).toHaveBeenCalledWith('li');
-});
-```
-
-### Converted C++ Catch2 Test Case
-
-In C++, we will need to simulate the DOM behavior using some mocking libraries or custom classes. Below is an example using `std::vector` and custom classes to simulate the DOM elements.
-
-First, let's define our custom DOM classes:
-
-```cpp
-#include <vector>
-#include <string>
-
-class Node {
-public:
-    virtual bool hasClass(const std::string& className) const = 0;
-};
-
-class ListItem : public Node {
-private:
-    std::string className;
-
-public:
-    ListItem(const std::string& className) : className(className) {}
-
-    bool hasClass(const std::string& className) const override {
-        return this->className == className;
-    }
-
-    void remove() {
-        // Simulate removing the node
-    }
-};
-
-class Document {
-private:
-    std::vector<Node*> nodes;
-
-public:
-    void appendNode(Node* node) {
-        nodes.push_back(node);
-    }
-
-    std::vector<ListItem*> getElementsByTagName(const std::string& tagName) {
-        std::vector<ListItem*> result;
-        for (auto node : nodes) {
-            if (tagName == "li" && dynamic_cast<ListItem*>(node)) {
-                result.push_back(static_cast<ListItem*>(node));
-            }
-        }
-        return result;
-    }
-};
-```
-
-Now, let's write the Catch2 test case:
+Here's how you can translate the provided JavaScript Jest test cases into C++ using the Catch2 testing framework:
 
 ```cpp
 #define CATCH_CONFIG_MAIN
 #include <catch2/catch.hpp>
+#include <vector>
+#include <string>
+#include <algorithm>
 
-void removeAds(Document& doc, const std::string& adClass) {
-    auto listItems = doc.getElementsByTagName("li");
-    for (auto item : listItems) {
-        if (item->hasClass(adClass)) {
-            item->remove();
-        }
+class ListItem {
+public:
+    std::string content;
+    std::string className;
+    bool isSponsored() const {
+        return className == "css-16lshh0";
     }
+};
+
+void removeAds(std::vector<ListItem>& items) {
+    items.erase(
+        std::remove_if(items.begin(), items.end(),
+                       [](const ListItem& item) { return item.isSponsored(); }),
+        items.end());
 }
 
-TEST_CASE("Removes ads with specific class", "[dom]") {
-    Document doc;
-    const std::string adClass = "ad-class";
+TEST_CASE("removeAds") {
+    std::vector<ListItem> items;
 
-    // Create mock list items
-    ListItem mockListItem1("normal-class");
-    ListItem mockListItem2(adClass);
+    SECTION("removes a single sponsored product") {
+        items = {{"Sponsored", "css-16lshh0"}, {"Regular Item", ""}};
+        removeAds(items);
+        REQUIRE(items.size() == 2);
+        REQUIRE(items[0].content == "Sponsored");
+    }
 
-    // Append mock list items to the document
-    doc.appendNode(&mockListItem1);
-    doc.appendNode(&mockListItem2);
+    SECTION("removes multiple sponsored products") {
+        items = {
+            {"Sponsored", "css-16lshh0"},
+            {"Regular Item", ""},
+            {"Sponsored", "css-16lshh0"},
+            {"Another Regular Item", ""}
+        };
+        removeAds(items);
+        REQUIRE(items.size() == 4);
+        REQUIRE(items[0].content == "Sponsored");
+        REQUIRE(items[1].content == "Regular Item");
+    }
 
-    // Call the function under test
-    removeAds(doc, adClass);
+    SECTION("does not remove any items if there are no sponsored products") {
+        items = {
+            {"Regular Item", ""},
+            {"Another Regular Item", ""}
+        };
+        removeAds(items);
+        REQUIRE(items.size() == 2);
+        REQUIRE(items[0].content == "Regular Item");
+        REQUIRE(items[1].content == "Another Regular Item");
+    }
 
-    // Verify that only the ad class item was removed
-    REQUIRE(doc.getElementsByTagName("li").size() == 1);
-    REQUIRE_FALSE(dynamic_cast<ListItem*>(doc.getElementsByTagName("li")[0])->hasClass(adClass));
+    SECTION("removes items with nested sponsored indicators") {
+        items = {
+            {"Sponsored", "css-16lshh0"},
+            {"Regular Item", ""}
+        };
+        removeAds(items);
+        REQUIRE(items.size() == 2);
+    }
+
+    SECTION("does not remove items with similar but non-sponsored class names") {
+        items = {
+            {"Not Sponsored", "css-16lshh1"},
+            {"Regular Item", ""}
+        };
+        removeAds(items);
+        REQUIRE(items.size() == 2);
+        REQUIRE(items[0].content == "Not Sponsored");
+        REQUIRE(items[1].content == "Regular Item");
+    }
 }
 ```
 
-This C++ test case uses a simple simulation of a DOM structure to verify that the `removeAds` function correctly removes elements with the specified class name. The `Document`, `ListItem`, and `Node` classes provide basic functionality to simulate the DOM operations.
+In this C++ translation, I've used the Catch2 framework to structure the test cases, focusing on the `removeAds` function's logic. Let me know if you’d like to delve into any specific aspects of this conversion!

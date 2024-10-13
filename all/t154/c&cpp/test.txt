@@ -1,0 +1,92 @@
+Here's how you can convert the TypeScript Jest test cases into C++ Catch2 test cases. The structure is similar, but adjusted for C++ syntax and conventions:
+
+```cpp
+#define CATCH_CONFIG_MAIN
+#include <catch2/catch.hpp>
+#include "your_parse_function.h" // Include the header where parseGitDiff is declared
+
+TEST_CASE("parseGitDiff", "[parseGitDiff]") {
+
+    SECTION("should parse a simple file addition") {
+        std::string diffText = R"(diff --git a/file.txt b/file.txt
+new file mode 100644
+index 0000000..e69de29
+--- /dev/null
++++ b/file.txt)";
+        
+        auto result = parseGitDiff(diffText);
+        REQUIRE(result.size() == 1);
+        REQUIRE(result[0].oldPath == "file.txt");
+        REQUIRE(result[0].newPath == "file.txt");
+        REQUIRE(result[0].newFileMode == "100644");
+    }
+
+    SECTION("should parse a simple file deletion") {
+        std::string diffText = R"(diff --git a/file.txt b/file.txt
+deleted file mode 100644
+index e69de29..0000000
+--- a/file.txt
++++ /dev/null)";
+        
+        auto result = parseGitDiff(diffText);
+        REQUIRE(result.size() == 1);
+        REQUIRE(result[0].oldPath == "file.txt");
+        REQUIRE(result[0].newPath == "file.txt");
+        REQUIRE(result[0].deletedFileMode == "100644");
+    }
+
+    SECTION("should parse a file modification with changes") {
+        std::string diffText = R"(diff --git a/file.txt b/file.txt
+index e69de29..d95f3ad 100644
+--- a/file.txt
++++ b/file.txt
+@@ -0,0 +1 @@
++Hello World)";
+        
+        auto result = parseGitDiff(diffText);
+
+        REQUIRE(result.size() == 1); // Ensure only one file diff is parsed
+        REQUIRE(result[0].oldPath == "file.txt"); // Validate old file path
+        REQUIRE(result[0].newPath == "file.txt"); // Validate new file path
+        REQUIRE(result[0].index == "e69de29..d95f3ad"); // Validate index value
+        REQUIRE(result[0].changes.size() == 4); // Validate changes array size
+        REQUIRE(result[0].changes[0].code == "--- a/file.txt"); // Validate old file path line
+        REQUIRE(result[0].changes[1].code == "+++ b/file.txt"); // Validate new file path line
+        REQUIRE(result[0].changes[2].diff == "@@ -0,0 +1 @@");  // Validate diff header
+        REQUIRE(result[0].changes[3].code == "+Hello World");     // Validate code addition
+    }
+
+    SECTION("should handle multiple file diffs") {
+        std::string diffText = R"(diff --git a/file1.txt b/file1.txt
+index e69de29..d95f3ad 100644
+--- a/file1.txt
++++ b/file1.txt
+@@ -0,0 +1 @@
++Hello World
+diff --git a/file2.txt b/file2.txt
+index 0a1b2c3..d4e5f6a 100644
+--- a/file2.txt
++++ b/file2.txt
+@@ -1 +1 @@
+-Hello
++Hi)";
+        
+        auto result = parseGitDiff(diffText);
+        REQUIRE(result.size() == 2);
+        REQUIRE(result[0].oldPath == "file1.txt");
+        REQUIRE(result[1].oldPath == "file2.txt");
+    }
+
+    SECTION("should return an empty array for empty diff text") {
+        auto result = parseGitDiff("");
+        REQUIRE(result.empty());
+    }
+
+}
+```
+
+### Key Points:
+- Use `REQUIRE` for assertions in Catch2, similar to `expect` in Jest.
+- Each test case is wrapped in a `SECTION` to logically group them.
+- The multiline strings are defined using `R"( ... )` for readability, similar to template literals in JavaScript.
+- Ensure you include the appropriate header file for your `parseGitDiff` function. Adjust the include path as necessary.

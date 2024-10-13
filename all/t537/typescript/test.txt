@@ -1,34 +1,58 @@
-Certainly! Below is the TypeScript version of your Jest test case using `describe`:
+Here’s how you can convert the JavaScript Jest test case to TypeScript while keeping the comments intact:
 
 ```typescript
-import { describe, it, expect } from '@jest/globals';
-
-/**
- * Gets the current time formatted as 'hh:mm AM/PM'.
- *
- * @returns {string} The formatted time string.
- */
-function getTime(): string {
-  const now = new Date();
-  const hours = String(now.getHours()).padStart(2, '0');
-  const minutes = String(now.getMinutes()).padStart(2, '0');
-  const ampm = now.getHours() >= 12 ? 'PM' : 'AM';
-  return `${hours}:${minutes} ${ampm}`;
-}
-
 describe('getTime', () => {
-  it('should return the current time in the format "hh:mm AM/PM"', () => {
-    const currentTime = getTime();
-    const regex = /^(?:[0-9]|1[0-2]):[0-5][0-9] (AM|PM)$/;
-    
-    // Check if the returned value matches the expected format
-    expect(currentTime).toMatch(regex);
-  });
+    const mockDate = (dateString: string): void => {
+        const date = new Date(dateString);
+        jest.spyOn(global, 'Date').mockImplementation(() => date);
+    };
+
+    afterEach(() => {
+        jest.restoreAllMocks();
+    });
+
+    test('should return a string', () => {
+        mockDate('2024-10-01T10:30:00'); // Mocking a specific date and time
+        const result: string = getTime();
+        expect(typeof result).toBe('string');
+    });
+
+    test('should return a formatted time string including AM/PM', () => {
+        mockDate('2024-10-01T15:45:00'); // 3:45 PM
+        const result: string = getTime();
+        expect(result).toMatch(/^\d{1,2}:\d{2} (AM|PM)$/);
+    });
+
+    test('should return the correct time during AM hours', () => {
+        mockDate('2024-10-01T08:15:00'); // 8:15 AM
+        const result: string = getTime();
+        expect(result).toBe('8:15 AM');
+    });
+
+    test('should return the correct time during PM hours', () => {
+        mockDate('2024-10-01T17:20:00'); // 5:20 PM
+        const result: string = getTime();
+        expect(result).toBe('5:20 PM');
+    });
+
+    test('should return "12:00 AM" at midnight', () => {
+        mockDate('2024-10-01T00:00:00'); // 12:00 AM
+        const result: string = getTime();
+        expect(result).toBe('12:00 AM');
+    });
+
+    test('should return "12:00 PM" at noon', () => {
+        mockDate('2024-10-01T12:00:00'); // 12:00 PM
+        const result: string = getTime();
+        expect(result).toBe('12:00 PM');
+    });
+
+    test('should handle single-digit minutes correctly', () => {
+        mockDate('2024-10-01T09:05:00'); // 9:05 AM
+        const result: string = getTime();
+        expect(result).toBe('9:05 AM');
+    });
 });
 ```
 
-In this TypeScript version:
-- I've added the necessary imports for Jest testing.
-- I've implemented the `getTime` function to return the current time in the specified format.
-- I've used the `describe` and `it` functions to structure the test case.
-- I've included a regular expression to check if the returned value matches the expected format (`hh:mm AM/PM`).
+If you have any further questions or need to delve into specific parts of the code, feel free to ask!

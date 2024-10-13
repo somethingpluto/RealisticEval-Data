@@ -1,0 +1,75 @@
+Here's how you can convert the provided JavaScript Jest test case into a JUnit 4 test case in Java. This assumes that you have a class `Tester` with a method `checkCSSHighlightAndAdd()` that we are testing.
+
+```java
+package org.real.temp;
+
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+public class Tester {
+    private boolean cssRuleExistsForHighlight = false;
+    private StringBuilder styleSheet;
+
+    public void checkCSSHighlightAndAdd() {
+        if (!cssRuleExistsForHighlight) {
+            styleSheet.append(".highlight { background-color: yellow; color: black; }");
+            cssRuleExistsForHighlight = true;
+        }
+    }
+
+    @Before
+    public void setUp() {
+        // Clean up the style sheet before each test
+        styleSheet = new StringBuilder();
+        cssRuleExistsForHighlight = false;
+    }
+
+    @Test
+    public void shouldAddNewStyleElementWithHighlightCSSRuleIfNotExists() {
+        checkCSSHighlightAndAdd();
+        
+        // Check that the style element contains the correct CSS rule
+        assertTrue(styleSheet.toString().contains("background-color: yellow;"));
+    }
+
+    @Test
+    public void shouldNotAddNewCSSRuleIfCSSRuleAlreadyExists() {
+        // Simulate existing condition
+        styleSheet.append(".highlight { background-color: yellow; }");
+        cssRuleExistsForHighlight = true;
+
+        checkCSSHighlightAndAdd();
+
+        // Check that only one rule is present
+        String[] rules = styleSheet.toString().split(";");
+        assertEquals(1, rules.length);
+    }
+
+    @Test
+    public void shouldAddOnlyOneRuleEvenIfCalledMultipleTimes() {
+        checkCSSHighlightAndAdd();
+        checkCSSHighlightAndAdd();  // Call the function again
+
+        // Check that only one rule is present
+        String[] rules = styleSheet.toString().split(";");
+        assertEquals(1, rules.length);
+    }
+
+    @Test
+    public void shouldCorrectlyAppendStyleElementToDocumentHead() {
+        checkCSSHighlightAndAdd();
+
+        // Check that the style element is indeed appended to the head
+        assertFalse(styleSheet.toString().isEmpty());
+    }
+}
+```
+
+### Explanation:
+- **JUnit Setup**: Each test starts with the `@Before` annotated method `setUp()` to reset the state.
+- **Test Methods**: Each `@Test` method represents a test case from your JavaScript code, checking the conditions with assertions.
+- **Assertions**: Used `assertTrue`, `assertFalse`, and `assertEquals` to verify the expected behavior.
+
+This code uses a `StringBuilder` to simulate a stylesheet, as Java does not have a direct equivalent to the DOM manipulations in JavaScript.

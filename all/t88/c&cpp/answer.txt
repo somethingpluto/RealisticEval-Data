@@ -1,64 +1,40 @@
-Sure, here's the equivalent C++ code for the given JavaScript function:
+To convert the given JavaScript function to C++, you can use the following code:
 
 ```cpp
 #include <iostream>
-#include <string>
-#include <vector>
 #include <sstream>
-#include <algorithm>
+#include <vector>
+#include <string>
 
-// Function to check if the cron expression has any hour between 2 and 4 AM
 bool isCronBetween2And4AM(const std::string& cronExpression) {
-    std::istringstream iss(cronExpression);
+    std::istringstream stream(cronExpression);
+    std::string part;
     std::vector<int> hours;
 
-    // Extract the hour part from the cron expression
-    std::string hourPart;
-    std::string token;
-    int tokenCount = 0;
-    while (std::getline(iss, token, ' ')) {
-        if (++tokenCount == 2) {
-            hourPart = token;
-            break;
-        }
+    // Skip the first part (minute part)
+    stream >> part; 
+    // Get the hour part
+    stream >> part;
+
+    std::istringstream hourStream(part);
+    std::string hour;
+    while (std::getline(hourStream, hour, ',')) {
+        hours.push_back(std::stoi(hour));
     }
 
-    // Split the hour part by commas and convert to integers
-    std::istringstream hourStream(hourPart);
-    std::string hourToken;
-    while (std::getline(hourStream, hourToken, ',')) {
-        try {
-            int hour = std::stoi(hourToken);
-            hours.push_back(hour);
-        } catch (const std::invalid_argument&) {
-            // Ignore invalid tokens
+    for (int hour : hours) {
+        if (hour >= 2 && hour < 4) {
+            return true;
         }
     }
-
-    // Check if any hour is between 2 and 4 AM
-    return std::any_of(hours.begin(), hours.end(), [](int hour) {
-        return hour >= 2 && hour < 4;
-    });
+    return false;
 }
 
 int main() {
-    std::string cronExpression = "*/5 2-4 * * *";
-    bool result = isCronBetween2And4AM(cronExpression);
-    std::cout << "Is the cron expression between 2 and 4 AM? " << (result ? "Yes" : "No") << std::endl;
+    std::string cron = "0 2,3 * * *";
+    std::cout << std::boolalpha << isCronBetween2And4AM(cron) << std::endl;
     return 0;
 }
 ```
 
-### Explanation:
-1. **Splitting the Cron Expression**:
-   - The `cronExpression` is split into tokens using spaces as delimiters.
-   - The second token (index 1) represents the hour part.
-
-2. **Parsing the Hour Part**:
-   - The hour part is further split by commas and converted to integers.
-
-3. **Checking Hours**:
-   - The `std::any_of` algorithm checks if any of the hours are between 2 and 4 AM.
-
-4. **Main Function**:
-   - Demonstrates how to call the `isCronBetween2And4AM` function with a sample cron expression and prints the result.
+This C++ code implements the same logic as your JavaScript function, checking if any hour in the cron expression falls between 2 AM and 4 AM.

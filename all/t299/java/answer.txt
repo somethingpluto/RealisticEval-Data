@@ -1,43 +1,46 @@
-Here's how you can convert the JavaScript code to Java:
+Here’s the equivalent Java code for the given JavaScript function:
 
 ```java
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
-/**
- * Calculates the age from the given birth date string and returns a string containing the original birth date and the calculated age. If the entered date string is invalid or empty, the function returns an empty string.
- *
- * @param birthDateString - The birth date as a string in a recognizable date format (e.g., 'YYYY-MM-DD').
- * @return A string that includes the original birth date and the calculated age in the format 'birthDateString (age)', or an empty string if the input is invalid.
- */
-public class Main {
-
-    public static void main(String[] args) {
-        System.out.println(calculateAge("1990-05-24"));
-        System.out.println(calculateAge(""));
-        System.out.println(calculateAge("not a date"));
-    }
+public class AgeCalculator {
 
     public static String calculateAge(String birthDateString) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
-        try {
-            LocalDate birthDate = LocalDate.parse(birthDateString, formatter);
-            LocalDate today = LocalDate.now();
-            int age = today.getYear() - birthDate.getYear();
-
-            if (today.getMonthValue() < birthDate.getMonthValue() || 
-                (today.getMonthValue() == birthDate.getMonthValue() && today.getDayOfMonth() < birthDate.getDayOfMonth())) {
-                age--;
-            }
-            
-            return birthDateString + " (" + age + ")";
-        } catch (DateTimeParseException e) {
+        if (birthDateString == null || birthDateString.isEmpty()) {
             return "";
         }
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        Date birthDate;
+        try {
+            birthDate = sdf.parse(birthDateString);
+        } catch (ParseException e) {
+            return "";
+        }
+
+        Date today = new Date();
+        int age = today.getYear() + 1900 - birthDate.getYear(); // getYear() returns year since 1900
+
+        boolean isBirthdayPassed = today.getMonth() > birthDate.getMonth() ||
+                (today.getMonth() == birthDate.getMonth() && today.getDate() >= birthDate.getDate());
+
+        if (!isBirthdayPassed) {
+            age--;
+        }
+
+        return birthDateString + " (" + age + ")";
+    }
+
+    public static void main(String[] args) {
+        // Example usage
+        System.out.println(calculateAge("2000-01-15")); // Change the date string as needed
     }
 }
 ```
 
-This Java code does the same thing as your JavaScript function: it calculates the person's age based on their birthdate. If the birthdate is not valid, it returns an empty string.
+### Notes:
+1. **Date Format**: The code assumes the date format is `"yyyy-MM-dd"`. Adjust the `SimpleDateFormat` pattern if needed.
+2. **Date Handling**: Java's `Date` class has some deprecated methods. Consider using `java.time.LocalDate` in Java 8 and above for better date handling.
+3. **Error Handling**: The Java code includes basic error handling for parsing the date. If the date string is invalid, it returns an empty string.

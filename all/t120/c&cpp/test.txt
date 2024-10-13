@@ -1,0 +1,88 @@
+Here’s how you can convert the provided Jest test cases into Catch2 test cases in C++:
+
+```cpp
+#define CATCH_CONFIG_MAIN
+#include <catch2/catch.hpp>
+#include <tinyxml2.h> // Use for HTML/XML parsing
+#include <vector>
+#include <string>
+
+using namespace tinyxml2;
+
+std::vector<std::vector<std::string>> extractCSVDataFromHTML(const std::string &html);
+
+TEST_CASE("HTML to CSV Extraction Tests") {
+    auto createMockDocument = [](const std::string &html) {
+        return html; // Return the HTML string directly for testing purposes
+    };
+
+    SECTION("Table with multiple rows and columns") {
+        const std::string testCaseHTML = R"(
+            <table class="waffle">
+                <tbody>
+                    <tr><td>Cell 1</td><td>Cell 2</td></tr>
+                    <tr><td>Cell 3</td><td>Cell 4</td></tr>
+                </tbody>
+            </table>)";
+        auto document = createMockDocument(testCaseHTML);
+        REQUIRE(extractCSVDataFromHTML(document) == std::vector<std::vector<std::string>>{
+            {"Cell 1", "Cell 2"},
+            {"Cell 3", "Cell 4"}
+        });
+    }
+
+    SECTION("Table with empty cells") {
+        const std::string testCaseHTML = R"(
+            <table class="waffle">
+                <tbody>
+                    <tr><td>Cell 1</td><td></td></tr>
+                    <tr><td></td><td>Cell 4</td></tr>
+                </tbody>
+            </table>)";
+        auto document = createMockDocument(testCaseHTML);
+        REQUIRE(extractCSVDataFromHTML(document) == std::vector<std::vector<std::string>>{
+            {"Cell 1", ""},
+            {"", "Cell 4"}
+        });
+    }
+
+    SECTION("Table with only one row") {
+        const std::string testCaseHTML = R"(
+            <table class="waffle">
+                <tbody>
+                    <tr><td>Single Cell 1</td><td>Single Cell 2</td></tr>
+                </tbody>
+            </table>)";
+        auto document = createMockDocument(testCaseHTML);
+        REQUIRE(extractCSVDataFromHTML(document) == std::vector<std::vector<std::string>>{
+            {"Single Cell 1", "Single Cell 2"}
+        });
+    }
+
+    SECTION("Table with only one column") {
+        const std::string testCaseHTML = R"(
+            <table class="waffle">
+                <tbody>
+                    <tr><td>Column Cell 1</td></tr>
+                    <tr><td>Column Cell 2</td></tr>
+                </tbody>
+            </table>)";
+        auto document = createMockDocument(testCaseHTML);
+        REQUIRE(extractCSVDataFromHTML(document) == std::vector<std::vector<std::string>>{
+            {"Column Cell 1"},
+            {"Column Cell 2"}
+        });
+    }
+
+    SECTION("No table with the class 'waffle' present") {
+        const std::string testCaseHTML = R"(
+            <div>
+                <p>No table here!</p>
+            </div>)";
+        auto document = createMockDocument(testCaseHTML);
+        REQUIRE(extractCSVDataFromHTML(document).empty());
+    }
+}
+```
+
+Make sure to implement the `extractCSVDataFromHTML` function to handle the parsing logic as needed. Adjust the HTML parsing library if necessary.

@@ -1,0 +1,59 @@
+Here's the equivalent C++ code for the provided TypeScript function. This code uses the `<chrono>` library for date and time manipulation and the `<iomanip>` and `<sstream>` libraries for formatting the output.
+
+```cpp
+#include <iostream>
+#include <chrono>
+#include <ctime>
+#include <iomanip>
+#include <sstream>
+#include <vector>
+
+std::string getRelativeTime(const std::chrono::system_clock::time_point& messageDate) {
+    auto now = std::chrono::system_clock::now();
+    auto timeDifference = std::chrono::duration_cast<std::chrono::milliseconds>(now - messageDate).count();
+
+    const long long oneDay = 1000 * 60 * 60 * 24; // milliseconds in one day
+    long long daysDifference = timeDifference / oneDay;
+
+    // Check if the message was created today
+    if (daysDifference == 0) {
+        return "Today";
+    }
+    // Check if the message was created yesterday
+    else if (daysDifference == 1) {
+        return "Yesterday";
+    }
+    // Check if the message was created within the past week (not today or yesterday)
+    else if (daysDifference < 7) {
+        std::vector<std::string> daysOfWeek = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
+        
+        // Get the day of the week for the message date
+        std::time_t messageTimeT = std::chrono::system_clock::to_time_t(messageDate);
+        std::tm* messageTm = std::localtime(&messageTimeT);
+        return daysOfWeek[messageTm->tm_wday];
+    }
+    // If the message was created earlier than one week ago
+    else {
+        // Format the date to a readable string (e.g., "MM/DD/YYYY")
+        std::time_t messageTimeT = std::chrono::system_clock::to_time_t(messageDate);
+        std::tm* messageTm = std::localtime(&messageTimeT);
+        
+        std::ostringstream oss;
+        oss << std::put_time(messageTm, "%m/%d/%Y");
+        return oss.str();
+    }
+}
+
+int main() {
+    // Example usage
+    auto messageDate = std::chrono::system_clock::now() - std::chrono::hours(24); // Example date (1 day ago)
+    std::cout << getRelativeTime(messageDate) << std::endl;
+    return 0;
+}
+```
+
+### Explanation:
+- **Date Handling**: The code uses `std::chrono::system_clock` to manage the current time and the `messageDate`.
+- **Days Calculation**: The difference in days is computed using milliseconds.
+- **String Formatting**: The date is formatted to a "MM/DD/YYYY" string using `std::ostringstream` and `std::put_time`.
+- **Example Usage**: The `main` function demonstrates how to use `getRelativeTime`. You can adjust the `messageDate` for testing different cases.

@@ -1,65 +1,51 @@
-Sure! Here's how you can translate the given JavaScript code into C++ code using standard libraries and basic string manipulation:
+Here's the equivalent C++ code for your JavaScript function that generates a cyclic tone sequence based on the Circle of Fifths:
 
 ```cpp
 #include <iostream>
 #include <vector>
 #include <string>
+#include <unordered_map>
 
-// A simple structure to represent musical intervals
-struct Interval {
-    static std::string get(const std::string& intervalName) {
-        if (intervalName == "P5") {
-            // In this simplified version, we assume P5 means moving 7 semitones
-            return "P5";
-        }
-        return "";
-    }
-};
-
-// A simple structure to represent musical notes
-struct Note {
+class Note {
+public:
     static std::string transpose(const std::string& note, const std::string& interval) {
-        int semitones = 0;
-        if (interval == "P5") {
-            semitones = 7; // Perfect fifth is 7 semitones
-        }
-
-        // Define the chromatic scale
-        const std::vector<std::string> chromaticScale = {
-            "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"
+        // Define the musical scale and intervals
+        const std::unordered_map<std::string, int> noteMap = {
+            {"C", 0}, {"C#", 1}, {"Db", 1}, {"D", 2}, {"D#", 3}, {"Eb", 3},
+            {"E", 4}, {"F", 5}, {"F#", 6}, {"Gb", 6}, {"G", 7}, {"G#", 8},
+            {"Ab", 8}, {"A", 9}, {"A#", 10}, {"Bb", 10}, {"B", 11}
         };
 
-        // Find the index of the current note
-        int currentIndex = -1;
-        for (int i = 0; i < chromaticScale.size(); ++i) {
-            if (chromaticScale[i] == note) {
-                currentIndex = i;
-                break;
+        // Transpose by perfect fifth (P5) which is 7 half steps
+        int steps = 7;
+
+        auto it = noteMap.find(note);
+        if (it == noteMap.end()) {
+            throw std::invalid_argument("Invalid note");
+        }
+
+        int newNoteIndex = (it->second + steps) % 12;
+        for (const auto& pair : noteMap) {
+            if (pair.second == newNoteIndex) {
+                return pair.first;
             }
         }
 
-        // Calculate the new index after transposition
-        int newIndex = (currentIndex + semitones) % chromaticScale.size();
-
-        // Return the new note
-        return chromaticScale[newIndex];
+        throw std::runtime_error("Failed to transpose note");
     }
 };
 
-/**
- * Generates a cyclic tone sequence of five degrees of length 12 starting with the specified starting note.
- *
- * @param startingNote The musical note to start the Circle of Fifths from (e.g., "C").
- * @return A vector representing the Circle of Fifths.
- */
 std::vector<std::string> createCircleOfFifths(const std::string& startingNote) {
     std::string currentNote = startingNote;  // Initialize with the starting note
-    std::vector<std::string> circle = {currentNote};  // Start the circle with the initial note
+    std::vector<std::string> circle;          // Start the circle
+
+    // Start with the initial note
+    circle.push_back(currentNote);
 
     // Loop to generate the next 11 notes in the circle
-    for (int i = 0; i < 11; ++i) {
+    for (int i = 0; i < 11; i++) {
         // Transpose the current note up by a perfect fifth (P5)
-        currentNote = Note::transpose(currentNote, Interval::get("P5"));
+        currentNote = Note::transpose(currentNote, "P5");
         circle.push_back(currentNote);  // Add the transposed note to the circle
     }
 
@@ -67,27 +53,22 @@ std::vector<std::string> createCircleOfFifths(const std::string& startingNote) {
 }
 
 int main() {
-    std::vector<std::string> circle = createCircleOfFifths("C");
-    for (const auto& note : circle) {
-        std::cout << note << std::endl;
+    std::string startingNote = "C";  // Example starting note
+    std::vector<std::string> circle = createCircleOfFifths(startingNote);
+
+    // Print the Circle of Fifths
+    for (const std::string& note : circle) {
+        std::cout << note << " ";
     }
+    std::cout << std::endl;
+
     return 0;
 }
 ```
 
 ### Explanation:
-1. **Structures `Interval` and `Note`:**
-   - These structures mimic the behavior of the Tonal.js library functions.
-   - `Interval::get` returns the interval name.
-   - `Note::transpose` transposes a note by a given interval.
+- The `Note` class has a static method `transpose` that transposes a note up by a perfect fifth (7 half steps).
+- The `createCircleOfFifths` function initializes the circle with the starting note and then uses a loop to generate the next 11 notes.
+- In the `main` function, the Circle of Fifths is created starting from "C" and printed out.
 
-2. **Chromatic Scale:**
-   - A vector `chromaticScale` is defined to represent the chromatic scale.
-   - The function `transpose` uses this scale to find the new note after transposition.
-
-3. **Function `createCircleOfFifths`:**
-   - This function generates the Circle of Fifths starting from the given note.
-   - It uses the `transpose` method to move up by a perfect fifth (P5).
-
-4. **Main Function:**
-   - Demonstrates the usage of `createCircleOfFifths` and prints the resulting circle of fifths.
+You can compile and run this C++ code in an appropriate environment to see the output.

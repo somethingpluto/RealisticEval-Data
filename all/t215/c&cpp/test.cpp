@@ -1,27 +1,81 @@
-TEST_CASE("Replace words in file", "[file_replacement]") {
-    // Define a sample input file content
-    std::string file_content = "hello world\nthis is a test";
+TEST_CASE("Test replace_words_in_file") {
+    SECTION("test_replace_single_word") {
+        const std::string file_path = "dummy_path.txt";
+        const std::unordered_map<std::string, std::string> replacement_dict = {{"hello", "hi"}};
+        const std::string expected_output = "hi world";
 
-    // Write the sample input file to disk
-    std::ofstream file("test_input.txt");
-    file << file_content;
-    file.close();
+        // Mock file content
+        std::istringstream mock_file_content("hello world");
 
-    // Define the replacement dictionary
-    std::unordered_map<std::string, std::string> replacement_dict = {
-        {"hello", "hi"},
-        {"world", "earth"}
-    };
+        // Redirect file stream to mock file content
+        std::istringstream original_cin(std::cin.rdbuf());
+        std::cin.rdbuf(mock_file_content.rdbuf());
 
-    // Call the function under test
-    std::string result = replace_words_in_file("test_input.txt", replacement_dict);
+        std::string result = replaceWordsInFile(file_path, replacement_dict);
 
-    // Expected output after replacements
-    std::string expected_output = "hi earth\ntest is a test";
+        // Restore original file stream
+        std::cin.rdbuf(original_cin.rdbuf());
 
-    // Check if the result matches the expected output
-    REQUIRE(result == expected_output);
+        REQUIRE(result == expected_output);
+    }
 
-    // Clean up the temporary file
-    remove("test_input.txt");
+    SECTION("test_replace_multiple_words") {
+        const std::string file_path = "dummy_path.txt";
+        const std::unordered_map<std::string, std::string> replacement_dict = {{"hello", "hi"}, {"world", "earth"}};
+        const std::string expected_output = "hi earth";
+
+        // Mock file content
+        std::istringstream mock_file_content("hello world");
+
+        // Redirect file stream to mock file content
+        std::istringstream original_cin(std::cin.rdbuf());
+        std::cin.rdbuf(mock_file_content.rdbuf());
+
+        std::string result = replaceWordsInFile(file_path, replacement_dict);
+
+        // Restore original file stream
+        std::cin.rdbuf(original_cin.rdbuf());
+
+        REQUIRE(result == expected_output);
+    }
+
+    SECTION("test_no_replacement") {
+        const std::string file_path = "dummy_path.txt";
+        const std::unordered_map<std::string, std::string> replacement_dict = {{"goodbye", "bye"}};
+        const std::string expected_output = "hello world";
+
+        // Mock file content
+        std::istringstream mock_file_content("hello world");
+
+        // Redirect file stream to mock file content
+        std::istringstream original_cin(std::cin.rdbuf());
+        std::cin.rdbuf(mock_file_content.rdbuf());
+
+        std::string result = replaceWordsInFile(file_path, replacement_dict);
+
+        // Restore original file stream
+        std::cin.rdbuf(original_cin.rdbuf());
+
+        REQUIRE(result == expected_output);
+    }
+
+    SECTION("test_empty_file") {
+        const std::string file_path = "dummy_path.txt";
+        const std::unordered_map<std::string, std::string> replacement_dict = {{"hello", "hi"}};
+        const std::string expected_output = "";
+
+        // Mock file content
+        std::istringstream mock_file_content("");
+
+        // Redirect file stream to mock file content
+        std::istringstream original_cin(std::cin.rdbuf());
+        std::cin.rdbuf(mock_file_content.rdbuf());
+
+        std::string result = replaceWordsInFile(file_path, replacement_dict);
+
+        // Restore original file stream
+        std::cin.rdbuf(original_cin.rdbuf());
+
+        REQUIRE(result == expected_output);
+    }
 }

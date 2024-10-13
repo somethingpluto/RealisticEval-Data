@@ -1,33 +1,29 @@
+/**
+ * Check for ticker symbols with the same ex-dividend date but different dividend amounts.
+ *
+ * Parameters:
+ * - records (array of arrays): Each array contains [ticker, exDividendDate, dividendAmount].
+ *
+ * Returns:
+ * - array of arrays: Each array contains [ticker, exDividendDate] that have different dividend amounts.
+ */
 function checkDividendVariances(records) {
-    /**
-     * Check for ticker symbols with the same ex-dividend date but different dividend amounts.
-     * @param {Array} records - Each array element contains [ticker, ex_dividend_date, dividend_amount].
-     * @returns {Array} - Each array element contains [ticker, ex_dividend_date] that have different dividend amounts.
-     */
+    // Object to store dividend amounts by [ticker, exDividendDate]
+    const dividendDict = {};
 
-    const varianceMap = {};
-    const result = [];
-
-    records.forEach(record => {
-        const [ticker, exDividendDate, dividendAmount] = record;
-
-        if (!varianceMap[ticker]) {
-            varianceMap[ticker] = {};
+    // Iterate through the records
+    for (const [ticker, exDividendDate, dividendAmount] of records) {
+        const key = [ticker, exDividendDate].join('|'); // Use a string key for JavaScript objects
+        if (!dividendDict[key]) {
+            dividendDict[key] = new Set();
         }
+        dividendDict[key].add(dividendAmount);
+    }
 
-        if (!varianceMap[ticker][exDividendDate]) {
-            varianceMap[ticker][exDividendDate] = [];
-        }
-
-        varianceMap[ticker][exDividendDate].push(dividendAmount);
-    });
-
-    Object.keys(varianceMap).forEach(ticker => {
-        Object.keys(varianceMap[ticker]).forEach(exDividendDate => {
-            if (varianceMap[ticker][exDividendDate].length > 1) {
-                result.push([ticker, exDividendDate]);
-            }
-        });
+    // Find entries with more than one unique dividend amount
+    const result = Object.entries(dividendDict).filter(([key, amounts]) => amounts.size > 1).map(([key]) => {
+        const [ticker, exDividendDate] = key.split('|');
+        return [ticker, exDividendDate];
     });
 
     return result;

@@ -1,45 +1,39 @@
-Sure! Below is the equivalent Java code for the provided JavaScript function:
+Here’s a Java version of your JavaScript code:
 
 ```java
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.net.URL;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 
-/**
- * Extracts the fileID from the given URL query args. If not found returns null.
- * For example:
- *      input: https://example.com/download?fileId=12345
- *      output: 12345
- *
- * @param url - The URL from which the file ID is to be extracted.
- * @return The extracted file ID if present, otherwise null if the URL does not conform to the expected format.
- */
-public class FileIdExtractor {
+public class UrlUtil {
 
+    /**
+     * Extract the file ID from the given URL query args.
+     *
+     * @param url - The URL from which the file ID is to be extracted.
+     * @return - The extracted file ID if present, otherwise null if the URL does not conform to the expected format.
+     */
     public static String getFileIdFromUrl(String url) {
-        // Regular expression to extract the fileId parameter value
-        String regex = "fileId=([^&]*)";
-        Pattern pattern = Pattern.compile(regex);
-        Matcher matcher = pattern.matcher(url);
+        try {
+            URL urlObject = new URL(url);
+            String query = urlObject.getQuery();
+            Map<String, String> queryPairs = new HashMap<>();
 
-        if (matcher.find()) {
-            return matcher.group(1);
-        } else {
-            return null;
+            for (String pair : query.split("&")) {
+                int idx = pair.indexOf("=");
+                queryPairs.put(URLDecoder.decode(pair.substring(0, idx), StandardCharsets.UTF_8), 
+                               URLDecoder.decode(pair.substring(idx + 1), StandardCharsets.UTF_8));
+            }
+
+            return queryPairs.get("fileId"); // Return the decoded file ID if found
+        } catch (Exception e) {
+            System.err.println("Invalid URL: " + e);
+            return null; // Return null if the URL is invalid or an error occurs.
         }
-    }
-
-    public static void main(String[] args) {
-        // Test cases
-        System.out.println(getFileIdFromUrl("https://example.com/download?fileId=12345")); // Output: 12345
-        System.out.println(getFileIdFromUrl("https://example.com/download?otherParam=value&fileId=67890")); // Output: 67890
-        System.out.println(getFileIdFromUrl("https://example.com/download")); // Output: null
     }
 }
 ```
 
-### Explanation:
-1. **Regex**: The regular expression `fileId=([^&]*)` is used to match the `fileId` parameter in the URL. It captures everything after `fileId=` until the next `&` character or the end of the string.
-2. **Pattern and Matcher**: The `Pattern` and `Matcher` classes from the `java.util.regex` package are used to apply the regex to the URL and find matches.
-3. **Method**: The `getFileIdFromUrl` method takes a URL as input and returns the extracted `fileId` or `null` if it is not found.
-
-This Java code should work similarly to your original JavaScript function.
+This code utilizes Java's `URL` and `URLDecoder` to parse the query string and extract the file ID.

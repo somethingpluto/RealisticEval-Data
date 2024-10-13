@@ -1,50 +1,50 @@
 import { Deque } from 'collections/deque';
 
-class UniqueDeque {
-  private deque: Deque<any>;
+class UniqueDeque<T> {
+  private deque: Deque<T>;
+  private set: Set<T>;
 
   constructor() {
-    this.deque = new Deque();
+    this.deque = new Deque<T>();
+    this.set = new Set<T>();
   }
 
-  add(item: any): boolean {
-    if (this.contains(item)) {
-      return false;
+  add(item: T): boolean {
+    if (!this.set.has(item)) {
+      this.deque.push(item);
+      this.set.add(item);
+      return true;
     }
-    this.deque.addBack(item);
-    return true;
+    return false;
   }
 
-  delete(item: any): boolean {
-    const index = this.deque.toArray().indexOf(item);
-    if (index === -1) {
-      return false;
+  delete(item: T): boolean {
+    if (this.set.has(item)) {
+      const index = this.deque.toArray().findIndex((x) => x === item);
+      if (index !== -1) {
+        this.deque.deleteAt(index);
+      }
+      this.set.delete(item);
+      return true;
     }
-    this.deque.removeAt(index);
-    return true;
+    return false;
   }
 
-  contains(item: any): boolean {
-    return this.deque.toArray().includes(item);
+  contains(item: T): boolean {
+    return this.set.has(item);
   }
 
-  get length(): number {
+  length(): number {
     return this.deque.length;
   }
 
-  [Symbol.iterator](): Iterator<any> {
-    let index = 0;
-    const array = this.deque.toArray();
-    const length = array.length;
+  *[Symbol.iterator](): Iterator<T> {
+    for (const item of this.deque) {
+      yield item;
+    }
+  }
 
-    return {
-      next(): IteratorResult<any> {
-        if (index < length) {
-          return { value: array[index++], done: false };
-        } else {
-          return { value: undefined, done: true };
-        }
-      },
-    };
+  toString(): string {
+    return `UniqueDeque(${Array.from(this.deque).toString()})`;
   }
 }

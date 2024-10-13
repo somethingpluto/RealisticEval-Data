@@ -3,42 +3,46 @@ package org.real.temp;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 
 public class Answer {
 
     /**
-     * Read a text file, replace words according to a dictionary map, and return the modified text.
+     * Reads a text file, replaces words according to a map, and returns the modified text.
      *
-     * @param filePath       The path to the text file.
-     * @param replacementDict A dictionary where the keys are words to be replaced, and the values are the replacement words.
-     * @return The text with the words replaced.
+     * @param filePath The path to the text file.
+     * @param replacementMap A map where the keys are words to be replaced, and the values are the replacement words.
+     * @return The text with the words replaced or an error message if an exception occurs.
      */
-    public static String replaceWordsInFile(String filePath, Map<String, String> replacementDict) {
-        StringBuilder result = new StringBuilder();
-        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
+    public static String replaceWordsInFile(String filePath, Map<String, String> replacementMap) {
+        StringBuilder text = new StringBuilder();
+        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
             String line;
-            while ((line = br.readLine()) != null) {
-                for (Map.Entry<String, String> entry : replacementDict.entrySet()) {
-                    line = line.replace(entry.getKey(), entry.getValue());
-                }
-                result.append(line).append("\n");
+            while ((line = reader.readLine()) != null) {
+                text.append(line).append("\n");
             }
+
+            // Replace words according to the replacement map
+            for (Map.Entry<String, String> entry : replacementMap.entrySet()) {
+                text = new StringBuilder(text.toString().replace(entry.getKey(), entry.getValue()));
+            }
+
+            return text.toString();
+
         } catch (IOException e) {
-            e.printStackTrace();
+            if (e instanceof java.io.FileNotFoundException) {
+                return "Error: The file was not found.";
+            }
+            return "Error: " + e.getMessage();
+        } catch (Exception e) {
+            return "Error: " + e.getMessage();
         }
-        return result.toString().trim(); // Remove trailing newline
     }
 
+    // Example usage
     public static void main(String[] args) {
-        // Example usage
-        Map<String, String> replacements = new HashMap<>();
-        replacements.put("hello", "hi");
-        replacements.put("world", "earth");
-
-        String filePath = "path/to/your/file.txt";
-        String modifiedText = replaceWordsInFile(filePath, replacements);
-        System.out.println(modifiedText);
+        Map<String, String> replacementMap = Map.of("oldWord", "newWord");
+        String result = replaceWordsInFile("path/to/your/file.txt", replacementMap);
+        System.out.println(result);
     }
 }

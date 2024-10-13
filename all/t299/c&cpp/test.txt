@@ -1,58 +1,33 @@
-Sure, here's how you can convert the JavaScript Jest test case to a C++ Catch2 test case:
-
-First, let's assume you have the `calculateAge` function implemented in C++. Here's a simple implementation for demonstration purposes:
-
-```cpp
-#include <iostream>
-#include <string>
-#include <chrono>
-#include <ctime>
-
-std::string calculateAge(const std::string& birthDateString) {
-    if (birthDateString.empty()) return "";
-
-    std::tm tm = {};
-    strptime(birthDateString.c_str(), "%Y-%m-%d", &tm);
-
-    auto now = std::chrono::system_clock::now();
-    auto nowTimeT = std::chrono::system_clock::to_time_t(now);
-    auto birthTimeT = mktime(&tm);
-
-    if (birthTimeT == -1) return ""; // Invalid date
-
-    auto duration = nowTimeT - birthTimeT;
-    auto years = std::chrono::duration_cast<std::chrono::years>(duration).count();
-
-    return birthDateString + " (" + std::to_string(years) + ")";
-}
-```
-
-Now, let's write the Catch2 test cases for this function:
+Here's the equivalent C++ Catch2 test case for your JavaScript Jest test case:
 
 ```cpp
 #define CATCH_CONFIG_MAIN
-#include "catch.hpp"
+#include <catch2/catch.hpp>
+#include <string>
 
-TEST_CASE("Calculate Age with valid date") {
-    REQUIRE(calculateAge("1990-05-15") == "1990-05-15 (33)");
-}
+// Assuming calculateAge is already defined
 
-TEST_CASE("Calculate Age with invalid date") {
-    REQUIRE(calculateAge("2020-13-01") == "");
-}
+TEST_CASE("calculateAge") {
+    SECTION("Birthday today, should be 24 years old") {
+        REQUIRE(calculateAge("2000-08-23") == "2000-08-23 (24)");
+    }
 
-TEST_CASE("Calculate Age with empty date") {
-    REQUIRE(calculateAge("") == "");
-}
+    SECTION("Birthday has passed this year, should be 34 years old") {
+        REQUIRE(calculateAge("1990-01-15") == "1990-01-15 (34)");
+    }
 
-TEST_CASE("Calculate Age with future date") {
-    REQUIRE(calculateAge("2100-01-01") == "2100-01-01 (-100)");
+    SECTION("Birthday at the end of the year, should be 38 years old") {
+        REQUIRE(calculateAge("1985-12-31") == "1985-12-31 (38)");
+    }
+
+    SECTION("Recently turned 1 year old this year") {
+        REQUIRE(calculateAge("2023-05-05") == "2023-05-05 (1)");
+    }
+
+    SECTION("Invalid date input should return an empty string") {
+        REQUIRE(calculateAge("invalid-date") == "");
+    }
 }
 ```
 
-In this example:
-- `CATCH_CONFIG_MAIN` macro tells Catch2 to automatically generate the main function.
-- `TEST_CASE` macro defines a new test case.
-- `REQUIRE` macro asserts that the expression evaluates to true.
-
-Make sure you have the Catch2 library installed and properly configured in your project. If you're using a build system like CMake, you can add Catch2 as a subdirectory or find it via package managers.
+This code uses the Catch2 framework to set up similar test cases, verifying the output of `calculateAge` against expected results.

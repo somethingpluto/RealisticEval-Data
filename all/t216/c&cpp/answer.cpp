@@ -1,32 +1,44 @@
 #include <iostream>
-#include <cstring>
-#include <sys/ioctl.h>
-#include <net/if.h>
-#include <arpa/inet.h>
+#include <fstream>
+#include <string>
+#include <regex>
+#include <cstdio>
+#include <stdexcept>
 
-std::string getLocalIP(const std::string &interface) {
-    struct ifreq ifr;
-    int fd;
-
-    fd = socket(AF_INET, SOCK_DGRAM, 0);
-    if (fd == -1) {
-        perror("socket");
-        return "Error";
+std::string get_local_ip(const std::string& interface = "wlan0") {
+    std::string command = "ip addr show " + interface;
+    FILE* pipe = popen(command.c_str(), "r");
+    if (!pipe) {
+        throw std::runtime_error("Failed to execute command");
     }
 
-    memset(&ifr, 0, sizeof(ifr));
-    strncpy(ifr.ifr_name, interface.c_str(), IFNAMSIZ-1);
-
-    if (ioctl(fd, SIOCGIFADDR, &ifr) != 0) {
-        close(fd);
-        perror("ioctl");
-        return "Error";
+    std::string result;
+    char buffer[128];
+    while (!feof(pipe)) {
+        if (fgets(buffer, 128, pipe) != nullptr) {
+            result += buffer;
+        }
     }
+    pclose(pipe);
 
-    close(fd);
+    // Regular expression to match IPv4 addresses, excluding the loopback address
+    std::regex ip_pattern("inet ([0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+)/[0-9]+");
 
-    char ip[INET_ADDRSTRLEN];
-    inet_ntop(AF_INET, &((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr, ip, INET_ADDRSTRLEN);
-    
-    return std::string(ip);
+    // Search for IP addresses in the command output
+    std::smatch match;
+    if (std::regex_search(result, match, ip_pattern)) {
+        return match[1];
+    } else {
+        throw std::runtime_error("No local IP found");
+    }
+}
+
+int main() {
+    try {
+        std::string local_ip = get_local_ip();
+        std::cout << "Local IP: " << local_ip << std::endl;
+    } catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+    }
+    return 0;
 }

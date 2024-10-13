@@ -1,42 +1,44 @@
-Here is the equivalent C++ code using the Boost Filesystem library:
+To convert the provided JavaScript code to C++, you can use the following code snippet. This code utilizes the filesystem library available in C++17:
 
 ```cpp
 #include <iostream>
 #include <vector>
-#include <boost/filesystem.hpp>
+#include <string>
+#include <filesystem>
 
-using namespace std;
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 /**
- * Searches for Markdown files in the specified directory and returns the path of the files as an vector
+ * Recursively searches for Markdown files in the specified directory.
  *
- * @param {string} dir - The directory path to search in.
- * @returns {vector<string>} - A vector of paths to Markdown files.
+ * @param dir - The directory path to search in.
+ * @returns A vector of paths to Markdown files.
  */
-vector<string> findMarkdownFiles(const string& dir) {
-    vector<string> result;
-    if (fs::exists(dir) && fs::is_directory(dir)) {
-        for (auto& entry : fs::directory_iterator(dir)) {
-            if (entry.path().extension() == ".md") {
-                result.push_back(entry.path().string());
-            }
+std::vector<std::string> findMarkdownFiles(const fs::path& dir) {
+    std::vector<std::string> markdownFiles;
+
+    for (const auto& entry : fs::directory_iterator(dir)) {
+        if (entry.is_directory()) {
+            auto subFiles = findMarkdownFiles(entry.path());
+            markdownFiles.insert(markdownFiles.end(), subFiles.begin(), subFiles.end());
+        } else if (entry.path().extension() == ".md") {
+            markdownFiles.push_back(entry.path().string());
         }
     }
-    return result;
+
+    return markdownFiles;
 }
 
 int main() {
-    // Example usage:
-    auto markdown_files = findMarkdownFiles("your/directory/path");
-    for (const auto& file : markdown_files) {
-        cout << file << endl;
+    std::string directory = "your_directory_path_here"; // Replace with your directory
+    std::vector<std::string> markdownFiles = findMarkdownFiles(directory);
+
+    for (const auto& file : markdownFiles) {
+        std::cout << file << std::endl;
     }
 
     return 0;
 }
 ```
 
-Note: This code uses the Boost Filesystem library which needs to be installed on your system. You can install it via your package manager or download it from the official website.
-
-Also, remember to replace `"your/directory/path"` with the actual path where you want to search for Markdown files.
+Make sure to replace `"your_directory_path_here"` with the actual path you want to search. This C++ code utilizes recursion and the standard library's filesystem capabilities to achieve the same functionality as the JavaScript version.

@@ -1,36 +1,51 @@
 #include <iostream>
 #include <vector>
-#include <map>
+#include <string>
+#include <unordered_map>
+#include <set>
 
-using namespace std;
+// Function to check for ticker symbols with the same ex-dividend date but different dividend amounts
+std::vector<std::pair<std::string, std::string>> checkDividendVariances(const std::vector<std::tuple<std::string, std::string, int>>& records) {
+    // Dictionary to store dividend amounts by (ticker, ex_dividend_date)
+    std::unordered_map<std::pair<std::string, std::string>, std::set<int>> dividendDict;
 
-struct Record {
-    string ticker;
-    string exDividendDate;
-    double dividendAmount;
-};
+    // Iterate through the records
+    for (const auto& record : records) {
+        const std::string& ticker = std::get<0>(record);
+        const std::string& exDividendDate = std::get<1>(record);
+        int dividendAmount = std::get<2>(record);
 
-vector<Record> checkDividendVariances(vector<Record>& records) {
-    map<string, vector<pair<string, double>>> recordMap;
-
-    for(auto& record : records){
-        recordMap[record.exDividendDate].push_back({record.ticker, record.dividendAmount});
+        std::pair<std::string, std::string> key(ticker, exDividendDate);
+        dividendDict[key].insert(dividendAmount);
     }
 
-    vector<Record> result;
-    
-    for(auto& [key, value] : recordMap){
-        if(value.size() > 1){
-            for(int i = 0; i < value.size(); ++i){
-                for(int j = i + 1; j < value.size(); ++j){
-                    if(value[i].second != value[j].second){
-                        result.push_back(Record{value[i].first, key});
-                        break;
-                    }
-                }
-            }
+    // Find entries with more than one unique dividend amount
+    std::vector<std::pair<std::string, std::string>> result;
+    for (const auto& entry : dividendDict) {
+        if (entry.second.size() > 1) {
+            result.push_back(entry.first);
         }
     }
 
     return result;
+}
+
+int main() {
+    // Example usage
+    std::vector<std::tuple<std::string, std::string, int>> records = {
+        {"AAPL", "2023-06-01", 100},
+        {"AAPL", "2023-06-01", 150},
+        {"GOOGL", "2023-06-01", 200},
+        {"MSFT", "2023-06-01", 120},
+        {"AAPL", "2023-06-02", 100}
+    };
+
+    auto result = checkDividendVariances(records);
+
+    // Print the result
+    for (const auto& entry : result) {
+        std::cout << "(" << entry.first << ", " << entry.second << ")" << std::endl;
+    }
+
+    return 0;
 }

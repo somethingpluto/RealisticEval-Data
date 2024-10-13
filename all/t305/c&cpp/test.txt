@@ -1,62 +1,69 @@
-Certainly! Below is an equivalent C++ Catch2 test case for the JavaScript Jest test case you provided. Note that I'll assume some basic functionality for the `SeededRandom` class in C++. If you have more specific requirements or additional methods, please provide them.
-
-First, let's define the `SeededRandom` class in C++:
-
-```cpp
-#include <iostream>
-#include <random>
-
-class SeededRandom {
-private:
-    std::mt19937 generator;
-public:
-    // Constructor initializes the random number generator with a given seed
-    SeededRandom(unsigned int seed) : generator(seed) {}
-
-    // Generates a random number between 0 and 1
-    double rand() {
-        std::uniform_real_distribution<double> distribution(0.0, 1.0);
-        return distribution(generator);
-    }
-};
-```
-
-Now, let's write the Catch2 test cases for the `SeededRandom` class:
+Here's the equivalent C++ test case using the Catch2 framework, based on your provided JavaScript Jest test case:
 
 ```cpp
 #define CATCH_CONFIG_MAIN
-#include "catch.hpp"
+#include <catch2/catch.hpp>
+#include "SeededRandom.h" // Include the header for your SeededRandom class
 
-TEST_CASE("SeededRandom Class", "[SeededRandom]") {
-    SECTION("Constructor initializes with correct seed") {
-        SeededRandom sr(42);
-        REQUIRE(sr.rand() != SeededRandom(0).rand()); // Different seeds should produce different results
+TEST_CASE("SeededRandom", "[SeededRandom]") {
+    
+    SECTION("generates consistent numbers with the same seed") {
+        SeededRandom seededRand1(42);
+        SeededRandom seededRand2(42);
+
+        REQUIRE(seededRand1.rand() == Catch::Approx(seededRand2.rand()).epsilon(1e-10));
+        REQUIRE(seededRand1.rand() == Catch::Approx(seededRand2.rand()).epsilon(1e-10));
+        REQUIRE(seededRand1.rand() == Catch::Approx(seededRand2.rand()).epsilon(1e-10));
     }
 
-    SECTION("rand method generates numbers between 0 and 1") {
-        SeededRandom sr(42);
-        double randomValue = sr.rand();
-        REQUIRE(randomValue >= 0.0 && randomValue < 1.0); // Ensure the value is within [0, 1)
+    SECTION("generates different numbers with different seeds") {
+        SeededRandom seededRand1(42);
+        SeededRandom seededRand2(24);
+
+        REQUIRE(seededRand1.rand() != Catch::Approx(seededRand2.rand()).epsilon(1e-10));
     }
 
-    SECTION("rand method produces consistent values for the same seed") {
-        SeededRandom sr(42);
-        double firstRandomValue = sr.rand();
-        double secondRandomValue = sr.rand();
-        REQUIRE(firstRandomValue == secondRandomValue); // Same seed should produce the same sequence
+    SECTION("returns numbers between 0 and 1") {
+        SeededRandom seededRand(123456);
+
+        for (int i = 0; i < 1000; ++i) {
+            double randValue = seededRand.rand();
+            REQUIRE(randValue >= 0);
+            REQUIRE(randValue < 1);
+        }
+    }
+
+    SECTION("produces different sequences with different seeds") {
+        SeededRandom seededRand1(123);
+        SeededRandom seededRand2(456);
+
+        std::vector<double> sequence1(5);
+        std::vector<double> sequence2(5);
+
+        for (int i = 0; i < 5; ++i) {
+            sequence1[i] = seededRand1.rand();
+            sequence2[i] = seededRand2.rand();
+        }
+
+        REQUIRE(sequence1 != sequence2);
+    }
+
+    SECTION("consistent sequence with the same seed over multiple calls") {
+        SeededRandom seededRand(987654321);
+
+        std::vector<double> sequence1 = { seededRand.rand(), seededRand.rand(), seededRand.rand() };
+
+        // Re-initialize with the same seed to test consistency
+        SeededRandom seededRand2(987654321);
+        std::vector<double> sequence2 = { seededRand2.rand(), seededRand2.rand(), seededRand2.rand() };
+
+        REQUIRE(sequence1 == sequence2);
     }
 }
 ```
 
-### Explanation:
-
-1. **Class Definition**:
-   - The `SeededRandom` class uses `std::mt19937` for the random number generation, which is a modern Mersenne Twister engine.
-   - The `rand` method uses `std::uniform_real_distribution` to generate a uniform real number between 0 and 1.
-
-2. **Catch2 Test Cases**:
-   - **Constructor**: Ensures that the random number generator is initialized correctly with a given seed.
-   - **rand Method**: Checks if the generated random numbers are within the range [0, 1).
-   - **Consistency Check**: Ensures that the same seed produces the same sequence of random numbers.
-
-Make sure you have Catch2 installed and properly configured in your project to run these tests. If you encounter any issues, feel free to ask!
+### Key Points:
+- Each Jest `test` block is replaced with a Catch2 `SECTION`.
+- The assertion style is adapted to Catch2's syntax (`REQUIRE` and `Catch::Approx`).
+- Loops and data structures are adjusted to fit C++ syntax (using `std::vector`).
+- Make sure to include the appropriate header file for your `SeededRandom` class.

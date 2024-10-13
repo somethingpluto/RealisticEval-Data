@@ -1,57 +1,39 @@
-Here's how you can convert the JavaScript function to Java:
+Here's the equivalent Java code for your JavaScript function:
 
 ```java
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-
 public class RecipePrice {
-    public static void main(String[] args) {
-        // Test the method
-        String recipeId = "exampleRecipeId";
-        double minVal = 10;
-        double maxVal = 30;
-        double price = getPrice(recipeId, minVal, maxVal);
-        System.out.println("Hashed Price: " + price);
-    }
-
     /**
-     * The recipe ID is hashed to produce a price in the specified range
+     * The recipe ID is hashed to produce a price in the specified range.
      *
-     * @param recipeId The ID of the recipe to hash.
-     * @param minVal   The minimum value of the price range.
-     * @param maxVal   The maximum value of the price range.
-     * @return The hashed price, mapped to the specified range with two decimal places.
+     * @param recipeId - The ID of the recipe to hash.
+     * @param minVal - The minimum value of the price range.
+     * @param maxVal - The maximum value of the price range.
+     * @return - The hashed price, mapped to the specified range with two decimal places.
      */
     public static double getPrice(String recipeId, double minVal, double maxVal) {
-        try {
-            MessageDigest md = MessageDigest.getInstance("SHA-256");
-            byte[] messageDigest = md.digest(recipeId.getBytes());
-            BigInteger no = new BigInteger(1, messageDigest);
+        int hash = 0;
 
-            // Get 48 bits from the digest for better distribution
-            long hash = no.longValue() & 0x7FFFFFFFFFFFFFFFL;
-
-            // Map to the desired range
-            double range = (double) hash / Long.MAX_VALUE;
-            double price = minVal + range * (maxVal - minVal);
-
-            // Round to two decimal places
-            return Math.round(price * 100.0) / 100.0;
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
+        // Generate a hash from the recipe ID
+        for (int i = 0; i < recipeId.length(); i++) {
+            int charCode = recipeId.charAt(i);
+            hash = (hash << 5) - hash + charCode; // Equivalent to hash * 31 + char
         }
+
+        // Convert the hash to a positive value
+        double decimalValue = Math.abs(hash);
+
+        // Map the decimal value to the specified price range
+        double mappedValue = (decimalValue % ((maxVal - minVal) * 100)) / 100 + minVal;
+
+        // Ensure the final value has exactly two decimal places
+        return Math.round(mappedValue * 100.0) / 100.0;
+    }
+
+    // Overloaded method with default values
+    public static double getPrice(String recipeId) {
+        return getPrice(recipeId, 10.0, 30.0);
     }
 }
 ```
 
-### Explanation:
-1. **Import Statements**: Import necessary classes for hashing and mathematical operations.
-2. **Main Method**: A test case to demonstrate the usage of `getPrice`.
-3. **getPrice Method**:
-   - **MessageDigest**: Uses SHA-256 to hash the input string.
-   - **BigInteger**: Converts the byte array to a `BigInteger` to handle large numbers.
-   - **Bitwise Operations**: Ensures only positive values are used.
-   - **Mapping to Range**: Maps the hashed value to the specified range `[minVal, maxVal]`.
-   - **Rounding**: Rounds the result to two decimal places.
-
-This Java code should provide similar functionality to your original JavaScript function.
+This Java code captures the ultimate functionality of your JavaScript function while accommodating Java's syntax and type system.

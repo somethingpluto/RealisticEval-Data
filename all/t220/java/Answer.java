@@ -1,26 +1,24 @@
 package org.real.temp;
 
-import java.util.Deque;
+import java.util.LinkedList;
+import java.util.Set;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Set;
+import java.util.ListIterator;
 
 public class Answer {
-    private Deque<Integer> deque;
+    private LinkedList<Integer> deque;
     private Set<Integer> set;
 
     public Answer() {
-        deque = new ArrayDeque<>();
-        set = new HashSet<>();
+        // Initialize a UniqueDeque object using a LinkedList and a HashSet.
+        // The LinkedList stores elements in order, while the HashSet ensures uniqueness.
+        this.deque = new LinkedList<>();
+        this.set = new HashSet<>();
     }
 
-    /**
-     * Add an item to the deque if it is not already present.
-     *
-     * @param item The item to add.
-     * @return true if the item was added, false if it was already present.
-     */
     public boolean add(int item) {
+        // Add an item to the deque if it is not already present.
         if (!set.contains(item)) {
             deque.addLast(item);
             set.add(item);
@@ -29,45 +27,47 @@ public class Answer {
         return false;
     }
 
-    /**
-     * Remove an item from the deque if it exists.
-     *
-     * @param item The item to remove.
-     * @return true if the item was removed, false if it was not found.
-     */
     public boolean delete(int item) {
-        if (set.remove(item)) {
+        // Remove an item from the deque if it exists.
+        if (set.contains(item)) {
             deque.removeFirstOccurrence(item);
+            set.remove(item);
             return true;
         }
         return false;
     }
 
-    /**
-     * Check if an item is present in the deque.
-     *
-     * @param item The item to check.
-     * @return true if the item is present, false otherwise.
-     */
     public boolean contains(int item) {
+        // Check if an item is present in the deque.
         return set.contains(item);
     }
 
-    /**
-     * Get the number of elements in the deque.
-     *
-     * @return The number of unique elements in the deque.
-     */
     public int size() {
-        return set.size();
+        // Get the number of elements in the deque.
+        return deque.size();
     }
 
-    /**
-     * Create an iterator for the deque.
-     *
-     * @return An iterator over the elements in the deque.
-     */
     public Iterator<Integer> iterator() {
+        // Create an iterator for the deque.
         return deque.iterator();
+    }
+
+    @Override
+    public String toString() {
+        // Get a string representation of the UniqueDeque.
+        return "UniqueDeque(" + deque.toString() + ")";
+    }
+
+    public static void main(String[] args) {
+        // Example usage
+        Answer uniqueDeque = new Answer();
+        System.out.println(uniqueDeque.add(1)); // true
+        System.out.println(uniqueDeque.add(2)); // true
+        System.out.println(uniqueDeque.add(1)); // false
+        System.out.println(uniqueDeque.delete(2)); // true
+        System.out.println(uniqueDeque.delete(3)); // false
+        System.out.println(uniqueDeque.contains(1)); // true
+        System.out.println(uniqueDeque.size()); // 1
+        System.out.println(uniqueDeque.toString()); // UniqueDeque([1])
     }
 }

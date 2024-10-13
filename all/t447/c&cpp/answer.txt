@@ -1,49 +1,42 @@
-Sure, here is how you can convert the JavaScript function to C++:
+Here's a C++ version of your JavaScript code to calculate age:
 
 ```cpp
 #include <iostream>
-#include <chrono>
+#include <sstream>
 #include <ctime>
 
-/**
- * Calculate age based on the birth date string entered by the user.
- * Input birthDateString format such as 2000-01-01
- * @param birthDateString
- * @return int
- */
 int calculateAge(const std::string& birthDateString) {
-    // Convert the input string to a time_t object
-    tm tm = {};
-    strptime(birthDateString.c_str(), "%Y-%m-%d", &tm);
+    std::tm birthDate = {};
+    std::istringstream ss(birthDateString);
+    ss >> std::get_time(&birthDate, "%Y-%m-%d");
+    if (ss.fail()) {
+        std::cerr << "Invalid date format. Please enter a valid date." << std::endl;
+        return -1; // Indicate an error
+    }
 
-    // Get the current time
-    auto now = std::chrono::system_clock::now();
-    auto now_c = std::chrono::system_clock::to_time_t(now);
-    tm now_tm = *std::localtime(&now_c);
+    std::time_t now = std::time(0);
+    std::tm* today = std::localtime(&now);
 
-    // Calculate the difference in years
-    int age = now_tm.tm_year - tm.tm_year;
+    int age = today->tm_year + 1900 - (birthDate.tm_year + 1900);
+    int monthDifference = today->tm_mon - birthDate.tm_mon;
 
-    // Adjust if the birthday has not occurred yet this year
-    if (now_tm.tm_mon < tm.tm_mon || 
-        (now_tm.tm_mon == tm.tm_mon && now_tm.tm_mday < tm.tm_mday)) {
-        --age;
+    if (monthDifference < 0 || (monthDifference == 0 && today->tm_mday < birthDate.tm_mday)) {
+        age--;
     }
 
     return age;
 }
 
 int main() {
-    std::string birthDateString = "2000-01-01";
-    std::cout << "Age: " << calculateAge(birthDateString) << std::endl;
+    std::string birthDateString;
+    std::cout << "Enter your birth date (YYYY-MM-DD): ";
+    std::cin >> birthDateString;
+    int age = calculateAge(birthDateString);
+    if (age >= 0) {
+        std::cout << "Your age is: " << age << std::endl;
+    }
     return 0;
 }
 ```
 
-This C++ code does the following:
-1. Converts the input string (`birthDateString`) into a `tm` structure using `strptime`.
-2. Retrieves the current date and time using `std::chrono::system_clock::now()` and converts it to a `tm` structure.
-3. Calculates the preliminary age by subtracting the birth year from the current year.
-4. Adjusts the age if the birthday hasn't occurred yet this year.
-
-Make sure to include the necessary headers for handling dates and times in C++. The `main` function demonstrates how to use the `calculateAge` function with an example birth date string.
+This C++ code captures the same functionality while using the standard library for date handling. Adjust the date format in `std::get_time` as needed.

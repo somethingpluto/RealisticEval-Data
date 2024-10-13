@@ -1,20 +1,56 @@
-TEST_CASE("Check Dividend Variances", "[check_dividend_variances]") {
-    vector<Record> records = {
-        {"AAPL", "2023-10-05", 1.5},
-        {"GOOGL", "2023-10-05", 2.0},
-        {"MSFT", "2023-10-06", 1.0},
-        {"AAPL", "2023-10-05", 1.8}
-    };
+TEST_CASE("Test checkDividendVariances function", "[checkDividendVariances]") {
+    SECTION("No inconsistencies") {
+        std::vector<std::tuple<std::string, std::string, int>> records = {
+            {"AAPL", "2023-09-01", 22},
+            {"AAPL", "2023-09-01", 22},
+            {"MSFT", "2023-09-01", 56},
+            {"GOOG", "2023-09-02", 0}
+        };
+        std::vector<std::pair<std::string, std::string>> expected_output = {};
+        REQUIRE(checkDividendVariances(records) == expected_output);
+    }
 
-    vector<Record> expected = {
-        {"AAPL", "2023-10-05"}
-    };
+    SECTION("One inconsistency") {
+        std::vector<std::tuple<std::string, std::string, int>> records = {
+            {"AAPL", "2023-09-01", 22},
+            {"AAPL", "2023-09-01", 23},  // Different amount
+            {"MSFT", "2023-09-01", 56},
+            {"GOOG", "2023-09-02", 0}
+        };
+        std::vector<std::pair<std::string, std::string>> expected_output = {{"AAPL", "2023-09-01"}};
+        REQUIRE(checkDividendVariances(records) == expected_output);
+    }
 
-    vector<Record> result = check_dividend_variances(records);
+    SECTION("Multiple inconsistencies") {
+        std::vector<std::tuple<std::string, std::string, int>> records = {
+            {"AAPL", "2023-09-01", 22},
+            {"AAPL", "2023-09-01", 23},  // Different amount
+            {"MSFT", "2023-09-01", 56},
+            {"MSFT", "2023-09-01", 60},  // Different amount
+            {"GOOG", "2023-09-02", 0},
+            {"TSLA", "2023-09-03", 10},
+            {"TSLA", "2023-09-03", 10},  // Same amount, no inconsistency
+            {"TSLA", "2023-09-03", 15}  // Different amount
+        };
+        std::vector<std::pair<std::string, std::string>> expected_output = {
+            {"AAPL", "2023-09-01"},
+            {"MSFT", "2023-09-01"},
+            {"TSLA", "2023-09-03"}
+        };
+        REQUIRE(checkDividendVariances(records) == expected_output);
+    }
 
-    REQUIRE(result.size() == expected.size());
-    for (size_t i = 0; i < result.size(); ++i) {
-        REQUIRE(result[i].ticker == expected[i].ticker);
-        REQUIRE(result[i].ex_dividend_date == expected[i].ex_dividend_date);
+    SECTION("Single record") {
+        std::vector<std::tuple<std::string, std::string, int>> records = {
+            {"AAPL", "2023-09-01", 22}
+        };
+        std::vector<std::pair<std::string, std::string>> expected_output = {};
+        REQUIRE(checkDividendVariances(records) == expected_output);
+    }
+
+    SECTION("Empty list") {
+        std::vector<std::tuple<std::string, std::string, int>> records = {};
+        std::vector<std::pair<std::string, std::string>> expected_output = {};
+        REQUIRE(checkDividendVariances(records) == expected_output);
     }
 }

@@ -1,0 +1,73 @@
+Here's how you can convert the provided JavaScript Jest test cases into C++ test cases using the Catch2 testing framework:
+
+```cpp
+#define CATCH_CONFIG_MAIN
+#include <catch2/catch.hpp>
+#include <fstream>
+#include <stdexcept>
+#include <string>
+
+// Mocking file operations
+class FileSystem {
+public:
+    virtual std::string readFile(const std::string& filePath) = 0;
+    virtual void writeFile(const std::string& filePath, const std::string& data) = 0;
+};
+
+class MockFileSystem : public FileSystem {
+public:
+    std::string readFile(const std::string& filePath) override {
+        if (filePath == "/invalid/path.txt") {
+            throw std::runtime_error("File not found");
+        }
+        if (filePath == "/path/to/emptyfile.txt") {
+            return "";
+        }
+        if (filePath == "/path/to/largefile.txt") {
+            return std::string(10000, 'a'); // 10,000 characters
+        }
+        return "Hello, world!";
+    }
+
+    void writeFile(const std::string& filePath, const std::string& data) override {
+        if (filePath == "/invalid/path.txt") {
+            throw std::runtime_error("Permission denied");
+        }
+        // Assume writing is successful for valid paths
+    }
+};
+
+TEST_CASE("File Utility Functions", "[file]") {
+    MockFileSystem fs;
+
+    SECTION("readFile should return file content as a string") {
+        std::string result = fs.readFile("/path/to/file.txt");
+        REQUIRE(result == "Hello, world!");
+    }
+
+    SECTION("readFile should return an empty string for an empty file") {
+        std::string result = fs.readFile("/path/to/emptyfile.txt");
+        REQUIRE(result == "");
+    }
+
+    SECTION("readFile should throw an error if file cannot be read") {
+        REQUIRE_THROWS_AS(fs.readFile("/invalid/path.txt"), std::runtime_error);
+    }
+
+    SECTION("writeFile should throw an error if file cannot be written") {
+        REQUIRE_THROWS_AS(fs.writeFile("/invalid/path.txt", "data"), std::runtime_error);
+    }
+
+    SECTION("readFile should handle large files correctly") {
+        std::string result = fs.readFile("/path/to/largefile.txt");
+        REQUIRE(result == std::string(10000, 'a'));
+    }
+}
+```
+
+### Key Changes and Additions:
+- **Mocking File Operations**: A `MockFileSystem` class is created to simulate file operations, allowing you to define specific behaviors for different file paths.
+- **Catch2 Setup**: The tests are defined using `TEST_CASE` and `SECTION` macros from Catch2.
+- **Error Handling**: The test cases check for exceptions using `REQUIRE_THROWS_AS` to assert that the expected exceptions are thrown.
+
+This structure allows you to keep the test logic organized while adhering to C++ conventions. If you have any further adjustments or questions, let me know!

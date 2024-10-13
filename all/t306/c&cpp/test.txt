@@ -1,45 +1,44 @@
-Sure! Below is an example of how you might translate the provided JavaScript Jest test case into a C++ test case using Catch2:
+Here's how you can translate the Jest test cases into Catch2 test cases in C++:
 
-### JavaScript Jest Test Case Example (JavaScript)
-```javascript
-test('getPrice should return a price within the specified range', () => {
-    const recipeId = 'abc123';
-    const minVal = 10;
-    const maxVal = 30;
-
-    const result = getPrice(recipeId, minVal, maxVal);
-
-    expect(result).toBeGreaterThanOrEqual(minVal);
-    expect(result).toBeLessThanOrEqual(maxVal);
-    expect(result).toBeCloseTo(Math.floor((Math.random() * (maxVal - minVal + 1)) + minVal), 2);
-});
-```
-
-### Equivalent C++ Test Case Using Catch2
 ```cpp
+#define CATCH_CONFIG_MAIN
 #include <catch2/catch.hpp>
-#include <cmath>
+#include "your_header_file.h" // Replace with the actual header file for getPrice
 
-// Assuming getPrice function is defined somewhere
-double getPrice(const std::string& recipeId, double minVal = 10, double maxVal = 30);
+TEST_CASE("getPrice", "[getPrice]") {
+    SECTION("should return a number within the default range for a given recipe ID") {
+        double price = getPrice("recipe123");
+        REQUIRE(price >= 10);
+        REQUIRE(price <= 30);
+    }
 
-TEST_CASE("getPrice should return a price within the specified range", "[price]") {
-    std::string recipeId = "abc123";
-    double minVal = 10;
-    double maxVal = 30;
+    SECTION("should return the same price for the same recipe ID") {
+        double price1 = getPrice("recipe123");
+        double price2 = getPrice("recipe123");
+        REQUIRE(price1 == price2);
+    }
 
-    double result = getPrice(recipeId, minVal, maxVal);
+    SECTION("should return different prices for different recipe IDs") {
+        double price1 = getPrice("recipe123");
+        double price2 = getPrice("recipe456");
+        REQUIRE(price1 != price2);
+    }
 
-    REQUIRE(result >= minVal);
-    REQUIRE(result <= maxVal);
-    // Assuming the getPrice function returns a random number between minVal and maxVal
-    REQUIRE(std::abs(result - std::floor((std::rand() % static_cast<int>(maxVal - minVal + 1)) + minVal)) < 0.01);
+    SECTION("should return a price within a custom range") {
+        double minVal = 20;
+        double maxVal = 50;
+        double price = getPrice("recipe789", minVal, maxVal);
+        REQUIRE(price >= minVal);
+        REQUIRE(price <= maxVal);
+    }
+
+    SECTION("should handle very long recipe IDs without error") {
+        std::string longRecipeId = "recipe" + std::string(1000, 'A');
+        double price = getPrice(longRecipeId);
+        REQUIRE(price >= 10);
+        REQUIRE(price <= 30);
+    }
 }
 ```
 
-### Explanation:
-- **Catch2 Macros**: `TEST_CASE` is used to define a test case, and `REQUIRE` is used for assertions similar to `expect` in Jest.
-- **Random Number Generation**: In the C++ version, we use `std::rand()` to generate a random number within the specified range. Note that `std::rand()` is not cryptographically secure; consider using `std::random_device` or other more secure methods if needed.
-- **Assertions**: We check that the result is within the specified range and close enough to a randomly generated value.
-
-Make sure to include the Catch2 library and link against it when compiling your C++ code.
+Make sure to replace `"your_header_file.h"` with the actual header file where `getPrice` is declared. This code uses Catch2's `REQUIRE` macro to assert conditions similar to Jest's `expect`.

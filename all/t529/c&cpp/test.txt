@@ -1,90 +1,97 @@
-To convert the given JavaScript Jest test case to a C++ Catch2 test case, we need to implement the `saveAsJSON` function in C++ and then write a corresponding test case using Catch2.
-
-Here's how you can do it:
-
-1. **Implement the `saveAsJSON` function in C++:**
-   We'll use the `<fstream>` library for file operations and `<nlohmann/json.hpp>` (a popular JSON library for C++) to handle JSON conversion.
-
-2. **Write the Catch2 test case:**
-
-Let's start with the implementation of `saveAsJSON`:
+Here's the equivalent C++ test case using Catch2, structured similarly to your Jest test case:
 
 ```cpp
-#include <fstream>
-#include <iostream>
+#define CATCH_CONFIG_MAIN
+#include <catch2/catch.hpp>
 #include <nlohmann/json.hpp>
+#include <fstream>
+#include <filesystem>
 
-using json = nlohmann::json;
+void saveAsJSON(const nlohmann::json& data, const std::string& outputFilePath);
 
-void saveAsJSON(const json& data, const std::string& outputFilePath) {
-    std::ofstream outFile(outputFilePath);
-    if (!outFile.is_open()) {
-        throw std::runtime_error("Failed to open file for writing");
-    }
-    outFile << data.dump(4); // Pretty print JSON with 4 spaces indentation
-    outFile.close();
-}
-```
+TEST_CASE("saveAsJSON", "[json]") {
+    const std::string mockFilePath = "test.json";
 
-Now, let's write the Catch2 test case:
-
-```cpp
-#define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
-#include "catch2/catch.hpp"
-
-TEST_CASE("Save JSON to file", "[file]") {
-    // Create some sample data
-    json data = {
-        {"name", "John"},
-        {"age", 30},
-        {"city", "New York"}
+    // Clean up after each test
+    auto cleanup = [&]() {
+        if (std::filesystem::exists(mockFilePath)) {
+            std::filesystem::remove(mockFilePath);
+        }
     };
 
-    // Define the output file path
-    std::string outputFilePath = "output.json";
+    // Run cleanup after each test case
+    SECTION("Cleanup") { cleanup(); }
 
-    // Call the function to save the JSON
-    try {
-        saveAsJSON(data, outputFilePath);
+    SECTION("should save valid object to JSON file") {
+        nlohmann::json data = {{"name", "Alice"}, {"age", 25}};
+        saveAsJSON(data, mockFilePath);
+        std::ifstream savedFile(mockFilePath);
+        std::string savedData((std::istreambuf_iterator<char>(savedFile)), std::istreambuf_iterator<char>());
+        REQUIRE(savedData == data.dump(2));
+        cleanup();
+    }
 
-        // Verify that the file was written successfully
-        std::ifstream inFile(outputFilePath);
-        REQUIRE(inFile.is_open());
+    SECTION("should handle empty object") {
+        nlohmann::json data = {};
+        saveAsJSON(data, mockFilePath);
+        std::ifstream savedFile(mockFilePath);
+        std::string savedData((std::istreambuf_iterator<char>(savedFile)), std::istreambuf_iterator<char>());
+        REQUIRE(savedData == data.dump(2));
+        cleanup();
+    }
 
-        // Read back the content from the file
-        std::stringstream buffer;
-        buffer << inFile.rdbuf();
-        std::string fileContent = buffer.str();
+    SECTION("should save nested object to JSON file") {
+        nlohmann::json data = {{"user", {{"name", "Bob"}, {"age", 30}}}, {"active", true}};
+        saveAsJSON(data, mockFilePath);
+        std::ifstream savedFile(mockFilePath);
+        std::string savedData((std::istreambuf_iterator<char>(savedFile)), std::istreambuf_iterator<char>());
+        REQUIRE(savedData == data.dump(2));
+        cleanup();
+    }
 
-        // Check if the file content matches the expected JSON
-        std::string expectedJson = R"({
-            "name": "John",
-            "age": 30,
-            "city": "New York"
-        })";
-        REQUIRE(fileContent == expectedJson);
+    SECTION("should save array of objects to JSON file") {
+        nlohmann::json data = {
+            {{"product", {{"id", 1}, {"name", "Laptop"}, {"price", 999.99}}}, {"inStock", true}},
+            {{"product", {{"id", 2}, {"name", "Phone"}, {"price", 499.99}}}, {"inStock", false}}
+        };
+        saveAsJSON(data, mockFilePath);
+        std::ifstream savedFile(mockFilePath);
+        std::string savedData((std::istreambuf_iterator<char>(savedFile)), std::istreambuf_iterator<char>());
+        REQUIRE(savedData == data.dump(2));
+        cleanup();
+    }
 
-        // Clean up the file
-        inFile.close();
-        std::remove(outputFilePath.c_str());
-    } catch (const std::exception& e) {
-        FAIL(e.what());
+    SECTION("should save object with mixed data types to JSON file") {
+        nlohmann::json data = {{"title", "Shopping List"}, {"items", {"Milk", "Eggs", "Bread"}}, {"total", 3.50}, {"completed", false}};
+        saveAsJSON(data, mockFilePath);
+        std::ifstream savedFile(mockFilePath);
+        std::string savedData((std::istreambuf_iterator<char>(savedFile)), std::istreambuf_iterator<char>());
+        REQUIRE(savedData == data.dump(2));
+        cleanup();
+    }
+
+    SECTION("should save deeply nested object to JSON file") {
+        nlohmann::json data = {
+            {"company", {
+                {"name", "TechCorp"},
+                {"employees", {
+                    {{"id", 1}, {"name", "Alice"}, {"role", "Developer"}, {"contact", {{"email", "alice@techcorp.com"}, {"phone", "123-456-7890"}}}},
+                    {{"id", 2}, {"name", "Bob"}, {"role", "Designer"}, {"contact", {{"email", "bob@techcorp.com"}, {"phone", "098-765-4321"}}}}
+                }}
+            }},
+            {"established", 2010}
+        };
+        saveAsJSON(data, mockFilePath);
+        std::ifstream savedFile(mockFilePath);
+        std::string savedData((std::istreambuf_iterator<char>(savedFile)), std::istreambuf_iterator<char>());
+        REQUIRE(savedData == data.dump(2));
+        cleanup();
     }
 }
 ```
 
 ### Explanation:
-1. **Implementation of `saveAsJSON`:**
-   - We use `std::ofstream` to create an output file stream.
-   - If the file cannot be opened, we throw a `std::runtime_error`.
-   - We serialize the JSON data using `data.dump(4)` to get a pretty-printed JSON string and write it to the file.
-   - Finally, we close the file stream.
-
-2. **Catch2 Test Case:**
-   - We define a sample JSON object.
-   - Specify the output file path.
-   - Call `saveAsJSON` and verify that the file is created successfully.
-   - Read the content of the file back and compare it with the expected JSON string.
-   - Clean up by removing the output file after the test.
-
-This should give you a good starting point for converting your JavaScript Jest test case to a C++ Catch2 test case.
+- **Catch2 Library**: The tests use the Catch2 framework, which is similar to Jest.
+- **Test Cleanup**: The cleanup function removes the test file after each test case to ensure isolation.
+- **Test Cases**: Each test case uses `REQUIRE` to check that the saved file content matches the expected JSON string.
+- **JSON Handling**: The `nlohmann::json` library is utilized for JSON operations, mirroring the structure and functionality of the original JavaScript code.

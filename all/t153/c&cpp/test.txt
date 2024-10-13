@@ -1,0 +1,64 @@
+Here’s the equivalent C++ test case using Catch2, based on your provided TypeScript Jest test case:
+
+```cpp
+#define CATCH_CONFIG_MAIN
+#include <catch2/catch.hpp>
+#include <openssl/sha.h>
+#include <string>
+#include <cstring>
+#include "your_compress_hash_header.h" // Adjust the include as needed
+
+// Function to create a SHA-256 hash
+std::string createHash(const std::string& input) {
+    unsigned char hash[SHA256_DIGEST_LENGTH];
+    SHA256(reinterpret_cast<const unsigned char*>(input.c_str()), input.size(), hash);
+    
+    // Convert hash to hex string
+    std::ostringstream oss;
+    for (const auto& byte : hash) {
+        oss << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(byte);
+    }
+    return oss.str();
+}
+
+TEST_CASE("compressHash") {
+    SECTION("should return a string of length 5") {
+        std::string hash = createHash("test");
+        std::string result = compressHash(hash);
+        REQUIRE(result.length() == 5);
+    }
+
+    SECTION("should return different strings for different inputs") {
+        std::string hash1 = createHash("test1");
+        std::string hash2 = createHash("test2");
+        std::string result1 = compressHash(hash1);
+        std::string result2 = compressHash(hash2);
+        REQUIRE(result1 != result2);
+    }
+
+    SECTION("should return a consistent result for the same input") {
+        std::string hash = createHash("test");
+        std::string result1 = compressHash(hash);
+        std::string result2 = compressHash(hash);
+        REQUIRE(result1 == result2);
+    }
+
+    SECTION("should handle a hash of all zeros") {
+        unsigned char zeroHash[32] = {0}; // 32 bytes of zeros
+        std::string result = compressHash(std::string(reinterpret_cast<char*>(zeroHash), 32));
+        REQUIRE(std::regex_match(result, std::regex("^[0-9a-zA-Z]{5}$")));
+    }
+
+    SECTION("should handle a hash of all ones") {
+        unsigned char oneHash[32] = {255}; // 32 bytes of 0xFF (255 in decimal)
+        std::string result = compressHash(std::string(reinterpret_cast<char*>(oneHash), 32));
+        REQUIRE(std::regex_match(result, std::regex("^[0-9a-zA-Z]{5}$")));
+    }
+}
+```
+
+### Notes:
+1. **SHA-256 Hashing**: The code uses OpenSSL's `SHA256` function to generate hashes, so make sure you have the OpenSSL library linked in your project.
+2. **String Representation**: The `createHash` function generates a hex string for the input, which simulates the behavior of the original TypeScript code.
+3. **Regex Check**: The regex check ensures that the output is a valid 5-character alphanumeric string.
+4. **Include Statement**: Adjust the include statement for your `compressHash` function as necessary.

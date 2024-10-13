@@ -1,61 +1,91 @@
-package org.real.temp;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import java.util.LinkedList;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.Iterator;
 
-import static org.junit.jupiter.api.Assertions.*;
-
+/**
+ * Test class for the UniqueDeque implementation.
+ */
 public class Tester {
 
-    private UniqueDeque<String> deque;
-
-    @BeforeEach
-    public void setUp() {
-        deque = new UniqueDeque<>();
+    @Test
+    public void testAddUniqueElements() {
+        UniqueDeque ud = new UniqueDeque();
+        assertTrue(ud.add(1));
+        assertTrue(ud.add(2));
+        assertTrue(ud.add(3));
+        assertEquals(3, ud.size());
+        Iterator<Integer> iterator = ud.iterator();
+        List<Integer> list = new LinkedList<>();
+        while (iterator.hasNext()) {
+            list.add(iterator.next());
+        }
+        assertEquals("[1, 2, 3]", list.toString());
     }
 
     @Test
-    public void testAdd() {
-        assertTrue(deque.add("item1"));
-        assertFalse(deque.add("item1")); // Should not be added again
+    public void testAddDuplicateElements() {
+        UniqueDeque ud = new UniqueDeque();
+        assertTrue(ud.add(1));
+        assertFalse(ud.add(1));  // Duplicate add should return false
+        assertEquals(1, ud.size());
+        Iterator<Integer> iterator = ud.iterator();
+        List<Integer> list = new LinkedList<>();
+        while (iterator.hasNext()) {
+            list.add(iterator.next());
+        }
+        assertEquals("[1]", list.toString());
     }
 
     @Test
-    public void testDelete() {
-        deque.add("item1");
-        assertTrue(deque.delete("item1"));
-        assertFalse(deque.delete("item1")); // Should not be deleted again
+    public void testDeleteElements() {
+        UniqueDeque ud = new UniqueDeque();
+        ud.add(1);
+        ud.add(2);
+        ud.add(3);
+        assertTrue(ud.delete(2));
+        assertFalse(ud.delete(2));  // Deleting non-existing element should return false
+        assertEquals(2, ud.size());
+        Iterator<Integer> iterator = ud.iterator();
+        List<Integer> list = new LinkedList<>();
+        while (iterator.hasNext()) {
+            list.add(iterator.next());
+        }
+        assertEquals("[1, 3]", list.toString());
     }
 
     @Test
     public void testContains() {
-        deque.add("item1");
-        assertTrue(deque.contains("item1"));
-        deque.delete("item1");
-        assertFalse(deque.contains("item1"));
+        UniqueDeque ud = new UniqueDeque();
+        ud.add(1);
+        assertTrue(ud.contains(1));
+        assertFalse(ud.contains(2));
+        ud.delete(1);
+        assertFalse(ud.contains(1));
     }
 
     @Test
-    public void testLength() {
-        assertEquals(0, deque.size());
-        deque.add("item1");
-        assertEquals(1, deque.size());
-        deque.add("item2");
-        assertEquals(2, deque.size());
-        deque.delete("item1");
-        assertEquals(1, deque.size());
-    }
-
-    @Test
-    public void testIterator() {
-        deque.add("item1");
-        deque.add("item2");
-        deque.add("item3");
-
-        int count = 0;
-        for (String item : deque) {
-            count++;
+    public void testIterAndLen() {
+        UniqueDeque ud = new UniqueDeque();
+        ud.add(1);
+        ud.add(2);
+        assertEquals(2, ud.size());
+        Iterator<Integer> iterator = ud.iterator();
+        List<Integer> list = new LinkedList<>();
+        while (iterator.hasNext()) {
+            list.add(iterator.next());
         }
-        assertEquals(3, count);
+        assertEquals("[1, 2]", list.toString());
+        ud.delete(1);
+        assertEquals(1, ud.size());
+        iterator = ud.iterator();
+        list.clear();
+        while (iterator.hasNext()) {
+            list.add(iterator.next());
+        }
+        assertEquals("[2]", list.toString());
     }
 }

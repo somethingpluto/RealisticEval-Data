@@ -1,46 +1,82 @@
 class UniqueDeque {
-    constructor() {
-      this.set = new Set();
+  constructor() {
+    /**
+     * Initialize a UniqueDeque object using an array and a Set.
+     * The array stores elements in order, while the Set ensures uniqueness.
+     */
+    this._array = [];
+    this._set = new Set();
+  }
+
+  add(item) {
+    /**
+     * Add an item to the deque if it is not already present.
+     *
+     * Parameters:
+     * - item: The item to add.
+     *
+     * Returns:
+     * - boolean: True if the item was added, False if it was already present.
+     */
+    if (!this._set.has(item)) {
+      this._array.push(item);
+      this._set.add(item);
+      return true;
     }
-  
-    add(item) {
-      // If the item is already present, return false else add and return true
-      if(this.set.has(item)) {
-        return false;
-      } else {
-        this.set.add(item);
-        return true;
-      }
+    return false;
+  }
+
+  delete(item) {
+    /**
+     * Remove an item from the deque if it exists.
+     *
+     * Parameters:
+     * - item: The item to remove.
+     *
+     * Returns:
+     * - boolean: True if the item was removed, False if it was not found.
+     */
+    const index = this._array.indexOf(item);
+    if (index !== -1) {
+      this._array.splice(index, 1);
+      this._set.delete(item);
+      return true;
     }
-  
-    delete(item) {
-      // If the item is present, delete and return true else return false
-      if(this.set.has(item)) {
-        this.set.delete(item);
-        return true;
-      } else {
-        return false;
-      }
-    }
-  
-    contains(item) {
-      // Return true if the item is present, else false
-      return this.set.has(item);
-    }
-  
-    get size() {
-      // Return the number of elements in the set
-      return this.set.size;
-    }
-  
-    [Symbol.iterator]() {
-      // Create an iterator for the set
-      let index = 0;
-      const keys = Array.from(this.set.keys());
-      return {
-        next: function () {
-          return index < keys.length ? { value: keys[index++], done: false } : { done: true };
-        }
-      };
+    return false;
+  }
+
+  contains(item) {
+    /**
+     * Check if an item is present in the deque.
+     *
+     * Parameters:
+     * - item: The item to check.
+     *
+     * Returns:
+     * - boolean: True if the item is present, False otherwise.
+     */
+    return this._set.has(item);
+  }
+
+  get length() {
+    /**
+     * Get the number of elements in the deque.
+     *
+     * Returns:
+     * - number: The number of unique elements in the deque.
+     */
+    return this._array.length;
+  }
+
+  *[Symbol.iterator]() {
+    /**
+     * Create an iterator for the deque.
+     *
+     * Returns:
+     * - iterator: An iterator over the elements in the deque.
+     */
+    for (const item of this._array) {
+      yield item;
     }
   }
+}

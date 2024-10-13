@@ -1,93 +1,139 @@
 package org.real.temp;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import org.junit.jupiter.api.Test;
-import java.util.Arrays;
+import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Tester {
 
+    /**
+     * Test case for no inconsistencies in the records.
+     */
     @Test
-    public void testCheckDividendVariances() {
-        // Test data
-        List<Tuple<String, String, Double>> records = Arrays.asList(
-            new Tuple<>("AAPL", "2023-10-05", 4.75),
-            new Tuple<>("GOOGL", "2023-10-05", 199.99),
-            new Tuple<>("AAPL", "2023-10-05", 4.80),
-            new Tuple<>("MSFT", "2023-10-06", 2.99)
-        );
+    public void testNoInconsistencies() {
+        List<Tuple<String, String, Double>> records = new ArrayList<>();
+        records.add(new Tuple<>("AAPL", "2023-09-01", 0.22));
+        records.add(new Tuple<>("AAPL", "2023-09-01", 0.22));
+        records.add(new Tuple<>("MSFT", "2023-09-01", 0.56));
+        records.add(new Tuple<>("GOOG", "2023-09-02", 0.00));
 
-        // Expected result
-        List<Tuple<String, String>> expected = Arrays.asList(
-            new Tuple<>("AAPL", "2023-10-05")
-        );
+        List<Tuple<String, String>> expectedOutput = new ArrayList<>();
+        List<Tuple<String, String>> actualOutput = checkDividendVariances(records);
 
-        // Actual result
-        List<Tuple<String, String>> actual = checkDividendVariances(records);
-
-        // Assert the results
-        assertEquals(expected, actual);
+        assertEquals(expectedOutput, actualOutput);
     }
 
-    private List<Tuple<String, String>> checkDividendVariances(List<Tuple<String, String, Double>> records) {
-        List<Tuple<String, String>> result = new ArrayList<>();
-        Map<String, Set<Double>> tickerToAmounts = new HashMap<>();
+    /**
+     * Test case for one inconsistency in the records.
+     */
+    @Test
+    public void testOneInconsistency() {
+        List<Tuple<String, String, Double>> records = new ArrayList<>();
+        records.add(new Tuple<>("AAPL", "2023-09-01", 0.22));
+        records.add(new Tuple<>("AAPL", "2023-09-01", 0.23));  // Different amount
+        records.add(new Tuple<>("MSFT", "2023-09-01", 0.56));
+        records.add(new Tuple<>("GOOG", "2023-09-02", 0.00));
 
-        for (Tuple<String, String, Double> record : records) {
-            String ticker = record.getFirst();
-            String date = record.getSecond();
-            double amount = record.getThird();
+        List<Tuple<String, String>> expectedOutput = new ArrayList<>();
+        expectedOutput.add(new Tuple<>("AAPL", "2023-09-01"));
+        List<Tuple<String, String>> actualOutput = checkDividendVariances(records);
 
-            tickerToAmounts.putIfAbsent(ticker + "-" + date, new HashSet<>());
-            if (!tickerToAmounts.get(ticker + "-" + date).add(amount)) {
-                result.add(new Tuple<>(ticker, date));
-            }
-        }
-
-        return result;
+        assertEquals(expectedOutput, actualOutput);
     }
 
-    // Helper class for tuples
-    public static class Tuple<X, Y, Z> {
-        private final X first;
-        private final Y second;
-        private final Z third;
+    /**
+     * Test case for multiple inconsistencies in the records.
+     */
+    @Test
+    public void testMultipleInconsistencies() {
+        List<Tuple<String, String, Double>> records = new ArrayList<>();
+        records.add(new Tuple<>("AAPL", "2023-09-01", 0.22));
+        records.add(new Tuple<>("AAPL", "2023-09-01", 0.23));  // Different amount
+        records.add(new Tuple<>("MSFT", "2023-09-01", 0.56));
+        records.add(new Tuple<>("MSFT", "2023-09-01", 0.60));  // Different amount
+        records.add(new Tuple<>("GOOG", "2023-09-02", 0.00));
+        records.add(new Tuple<>("TSLA", "2023-09-03", 0.10));
+        records.add(new Tuple<>("TSLA", "2023-09-03", 0.10));  // Same amount, no inconsistency
+        records.add(new Tuple<>("TSLA", "2023-09-03", 0.15));  // Different amount
 
-        public Tuple(X first, Y second, Z third) {
+        List<Tuple<String, String>> expectedOutput = new ArrayList<>();
+        expectedOutput.add(new Tuple<>("AAPL", "2023-09-01"));
+        expectedOutput.add(new Tuple<>("MSFT", "2023-09-01"));
+        expectedOutput.add(new Tuple<>("TSLA", "2023-09-03"));
+        List<Tuple<String, String>> actualOutput = checkDividendVariances(records);
+
+        assertEquals(expectedOutput, actualOutput);
+    }
+
+    /**
+     * Test case for a single record.
+     */
+    @Test
+    public void testSingleRecord() {
+        List<Tuple<String, String, Double>> records = new ArrayList<>();
+        records.add(new Tuple<>("AAPL", "2023-09-01", 0.22));
+
+        List<Tuple<String, String>> expectedOutput = new ArrayList<>();
+        List<Tuple<String, String>> actualOutput = checkDividendVariances(records);
+
+        assertEquals(expectedOutput, actualOutput);
+    }
+
+    /**
+     * Test case for an empty list of records.
+     */
+    @Test
+    public void testEmptyList() {
+        List<Tuple<String, String, Double>> records = new ArrayList<>();
+
+        List<Tuple<String, String>> expectedOutput = new ArrayList<>();
+        List<Tuple<String, String>> actualOutput = checkDividendVariances(records);
+
+        assertEquals(expectedOutput, actualOutput);
+    }
+
+    // Helper class to represent a tuple
+    public static class Tuple<T1, T2, T3> {
+        private T1 first;
+        private T2 second;
+        private T3 third;
+
+        public Tuple(T1 first, T2 second, T3 third) {
             this.first = first;
             this.second = second;
             this.third = third;
         }
 
-        public X getFirst() {
+        public T1 getFirst() {
             return first;
         }
 
-        public Y getSecond() {
+        public T2 getSecond() {
             return second;
         }
 
-        public Z getThird() {
+        public T3 getThird() {
             return third;
         }
+    }
 
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof Tuple)) return false;
-            Tuple<?, ?, ?> tuple = (Tuple<?, ?, ?>) o;
-            return Objects.equals(first, tuple.first) &&
-                   Objects.equals(second, tuple.second);
+    // Helper class to represent a tuple with two elements
+    public static class Tuple<T1, T2> {
+        private T1 first;
+        private T2 second;
+
+        public Tuple(T1 first, T2 second) {
+            this.first = first;
+            this.second = second;
         }
 
-        @Override
-        public int hashCode() {
-            return Objects.hash(first, second);
+        public T1 getFirst() {
+            return first;
         }
 
-        @Override
-        public String toString() {
-            return "(" + first + ", " + second + ")";
+        public T2 getSecond() {
+            return second;
         }
     }
 }

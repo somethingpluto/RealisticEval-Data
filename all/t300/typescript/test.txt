@@ -1,63 +1,99 @@
-Sure! Here's how you can convert the given JavaScript Jest test case into a TypeScript test case using `describe`:
+Here’s the TypeScript version of your Jest test case:
 
 ```typescript
-import { describe, it, expect } from '@jest/globals';
+describe('removeAds', () => {
+    beforeEach(() => {
+        // Reset the DOM before each test
+        document.body.innerHTML = '';
+    });
 
-// Mocking the necessary functions for demonstration purposes
-const document = {
-  querySelectorAll: jest.fn(),
-  removeChild: jest.fn()
-};
+    test('removes a single sponsored product', () => {
+        document.body.innerHTML = `
+            <ul>
+                <li><span class="css-16lshh0">Sponsored</span></li>
+                <li>Regular Item</li>
+            </ul>
+        `;
 
-const adClass = 'ad-class';
+        removeAds();
 
-function removeAds() {
-  const ads = document.querySelectorAll(`.${adClass}`);
-  ads.forEach(ad => {
-    ad.parentNode?.removeChild(ad);
-  });
-}
+        const listItems = document.querySelectorAll('li');
+        expect(listItems.length).toBe(2);
+        expect(listItems[0].textContent).toBe('Sponsored');
+    });
 
-describe('removeAds function', () => {
-  beforeEach(() => {
-    // Reset mocks before each test
-    document.querySelectorAll.mockClear();
-    document.removeChild.mockClear();
-  });
+    test('removes multiple sponsored products', () => {
+        document.body.innerHTML = `
+            <ul>
+                <li><span class="css-16lshh0">Sponsored</span></li>
+                <li>Regular Item</li>
+                <li><span class="css-16lshh0">Sponsored</span></li>
+                <li>Another Regular Item</li>
+            </ul>
+        `;
 
-  it('should not remove any elements if no ads are found', () => {
-    document.querySelectorAll.mockReturnValue([]);
-    
-    removeAds();
+        removeAds();
 
-    expect(document.querySelectorAll).toHaveBeenCalledWith(`.${adClass}`);
-    expect(document.removeChild).not.toHaveBeenCalled();
-  });
+        const listItems = document.querySelectorAll('li');
+        expect(listItems.length).toBe(4);
+        expect(listItems[0].textContent).toBe('Sponsored');
+        expect(listItems[1].textContent).toBe('Regular Item');
+    });
 
-  it('should remove all ads with the specified class name', () => {
-    const mockElements = [
-      { parentNode: { removeChild: jest.fn() } },
-      { parentNode: { removeChild: jest.fn() } }
-    ];
+    test('does not remove any items if there are no sponsored products', () => {
+        document.body.innerHTML = `
+            <ul>
+                <li>Regular Item</li>
+                <li>Another Regular Item</li>
+            </ul>
+        `;
 
-    document.querySelectorAll.mockReturnValue(mockElements);
+        removeAds();
 
-    removeAds();
+        const listItems = document.querySelectorAll('li');
+        expect(listItems.length).toBe(2);
+        expect(listItems[0].textContent).toBe('Regular Item');
+        expect(listItems[1].textContent).toBe('Another Regular Item');
+    });
 
-    expect(document.querySelectorAll).toHaveBeenCalledWith(`.${adClass}`);
-    expect(document.removeChild).toHaveBeenCalledTimes(2);
-    expect(mockElements[0].parentNode.removeChild).toHaveBeenCalledWith(mockElements[0]);
-    expect(mockElements[1].parentNode.removeChild).toHaveBeenCalledWith(mockElements[1]);
-  });
+    test('removes items with nested sponsored indicators', () => {
+        document.body.innerHTML = `
+            <ul>
+                <li>
+                    <div>
+                        <span class="css-16lshh0">Sponsored</span>
+                    </div>
+                </li>
+                <li>Regular Item</li>
+            </ul>
+        `;
+
+        removeAds();
+
+        const listItems = document.querySelectorAll('li');
+        expect(listItems.length).toBe(2);
+    });
+
+    test('does not remove items with similar but non-sponsored class names', () => {
+        document.body.innerHTML = `
+            <ul>
+                <li><span class="css-16lshh1">Not Sponsored</span></li>
+                <li>Regular Item</li>
+            </ul>
+        `;
+
+        removeAds();
+
+        const listItems = document.querySelectorAll('li');
+        expect(listItems.length).toBe(2);
+        expect(listItems[0].textContent).toBe('Not Sponsored');
+        expect(listItems[1].textContent).toBe('Regular Item');
+    });
 });
 ```
 
-In this TypeScript test case:
-- We import the necessary Jest globals (`describe`, `it`, `expect`) at the top.
-- We mock the `document` object and its methods (`querySelectorAll` and `removeChild`) to simulate the behavior during testing.
-- We define the `removeAds` function similarly to your original JavaScript code.
-- We use `describe` to group related tests together.
-- We use `beforeEach` to reset the mocks before each test run.
-- We write two test cases: one to ensure that no elements are removed if no ads are found, and another to verify that all ads are removed correctly.
+### Key Changes:
+- The test structure remains the same as it works well with TypeScript, so no significant changes were needed beyond ensuring the syntax is compatible. 
+- TypeScript handles type inference automatically, so explicit type declarations in tests aren't necessary unless needed for clarity. 
 
-This should give you a good starting point for writing TypeScript Jest tests in a structured manner.
+Let me know if you need any adjustments!

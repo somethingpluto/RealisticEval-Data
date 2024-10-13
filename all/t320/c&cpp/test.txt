@@ -1,56 +1,38 @@
-Certainly! Below is how you can convert the given JavaScript Jest test case into a C++ Catch2 test case.
-
-First, let's define the `getArrayAverage` function in C++. Then, we'll write the corresponding Catch2 test cases.
-
-### C++ Code
-
-```cpp
-#include <vector>
-#include <numeric> // For std::accumulate
-#include <stdexcept> // For std::invalid_argument
-
-double getArrayAverage(const std::vector<double>& array) {
-    if (array.empty()) {
-        throw std::invalid_argument("Cannot compute average of an empty array");
-    }
-    
-    double sum = std::accumulate(array.begin(), array.end(), 0.0);
-    return sum / array.size();
-}
-```
-
-### Catch2 Test Cases
+Here’s how you can convert the JavaScript Jest test cases to Catch2 test cases in C++:
 
 ```cpp
 #define CATCH_CONFIG_MAIN
-#include "catch.hpp"
+#include <catch2/catch.hpp>
+#include <vector>
+#include <cmath> // For std::isnan
 
-TEST_CASE("Calculate average of an array of numbers", "[average]") {
-    SECTION("Empty array") {
-        REQUIRE_THROWS_AS(getArrayAverage({}), std::invalid_argument);
+double getArrayAverage(const std::vector<double>& array); // Assume this is defined elsewhere
+
+TEST_CASE("getArrayAverage") {
+    SECTION("should return the average of an array of positive integers") {
+        REQUIRE(getArrayAverage({1, 2, 3, 4, 5}) == Approx(3)); // (1 + 2 + 3 + 4 + 5) / 5 = 3
     }
 
-    SECTION("Single element array") {
-        REQUIRE(getArrayAverage({42}) == 42);
+    SECTION("should return the average of an array with negative numbers") {
+        REQUIRE(getArrayAverage({-1, -2, -3, -4, -5}) == Approx(-3)); // (-1 + -2 + -3 + -4 + -5) / 5 = -3
     }
 
-    SECTION("Multiple elements array") {
-        REQUIRE(getArrayAverage({1, 2, 3, 4, 5}) == 3);
-        REQUIRE(getArrayAverage({-1, 0, 1}) == 0);
-        REQUIRE(getArrayAverage({10, 20, 30, 40, 50}) == 30);
+    SECTION("should return the average of an array with mixed positive and negative numbers") {
+        REQUIRE(getArrayAverage({1, -1, 2, -2, 3, -3}) == Approx(0)); // (1 + -1 + 2 + -2 + 3 + -3) / 6 = 0
+    }
+
+    SECTION("should handle an empty array (edge case)") {
+        REQUIRE(std::isnan(getArrayAverage({}))); // Division by zero, expected result is NaN
+    }
+
+    SECTION("should return the single element when the array contains one item") {
+        REQUIRE(getArrayAverage({7}) == Approx(7)); // The average of [7] is 7
     }
 }
 ```
 
-### Explanation
-
-1. **Function Definition**:
-   - The `getArrayAverage` function takes a vector of doubles and returns the average.
-   - If the array is empty, it throws an `std::invalid_argument`.
-
-2. **Catch2 Test Cases**:
-   - `SECTION("Empty array")`: Tests that calling `getArrayAverage` with an empty array throws an exception.
-   - `SECTION("Single element array")`: Tests that the average of a single-element array is the element itself.
-   - `SECTION("Multiple elements array")`: Tests the average calculation for arrays with multiple elements.
-
-This setup ensures that your C++ function behaves correctly under various conditions, similar to how the Jest test cases would work in JavaScript.
+### Explanation:
+- The `#define CATCH_CONFIG_MAIN` and `#include <catch2/catch.hpp>` include the Catch2 framework.
+- Each test case is wrapped in a `SECTION`, and `REQUIRE` is used to check conditions.
+- `Approx` is used for floating-point comparisons.
+- `std::isnan` checks for NaN results.

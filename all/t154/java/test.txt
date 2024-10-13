@@ -1,0 +1,102 @@
+Here’s the equivalent JUnit 4 test case for the provided Jest test cases, adapted for Java with the package and class specifications you mentioned:
+
+```java
+package org.real.temp;
+
+import org.junit.Test;
+
+import java.util.List;
+
+import static org.junit.Assert.*;
+
+public class Tester {
+
+    @Test
+    public void testParseSimpleFileAddition() {
+        String diffText = "diff --git a/file.txt b/file.txt\n" +
+                          "new file mode 100644\n" +
+                          "index 0000000..e69de29\n" +
+                          "--- /dev/null\n" +
+                          "+++ b/file.txt";
+
+        List<GitDiffFile> result = GitDiffParser.parseGitDiff(diffText);
+        assertEquals(1, result.size());
+        assertEquals("file.txt", result.get(0).getOldPath());
+        assertEquals("file.txt", result.get(0).getNewPath());
+        assertEquals("100644", result.get(0).getNewFileMode());
+    }
+
+    @Test
+    public void testParseSimpleFileDeletion() {
+        String diffText = "diff --git a/file.txt b/file.txt\n" +
+                          "deleted file mode 100644\n" +
+                          "index e69de29..0000000\n" +
+                          "--- a/file.txt\n" +
+                          "+++ /dev/null";
+
+        List<GitDiffFile> result = GitDiffParser.parseGitDiff(diffText);
+        assertEquals(1, result.size());
+        assertEquals("file.txt", result.get(0).getOldPath());
+        assertEquals("file.txt", result.get(0).getNewPath());
+        assertEquals("100644", result.get(0).getDeletedFileMode());
+    }
+
+    @Test
+    public void testParseFileModificationWithChanges() {
+        String diffText = "diff --git a/file.txt b/file.txt\n" +
+                          "index e69de29..d95f3ad 100644\n" +
+                          "--- a/file.txt\n" +
+                          "+++ b/file.txt\n" +
+                          "@@ -0,0 +1 @@\n" +
+                          "+Hello World";
+
+        List<GitDiffFile> result = GitDiffParser.parseGitDiff(diffText);
+
+        assertEquals(1, result.size()); // Ensure only one file diff is parsed
+        assertEquals("file.txt", result.get(0).getOldPath()); // Validate old file path
+        assertEquals("file.txt", result.get(0).getNewPath()); // Validate new file path
+        assertEquals("e69de29..d95f3ad", result.get(0).getIndex()); // Validate index value
+
+        List<GitDiffChange> changes = result.get(0).getChanges();
+        assertEquals(4, changes.size()); // Validate number of changes
+        assertEquals("--- a/file.txt", changes.get(0).getCode()); // Validate old file path line
+        assertEquals("+++ b/file.txt", changes.get(1).getCode()); // Validate new file path line
+        assertEquals("@@ -0,0 +1 @@", changes.get(2).getDiff());  // Validate diff header
+        assertEquals("+Hello World", changes.get(3).getCode());     // Validate code addition
+    }
+
+    @Test
+    public void testHandleMultipleFileDiffs() {
+        String diffText = "diff --git a/file1.txt b/file1.txt\n" +
+                          "index e69de29..d95f3ad 100644\n" +
+                          "--- a/file1.txt\n" +
+                          "+++ b/file1.txt\n" +
+                          "@@ -0,0 +1 @@\n" +
+                          "+Hello World\n" +
+                          "diff --git a/file2.txt b/file2.txt\n" +
+                          "index 0a1b2c3..d4e5f6a 100644\n" +
+                          "--- a/file2.txt\n" +
+                          "+++ b/file2.txt\n" +
+                          "@@ -1 +1 @@\n" +
+                          "-Hello\n" +
+                          "+Hi";
+
+        List<GitDiffFile> result = GitDiffParser.parseGitDiff(diffText);
+        assertEquals(2, result.size());
+        assertEquals("file1.txt", result.get(0).getOldPath());
+        assertEquals("file2.txt", result.get(1).getOldPath());
+    }
+
+    @Test
+    public void testReturnEmptyArrayForEmptyDiffText() {
+        List<GitDiffFile> result = GitDiffParser.parseGitDiff("");
+        assertTrue(result.isEmpty());
+    }
+}
+```
+
+### Key Changes:
+- **JUnit 4 Annotations**: The `@Test` annotation from JUnit 4 is used to define test methods.
+- **Assertions**: JUnit assertions such as `assertEquals`, `assertTrue`, and `assertArrayEquals` are used to verify conditions.
+- **Package and Class**: The package is set to `org.real.temp` and the class is named `Tester` as per your request.
+- **Method Structure**: Each test method mirrors the logic and assertions from the Jest tests, ensuring functionality remains the same.

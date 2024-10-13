@@ -1,0 +1,73 @@
+Here's the equivalent C++ code for the provided TypeScript function:
+
+```cpp
+#include <iostream>
+#include <map>
+#include <string>
+#include <variant>
+#include <vector>
+#include <memory>
+
+using PlainObject = std::map<std::string, std::variant<std::nullptr_t, int, double, std::string, std::map<std::string, std::variant<std::nullptr_t, int, double, std::string>>>>;
+
+PlainObject deepMergeObjects(const PlainObject& obj1, const PlainObject& obj2) {
+    PlainObject output = obj2; // Create a shallow copy of obj2
+
+    for (const auto& [key, value1] : obj1) {
+        // Check if key exists in obj2
+        if (output.find(key) != output.end()) {
+            const auto& value2 = output[key];
+
+            // Check if both values are maps
+            if (std::holds_alternative<PlainObject>(value1) && std::holds_alternative<PlainObject>(value2)) {
+                output[key] = deepMergeObjects(std::get<PlainObject>(value1), std::get<PlainObject>(value2));
+            } else {
+                // Use the value from obj1
+                output[key] = value1;
+            }
+        } else {
+            // If key does not exist in obj2, add it
+            output[key] = value1;
+        }
+    }
+
+    return output;
+}
+
+int main() {
+    // Example usage
+    PlainObject obj1 = {
+        {"a", 1},
+        {"b", PlainObject{{"c", 2}}},
+    };
+
+    PlainObject obj2 = {
+        {"b", PlainObject{{"d", 3}}},
+        {"e", 4},
+    };
+
+    PlainObject merged = deepMergeObjects(obj1, obj2);
+
+    // Print merged object (example implementation for demonstration)
+    for (const auto& [key, value] : merged) {
+        std::cout << key << ": ";
+        if (std::holds_alternative<int>(value)) {
+            std::cout << std::get<int>(value);
+        } else if (std::holds_alternative<PlainObject>(value)) {
+            std::cout << "{ ... }"; // Simplified output for nested objects
+        } else {
+            std::cout << "Other type";
+        }
+        std::cout << std::endl;
+    }
+
+    return 0;
+}
+```
+
+### Explanation:
+- **PlainObject**: Defined as a `std::map` where the key is a `std::string`, and the value can be various types (including nested maps) using `std::variant`.
+- **deepMergeObjects Function**: Takes two `PlainObject` parameters and merges them similarly to the TypeScript function.
+- **main Function**: Demonstrates usage and includes a simple way to print the merged object. 
+
+You can modify the `PlainObject` type to include additional types as necessary.

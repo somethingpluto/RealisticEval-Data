@@ -1,27 +1,28 @@
-function replaceWordsInFile(filePath, replacementDict) {
-    /*
-     * Read a text file, replace words according to a dictionary map, and return the modified text.
-     *
-     * @param {string} filePath - The path to the text file.
-     * @param {Object} replacementDict - A dictionary where the keys are words to be replaced, and the values are the replacement words.
-     * @return {string} The text with the words replaced.
-     */
-    
-    // Node.js fs module for reading files
-    const fs = require('fs');
+const fs = require('fs').promises; // Import the fs.promises API for asynchronous file operations
 
-    // Read the file synchronously
-    let data = fs.readFileSync(filePath, 'utf8');
-    
-    // Iterate over each key-value pair in the replacement dictionary
-    for(let oldWord in replacementDict){
-        if(replacementDict.hasOwnProperty(oldWord)){
-            let newWord = replacementDict[oldWord];
-            // Replace all occurrences of old word with new word
-            data = data.split(oldWord).join(newWord);
+/**
+ * Read a text file, replace words according to a dictionary map, and return the modified text.
+ *
+ * @param {string} file_path - The path to the text file.
+ * @param {Object} replacement_dict - An object where the keys are words to be replaced, and the values are the replacement words.
+ * @returns {Promise<string>} A promise that resolves to the text with the words replaced or an error message.
+ */
+async function replaceWordsInFile(file_path, replacement_dict) {
+    try {
+        // Read the content of the file
+        const text = await fs.readFile(file_path, 'utf-8');
+
+        // Replace words according to the replacement dictionary
+        for (const [oldWord, newWord] of Object.entries(replacement_dict)) {
+            text = text.replace(new RegExp(oldWord, 'g'), newWord);
         }
-    }
 
-    // Return the modified text
-    return data;
+        return text;
+
+    } catch (error) {
+        if (error.code === 'ENOENT') {
+            return "Error: The file was not found.";
+        }
+        return `Error: ${error.message}`;
+    }
 }

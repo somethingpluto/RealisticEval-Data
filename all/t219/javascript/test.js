@@ -1,29 +1,52 @@
-describe('checkDividendVariances', () => {
-    it('should return tickers with the same ex-dividend date but different dividend amounts', () => {
+describe('TestCheckDividendVariances', () => {
+    it('should handle no inconsistencies', () => {
         const records = [
-            ['AAPL', '2023-04-14', 50],
-            ['AAPL', '2023-04-14', 60], // Different dividend amount
-            ['GOOGL', '2023-04-15', 2800],
-            ['GOOGL', '2023-04-15', 2800], // Same dividend amount
-            ['MSFT', '2023-04-16', 310]
+            ['AAPL', '2023-09-01', 0.22],
+            ['AAPL', '2023-09-01', 0.22],
+            ['MSFT', '2023-09-01', 0.56],
+            ['GOOG', '2023-09-02', 0.00]
         ];
-
-        const expected = [
-            ['AAPL', '2023-04-14']
-        ];
-
-        expect(checkDividendVariances(records)).toEqual(expected);
+        const expectedOutput = [];
+        expect(checkDividendVariances(records)).toEqual(expectedOutput);
     });
 
-    it('should handle empty input gracefully', () => {
+    it('should handle one inconsistency', () => {
+        const records = [
+            ['AAPL', '2023-09-01', 0.22],
+            ['AAPL', '2023-09-01', 0.23],  // Different amount
+            ['MSFT', '2023-09-01', 0.56],
+            ['GOOG', '2023-09-02', 0.00]
+        ];
+        const expectedOutput = [['AAPL', '2023-09-01']];
+        expect(checkDividendVariances(records)).toEqual(expectedOutput);
+    });
+
+    it('should handle multiple inconsistencies', () => {
+        const records = [
+            ['AAPL', '2023-09-01', 0.22],
+            ['AAPL', '2023-09-01', 0.23],  // Different amount
+            ['MSFT', '2023-09-01', 0.56],
+            ['MSFT', '2023-09-01', 0.60],  // Different amount
+            ['GOOG', '2023-09-02', 0.00],
+            ['TSLA', '2023-09-03', 0.10],
+            ['TSLA', '2023-09-03', 0.10],  // Same amount, no inconsistency
+            ['TSLA', '2023-09-03', 0.15]  // Different amount
+        ];
+        const expectedOutput = [['AAPL', '2023-09-01'], ['MSFT', '2023-09-01'], ['TSLA', '2023-09-03']];
+        expect(checkDividendVariances(records)).toEqual(expectedOutput);
+    });
+
+    it('should handle a single record', () => {
+        const records = [
+            ['AAPL', '2023-09-01', 0.22]
+        ];
+        const expectedOutput = [];
+        expect(checkDividendVariances(records)).toEqual(expectedOutput);
+    });
+
+    it('should handle an empty list', () => {
         const records = [];
-        const expected = [];
-        expect(checkDividendVariances(records)).toEqual(expected);
-    });
-
-    it('should handle single record correctly', () => {
-        const records = [['AAPL', '2023-04-14', 50]];
-        const expected = [];
-        expect(checkDividendVariances(records)).toEqual(expected);
+        const expectedOutput = [];
+        expect(checkDividendVariances(records)).toEqual(expectedOutput);
     });
 });

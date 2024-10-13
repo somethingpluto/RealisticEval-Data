@@ -1,0 +1,69 @@
+Here’s how you can translate the provided JavaScript Jest test cases into C++ using the Catch2 testing framework:
+
+```cpp
+#include <catch2/catch.hpp>
+#include <string>
+#include <vector>
+
+bool cssRuleExistsForHighlight = false;
+std::string styleContent;
+
+void checkCSSHighlightAndAdd() {
+    if (!cssRuleExistsForHighlight) {
+        styleContent = R"(
+        <style>
+            .highlight {
+                background-color: yellow;
+            }
+        </style>)";
+        cssRuleExistsForHighlight = true;
+    }
+}
+
+TEST_CASE("checkCSSHighlightAndAdd", "[CSS]") {
+    // Clean up before each test
+    styleContent.clear();
+    cssRuleExistsForHighlight = false;
+
+    SECTION("should add a new style element with the highlight CSS rule if it does not exist") {
+        checkCSSHighlightAndAdd();
+        REQUIRE(styleContent.find("background-color: yellow;") != std::string::npos);
+    }
+
+    SECTION("should not add a new CSS rule if the CSS rule already exists") {
+        // Simulate existing rule
+        styleContent = R"(
+        <style>
+            .highlight {
+                background-color: yellow;
+            }
+        </style>)";
+        cssRuleExistsForHighlight = true;
+
+        checkCSSHighlightAndAdd();
+        // Check that only one rule is present
+        REQUIRE(styleContent.find("highlight") != std::string::npos);
+        // In a real case, you'd have a better way to check rule count
+    }
+
+    SECTION("should add only one rule even if called multiple times") {
+        checkCSSHighlightAndAdd();
+        checkCSSHighlightAndAdd();  // Call the function again
+
+        // Check that only one rule is present
+        REQUIRE(styleContent.find("highlight") != std::string::npos);
+        // Again, this is a simplification
+    }
+
+    SECTION("should correctly append the style element to the document head") {
+        checkCSSHighlightAndAdd();
+        // Check that the style element is indeed appended
+        REQUIRE(!styleContent.empty());
+    }
+}
+```
+
+### Notes:
+1. **Simulation**: Since C++ doesn’t manage DOM elements, the test simulates behavior by using a string (`styleContent`) to represent the style.
+2. **Catch2 Requirements**: Ensure you have Catch2 set up in your project to run these tests.
+3. **Testing Logic**: The conditions and requirements reflect the intent of the original JavaScript tests, but the checks may need adjustment depending on how you actually handle styles in your C++ application.

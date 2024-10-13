@@ -1,106 +1,61 @@
-Certainly! Here’s the equivalent C++ test case using Catch2 for the provided Jest test cases:
-
-First, make sure you have Catch2 installed and included in your project. You can install Catch2 via a package manager or include it directly in your project.
-
-Here’s the C++ test case using Catch2:
-
-### C++ Test Case Using Catch2
+Here's how you can convert the provided JavaScript Jest test cases into C++ Catch2 test cases:
 
 ```cpp
-#include <catch2/catch_test_macros.hpp>
-#include <string>
-#include <vector>
-#include <sstream>
-#include <ctime>
+#define CATCH_CONFIG_MAIN
+#include <catch2/catch.hpp>
+#include "YourHeaderFile.h" // Replace with the header file where convertChatToMarkdown is declared
 
-// Function to convert the chat logs to Markdown format and generate a Blob object containing them
-std::string convertChatToMarkdown(const std::vector<std::string>& chat, const std::string& title = "ChatGPT Conversation") {
-    std::stringstream markdown;
-    markdown << "# " << title << "\n\n";
-
-    // Iterate over the chat conversation array
-    for (size_t index = 0; index < chat.size(); ++index) {
-        const std::string speaker = (index % 2 == 0) ? "Human" : "Assistant"; // Alternate speaker
-        markdown << "**" << speaker << ":**\n" << chat[index] << "\n\n***\n\n";
-    }
-
-    // Get the current date and time
-    std::time_t now = std::time(nullptr);
-    std::tm* ltm = std::localtime(&now);
-
-    // Format the date and time
-    char date[11];
-    char time[9];
-    std::strftime(date, sizeof(date), "%Y-%m-%d", ltm);
-    std::strftime(time, sizeof(time), "%H:%M:%S", ltm);
-
-    // Append the timestamp
-    markdown << "Exported on " << date << " " << time << ".";
-
-    return markdown.str();
-}
-
-TEST_CASE("convertChatToMarkdown", "[convertChatToMarkdown]") {
+TEST_CASE("convertChatToMarkdown", "[markdown]") {
+    
     SECTION("should include the default title when no title is provided") {
-        const std::vector<std::string> chat = {"Hello", "Hi there!"};
-        const std::string blob = convertChatToMarkdown(chat);
-        const std::string expectedStart = "# ChatGPT Conversation\n\n**Human:**\nHello\n\n***\n\n**Assistant:**\nHi there!\n\n***\n\nExported on ";
-
-        REQUIRE(blob.substr(0, expectedStart.size()) == expectedStart);
+        std::vector<std::string> chat = {"Hello", "Hi there!"};
+        Blob blob = convertChatToMarkdown(chat);
+        std::string expectedStart = "# ChatGPT Conversation\n\n**Human:**\nHello\n\n***\n\n**Assistant:**\nHi there!\n\n***\n\nExported on ";
+        
+        REQUIRE(blob.data.find(expectedStart) == 0); // Check if the start matches
     }
 
     SECTION("should include the custom title when a title is provided") {
-        const std::vector<std::string> chat = {"How are you?", "I'm doing well, thank you!"};
-        const std::string title = "Friendly Chat";
-        const std::string blob = convertChatToMarkdown(chat, title);
-        const std::string expectedStart = "# Friendly Chat\n\n**Human:**\nHow are you?\n\n***\n\n**Assistant:**\nI'm doing well, thank you!\n\n***\n\nExported on ";
-
-        REQUIRE(blob.substr(0, expectedStart.size()) == expectedStart);
+        std::vector<std::string> chat = {"How are you?", "I'm doing well, thank you!"};
+        std::string title = "Friendly Chat";
+        Blob blob = convertChatToMarkdown(chat, title);
+        std::string expectedStart = "# Friendly Chat\n\n**Human:**\nHow are you?\n\n***\n\n**Assistant:**\nI'm doing well, thank you!\n\n***\n\nExported on ";
+        
+        REQUIRE(blob.data.find(expectedStart) == 0); // Check if the start matches
     }
 
     SECTION("should correctly alternate speakers between Human and Assistant") {
-        const std::vector<std::string> chat = {"Question?", "Answer.", "Another question?", "Another answer."};
-        const std::string blob = convertChatToMarkdown(chat);
-        const std::string expectedContent = "**Human:**\nQuestion?\n\n***\n\n**Assistant:**\nAnswer.\n\n***\n\n**Human:**\nAnother question?\n\n***\n\n**Assistant:**\nAnother answer.\n\n***\n\nExported on ";
-
-        REQUIRE(blob.find(expectedContent) != std::string::npos);
+        std::vector<std::string> chat = {"Question?", "Answer.", "Another question?", "Another answer."};
+        Blob blob = convertChatToMarkdown(chat);
+        std::string expectedContent = "**Human:**\nQuestion?\n\n***\n\n**Assistant:**\nAnswer.\n\n***\n\n**Human:**\nAnother question?\n\n***\n\n**Assistant:**\nAnother answer.\n\n***\n\nExported on ";
+        
+        REQUIRE(blob.data.find(expectedContent) != std::string::npos); // Check if the content includes the expected text
     }
 
-    SECTION("should include the correct timestamp using getDate and getTime") {
-        // Mocking the current time
-        std::time_t now = std::mktime(std::gmtime("2024-01-01 12:00:00 GMT"));
-        std::tm* ltm = std::localtime(&now);
-
-        // Format the date and time
-        char date[11];
-        char time[9];
-        std::strftime(date, sizeof(date), "%Y-%m-%d", ltm);
-        std::strftime(time, sizeof(time), "%H:%M:%S", ltm);
-
-        const std::vector<std::string> chat = {"What's the time?", "It's now."};
-        const std::string blob = convertChatToMarkdown(chat);
-        const std::string expectedEnd = "Exported on " + std::string(date) + " " + std::string(time) + ".";
-
-        REQUIRE(blob.substr(blob.size() - expectedEnd.size()) == expectedEnd);
+    SECTION("should include the correct timestamp") {
+        std::vector<std::string> chat = {"What's the time?", "It's now."};
+        
+        // Mock the date and time if needed (you may need a mock library for full functionality)
+        // This is a placeholder, adjust accordingly based on your testing framework capabilities.
+        // Assume the getDate and getTime functions return the mocked values.
+        
+        Blob blob = convertChatToMarkdown(chat);
+        std::string expectedEnd = "Exported on 2024-01-01";
+        REQUIRE(blob.data.ends_with(expectedEnd)); // Check if the end matches
     }
 
     SECTION("should return a Blob of type text/markdown") {
-        // Since we're simulating a Blob with a string, we'll check the content instead
-        const std::vector<std::string> chat = {"This is a test.", "Yes, it is."};
-        const std::string blob = convertChatToMarkdown(chat);
-        REQUIRE(blob.find("Exported on ") != std::string::npos);
+        std::vector<std::string> chat = {"This is a test.", "Yes, it is."};
+        Blob blob = convertChatToMarkdown(chat);
+        
+        REQUIRE(blob.type == "text/markdown"); // Check the type
     }
 }
 ```
 
-### Explanation:
-1. **Catch2 Setup**: The test case uses Catch2 to define test sections.
-2. **Function Implementation**: The `convertChatToMarkdown` function is implemented to convert the chat logs to Markdown format.
-3. **Test Sections**:
-   - **Default Title**: Checks if the default title is included when no title is provided.
-   - **Custom Title**: Checks if the custom title is included when a title is provided.
-   - **Speaker Alternation**: Checks if the speakers alternate correctly.
-   - **Timestamp**: Checks if the correct timestamp is included.
-   - **Blob Type**: Checks if the content includes the expected format (simulated as a string).
-
-This setup ensures that the tests cover the same functionality as the original Jest test cases.
+### Notes:
+1. **Catch2**: Ensure you have Catch2 installed and included in your project.
+2. **Blob Class**: This code assumes the `Blob` class has a `data` and `type` member, similar to the previous C++ conversion.
+3. **Mocking Date**: The JavaScript code mocks the date, which isn't directly translatable in C++. You may need to use a mocking library or approach suitable for your testing framework, or adjust the function to accept a date parameter for testing.
+4. **Assertions**: Catch2 uses `REQUIRE` for assertions, similar to Jest's `expect`.
+5. **Test Sections**: Each test case is wrapped in `SECTION` to provide clarity and separation of different test scenarios.

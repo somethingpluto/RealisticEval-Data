@@ -1,59 +1,57 @@
-Certainly! Below is the equivalent C++ test case using Catch2 for the provided JavaScript Jest test function:
+Here’s how you can convert the provided JavaScript Jest test cases to C++ using the Catch2 testing framework:
 
 ```cpp
-#include <vector>
+#define CATCH_CONFIG_MAIN
 #include <catch2/catch.hpp>
+#include <vector>
 
-/**
- * Removes the first occurrence of a specified element from a vector.
- *
- * @param vec - The vector from which to remove the element.
- * @param element - The element to remove from the vector.
- * @returns A new vector with the element removed, or the original vector if the element is not found.
- */
-std::vector<int> removeElementInVector(std::vector<int>& vec, int element) {
-    auto it = std::find(vec.begin(), vec.end(), element);
-    if (it != vec.end()) {
-        vec.erase(it);
+std::vector<int> removeElementInArray(const std::vector<int>& array, int element) {
+    std::vector<int> newArray;
+    for (const auto& item : array) {
+        if (item != element) {
+            newArray.push_back(item);
+        }
     }
-    return vec;
+    return newArray;
 }
 
-TEST_CASE("removeElementInVector", "[removeElement]") {
-    // Test case 1: Element exists in the vector
-    std::vector<int> vec1 = {1, 2, 3, 4, 5};
-    std::vector<int> expected1 = {1, 2, 4, 5};
-    REQUIRE(removeElementInVector(vec1, 3) == expected1);
+TEST_CASE("removeElementInArray", "[removeElementInArray]") {
+    SECTION("returns the original array when the element is not found") {
+        std::vector<int> result = removeElementInArray({1, 2, 3, 4}, 5);
+        REQUIRE(result == std::vector<int>({1, 2, 3, 4}));
+    }
 
-    // Test case 2: Element does not exist in the vector
-    std::vector<int> vec2 = {1, 2, 3, 4, 5};
-    std::vector<int> expected2 = {1, 2, 3, 4, 5};
-    REQUIRE(removeElementInVector(vec2, 6) == expected2);
+    SECTION("handles an empty array correctly") {
+        std::vector<int> result = removeElementInArray({}, 1);
+        REQUIRE(result == std::vector<int>({}));
+    }
 
-    // Test case 3: Empty vector
-    std::vector<int> vec3 = {};
-    std::vector<int> expected3 = {};
-    REQUIRE(removeElementInVector(vec3, 1) == expected3);
+    SECTION("removes an element from a vector of objects") {
+        struct Obj {
+            int id;
+            bool operator==(const Obj& other) const {
+                return id == other.id;
+            }
+        };
+        
+        Obj obj1{1}, obj2{2}, obj3{3};
+        std::vector<Obj> result = removeElementInArray({obj1, obj2, obj3}, obj2);
+        REQUIRE(result == std::vector<Obj>({obj1, obj3}));
+    }
 
-    // Test case 4: Single-element vector with matching element
-    std::vector<int> vec4 = {7};
-    std::vector<int> expected4 = {};
-    REQUIRE(removeElementInVector(vec4, 7) == expected4);
-
-    // Test case 5: Single-element vector without matching element
-    std::vector<int> vec5 = {8};
-    std::vector<int> expected5 = {8};
-    REQUIRE(removeElementInVector(vec5, 9) == expected5);
+    SECTION("does not modify the original array") {
+        std::vector<int> originalArray = {1, 2, 3};
+        std::vector<int> result = removeElementInArray(originalArray, 2);
+        REQUIRE(originalArray == std::vector<int>({1, 2, 3}));
+        REQUIRE(result == std::vector<int>({1, 3}));
+    }
 }
 ```
 
-### Explanation:
-- **Function Definition**: The `removeElementInVector` function takes a reference to a `std::vector<int>` and an integer `element`. It removes the first occurrence of `element` from the vector if it exists and returns the modified vector.
-- **Catch2 Test Cases**:
-  - **Test Case 1**: Checks that removing an existing element results in the correct modified vector.
-  - **Test Case 2**: Checks that attempting to remove a non-existing element leaves the vector unchanged.
-  - **Test Case 3**: Checks that an empty vector remains empty after attempting to remove any element.
-  - **Test Case 4**: Checks that a single-element vector with the matching element becomes empty.
-  - **Test Case 5**: Checks that a single-element vector without the matching element remains unchanged.
+### Key Changes:
+- Used `Catch2` for the test cases.
+- Created a simple struct `Obj` to represent objects for the vector test.
+- Used `REQUIRE` instead of `expect` for assertions.
+- Used `SECTION` to separate different test cases.
 
-This should give you a good starting point for testing your C++ function using Catch2.
+Make sure to link against Catch2 in your build system for these tests to run.

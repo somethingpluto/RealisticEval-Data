@@ -1,16 +1,66 @@
+jest.mock('fs', () => ({
+  ...jest.requireActual('fs'),
+  readFile: jest.fn(),
+}));
 describe('replaceWordsInFile', () => {
-    it('should replace words in the file according to the replacement dictionary', async () => {
-      const filePath = 'path/to/your/testfile.txt';
-      const replacementDict = { 'hello': 'hi', 'world': 'earth' };
-  
-      // Mock the readFile method to return a sample text
-      jest.spyOn(fs, 'readFile').mockResolvedValue('hello world');
-  
-      const result = await replaceWordsInFile(filePath, replacementDict);
-  
-      expect(result).toBe('hi earth');
-  
-      // Restore the original readFile method
-      fs.readFile.mockRestore();
-    });
+  beforeEach(() => {
+    // Reset the mock implementation before each test
+    fs.readFile.mockClear();
   });
+
+  it('replaces a single word', () => {
+    const file_path = "dummy_path.txt";
+    const replacement_dict = {"hello": "hi"};
+    const expected_output = "hi world";
+
+    // Mock the file content
+    fs.readFile.mockImplementationOnce((path, callback) => {
+      callback(null, "hello world");
+    });
+
+    const result = replaceWordsInFile(file_path, replacement_dict);
+    expect(result).toBe(expected_output);
+  });
+
+  it('replaces multiple words', () => {
+    const file_path = "dummy_path.txt";
+    const replacement_dict = {"hello": "hi", "world": "earth"};
+    const expected_output = "hi earth";
+
+    // Mock the file content
+    fs.readFile.mockImplementationOnce((path, callback) => {
+      callback(null, "hello world");
+    });
+
+    const result = replaceWordsInFile(file_path, replacement_dict);
+    expect(result).toBe(expected_output);
+  });
+
+  it('does not replace non-existent words', () => {
+    const file_path = "dummy_path.txt";
+    const replacement_dict = {"goodbye": "bye"};
+    const expected_output = "hello world";
+
+    // Mock the file content
+    fs.readFile.mockImplementationOnce((path, callback) => {
+      callback(null, "hello world");
+    });
+
+    const result = replaceWordsInFile(file_path, replacement_dict);
+    expect(result).toBe(expected_output);
+  });
+
+  it('handles empty files', () => {
+    const file_path = "dummy_path.txt";
+    const replacement_dict = {"hello": "hi"};
+    const expected_output = "";
+
+    // Mock the file content
+    fs.readFile.mockImplementationOnce((path, callback) => {
+      callback(null, "");
+    });
+
+    const result = replaceWordsInFile(file_path, replacement_dict);
+    expect(result).toBe(expected_output);
+  });
+});

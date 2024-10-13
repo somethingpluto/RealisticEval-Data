@@ -1,47 +1,56 @@
-Sure! Here's how you can convert your JavaScript Jest test case to TypeScript using `describe`:
+Here’s the TypeScript version of your Jest test case:
 
 ```typescript
 import * as fs from 'fs';
-import * as path from 'path';
+import { findMarkdownFiles } from './yourModulePath'; // Adjust the import according to your file structure
 
-/**
- * Searches for Markdown files in the specified directory and returns the path of the files as an array
- *
- * @param {string} dir - The directory path to search in.
- * @returns {string[]} - An array of paths to Markdown files.
- */
-function findMarkdownFiles(dir: string): string[] {
-    // Implementation goes here
-}
+jest.mock('fs');
 
-// Test suite with Jest
 describe('findMarkdownFiles', () => {
-    it('should return an empty array if no Markdown files are found', async () => {
-        const mockDir = '/mock/directory';
-        jest.spyOn(fs, 'readdirSync').mockReturnValue([]);
-
-        expect(findMarkdownFiles(mockDir)).toEqual([]);
+    beforeEach(() => {
+        jest.clearAllMocks();
     });
 
-    it('should return an array of Markdown file paths', async () => {
-        const mockDir = '/mock/directory';
-        const mockFiles = ['file1.md', 'file2.md'];
-        jest.spyOn(fs, 'readdirSync').mockReturnValue(mockFiles);
-        jest.spyOn(path, 'join').mockImplementation((dir, fileName) => `${dir}/${fileName}`);
+    test('should return an empty array for an empty directory', () => {
+        (fs.readdirSync as jest.Mock).mockReturnValue([]);
+        (fs.statSync as jest.Mock).mockImplementation(() => ({ isDirectory: () => false }));
 
-        expect(findMarkdownFiles(mockDir)).toEqual([`${mockDir}/file1.md`, `${mockDir}/file2.md`]);
+        const result = findMarkdownFiles('emptyDir');
+        expect(result).toEqual([]);
+    });
+
+    test('should return an array with one Markdown file', () => {
+        (fs.readdirSync as jest.Mock).mockReturnValue(['file1.md']);
+        (fs.statSync as jest.Mock).mockImplementation(() => ({ isDirectory: () => false }));
+
+        const result = findMarkdownFiles('dir');
+        expect(result).toEqual(['dir\\file1.md']);
+    });
+
+    test('should return an array with multiple Markdown files in the same directory', () => {
+        (fs.readdirSync as jest.Mock).mockReturnValue(['file1.md', 'file2.md']);
+        (fs.statSync as jest.Mock).mockImplementation(() => ({ isDirectory: () => false }));
+
+        const result = findMarkdownFiles('dir');
+        expect(result).toEqual(['dir\\file1.md', 'dir\\file2.md']);
+    });
+
+    test('should return Markdown files while ignoring non-Markdown files', () => {
+        (fs.readdirSync as jest.Mock).mockReturnValue(['file1.txt', 'file2.md', 'file3.doc']);
+        (fs.statSync as jest.Mock).mockImplementation(() => ({ isDirectory: () => false }));
+
+        const result = findMarkdownFiles('dir');
+        expect(result).toEqual(['dir\\file2.md']);
+    });
+
+    test('should handle a directory with only non-Markdown files', () => {
+        (fs.readdirSync as jest.Mock).mockReturnValue(['file1.txt', 'file2.doc']);
+        (fs.statSync as jest.Mock).mockImplementation(() => ({ isDirectory: () => false }));
+
+        const result = findMarkdownFiles('dir');
+        expect(result).toEqual([]);
     });
 });
 ```
 
-In this example:
-- We import `fs` and `path` modules from `@types/node`.
-- We define the `findMarkdownFiles` function with type annotations.
-- We use `describe` to group our tests together.
-- Inside each `it` block, we use `jest.spyOn` to mock the necessary methods (`fs.readdirSync` and `path.join`) so that we can control their behavior during testing.
-
-Make sure to install the necessary type definitions for Node.js:
-
-```sh
-npm install --save-dev @types/node
-```
+Make sure to adjust the import path for `findMarkdownFiles` based on your project's structure. The type assertions ensure that TypeScript understands we're mocking the methods from `fs`.

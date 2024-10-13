@@ -1,55 +1,103 @@
-Sure! Here is how you can convert your JavaScript Jest test case into a C++ Catch2 test case:
+Here’s how you can convert the provided JavaScript Jest test cases into C++ test cases using the Catch2 testing framework. Note that C++ doesn't have the same mocking capabilities as Jest by default, but you can use simple function replacements to simulate the behavior.
 
-Firstly, let's assume that `findMarkdownFiles` function is implemented in a file named `find_markdown_files.cpp`.
+Here’s the adapted code:
 
-Here is a sample implementation of `findMarkdownFiles` function:
 ```cpp
-#include <iostream>
-#include <vector>
+#define CATCH_CONFIG_MAIN
+#include <catch2/catch.hpp>
 #include <filesystem>
+#include <vector>
+#include <string>
+#include <iostream>
 
-std::vector<std::string> findMarkdownFiles(const std::string& dir)
-{
+// Mock functions for filesystem operations
+namespace fs {
+    std::vector<std::string> readdirSync(const std::string& dir) {
+        // Placeholder for mocking
+        return {};
+    }
+
+    bool isDirectory(const std::string& path) {
+        // Placeholder for mocking
+        return false;
+    }
+
+    void mockReaddirSync(const std::vector<std::string>& files) {
+        readdirSync = [files](const std::string&) { return files; };
+    }
+
+    void mockStatSync(const std::function<bool(const std::string&)>& statFunc) {
+        isDirectory = [statFunc](const std::string& path) { return statFunc(path); };
+    }
+}
+
+// Function to be tested
+std::vector<std::string> findMarkdownFiles(const std::string& dir) {
     std::vector<std::string> markdownFiles;
-    std::filesystem::directory_iterator di(dir);
-    
-    for (auto &entry : di)
-    {
-        if (entry.is_regular_file() && entry.path().extension() == ".md")
-            markdownFiles.push_back(entry.path().string());
+
+    for (const auto& entry : fs::readdirSync(dir)) {
+        if (fs::isDirectory(entry)) {
+            auto subFiles = findMarkdownFiles(entry);
+            markdownFiles.insert(markdownFiles.end(), subFiles.begin(), subFiles.end());
+        } else if (entry.ends_with(".md")) {
+            markdownFiles.push_back(entry);
+        }
     }
 
     return markdownFiles;
 }
-```
 
-Now, here is how you can write a Catch2 test case for this function:
+TEST_CASE("findMarkdownFiles tests", "[findMarkdownFiles]") {
+    // Test for an empty directory
+    SECTION("should return an empty array for an empty directory") {
+        fs::mockReaddirSync({});
+        fs::mockStatSync([](const std::string&) { return false; });
 
-```cpp
-#define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
-
-#include "catch.hpp"
-#include "find_markdown_files.h"
-
-TEST_CASE("Find Markdown Files", "[findMarkdownFiles]")
-{
-    SECTION("Empty Directory")
-    {
-        std::vector<std::string> result = findMarkdownFiles("/tmp/empty_directory");
-        REQUIRE(result.empty());
+        auto result = findMarkdownFiles("emptyDir");
+        REQUIRE(result == std::vector<std::string>{});
     }
-    
-    SECTION("Directory with Markdown File")
-    {
-        std::vector<std::string> result = findMarkdownFiles("/tmp/markdown_dir");
-        REQUIRE(!result.empty());
-        REQUIRE(result[0] == "/tmp/markdown_dir/test.md");
+
+    // Test for one Markdown file
+    SECTION("should return an array with one Markdown file") {
+        fs::mockReaddirSync({"file1.md"});
+        fs::mockStatSync([](const std::string&) { return false; });
+
+        auto result = findMarkdownFiles("dir");
+        REQUIRE(result == std::vector<std::string>{"file1.md"});
+    }
+
+    // Test for multiple Markdown files in the same directory
+    SECTION("should return an array with multiple Markdown files in the same directory") {
+        fs::mockReaddirSync({"file1.md", "file2.md"});
+        fs::mockStatSync([](const std::string&) { return false; });
+
+        auto result = findMarkdownFiles("dir");
+        REQUIRE(result == std::vector<std::string>{"file1.md", "file2.md"});
+    }
+
+    // Test for ignoring non-Markdown files
+    SECTION("should return Markdown files while ignoring non-Markdown files") {
+        fs::mockReaddirSync({"file1.txt", "file2.md", "file3.doc"});
+        fs::mockStatSync([](const std::string&) { return false; });
+
+        auto result = findMarkdownFiles("dir");
+        REQUIRE(result == std::vector<std::string>{"file2.md"});
+    }
+
+    // Test for a directory with only non-Markdown files
+    SECTION("should handle a directory with only non-Markdown files") {
+        fs::mockReaddirSync({"file1.txt", "file2.doc"});
+        fs::mockStatSync([](const std::string&) { return false; });
+
+        auto result = findMarkdownFiles("dir");
+        REQUIRE(result == std::vector<std::string>{});
     }
 }
 ```
 
-In this test case, we're assuming that there are two directories: `/tmp/empty_directory` which doesn't contain any files, and `/tmp/markdown_dir` which contains a single Markdown file named `test.md`. Please replace these paths with actual paths on your machine where you have some test data.
+### Notes:
+1. **Mocking Functions**: The C++ example simulates mocking by using lambda functions and a mock directory structure.
+2. **CATCH_CONFIG_MAIN**: This macro is used to define the main function for Catch2, allowing you to run the tests directly.
+3. **Requirements**: Ensure you have Catch2 set up in your C++ project to run these tests.
 
-Please note that you need to install Catch2 library before running this code. If you don't have it installed, you can add it using your package manager or download it from its GitHub repository: https://github.com/catchorg/Catch2
-
-Also, make sure that you have a proper build system set up to compile and run your C++ code with Catch2.
+This structure should effectively mirror the behavior of your JavaScript Jest tests in C++.

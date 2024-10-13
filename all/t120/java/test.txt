@@ -1,0 +1,103 @@
+Here’s how you can convert your Jest test cases into JUnit 4 test cases in Java. We'll use the Jsoup library for HTML parsing and structure the tests to match the intent of your JavaScript code.
+
+First, ensure you have the necessary Jsoup and JUnit dependencies in your project.
+
+### Java Code
+
+```java
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class Tester {
+
+    public static List<List<String>> extractCSVDataFromHTML(String html) {
+        Document document = Jsoup.parse(html);
+        Element table = document.selectFirst("table.waffle");
+        List<List<String>> result = new ArrayList<>();
+        
+        if (table != null) {
+            Elements rows = table.select("tbody tr");
+            for (Element row : rows) {
+                List<String> rowData = new ArrayList<>();
+                Elements cells = row.select("td");
+                for (Element cell : cells) {
+                    rowData.add(cell.text().trim());
+                }
+                result.add(rowData);
+            }
+        }
+        
+        return result;
+    }
+
+    @Test
+    public void testTableWithMultipleRowsAndColumns() {
+        String testCaseHTML = "<table class=\"waffle\">\n" +
+                              "  <tbody>\n" +
+                              "    <tr><td>Cell 1</td><td>Cell 2</td></tr>\n" +
+                              "    <tr><td>Cell 3</td><td>Cell 4</td></tr>\n" +
+                              "  </tbody>\n" +
+                              "</table>";
+        List<List<String>> expected = List.of(List.of("Cell 1", "Cell 2"), List.of("Cell 3", "Cell 4"));
+        assertEquals(expected, extractCSVDataFromHTML(testCaseHTML));
+    }
+
+    @Test
+    public void testTableWithEmptyCells() {
+        String testCaseHTML = "<table class=\"waffle\">\n" +
+                              "  <tbody>\n" +
+                              "    <tr><td>Cell 1</td><td></td></tr>\n" +
+                              "    <tr><td></td><td>Cell 4</td></tr>\n" +
+                              "  </tbody>\n" +
+                              "</table>";
+        List<List<String>> expected = List.of(List.of("Cell 1", ""), List.of("", "Cell 4"));
+        assertEquals(expected, extractCSVDataFromHTML(testCaseHTML));
+    }
+
+    @Test
+    public void testTableWithOnlyOneRow() {
+        String testCaseHTML = "<table class=\"waffle\">\n" +
+                              "  <tbody>\n" +
+                              "    <tr><td>Single Cell 1</td><td>Single Cell 2</td></tr>\n" +
+                              "  </tbody>\n" +
+                              "</table>";
+        List<List<String>> expected = List.of(List.of("Single Cell 1", "Single Cell 2"));
+        assertEquals(expected, extractCSVDataFromHTML(testCaseHTML));
+    }
+
+    @Test
+    public void testTableWithOnlyOneColumn() {
+        String testCaseHTML = "<table class=\"waffle\">\n" +
+                              "  <tbody>\n" +
+                              "    <tr><td>Column Cell 1</td></tr>\n" +
+                              "    <tr><td>Column Cell 2</td></tr>\n" +
+                              "  </tbody>\n" +
+                              "</table>";
+        List<List<String>> expected = List.of(List.of("Column Cell 1"), List.of("Column Cell 2"));
+        assertEquals(expected, extractCSVDataFromHTML(testCaseHTML));
+    }
+
+    @Test
+    public void testNoTableWithWaffleClassPresent() {
+        String testCaseHTML = "<div>\n" +
+                              "  <p>No table here!</p>\n" +
+                              "</div>";
+        List<List<String>> expected = new ArrayList<>();
+        assertEquals(expected, extractCSVDataFromHTML(testCaseHTML));
+    }
+}
+```
+
+### Explanation
+- Each test case is marked with the `@Test` annotation.
+- The `assertEquals` method is used to compare the expected output with the result from the `extractCSVDataFromHTML` method.
+- The method `extractCSVDataFromHTML` remains the same, as it was previously defined.
+
+Make sure to include JUnit and Jsoup in your project's dependencies for the tests to run successfully.

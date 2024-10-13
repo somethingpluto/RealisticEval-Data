@@ -1,78 +1,86 @@
-Certainly! Below is the equivalent TypeScript Jest test case for your JavaScript function using `describe`:
+Here's your Jest test case rewritten in TypeScript:
 
 ```typescript
-import fs from 'fs';
-import { promisify } from 'util';
-
-// Promisify the writeFile method to return a Promise
-const writeFileAsync = promisify(fs.writeFile);
-
-/**
- * Converts the data object to JSON format and saves it to the specified file path.
- * @param {Object} data - The data object to be converted to JSON.
- * @param {string} outputFilePath - The file path where the JSON will be saved.
- */
-async function saveAsJSON(data: any, outputFilePath: string): Promise<void> {
-  try {
-    await writeFileAsync(outputFilePath, JSON.stringify(data, null, 2));
-  } catch (error) {
-    throw new Error(`Error writing to file ${outputFilePath}: ${error.message}`);
-  }
-}
+import * as fs from 'fs';
+import { saveAsJSON } from './path/to/your/module'; // Adjust the import path accordingly
 
 describe('saveAsJSON', () => {
-  let mockData: any;
-  let mockOutputFilePath: string;
+    const mockFilePath = 'test.json';
+    const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
 
-  beforeEach(() => {
-    mockData = { key: 'value' };
-    mockOutputFilePath = 'mock.json';
-  });
-
-  afterEach(() => {
-    // Clean up any mocked functions or files after each test
-    jest.clearAllMocks();
-  });
-
-  test('should save data as JSON to the specified file path', async () => {
-    const spy = jest.spyOn(fs, 'writeFile').mockImplementation((filePath, content, callback) => {
-      if (filePath === mockOutputFilePath && content === JSON.stringify(mockData, null, 2)) {
-        callback(null);
-      } else {
-        callback(new Error('Mocked error'));
-      }
+    afterEach(() => {
+        // Clean up after each test
+        jest.clearAllMocks();
+        if (fs.existsSync(mockFilePath)) {
+            fs.unlinkSync(mockFilePath); // Remove test file if it exists
+        }
     });
 
-    await expect(saveAsJSON(mockData, mockOutputFilePath)).resolves.not.toThrow();
-
-    expect(spy).toHaveBeenCalledWith(
-      mockOutputFilePath,
-      JSON.stringify(mockData, null, 2),
-      expect.any(Function)
-    );
-  });
-
-  test('should handle errors when saving JSON to file', async () => {
-    const spy = jest.spyOn(fs, 'writeFile').mockImplementation((filePath, content, callback) => {
-      callback(new Error('Mocked error'));
+    test('should save valid object to JSON file', () => {
+        const data = { name: "Alice", age: 25 };
+        saveAsJSON(data, mockFilePath);
+        const savedData = fs.readFileSync(mockFilePath, 'utf8');
+        expect(savedData).toBe(JSON.stringify(data, null, 2));
     });
 
-    await expect(saveAsJSON(mockData, mockOutputFilePath)).rejects.toThrow('Error writing to file mock.json: Mocked error');
+    test('should handle empty object', () => {
+        const data = {};
+        saveAsJSON(data, mockFilePath);
+        const savedData = fs.readFileSync(mockFilePath, 'utf8');
+        expect(savedData).toBe(JSON.stringify(data, null, 2));
+    });
 
-    expect(spy).toHaveBeenCalledWith(
-      mockOutputFilePath,
-      JSON.stringify(mockData, null, 2),
-      expect.any(Function)
-    );
-  });
+    test('should save nested object to JSON file', () => {
+        const data = { user: { name: "Bob", age: 30 }, active: true };
+        saveAsJSON(data, mockFilePath);
+        const savedData = fs.readFileSync(mockFilePath, 'utf8');
+        expect(savedData).toBe(JSON.stringify(data, null, 2));
+    });
+
+    test('should save array of objects to JSON file', () => {
+        const data = [
+            { product: { id: 1, name: "Laptop", price: 999.99 }, inStock: true },
+            { product: { id: 2, name: "Phone", price: 499.99 }, inStock: false }
+        ];
+        saveAsJSON(data, mockFilePath);
+        const savedData = fs.readFileSync(mockFilePath, 'utf8');
+        expect(savedData).toBe(JSON.stringify(data, null, 2));
+    });
+
+    test('should save object with mixed data types to JSON file', () => {
+        const data = { title: "Shopping List", items: ["Milk", "Eggs", "Bread"], total: 3.50, completed: false };
+        saveAsJSON(data, mockFilePath);
+        const savedData = fs.readFileSync(mockFilePath, 'utf8');
+        expect(savedData).toBe(JSON.stringify(data, null, 2));
+    });
+
+    test('should save deeply nested object to JSON file', () => {
+        const data = {
+            company: {
+                name: "TechCorp",
+                employees: [
+                    {
+                        id: 1,
+                        name: "Alice",
+                        role: "Developer",
+                        contact: { email: "alice@techcorp.com", phone: "123-456-7890" }
+                    },
+                    { id: 2, name: "Bob", role: "Designer", contact: { email: "bob@techcorp.com", phone: "098-765-4321" } }
+                ]
+            },
+            established: 2010
+        };
+        saveAsJSON(data, mockFilePath);
+        const savedData = fs.readFileSync(mockFilePath, 'utf8');
+        expect(savedData).toBe(JSON.stringify(data, null, 2));
+    });
 });
 ```
 
-### Explanation:
-1. **Promisification**: We use `promisify` from Node.js to convert `fs.writeFile` into a promise-based function.
-2. **TypeScript Types**: The `saveAsJSON` function now includes type annotations for its parameters and return type.
-3. **Jest Describe/It**: The test cases are wrapped in a `describe` block with individual `test` blocks for different scenarios.
-4. **Mocking**: We use `jest.spyOn` to mock the `fs.writeFile` function and control its behavior during testing.
-5. **Assertions**: We use Jest's assertion methods (`expect`) to verify that the function behaves as expected.
+### Key Changes
+1. **Imports**: Ensure you import the `saveAsJSON` function correctly based on your project's structure.
+2. **Type Annotations**: TypeScript infers types automatically in this context, but you could add more specific types if needed for enhanced type checking.
+3. **File Cleanup**: The cleanup code remains the same to remove the test file after each test. 
 
-This should give you a good starting point for testing your TypeScript function using Jest.
+Make sure to have the TypeScript setup configured for Jest in your project to run this code successfully!

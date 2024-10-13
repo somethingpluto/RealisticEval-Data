@@ -1,8 +1,6 @@
-Certainly! Here’s the TypeScript version of your Jest test case, including the `describe` block and all the test cases:
+Here’s the TypeScript version of your Jest test case:
 
 ```typescript
-import { getCSSFromSheet } from './path/to/your/function'; // Import the function you're testing
-
 describe('getCSSFromSheet', () => {
     let styleSheet: CSSStyleSheet | null;
 
@@ -14,7 +12,7 @@ describe('getCSSFromSheet', () => {
             p { color: blue; }
         `));
         document.head.appendChild(style);
-        styleSheet = style.sheet;
+        styleSheet = style.sheet as CSSStyleSheet;
     });
 
     afterEach(() => {
@@ -25,7 +23,7 @@ describe('getCSSFromSheet', () => {
     test('Empty Stylesheet: should return an empty string', () => {
         const emptyStyle = document.createElement('style');
         document.head.appendChild(emptyStyle);
-        const emptyStyleSheet = emptyStyle.sheet;
+        const emptyStyleSheet = emptyStyle.sheet as CSSStyleSheet;
 
         const cssText = getCSSFromSheet(emptyStyleSheet);
         expect(cssText).toBe('');
@@ -33,8 +31,8 @@ describe('getCSSFromSheet', () => {
 
     test('Invalid Input: should return an empty string for non-CSSStyleSheet input', () => {
         expect(getCSSFromSheet(null)).toBe('');
-        expect(getCSSFromSheet({} as any)).toBe('');
-        expect(getCSSFromSheet('not a stylesheet' as any)).toBe('');
+        expect(getCSSFromSheet({} as CSSStyleSheet)).toBe('');
+        expect(getCSSFromSheet('not a stylesheet' as unknown as CSSStyleSheet)).toBe('');
     });
 
     test('Cross-Origin Restrictions: should handle restricted stylesheets gracefully', () => {
@@ -45,7 +43,7 @@ describe('getCSSFromSheet', () => {
         document.head.appendChild(link);
 
         // Accessing cssRules of a cross-origin stylesheet should throw an error
-        const restrictedSheet = link.sheet;
+        const restrictedSheet = link.sheet as CSSStyleSheet;
 
         expect(() => {
             getCSSFromSheet(restrictedSheet);
@@ -61,17 +59,10 @@ describe('getCSSFromSheet', () => {
         styleElement.textContent = 'div { font-size: 16px; }';
         document.head.appendChild(styleElement);
 
-        const cssText = getCSSFromSheet(styleElement.sheet);
+        const cssText = getCSSFromSheet(styleElement.sheet as CSSStyleSheet);
         expect(cssText).toBe('div {font-size: 16px;}');
     });
 });
 ```
 
-### Key Changes:
-1. **Import Statement**: Added an import statement for the `getCSSFromSheet` function.
-2. **Type Annotations**:
-   - `styleSheet` is typed as `CSSStyleSheet | null`.
-   - In the `test` blocks, `emptyStyleSheet` and `restrictedSheet` are typed implicitly based on their context.
-3. **Type Casting**: For non-CSSStyleSheet inputs, explicit type casting is used (`as any`) to bypass TypeScript type checking.
-
-This ensures that the test cases remain consistent and type-safe.
+This includes type annotations where necessary, ensuring better type safety in TypeScript.

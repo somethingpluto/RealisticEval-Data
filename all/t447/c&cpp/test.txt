@@ -1,73 +1,45 @@
-To convert the given JavaScript Jest test case into a C++ Catch2 test case, we need to follow these steps:
-
-1. Define the function `calculateAge` in C++.
-2. Write the corresponding Catch2 test cases.
-
-Here's how you can do it:
-
-### Step 1: Define the Function `calculateAge`
-
-First, let's define the `calculateAge` function in C++. We'll assume that the input is a string representing a birth date in the format "YYYY-MM-DD".
-
-```cpp
-#include <iostream>
-#include <string>
-#include <chrono>
-#include <ctime>
-
-int calculateAge(const std::string& birthDateString) {
-    // Parse the birth date string
-    std::tm tm = {};
-    strptime(birthDateString.c_str(), "%Y-%m-%d", &tm);
-
-    // Get the current time
-    auto now = std::chrono::system_clock::now();
-    std::time_t now_c = std::chrono::system_clock::to_time_t(now);
-    std::tm now_tm = *std::localtime(&now_c);
-
-    // Calculate the difference in years
-    int age = now_tm.tm_year - tm.tm_year;
-    if (now_tm.tm_mon < tm.tm_mon || 
-        (now_tm.tm_mon == tm.tm_mon && now_tm.tm_mday < tm.tm_mday)) {
-        --age;
-    }
-
-    return age;
-}
-```
-
-### Step 2: Write the Catch2 Test Cases
-
-Now, let's write the corresponding Catch2 test cases for the `calculateAge` function.
+Here’s the equivalent Catch2 test case in C++ based on your Jest test case:
 
 ```cpp
 #define CATCH_CONFIG_MAIN
-#include "catch.hpp"
+#include <catch2/catch.hpp>
+#include <ctime>
+#include <sstream>
+#include <iomanip>
 
-TEST_CASE("Calculate Age from Birth Date") {
-    SECTION("Valid birth date") {
-        REQUIRE(calculateAge("2000-01-01") == 23); // Assuming the current year is 2023
-        REQUIRE(calculateAge("1990-05-15") == 33); // Assuming the current year is 2023
+int calculateAge(const std::string& birthDateString);
+
+TEST_CASE("calculateAge", "[age]") {
+    SECTION("calculates age correctly for a birth date in the past") {
+        REQUIRE(calculateAge("2000-01-01") == (std::time(0) / (365.25 * 24 * 60 * 60)) - 2000);
     }
 
-    SECTION("Invalid birth date") {
-        REQUIRE_THROWS(calculateAge("invalid-date"));
+    SECTION("calculates age correctly for a birth date in the long past") {
+        REQUIRE(calculateAge("1000-01-01") == (std::time(0) / (365.25 * 24 * 60 * 60)) - 1000);
     }
 
-    SECTION("Future birth date") {
-        REQUIRE_THROWS(calculateAge("2050-01-01"));
+    SECTION("calculates age correctly for a birth date today") {
+        std::time_t now = std::time(0);
+        std::tm* today = std::localtime(&now);
+        std::ostringstream oss;
+        oss << std::put_time(today, "%Y-%m-%d");
+        REQUIRE(calculateAge(oss.str()) == 0);
+    }
+
+    SECTION("calculates age correctly for a person born yesterday") {
+        std::time_t now = std::time(0);
+        std::tm* yesterday = std::localtime(&now);
+        yesterday->tm_mday--; // Set to yesterday
+        std::mktime(yesterday); // Normalize the structure
+        std::ostringstream oss;
+        oss << std::put_time(yesterday, "%Y-%m-%d");
+        REQUIRE(calculateAge(oss.str()) == 0);
     }
 }
 ```
 
-### Explanation
-
-1. **Parsing the Birth Date**: The `strptime` function is used to parse the birth date string into a `std::tm` structure.
-2. **Getting Current Time**: The `std::chrono` library is used to get the current time and convert it to a `std::tm` structure.
-3. **Calculating Age**: The age is calculated by subtracting the birth year from the current year and adjusting for whether the current month and day have passed the birth month and day.
-4. **Catch2 Test Cases**:
-   - `SECTION("Valid birth date")`: Tests with valid birth dates.
-   - `SECTION("Invalid birth date")`: Tests with an invalid birth date format.
-   - `SECTION("Future birth date")`: Tests with a future birth date.
-
-This should give you a good starting point for converting your JavaScript Jest test case to a C++ Catch2 test case.
+### Explanation:
+- Each test case is encapsulated within a `SECTION` macro.
+- The `REQUIRE` macro is used for assertions.
+- The current date and time handling uses C++'s `<ctime>` and `<iomanip>` libraries to format dates.
+- The calculation for age for past dates uses a rough approximation based on seconds, which may need refinement for exact year handling.

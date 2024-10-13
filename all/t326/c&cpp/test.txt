@@ -1,11 +1,10 @@
-Certainly! Below is an equivalent C++ test case using Catch2 for the `calculateTimeDifference` function. Note that I'll assume you have a function signature similar to the JavaScript one in your C++ code.
-
-First, let's define the `calculateTimeDifference` function in C++. For simplicity, we'll use `std::chrono` to handle dates and times.
+Here’s how you can translate the provided JavaScript Jest test cases into C++ using the Catch2 testing framework:
 
 ```cpp
-#include <iostream>
+#define CATCH_CONFIG_MAIN
+#include <catch2/catch.hpp>
 #include <chrono>
-#include <ctime>
+#include <string>
 
 struct TimeDifference {
     int days;
@@ -13,72 +12,79 @@ struct TimeDifference {
     int minutes;
 };
 
-TimeDifference calculateTimeDifference(const std::string& givenDateString) {
-    // Parse the given date string into a time_t object
-    std::tm tm = {};
-    strptime(givenDateString.c_str(), "%Y-%m-%d %H:%M:%S", &tm);
-    std::time_t givenDate = mktime(&tm);
+TimeDifference calculateTimeDifference(const std::string& givenDate);
 
-    // Get the current date and time
-    auto now = std::chrono::system_clock::now();
-    std::time_t currentDate = std::chrono::system_clock::to_time_t(now);
-
-    // Calculate the difference in seconds
-    std::time_t diffSeconds = difftime(currentDate, givenDate);
-
-    // Convert seconds to days, hours, and minutes
-    int days = static_cast<int>(diffSeconds / (60 * 60 * 24));
-    int remainingSeconds = static_cast<int>(diffSeconds % (60 * 60 * 24));
-    int hours = remainingSeconds / (60 * 60);
-    int remainingMinutes = (remainingSeconds % (60 * 60)) / 60;
-
-    return {days, hours, remainingMinutes};
-}
-```
-
-Next, let's write the Catch2 test cases:
-
-```cpp
-#define CATCH_CONFIG_MAIN
-#include "catch.hpp"
-
-TEST_CASE("Calculate time difference", "[time_difference]") {
-    SECTION("Given date is before current date") {
-        TimeDifference result = calculateTimeDifference("2023-10-01 12:00:00");
-        REQUIRE(result.days > 0);
-        REQUIRE(result.hours >= 0);
-        REQUIRE(result.minutes >= 0);
+TEST_CASE("calculateTimeDifference") {
+    SECTION("should return correct time difference for a date in the past") {
+        auto pastDate = std::chrono::system_clock::now() - std::chrono::hours(3 * 24 + 5 / 60);
+        std::time_t pastTime = std::chrono::system_clock::to_time_t(pastDate);
+        std::tm* tmPast = std::localtime(&pastTime);
+        char buffer[20];
+        std::strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", tmPast);
+        
+        TimeDifference result = calculateTimeDifference(buffer);
+        REQUIRE(result.days == 3);
+        REQUIRE(result.hours == 0);
+        REQUIRE(result.minutes == 5);
     }
 
-    SECTION("Given date is the same day but later") {
-        TimeDifference result = calculateTimeDifference("2023-10-05 18:00:00");
+    SECTION("should return correct time difference for a date that is exactly now") {
+        auto now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+        std::tm* tmNow = std::localtime(&now);
+        char buffer[20];
+        std::strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", tmNow);
+
+        TimeDifference result = calculateTimeDifference(buffer);
         REQUIRE(result.days == 0);
-        REQUIRE(result.hours > 0);
-        REQUIRE(result.minutes >= 0);
+        REQUIRE(result.hours == 0);
+        REQUIRE(result.minutes == 0);
     }
 
-    SECTION("Given date is the same day but earlier") {
-        TimeDifference result = calculateTimeDifference("2023-10-05 10:00:00");
+    SECTION("should return correct time difference for a date just seconds ago") {
+        auto justNow = std::chrono::system_clock::now() - std::chrono::seconds(45);
+        std::time_t justNowTime = std::chrono::system_clock::to_time_t(justNow);
+        std::tm* tmJustNow = std::localtime(&justNowTime);
+        char buffer[20];
+        std::strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", tmJustNow);
+        
+        TimeDifference result = calculateTimeDifference(buffer);
         REQUIRE(result.days == 0);
-        REQUIRE(result.hours >= 0);
-        REQUIRE(result.minutes >= 0);
+        REQUIRE(result.hours == 0);
+        REQUIRE(result.minutes == 0);
     }
 
-    SECTION("Given date is in the past") {
-        TimeDifference result = calculateTimeDifference("2020-01-01 00:00:00");
-        REQUIRE(result.days > 0);
-        REQUIRE(result.hours >= 0);
-        REQUIRE(result.minutes >= 0);
+    SECTION("should return correct time difference for a date with only hours difference") {
+        auto hoursAgo = std::chrono::system_clock::now() - std::chrono::hours(7);
+        std::time_t hoursAgoTime = std::chrono::system_clock::to_time_t(hoursAgo);
+        std::tm* tmHoursAgo = std::localtime(&hoursAgoTime);
+        char buffer[20];
+        std::strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", tmHoursAgo);
+
+        TimeDifference result = calculateTimeDifference(buffer);
+        REQUIRE(result.days == 0);
+        REQUIRE(result.hours == 7);
+        REQUIRE(result.minutes == 0);
+    }
+
+    SECTION("should return correct time difference for a date with hours and minutes difference") {
+        auto hoursAndMinutesAgo = std::chrono::system_clock::now() - std::chrono::hours(24) - std::chrono::minutes(3);
+        std::time_t hoursAndMinutesAgoTime = std::chrono::system_clock::to_time_t(hoursAndMinutesAgo);
+        std::tm* tmHoursAndMinutesAgo = std::localtime(&hoursAndMinutesAgoTime);
+        char buffer[20];
+        std::strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", tmHoursAndMinutesAgo);
+
+        TimeDifference result = calculateTimeDifference(buffer);
+        REQUIRE(result.days == 1);
+        REQUIRE(result.hours == 0);
+        REQUIRE(result.minutes == 3);
     }
 }
 ```
 
 ### Explanation:
-1. **Function Definition**: The `calculateTimeDifference` function takes a date string in the format `"YYYY-MM-DD HH:MM:SS"`, parses it into a `std::time_t` object, and then calculates the difference from the current date.
-2. **Catch2 Test Cases**:
-   - **Given date is before current date**: Checks if the function returns positive values for days, hours, and minutes.
-   - **Given date is the same day but later**: Ensures the function correctly handles the case where the given date is the same day but later than the current time.
-   - **Given date is the same day but earlier**: Ensures the function correctly handles the case where the given date is the same day but earlier than the current time.
-   - **Given date is in the past**: Verifies that the function correctly calculates the time difference even if the given date is in the past.
+1. **Include Catch2**: The `#define CATCH_CONFIG_MAIN` line is necessary to set up the Catch2 test runner.
+2. **Time Handling**: The `std::chrono` library is used to manipulate and create dates in C++. 
+3. **Time Formatting**: `std::strftime` is used to format the date into a string that matches the expected input for `calculateTimeDifference`.
+4. **Assertions**: The `REQUIRE` macro is used to check the expected results.
 
-Make sure you have Catch2 installed and properly configured in your project to run these tests.
+Make sure you have Catch2 installed and properly linked to your C++ project to run these tests.
