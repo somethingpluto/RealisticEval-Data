@@ -1,6 +1,5 @@
-TEST_CASE("Trie operations", "[Trie]") {
+TEST_CASE("Test Trie operations", "[Trie]") {
     Trie trie;
-
     trie.insert("apple");
     trie.insert("app");
     trie.insert("apricot");
@@ -23,14 +22,14 @@ TEST_CASE("Trie operations", "[Trie]") {
     }
 
     SECTION("Prefix search") {
-        REQUIRE(trie.startsWith("car"));
-        REQUIRE(trie.startsWith("care"));
-        REQUIRE_FALSE(trie.startsWith("cat"));
+        REQUIRE(trie.starts_with("car"));
+        REQUIRE(trie.starts_with("care"));
+        REQUIRE_FALSE(trie.starts_with("cat"));
     }
 
     SECTION("Empty string") {
         REQUIRE(trie.search(""));
-        REQUIRE(trie.startsWith(""));
+        REQUIRE(trie.starts_with(""));
     }
 
     SECTION("Case sensitivity") {

@@ -1,17 +1,51 @@
-describe('parseXamlToDict', () => {
-  it('should correctly parse XAML file and return a dictionary', async () => {
-    const xamlFilePath = path.join(__dirname, 'test.xml'); // Replace with actual test XML file path
-    const expectedOutput = { key1: 'value1', key2: 'value2' }; // Replace with expected output
+const { parse } = require('xml2js');
 
-    const result = await parseXamlToDict(xamlFilePath);
-    expect(result).toEqual(expectedOutput);
-  });
+describe('TestParseXamlToDict', () => {
+    it('should correctly parse valid strings', () => {
+        const xamlData = `
+            <root>
+                <String Key="Username">Alice</String>
+                <String Key="Password">secret</String>
+            </root>
+        `;
+        const expected = { Username: 'Alice', Password: 'secret' };
+        const result = parseXamlToDict(xamlData);
+        expect(result).toEqual(expected);
+    });
 
-  it('should handle empty XAML file gracefully', async () => {
-    const xamlFilePath = path.join(__dirname, 'empty_test.xml'); // Replace with actual empty test XML file path
-    const expectedOutput = {};
+    it('should handle missing key attribute', () => {
+        const xamlData = `
+            <root>
+                <String>Alice</String>
+            </root>
+        `;
+        const expected = {};
+        const result = parseXamlToDict(xamlData);
+        expect(result).toEqual(expected);
+    });
 
-    const result = await parseXamlToDict(xamlFilePath);
-    expect(result).toEqual(expectedOutput);
-  });
+    it('should handle no string tags', () => {
+        const xamlData = `
+            <root>
+                <Data>Some question</Data>
+            </root>
+        `;
+        const expected = {};
+        const result = parseXamlToDict(xamlData);
+        expect(result).toEqual(expected);
+    });
+
+    it('should correctly parse nested string tags', () => {
+        const xamlData = `
+            <root>
+                <Container>
+                    <String Key="Username">Bob</String>
+                </Container>
+                <String Key="Location">Earth</String>
+            </root>
+        `;
+        const expected = { Username: 'Bob', Location: 'Earth' };
+        const result = parseXamlToDict(xamlData);
+        expect(result).toEqual(expected);
+    });
 });

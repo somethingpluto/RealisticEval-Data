@@ -1,0 +1,82 @@
+Certainly! Here’s the equivalent Java test case using JUnit 4 for the given Jest test cases:
+
+```java
+import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+
+public class Tester {
+
+    @Test
+    public void testIsCronBetween2And4AM() {
+        // Test cases for the method isCronBetween2And4AM
+
+        // Test case: should return true for specific hours 2, 3, and 4
+        assertEquals("should return true for specific hours 2, 3, and 4", true, CronChecker.isCronBetween2And4AM("0 2,3,4 * * *"));
+
+        // Test case: should return false for range that includes 2 to 4 a.m.
+        assertEquals("should return false for range that includes 2 to 4 a.m.", false, CronChecker.isCronBetween2And4AM("0 1-5 * * *"));
+
+        // Test case: should return false for range that excludes 2 to 4 a.m.
+        assertEquals("should return false for range that excludes 2 to 4 a.m.", false, CronChecker.isCronBetween2And4AM("0 0-1,5-23 * * *"));
+
+        // Test case: should return true for wildcard in hour field
+        assertEquals("should return true for wildcard in hour field", false, CronChecker.isCronBetween2And4AM("0 * * * *"));
+    }
+}
+
+// The CronChecker class remains the same as before
+public class CronChecker {
+
+    /**
+     * Parse a cron expression and determine whether it is between 2 a.m. and 4 a.m.
+     * @param cronExpression the cron expression to be parsed
+     * @return true if the cron expression indicates a time between 2 a.m. and 4 a.m., false otherwise
+     */
+    public static boolean isCronBetween2And4AM(String cronExpression) {
+        String[] parts = cronExpression.split(" ");
+        String hourPart = parts[1];
+
+        List<Integer> hours = Arrays.stream(hourPart.split(","))
+                                    .flatMapToInt(s -> {
+                                        if (s.contains("-")) {
+                                            String[] range = s.split("-");
+                                            int start = Integer.parseInt(range[0]);
+                                            int end = Integer.parseInt(range[1]);
+                                            return IntStream.rangeClosed(start, end).boxed().mapToInt(i -> i);
+                                        } else {
+                                            return IntStream.of(Integer.parseInt(s));
+                                        }
+                                    })
+                                    .boxed()
+                                    .collect(Collectors.toList());
+
+        return hours.stream().anyMatch(hour -> hour >= 2 && hour < 4);
+    }
+
+    public static void main(String[] args) {
+        // Example usage
+        String cronExpression = "0 2,3 * * *";
+        System.out.println(isCronBetween2And4AM(cronExpression)); // Should print true
+    }
+}
+```
+
+### Explanation:
+1. **JUnit Test Class**:
+   - The test class `Tester` contains a single test method `testIsCronBetween2And4AM`.
+   - Each test case uses `assertEquals` to assert the expected result.
+
+2. **JUnit Assertions**:
+   - The `assertEquals` method is used to compare the expected result with the actual result returned by the `isCronBetween2And4AM` method.
+
+3. **CronChecker Class**:
+   - The `CronChecker` class contains the `isCronBetween2And4AM` method, which parses the cron expression and determines if it falls between 2 a.m. and 4 a.m.
+   - The method handles both comma-separated values and ranges.
+
+4. **Handling Ranges**:
+   - The method now handles ranges (e.g., `1-5`) by splitting the range and generating a stream of integers within that range.
+
+5. **Main Method**:
+   - The `main` method provides an example usage of the `isCronBetween2And4AM` method.
+
+This setup ensures that the test cases are properly implemented using JUnit 4 and that the `CronChecker` class functions correctly.

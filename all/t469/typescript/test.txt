@@ -1,10 +1,84 @@
-Certainly! Below is the equivalent TypeScript code for the provided Python function and its corresponding test class using Jest. The code includes proper type annotations and Jest assertions to ensure the functionality and logic of the tests are preserved.
+Certainly! Below is the equivalent Jest test suite in TypeScript for the provided Python unittest class. The TypeScript code will include proper type annotations and use Jest assertions to ensure the functionality and logic of the tests are preserved.
 
-### TypeScript Code for `getScale` Function
+### TypeScript Code
 
 ```typescript
-import * as math from 'mathjs';
+import { getScale } from './getScale'; // Assuming getScale is defined in a separate file
 
+describe('TestGetScaleFunction', () => {
+    it('test_identity_matrix', () => {
+        // Test for the identity matrix (no scaling)
+        const matrix: number[][] = [
+            [1, 0, 0],
+            [0, 1, 0],
+            [0, 0, 1]
+        ];
+        const expectedScale: [number, number] = [1.0, 1.0];
+        expect(getScale(matrix)).toEqual(expectedScale);
+    });
+
+    it('test_scaling_matrix', () => {
+        // Test for a scaling matrix (2x in x and 3x in y)
+        const matrix: number[][] = [
+            [2, 0, 0],
+            [0, 3, 0],
+            [0, 0, 1]
+        ];
+        const expectedScale: [number, number] = [2.0, 3.0];
+        expect(getScale(matrix)).toEqual(expectedScale);
+    });
+
+    it('test_uniform_scaling', () => {
+        // Test case with uniform scaling
+        const matrix: number[][] = [
+            [2, 0, 0],
+            [0, 2, 0],
+            [0, 0, 1]
+        ];
+        const expectedScale: [number, number] = [2.0, 2.0];
+        expect(getScale(matrix)).toEqual(expectedScale);
+    });
+
+    it('test_non_uniform_scaling', () => {
+        // Test case with non-uniform scaling
+        const matrix: number[][] = [
+            [3, 0, 0],
+            [0, 5, 0],
+            [0, 0, 1]
+        ];
+        const expectedScale: [number, number] = [3.0, 5.0];
+        expect(getScale(matrix)).toEqual(expectedScale);
+    });
+
+    it('test_reflection_matrix', () => {
+        // Test case with reflection matrix
+        const matrix: number[][] = [
+            [-1, 0, 0],
+            [0, 1, 0],
+            [0, 0, 1]
+        ];
+        const expectedScale: [number, number] = [1.0, 1.0];
+        expect(getScale(matrix)).toEqual(expectedScale);
+    });
+});
+
+// Utility functions (if needed)
+function calculateNorm(vector: number[]): number {
+    return Math.sqrt(vector.reduce((acc, val) => acc + val * val, 0));
+}
+```
+
+### Explanation:
+1. **Import Statements**: The `getScale` function is imported from a separate file (`getScale.ts`).
+2. **Jest Describe Block**: The `describe` block groups all the test cases under a single suite named `TestGetScaleFunction`.
+3. **Test Cases**: Each test case is defined using the `it` function, which includes a description and the actual test logic.
+4. **Type Annotations**: The `matrix` and `expectedScale` variables are properly typed to ensure correctness.
+5. **Assertions**: The `expect` function is used with `toEqual` to compare the results of `getScale` with the expected values.
+6. **Utility Function**: The `calculateNorm` function is included as a utility function if needed for the implementation of `getScale`.
+
+### `getScale` Implementation (Assuming it is defined in `getScale.ts`)
+
+```typescript
 /**
  * Given a 3x3 affine transformation matrix, return the corresponding scaling factors
  * along the x and y axes.
@@ -12,70 +86,28 @@ import * as math from 'mathjs';
  * @param matrix - A 3x3 affine transformation matrix.
  * @returns A tuple containing the scale factors (scale_x, scale_y).
  */
-function getScale(matrix: number[][]): [number, number] {
-  // Ensure the matrix is a 3x3 array
-  if (!Array.isArray(matrix) || matrix.length !== 3 || matrix.some(row => row.length !== 3)) {
-    throw new Error('Input must be a 3x3 affine transformation matrix.');
-  }
+export function getScale(matrix: number[][]): [number, number] {
+    // Ensure the matrix is a 3x3 array
+    if (!Array.isArray(matrix) || matrix.length !== 3 || matrix.some(row => row.length !== 3)) {
+        throw new Error("Input must be a 3x3 affine transformation matrix.");
+    }
 
-  // Calculate the scale factors using the norm of the columns
-  const scale_x = math.norm(matrix.slice(0, 2).map(row => row[0]), 2); // Using the first two rows for x-scale
-  const scale_y = math.norm(matrix.slice(0, 2).map(row => row[1]), 2); // Using the first two rows for y-scale
+    // Calculate the scale factors using the norm of the columns
+    const scaleX = calculateNorm(matrix.slice(0, 2).map(row => row[0]));
+    const scaleY = calculateNorm(matrix.slice(0, 2).map(row => row[1]));
 
-  return [scale_x, scale_y];
+    return [scaleX, scaleY];
 }
 
-export default getScale;
+/**
+ * Calculates the Euclidean norm of a vector.
+ *
+ * @param vector - The vector to calculate the norm for.
+ * @returns The Euclidean norm of the vector.
+ */
+function calculateNorm(vector: number[]): number {
+    return Math.sqrt(vector.reduce((acc, val) => acc + val * val, 0));
+}
 ```
 
-### Jest Test Class for `getScale` Function
-
-```typescript
-import { getScale } from './path-to-getScale'; // Replace with the actual path
-
-describe('getScale', () => {
-  it('should return correct scale factors for a 3x3 identity matrix', () => {
-    const identityMatrix: number[][] = [
-      [1, 0, 0],
-      [0, 1, 0],
-      [0, 0, 1]
-    ];
-    const result = getScale(identityMatrix);
-    expect(result).toEqual([1, 1]);
-  });
-
-  it('should handle non-3x3 matrices correctly', () => {
-    const invalidMatrix: number[][] = [
-      [1, 0, 0],
-      [0, 1, 0]
-    ];
-
-    expect(() => getScale(invalidMatrix)).toThrow('Input must be a 3x3 affine transformation matrix.');
-  });
-
-  it('should return correct scale factors for a scaled matrix', () => {
-    const scaledMatrix: number[][] = [
-      [2, 0, 0],
-      [0, 3, 0],
-      [0, 0, 1]
-    ];
-    const result = getScale(scaledMatrix);
-    expect(result).toEqual([2, 3]);
-  });
-});
-```
-
-### Explanation:
-1. **Function Definition**:
-   - The `getScale` function is defined with proper type annotations for the input matrix and the returned tuple.
-   - The function performs validation and calculates the scale factors using the `mathjs` library.
-
-2. **Jest Test Class**:
-   - The `describe` block defines a test suite for the `getScale` function.
-   - Each `it` block represents a specific test case.
-   - The `expect` assertions are used to validate the expected behavior of the function:
-     - For the identity matrix, it checks if the scale factors are `[1, 1]`.
-     - For an invalid matrix, it checks if the function throws an error.
-     - For a scaled matrix, it checks if the scale factors are `[2, 3]`.
-
-This ensures that the TypeScript code and Jest tests preserve the functionality and logic of the original Python code and unittests.
+This setup ensures that the functionality and logic of the tests are preserved, and the TypeScript code is properly structured and annotated.

@@ -1,39 +1,59 @@
-Here's the equivalent C++ code for the given Python function, including the translation of the docstring into C++ comments:
+Certainly! Below is the equivalent C++ code for the given Python function, including proper comments and type translations:
 
 ```cpp
+#include <iostream>
 #include <fstream>
 #include <string>
-#include <vector>
 
-// Prepend the specified string to the beginning of each line of the file.
-// Args:
-//     file_path (std::string): Path to the file whose lines will be modified.
-//     prefix (std::string): String to prepend to the beginning of each line.
+/**
+ * Appends the specified string to the beginning of each line of the file.
+ *
+ * @param file_path Path to the file whose lines will be modified.
+ * @param prefix String to append to the beginning of each line.
+ */
 void prepend_to_each_line(const std::string& file_path, const std::string& prefix) {
-    std::ifstream input_file(file_path);
-    if (!input_file.is_open()) {
-        // Handle error: file could not be opened.
+    std::string temp_file_path = file_path + ".tmp";
+
+    std::ifstream file(file_path);
+    std::ofstream temp_file(temp_file_path);
+
+    if (!file.is_open() || !temp_file.is_open()) {
+        std::cerr << "Error opening files." << std::endl;
         return;
     }
 
-    std::vector<std::string> lines;
     std::string line;
-    while (getline(input_file, line)) {
-        lines.push_back(prefix + line);
-    }
-    input_file.close();
-
-    std::ofstream output_file(file_path);
-    if (!output_file.is_open()) {
-        // Handle error: file could not be opened for writing.
-        return;
+    while (std::getline(file, line)) {
+        temp_file << prefix << line << '\n';
     }
 
-    for (const auto& modified_line : lines) {
-        output_file << modified_line << '\n';
+    file.close();
+    temp_file.close();
+
+    // Replace the original file with the modified file
+    if (std::rename(temp_file_path.c_str(), file_path.c_str()) != 0) {
+        std::cerr << "Error replacing the file." << std::endl;
     }
-    output_file.close();
+}
+
+int main() {
+    std::string file_path = "example.txt";
+    std::string prefix = "Prefix: ";
+    prepend_to_each_line(file_path, prefix);
+    return 0;
 }
 ```
 
-This C++ function performs the same operation as the Python function, appending a specified prefix to the beginning of each line in a file. It includes error handling for opening the file and writing back the modified content.
+### Explanation:
+1. **Header Files**: The necessary header files (`<iostream>`, `<fstream>`, `<string>`) are included.
+2. **Function Definition**: The `prepend_to_each_line` function takes two parameters: `file_path` and `prefix`, both of type `std::string`.
+3. **Docstring**: The Python docstring is converted into a C++ multi-line comment using `/* ... */`.
+4. **Temporary File**: A temporary file path is created by appending `.tmp` to the original file path.
+5. **File Streams**: `std::ifstream` and `std::ofstream` are used to read from and write to the files, respectively.
+6. **Error Handling**: Checks if the files are successfully opened; if not, an error message is printed.
+7. **Reading and Writing Lines**: Each line is read from the original file, prefixed with the specified string, and written to the temporary file.
+8. **Closing Files**: Both input and output files are closed after processing.
+9. **Replacing the Original File**: The temporary file is renamed to replace the original file using `std::rename`. If this operation fails, an error message is printed.
+10. **Main Function**: Demonstrates how to call the `prepend_to_each_line` function with a sample file path and prefix.
+
+This conversion preserves the original functionality and structure of the Python code while adhering to C++ standards and practices.

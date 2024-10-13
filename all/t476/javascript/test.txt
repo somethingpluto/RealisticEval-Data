@@ -1,151 +1,99 @@
-Certainly! Below is the equivalent Jest test class for the given Python unittest test class. I will provide the Jest test suite and ensure that the functionality and logic of the tests are maintained.
+Certainly! Below is the equivalent Jest test suite for the given Python unittest class. The goal is to maintain the functionality and logic of the tests while adapting them to Jest's syntax and conventions.
 
 ### Python Unittest Code
 
 ```python
 import unittest
-from typing import List, Tuple
 
-def topological_sort_dfs(vertices: List[int], edges: List[Tuple]) -> List:
-    """
-    Achieve topological sorting based on depth-first search (DFS).
-
-    Args:
-        vertices (List[int]): A list of vertices in the graph. Each vertex should be a unique integer.
-        edges (List[Tuple[int, int]]): A list of tuples where each tuple represents a directed edge
-                                       in the graph and is formed as (start_vertex, end_vertex).
-
-    Returns:
-        List[int]: A list of vertices in topological order. If the graph contains a cycle,
-                   and thus cannot have a valid topological ordering, an empty list is returned.
-    """
-    from collections import defaultdict, deque
-    graph = defaultdict(list)
-    visited = set()
-    result = deque()
-
-    # Build the graph
-    for u, v in edges:
-        graph[u].append(v)
-
-    # Recursive depth-first search function
-    def dfs(node):
-        if node in visited:
-            return
-        visited.add(node)
-        for neighbor in graph[node]:
-            if neighbor not in visited:
-                dfs(neighbor)
-        result.appendleft(node)
-
-    # Traverse all nodes
-    for vertex in vertices:
-        if vertex not in visited:
-            dfs(vertex)
-
-    return list(result)
-
-
-class TestTopologicalSort(unittest.TestCase):
-
-    def test_topological_sort(self):
-        vertices = [1, 2, 3, 4]
-        edges = [(1, 2), (1, 3), (2, 4), (3, 4)]
-        expected = [1, 2, 3, 4]  # The actual order may vary, but it should be a valid topological sort
-        self.assertEqual(topological_sort_dfs(vertices, edges), expected)
-
+class TestTopologicalSortDFS(unittest.TestCase):
+    def test_simple_chain(self):
         vertices = [1, 2, 3]
-        edges = [(1, 2), (2, 3), (3, 1)]
-        expected = []  # Graph contains a cycle, so the result should be an empty list
-        self.assertEqual(topological_sort_dfs(vertices, edges), expected)
+        edges = [(1, 2), (2, 3)]
+        self.assertEqual(topological_sort_dfs(vertices, edges), [1, 2, 3])
 
+    def test_disconnected_graph(self):
+        vertices = [1, 2, 3, 4]
+        edges = [(1, 2)]
+        # There are multiple correct answers possible
+        result = topological_sort_dfs(vertices, edges)
+        self.assertTrue(result.index(1) < result.index(2))
+        self.assertTrue(3 in result and 4 in result)
 
-if __name__ == '__main__':
-    unittest.main()
+    def test_complex_graph(self):
+        vertices = [1, 2, 3, 4, 5, 6]
+        edges = [(1, 2), (1, 3), (2, 4), (3, 4), (4, 5), (6, 1)]
+        result = topological_sort_dfs(vertices, edges)
+        self.assertTrue(result.index(1) < result.index(2))
+        self.assertTrue(result.index(1) < result.index(3))
+        self.assertTrue(result.index(2) < result.index(4))
+        self.assertTrue(result.index(3) < result.index(4))
+        self.assertTrue(result.index(4) < result.index(5))
+        self.assertTrue(result.index(6) < result.index(1))
+
+    def test_single_vertex(self):
+        vertices = [1]
+        edges = []
+        self.assertEqual(topological_sort_dfs(vertices, edges), [1])
 ```
 
-### Equivalent Jest Test Class
-
-Here is the equivalent Jest test class:
+### Equivalent Jest Test Suite
 
 ```javascript
-const topologicalSortDFS = require('./topologicalSortDFS'); // Import the function
+const topologicalSortDFS = require('./topologicalSortDFS'); // Import the topologicalSortDFS function
 
-describe('topologicalSortDFS', () => {
-    it('should correctly perform topological sort without cycles', () => {
-        const vertices = [1, 2, 3, 4];
-        const edges = [[1, 2], [1, 3], [2, 4], [3, 4]];
-        const expected = [1, 2, 3, 4];  // The actual order may vary, but it should be a valid topological sort
-        expect(topologicalSortDFS(vertices, edges)).toEqual(expected);
+describe('TestTopologicalSortDFS', () => {
+    describe('test_simple_chain', () => {
+        it('should sort a simple chain correctly', () => {
+            const vertices = [1, 2, 3];
+            const edges = [[1, 2], [2, 3]];
+            expect(topologicalSortDFS(vertices, edges)).toEqual([1, 2, 3]);
+        });
     });
 
-    it('should return an empty list when the graph contains a cycle', () => {
-        const vertices = [1, 2, 3];
-        const edges = [[1, 2], [2, 3], [3, 1]];
-        const expected = [];
-        expect(topologicalSortDFS(vertices, edges)).toEqual(expected);
+    describe('test_disconnected_graph', () => {
+        it('should handle a disconnected graph correctly', () => {
+            const vertices = [1, 2, 3, 4];
+            const edges = [[1, 2]];
+            const result = topologicalSortDFS(vertices, edges);
+
+            expect(result.indexOf(1)).toBeLessThan(result.indexOf(2));
+            expect(result.includes(3) && result.includes(4)).toBeTruthy();
+        });
+    });
+
+    describe('test_complex_graph', () => {
+        it('should handle a complex graph correctly', () => {
+            const vertices = [1, 2, 3, 4, 5, 6];
+            const edges = [[1, 2], [1, 3], [2, 4], [3, 4], [4, 5], [6, 1]];
+            const result = topologicalSortDFS(vertices, edges);
+
+            expect(result.indexOf(1)).toBeLessThan(result.indexOf(2));
+            expect(result.indexOf(1)).toBeLessThan(result.indexOf(3));
+            expect(result.indexOf(2)).toBeLessThan(result.indexOf(4));
+            expect(result.indexOf(3)).toBeLessThan(result.indexOf(4));
+            expect(result.indexOf(4)).toBeLessThan(result.indexOf(5));
+            expect(result.indexOf(6)).toBeLessThan(result.indexOf(1));
+        });
+    });
+
+    describe('test_single_vertex', () => {
+        it('should handle a single vertex correctly', () => {
+            const vertices = [1];
+            const edges = [];
+            expect(topologicalSortDFS(vertices, edges)).toEqual([1]);
+        });
     });
 });
-
-// Implementation of the topologicalSortDFS function
-function topologicalSortDFS(vertices, edges) {
-    const graph = new Map();
-    const visited = new Set();
-    const result = [];
-
-    // Build the graph
-    edges.forEach(([u, v]) => {
-        if (!graph.has(u)) {
-            graph.set(u, []);
-        }
-        graph.get(u).push(v);
-    });
-
-    // Recursive depth-first search function
-    function dfs(node) {
-        if (visited.has(node)) {
-            return;
-        }
-        visited.add(node);
-        if (graph.has(node)) {
-            graph.get(node).forEach(neighbor => {
-                if (!visited.has(neighbor)) {
-                    dfs(neighbor);
-                }
-            });
-        }
-        result.unshift(node); // Add the node to the front of the result array
-    }
-
-    // Traverse all nodes
-    vertices.forEach(vertex => {
-        if (!visited.has(vertex)) {
-            dfs(vertex);
-        }
-    });
-
-    return result;
-}
-
-module.exports = topologicalSortDFS;
 ```
 
 ### Explanation:
-1. **Jest Test Suite**:
-   - The `describe` block defines the test suite for the `topologicalSortDFS` function.
-   - Each `it` block represents a specific test case.
+1. **Import Statement**: The `topologicalSortDFS` function is imported at the beginning of the test file.
+2. **Describe Blocks**: Each test case is wrapped in a `describe` block to group related tests together.
+3. **It Blocks**: Each test case is defined within an `it` block, which provides a description of what the test does.
+4. **Assertions**:
+   - `expect(topologicalSortDFS(vertices, edges)).toEqual(expected)` is used to check equality.
+   - `expect(result.indexOf(1)).toBeLessThan(result.indexOf(2))` is used to check the relative positions of elements.
+   - `expect(result.includes(3) && result.includes(4)).toBeTruthy()` checks if the result includes specific elements.
+5. **Structure**: The structure is kept clear and organized, with each test case clearly defined and documented.
 
-2. **Test Cases**:
-   - The first test case (`test_topological_sort`) checks the topological sort for a graph without cycles.
-   - The second test case (`should return an empty list when the graph contains a cycle`) checks the topological sort for a graph with cycles.
-
-3. **Assertions**:
-   - The `expect` function is used with `toEqual` to compare the results with the expected values.
-
-4. **Implementation**:
-   - The `topologicalSortDFS` function is implemented in JavaScript, maintaining the same logic and structure as the Python version.
-   - The `Map` object is used to represent the graph.
-   - The `Set` object is used to track visited nodes.
-   - The `result` array stores the final topological order.
-
-This Jest test class ensures that the functionality and logic of the tests are maintained while adhering to Jest standards.
+This Jest test suite maintains the functionality and logic of the original Python unittest class while adapting to Jest's syntax and conventions.

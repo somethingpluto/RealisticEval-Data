@@ -1,62 +1,111 @@
-To convert the provided Python function into a C++ test using Catch2, we need to first define the function `remove_parts_of_string` in C++. Then, we will create a Catch2 test case to verify its correctness. Here’s how you can do it:
+Certainly! Here’s the equivalent C++ test class using the Catch2 testing framework. We will ensure that the functionality and logic of the tests are preserved, and we will use appropriate assertions in Catch2.
 
-1. **Define the Function in C++**
-2. **Create a Catch2 Test Case**
-
-Here is the complete implementation:
+First, make sure you have Catch2 installed and included in your project. You can include Catch2 using the following headers:
 
 ```cpp
 #include <catch2/catch_test_macros.hpp>
-#include <string>
+#include <catch2/generators/catch_generators_all.hpp>
+```
+
+Now, let's convert the Python unittest class into a C++ test class using Catch2.
+
+### C++ Code with Catch2 Tests
+
+```cpp
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators_all.hpp>
+
 #include <vector>
-#include <algorithm>
+#include <string>
+#include <cctype>
 
-// Define the function to remove parts of the string before the first uppercase and lowercase letters
-std::string remove_parts_of_string(const std::string& str) {
-    // Find the position of the first uppercase and lowercase letter
-    auto pos_upper = std::find_if(str.begin(), str.end(), ::isupper);
-    auto pos_lower = std::find_if(str.begin(), str.end(), ::islower);
-
-    // Determine the earliest position
-    std::string::const_iterator pos;
-    if (pos_upper != str.end() && pos_lower != str.end()) {
-        pos = std::min(pos_upper, pos_lower);
-    } else if (pos_upper != str.end()) {
-        pos = pos_upper;
-    } else if (pos_lower != str.end()) {
-        pos = pos_lower;
-    } else {
-        return ""; // No uppercase or lowercase found
+// Function to find the index of the first character that satisfies the predicate
+int find_index(const std::string& str, bool (*predicate)(int)) {
+    for (size_t i = 0; i < str.length(); ++i) {
+        if (predicate(str[i])) {
+            return static_cast<int>(i);
+        }
     }
-
-    // Return the substring starting from the earliest position
-    return std::string(pos, str.end());
+    return -1; // Return -1 if no matching character is found
 }
 
-TEST_CASE("Test remove_parts_of_string") {
-    SECTION("Remove parts before the first uppercase and lowercase") {
-        REQUIRE(remove_parts_of_string("1234AbCde5678") == "AbCde5678");
-        REQUIRE(remove_parts_of_string("aBcDeF") == "BcDeF");
-        REQUIRE(remove_parts_of_string("123456789") == "");
-        REQUIRE(remove_parts_of_string("ABCdefGHI") == "defGHI");
-        REQUIRE(remove_parts_of_string("abcDEFghi") == "DEFghi");
-        REQUIRE(remove_parts_of_string("123456") == "");
-        REQUIRE(remove_parts_of_string("abcdef") == "");
-        REQUIRE(remove_parts_of_string("ABCDEF") == "");
-        REQUIRE(remove_parts_of_string("") == "");
+// Function to remove parts of the string based on the criteria
+std::vector<std::string> remove_parts_of_string(const std::vector<std::string>& strings) {
+    std::vector<std::string> results;
+
+    for (const auto& string : strings) {
+        std::string modifiedString = string;
+
+        // Remove all characters before the first uppercase letter
+        int upperIndex = find_index(modifiedString, ::isupper);
+        if (upperIndex != -1) {
+            modifiedString = modifiedString.substr(upperIndex);
+        }
+
+        // Remove all characters before the first lowercase letter
+        int lowerIndex = find_index(modifiedString, ::islower);
+        if (lowerIndex != -1) {
+            modifiedString = modifiedString.substr(lowerIndex - 1);
+        }
+
+        results.push_back(modifiedString);
     }
+
+    return results;
+}
+
+// Test fixture for the remove_parts_of_string function
+TEST_CASE("Test remove_parts_of_string function") {
+    SECTION("Test with a string that has no uppercase letters") {
+        std::vector<std::string> input = {"abcdefg"};
+        std::vector<std::string> expected = {"abcdefg"};
+        REQUIRE(remove_parts_of_string(input) == expected);
+    }
+
+    SECTION("Test with a string that has no lowercase letters") {
+        std::vector<std::string> input = {"ABCDEFG"};
+        std::vector<std::string> expected = {"ABCDEFG"};
+        REQUIRE(remove_parts_of_string(input) == expected);
+    }
+
+    SECTION("Test with a string that has mixed cases") {
+        std::vector<std::string> input = {"1234AbCde5678"};
+        std::vector<std::string> expected = {"AbCde5678"};
+        REQUIRE(remove_parts_of_string(input) == expected);
+    }
+
+    SECTION("Test with an empty string") {
+        std::vector<std::string> input = {""};
+        std::vector<std::string> expected = {""};
+        REQUIRE(remove_parts_of_string(input) == expected);
+    }
+
+    SECTION("Test with a string that has only one uppercase letter") {
+        std::vector<std::string> input = {"X"};
+        std::vector<std::string> expected = {"X"};
+        REQUIRE(remove_parts_of_string(input) == expected);
+    }
+
+    SECTION("Test with a string that has only one lowercase letter") {
+        std::vector<std::string> input = {"y"};
+        std::vector<std::string> expected = {"y"};
+        REQUIRE(remove_parts_of_string(input) == expected);
+    }
+}
+
+int main(int argc, char* argv[]) {
+    // Run Catch2 tests
+    int result = Catch::Session().run(argc, argv);
+    return result;
 }
 ```
 
 ### Explanation:
-1. **Function Definition**:
-   - The function `remove_parts_of_string` takes a single string as an argument.
-   - It uses `std::find_if` with `::isupper` and `::islower` to find the positions of the first uppercase and lowercase letters.
-   - It determines the earliest position and returns the substring from that position to the end.
+1. **Catch2 Headers**: Include the necessary Catch2 headers.
+2. **Helper Function**: The `find_index` function is defined to find the index of the first character that satisfies a given predicate.
+3. **Function Implementation**: The `remove_parts_of_string` function is implemented to modify the strings according to the specified criteria.
+4. **Test Fixture**: The `TEST_CASE` macro defines a test case for the `remove_parts_of_string` function.
+5. **Sections**: Each `SECTION` within the test case corresponds to a specific test scenario, ensuring that the functionality is tested thoroughly.
+6. **Assertions**: The `REQUIRE` macro is used to assert the expected results.
 
-2. **Catch2 Test Case**:
-   - The `TEST_CASE` macro defines the test case.
-   - The `SECTION` macro defines a section within the test case where various scenarios are tested.
-   - `REQUIRE` is used to assert the expected outcomes of the function calls.
-
-This setup ensures that the functionality and logic of the tests are preserved while making necessary adjustments for language differences between Python and C++.
+This C++ code preserves the functionality and logic of the original Python tests while adhering to the Catch2 testing framework.

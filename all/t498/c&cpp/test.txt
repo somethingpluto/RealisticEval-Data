@@ -1,51 +1,78 @@
-Sure! Below is the equivalent C++ unit test using Catch2 for the provided Python unittest function `compute_md5`.
+Certainly! Here is the equivalent C++ test class using the Catch2 testing framework. This will ensure that the functionality and logic of the tests are preserved, with appropriate assertions in Catch2.
 
-First, ensure you have Catch2 installed. If not, you can install it via your package manager or download it from its [official GitHub repository](https://github.com/catchorg/Catch2).
+First, make sure you have Catch2 installed and included in your project. You can download Catch2 from [here](https://github.com/catchorg/Catch2).
 
-Here's how you can write the C++ unit test:
+### C++ Code with Catch2 Testing Framework
 
 ```cpp
-#include <catch2/catch.hpp>
-#include <iostream>
+#include <catch2/catch_test_macros.hpp>
 #include <string>
-#include <openssl/md5.h> // Make sure you link against OpenSSL
+#include <openssl/md5.h> // Make sure to link against OpenSSL
 
+// Function to compute and return the MD5 hash of the input string
 std::string compute_md5(const std::string& input_string) {
     unsigned char digest[MD5_DIGEST_LENGTH];
-    MD5_CTX md5;
-    MD5_Init(&md5);
-    MD5_Update(&md5, input_string.c_str(), input_string.size());
-    MD5_Final(digest, &md5);
+    MD5((unsigned char*)input_string.c_str(), input_string.length(), (unsigned char*)&digest);
 
     char mdString[33];
-    for(int i = 0; i < 16; ++i)
-        sprintf(&mdString[i*2], "%02x", (unsigned int)digest[i]);
+    for (int i = 0; i < 16; ++i) {
+        sprintf(&mdString[i * 2], "%02x", (unsigned int)digest[i]);
+    }
 
     return std::string(mdString);
 }
 
-TEST_CASE("Compute MD5 Hash") {
-    REQUIRE(compute_md5("Hello world") == "fc3ff98e8c6a0d3087d515c0473f8677");
-    REQUIRE(compute_md5("") == "d41d8cd98f00b204e9800998ecf8427e");
-    REQUIRE(compute_md5("OpenSSL rocks!") == "c6d2d2c9e16c8f7d4756a642808485e2");
+TEST_CASE("Test Compute MD5") {
+    SECTION("Test the MD5 hash of an empty string") {
+        REQUIRE(compute_md5("") == "d41d8cd98f00b204e9800998ecf8427e");
+    }
+
+    SECTION("Test the MD5 hash of a simple string") {
+        REQUIRE(compute_md5("Hello, World!") == "65a8e27d8879283831b664bd8b7f0ad4");
+    }
+
+    SECTION("Test the MD5 hash of a numeric string") {
+        REQUIRE(compute_md5("123456") == "e10adc3949ba59abbe56e057f20f883e");
+    }
+
+    SECTION("Test the MD5 hash of a string with special characters") {
+        REQUIRE(compute_md5("!@#$%^&*()") == "05b28d17a7b6e7024b6e5d8cc43a8bf7");
+    }
+
+    SECTION("Test the MD5 hash of a long string") {
+        std::string long_string(1000, 'a');
+        std::string expected_hash = "cabe45dcc9ae5b66ba86600cca6b8ba8";
+        REQUIRE(compute_md5(long_string) == expected_hash);
+    }
+}
+
+int main(int argc, char* argv[]) {
+    // Run all the tests
+    return Catch::Session().run(argc, argv);
 }
 ```
 
-### Explanation:
+### Notes:
+1. **Catch2 Headers**:
+   - Include the Catch2 headers at the beginning of the file.
 
-1. **Include Catch2 Header**: We include the Catch2 header file at the top.
-2. **Function Implementation**: The `compute_md5` function is implemented similarly to the Python version. It uses OpenSSL's MD5 functions to compute the hash.
-3. **Test Case**: We define a test case named "Compute MD5 Hash" using the `TEST_CASE` macro.
-4. **Assertions**: Inside the test case, we use the `REQUIRE` macro to assert that the computed MD5 hashes match the expected values.
+2. **Function Definition**:
+   - The `compute_md5` function is defined similarly to the Python version, using OpenSSL's `MD5` function to compute the hash and converting it to a hexadecimal string.
 
-### Compilation:
+3. **Test Class**:
+   - The `TEST_CASE` macro is used to define a test case.
+   - Each `SECTION` within the test case corresponds to a specific test scenario.
+   - The `REQUIRE` macro is used to assert the expected results.
 
-To compile this C++ code with Catch2, you need to link against the OpenSSL library. Here’s an example command using g++:
+4. **Main Function**:
+   - The `main` function runs all the tests using the `Catch::Session().run` method.
+
+### Compilation and Running Tests:
+To compile and run the tests, you need to link against the OpenSSL library. Here’s an example using g++:
 
 ```sh
-g++ -o test_md5 test_md5.cpp -lcrypto -lCatch2
+g++ -o md5_tests md5_tests.cpp -lcrypto -lcatch2
+./md5_tests
 ```
 
-Make sure to replace `test_md5.cpp` with the name of your source file and adjust the library paths if necessary.
-
-This should give you a basic C++ unit test for the `compute_md5` function using Catch2.
+This command compiles the code and links it against the OpenSSL library (`-lcrypto`) and the Catch2 library (`-lcatch2`). Running the compiled executable will execute the tests and provide the test results.

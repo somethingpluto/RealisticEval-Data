@@ -1,4 +1,4 @@
-Certainly! Below is the equivalent JavaScript code that mirrors the functionality and structure of the provided Python code:
+Certainly! Below is the equivalent JavaScript code that maintains the same functionality, logic, and structure as the given Python code:
 
 ```javascript
 function parseTypeHint(typeHintString) {
@@ -6,7 +6,7 @@ function parseTypeHint(typeHintString) {
      * Parses a Python type hint string and returns the individual types as an array of strings.
      *
      * @param {string} typeHintString - The type hint string to parse.
-     * @returns {Array<string>} The individual types parsed from the type hint string.
+     * @returns {Array} The individual types parsed from the type hint string.
      *
      * Example:
      * const typeHint = "Union[typing.List[str], typing.Dict[str, int], Tuple[int, str], Optional[int]]";
@@ -14,7 +14,7 @@ function parseTypeHint(typeHintString) {
      * console.log(parsedTypes);
      * // Output: ['Union', 'typing.List', 'str', 'typing.Dict', 'str', 'int', 'Tuple', 'int', 'str', 'Optional', 'int']
      */
-
+    
     // Create a source function definition with the type hint string
     const source = `function f() { return ${typeHintString}; }`;
 
@@ -29,42 +29,19 @@ function parseTypeHint(typeHintString) {
          * Recursively processes the AST nodes and extracts the type names.
          *
          * @param {Object} node - The AST node to process.
-         * @param {Array<string>} qualNames - An array of qualified names encountered during processing.
+         * @param {Array} qualNames - An array of qualified names encountered during processing.
          * @returns {void}
          */
 
         if (node.type === 'Identifier') {
             // Add simple type names (e.g., str, int)
-            typeStrings.push(qualNames.reverse().concat(node.name).join('.'));
-        } else if (node.type === 'TSTypeReference') {
-            // Process the type reference (e.g., typing.List)
-            processNode(node.typeName, qualNames.concat(node.typeName.name));
-        } else if (node.type === 'TSTypeLiteral') {
-            // Process the type literal (if any)
-            for (const member of node.members) {
-                processNode(member, qualNames);
-            }
-        } else if (node.type === 'TSLiteralType') {
-            // Process the literal type (if any)
-            processNode(node.literal, qualNames);
-        } else if (node.type === 'TSTupleType') {
+            typeStrings.push(qualNames.concat(node.name).reverse().join('.'));
+        } else if (node.type === 'MemberExpression') {
+            // Process attributes (e.g., typing.List)
+            processNode(node.object, qualNames.concat([node.property.name]));
+        } else if (node.type === 'ArrayExpression') {
             // Process each element in a tuple type hint
-            for (const element of node.elementTypes) {
-                processNode(element, qualNames);
-            }
-        } else if (node.type === 'TSTypeQuery') {
-            // Process the type query (if any)
-            processNode(node.exprName, qualNames);
-        } else if (node.type === 'TSTypeOperator') {
-            // Process the type operator (e.g., Optional)
-            processNode(node.typeAnnotation, qualNames);
-        } else if (node.type === 'TSArrayType' || node.type === 'TSParenthesizedType') {
-            // Process array or parenthesized type (if any)
-            processNode(node.elementType, qualNames);
-        } else if (node.type === 'TSIndexedAccessType') {
-            // Process indexed access type (if any)
-            processNode(node.objectType, qualNames);
-            processNode(node.indexType, qualNames);
+            node.elements.forEach(element => processNode(element, qualNames));
         }
     }
 
@@ -83,8 +60,19 @@ const parsedTypes = parseTypeHint(typeHint);
 console.log(parsedTypes);
 ```
 
-### Notes:
-1. **ESPrima**: The `esprima` library is used to parse JavaScript code into an Abstract Syntax Tree (AST). You will need to install ESPrima using npm (`npm install esprima`).
-2. **Type Annotations**: The JavaScript version assumes the use of TypeScript type annotations for parsing. If you are working strictly with JavaScript, you may need to adapt the type handling logic accordingly.
+### Explanation:
+1. **Function Definition**: The `parseTypeHint` function takes a type hint string and processes it.
+2. **Source Creation**: The source code is created using a template literal to include the type hint string.
+3. **AST Parsing**: The source code is parsed into an Abstract Syntax Tree (AST) using `esprima`.
+4. **Type String Extraction**:
+   - The `processNode` function recursively processes the AST nodes.
+   - It checks the type of each node and extracts the type names accordingly.
+5. **Example Usage**: An example is provided to demonstrate how to use the `parseTypeHint` function.
 
-This JavaScript code should provide the same functionality as the original Python code, including the example output.
+Note: This JavaScript code uses `esprima` for parsing the source code into an AST. You will need to install `esprima` to run this code:
+
+```sh
+npm install esprima
+```
+
+This conversion aims to maintain the same functionality and structure as the original Python code.

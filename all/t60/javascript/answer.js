@@ -1,38 +1,50 @@
 const fs = require('fs');
 const path = require('path');
+const Papa = require('papaparse');
 
 function findCommonColumns(directory) {
-    /**
-     * Find the common columns of all CSV files in a directory and return these column names as an array.
-     * @param {string} directory - Directory path
-     * @returns {Array} - Array of common column names
-     */
+    // List to store the parsed CSV data
+    const csvData = [];
 
-    // Read all files in the directory
-    const files = fs.readdirSync(directory);
+    // Iterate through all files in the specified directory
+    fs.readdir(directory, (err, files) => {
+        if (err) throw err;
 
-    // Filter out non-CSV files
-    const csvFiles = files.filter(file => path.extname(file).toLowerCase() === '.csv');
+        files.forEach(file => {
+            if (file.endsWith('.csv')) {
+                // Construct the full file path
+                const filePath = path.join(directory, file);
 
-    if (csvFiles.length === 0) {
-        throw new Error('No CSV files found in the directory.');
-    }
+                // Read the CSV file synchronously
+                fs.readFile(filePath, 'utf8', (err, data) => {
+                    if (err) throw err;
 
-    // Function to read and parse a CSV file
-    function readAndParseCsv(filePath) {
-        const content = fs.readFileSync(filePath, 'utf8');
-        const rows = content.split('\n').map(row => row.trim().split(','));
-        return rows[0]; // Return the header row
-    }
+                    // Parse the CSV data
+                    const parsedData = Papa.parse(data, { header: true });
+                    const headers = new Set(parsedData.meta.fields);
 
-    // Get headers from the first CSV file
-    let commonHeaders = readAndParseCsv(path.join(directory, csvFiles[0]));
+                    // Add the headers to the list
+                    csvData.push(headers);
+                });
+            }
+        });
 
-    // Compare with other CSV files
-    for (let i = 1; i < csvFiles.length; i++) {
-        const currentHeaders = readAndParseCsv(path.join(directory, csvFiles[i]));
-        commonHeaders = commonHeaders.filter(header => currentHeaders.includes(header));
-    }
+        // Wait for all CSV files to be read and parsed
+        setTimeout(() => {
+            // Use set intersection to find common columns across all CSV files
+            if (csvData.length > 0) {
+                let commonColumns = new Set(csvData[0]);
 
-    return commonHeaders;
+                // Intersect with columns of each subsequent CSV file
+                csvData.slice(1).forEach(set => {
+                    commonColumns = new Set([...commonColumns].filter(x => set.has(x)));
+                });
+
+                console.log(Array.from(commonColumns));
+            } else {
+                // Return an empty array if no CSV files are found
+                console.log([]);
+            }
+        }, 1000); // Wait for all asynchronous reads to complete
+    });
 }

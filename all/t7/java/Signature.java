@@ -1,19 +1,24 @@
+/**
+ * A class that provides logging functionality.
+ */
 public class Logger {
-    private static final Logger logger = Logger.getLogger(Logger.class.getName());
+
+    private final Logger javaLogger;
 
     /**
      * Initializes a new logger instance.
      *
-     * @param name Name of the logger, typically the name of the class or package.
-     * @param level Logging level, default is INFO.
+     * @param name  the name of the logger, typically the module name
+     * @param level the logging level, default is DEBUG
      */
     public Logger(String name, Level level) {}
 
     /**
      * Logs a message with the given level.
      *
-     * @param level Logging level for the message (e.g., Level.INFO).
-     * @param message Log message.
+     * @param level   the logging level for the message (e.g., Level.INFO)
+     * @param message the log message
      */
-    public void log(Level level, String message) {}
+    public void log(Level level, String message) {
+    }
 }

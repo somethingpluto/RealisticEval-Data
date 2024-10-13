@@ -1,24 +1,48 @@
-Here's how you can convert your Python code to TypeScript:
+Sure! Here is the equivalent TypeScript code, including the necessary type definitions and logic:
 
 ```typescript
-type TemperatureInput = number | [number];
+import { log10 } from "mathjs";
 
+// Define the constant for conversion: Boltzmann constant in keV/K
 const k_B_over_keV = 8.617333262145e-5; // eV/K to keV/K
 
-function getTInLog10Kelvin(TkeV: TemperatureInput): number | number[] {
+function getTInLog10Kelvin(T_keV: number | [number]): number | [number] {
     /**
      * Converts temperature from keV to log10(K) for a given input (scalar or tuple).
-     * 
-     * @param TkeV - The temperature in keV. Can be a scalar or a tuple of temperatures.
+     *
+     * @param T_keV - The temperature in keV. Can be a scalar or a tuple of temperatures.
      * @returns The temperature(s) in log10(K) corresponding to the input.
+     * @throws {Error} If the input is not a scalar (number) or a tuple of temperatures.
      */
-    
-    if (Array.isArray(TkeV)) {
-        return TkeV.map(temp => Math.log10((temp / k_B_over_keV) + 273.15));
-    } else {
-        return Math.log10((TkeV / k_B_over_keV) + 273.15);
+
+    // Check if the input is a scalar (number)
+    if (typeof T_keV === 'number') {
+        // Calculate log10(K) for the scalar value
+        return log10(T_keV / k_B_over_keV);
+    }
+
+    // Check if the input is a tuple
+    else if (Array.isArray(T_keV) && T_keV.length > 0 && T_keV.every(t => typeof t === 'number')) {
+        // Calculate log10(K) for each element in the tuple
+        return T_keV.map(t => log10(t / k_B_over_keV)) as [number];
+    }
+
+    // Raise an error for unsupported input types
+    else {
+        throw new Error("Input must be a scalar (number) or a tuple of temperatures.");
     }
 }
+
+// Example usage
+console.log(getTInLog10Kelvin(1.0)); // Scalar example
+console.log(getTInLog10Kelvin([1.0, 2.0])); // Tuple example
 ```
 
-This TypeScript function `getTInLog10Kelvin` takes either a single number or an array of numbers representing temperatures in keV and returns their equivalent temperatures in log10(K). It uses `Math.log10()` to calculate the logarithm base 10, which is similar to Python's `math.log10()`. The conversion formula used here assumes that the input temperature is already in Kelvin, hence the addition of 273.15 to convert it from keV to Kelvin.
+### Explanation:
+1. **Import Statement**: We use `log10` from the `mathjs` library to perform logarithmic calculations, similar to `numpy.log10`.
+2. **Type Definitions**: We define the function parameter `T_keV` with the union type `number | [number]` to handle both scalar values and tuples.
+3. **Type Checking**: We use `typeof` to check if the input is a scalar (`number`) and `Array.isArray` along with `.every` to check if it is a tuple of numbers.
+4. **Error Handling**: We throw an error if the input is neither a scalar nor a tuple of numbers.
+5. **Example Usage**: We provide examples of calling the function with both scalar and tuple inputs.
+
+This TypeScript code maintains the same functionality and logic as the original Python code.

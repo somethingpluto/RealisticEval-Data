@@ -1,52 +1,59 @@
-import fs from 'fs';
-import path from 'path';
+import * as fs from 'fs';
+import * as path from 'path';
+import { parse } from 'csv-parser';
+import { reduce } from 'extra-static-methods';
 
-interface CSVData {
-  [key: string]: any;
-}
-
-function readCSVFile(filePath: string): CSVData[] {
-  const fileContent = fs.readFileSync(filePath, 'utf8');
-  const rows = fileContent.split('\n').filter(row => row.trim() !== '');
-  const headers = rows[0].split(',').map(header => header.trim());
-
-  return rows.slice(1).map(row => {
-    const values = row.split(',').map(value => value.trim());
-    const obj: CSVData = {};
-    for (let i = 0; i < headers.length; i++) {
-      obj[headers[i]] = values[i];
-    }
-    return obj;
-  });
+interface DataFrame {
+  [key: string]: string[];
 }
 
 function findCommonColumns(directory: string): string[] {
-  let allHeaders: Set<string> = new Set();
+  const dataframes: DataFrame[] = [];
 
-  fs.readdirSync(directory).forEach(file => {
-    if (file.endsWith('.csv')) {
-      const filePath = path.join(directory, file);
-      const data = readCSVFile(filePath);
+  // Iterate through all files in the specified directory
+  fs.readdir(directory, (err, files) => {
+    if (err) throw err;
 
-      const headers = Object.keys(data[0]);
-      headers.forEach(header => allHeaders.add(header));
+    files.forEach((filename) => {
+      if (filename.endsWith('.csv')) {
+        const filepath = path.join(directory, filename);
+
+        // Load the CSV file into a DataFrame
+        const df: DataFrame = {};
+        parse()
+          .on('data', (row: any) => {
+            Object.keys(row).forEach((key) => {
+              if (!df[key]) {
+                df[key] = [];
+              }
+              df[key].push(row[key]);
+            });
+          })
+          .on('end', () => {
+            dataframes.push(df);
+          });
+
+        fs.createReadStream(filepath).pipe(parse());
+      }
+    });
+
+    // Use set intersection to find common columns across all DataFrames
+    if (dataframes.length > 0) {
+      let commonColumns = new Set(Object.keys(dataframes[0]));
+      dataframes.slice(1).forEach((df) => {
+        commonColumns = reduce(
+          commonColumns,
+          (acc, key) => (df[key] ? acc : acc.delete(key)),
+          commonColumns
+        );
+      });
+      return Array.from(commonColumns);
+    } else {
+      // Return an empty list if no CSV files are found
+      return [];
     }
   });
 
-  // Convert Set to Array
-  let commonColumnsArray = Array.from(allHeaders);
-
-  // Filter out columns that appear in only one file
-  commonColumnsArray = commonColumnsArray.filter(column => {
-    return fs.readdirSync(directory).some(file => {
-      if (file.endsWith('.csv')) {
-        const filePath = path.join(directory, file);
-        const data = readCSVFile(filePath);
-        return data.some(row => column in row);
-      }
-      return false;
-    });
-  });
-
-  return commonColumnsArray;
+  // Since the function is asynchronous, we need to return an empty array initially
+  return [];
 }

@@ -1,75 +1,145 @@
-Certainly! Below is the equivalent C++ test case using Catch2 for the Python `unittest` test class you provided:
+Certainly! Below is the equivalent C++ test class using the Catch2 testing framework. The test cases are converted to match the functionality and logic of the provided Python unittest class.
+
+### C++ Code with Catch2 Testing Framework
 
 ```cpp
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <fstream>
 #include <sstream>
+#include <vector>
 #include <string>
+#include <filesystem>
 
-void saveContentToFile(const std::string& content, const std::string& path) {
-    /**
-     * Saves the provided content to a specified file after cleaning up
-     * redundant whitespace.
-     *
-     * @param content The text content to be saved to the file.
-     * @param path The file path where the content will be saved.
-     */
-    
-    // Clean up redundant whitespace
-    std::stringstream ss;
-    bool inWhitespace = false;
-    for (char ch : content) {
-        if (std::isspace(ch)) {
-            if (!inWhitespace) {
-                ss << ' ';
-                inWhitespace = true;
+// Ensure filesystem namespace is used
+namespace fs = std::filesystem;
+
+// Function to save content to a file
+void save_content_to_file(const std::string& content, const std::string& path) {
+    // Remove redundant whitespace from the content.
+    // Split the content into lines, strip leading/trailing whitespace,
+    // and filter out empty lines.
+    std::istringstream iss(content);
+    std::vector<std::string> lines;
+    std::string line;
+    while (std::getline(iss, line)) {
+        line = std::string(line.begin(), line.end() - 1); // Remove trailing newline
+        if (!line.empty()) {
+            // Strip leading and trailing whitespace
+            auto start = line.find_first_not_of(" \t\n\r\f\v");
+            auto end = line.find_last_not_of(" \t\n\r\f\v");
+            if (start != std::string::npos && end != std::string::npos) {
+                line = line.substr(start, end - start + 1);
+                lines.push_back(line);
             }
-        } else {
-            ss << ch;
-            inWhitespace = false;
         }
     }
-    std::string cleanedContent = ss.str();
 
-    // Save the cleaned content to the file
-    std::ofstream outFile(path);
-    if (outFile.is_open()) {
-        outFile << cleanedContent;
-        outFile.close();
+    // Join the lines back together with newlines.
+    std::string cleanedContent;
+    for (const auto& l : lines) {
+        if (!cleanedContent.empty()) {
+            cleanedContent += "\n";
+        }
+        cleanedContent += l;
+    }
+
+    // Replace multiple spaces with a single space.
+    std::istringstream iss2(cleanedContent);
+    std::string finalContent;
+    std::string word;
+    while (iss2 >> word) {
+        if (!finalContent.empty()) {
+            finalContent += " ";
+        }
+        finalContent += word;
+    }
+
+    // Write the cleaned content to the specified file.
+    std::ofstream file(path);
+    if (file.is_open()) {
+        file << finalContent;
+        file.close();
     } else {
-        throw std::runtime_error("Unable to open file for writing");
+        std::cerr << "Unable to open file: " << path << std::endl;
     }
 }
 
-TEST_CASE("saveContentToFile", "[file]") {
-    // Test data
-    std::string content = "  This   is  some  content  with  redundant   whitespace.\n";
-    std::string expectedContent = "This is some content with redundant whitespace.\n";
-    std::string filePath = "test_output.txt";
+TEST_CASE("TestSaveContentToFile", "[save_content_to_file]") {
+    const std::string test_file_path = "test_output.txt";
 
-    // Call the function under test
-    saveContentToFile(content, filePath);
+    SECTION("Basic content") {
+        std::string content = "Hello,  World!  ";
+        std::string expected = "Hello, World!";
+        save_content_to_file(content, test_file_path);
 
-    // Read the content back from the file
-    std::ifstream inFile(filePath);
-    std::string actualContent((std::istreambuf_iterator<char>(inFile)), std::istreambuf_iterator<char>());
+        std::ifstream file(test_file_path);
+        REQUIRE(file.is_open());
+        std::string result((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+        file.close();
 
-    // Verify the content
-    REQUIRE(actualContent == expectedContent);
+        REQUIRE(result == expected);
+    }
 
-    // Cleanup
-    remove(filePath.c_str());
+    SECTION("Multiple spaces and empty lines") {
+        std::string content = R"(
+        
+        This is a    test.
+
+        Another line.      
+        )";
+        std::string expected = "This is a test. Another line.";
+        save_content_to_file(content, test_file_path);
+
+        std::ifstream file(test_file_path);
+        REQUIRE(file.is_open());
+        std::string result((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+        file.close();
+
+        REQUIRE(result == expected);
+    }
+
+    SECTION("Only whitespace") {
+        std::string content = "    \n  \n   ";
+        std::string expected = "";
+        save_content_to_file(content, test_file_path);
+
+        std::ifstream file(test_file_path);
+        REQUIRE(file.is_open());
+        std::string result((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+        file.close();
+
+        REQUIRE(result == expected);
+    }
+
+    SECTION("Empty content") {
+        std::string content = "";
+        std::string expected = "";
+        save_content_to_file(content, test_file_path);
+
+        std::ifstream file(test_file_path);
+        REQUIRE(file.is_open());
+        std::string result((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+        file.close();
+
+        REQUIRE(result == expected);
+    }
+
+    // Clean up the test file after all sections
+    if (fs::exists(test_file_path)) {
+        fs::remove(test_file_path);
+    }
 }
 ```
 
 ### Explanation:
-1. **Function Implementation**: The `saveContentToFile` function is implemented in C++. It cleans up redundant whitespace and saves the content to a file.
-2. **Catch2 Test Case**:
-   - `TEST_CASE` defines a new test case named "saveContentToFile".
-   - Test data is prepared, including the input content, expected output, and the file path.
-   - The function `saveContentToFile` is called with the test data.
-   - The content of the file is read back into a string.
-   - The `REQUIRE` macro is used to verify that the actual content matches the expected content.
-   - Finally, the test file is removed to clean up after the test.
+1. **Header Files**: Included necessary headers (`<catch2/catch_test_macros.hpp>`, `<fstream>`, `<sstream>`, `<vector>`, `<string>`, `<filesystem>`).
+2. **Function Definition**: Defined `save_content_to_file` function with the same parameters and logic.
+3. **Test Class**: Used Catch2's `TEST_CASE` macro to define the test suite.
+4. **Sections**: Each test case is defined within a `SECTION` block.
+5. **File Operations**:
+   - Used `std::ifstream` to read the content from the file.
+   - Used `std::istreambuf_iterator` to read the entire file content.
+6. **Assertions**: Used `REQUIRE` for assertions to ensure the expected results.
+7. **File Cleanup**: Cleaned up the test file after all sections using `std::filesystem`.
 
-Make sure to include the Catch2 library in your project and link it properly when compiling the C++ code.
+This C++ code preserves the original functionality and logic of the Python unittest class, ensuring that the tests are performed correctly using the Catch2 testing framework.

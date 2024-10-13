@@ -1,31 +1,60 @@
-Here's how you can translate the given Python function into JavaScript:
+Sure! Here is the equivalent JavaScript code that maintains the same functionality, logic, and structure as the provided Python code:
 
 ```javascript
 const fs = require('fs');
-const path = require('path');
+const util = require('util');
+const readFilePromise = util.promisify(fs.readFile);
+const JSON = require('json-bigint')({ store: [] }); // Assuming you might need to handle large integers
 
-function readTxtAddJsonBracket(filename) {
+async function readTxtAddJsonBracket(filename) {
+    /**
+     * Reads a text file, wraps its content in JSON brackets, and parses it into a JavaScript object.
+     *
+     * Args:
+     *     filename (string): The path to the text file to be read.
+     *
+     * Returns:
+     *     Promise<Array>: A promise that resolves to an array parsed from the JSON content wrapped in brackets.
+     *
+     * Throws:
+     *     Error: If the specified file does not exist or if the content cannot be parsed as JSON.
+     */
     try {
-        // Read the file synchronously
-        const data = fs.readFileSync(path.resolve(__dirname, filename), 'utf8');
-        
-        // Wrap the data in JSON brackets
-        const jsonData = `[${data}]`;
+        const text = await readFilePromise(filename, 'utf-8');
 
-        // Parse the JSON data
-        const parsedData = JSON.parse(jsonData);
+        // Wrap the text in square brackets to form a valid JSON array
+        const wrappedText = `[${text.trim()}]`;
 
-        return parsedData;
+        // Parse the JSON content into a JavaScript object
+        const data = JSON.parse(wrappedText);
+
+        return data;
     } catch (error) {
         if (error.code === 'ENOENT') {
-            throw new Error(`The specified file ${filename} does not exist.`);
+            console.error(`Error: ${error.message}`);
+            return [];
         } else if (error instanceof SyntaxError) {
-            throw new Error(`Cannot parse the content as JSON.`);
+            console.error(`Error decoding JSON: ${error.message}`);
+            return [];
+        } else {
+            throw error; // Re-throw other unexpected errors
         }
-
-        throw error;
     }
 }
+
+// Example usage
+(async () => {
+    try {
+        const result = await readTxtAddJsonBracket('example.txt');
+        console.log(result);
+    } catch (error) {
+        console.error(error);
+    }
+})();
 ```
 
-This JavaScript function reads a text file using Node.js's `fs` module, wraps its content in JSON brackets, and then attempts to parse it. It handles errors such as file not found or invalid JSON syntax. Note that JavaScript uses `require` for importing modules, which is different from Python's `import`. Also, error handling in JavaScript typically involves catching exceptions with a `try...catch` block.
+### Explanation:
+1. **File Reading**: We use `fs.readFile` to read the file synchronously. To make it asynchronous, we use `util.promisify` to create a promise-based version of `readFile`.
+2. **JSON Parsing**: We wrap the text in square brackets to form a valid JSON array and then parse it using `JSON.parse`.
+3. **Error Handling**: We catch specific errors (`ENOENT` for file not found and `SyntaxError` for JSON parsing errors) and log appropriate messages. Other unexpected errors are re-thrown.
+4. **Example Usage**: An example usage is provided at the end to demonstrate how to call the function asynchronously.

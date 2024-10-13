@@ -1,27 +1,31 @@
-function findDuplicateIps(ipList, ignoreList) {
-  // Create an object to store the count of each IP address
+function findDuplicateIPs(ipList, ignoreList) {
+  /**
+   * Find duplicate IPs in the given IP list excluding specified IPs to ignore.
+   *
+   * @param {Array} ipList - List of IP addresses (strings).
+   * @param {Array} ignoreList - List of IP addresses to ignore (strings).
+   * @returns {Array} A list of duplicate IPs excluding those in the ignore list.
+   */
+  
+  // Convert ignoreList to a Set for faster lookups
+  const ignoreSet = new Set(ignoreList);
+
+  // Object to count occurrences of each IP
   const ipCount = {};
 
-  // Iterate over the IP list and increment the count for each IP
-  for(let i = 0; i < ipList.length; i++) {
-    if(!ignoreList.includes(ipList[i])) { // If the IP is not in the ignore list
-      if(ipCount[ipList[i]]) {
-        ipCount[ipList[i]]++;
-      } else {
-        ipCount[ipList[i]] = 1;
+  // Count occurrences of each IP, excluding ignored IPs
+  for (const ip of ipList) {
+      if (!ignoreSet.has(ip)) {
+          if (ip in ipCount) {
+              ipCount[ip] += 1;
+          } else {
+              ipCount[ip] = 1;
+          }
       }
-    }
   }
 
-  // Create an array to store the duplicate IPs
-  const duplicates = [];
-
-  // Iterate over the IP count object and add any IP with a count greater than 1 to the duplicates array
-  for(const ip in ipCount) {
-    if(ipCount[ip] > 1) {
-      duplicates.push(ip);
-    }
-  }
+  // Collect duplicate IPs
+  const duplicates = Object.entries(ipCount).filter(([ip, count]) => count > 1).map(([ip, count]) => ip);
 
   return duplicates;
 }

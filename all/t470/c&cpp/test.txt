@@ -1,46 +1,39 @@
-Certainly! Below is the equivalent C++ code using the Catch2 testing framework to test the `apply_shear_x` function. I'll provide the full implementation, including the Catch2 setup and the test cases.
+Certainly! Below is the equivalent C++ test class using the Catch2 testing framework. The provided Python unittest class will be converted into a Catch2 test suite, ensuring that the functionality and logic of the tests are preserved.
 
-### Python Code:
-```python
-import numpy as np
+### C++ Code with Catch2
 
-def apply_shear_x(matrix: np.array, shear_factor: float):
-    """
-    Applies a shear transformation to a 2D matrix along the x-axis.
+First, make sure you have Catch2 installed. You can include it in your project by adding the Catch2 header files.
 
-    Args:
-    matrix (np.ndarray): A 2D numpy array representing the original matrix.
-    shear_factor (float): The factor by which the matrix is sheared along the x-axis.
+#### Catch2 Header File
+Add the following line at the beginning of your file to include Catch2:
 
-    Returns:
-    np.ndarray: The sheared matrix.
-    """
-    # Define the shear transformation matrix for shearing along the x-axis
-    shear_matrix = np.array([[1, shear_factor],
-                             [0, 1]])
-
-    # Applying the shear transformation
-    # For matrix multiplication, use np.dot() or @ operator
-    transformed_matrix = matrix @ shear_matrix
-
-    return transformed_matrix
+```cpp
+#define CATCH_CONFIG_MAIN
+#include "catch.hpp"
 ```
 
-### Equivalent C++ Code with Catch2 Testing Framework:
+#### Test Class Conversion
 
-#### 1. Include Catch2 Headers
-First, include the necessary Catch2 headers in your project. You can install Catch2 via a package manager or include it directly in your project.
-
-#### 2. C++ Code
-Here is the complete C++ code with the Catch2 test cases:
+Here is the complete C++ code with the Catch2 test suite:
 
 ```cpp
 #include <iostream>
 #include <Eigen/Dense>
-#include <catch2/catch_test_macros.hpp>
+#include "catch.hpp"
 
 // Function to apply a shear transformation to a 2D matrix along the x-axis
 Eigen::MatrixXd applyShearX(const Eigen::MatrixXd& matrix, double shear_factor) {
+    /*
+     * Applies a shear transformation to a 2D matrix along the x-axis.
+     *
+     * Args:
+     * matrix (Eigen::MatrixXd): A 2D matrix representing the original matrix.
+     * shear_factor (double): The factor by which the matrix is sheared along the x-axis.
+     *
+     * Returns:
+     * Eigen::MatrixXd: The sheared matrix.
+     */
+
     // Define the shear transformation matrix for shearing along the x-axis
     Eigen::Matrix2d shear_matrix;
     shear_matrix << 1, shear_factor,
@@ -53,76 +46,70 @@ Eigen::MatrixXd applyShearX(const Eigen::MatrixXd& matrix, double shear_factor) 
     return transformed_matrix;
 }
 
-TEST_CASE("Test applyShearX function", "[shear]") {
-    SECTION("Test basic shear transformation") {
-        Eigen::MatrixXd matrix(2, 2);
+TEST_CASE("TestShearTransformation", "[shear]") {
+    SECTION("test_identity_shear") {
+        // Test with zero shear factor which should return the original matrix unchanged.
+        Eigen::MatrixXd matrix = Eigen::MatrixXd::Zero(2, 2);
         matrix << 1, 2,
                   3, 4;
-
-        double shear_factor = 0.5;
-
-        Eigen::MatrixXd expected_result(2, 2);
-        expected_result << 1 + 2 * 0.5, 2,
-                           3 + 4 * 0.5, 4;
-
-        Eigen::MatrixXd result = applyShearX(matrix, shear_factor);
-
-        REQUIRE(result.isApprox(expected_result));
-    }
-
-    SECTION("Test zero shear factor") {
-        Eigen::MatrixXd matrix(2, 2);
-        matrix << 1, 2,
-                  3, 4;
-
-        double shear_factor = 0.0;
-
-        Eigen::MatrixXd expected_result(2, 2);
-        expected_result << 1, 2,
+        double shear_factor = 0;
+        Eigen::MatrixXd expected_output = Eigen::MatrixXd::Zero(2, 2);
+        expected_output << 1, 2,
                            3, 4;
-
         Eigen::MatrixXd result = applyShearX(matrix, shear_factor);
-
-        REQUIRE(result.isApprox(expected_result));
+        REQUIRE(result.isApprox(expected_output));
     }
 
-    SECTION("Test negative shear factor") {
-        Eigen::MatrixXd matrix(2, 2);
+    SECTION("test_positive_shear") {
+        // Test with a positive shear factor.
+        Eigen::MatrixXd matrix = Eigen::MatrixXd::Zero(2, 2);
         matrix << 1, 2,
                   3, 4;
-
-        double shear_factor = -0.5;
-
-        Eigen::MatrixXd expected_result(2, 2);
-        expected_result << 1 - 2 * 0.5, 2,
-                           3 - 4 * 0.5, 4;
-
+        double shear_factor = 1;
+        Eigen::MatrixXd expected_output = Eigen::MatrixXd::Zero(2, 2);
+        expected_output << 1, 3,
+                           3, 7;
         Eigen::MatrixXd result = applyShearX(matrix, shear_factor);
+        REQUIRE(result.isApprox(expected_output));
+    }
 
-        REQUIRE(result.isApprox(expected_result));
+    SECTION("test_negative_shear") {
+        // Test with a negative shear factor.
+        Eigen::MatrixXd matrix = Eigen::MatrixXd::Zero(2, 2);
+        matrix << 1, 2,
+                  3, 4;
+        double shear_factor = -1;
+        Eigen::MatrixXd expected_output = Eigen::MatrixXd::Zero(2, 2);
+        expected_output << 1, 1,
+                           3, 1;
+        Eigen::MatrixXd result = applyShearX(matrix, shear_factor);
+        REQUIRE(result.isApprox(expected_output));
+    }
+
+    SECTION("test_high_shear_factor") {
+        // Test with a high shear factor to see how the matrix adapts to extreme transformations.
+        Eigen::MatrixXd matrix = Eigen::MatrixXd::Zero(2, 2);
+        matrix << 1, 1,
+                  1, 1;
+        double shear_factor = 10;
+        Eigen::MatrixXd expected_output = Eigen::MatrixXd::Zero(2, 2);
+        expected_output << 1, 11,
+                           1, 11;
+        Eigen::MatrixXd result = applyShearX(matrix, shear_factor);
+        REQUIRE(result.isApprox(expected_output));
     }
 }
 
 int main(int argc, char* argv[]) {
-    int result = Catch::Session().run(argc, argv);
-    return result;
+    return Catch::Session().run(argc, argv);
 }
 ```
 
 ### Explanation:
-1. **Include Catch2 Headers**: The `#include <catch2/catch_test_macros.hpp>` line includes the necessary Catch2 headers for writing tests.
-2. **Function Implementation**: The `applyShearX` function is implemented to perform the shear transformation on a 2D matrix.
-3. **Catch2 Test Cases**:
-   - `TEST_CASE`: Defines a test case named "Test applyShearX function" with a tag `[shear]`.
-   - `SECTION`: Each section contains a specific test scenario.
-   - `REQUIRE`: Asserts that the result of the shear transformation is approximately equal to the expected result using `isApprox()`.
+1. **Catch2 Header**: The `#include "catch.hpp"` line includes the Catch2 header file.
+2. **Function Definition**: The `applyShearX` function is defined to perform the shear transformation.
+3. **Test Suite**: The `TEST_CASE` macro defines the test suite named `TestShearTransformation`.
+4. **Sections**: Each `SECTION` within the test suite corresponds to a specific test case.
+5. **Assertions**: The `REQUIRE` macro is used to assert that the results match the expected output. `isApprox` is used to check for approximate equality, which is suitable for floating-point comparisons.
 
-### Running the Tests:
-To run the tests, you can compile and execute the program using Catch2. Here’s an example command to run the tests:
-
-```sh
-g++ -std=c++17 -o shear_test shear_test.cpp -lEigen
-./shear_test
-```
-
-Ensure that you have the Eigen library installed and linked correctly. If you encounter any issues, you may need to adjust the compilation flags or include paths based on your build environment.
+This code ensures that the functionality and logic of the tests are preserved while adapting to the syntax and features of C++ and the Catch2 testing framework.

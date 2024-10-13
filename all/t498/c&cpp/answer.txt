@@ -1,59 +1,36 @@
-Here is an equivalent C++ code using OpenSSL library:
+Here is the equivalent C++ code that computes the MD5 hash of an input string and returns it in hexadecimal format:
 
 ```cpp
-#include <openssl/md5.h>
-#include <iomanip>
-#include <sstream>
+#include <iostream>
 #include <string>
+#include <openssl/md5.h> // Make sure to link against OpenSSL
 
-std::string compute_md5(const std::string &input_string)
-{
+// Function to compute and return the MD5 hash of the input string
+std::string compute_md5(const std::string& input_string) {
     unsigned char digest[MD5_DIGEST_LENGTH];
-    MD5((unsigned char*)input_string.c_str(), input_string.size(), (unsigned char*)&digest);    
+    MD5((unsigned char*)input_string.c_str(), input_string.length(), (unsigned char*)&digest);    
 
-    std::stringstream ss;
-    for(int i = 0; i < MD5_DIGEST_LENGTH; ++i)
-    {
-        ss << std::hex << std::setw(2) << std::setfill('0') << (int)digest[i];
-    }
+    char mdString[33];
+    for(int i = 0; i < 16; ++i)
+        sprintf(&mdString[i*2], "%02x", (unsigned int)digest[i]);
 
-    return ss.str();
-}
-```
-
-And here is the equivalent C code using the standard library:
-
-```c
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdint.h>
-
-void compute_md5(const char *input_string, char *output_buffer)
-{
-    uint8_t digest[16];
-    FILE *fp = popen("echo -n " input_string "| md5sum | awk '{print $1}'", "r");
-    fread(output_buffer, 1, 33, fp);
-    pclose(fp);
-
-    // Remove newline character if it exists
-    size_t len = strlen(output_buffer);
-    if(len > 0 && output_buffer[len-1] == '\n')
-        output_buffer[len-1] = '\0';
+    return std::string(mdString);
 }
 
 int main() {
-    char output_buffer[34]; // MD5 produces 32 bytes of data, plus null terminator
-    compute_md5("your_input_string", output_buffer);
-    printf("%s\n", output_buffer);
+    std::string test_string = "Hello, World!";
+    std::string md5_hash = compute_md5(test_string);
+
+    std::cout << "MD5 hash of \"" << test_string << "\": " << md5_hash << std::endl;
+
     return 0;
 }
 ```
 
-Please note that you need to link against OpenSSL library when compiling the C++ code. For example:
+### Notes:
+1. **OpenSSL Library**: The `#include <openssl/md5.h>` directive is used to include the necessary header file for computing MD5 hashes. You need to link your program against the OpenSSL library.
+2. **MD5 Function**: The `MD5` function from OpenSSL is used to compute the hash of the input string.
+3. **Hexadecimal Conversion**: A loop is used to convert the computed hash (in binary form) to its hexadecimal representation.
+4. **Main Function**: A simple example is provided in the `main` function to demonstrate how to use the `compute_md5` function.
 
-```bash
-g++ -o my_program my_program.cpp -lssl -lcrypto
-```
-
-For the C code, you can use the system call `popen` which might not be secure depending on your context, consider using a safer alternative like `exec` or creating your own MD5 implementation if security is a concern.
+Make sure you have the OpenSSL library installed and linked correctly when compiling this C++ code.

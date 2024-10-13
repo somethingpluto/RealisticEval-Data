@@ -1,5 +1,5 @@
 /**
- * Compare the contents of two files and return the differences in unified diff format.
+ * compare the contents of two files and print the differences in unified diff format.
  *
  * @param file1Path - Path to the first file.
  * @param file2Path - Path to the second file.

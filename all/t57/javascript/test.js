@@ -1,22 +1,101 @@
-describe('convert_png_to_ico', () => {
-     test('should convert PNG to ICO with default size', async () => {
-       const pngFilePath = 'path/to/source.png';
-       const icoFilePath = 'path/to/output.ico';
+const fs = require('fs').promises; // Import fs.promises for mocking errors
 
-       await convert_png_to_ico(pngFilePath, icoFilePath);
+describe('TestConvertPngToIco', () => {
+    beforeEach(() => {
+        jest.resetModules();
+        jest.clearAllMocks();
+    });
 
-       // Assuming there's a way to check if the ICO file was created successfully
-       expect(fs.existsSync(icoFilePath)).toBe(true);
-     });
+    describe('testSingleIconSize', () => {
+        it('should save the image with a single icon size', () => {
+            const mockImage = {
+                save: jest.fn()
+            };
 
-     test('should convert PNG to ICO with custom sizes', async () => {
-       const pngFilePath = 'path/to/source.png';
-       const icoFilePath = 'path/to/output.ico';
-       const iconSizes = [(32, 32), (64, 64)];
+            const mockOpen = jest.fn().mockReturnValue({
+                __enter__: jest.fn().mockReturnValue(mockImage),
+                __exit__: jest.fn()
+            });
 
-       await convert_png_to_ico(pngFilePath, icoFilePath, iconSizes);
+            jest.doMock('sharp', () => ({
+                open: mockOpen
+            }));
 
-       // Assuming there's a way to check if the ICO file was created successfully
-       expect(fs.existsSync(icoFilePath)).toBe(true);
-     });
-   });
+            convertPngToIco('source.png', 'output.ico', [[64, 64]]);
+            expect(mockImage.save).toHaveBeenCalledWith('output.ico', { format: 'ICO', sizes: [[64, 64]] });
+        });
+    });
+
+    describe('testMultipleIconSizes', () => {
+        it('should save the image with multiple icon sizes', () => {
+            const mockImage = {
+                save: jest.fn()
+            };
+
+            const mockOpen = jest.fn().mockReturnValue({
+                __enter__: jest.fn().mockReturnValue(mockImage),
+                __exit__: jest.fn()
+            });
+
+            jest.doMock('sharp', () => ({
+                open: mockOpen
+            }));
+
+            convertPngToIco('source.png', 'output.ico', [[16, 16], [32, 32], [64, 64]]);
+            expect(mockImage.save).toHaveBeenCalledWith('output.ico', { format: 'ICO', sizes: [[16, 16], [32, 32], [64, 64]] });
+        });
+    });
+
+    describe('testDefaultIconSize', () => {
+        it('should save the image with the default icon size', () => {
+            const mockImage = {
+                save: jest.fn()
+            };
+
+            const mockOpen = jest.fn().mockReturnValue({
+                __enter__: jest.fn().mockReturnValue(mockImage),
+                __exit__: jest.fn()
+            });
+
+            jest.doMock('sharp', () => ({
+                open: mockOpen
+            }));
+
+            convertPngToIco('source.png', 'output.ico');
+            expect(mockImage.save).toHaveBeenCalledWith('output.ico', { format: 'ICO', sizes: [[32, 32]] });
+        });
+    });
+
+    describe('testFileHandling', () => {
+        it('should save the image with the correct parameters', () => {
+            const mockImage = {
+                save: jest.fn()
+            };
+
+            const mockOpen = jest.fn().mockReturnValue({
+                __enter__: jest.fn().mockReturnValue(mockImage),
+                __exit__: jest.fn()
+            });
+
+            jest.doMock('sharp', () => ({
+                open: mockOpen
+            }));
+
+            convertPngToIco('source.png', 'output.ico');
+            expect(mockImage.save).toHaveBeenCalledTimes(1);
+            expect(mockImage.save).toHaveBeenCalledWith('output.ico', { format: 'ICO', sizes: [[32, 32]] });
+        });
+    });
+
+    describe('testInvalidImagePath', () => {
+        it('should throw an error when the image path is invalid', async () => {
+            const mockOpen = jest.fn().mockRejectedValue(new Error('File not found'));
+
+            jest.doMock('sharp', () => ({
+                open: mockOpen
+            }));
+
+            await expect(convertPngToIco('invalid.png', 'output.ico')).rejects.toThrow('File not found');
+        });
+    });
+});

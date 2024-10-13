@@ -1,40 +1,109 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <string>
+#include <sstream>
 
-void dataframeToMarkdown(std::vector<std::pair<std::string, std::vector<std::string>>> data, const std::string& mdPath)
-{
-    // Open file in write mode
-    std::ofstream mdFile(mdPath);
+// Assuming DataFrame is a custom class that provides similar functionality to pandas DataFrame
+class DataFrame {
+public:
+    std::vector<std::vector<std::string>> data;
+    std::vector<std::string> columns;
 
-    if (!mdFile.is_open()) {
-        std::cerr << "Error opening file!" << std::endl;
-        return;
-    }
+    // Constructor to initialize the DataFrame
+    DataFrame(const std::vector<std::vector<std::string>>& data, const std::vector<std::string>& columns)
+        : data(data), columns(columns) {}
 
-    // Write the header row
-    mdFile << "|";
-    for (const auto& column : data[0].second) {
-        mdFile << " " << column << " |";
-    }
-    mdFile << "\n";
+    // Iterator for rows
+    struct RowIterator {
+        const std::vector<std::vector<std::string>>& data;
+        size_t index;
 
-    // Write the separator row
-    mdFile << "|";
-    for (size_t i = 0; i < data[0].second.size(); ++i) {
-        mdFile << " --- |";
-    }
-    mdFile << "\n";
+        RowIterator(const std::vector<std::vector<std::string>>& data, size_t index)
+            : data(data), index(index) {}
 
-    // Write the data rows
-    for (const auto& row : data) {
-        mdFile << "|";
-        for (const auto& cell : row.second) {
-            mdFile << " " << cell << " |";
+        bool operator!=(const RowIterator& other) const {
+            return index != other.index;
         }
-        mdFile << "\n";
+
+        void operator++() {
+            ++index;
+        }
+
+        std::vector<std::string>& operator*() {
+            return data[index];
+        }
+    };
+
+    RowIterator begin() {
+        return RowIterator(data, 0);
     }
 
-    // Close file
-    mdFile.close();
+    RowIterator end() {
+        return RowIterator(data, data.size());
+    }
+};
+
+std::string dataframe_to_markdown(const DataFrame& df, const std::string& md_path) {
+    // Construct the header row
+    std::stringstream headers;
+    headers << "| ";
+    for (size_t i = 0; i < df.columns.size(); ++i) {
+        headers << df.columns[i];
+        if (i < df.columns.size() - 1) {
+            headers << " | ";
+        }
+    }
+    headers << " |\n";
+
+    // Construct the separator row
+    std::stringstream separators;
+    separators << "| ";
+    for (size_t i = 0; i < df.columns.size(); ++i) {
+        separators << "---";
+        if (i < df.columns.size() - 1) {
+            separators << " | ";
+        }
+    }
+    separators << " |\n";
+
+    // Combine headers and separators
+    std::string markdown = headers.str() + separators.str();
+
+    // Build markdown table body
+    for (auto it = df.begin(); it != df.end(); ++it) {
+        std::stringstream row;
+        row << "| ";
+        for (size_t i = 0; i < (*it).size(); ++i) {
+            row << (*it)[i];
+            if (i < (*it).size() - 1) {
+                row << " | ";
+            }
+        }
+        row << " |\n";
+        markdown += row.str();
+    }
+
+    // Write markdown to file
+    std::ofstream handle(md_path);
+    if (handle.is_open()) {
+        handle << markdown;
+        handle.close();
+    } else {
+        std::cerr << "Failed to open file: " << md_path << std::endl;
+    }
+
+    return markdown;
+}
+
+int main() {
+    // Example usage
+    std::vector<std::vector<std::string>> data = {{"1", "2", "3"}, {"4", "5", "6"}};
+    std::vector<std::string> columns = {"A", "B", "C"};
+    DataFrame df(data, columns);
+
+    std::string markdown = dataframe_to_markdown(df, "output.md");
+    std::cout << markdown << std::endl;
+
+    return 0;
 }

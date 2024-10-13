@@ -1,11 +1,21 @@
-TEST_CASE("Probability of drawing red balls", "[probability]") {
-    REQUIRE(probability_red_balls(0, 5, 3) == Approx(1.0)); // No balls drawn, so the probability is 1
-    REQUIRE(probability_red_balls(1, 5, 3) == Approx(0.625)); // Drawing 1 red ball out of 8 total
-    REQUIRE(probability_red_balls(2, 5, 3) == Approx(0.1875)); // Drawing 2 red balls out of 8 total
-    REQUIRE(probability_red_balls(3, 5, 3) == Approx(0.0416667)); // Drawing 3 red balls out of 8 total
-    REQUIRE(probability_red_balls(4, 5, 3) == Approx(0.0)); // Not possible to draw 4 red balls with only 5 red balls
+TEST_CASE("Test Probability Red Balls") {
+    SECTION("All balls are red") {
+        REQUIRE(probability_red_balls(5, 5, 0) == Approx(1));
+    }
 
-    // Additional edge cases
-    REQUIRE(probability_red_balls(-1, 5, 3) == Approx(0.0)); // Invalid number of balls to draw
-    REQUIRE(probability_red_balls(6, 5, 3) == Approx(0.0)); // Drawing more balls than available
+    SECTION("No red balls are available") {
+        REQUIRE(probability_red_balls(1, 0, 5) == Approx(0));
+    }
+
+    SECTION("Typical scenario") {
+        REQUIRE(probability_red_balls(2, 10, 5) == Approx(static_cast<double>(binomial_coefficient(10, 2)) / binomial_coefficient(15, 2)));
+    }
+
+    SECTION("More balls requested than available") {
+        REQUIRE(probability_red_balls(6, 5, 4) == Approx(0));
+    }
+
+    SECTION("High combinations") {
+        REQUIRE(probability_red_balls(3, 20, 30) == Approx(static_cast<double>(binomial_coefficient(20, 3)) / binomial_coefficient(50, 3)));
+    }
 }

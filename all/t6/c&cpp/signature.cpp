@@ -1,12 +1,10 @@
 /**
- * @brief Simplifies Windows file paths into a string representation by removing the drive letter and file extensions.
+ * @brief Simplify file paths in Windows systems into name strings.
+ * For example:
+ *     Input: C:\\Users\\User\\file.txt
+ *     Output: C_Users_User_file.txt
  *
- * This function takes a Windows file path as input and simplifies it by removing the drive letter,
- * converting backslashes to underscores, and omitting the file extension. For example:
- * - Input: C:\\Users\\User\\file.txt
- * - Output: Users_User_file
- *
- * @param path A string representing the Windows file path to be simplified.
- * @return A string representing the simplified path without the drive letter and file extension.
+ * @param path The Windows file path string.
+ * @return The simplified path string.
  */
-std::string simplify_windows_path(const std::string& path) {}
+std::string simplifyWindowsPath(const std::string& path) {}

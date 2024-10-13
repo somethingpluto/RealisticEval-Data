@@ -1,0 +1,154 @@
+Certainly! Here’s how you can convert the JavaScript Jest test case to a C++ test case using Catch2. Catch2 is a popular C++ testing framework that provides a similar level of readability and ease of use as Jest.
+
+First, make sure you have Catch2 installed in your project. You can include Catch2 via a header-only library or through a package manager.
+
+Here’s the complete C++ test case using Catch2:
+
+### C++ Test Case Using Catch2
+
+```cpp
+#include <catch2/catch_test_macros.hpp>
+#include <vector>
+#include <string>
+#include <stdexcept>
+
+// Define the Queue class
+class Queue {
+public:
+    Queue() : items() {}
+
+    /**
+     * Adds an element to the end of the queue.
+     * @param T element - The element to be added to the queue.
+     */
+    void enqueue(const T& element) {
+        items.push_back(element);
+    }
+
+    /**
+     * Removes and returns the element from the front of the queue.
+     * @returns T The removed element from the front of the queue, or "Underflow" if the queue is empty.
+     */
+    T dequeue() {
+        if (isEmpty()) {
+            throw std::runtime_error("Underflow");
+        }
+        T frontElement = items.front();
+        items.erase(items.begin());
+        return frontElement;
+    }
+
+    /**
+     * Returns the front element of the queue without removing it.
+     * @returns T The front element of the queue, or "No elements in Queue" if the queue is empty.
+     */
+    T front() const {
+        if (isEmpty()) {
+            throw std::runtime_error("No elements in Queue");
+        }
+        return items.front();
+    }
+
+    /**
+     * Checks if the queue is empty.
+     * @returns bool True if the queue is empty, otherwise false.
+     */
+    bool isEmpty() const {
+        return items.empty();
+    }
+
+    /**
+     * Returns a string representation of all the elements in the queue.
+     * @returns std::string A string containing all elements in the queue, separated by spaces.
+     */
+    std::string printQueue() const {
+        std::string result;
+        for (const auto& item : items) {
+            result += std::to_string(item) + " ";
+        }
+        if (!result.empty()) {
+            result.pop_back(); // Remove the last space
+        }
+        return result;
+    }
+
+private:
+    std::vector<T> items;
+};
+
+TEST_CASE("Queue Class", "[Queue]") {
+    Queue<int> queue;
+
+    SECTION("should initialize an empty queue") {
+        REQUIRE(queue.isEmpty());
+    }
+
+    SECTION("should enqueue elements to the queue") {
+        queue.enqueue(1);
+        queue.enqueue(2);
+        queue.enqueue(3);
+        REQUIRE(queue.printQueue() == "1 2 3");
+        REQUIRE_FALSE(queue.isEmpty());
+    }
+
+    SECTION("should dequeue elements from the queue") {
+        queue.enqueue(1);
+        queue.enqueue(2);
+        int dequeuedElement = queue.dequeue();
+        REQUIRE(dequeuedElement == 1);
+    }
+
+    SECTION("should return the front element without removing it") {
+        queue.enqueue(10);
+        queue.enqueue(20);
+        int frontElement = queue.front();
+        REQUIRE(frontElement == 10);
+    }
+
+    SECTION("should check if the queue is empty") {
+        REQUIRE(queue.isEmpty());
+        queue.enqueue(5);
+        REQUIRE_FALSE(queue.isEmpty());
+        queue.dequeue();
+        REQUIRE(queue.isEmpty());
+    }
+}
+```
+
+### Explanation:
+1. **Include Catch2**: Include the Catch2 header file at the beginning of your test file.
+2. **Define the Queue Class**: Define the `Queue` class with the necessary methods.
+3. **Test Case Structure**:
+   - Use `TEST_CASE` to define the overall test case.
+   - Use `SECTION` to define individual test sections within the test case.
+   - Use `REQUIRE` to assert conditions.
+   - Use `REQUIRE_FALSE` to assert that a condition is false.
+
+### Running the Tests
+To run the tests, you need to link against Catch2. If you are using CMake, you can set up your project like this:
+
+```cmake
+cmake_minimum_required(VERSION 3.10)
+project(QueueTests)
+
+# Find Catch2
+find_package(Catch2 REQUIRED)
+
+# Add executable
+add_executable(QueueTests main.cpp queue_tests.cpp)
+
+# Link against Catch2
+target_link_libraries(QueueTests PRIVATE Catch2::Catch2)
+```
+
+In `main.cpp`, you can include the entry point for Catch2:
+
+```cpp
+#include <catch2/catch_test_macros.hpp>
+
+int main(int argc, char* argv[]) {
+    return Catch::Session().run(argc, argv);
+}
+```
+
+This setup ensures that your tests are properly linked and executed when you run the test executable.

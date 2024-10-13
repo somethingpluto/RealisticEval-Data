@@ -1,11 +1,11 @@
-Certainly! Here is the equivalent TypeScript code for the given Python function, including proper type annotations and JSDoc comments:
+Certainly! Here’s the equivalent TypeScript code, including proper type annotations and JSDoc-style documentation:
 
 ```typescript
 import Jimp from 'jimp';
 
 /**
  * Converts an image to a binary representation.
- * Convert the image to black and white mode, that is, each pixel is represented by only 1 bit,
+ * Converts the image to black and white mode, that is, each pixel is represented by only 1 bit,
  * with a white pixel value of 255 and a black pixel value of 0.
  *
  * @param {string} imagePath - The file path of the image to convert.
@@ -13,47 +13,52 @@ import Jimp from 'jimp';
  *                              where 1 is for white pixels and 0 is for black pixels.
  */
 async function convertImageToBits(imagePath: string): Promise<number[]> {
-  const image = await Jimp.read(imagePath);
-  image.grayscale();
-  image.threshold(128);
+    const image = await Jimp.read(imagePath);
+    image.color([{ apply: 'greyscale' }]);
+    image.color([{ apply: 'threshold', params: [128] }]);
 
-  const width = image.bitmap.width;
-  const height = image.bitmap.height;
+    const pixelData = image.bitmap.data;
+    const width = image.bitmap.width;
+    const height = image.bitmap.height;
 
-  const bitsArray: number[] = [];
+    const bitsArray: number[] = [];
 
-  for (let y = 0; y < height; y++) {
-    for (let x = 0; x < width; x++) {
-      const pixel = image.getPixelColor(x, y);
-      const bit = Jimp.intToRGBA(pixel).r === 255 ? 1 : 0;
-      bitsArray.push(bit);
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+            const index = (y * width + x) * 4; // Each pixel has 4 values (RGBA)
+            const pixel = pixelData[index]; // Assuming grayscale, we use the red channel
+            const bit = pixel === 255 ? 1 : 0;
+            bitsArray.push(bit);
+        }
     }
-  }
 
-  return bitsArray;
+    return bitsArray;
 }
 
 // Example usage
 (async () => {
-  try {
-    const bits = await convertImageToBits('path/to/image.jpg');
-    console.log(bits);
-  } catch (error) {
-    console.error('Error converting image:', error);
-  }
+    try {
+        const bits = await convertImageToBits('path/to/image.jpg');
+        console.log(bits);
+    } catch (error) {
+        console.error('Error converting image:', error);
+    }
 })();
 ```
 
 ### Explanation:
+1. **Imports**: We import `Jimp` from the `jimp` library.
+2. **Function Definition**: The `convertImageToBits` function is defined as an asynchronous function because reading an image is an asynchronous operation in Node.js.
+3. **JSDoc Documentation**:
+   - The function signature includes a detailed JSDoc comment block that describes the purpose, arguments, and return type.
+4. **Image Processing**:
+   - Read the image using `Jimp.read`.
+   - Convert the image to grayscale using `color([{apply: 'greyscale'}])`.
+   - Apply a threshold to convert the image to black and white using `color([{apply: 'threshold', params: [128]}])`.
+5. **Pixel Data Extraction**:
+   - Access the pixel data using `image.bitmap.data`.
+   - Iterate over each pixel and extract the red channel value (assuming grayscale).
+   - Convert the pixel value to a bit (1 for white, 0 for black).
+6. **Example Usage**: An example usage block demonstrates how to call the function and handle the result.
 
-1. **Importing Jimp**: We import the `Jimp` library to handle image processing.
-2. **Function Definition**: The `convertImageToBits` function is defined with the appropriate type signatures and JSDoc comments.
-3. **Loading the Image**: We use `Jimp.read` to load the image asynchronously.
-4. **Converting to Grayscale and Thresholding**: We convert the image to grayscale and then apply a threshold to get a binary image.
-5. **Iterating Over Pixels**: We iterate over each pixel and extract the red channel value (which is the same for all channels in a grayscale image).
-6. **Appending Bits**: We append either 1 or 0 based on the pixel value.
-7. **Example Usage**: An example usage is provided at the end to demonstrate how to call the function asynchronously.
-
-### JSDoc Comments:
-
-The JSDoc comments provide detailed documentation similar to the Python docstring, ensuring that the function's purpose, arguments, and return values are clearly documented.
+This TypeScript code preserves the original functionality and structure of the Python code while adapting it to TypeScript conventions and the `jimp` library.

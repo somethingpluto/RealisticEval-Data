@@ -1,21 +1,137 @@
-Here's how you can convert your Python unittest test class to C++ using Catch2:
+Certainly! Below is the equivalent C++ test class using the Catch2 testing framework. The tests will preserve the functionality and logic of the provided Python unittest class, ensuring that all assertions are appropriately translated to Catch2.
+
+### C++ Code with Catch2 Testing Framework
 
 ```cpp
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <cmath>
+#include <tuple>
+#include <type_traits>
+#include <stdexcept>
 
 // Define the constant for conversion: Boltzmann constant in keV/K
 const double k_B_over_keV = 8.617333262145e-5;  // eV/K to keV/K
 
-double convert_log10_K_to_keV(double T_log10_K) {
-    return std::pow(10.0, T_log10_K) * k_B_over_keV;
+// Helper function to check if a type is integral (int or float)
+template<typename T>
+struct is_integral : std::integral_constant<bool, std::is_integral<T>::value> {};
+
+// Function to convert temperature from log10(K) to keV
+template<typename T>
+auto convert_log10_K_to_keV(T T_log10_K) -> decltype(std::declval<T>() * k_B_over_keV) {
+    if constexpr (std::is_floating_point<T>::value || std::is_integral<T>::value) {
+        double T_kelvin = std::pow(10, T_log10_K);  // Convert log10(K) to K
+        return T_kelvin * k_B_over_keV;  // Convert K to keV
+    } else if constexpr (std::is_same<T, std::tuple<double, double>>::value ||
+                         std::is_same<T, std::tuple<double, double, double>>::value ||
+                         std::is_same<T, std::tuple<double, double, double, double, double>>::value) {
+        std::tuple<double, double, double, double, double> results;
+        if constexpr (std::is_same<T, std::tuple<double, double>>::value) {
+            double first = std::get<0>(T_log10_K);
+            double second = std::get<1>(T_log10_K);
+            double T_kelvin_first = std::pow(10, first);
+            double T_kelvin_second = std::pow(10, second);
+            results = std::make_tuple(T_kelvin_first * k_B_over_keV, T_kelvin_second * k_B_over_keV);
+        } else if constexpr (std::is_same<T, std::tuple<double, double, double>>::value) {
+            double first = std::get<0>(T_log10_K);
+            double second = std::get<1>(T_log10_K);
+            double third = std::get<2>(T_log10_K);
+            double T_kelvin_first = std::pow(10, first);
+            double T_kelvin_second = std::pow(10, second);
+            double T_kelvin_third = std::pow(10, third);
+            results = std::make_tuple(T_kelvin_first * k_B_over_keV, T_kelvin_second * k_B_over_keV, T_kelvin_third * k_B_over_keV);
+        } else if constexpr (std::is_same<T, std::tuple<double, double, double, double, double>>::value) {
+            double first = std::get<0>(T_log10_K);
+            double second = std::get<1>(T_log10_K);
+            double third = std::get<2>(T_log10_K);
+            double fourth = std::get<3>(T_log10_K);
+            double fifth = std::get<4>(T_log10_K);
+            double T_kelvin_first = std::pow(10, first);
+            double T_kelvin_second = std::pow(10, second);
+            double T_kelvin_third = std::pow(10, third);
+            double T_kelvin_fourth = std::pow(10, fourth);
+            double T_kelvin_fifth = std::pow(10, fifth);
+            results = std::make_tuple(T_kelvin_first * k_B_over_keV, T_kelvin_second * k_B_over_keV, T_kelvin_third * k_B_over_keV, T_kelvin_fourth * k_B_over_keV, T_kelvin_fifth * k_B_over_keV);
+        }
+        return results;
+    } else {
+        throw std::invalid_argument("Input must be a scalar (int or float) or a tuple of temperatures.");
+    }
 }
 
-TEST_CASE("Convert log10(K) to keV", "[convert_log10_K_to_keV]") {
-    REQUIRE(convert_log10_K_to_keV(0.0) == Approx(k_B_over_keV));
-    REQUIRE(convert_log10_K_to_keV(1.0) == Approx(10.0 * k_B_over_keV));
-    REQUIRE(convert_log10_K_to_keV(-1.0) == Approx(0.1 * k_B_over_keV));
+TEST_CASE("Test conversion of log10(K) to keV", "[convert_log10_K_to_keV]") {
+    SECTION("Test conversion of a single scalar log10(K) value") {
+        double T_log10_K = 3.0;
+        double expected_result = std::pow(10, T_log10_K) * k_B_over_keV;
+        REQUIRE(std::abs(convert_log10_K_to_keV(T_log10_K) - expected_result) < 1e-6);
+    }
+
+    SECTION("Test conversion of a tuple of log10(K) values") {
+        std::tuple<double, double, double> T_log10_K = std::make_tuple(2.0, 3.0, 4.0);
+        std::tuple<double, double, double> expected_results = std::make_tuple(
+            std::pow(10, std::get<0>(T_log10_K)) * k_B_over_keV,
+            std::pow(10, std::get<1>(T_log10_K)) * k_B_over_keV,
+            std::pow(10, std::get<2>(T_log10_K)) * k_B_over_keV
+        );
+        auto result = convert_log10_K_to_keV(T_log10_K);
+        REQUIRE(std::abs(std::get<0>(result) - std::get<0>(expected_results)) < 1e-6);
+        REQUIRE(std::abs(std::get<1>(result) - std::get<1>(expected_results)) < 1e-6);
+        REQUIRE(std::abs(std::get<2>(result) - std::get<2>(expected_results)) < 1e-6);
+    }
+
+    SECTION("Test conversion of log10(K) = 0") {
+        double T_log10_K = 0.0;
+        double expected_result = std::pow(10, T_log10_K) * k_B_over_keV;
+        REQUIRE(std::abs(convert_log10_K_to_keV(T_log10_K) - expected_result) < 1e-6);
+    }
+
+    SECTION("Test conversion of a negative log10(K) value") {
+        double T_log10_K = -1.0;
+        double expected_result = std::pow(10, T_log10_K) * k_B_over_keV;
+        REQUIRE(std::abs(convert_log10_K_to_keV(T_log10_K) - expected_result) < 1e-6);
+    }
+
+    SECTION("Test conversion of a large tuple of log10(K) values") {
+        std::tuple<double, double, double, double, double> T_log10_K = std::make_tuple(1.0, 2.0, 3.0, 4.0, 5.0);
+        std::tuple<double, double, double, double, double> expected_results = std::make_tuple(
+            std::pow(10, std::get<0>(T_log10_K)) * k_B_over_keV,
+            std::pow(10, std::get<1>(T_log10_K)) * k_B_over_keV,
+            std::pow(10, std::get<2>(T_log10_K)) * k_B_over_keV,
+            std::pow(10, std::get<3>(T_log10_K)) * k_B_over_keV,
+            std::pow(10, std::get<4>(T_log10_K)) * k_B_over_keV
+        );
+        auto result = convert_log10_K_to_keV(T_log10_K);
+        REQUIRE(std::abs(std::get<0>(result) - std::get<0>(expected_results)) < 1e-6);
+        REQUIRE(std::abs(std::get<1>(result) - std::get<1>(expected_results)) < 1e-6);
+        REQUIRE(std::abs(std::get<2>(result) - std::get<2>(expected_results)) < 1e-6);
+        REQUIRE(std::abs(std::get<3>(result) - std::get<3>(expected_results)) < 1e-6);
+        REQUIRE(std::abs(std::get<4>(result) - std::get<4>(expected_results)) < 1e-6);
+    }
+
+    SECTION("Test conversion of a large log10(K) value") {
+        double T_log10_K = 10.0;
+        double expected_result = std::pow(10, T_log10_K) * k_B_over_keV;
+        REQUIRE(std::abs(convert_log10_K_to_keV(T_log10_K) - expected_result) < 1e-6);
+    }
+
+    SECTION("Test conversion with invalid input (string)") {
+        // In C++, we cannot pass a string directly to the function, so we simulate this by passing an invalid type.
+        // We use a lambda to capture the exception.
+        REQUIRE_THROWS_AS((void)convert_log10_K_to_keV("invalid"), std::invalid_argument);
+    }
 }
 ```
 
-In this C++ code, we've used Catch2's `TEST_CASE` macro to create a test case named "Convert log10(K) to keV". We're testing three scenarios where the input values are 0.0, 1.0 and -1.0 respectively. We're comparing the output with expected results using Catch2's `REQUIRE` macro along with `Approx` to allow for floating point comparison.
+### Explanation:
+1. **Constants**: The Boltzmann constant `k_B_over_keV` is defined as a constant.
+2. **Function Definition**: The `convert_log10_K_to_keV` function handles scalar and tuple inputs, converting them to keV.
+3. **Catch2 Test Class**:
+   - Each test case is defined using `SECTION` within the `TEST_CASE`.
+   - Assertions are made using `REQUIRE` for floating-point comparisons and `REQUIRE_THROWS_AS` for exception handling.
+4. **Type Handling**:
+   - The function template handles different tuple sizes and scalar inputs.
+5. **Assertions**:
+   - Floating-point comparisons use `std::abs` with a tolerance (`1e-6`).
+   - Exception handling uses `REQUIRE_THROWS_AS` to verify that the function throws the correct exception.
+
+This code ensures that the functionality and logic of the Python unittest class are preserved in the C++ Catch2 test class.

@@ -1,7 +1,7 @@
 class TreeNode {
-    public left: TreeNode | null;
-    public right: TreeNode | null;
-    public val: number;
+    left: TreeNode | null;
+    right: TreeNode | null;
+    val: number;
 
     constructor(key: number) {
         this.left = null;
@@ -11,13 +11,13 @@ class TreeNode {
 }
 
 class BinaryTree {
-    private root: TreeNode | null;
+    root: TreeNode | null;
 
     constructor() {
         this.root = null;
     }
 
-    public insert(key: number): void {
+    insert(key: number): void {
         if (this.root === null) {
             this.root = new TreeNode(key);
         } else {
@@ -32,7 +32,7 @@ class BinaryTree {
             } else {
                 this._insert(node.left, key);
             }
-        } else if (key > node.val) {
+        } else {
             if (node.right === null) {
                 node.right = new TreeNode(key);
             } else {
@@ -41,7 +41,7 @@ class BinaryTree {
         }
     }
 
-    public inorderTraversal(): number[] {
+    inorderTraversal(): number[] {
         const result: number[] = [];
         this._inorderTraversal(this.root, result);
         return result;
@@ -55,7 +55,7 @@ class BinaryTree {
         }
     }
 
-    public preorderTraversal(): number[] {
+    preorderTraversal(): number[] {
         const result: number[] = [];
         this._preorderTraversal(this.root, result);
         return result;
@@ -69,7 +69,7 @@ class BinaryTree {
         }
     }
 
-    public postorderTraversal(): number[] {
+    postorderTraversal(): number[] {
         const result: number[] = [];
         this._postorderTraversal(this.root, result);
         return result;

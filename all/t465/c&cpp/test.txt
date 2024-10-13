@@ -1,124 +1,128 @@
-Certainly! Let's convert the provided Python unittest test class into an equivalent test class using Catch2 in C++. We will ensure that the functionality and logic of the tests are preserved, making any necessary adjustments for language differences between Python and C++.
+Certainly! Let's convert the provided Python unittest test class into an equivalent test class using Catch2 in C++. We will ensure that the functionality and logic of the tests are preserved, and we will use appropriate assertions in Catch2.
 
-Here is the Python unittest test class:
-
+### Python Code:
 ```python
+import unittest
 import numpy as np
 
-class TestMatrixVectorMultiplication:
-    def test_correct_result(self):
-        matrix = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
-        vector = np.array([1, 2, 3])
-        expected_result = np.array([14, 32, 50])
+def matrix_vector_multiplication(matrix: np.array, vector: np.array):
+    result = np.dot(matrix, vector)
+    return result
 
-        result = matrix_vector_multiplication(matrix, vector)
-        assert np.allclose(result, expected_result)
+class TestMatrixVectorMultiplication(unittest.TestCase):
 
-    def test_incompatible_dimensions(self):
+    def test_case_1(self):
+        # Test with a simple 2x2 matrix and a 2-element vector
         matrix = np.array([[1, 2], [3, 4]])
-        vector = np.array([1, 2, 3])
+        vector = np.array([5, 6])
+        expected_result = np.array([17, 39])  # [1*5 + 2*6, 3*5 + 4*6]
+        np.testing.assert_array_equal(matrix_vector_multiplication(matrix, vector), expected_result)
 
-        try:
-            matrix_vector_multiplication(matrix, vector)
-            assert False, "Expected an exception due to incompatible dimensions"
-        except ValueError:
-            pass
+    def test_case_2(self):
+        # Test with a 3x3 matrix and a 3-element vector
+        matrix = np.array([[1, 0, 2], [0, 1, 2], [1, 1, 0]])
+        vector = np.array([3, 4, 5])
+        expected_result = np.array([13, 14, 7])  # [1*3 + 0*4 + 2*5, 0*3 + 1*4 + 2*5, 1*3 + 1*4 + 0*5]
+        np.testing.assert_array_equal(matrix_vector_multiplication(matrix, vector), expected_result)
 
-    def test_empty_matrix(self):
-        matrix = np.array([])
-        vector = np.array([1, 2])
+    def test_case_3(self):
+        # Test with a zero matrix and a vector
+        matrix = np.array([[0, 0], [0, 0]])
+        vector = np.array([1, 1])
+        expected_result = np.array([0, 0])  # Zero matrix multiplied by any vector yields zero
+        np.testing.assert_array_equal(matrix_vector_multiplication(matrix, vector), expected_result)
 
-        try:
-            matrix_vector_multiplication(matrix, vector)
-            assert False, "Expected an exception due to empty matrix"
-        except ValueError:
-            pass
+    def test_case_4(self):
+        # Test with a matrix having negative values
+        matrix = np.array([[-1, -2], [-3, -4]])
+        vector = np.array([1, 1])
+        expected_result = np.array([-3, -7])  # [-1*1 + -2*1, -3*1 + -4*1]
+        np.testing.assert_array_equal(matrix_vector_multiplication(matrix, vector), expected_result)
 
-    def test_empty_vector(self):
-        matrix = np.array([[1, 2], [3, 4]])
-        vector = np.array([])
-
-        try:
-            matrix_vector_multiplication(matrix, vector)
-            assert False, "Expected an exception due to empty vector"
-        except ValueError:
-            pass
+    def test_case_5(self):
+        # Test with non-square matrix (2x3) and a compatible vector (3-element)
+        matrix = np.array([[1, 2, 3], [4, 5, 6]])
+        vector = np.array([1, 0, 1])
+        expected_result = np.array([4, 10])  # [1*1 + 2*0 + 3*1, 4*1 + 5*0 + 6*1]
+        np.testing.assert_array_equal(matrix_vector_multiplication(matrix, vector), expected_result)
 ```
 
-Now, let's convert this to an equivalent test class using Catch2 in C++.
+### Equivalent C++ Code Using Catch2:
 
-### C++ Code Using Catch2
+First, make sure you have Catch2 installed and included in your project. You can include it via a header file or a library.
 
-First, make sure you have Catch2 installed and included in your project. You can include Catch2 using a header-only library or install it via a package manager.
-
+#### C++ Code:
 ```cpp
 #include <catch2/catch_test_macros.hpp>
 #include <vector>
-#include <stdexcept>
 
 // Function to perform matrix-vector multiplication
 std::vector<double> matrixVectorMultiplication(const std::vector<std::vector<double>>& matrix, const std::vector<double>& vector) {
     if (matrix.empty() || vector.empty() || matrix[0].size() != vector.size()) {
-        throw std::invalid_argument("Matrix columns must match vector size.");
+        throw std::invalid_argument("Matrix and vector dimensions are incompatible.");
     }
 
-    std::vector<double> result(matrix.size(), 0.0);
+    std::vector<double> result(matrix.size());
 
     for (size_t i = 0; i < matrix.size(); ++i) {
-        for (size_t j = 0; j < vector.size(); ++j) {
-            result[i] += matrix[i][j] * vector[j];
+        double sum = 0.0;
+        for (size_t j = 0; j < matrix[0].size(); ++j) {
+            sum += matrix[i][j] * vector[j];
         }
+        result[i] = sum;
     }
 
     return result;
 }
 
-TEST_CASE("Test Matrix-Vector Multiplication") {
-    SECTION("Correct Result") {
-        std::vector<std::vector<double>> matrix = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
-        std::vector<double> vector = {1, 2, 3};
-        std::vector<double> expected_result = {14, 32, 50};
-
-        auto result = matrixVectorMultiplication(matrix, vector);
-        REQUIRE_THAT(result, Catch::Approx(expected_result));
-    }
-
-    SECTION("Incompatible Dimensions") {
+TEST_CASE("Test Matrix-Vector Multiplication", "[matrix-vector-multiplication]") {
+    SECTION("Test with a simple 2x2 matrix and a 2-element vector") {
         std::vector<std::vector<double>> matrix = {{1, 2}, {3, 4}};
-        std::vector<double> vector = {1, 2, 3};
+        std::vector<double> vector = {5, 6};
+        std::vector<double> expected_result = {17, 39};  // [1*5 + 2*6, 3*5 + 4*6]
 
-        REQUIRE_THROWS_AS(matrixVectorMultiplication(matrix, vector), std::invalid_argument);
+        REQUIRE(matrixVectorMultiplication(matrix, vector) == expected_result);
     }
 
-    SECTION("Empty Matrix") {
-        std::vector<std::vector<double>> matrix = {};
-        std::vector<double> vector = {1, 2};
+    SECTION("Test with a 3x3 matrix and a 3-element vector") {
+        std::vector<std::vector<double>> matrix = {{1, 0, 2}, {0, 1, 2}, {1, 1, 0}};
+        std::vector<double> vector = {3, 4, 5};
+        std::vector<double> expected_result = {13, 14, 7};  // [1*3 + 0*4 + 2*5, 0*3 + 1*4 + 2*5, 1*3 + 1*4 + 0*5]
 
-        REQUIRE_THROWS_AS(matrixVectorMultiplication(matrix, vector), std::invalid_argument);
+        REQUIRE(matrixVectorMultiplication(matrix, vector) == expected_result);
     }
 
-    SECTION("Empty Vector") {
-        std::vector<std::vector<double>> matrix = {{1, 2}, {3, 4}};
-        std::vector<double> vector = {};
+    SECTION("Test with a zero matrix and a vector") {
+        std::vector<std::vector<double>> matrix = {{0, 0}, {0, 0}};
+        std::vector<double> vector = {1, 1};
+        std::vector<double> expected_result = {0, 0};  // Zero matrix multiplied by any vector yields zero
 
-        REQUIRE_THROWS_AS(matrixVectorMultiplication(matrix, vector), std::invalid_argument);
+        REQUIRE(matrixVectorMultiplication(matrix, vector) == expected_result);
+    }
+
+    SECTION("Test with a matrix having negative values") {
+        std::vector<std::vector<double>> matrix = {{-1, -2}, {-3, -4}};
+        std::vector<double> vector = {1, 1};
+        std::vector<double> expected_result = {-3, -7};  // [-1*1 + -2*1, -3*1 + -4*1]
+
+        REQUIRE(matrixVectorMultiplication(matrix, vector) == expected_result);
+    }
+
+    SECTION("Test with non-square matrix (2x3) and a compatible vector (3-element)") {
+        std::vector<std::vector<double>> matrix = {{1, 2, 3}, {4, 5, 6}};
+        std::vector<double> vector = {1, 0, 1};
+        std::vector<double> expected_result = {4, 10};  // [1*1 + 2*0 + 3*1, 4*1 + 5*0 + 6*1]
+
+        REQUIRE(matrixVectorMultiplication(matrix, vector) == expected_result);
     }
 }
 ```
 
 ### Explanation:
-1. **Header Files**:
-   - `#include <catch2/catch_test_macros.hpp>` for Catch2 testing macros.
-   - `#include <vector>` for handling vectors.
-   - `#include <stdexcept>` for throwing exceptions.
+1. **Header Inclusion**: Include the Catch2 header file at the beginning of the file.
+2. **Function Definition**: Define the `matrixVectorMultiplication` function to perform matrix-vector multiplication.
+3. **Test Class**: Use the `TEST_CASE` macro to define a test case for matrix-vector multiplication.
+4. **Sections**: Use the `SECTION` macro within the test case to define individual test sections.
+5. **Assertions**: Use `REQUIRE` to assert that the results match the expected values.
 
-2. **Function Definition**:
-   - The `matrixVectorMultiplication` function performs matrix-vector multiplication and throws an exception if the dimensions are incompatible.
-
-3. **Test Class**:
-   - The `TEST_CASE` macro defines a test case.
-   - Each `SECTION` within the test case defines a specific test scenario.
-   - `REQUIRE_THAT` is used to check the approximate equality of the result vector.
-   - `REQUIRE_THROWS_AS` is used to verify that the function throws the expected exception.
-
-This approach ensures that the functionality and logic of the Python unittest tests are preserved in C++ using Catch2, with appropriate assertions and error handling.
+This approach ensures that the functionality and logic of the tests are preserved while adapting to C++ syntax and features, using Catch2 for testing.

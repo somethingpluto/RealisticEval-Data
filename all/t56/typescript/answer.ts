@@ -1,28 +1,27 @@
 function findShiftJisNotGbk(): string[] {
-    /**
-     * Find all the characters that can be represented in Shift-JIS, but not in GBK, and return them as an array
-     *
-     * @returns {string[]} - A list of characters that are unique to Shift-JIS, not encodable in GBK.
-     */
-    
-    // Import necessary libraries
-    const iconv = require('iconv-lite');
+    // Array to store characters that are in Shift-JIS but not in GBK
+    const uniqueToShiftJis: string[] = [];
 
-    // Define character sets
-    const shiftJisCharset = 'shift-jis';
-    const gbkCharset = 'gbk';
+    // Iterate over a range of Unicode code points
+    // The BMP goes up to U+FFFF, which is 65535 in decimal
+    for (let codepoint = 0; codepoint < 65536; codepoint++) {
+        const character = String.fromCodePoint(codepoint);
 
-    // Create buffers for testing encoding/decoding
-    const testString = String.fromCharCode(0x81, 0x40); // Example character that should only exist in Shift-JIS
-
-    // Check if the character can be encoded in Shift-JIS but not in GBK
-    const shiftJisBuffer = iconv.encode(testString, shiftJisCharset);
-    const gbkBuffer = iconv.encode(testString, gbkCharset);
-
-    // If encoding fails in GBK but succeeds in Shift-JIS, it's unique to Shift-JIS
-    if (shiftJisBuffer && !gbkBuffer) {
-        return [testString];
+        try {
+            // Try encoding the character in Shift-JIS
+            Buffer.from(character, 'shift-jis').toString('shift-jis');
+            try {
+                // Try encoding the character in GBK
+                Buffer.from(character, 'gbk').toString('gbk');
+            } catch (error) {
+                // If it fails, the character is not representable in GBK but is in Shift-JIS
+                uniqueToShiftJis.push(character);
+            }
+        } catch (error) {
+            // If it fails, the character is not representable in Shift-JIS, so we skip it
+            continue;
+        }
     }
 
-    return [];
+    return uniqueToShiftJis;
 }

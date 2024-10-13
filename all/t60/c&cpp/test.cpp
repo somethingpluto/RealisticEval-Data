@@ -1,28 +1,75 @@
-TEST_CASE("Find common columns", "[common_columns]") {
-    SECTION("Directory with multiple CSV files") {
-        std::string directory = "path/to/your/directory";  // Replace with the actual directory path
-        std::vector<std::string> expected = {"column1", "column2"};  // Replace with the expected result
+TEST_CASE("Test common columns functionality", "[common-columns]") {
+    // Set up a temporary directory
+    const std::string test_dir = "test_dir";
+    std::filesystem::create_directories(test_dir);
 
-        std::vector<std::string> result = find_common_columns(directory);
+    SECTION("All CSV files have the same columns") {
+        const std::string data1 = "A,B,C\n1,2,3";
+        const std::string data2 = "A,B,C\n4,5,6";
+        const std::string data3 = "A,B,C\n7,8,9";
+        const std::vector<std::string> filenames = {"file1.csv", "file2.csv", "file3.csv"};
+        const std::vector<std::string> datas = {data1, data2, data3};
 
-        REQUIRE(result == expected);
+        for (size_t i = 0; i < filenames.size(); ++i) {
+            const std::string filepath = test_dir + "/" + filenames[i];
+            std::ofstream file(filepath);
+            file << datas[i];
+        }
+
+        REQUIRE(findCommonColumns(test_dir) == std::vector<std::string>({"A", "B", "C"}));
     }
 
-    SECTION("Directory with no CSV files") {
-        std::string directory = "path/to/empty/directory";  // Replace with the actual empty directory path
-        std::vector<std::string> expected = {};  // Expected result when there are no CSV files
+    SECTION("No common columns") {
+        const std::string data1 = "A,B,C\n1,2,3";
+        const std::string data2 = "D,E,F\n4,5,6";
+        const std::string data3 = "G,H,I\n7,8,9";
+        const std::vector<std::string> filenames = {"file1.csv", "file2.csv", "file3.csv"};
+        const std::vector<std::string> datas = {data1, data2, data3};
 
-        std::vector<std::string> result = find_common_columns(directory);
+        for (size_t i = 0; i < filenames.size(); ++i) {
+            const std::string filepath = test_dir + "/" + filenames[i];
+            std::ofstream file(filepath);
+            file << datas[i];
+        }
 
-        REQUIRE(result == expected);
+        REQUIRE(findCommonColumns(test_dir).empty());
     }
 
-    SECTION("Directory with single CSV file") {
-        std::string directory = "path/to/single_csv_file_directory";  // Replace with the actual directory path
-        std::vector<std::string> expected = {"column1", "column2"};  // Replace with the expected result
+    SECTION("Some common columns") {
+        const std::string data1 = "A,B,C\n1,2,3";
+        const std::string data2 = "B,C,D\n4,5,6";
+        const std::string data3 = "C,D,E\n7,8,9";
+        const std::vector<std::string> filenames = {"file1.csv", "file2.csv", "file3.csv"};
+        const std::vector<std::string> datas = {data1, data2, data3};
 
-        std::vector<std::string> result = find_common_columns(directory);
+        for (size_t i = 0; i < filenames.size(); ++i) {
+            const std::string filepath = test_dir + "/" + filenames[i];
+            std::ofstream file(filepath);
+            file << datas[i];
+        }
 
-        REQUIRE(result == expected);
+        REQUIRE(findCommonColumns(test_dir) == std::vector<std::string>({"C"}));
     }
+
+    SECTION("Mixed common and unique columns") {
+        const std::string data1 = "A,B,C\n1,2,3";
+        const std::string data2 = "B,C,D\n4,5,6";
+        const std::string data3 = "B,C,E\n7,8,9";
+        const std::vector<std::string> filenames = {"file1.csv", "file2.csv", "file3.csv"};
+        const std::vector<std::string> datas = {data1, data2, data3};
+
+        for (size_t i = 0; i < filenames.size(); ++i) {
+            const std::string filepath = test_dir + "/" + filenames[i];
+            std::ofstream file(filepath);
+            file << datas[i];
+        }
+
+        REQUIRE(findCommonColumns(test_dir) == std::vector<std::string>({"B", "C"}));
+    }
+
+    // Clean up the temporary directory
+    for (const auto& entry : std::filesystem::directory_iterator(test_dir)) {
+        std::filesystem::remove(entry.path());
+    }
+    std::filesystem::remove_all(test_dir);
 }

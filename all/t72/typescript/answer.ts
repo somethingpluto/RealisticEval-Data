@@ -1,27 +1,31 @@
-interface Matrix {
-    [index: number]: number[];
+import * as math from 'mathjs';
+
+interface CameraIntrinsicMatrix {
+    0: number;
+    1: number;
+    2: number;
+    3: number;
+    4: number;
+    5: number;
+    6: number;
+    7: number;
+    8: number;
 }
 
-function get3DCoordinates(K: Matrix, d: number, x: number, y: number): number[] {
-    /**
-     * Converts 2D pixel coordinates into 3D world coordinates using camera intrinsic parameters and depth.
-     * @param K - Camera intrinsic matrix (3x3).
-     * @param d - Depth (distance along z-axis).
-     * @param x - Pixel x-coordinate.
-     * @param y - Pixel y-coordinate.
-     * @returns 3D point coordinates in camera RDF coordinates.
-     */
+function get3DCoordinates(K: CameraIntrinsicMatrix, d: number, x: number, y: number): [number, number, number] {
+    // Step 1: Convert pixel coordinates to normalized device coordinates (NDC)
+    const cx = K[0 * 3 + 2];
+    const cy = K[1 * 3 + 2];
+    const fx = K[0 * 3 + 0];
+    const fy = K[1 * 3 + 1];
 
-    // Extracting elements from the camera intrinsic matrix K
-    const fx = K[0][0];
-    const fy = K[1][1];
-    const cx = K[0][2];
-    const cy = K[1][2];
+    const NDC_x = (x - cx) / fx;
+    const NDC_y = (y - cy) / fy;
 
-    // Calculating 3D coordinates
-    const X = (x - cx) * d / fx;
-    const Y = (y - cy) * d / fy;
-    const Z = d;
+    // Step 2: Get the 3D world coordinates (W)
+    const W_x = NDC_x * d;
+    const W_y = NDC_y * d;
+    const W_z = d;
 
-    return [X, Y, Z];
+    return [W_x, W_y, W_z];
 }

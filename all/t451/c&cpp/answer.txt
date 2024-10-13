@@ -1,40 +1,35 @@
-Sure! Here’s the equivalent C++ code for converting an image to a binary representation using the C++ Imaging Library (CImg). If you don't have CImg installed, you can install it or use another library like OpenCV, but for this example, we'll stick with CImg.
+Sure! Here’s the equivalent C++ code for the provided Python function. This code uses the C++ library `<png++/png.hpp>` to read and manipulate PNG images. If you need to work with other image formats, you may need to use a different library or convert the image to PNG format first.
 
-First, make sure you have CImg installed. You can download it from [here](http://cimg.eu/).
+First, make sure you have the `png++` library installed. You can install it using your package manager or build it from source.
 
-Here's the translated C++ code:
+Here's the C++ code:
 
 ```cpp
 #include <iostream>
 #include <vector>
-#include <CImg.h>
+#include <png++/png.hpp>
 
-using namespace std;
-using namespace cimg_library;
+// Function to convert an image to a binary representation
+std::vector<int> convert_image_to_bits(const std::string& image_path) {
+    // Load the image
+    png::image<png::rgb_pixel> image(image_path);
 
-vector<int> convert_image_to_bits(const char* image_path) {
-    /**
-     * Converts an image to a binary representation.
-     *
-     * Args:
-     *     image_path (const char*): The file path of the image to convert.
-     *
-     * Returns:
-     *     vector<int>: A vector of bits representing the image, where 1 is for white pixels
-     *                  and 0 is for black pixels.
-     */
-    CImg<unsigned char> image(image_path);
-    image.resize(image.width(), image.height(), 1, 1, 1); // Convert to grayscale
-    image.normalize(0, 255); // Normalize the image values between 0 and 255
+    // Convert the image to grayscale
+    png::image<png::gray_pixel_8> gray_image;
+    gray_image.create(image.get_width(), image.get_height());
+    for (int y = 0; y < image.get_height(); ++y) {
+        for (int x = 0; x < image.get_width(); ++x) {
+            png::rgb_pixel pixel = image[y][x];
+            png::gray_pixel_8 gray_pixel((pixel.red + pixel.green + pixel.blue) / 3);
+            gray_image[y][x] = gray_pixel;
+        }
+    }
 
-    vector<int> bits_array;
-
-    int w = image.width();
-    int h = image.height();
-
-    for (int y = 0; y < h; ++y) {
-        for (int x = 0; x < w; ++x) {
-            unsigned char pixel = image(x, y);
+    // Convert the grayscale image to binary
+    std::vector<int> bits_array;
+    for (int y = 0; y < gray_image.get_height(); ++y) {
+        for (int x = 0; x < gray_image.get_width(); ++x) {
+            int pixel = static_cast<int>(gray_image[y][x].value);
             int bit = (pixel == 255) ? 1 : 0;
             bits_array.push_back(bit);
         }
@@ -44,35 +39,32 @@ vector<int> convert_image_to_bits(const char* image_path) {
 }
 
 int main() {
-    const char* image_path = "path/to/your/image.jpg";
-    vector<int> bits = convert_image_to_bits(image_path);
+    std::string image_path = "path/to/your/image.png";
+    std::vector<int> bits = convert_image_to_bits(image_path);
 
-    // Print the bits for demonstration
+    // Print the bits array
     for (int bit : bits) {
-        cout << bit << " ";
+        std::cout << bit << " ";
     }
+    std::cout << std::endl;
 
     return 0;
 }
 ```
 
 ### Explanation:
-1. **Header Files**: 
-   - We include `iostream` for input/output operations.
-   - We include `vector` for using vectors.
-   - We include `CImg.h` from the CImg library for image processing.
+1. **Image Loading**: The `png::image<png::rgb_pixel>` class is used to load the image.
+2. **Grayscale Conversion**: The image is converted to grayscale by averaging the RGB values.
+3. **Binary Conversion**: Each grayscale pixel is converted to a binary value (1 for white, 0 for black).
+4. **Result**: The resulting binary values are stored in a `std::vector<int>` and returned.
 
-2. **Using Directives**:
-   - We use `using namespace std;` for standard C++ libraries.
-   - We use `using namespace cimg_library;` for the CImg library.
+### Dependencies:
+- **png++**: A C++ wrapper around the libpng library for handling PNG images.
 
-3. **Function Definition**:
-   - The function `convert_image_to_bits` takes the path of the image as a `const char*` argument.
-   - It loads the image using `CImg<unsigned char> image(image_path);`.
-   - It converts the image to grayscale and normalizes the pixel values to be between 0 and 255.
-   - It iterates over each pixel and appends the binary value (1 for white, 0 for black) to the `bits_array`.
+Make sure to link against the `png++` library when compiling your program. For example, if you are using g++:
 
-4. **Main Function**:
-   - The `main` function demonstrates how to call the `convert_image_to_bits` function and prints the resulting bits.
+```sh
+g++ -o convert_image convert_image.cpp -lpng++
+```
 
-This should give you a working C++ equivalent of the provided Python code.
+This will compile the code and create an executable named `convert_image`. You can then run it with the path to your image file.

@@ -1,0 +1,201 @@
+Certainly! Below is the equivalent JUnit 4 test case for the provided Jest test cases. The package is `org.real.temp`, and the class is `Tester`.
+
+```java
+import org.junit.Test;
+import static org.junit.Assert.*;
+
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import javax.activation.DataHandler;
+import javax.activation.DataSource;
+
+public class Tester {
+
+    @Test
+    public void shouldIncludeTheDefaultTitleWhenNoTitleIsProvided() {
+        String[] chat = {"Hello", "Hi there!"};
+        DataHandler blob = ChatConverter.convertChatToMarkdown(chat, null);
+        String expectedStart = "# ChatGPT Conversation\n\n**Human:**\nHello\n\n***\n\n**Assistant:**\nHi there!\n\n***\n\nExported on ";
+
+        try (InputStream inputStream = blob.getInputStream()) {
+            byte[] bytes = new byte[inputStream.available()];
+            inputStream.read(bytes);
+            String text = new String(bytes);
+
+            assertTrue(text.startsWith(expectedStart));
+        } catch (Exception e) {
+            fail("Failed to read from DataHandler: " + e.getMessage());
+        }
+    }
+
+    @Test
+    public void shouldIncludeTheCustomTitleWhenATitleIsProvided() {
+        String[] chat = {"How are you?", "I'm doing well, thank you!"};
+        String title = "Friendly Chat";
+        DataHandler blob = ChatConverter.convertChatToMarkdown(chat, title);
+        String expectedStart = "# Friendly Chat\n\n**Human:**\nHow are you?\n\n***\n\n**Assistant:**\nI'm doing well, thank you!\n\n***\n\nExported on ";
+
+        try (InputStream inputStream = blob.getInputStream()) {
+            byte[] bytes = new byte[inputStream.available()];
+            inputStream.read(bytes);
+            String text = new String(bytes);
+
+            assertTrue(text.startsWith(expectedStart));
+        } catch (Exception e) {
+            fail("Failed to read from DataHandler: " + e.getMessage());
+        }
+    }
+
+    @Test
+    public void shouldCorrectlyAlternateSpeakersBetweenHumanAndAssistant() {
+        String[] chat = {"Question?", "Answer.", "Another question?", "Another answer."};
+        DataHandler blob = ChatConverter.convertChatToMarkdown(chat, null);
+        String expectedContent = "**Human:**\nQuestion?\n\n***\n\n**Assistant:**\nAnswer.\n\n***\n\n**Human:**\nAnother question?\n\n***\n\n**Assistant:**\nAnother answer.\n\n***\n\nExported on ";
+
+        try (InputStream inputStream = blob.getInputStream()) {
+            byte[] bytes = new byte[inputStream.available()];
+            inputStream.read(bytes);
+            String text = new String(bytes);
+
+            assertTrue(text.contains(expectedContent));
+        } catch (Exception e) {
+            fail("Failed to read from DataHandler: " + e.getMessage());
+        }
+    }
+
+    @Test
+    public void shouldIncludeTheCorrectTimestampUsingGetDateAndTime() {
+        String[] chat = {"What's the time?", "It's now."};
+        String mockedDate = "2024-01-01 12:00:00";
+
+        // Mocking the current date and time
+        ChatConverter.setCurrentDate(mockedDate);
+        ChatConverter.setCurrentTime(mockedDate);
+
+        DataHandler blob = ChatConverter.convertChatToMarkdown(chat, null);
+        String expectedEnd = "Exported on 2024-01-01 12:00:00.";
+
+        try (InputStream inputStream = blob.getInputStream()) {
+            byte[] bytes = new byte[inputStream.available()];
+            inputStream.read(bytes);
+            String text = new String(bytes);
+
+            assertTrue(text.endsWith(expectedEnd));
+        } catch (Exception e) {
+            fail("Failed to read from DataHandler: " + e.getMessage());
+        }
+    }
+
+    @Test
+    public void shouldReturnABlobOfTypeTextMarkdown() {
+        String[] chat = {"This is a test.", "Yes, it is."};
+        DataHandler blob = ChatConverter.convertChatToMarkdown(chat, null);
+        assertEquals("text/markdown", blob.getContentType());
+    }
+}
+```
+
+### Explanation:
+1. **Imports**: Added necessary imports for JUnit assertions and `DataHandler`.
+2. **Test Methods**: Each test method is annotated with `@Test` and follows the naming convention from the Jest tests.
+3. **Reading from `DataHandler`**: Each test reads the content from the `DataHandler` and performs assertions.
+4. **Mocking Dates**: For the timestamp test, a method `setCurrentDate` and `setCurrentTime` is used to mock the current date and time.
+
+### Additional Helper Methods in `ChatConverter`:
+To support mocking the current date and time, you can add the following helper methods in the `ChatConverter` class:
+
+```java
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import javax.activation.DataHandler;
+import javax.activation.DataSource;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
+public class ChatConverter {
+
+    private static String currentDate;
+    private static String currentTime;
+
+    public static DataHandler convertChatToMarkdown(String[] chat, String title) {
+        if (title == null) {
+            title = "ChatGPT Conversation";
+        }
+        StringBuilder markdown = new StringBuilder("# " + title + "\n\n");  // Initialize with the title and two newlines
+
+        // Iterate over the chat conversation array
+        for (int index = 0; index < chat.length; index++) {
+            String message = chat[index];
+            String speaker = index % 2 == 0 ? "Human" : "Assistant"; // Alternate speaker
+            markdown.append("**").append(speaker).append(":**\n").append(message).append("\n\n***\n\n");  // Add message to the markdown
+        }
+
+        // Get the current date and time
+        String date = getCurrentDate();
+        String time = getCurrentTime();
+
+        // Append the timestamp
+        markdown.append("Exported on ").append(date).append(" ").append(time).append(".");
+
+        // Encode the string as a Blob and return it
+        return encodeStringAsBlob(markdown.toString());
+    }
+
+    private static DataHandler encodeStringAsBlob(String string) {
+        DataSource dataSource = new ByteArrayDataSource(string.getBytes(), "text/markdown");
+        return new DataHandler(dataSource);
+    }
+
+    private static String getCurrentDate() {
+        if (currentDate != null) {
+            return currentDate;
+        }
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        return LocalDateTime.now().format(formatter);
+    }
+
+    private static String getCurrentTime() {
+        if (currentTime != null) {
+            return currentTime;
+        }
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+        return LocalDateTime.now().format(formatter);
+    }
+
+    public static void setCurrentDate(String date) {
+        currentDate = date;
+    }
+
+    public static void setCurrentTime(String time) {
+        currentTime = time;
+    }
+}
+
+class ByteArrayDataSource implements DataSource {
+    private final byte[] data;
+    private final String contentType;
+
+    public ByteArrayDataSource(byte[] data, String contentType) {
+        this.data = data;
+        this.contentType = contentType;
+    }
+
+    @Override
+    public String getContentType() {
+        return contentType;
+    }
+
+    @Override
+    public InputStream getInputStream() throws java.io.IOException {
+        return new ByteArrayInputStream(data);
+    }
+
+    @Override
+    public OutputStream getOutputStream() throws java.io.IOException {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+}
+```
+
+This setup ensures that the `ChatConverter` class can be tested with mocked dates and times, and the JUnit tests are structured similarly to the Jest tests.

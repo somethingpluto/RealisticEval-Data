@@ -5,7 +5,7 @@ class TrieNode {
     }
 
     hasChild(ch) {
-        return this.children.hasOwnProperty(ch);
+        return ch in this.children;
     }
 
     getChild(ch) {
@@ -13,7 +13,7 @@ class TrieNode {
     }
 
     addChild(ch) {
-        if (!this.children.hasOwnProperty(ch)) {
+        if (!this.hasChild(ch)) {
             this.children[ch] = new TrieNode();
         }
     }

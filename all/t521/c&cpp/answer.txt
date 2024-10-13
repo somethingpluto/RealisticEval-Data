@@ -1,48 +1,57 @@
-Sure! Below is the equivalent C++ code for the Python function `word_filter_counter`. This code uses standard libraries such as `<string>`, `<vector>`, `<unordered_map>`, and `<sstream>`.
+Certainly! Below is the equivalent C++ code that maintains the functionality, logic, and structure of the provided Python code:
 
 ```cpp
 #include <iostream>
 #include <string>
 #include <vector>
 #include <unordered_map>
-#include <sstream>
+#include <unordered_set>
+#include <regex>
+#include <algorithm>
 
-std::unordered_map<std::string, int> wordFilterCounter(const std::string& text, const std::vector<std::string>& filterWords) {
-    std::unordered_map<std::string, int> wordCount;
-    std::istringstream iss(text);
-    std::string word;
-
-    // Initialize the word count map with zero for each filter word
-    for (const auto& filterWord : filterWords) {
-        wordCount[filterWord] = 0;
+// Function to count the occurrences of specified words in the given text
+std::unordered_map<std::string, int> word_filter_counter(const std::string& text, const std::vector<std::string>& filter_words) {
+    // Convert filter words to lowercase for case-insensitive comparison
+    std::unordered_set<std::string> filter_words_set;
+    for (const auto& word : filter_words) {
+        std::string lower_word = word;
+        std::transform(lower_word.begin(), lower_word.end(), lower_word.begin(), ::tolower);
+        filter_words_set.insert(lower_word);
     }
 
-    // Count occurrences of each word in the text
-    while (iss >> word) {
-        // Remove punctuation from the end of the word
-        word.erase(std::remove_if(word.begin(), word.end(),
-                                   [](char ch) { return ispunct(ch); }),
-                    word.end());
+    // Find all words in the text using a regex pattern
+    std::regex word_pattern(R"(\b\w+(?:'\w+)?\b)");
+    std::sregex_iterator words_begin = std::sregex_iterator(text.begin(), text.end(), word_pattern);
+    std::sregex_iterator words_end = std::sregex_iterator();
 
-        // Convert word to lowercase
-        std::transform(word.begin(), word.end(), word.begin(),
-                       [](unsigned char c){ return std::tolower(c); });
-
-        // Increment the count if the word is in the filter list
-        if (wordCount.find(word) != wordCount.end()) {
-            wordCount[word]++;
+    // Count occurrences of filtered words
+    std::unordered_map<std::string, int> word_counts;
+    for (std::sregex_iterator i = words_begin; i != words_end; ++i) {
+        std::string word = (*i).str();
+        std::transform(word.begin(), word.end(), word.begin(), ::tolower);
+        if (filter_words_set.find(word) != filter_words_set.end()) {
+            word_counts[word]++;
         }
     }
 
-    return wordCount;
+    // Create an ordered output based on the original order of filter_words
+    std::unordered_map<std::string, int> ordered_output;
+    for (const auto& word : filter_words) {
+        std::string lower_word = word;
+        std::transform(lower_word.begin(), lower_word.end(), lower_word.begin(), ::tolower);
+        ordered_output[word] = word_counts[lower_word];
+    }
+
+    return ordered_output;
 }
 
 int main() {
-    std::string text = "Hello world! Hello everyone. Welcome to the world of programming.";
-    std::vector<std::string> filterWords = {"hello", "world", "programming"};
+    std::string text = "Python is great, and Python's syntax is clean. C++ is also powerful.";
+    std::vector<std::string> filter_words = {"python", "clean", "powerful"};
 
-    auto result = wordFilterCounter(text, filterWords);
+    auto result = word_filter_counter(text, filter_words);
 
+    // Print the results
     for (const auto& pair : result) {
         std::cout << pair.first << ": " << pair.second << std::endl;
     }
@@ -52,10 +61,12 @@ int main() {
 ```
 
 ### Explanation:
-1. **Initialization**: We initialize an unordered map `wordCount` to store the count of each filter word. We also use `std::istringstream` to split the text into individual words.
-2. **Punctuation Removal**: For each word, we remove any trailing punctuation using `ispunct`.
-3. **Case Insensitivity**: We convert each word to lowercase using `std::transform` and `std::tolower`.
-4. **Counting**: We increment the count for each filter word found in the text.
-5. **Output**: Finally, we print the count of each filter word.
+1. **Header Files**: The necessary header files (`<iostream>`, `<string>`, `<vector>`, `<unordered_map>`, `<unordered_set>`, `<regex>`, `<algorithm>`) are included to support the required functionalities.
+2. **Function Definition**: The `word_filter_counter` function takes a string `text` and a vector of strings `filter_words` as arguments.
+3. **Lowercase Conversion**: The filter words are converted to lowercase and stored in an `unordered_set` for efficient lookup.
+4. **Regex Pattern**: The regex pattern `\b\w+(?:'\w+)?\b` is used to find all words in the text.
+5. **Word Counting**: The occurrences of filtered words are counted using an `unordered_map`.
+6. **Ordered Output**: An ordered output map is created based on the original order of `filter_words`.
+7. **Main Function**: The `main` function demonstrates how to use the `word_filter_counter` function and prints the results.
 
-This C++ code should produce the same output as the original Python function.
+This C++ code should provide the same functionality as the original Python code.

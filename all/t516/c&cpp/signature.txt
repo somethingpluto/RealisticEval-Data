@@ -1,18 +1,77 @@
+Certainly! Below is the equivalent C++ code for the provided Python function, including comments and documentation adapted to C++ standards:
+
 ```cpp
+#include <iostream>
 #include <fstream>
-#include <string>
 #include <yaml-cpp/yaml.h>
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 /**
- * Reads a YAML file and returns its content as a C++ data structure.
+ * Reads a YAML file and returns its content as a YAML node.
  *
  * @param file_path The path to the YAML file.
- * @return A boost::variant containing either a std::map<std::string, boost::any> for dictionaries or a std::vector<boost::any> for lists.
- * @throw std::runtime_error if the specified file does not exist or if there is an error parsing the YAML file.
+ * @return Parsed YAML content as a YAML node.
+ * @throws std::runtime_error If the specified file does not exist or there is an error parsing the YAML file.
  */
-boost::variant<std::map<std::string, boost::any>, std::vector<boost::any>> read_yaml(const std::string& file_path) {
-    // Your implementation here
+YAML::Node read_yaml(const std::string& file_path) {
+    // Check if the file exists
+    if (!fs::exists(file_path)) {
+        throw std::runtime_error("The file '" + file_path + "' does not exist.");
+    }
+
+    std::ifstream file(file_path);
+    if (!file.is_open()) {
+        throw std::runtime_error("Failed to open the file '" + file_path + "'.");
+    }
+
+    try {
+        // Load the YAML file content
+        YAML::Node data = YAML::Load(file);
+        return data;
+    } catch (const YAML::ParserException& e) {
+        throw std::runtime_error("Error parsing YAML file: " + std::string(e.what()));
+    }
+}
+
+int main() {
+    try {
+        std::string file_path = "example.yaml";
+        YAML::Node data = read_yaml(file_path);
+        std::cout << "Parsed YAML content:\n" << data << std::endl;
+    } catch (const std::exception& e) {
+        std::cerr << "Exception: " << e.what() << std::endl;
+    }
+
+    return 0;
 }
 ```
 
-Please note that in C++, you would typically use a library like Boost.Serialization or YAML-CPP to parse YAML files into C++ data structures. The `boost::variant` type is used here to return either a dictionary (`std::map<std::string, boost::any>`) or a list (`std::vector<boost::any>`). Make sure to include the appropriate headers and link against the necessary libraries when compiling your C++ code.
+### Explanation:
+1. **Header Files**:
+   - `#include <iostream>` for input/output operations.
+   - `#include <fstream>` for file stream operations.
+   - `#include <yaml-cpp/yaml.h>` for YAML parsing.
+   - `#include <filesystem>` for filesystem operations.
+
+2. **Namespace**:
+   - `namespace fs = std::filesystem;` to simplify filesystem operations.
+
+3. **Function Definition**:
+   - `read_yaml` function reads a YAML file and returns its content as a `YAML::Node`.
+   - It checks if the file exists using `fs::exists`.
+   - It opens the file using `std::ifstream`.
+   - It loads the YAML content using `YAML::Load`.
+
+4. **Documentation Comments**:
+   - Multi-line comments (`/* ... */`) are used for the function documentation.
+   - Single-line comments (`//`) are used for inline comments.
+
+5. **Error Handling**:
+   - Throws `std::runtime_error` for file existence and parsing errors.
+
+6. **Main Function**:
+   - Demonstrates how to call the `read_yaml` function and handle exceptions.
+
+This code preserves the original purpose and structure of the Python code while adapting it to C++ syntax and conventions.

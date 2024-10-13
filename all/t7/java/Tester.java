@@ -1,50 +1,66 @@
 package org.real.temp;
 
-import static org.junit.jupiter.api.Assertions.*;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Before;
+import org.junit.Test;
+import static org.junit.Assert.*;
+import java.util.logging.Logger;
+import java.util.logging.Level;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.SimpleFormatter;
 
+/**
+ * Test class for the Logger functionality.
+ */
 public class Tester {
 
     private Logger logger;
+    private String loggerName = "TestLogger";
 
-    @BeforeEach
+    /**
+     * Set up a Logger instance for testing.
+     */
+    @Before
     public void setUp() {
-        // Initialize the logger before each test method
-        logger = new Logger("TestLogger");
+        logger = Logger.getLogger(loggerName);
+        logger.setLevel(Level.ALL);
+
+        // Create a console handler and set its level
+        ConsoleHandler consoleHandler = new ConsoleHandler();
+        consoleHandler.setLevel(Level.ALL);
+
+        // Create a formatter and set it to the handler
+        SimpleFormatter formatter = new SimpleFormatter();
+        consoleHandler.setFormatter(formatter);
+
+        // Add the handler to the logger
+        logger.addHandler(consoleHandler);
     }
 
+    /**
+     * Test that the logger is initialized with the correct name and level.
+     */
     @Test
-    public void testLogInfo() {
-        String message = "This is an info message";
-        logger.log(Logger.Level.INFO, message);
-        // Add assertions here to verify the log message was processed correctly
-        // For example, check if the message is stored in a list or logged to a file
+    public void testInitialization() {
+        assertEquals(logger.getName(), loggerName);
+        assertEquals(logger.getLevel(), Level.ALL);
     }
 
+    /**
+     * Test that the logger defaults to ALL level if not specified.
+     */
     @Test
-    public void testLogError() {
-        String message = "This is an error message";
-        logger.log(Logger.Level.ERROR, message);
-        // Add assertions here to verify the log message was processed correctly
+    public void testDefaultLoggingLevel() {
+        Logger defaultLogger = Logger.getLogger("DefaultLogger");
+        assertEquals(defaultLogger.getLevel(), Level.ALL);
     }
 
-    // Define the Logger class with necessary methods and properties
-    public static class Logger {
-        public enum Level {
-            INFO,
-            ERROR
-        }
-
-        private final String name;
-
-        public Logger(String name) {
-            this.name = name;
-        }
-
-        public void log(Level level, String message) {
-            // Implement the logic to log messages based on the level
-            System.out.println("[" + level + "] " + name + ": " + message);
-        }
+    /**
+     * Test that the console handler is added to the logger.
+     */
+    @Test
+    public void testConsoleHandlerAdded() {
+        assertNotNull(logger.getHandlers());
+        assertTrue(logger.getHandlers().length > 0);
+        assertTrue(logger.getHandlers()[0] instanceof ConsoleHandler);
     }
 }

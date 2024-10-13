@@ -1,13 +1,27 @@
 package org.real.temp;
 
-import static org.junit.Assert.assertEquals;
 import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
 public class Tester {
+
     @Test
-    public void testSimplifyWindowsPath() {
+    public void testSimplePath() {
         assertEquals("C_Users_User_file.txt", simplifyWindowsPath("C:\\Users\\User\\file.txt"));
-        assertEquals("D_Documents_folder_document.pdf", simplifyWindowsPath("D:\\Documents\\folder\\document.pdf"));
-        assertEquals("_root_folder_root_subfolder_file.docx", simplifyWindowsPath("C:\\root_folder\\root_subfolder\\file.docx"));
+    }
+
+    @Test
+    public void testSimplePath2() {
+        assertEquals("D_User_file.txt", simplifyWindowsPath("D:\\User\\file.txt"));
+    }
+
+    @Test
+    public void testPathWithSpaces() {
+        assertEquals("E_New Folder_my file.docx", simplifyWindowsPath("E:\\New Folder\\my file.docx"));
+    }
+
+    @Test
+    public void testNestedDirectories() {
+        assertEquals("G_folder1_folder2_folder3_file.jpeg", simplifyWindowsPath("G:\\folder1\\folder2\\folder3\\file.jpeg"));
     }
 }

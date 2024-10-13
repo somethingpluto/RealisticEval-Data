@@ -1,104 +1,154 @@
-Certainly! Below is the equivalent C++ code using the Catch2 testing framework to convert the provided Python unittest test class into a C++ test class. This includes the definition of the function `read_csv_to_data_structure` and the corresponding test cases using Catch2.
+Certainly! Below is the equivalent C++ test class using the Catch2 testing framework. The test cases will be structured similarly to the Python unittests, ensuring that the functionality and logic are preserved.
 
-### C++ Code with Catch2 Testing Framework
+### C++ Code Using Catch2
 
 ```cpp
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <vector>
 #include <catch2/catch_test_macros.hpp>
-#include <csv.h> // Assuming you have installed the cppcsv library
+#include <fstream>
+#include <vector>
+#include <string>
+#include <cppcsvparser/csv_parser.h>
+#include <filesystem>
 
-// Function to read a CSV file and convert it to a structured format
-std::vector<std::vector<std::string>> read_csv_to_data_structure(const std::string& file_path) {
+namespace fs = std::filesystem;
+
+// Function to read a CSV file and convert it to a vector of vectors
+std::vector<std::vector<std::string>> readCSV(const std::string& file_path) {
     try {
+        std::vector<std::vector<std::string>> data;
         csv::Parser file = csv::Parser(file_path);
 
-        if (file.is_open()) {
-            std::vector<std::vector<std::string>> data;
-
-            // Store headers
-            std::vector<std::string> headers;
-            for (const auto& header : file.headers()) {
-                headers.push_back(header);
-            }
-            data.push_back(headers);
-
-            // Store rows
-            for (const auto& row : file) {
-                std::vector<std::string> current_row;
-                for (const auto& cell : row) {
-                    current_row.push_back(cell);
-                }
-                data.push_back(current_row);
-            }
-
-            return data;
-        } else {
-            std::cerr << "Error: The file '" << file_path << "' could not be opened.\n";
+        for (auto line : file) {
+            data.push_back(line);
         }
+
+        return data;
     } catch (const std::exception& e) {
-        std::cerr << "An error occurred: " << e.what() << "\n";
+        std::cerr << "An error occurred: " << e.what() << std::endl;
+    } catch (...) {
+        std::cerr << "An unknown error occurred." << std::endl;
     }
 
     return {};
 }
 
-TEST_CASE("Test read_csv_to_data_structure", "[read_csv]") {
-    const std::string file_path = "path/to/your/file.csv";
-    std::vector<std::vector<std::string>> data = read_csv_to_data_structure(file_path);
+TEST_CASE("TestReadCsvToDataFrame", "[csv]") {
+    // Set up temporary CSV files for testing
+    const std::string valid_csv_path = "valid.csv";
+    const std::string empty_csv_path = "empty.csv";
+    const std::string invalid_csv_path = "invalid.csv";
+    const std::string missing_values_csv_path = "missing_values.csv";
+    const std::string large_csv_path = "large.csv";
 
-    SECTION("File exists and is not empty") {
-        REQUIRE(!data.empty());
-        REQUIRE(data.size() > 1); // Ensure there are headers and at least one row
+    SECTION("Test reading a valid CSV file") {
+        // Create a valid CSV file
+        std::ofstream valid_file(valid_csv_path);
+        valid_file << "col1,col2\n1,3\n2,4";
+        valid_file.close();
 
-        // Example check for headers
-        REQUIRE(data[0].size() == 3); // Assuming 3 headers
-        REQUIRE(data[0][0] == "header1");
-        REQUIRE(data[0][1] == "header2");
-        REQUIRE(data[0][2] == "header3");
+        auto df = readCSV(valid_csv_path);
+        REQUIRE(!df.empty());
+        REQUIRE(df.size() == 2);
+        REQUIRE(df[0].size() == 2);
+        REQUIRE(df[0][0] == "col1");
+        REQUIRE(df[0][1] == "col2");
+        REQUIRE(df[1][0] == "1");
+        REQUIRE(df[1][1] == "3");
+        REQUIRE(df[2][0] == "2");
+        REQUIRE(df[2][1] == "4");
 
-        // Example check for rows
-        REQUIRE(data[1].size() == 3); // Assuming 3 columns
-        REQUIRE(data[1][0] == "value1");
-        REQUIRE(data[1][1] == "value2");
-        REQUIRE(data[1][2] == "value3");
+        fs::remove(valid_csv_path);
     }
 
-    SECTION("File does not exist") {
-        const std::string non_existent_file_path = "path/to/nonexistent/file.csv";
-        std::vector<std::vector<std::string>> non_existent_data = read_csv_to_data_structure(non_existent_file_path);
-        REQUIRE(non_existent_data.empty());
+    SECTION("Test reading an empty CSV file") {
+        // Create an empty CSV file
+        std::ofstream empty_file(empty_csv_path);
+        empty_file.close();
+
+        auto df = readCSV(empty_csv_path);
+        REQUIRE(df.empty());
+
+        fs::remove(empty_csv_path);
     }
 
-    SECTION("File is empty") {
-        const std::string empty_file_path = "path/to/empty/file.csv";
-        std::vector<std::vector<std::string>> empty_data = read_csv_to_data_structure(empty_file_path);
-        REQUIRE(empty_data.empty());
-    }
-}
+    SECTION("Test reading an invalid format CSV file") {
+        // Create an invalid format CSV file
+        std::ofstream invalid_file(invalid_csv_path);
+        invalid_file << "col1,col2\n1,2\n3,4\ninvalid_line";
+        invalid_file.close();
 
-int main(int argc, char* argv[]) {
-    // Initialize Catch2
-    int result = Catch::Session().run(argc, argv);
-    return result;
+        auto df = readCSV(invalid_csv_path);
+        REQUIRE(!df.empty());
+        REQUIRE(df.size() == 4); // The parser should still read the lines
+
+        fs::remove(invalid_csv_path);
+    }
+
+    SECTION("Test reading a CSV file with missing values") {
+        // Create a CSV file with missing values
+        std::ofstream missing_values_file(missing_values_csv_path);
+        missing_values_file << "col1,col2\n1,\n,4";
+        missing_values_file.close();
+
+        auto df = readCSV(missing_values_csv_path);
+        REQUIRE(!df.empty());
+        REQUIRE(df.size() == 3);
+        REQUIRE(df[0][0] == "col1");
+        REQUIRE(df[0][1] == "col2");
+        REQUIRE(df[1][0] == "1");
+        REQUIRE(df[1][1] == "");
+        REQUIRE(df[2][0] == "");
+        REQUIRE(df[2][1] == "4");
+
+        fs::remove(missing_values_csv_path);
+    }
+
+    SECTION("Test reading a large CSV file") {
+        // Create a large CSV file
+        std::ofstream large_file(large_csv_path);
+        large_file << "col1,col2\n";
+        for (int i = 0; i < 1000; ++i) {
+            large_file << i << "," << (i + 1000) << "\n";
+        }
+        large_file.close();
+
+        auto df = readCSV(large_csv_path);
+        REQUIRE(!df.empty());
+        REQUIRE(df.size() == 1001); // Includes header row
+        REQUIRE(df[0][0] == "col1");
+        REQUIRE(df[0][1] == "col2");
+
+        for (int i = 1; i < 1001; ++i) {
+            REQUIRE(df[i][0] == std::to_string(i - 1));
+            REQUIRE(df[i][1] == std::to_string(i - 1 + 1000));
+        }
+
+        fs::remove(large_csv_path);
+    }
 }
 ```
 
 ### Explanation:
-1. **Header Files**: Include necessary headers like `<iostream>`, `<fstream>`, `<string>`, `<vector>`, and `<catch2/catch_test_macros.hpp>` for Catch2 testing framework.
+1. **Header Files**:
+   - `#include <catch2/catch_test_macros.hpp>`: For Catch2 testing macros.
+   - `#include <fstream>`: For file operations.
+   - `#include <vector>`: For using `std::vector`.
+   - `#include <string>`: For using `std::string`.
+   - `#include <cppcsvparser/csv_parser.h>`: For parsing CSV files.
+   - `#include <filesystem>`: For file system operations.
 
-2. **Function Definition**: Define the function `read_csv_to_data_structure` which reads a CSV file and returns a `std::vector<std::vector<std::string>>` representing the CSV data.
+2. **Function `readCSV`**:
+   - This function reads a CSV file and converts it to a `std::vector<std::vector<std::string>>`.
+   - It uses the `cppcsvparser` library to parse the CSV file.
+   - Exception handling is included to catch and report errors during file reading or parsing.
 
-3. **Catch2 Test Case**:
-   - Define a test case `TEST_CASE` named "Test read_csv_to_data_structure" with a tag `[read_csv]`.
-   - Inside the test case, define multiple sections (`SECTION`) to cover different scenarios:
-     - File exists and is not empty.
-     - File does not exist.
-     - File is empty.
-   - Use `REQUIRE` statements to assert the expected behavior of the function.
+3. **Test Cases**:
+   - Each test case is defined within a `SECTION` in the `TEST_CASE` macro.
+   - Temporary CSV files are created and cleaned up within each test section.
+   - Assertions are used to verify the correctness of the parsed data.
 
-4. **Main Function**: Initialize and run the Catch2 test suite in the `main` function.
+4. **Assertions**:
+   - `REQUIRE` is used for assertions to ensure that the conditions are met.
+   - The test cases cover various scenarios, including valid, empty, invalid, and large CSV files.
 
-This C++ code preserves the original purpose and structure of the Python code while adapting it to C++ syntax and conventions, using the Catch2 testing framework for unit testing.
+This approach ensures that the functionality and logic of the original Python unittests are preserved while adapting to C++ conventions and the Catch2 testing framework.

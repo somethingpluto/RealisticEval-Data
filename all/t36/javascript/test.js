@@ -1,8 +1,5 @@
-const { floydWarshallShortestPaths } = require('./yourModule');  // Adjust the path as needed
-
-describe('FloydWarshallShortestPaths', () => {
-    test('basic functionality', () => {
-        // Basic test case with a simple graph
+describe('TestFloydWarshallShortestPaths', () => {
+    it('should handle basic functionality with a simple graph', () => {
         const matrix = [
             [0, 3, Infinity, 7],
             [8, 0, 2, Infinity],
@@ -19,8 +16,7 @@ describe('FloydWarshallShortestPaths', () => {
         expect(result).toEqual(expected);
     });
 
-    test('single vertex graph', () => {
-        // Test case with a single vertex graph (1x1 matrix)
+    it('should handle a single vertex graph (1x1 matrix)', () => {
         const matrix = [
             [0]
         ];
@@ -31,8 +27,7 @@ describe('FloydWarshallShortestPaths', () => {
         expect(result).toEqual(expected);
     });
 
-    test('two vertices graph', () => {
-        // Test case with two vertices
+    it('should handle a two vertices graph', () => {
         const matrix = [
             [0, 1],
             [1, 0]
@@ -45,8 +40,7 @@ describe('FloydWarshallShortestPaths', () => {
         expect(result).toEqual(expected);
     });
 
-    test('large infinite weights', () => {
-        // Test case with infinite weights
+    it('should handle large infinite weights', () => {
         const matrix = [
             [0, Infinity],
             [Infinity, 0]
@@ -59,8 +53,7 @@ describe('FloydWarshallShortestPaths', () => {
         expect(result).toEqual(expected);
     });
 
-    test('negative cycle', () => {
-        // Test case with a negative cycle
+    it('should handle a negative cycle', () => {
         const matrix = [
             [0, 1, Infinity],
             [Infinity, 0, -1],

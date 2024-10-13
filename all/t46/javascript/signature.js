@@ -1,52 +1,57 @@
 /**
- * binary tree node
+ * Binary tree node.
  */
 class TreeNode {
     /**
-     * @param {number} [value=0]
-     * @param {TreeNode} [left=null]
-     * @param {TreeNode} [right=null]
+     * Constructs a new TreeNode.
+     * @param {number} [value=0] - The value of the node.
+     * @param {TreeNode} [left=null] - The left child node.
+     * @param {TreeNode} [right=null] - The right child node.
      */
     constructor(value = 0, left = null, right = null) {
-        // Your implementation here
+        // Implementation goes here
     }
 }
 
 /**
- * binary tree
+ * Binary tree.
  */
 class BinaryTree {
     /**
-     * @param {TreeNode} [root=null]
+     * Constructs a new BinaryTree.
+     * @param {TreeNode} [root=null] - The root node of the tree.
      */
     constructor(root = null) {
-        // Your implementation here
+        // Implementation goes here
     }
 
     /**
-     * Preorder traversal of the binary tree
-     * @param {TreeNode} node - The current node
-     * @param {Array<number>} [result=[]] - The array to store the traversal result
+     * Performs a preorder traversal of the tree.
+     * @param {TreeNode} node - The current node being traversed.
+     * @param {Array} [result=null] - The result array to store the values.
+     * @returns {Array} The result array containing the values.
      */
-    preorderTraversal(node, result = []) {
-        // Your implementation here
+    preorderTraversal(node, result = null) {
+        // Implementation goes here
     }
 
     /**
-     * Inorder traversal of the binary tree
-     * @param {TreeNode} node - The current node
-     * @param {Array<number>} [result=[]] - The array to store the traversal result
+     * Performs an inorder traversal of the tree.
+     * @param {TreeNode} node - The current node being traversed.
+     * @param {Array} [result=null] - The result array to store the values.
+     * @returns {Array} The result array containing the values.
      */
-    inorderTraversal(node, result = []) {
-        // Your implementation here
+    inorderTraversal(node, result = null) {
+        // Implementation goes here
     }
 
     /**
-     * Postorder traversal of the binary tree
-     * @param {TreeNode} node - The current node
-     * @param {Array<number>} [result=[]] - The array to store the traversal result
+     * Performs a postorder traversal of the tree.
+     * @param {TreeNode} node - The current node being traversed.
+     * @param {Array} [result=null] - The result array to store the values.
+     * @returns {Array} The result array containing the values.
      */
-    postorderTraversal(node, result = []) {
-        // Your implementation here
+    postorderTraversal(node, result = null) {
+        // Implementation goes here
     }
 }

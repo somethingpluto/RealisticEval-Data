@@ -1,56 +1,98 @@
-Sure! Below is an equivalent C++ unit test using Catch2 for the provided Python unittest function `is_phrase_in_string_ignore_case`. 
+Certainly! Here is the equivalent C++ test class using the Catch2 testing framework. We will ensure that the functionality and logic of the tests are preserved, and we will use appropriate assertions in Catch2.
 
-First, let's define the function in C++:
+First, make sure you have Catch2 installed and included in your project. You can include Catch2 by adding the header file and ensuring your test file compiles with the appropriate flags.
+
+### C++ Code with Catch2
 
 ```cpp
+#include <catch2/catch_test_macros.hpp>
 #include <string>
+#include <cctype>
 #include <regex>
 
-bool isPhraseInStringIgnoreCase(const std::string& phrase, const std::string& str) {
-    // Create a regex pattern that matches the phrase ignoring case and allowing for variations in whitespace
-    std::string pattern = "\\b" + std::regex_replace(phrase, std::regex("\\s+"), "\\s*") + "\\b";
-    std::regex re(pattern, std::regex_constants::icase);
-
-    // Search for the pattern in the string
-    return std::regex_search(str, re);
+// Function to convert a string to lowercase
+std::string to_lower(const std::string& str) {
+    std::string lower_str;
+    for (char c : str) {
+        lower_str += std::tolower(c);
+    }
+    return lower_str;
 }
-```
 
-Now, let's write the Catch2 test cases for this function:
+/**
+ * Check if the given phrase exists in the target string, ignoring case and allowing for variations in whitespace.
+ *
+ * @param phrase The phrase to search for in the string.
+ * @param string The target string in which to search for the phrase.
+ *
+ * @return True if the phrase is found as a whole word in the string, False otherwise.
+ */
+bool is_phrase_in_string_ignore_case(const std::string& phrase, const std::string& string) {
+    // Convert both phrase and string to lower case
+    std::string lower_phrase = to_lower(phrase);
+    std::string lower_string = to_lower(string);
 
-```cpp
-#define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
+    // Escape special characters in the phrase
+    std::string escaped_phrase;
+    for (char c : lower_phrase) {
+        if (std::ispunct(c)) {
+            escaped_phrase += '\\';
+        }
+        escaped_phrase += c;
+    }
 
-#include "catch.hpp"
-#include <string>
-#include <regex>
+    // Replace spaces in the phrase with \s+ to allow for any whitespace variations
+    std::replace(escaped_phrase.begin(), escaped_phrase.end(), ' ', '\\');
+    std::replace(escaped_phrase.begin(), escaped_phrase.end(), '+', ' ');
 
-// Function definition from above
-bool isPhraseInStringIgnoreCase(const std::string& phrase, const std::string& str);
+    // Construct the regex pattern with word boundaries
+    std::string pattern = "\\b" + escaped_phrase + "\\b";
 
-TEST_CASE("Test isPhraseInStringIgnoreCase", "[isPhraseInStringIgnoreCase]") {
-    REQUIRE(isPhraseInStringIgnoreCase("hello world", "Hello World"));  // Case-insensitive match
-    REQUIRE(!isPhraseInStringIgnoreCase("hello world", "hello there"));  // Not found
-    REQUIRE(isPhraseInStringIgnoreCase("hello world", "   hello world   "));  // Leading/trailing spaces
-    REQUIRE(isPhraseInStringIgnoreCase("hello world", "hello\nworld"));  // Whitespace variations
-    REQUIRE(!isPhraseInStringIgnoreCase("hello world", "helloworld"));  // No space between words
-    REQUIRE(!isPhraseInStringIgnoreCase("hello world", "world hello"));  // Different order of words
+    // Search for the pattern in the target string
+    return std::regex_search(lower_string, std::regex(pattern));
+}
+
+TEST_CASE("Test is_phrase_in_string_ignore_case", "[is_phrase_in_string_ignore_case]") {
+    SECTION("Exact match case insensitive") {
+        REQUIRE(is_phrase_in_string_ignore_case("hello world", "Hello World"));
+    }
+
+    SECTION("Partial word match case insensitive") {
+        REQUIRE(is_phrase_in_string_ignore_case("Hello", "saying Hello there"));
+    }
+
+    SECTION("Different cases") {
+        REQUIRE(is_phrase_in_string_ignore_case("HELLO", "hello there!"));
+        REQUIRE(is_phrase_in_string_ignore_case("world", "WORLD is great"));
+    }
+
+    SECTION("Non-existent phrase") {
+        REQUIRE_FALSE(is_phrase_in_string_ignore_case("goodbye", "Hello world"));
+        REQUIRE_FALSE(is_phrase_in_string_ignore_case("hello", "goodbye world"));
+    }
 }
 ```
 
 ### Explanation:
+1. **Catch2 Header**: Include the Catch2 header file at the beginning of the file.
+2. **Helper Function `to_lower`**: This function converts a string to lowercase.
+3. **Function `is_phrase_in_string_ignore_case`**:
+   - Converts both the `phrase` and `string` to lowercase.
+   - Escapes special characters in the `phrase`.
+   - Replaces spaces in the `phrase` with `\s+` to allow for variations in whitespace.
+   - Constructs a regex pattern with word boundaries (`\b`).
+   - Searches for the pattern in the `string` using `std::regex_search`.
+4. **Test Class `TEST_CASE`**:
+   - Each test case is defined within a `SECTION`.
+   - `REQUIRE` is used for positive assertions.
+   - `REQUIRE_FALSE` is used for negative assertions.
 
-1. **Function Definition**:
-   - `isPhraseInStringIgnoreCase` takes two strings (`phrase` and `str`) and checks if the phrase exists in the string, ignoring case and allowing for variations in whitespace.
-   - It constructs a regular expression pattern that matches the phrase with optional whitespace around it and performs a case-insensitive search.
+### Running the Tests
+To run the tests, compile your code with the Catch2 library and execute the binary. For example, if you are using g++:
 
-2. **Catch2 Test Cases**:
-   - Each `REQUIRE` statement tests a specific scenario to ensure the function behaves as expected.
-   - The first `REQUIRE` checks for a case-insensitive match.
-   - The second `REQUIRE` checks for a non-match when the phrase is not present.
-   - The third `REQUIRE` checks for matching with leading and trailing spaces.
-   - The fourth `REQUIRE` checks for matching with different whitespace characters.
-   - The fifth `REQUIRE` checks for no space between words.
-   - The sixth `REQUIRE` checks for a different order of words.
+```sh
+g++ -o test_is_phrase_in_string test_is_phrase_in_string.cpp -lcatch2
+./test_is_phrase_in_string
+```
 
-Make sure you have Catch2 installed and properly set up in your project to compile and run these tests.
+This setup ensures that the tests are structured and executed similarly to the Python unittest framework, providing clear and concise test cases.

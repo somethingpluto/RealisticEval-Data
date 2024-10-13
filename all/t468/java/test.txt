@@ -1,118 +1,101 @@
-Certainly! Below is the equivalent Java test class using JUnit for the provided Python unittest test class. The Java test class will be placed in the package `org.real.temp` and named `Tester`. It will include appropriate JUnit annotations and assertions to ensure the functionality and logic of the tests are preserved.
+Certainly! Below is the Java equivalent of the provided Python unittest class, converted into a JUnit test class. The Java test class will be placed in the package `org.real.temp` and named `Tester`. It will use JUnit annotations and assertions to ensure the functionality and logic of the tests are preserved.
 
-### Java Test Class
+### Java Code
 
 ```java
 package org.real.temp;
 
-import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.Test;
+import static org.junit.Assert.assertArrayEquals;
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.factory.Nd4j;
 
 /**
- * Test class for the getTranslation method.
+ * Test class for the getTranslation function.
  */
 public class Tester {
 
     /**
-     * Tests the getTranslation method with a valid 3x3 affine transformation matrix.
+     * Test for the identity matrix (no translation).
      */
     @Test
-    public void testGetTranslation() {
-        // Valid 3x3 affine transformation matrix
-        double[][] matrix = {
-            {1, 0, 10},
-            {0, 1, 20},
+    public void testIdentityMatrix() {
+        INDArray matrix = Nd4j.create(new double[][]{
+            {1, 0, 0},
+            {0, 1, 0},
             {0, 0, 1}
-        };
-
-        // Expected translation vector
-        double[] expectedTranslation = {10.0, 20.0};
-
-        // Call the getTranslation method
-        double[] translation = Answer.getTranslation(matrix);
-
-        // Assert that the translation vector matches the expected result
-        assertArrayEquals(expectedTranslation, translation, 0.001);
+        });
+        INDArray expectedTranslation = Nd4j.create(new double[]{0.0, 0.0});
+        
+        assertArrayEquals(expectedTranslation, getTranslation(matrix), 1e-6);
     }
 
     /**
-     * Tests the getTranslation method with an invalid 3x3 affine transformation matrix.
+     * Test for a translation matrix (5 in x, 10 in y).
      */
     @Test
-    public void testGetTranslationWithInvalidMatrix() {
-        // Invalid 3x3 affine transformation matrix (wrong shape)
-        double[][] invalidMatrix = {
-            {1, 0, 10},
-            {0, 1, 20}
-        };
-
-        // Call the getTranslation method and expect an IllegalArgumentException
-        assertThrows(IllegalArgumentException.class, () -> {
-            Answer.getTranslation(invalidMatrix);
+    public void testTranslationMatrix() {
+        INDArray matrix = Nd4j.create(new double[][]{
+            {1, 0, 5},
+            {0, 1, 10},
+            {0, 0, 1}
         });
+        INDArray expectedTranslation = Nd4j.create(new double[]{5.0, 10.0});
+        
+        assertArrayEquals(expectedTranslation, getTranslation(matrix), 1e-6);
+    }
+
+    /**
+     * Test for a translation matrix with negative values.
+     */
+    @Test
+    public void testNegativeTranslation() {
+        INDArray matrix = Nd4j.create(new double[][]{
+            {1, 0, -3},
+            {0, 1, -6},
+            {0, 0, 1}
+        });
+        INDArray expectedTranslation = Nd4j.create(new double[]{-3.0, -6.0});
+        
+        assertArrayEquals(expectedTranslation, getTranslation(matrix), 1e-6);
+    }
+
+    // Utility method to get the translation
+    private INDArray getTranslation(INDArray matrix) {
+        // Ensure the matrix is a 3x3 array
+        if (matrix == null || matrix.rows() != 3 || matrix.columns() != 3) {
+            throw new IllegalArgumentException("Input must be a 3x3 affine transformation matrix.");
+        }
+
+        // Extract the translation components from the matrix
+        INDArray translation = matrix.get(NDArrayIndex.interval(0, 2), NDArrayIndex.point(2));
+
+        // Ensure the return type is double
+        return translation.castTo(double.class);
     }
 }
 
 ```
 
 ### Explanation:
-
 1. **Package Declaration**:
-   - The package declaration is included at the top.
+   - The package declaration `package org.real.temp;` ensures the code is organized properly.
 
-2. **Import Statements**:
-   - Import necessary JUnit classes and assertions.
+2. **Imports**:
+   - Import statements include `org.junit.Test`, `static org.junit.Assert.assertArrayEquals`, `org.nd4j.linalg.api.ndarray.INDArray`, and `org.nd4j.linalg.factory.Nd4j` for handling matrices and assertions.
 
 3. **Class Definition**:
-   - The class `Tester` is defined.
+   - The class `Tester` is defined within the package `org.real.temp`.
 
 4. **JUnit Annotations**:
-   - Use `@Test` annotations to define test methods.
+   - Each test method is annotated with `@Test` to indicate that it is a test case.
 
 5. **Test Methods**:
-   - `testGetTranslation`: Tests the `getTranslation` method with a valid 3x3 affine transformation matrix.
-   - `testGetTranslationWithInvalidMatrix`: Tests the `getTranslation` method with an invalid 3x3 affine transformation matrix.
+   - Each test method is named and documented similarly to the Python version.
+   - The test methods create `INDArray` instances to represent the matrices and expected translations.
+   - `assertArrayEquals` is used to compare the actual and expected translations with a tolerance (`1e-6`).
 
-6. **Assertions**:
-   - `assertArrayEquals`: Used to check if the translation vector matches the expected result.
-   - `assertThrows`: Used to verify that an `IllegalArgumentException` is thrown when an invalid matrix is passed.
+6. **Utility Method**:
+   - The `getTranslation` method is defined to extract the translation components from the matrix, ensuring consistency with the original functionality.
 
-### Helper Class `Answer`
-
-Ensure that the `Answer` class is available in the same package for testing purposes:
-
-```java
-package org.real.temp;
-
-import java.util.Arrays;
-
-/**
- * A class that provides methods for extracting translation vectors from affine transformation matrices.
- */
-public class Answer {
-
-    /**
-     * Given a 3x3 matrix, returns the corresponding translation vector.
-     *
-     * @param matrix A 3x3 affine transformation matrix.
-     * @return A 2-element array containing the translation components (translation_x, translation_y).
-     */
-    public static double[] getTranslation(double[][] matrix) {
-        // Ensure the matrix is a 3x3 array
-        if (matrix == null || matrix.length != 3 || matrix[0].length != 3 || matrix[1].length != 3 || matrix[2].length != 3) {
-            throw new IllegalArgumentException("Input must be a 3x3 affine transformation matrix.");
-        }
-
-        // Extract the translation components from the matrix
-        double[] translation = new double[2];
-        translation[0] = matrix[0][2];
-        translation[1] = matrix[1][2];
-
-        return translation;
-    }
-}
-```
-
-### Summary
-
-The Java test class `Tester` uses JUnit annotations and assertions to test the `getTranslation` method. The helper class `Answer` contains the implementation of the `getTranslation` method, ensuring that the functionality and logic are preserved.
+This Java code preserves the functionality and structure of the original Python unittest class while adhering to Java's syntax and best practices.

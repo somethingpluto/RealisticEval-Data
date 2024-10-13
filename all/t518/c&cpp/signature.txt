@@ -1,20 +1,98 @@
-Sure, here is the equivalent C++ code signature with comments:
+Certainly! Below is the equivalent C++ code for the provided Python function, including appropriate comments and documentation:
 
 ```cpp
+#include <iostream>
 #include <map>
 #include <string>
-#include <optional>
+#include <cctype>
+
+// Function to check if a string is numeric with possible comma and negative sign
+bool isNumeric(const std::string& value) {
+    std::string temp = value;
+    size_t commaCount = 0;
+    bool hasNegativeSign = false;
+
+    for (char& c : temp) {
+        if (c == ',') {
+            if (++commaCount > 1) return false; // More than one comma is invalid
+            c = '.'; // Replace comma with dot
+        } else if (c == '-') {
+            if (&c != &temp[0]) return false; // Negative sign must be at the beginning
+            hasNegativeSign = true;
+            c = '0'; // Replace negative sign temporarily
+        }
+    }
+
+    // Check if all remaining characters are digits
+    return std::all_of(temp.begin(), temp.end(), ::isdigit) && commaCount <= 1 && hasNegativeSign;
+}
 
 /**
  * Convert numeric values in a CSV row from string format to a standardized format.
  *
- * @param row A map representing a row of CSV data where keys are column names
- *            and values are strings.
+ * @param row A map representing a row of CSV data where keys are column names and values are strings.
  * @return A new map with values converted:
  *         - Numeric strings have commas replaced with dots.
- *         - Non-numeric strings are set to nullptr.
+ *         - Non-numeric strings are set to an empty string (to represent None).
  */
-std::map<std::string, std::optional<std::string>> convertCsvValues(const std::map<std::string, std::string>& row);
+std::map<std::string, std::string> convertCsvValues(const std::map<std::string, std::string>& row) {
+    std::map<std::string, std::string> convertedRow;
+
+    for (const auto& item : row) {
+        const std::string& key = item.first;
+        const std::string& value = item.second;
+
+        if (isNumeric(value)) {
+            std::string newValue = value;
+            for (char& c : newValue) {
+                if (c == ',') {
+                    c = '.'; // Replace comma with dot
+                }
+            }
+            convertedRow[key] = newValue;
+        } else {
+            convertedRow[key] = ""; // Use empty string to represent None
+        }
+    }
+
+    return convertedRow;
+}
+
+int main() {
+    // Example usage
+    std::map<std::string, std::string> row = {
+        {"id", "123"},
+        {"name", "John Doe"},
+        {"age", "45,67"},
+        {"address", "123 Main St"}
+    };
+
+    std::map<std::string, std::string> convertedRow = convertCsvValues(row);
+
+    for (const auto& item : convertedRow) {
+        std::cout << item.first << ": " << (item.second.empty() ? "None" : item.second) << std::endl;
+    }
+
+    return 0;
+}
 ```
 
-This C++ function `convertCsvValues` takes a `std::map<std::string, std::string>` as input and returns a `std::map<std::string, std::optional<std::string>>`. The function's purpose and behavior are described in the docstring.
+### Explanation:
+1. **Function `isNumeric`**:
+   - This function checks if a given string is numeric, considering possible commas and a negative sign.
+   - It replaces commas with dots and checks if all characters are digits.
+   - It ensures that there is only one comma and that the negative sign is at the beginning.
+
+2. **Function `convertCsvValues`**:
+   - This function takes a `std::map<std::string, std::string>` representing a row of CSV data.
+   - It converts numeric strings by replacing commas with dots.
+   - Non-numeric strings are represented using an empty string (`""`) to mimic the behavior of setting them to `None` in Python.
+
+3. **Documentation Comments**:
+   - Multi-line comments (`/* ... */`) are used for the function documentation.
+   - Single-line comments (`//`) are used for inline comments within the functions.
+
+4. **Example Usage**:
+   - The `main` function demonstrates how to use the `convertCsvValues` function and prints the converted values, with non-numeric strings represented as `"None"`.
+
+This C++ code preserves the original purpose and structure of the Python code while adhering to C++ documentation standards.

@@ -1,20 +1,25 @@
-TEST_CASE("Replace Phone Numbers", "[replace_phone_numbers]") {
-    SECTION("Single Phone Number") {
-        REQUIRE(replace_phone_numbers("Call me at 123-456-7890.") == "Call me at [PHONE_NUM].");
+TEST_CASE("Test Replace Phone Numbers") {
+    SECTION("Basic Number") {
+        std::string msg = "Call me at 123-456-7890.";
+        std::string expected = "Call me at [PHONE_NUM].";
+        REQUIRE(replace_phone_numbers(msg) == expected);
     }
 
-    SECTION("Multiple Phone Numbers") {
-        REQUIRE(replace_phone_numbers("Contact us at 123-456-7890 or 987-654-3210.") 
-                == "Contact us at [PHONE_NUM] or [PHONE_NUM].");
+    SECTION("Number with Parentheses") {
+        std::string msg = "Our office number is 123 456-7890.";
+        std::string expected = "Our office number is [PHONE_NUM].";
+        REQUIRE(replace_phone_numbers(msg) == expected);
     }
 
-    SECTION("No Phone Numbers") {
-        REQUIRE(replace_phone_numbers("This is just a normal message.") 
-                == "This is just a normal message.");
+    SECTION("Number with Dots") {
+        std::string msg = "Fax us at 123.456.7890.";
+        std::string expected = "Fax us at [PHONE_NUM].";
+        REQUIRE(replace_phone_numbers(msg) == expected);
     }
 
-    SECTION("Phone Number with Different Format") {
-        REQUIRE(replace_phone_numbers("Reach out at (123) 456-7890.") 
-                == "Reach out at [PHONE_NUM].");
+    SECTION("No Phone Number") {
+        std::string msg = "Hello, please reply to this email.";
+        std::string expected = "Hello, please reply to this email.";
+        REQUIRE(replace_phone_numbers(msg) == expected);
     }
 }

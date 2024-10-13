@@ -1,31 +1,68 @@
-Sure! Below is the equivalent C++ code for the provided Python function `compute_output_index`. This function computes the output index from two given indices by interpreting them as little-endian bitstrings, taking their XOR, and then interpreting the result as an integer in little-endian format.
+Certainly! Below is the equivalent C++ code for the provided Python function. The goal is to maintain the same functionality, logic, and structure while adapting it to C++ syntax and features.
 
 ```cpp
-#include <iostream>
+#include <cstdint>  // For uint8_t, etc.
+#include <cstring>  // For std::memcpy
+#include <algorithm>  // For std::reverse
 
-// Function to compute the output index from two given indices
-int compute_output_index(int idx_1, int idx_2) {
-    // Take the XOR of the two input indices
-    int result = idx_1 ^ idx_2;
-    
-    return result;
+// Function to compute the output index from two given indices in the MultiVector's representation
+// of the G_n orthonormal basis.
+//
+// This function interprets the integers as little-endian bitstrings, takes their XOR,
+// and interprets the result as an integer in little-endian.
+//
+// Args:
+//     idx_1 (uint64_t): Input index 1.
+//     idx_2 (uint64_t): Input index 2.
+//
+// Returns:
+//     uint64_t: The computed output index.
+uint64_t compute_output_index(uint64_t idx_1, uint64_t idx_2) {
+    // Perform bitwise XOR between the two indices
+    uint64_t result = idx_1 ^ idx_2;
+
+    // Calculate the number of bytes needed to represent the result
+    size_t num_bytes = (sizeof(result) * 8 - result.leading_zeros()) / 8;
+    if ((sizeof(result) * 8 - result.leading_zeros()) % 8 != 0) {
+        num_bytes++;
+    }
+
+    // Allocate a buffer to hold the little-endian bytes
+    uint8_t* result_bytes = new uint8_t[num_bytes];
+
+    // Copy the result into the buffer in big-endian format
+    std::memcpy(result_bytes, &result, num_bytes);
+
+    // Reverse the byte order to make it little-endian
+    std::reverse(result_bytes, result_bytes + num_bytes);
+
+    // Convert little-endian bytes back to an integer
+    uint64_t result_int = 0;
+    for (size_t i = 0; i < num_bytes; ++i) {
+        result_int |= static_cast<uint64_t>(result_bytes[i]) << (i * 8);
+    }
+
+    // Clean up the allocated buffer
+    delete[] result_bytes;
+
+    return result_int;
 }
 
+// Example usage
 int main() {
-    // Example usage
-    int idx_1 = 5;  // Binary: 0101
-    int idx_2 = 3;  // Binary: 0011
-    
-    int output_index = compute_output_index(idx_1, idx_2);
-    
-    std::cout << "Output Index: " << output_index << std::endl;  // Output should be 6 (Binary: 0110)
-    
+    uint64_t idx_1 = 0b1010101010101010101010101010101010101010101010101010101010101010ULL;
+    uint64_t idx_2 = 0b1111111111111111111111111111111111111111111111111111111111111111ULL;
+    uint64_t output_index = compute_output_index(idx_1, idx_2);
+    std::cout << "Output Index: " << output_index << std::endl;
     return 0;
 }
 ```
 
 ### Explanation:
-- **XOR Operation**: The XOR operation (`^` in C++) is used to compute the result of the bitwise XOR between `idx_1` and `idx_2`.
-- **Return Value**: The result of the XOR operation is returned as the output index.
+1. **Bitwise XOR**: The function performs a bitwise XOR operation on the two input indices.
+2. **Byte Representation**: It calculates the number of bytes needed to represent the result and allocates a buffer to hold these bytes.
+3. **Byte Order Conversion**: The bytes are copied into the buffer in big-endian format, then reversed to make them little-endian.
+4. **Conversion Back to Integer**: The little-endian bytes are converted back to an integer by combining them using bitwise operations.
+5. **Memory Management**: The allocated buffer is deleted to avoid memory leaks.
 
-This C++ code provides the same functionality as the original Python function. You can compile and run it using any standard C++ compiler.
+This code should provide the same functionality as the original Python code.

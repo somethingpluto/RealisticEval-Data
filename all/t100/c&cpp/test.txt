@@ -1,0 +1,102 @@
+Certainly! Here’s how you can translate the Jest test cases to C++ using the Catch2 testing framework. First, make sure you have Catch2 installed and included in your project.
+
+### C++ Code with Catch2 Test Cases
+
+1. **Include Catch2 Headers**:
+   Make sure you have the Catch2 library included in your project. You can download it from [here](https://github.com/catchorg/Catch2).
+
+2. **Write the Test Cases**:
+   Translate the Jest test cases to Catch2 test cases.
+
+Here’s the complete code:
+
+```cpp
+#include <iostream>
+#include <regex>
+#include <string>
+#include <cmath>
+#include <catch2/catch_test_macros.hpp>
+
+/**
+ * Converts an ISO 8601 duration string into a more readable format.
+ *
+ * @param duration The ISO 8601 duration string (e.g., "PT1H23M45.678S").
+ * @returns A human-readable duration string (e.g., "1h23m45s678ms").
+ */
+std::string convertTime(const std::string& duration) {
+    const std::regex regex("PT(?:(\\d+)H)?(?:(\\d+)M)?(?:(\\d+)(\\.\\d+)?S)?");
+    std::smatch matches;
+
+    if (!std::regex_match(duration, matches, regex)) {
+        return ""; // Return an empty string if the input doesn't match the expected format
+    }
+
+    const std::string& hours = matches[1];
+    const std::string& minutes = matches[2];
+    const std::string& seconds = matches[3];
+    const std::string& fractionalSeconds = matches[4];
+    std::string convertedTime = "";
+
+    if (!hours.empty()) {
+        convertedTime += hours + "h";
+    }
+
+    if (!minutes.empty()) {
+        convertedTime += minutes + "m";
+    }
+
+    if (!seconds.empty()) {
+        convertedTime += seconds + "s";
+    }
+
+    if (!fractionalSeconds.empty()) {
+        double fractionalSecondsValue = std::stod(fractionalSeconds);
+        int milliseconds = std::round(fractionalSecondsValue * 1000);
+        if (milliseconds > 0) {
+            convertedTime += std::to_string(milliseconds) + "ms";
+        }
+    }
+
+    return convertedTime;
+}
+
+TEST_CASE("ConvertTime Function Tests", "[convertTime]") {
+    SECTION("should correctly convert full ISO 8601 duration with hours, minutes, seconds, and milliseconds") {
+        REQUIRE(convertTime("PT1H23M45.678S") == "1h23m45s678ms");
+    }
+
+    SECTION("should correctly convert duration with only seconds and milliseconds") {
+        REQUIRE(convertTime("PT45.5S") == "45s500ms");
+    }
+
+    SECTION("should correctly convert duration with hours and minutes, but no seconds") {
+        REQUIRE(convertTime("PT2H5M") == "2h5m");
+    }
+
+    SECTION("should correctly convert duration with only seconds, no milliseconds") {
+        REQUIRE(convertTime("PT20S") == "20s");
+    }
+}
+
+int main(int argc, char* argv[]) {
+    return Catch::Session().run(argc, argv);
+}
+```
+
+### Explanation:
+1. **Catch2 Headers**: Include the Catch2 headers.
+2. **Function Definition**: Define the `convertTime` function.
+3. **Test Cases**:
+   - Use `TEST_CASE` to define the test suite.
+   - Use `SECTION` within the test case to define individual test sections.
+   - Use `REQUIRE` to assert the expected behavior of the `convertTime` function.
+
+### Running the Tests
+To run the tests, you need to compile the code with the Catch2 library. Here’s an example command using g++:
+
+```sh
+g++ -std=c++17 -o test_program test_program.cpp -lcatch2
+./test_program
+```
+
+This will compile and run the tests, and you should see the output indicating whether the tests pass or fail.

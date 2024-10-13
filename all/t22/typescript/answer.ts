@@ -2,15 +2,10 @@ function calculateEuclideanDistance(point1: [number, number], point2: [number, n
     /**
      * Calculate the Euclidean distance between two points in a 2D space.
      *
-     * Args:
-     *     point1 ([number, number]): The first point as a tuple of coordinates (x1, y1).
-     *     point2 ([number, number]): The second point as a tuple of coordinates (x2, y2).
-     *
-     * Returns:
-     *     number: The Euclidean distance between the two points.
-     *
+     * @param point1 - The first point as a tuple of coordinates (x1, y1).
+     * @param point2 - The second point as a tuple of coordinates (x2, y2).
+     * @returns The Euclidean distance between the two points.
      */
-    
     if (!Array.isArray(point1) || !Array.isArray(point2)) {
         throw new TypeError("Both points must be arrays");
     }
@@ -19,8 +14,8 @@ function calculateEuclideanDistance(point1: [number, number], point2: [number, n
         throw new TypeError("Both points must be arrays of two elements");
     }
 
-    if (!(point1.every(coord => typeof coord === 'number') && point2.every(coord => typeof coord === 'number'))) {
-        throw new TypeError("All coordinates must be integers or floats");
+    if (!point1.every(coord => typeof coord === 'number') || !point2.every(coord => typeof coord === 'number')) {
+        throw new TypeError("All coordinates must be numbers");
     }
 
     // Extract coordinates from the input tuples

@@ -1,4 +1,4 @@
-Sure! Here’s the equivalent C++ code for the provided Python script. This version includes error handling, file I/O, and regular expression matching using the C++ standard library.
+Sure! Here’s the equivalent C++ code that performs the same functionality as the provided Python code:
 
 ```cpp
 #include <iostream>
@@ -8,7 +8,7 @@ Sure! Here’s the equivalent C++ code for the provided Python script. This vers
 #include <map>
 #include <regex>
 
-// Function to extract the title, author, and year from a BibTeX file.
+// Function to extract title, author, and year from a BibTeX file
 std::vector<std::map<std::string, std::string>> extract_bib_info(const std::string& bib_file) {
     std::vector<std::map<std::string, std::string>> articles;
 
@@ -20,7 +20,7 @@ std::vector<std::map<std::string, std::string>> extract_bib_info(const std::stri
     try {
         std::ifstream file(bib_file);
         if (!file.is_open()) {
-            throw std::runtime_error("The file '" + bib_file + "' was not found.");
+            throw std::runtime_error("Error: The file '" + bib_file + "' was not found.");
         }
 
         std::stringstream buffer;
@@ -34,57 +34,61 @@ std::vector<std::map<std::string, std::string>> extract_bib_info(const std::stri
         while (std::getline(iss, line)) {
             if (line.find('@') != std::string::npos) {
                 if (!entry.empty()) {
-                    articles.push_back(process_entry(entry));
+                    articles.push_back(extract_entry(entry, title_pattern, author_pattern, year_pattern));
                 }
                 entry.clear();
             }
-            entry += line + " ";
+            entry += line + "\n";
         }
         if (!entry.empty()) {
-            articles.push_back(process_entry(entry));
+            articles.push_back(extract_entry(entry, title_pattern, author_pattern, year_pattern));
         }
 
     } catch (const std::exception& e) {
-        std::cerr << "Error: " << e.what() << std::endl;
+        std::cerr << e.what() << std::endl;
     }
 
     return articles;
 }
 
-std::map<std::string, std::string> process_entry(const std::string& entry) {
-    std::map<std::string, std::string> article;
+// Helper function to extract information from a single entry
+std::map<std::string, std::string> extract_entry(const std::string& entry, 
+                                                 const std::regex& title_pattern, 
+                                                 const std::regex& author_pattern, 
+                                                 const std::regex& year_pattern) {
     std::smatch match;
+    std::map<std::string, std::string> info;
 
     if (std::regex_search(entry, match, title_pattern)) {
-        article["title"] = match[1];
+        info["title"] = match[1];
     } else {
-        article["title"] = "";
+        info["title"] = "";
     }
 
     if (std::regex_search(entry, match, author_pattern)) {
-        article["author"] = match[1];
+        info["author"] = match[1];
     } else {
-        article["author"] = "";
+        info["author"] = "";
     }
 
     if (std::regex_search(entry, match, year_pattern)) {
-        article["year"] = match[1];
+        info["year"] = match[1];
     } else {
-        article["year"] = "";
+        info["year"] = "";
     }
 
-    return article;
+    return info;
 }
 
 int main() {
-    std::string bib_file = "example.bib";
+    std::string bib_file = "example.bib";  // Replace with your BibTeX file path
     auto articles = extract_bib_info(bib_file);
 
     for (const auto& article : articles) {
         std::cout << "Title: " << article.at("title") << std::endl;
         std::cout << "Author: " << article.at("author") << std::endl;
         std::cout << "Year: " << article.at("year") << std::endl;
-        std::cout << "---------------------" << std::endl;
+        std::cout << "-----------------" << std::endl;
     }
 
     return 0;
@@ -92,9 +96,11 @@ int main() {
 ```
 
 ### Explanation:
+1. **Headers**: Include necessary headers (`<iostream>`, `<fstream>`, `<sstream>`, `<vector>`, `<map>`, `<regex>`).
+2. **Regular Expressions**: Define regular expressions for matching `title`, `author`, and `year`.
+3. **File Handling**: Use `std::ifstream` to read the file and check if it is open.
+4. **Content Processing**: Read the entire file content into a string and split it into individual entries based on `'@'`.
+5. **Helper Function**: Define a helper function `extract_entry` to process each entry and extract the required information using regex.
+6. **Main Function**: Call `extract_bib_info` and print the extracted information.
 
-1. **Regular Expressions**: The C++ code uses `std::regex` for pattern matching.
-2. **File I/O**: The C++ code uses `std::ifstream` to read the file and `std::stringstream` to store the file content.
-3. **Error Handling**: The code handles exceptions when opening the file.
-4. **Processing Entries**: The `process_entry` function extracts the title, author, and year from each entry.
-5. **Main Function**: The `main` function demonstrates how to use the `extract_bib_info` function and prints out the extracted information.
+This C++ code maintains the same functionality as the Python code, including handling file I/O, regex matching, and storing the results in a vector of maps.

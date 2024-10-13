@@ -1,27 +1,25 @@
 const fs = require('fs');
-const { DataFrame } = require('pandas-js');
 
-function dataframeToMarkdown(df, mdPath) {
-    /**
-     * Convert a DataFrame object to a table in markdown format.
-     * For example:
-     *   Input: dataframe {'Name': ['Alice', 'Bob'], 'Age': [25, 30]}
-     *   Output: | Name | Age |\n| --- | --- |\n| Alice | 25 |\n| Bob | 30 |\n
-     *
-     * @param {DataFrame} df - DataFrame type object
-     * @param {string} mdPath - Output MD file path
-     * @returns {string} Markdown file content string
-     */
+function dataframeToMarkdown(data, mdPath) {
+    // Construct the header row
+    const headers = "| " + Object.keys(data[0]).join(" | ") + " |\n";
+    
+    // Construct the separator row
+    const separators = "| " + ("--- | ".repeat(Object.keys(data[0]).length)).slice(0, -3) + " |\n";
+    
+    // Combine headers and separators
+    let markdown = headers + separators;
 
-    // Convert DataFrame to markdown
-    const headers = df.columns.join(' | ');
-    const separator = Array(headers.split(' | ').length).fill('---').join(' | ');
-    const rows = df.values.map(row => row.join(' | ')).join('\n');
+    // Build markdown table body
+    data.forEach(row => {
+        markdown += "| " + Object.values(row).map(value => String(value)).join(" | ") + " |\n";
+    });
 
-    const markdownContent = `| ${headers}\n| ${separator}\n| ${rows}`;
+    // Write markdown to file
+    fs.writeFile(mdPath, markdown, (err) => {
+        if (err) throw err;
+        console.log(`Markdown table has been written to ${mdPath}`);
+    });
 
-    // Write markdown content to file
-    fs.writeFileSync(mdPath, markdownContent);
-
-    return markdownContent;
+    return markdown;
 }

@@ -1,23 +1,36 @@
 package org.real.temp;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 public class Answer {
+
     /**
-     * Simplify file paths in Windows systems into name strings.
-     * For example:
-     *      input: C:\\Users\\User\\file.txt
-     *      output: C_Users_User_file.txt
+     * Simplifies a given Windows path by replacing the drive letter and colon with the drive letter followed by an underscore,
+     * replacing all backslashes with underscores, and removing any leading or trailing underscores.
      *
-     * @param path Windows file path string
-     * @return Simplified path string
+     * @param path The Windows path to be simplified.
+     * @return The simplified path.
      */
     public static String simplifyWindowsPath(String path) {
-        // Replace backslashes with underscores and remove leading/trailing slashes
-        return path.replace("\\", "_").replaceAll("^[/\\\\]+|[/\\\\]+$", "");
+        // Extract the drive letter and the rest of the path
+        String[] splitPath = path.split("[:\\\\]", 2);
+        String drive = splitPath[0] + "_";
+
+        // Process the rest of the path
+        String pathWithoutDrive = splitPath[1];
+        String simplifiedPath = pathWithoutDrive.replace("\\", "_").replaceAll("^_|_$", "");
+
+        // Concatenate the simplified drive and path
+        String finalPath = drive + simplifiedPath;
+
+        return finalPath;
     }
 
+    // A check function to verify the correctness of the generated function with provided data points
     public static void main(String[] args) {
-        // Example usage
-        String simplifiedPath = simplifyWindowsPath("C:\\Users\\User\\file.txt");
-        System.out.println(simplifiedPath);  // Output: C_Users_User_file.txt
+        System.out.println(simplifyWindowsPath("D:\\User\\Documents")); // Expected: D_User_Documents
+        System.out.println(simplifyWindowsPath("C:\\Program Files\\Java")); // Expected: C_Program_Files_Java
+        System.out.println(simplifyWindowsPath("E:\\Temp\\")); // Expected: E_Temp
     }
 }

@@ -1,19 +1,17 @@
-import { convertToCommaSeparated } from './yourModuleName';  // Adjust the import to match your module
-
 describe('convertToCommaSeparated', () => {
-    test('basic separators', () => {
+    it('should convert basic separators', () => {
         expect(convertToCommaSeparated("apple;banana*orange/mango")).toBe("apple,banana,orange,mango");
     });
 
-    test('mixed separators', () => {
+    it('should convert mixed separators in a string', () => {
         expect(convertToCommaSeparated("grapes;lemon/melon*kiwi;litchi")).toBe("grapes,lemon,melon,kiwi,litchi");
     });
 
-    test('no separators', () => {
-        expect(convertToCommaSeparated("watermelon")).toBe("watermelon");
+    it('should convert mixed separators in another string', () => {
+        expect(convertToCommaSeparated("grapes/lemon/melon*kiwi*litchi")).toBe("grapes,lemon,melon,kiwi,litchi");
     });
 
-    test('repeated separators', () => {
-        expect(convertToCommaSeparated("pear;;apple**banana//orange")).toBe("pear,,apple,,banana,,orange");
+    it('should handle strings without separators', () => {
+        expect(convertToCommaSeparated("watermelon")).toBe("watermelon");
     });
 });

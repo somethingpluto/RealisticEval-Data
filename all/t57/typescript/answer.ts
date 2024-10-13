@@ -1,28 +1,26 @@
-import * as sharp from 'sharp';
+import sharp from 'sharp'; // Assuming sharp is installed and can handle image conversions
 
-interface IconSize {
+interface IconSizes {
     width: number;
     height: number;
 }
 
-async function convertPngToIco(pngFilePath: string, icoFilePath: string, iconSizes: IconSize[] = [{ width: 32, height: 32 }]): Promise<void> {
-    /**
-     * Convert PNG images to ICO files
-     * @param pngFilePath - Path to the source PNG image file.
-     * @param icoFilePath - Path to save the ICO file.
-     * @param iconSizes - List of objects specifying the sizes to include in the ICO file.
-     */
-
-    try {
-        const promises = iconSizes.map(async (size) => {
-            await sharp(pngFilePath)
-                .resize(size.width, size.height)
-                .toFile(`${icoFilePath}_${size.width}x${size.height}.ico`);
+/**
+ * Convert a PNG image file to an ICO format file.
+ *
+ * @param pngFilePath - Path to the source PNG image file.
+ * @param icoFilePath - Path to save the ICO file.
+ * @param iconSizes - List of tuples specifying the sizes to include in the ICO file.
+ */
+function convertPngToIco(pngFilePath: string, icoFilePath: string, iconSizes: IconSizes[] = [{ width: 32, height: 32 }]): void {
+    // Open the image file using sharp
+    sharp(pngFilePath)
+        .resize(iconSizes[0].width, iconSizes[0].height)
+        .toFile(icoFilePath, (err, info) => {
+            if (err) {
+                console.error('Error converting PNG to ICO:', err);
+            } else {
+                console.log('ICO file saved successfully:', icoFilePath);
+            }
         });
-
-        await Promise.all(promises);
-        console.log('ICO files generated successfully.');
-    } catch (error) {
-        console.error('Error converting PNG to ICO:', error);
-    }
 }

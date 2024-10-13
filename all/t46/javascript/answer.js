@@ -1,10 +1,4 @@
 class TreeNode {
-    /**
-     * Binary tree node
-     * @param {number} [value=0] - The value of the node.
-     * @param {TreeNode} [left=null] - The left child node.
-     * @param {TreeNode} [right=null] - The right child node.
-     */
     constructor(value = 0, left = null, right = null) {
         this.value = value;
         this.left = left;
@@ -12,24 +6,16 @@ class TreeNode {
     }
 }
 
-// Define the BinaryTree class
 class BinaryTree {
-    /**
-     * Binary tree
-     * @param {TreeNode} [root=null] - The root node of the binary tree.
-     */
     constructor(root = null) {
         this.root = root;
     }
 
-    /**
-     * Preorder traversal of the binary tree
-     * @param {TreeNode} node - The current node being visited.
-     * @param {Array} [result=[]] - The array to store the traversal result.
-     * @returns {Array} - The traversal result.
-     */
-    preorderTraversal(node, result = []) {
-        if (node !== null) {
+    preorderTraversal(node, result = null) {
+        if (result === null) {
+            result = [];
+        }
+        if (node) {
             result.push(node.value);
             this.preorderTraversal(node.left, result);
             this.preorderTraversal(node.right, result);
@@ -37,14 +23,11 @@ class BinaryTree {
         return result;
     }
 
-    /**
-     * Inorder traversal of the binary tree
-     * @param {TreeNode} node - The current node being visited.
-     * @param {Array} [result=[]] - The array to store the traversal result.
-     * @returns {Array} - The traversal result.
-     */
-    inorderTraversal(node, result = []) {
-        if (node !== null) {
+    inorderTraversal(node, result = null) {
+        if (result === null) {
+            result = [];
+        }
+        if (node) {
             this.inorderTraversal(node.left, result);
             result.push(node.value);
             this.inorderTraversal(node.right, result);
@@ -52,17 +35,66 @@ class BinaryTree {
         return result;
     }
 
-    /**
-     * Postorder traversal of the binary tree
-     * @param {TreeNode} node - The current node being visited.
-     * @param {Array} [result=[]] - The array to store the traversal result.
-     * @returns {Array} - The traversal result.
-     */
-    postorderTraversal(node, result = []) {
-        if (node !== null) {
+    postorderTraversal(node, result = null) {
+        if (result === null) {
+            result = [];
+        }
+        if (node) {
             this.postorderTraversal(node.left, result);
             this.postorderTraversal(node.right, result);
             result.push(node.value);
+        }
+        return result;
+    }
+
+    iterativePreorder() {
+        if (!this.root) {
+            return [];
+        }
+        let stack = [this.root];
+        let result = [];
+        while (stack.length > 0) {
+            let node = stack.pop();
+            if (node) {
+                result.push(node.value);
+                stack.push(node.right);
+                stack.push(node.left);
+            }
+        }
+        return result;
+    }
+
+    iterativeInorder() {
+        let stack = [];
+        let result = [];
+        let current = this.root;
+        while (stack.length > 0 || current) {
+            while (current) {
+                stack.push(current);
+                current = current.left;
+            }
+            current = stack.pop();
+            result.push(current.value);
+            current = current.right;
+        }
+        return result;
+    }
+
+    iterativePostorder() {
+        if (!this.root) {
+            return [];
+        }
+        let stack = [this.root];
+        let result = [];
+        while (stack.length > 0) {
+            let node = stack.pop();
+            result.unshift(node.value);
+            if (node.left) {
+                stack.push(node.left);
+            }
+            if (node.right) {
+                stack.push(node.right);
+            }
         }
         return result;
     }

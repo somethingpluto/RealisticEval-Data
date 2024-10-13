@@ -1,90 +1,169 @@
-Sure! Below is the equivalent JavaScript test case using Jest for the provided Python unittest test class. Note that I'll assume you have a basic implementation of the `average_of_levels` function in JavaScript and will focus on writing the Jest tests.
+Certainly! Below is the equivalent Jest test suite for the given Python unittest class. The goal is to maintain the same functionality and logic while adapting to Jest's syntax and conventions.
 
+### Python Code:
+```python
+import unittest
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+class TestAverageOfLevels(unittest.TestCase):
+
+    def test_empty_tree(self):
+        root = None
+        expected = []
+        self.assertEqual(average_of_levels(root), expected)
+
+    def test_single_node_tree(self):
+        root = TreeNode(5)
+        expected = [5.0]
+        self.assertEqual(average_of_levels(root), expected)
+
+    def test_balanced_tree_two_levels(self):
+        root = TreeNode(3)
+        root.left = TreeNode(9)
+        root.right = TreeNode(20)
+        expected = [3.0, 14.5]  # Level 0: 3; Level 1: (9+20)/2 = 14.5
+        self.assertEqual(average_of_levels(root), expected)
+
+    def test_unbalanced_tree(self):
+        root = TreeNode(1)
+        root.right = TreeNode(2)
+        root.right.right = TreeNode(3)
+        expected = [1.0, 2.0, 3.0]  # Level 0: 1; Level 1: 2; Level 2: 3
+        self.assertEqual(average_of_levels(root), expected)
+
+    def test_tree_multiple_levels(self):
+        root = TreeNode(1)
+        root.left = TreeNode(2)
+        root.right = TreeNode(3)
+        root.left.left = TreeNode(4)
+        root.left.right = TreeNode(5)
+        root.right.right = TreeNode(8)
+        expected = [1.0, 2.5, 5.67]  # Level 0: 1; Level 1: (2+3)/2 = 2.5; Level 2: (4+5+8)/3 ≈ 5.67
+        self.assertAlmostEqual(average_of_levels(root)[2], expected[2], places=2)
+        self.assertEqual(average_of_levels(root)[:2], expected[:2])
+```
+
+### Equivalent Jest Test Suite:
 ```javascript
-// Assuming the TreeNode class and average_of_levels function are defined as follows:
-
+// Define the TreeNode class
 class TreeNode {
-  constructor(val = 0, left = null, right = null) {
-    this.val = val;
-    this.left = left;
-    this.right = right;
-  }
+    /**
+     * Constructs a new TreeNode instance.
+     * 
+     * @param {number} val - The value of the node.
+     * @param {TreeNode} [left=null] - The left child of the node.
+     * @param {TreeNode} [right=null] - The right child of the node.
+     */
+    constructor(val = 0, left = null, right = null) {
+        this.val = val;
+        this.left = left;
+        this.right = right;
+    }
 }
 
+/**
+ * Calculates the average value of the nodes on each level of a binary tree.
+ * 
+ * @param {TreeNode} root - The root of the binary tree.
+ * @returns {number[]} An array containing the average values of each level.
+ */
 function averageOfLevels(root) {
-  if (!root) return [];
-
-  const result = [];
-  const queue = [root];
-
-  while (queue.length > 0) {
-    const levelSize = queue.length;
-    let levelSum = 0;
-
-    for (let i = 0; i < levelSize; i++) {
-      const currentNode = queue.shift();
-      levelSum += currentNode.val;
-
-      if (currentNode.left) queue.push(currentNode.left);
-      if (currentNode.right) queue.push(currentNode.right);
+    if (!root) {
+        return [];
     }
 
-    result.push(levelSum / levelSize);
-  }
+    let result = [];
+    let queue = [[root, 0]];  // [node, level]
 
-  return result;
+    while (queue.length > 0) {
+        let currentLevel = [];
+        let levelSize = queue.length;
+
+        for (let i = 0; i < levelSize; i++) {
+            let [node, level] = queue.shift();
+            currentLevel.push(node.val);
+
+            if (node.left) {
+                queue.push([node.left, level + 1]);
+            }
+            if (node.right) {
+                queue.push([node.right, level + 1]);
+            }
+        }
+
+        // Calculate the average for the current level
+        let levelAverage = currentLevel.reduce((acc, val) => acc + val, 0) / currentLevel.length;
+        result.push(levelAverage);
+    }
+
+    return result;
 }
 
-// Jest test cases
+describe('TestAverageOfLevels', () => {
+    it('should handle an empty tree', () => {
+        const root = null;
+        const expected = [];
+        expect(averageOfLevels(root)).toEqual(expected);
+    });
 
-describe('averageOfLevels', () => {
-  it('should return the average values of each level in a binary tree', () => {
-    // Constructing the following binary tree:
-    //       3
-    //      / \
-    //     9   20
-    //        /  \
-    //       15   7
-    const root = new TreeNode(3);
-    root.left = new TreeNode(9);
-    root.right = new TreeNode(20);
-    root.right.left = new TreeNode(15);
-    root.right.right = new TreeNode(7);
+    it('should handle a single node tree', () => {
+        const root = new TreeNode(5);
+        const expected = [5.0];
+        expect(averageOfLevels(root)).toEqual(expected);
+    });
 
-    expect(averageOfLevels(root)).toEqual([3, 14.5, 11]);
-  });
+    it('should handle a balanced tree with two levels', () => {
+        const root = new TreeNode(3);
+        root.left = new TreeNode(9);
+        root.right = new TreeNode(20);
+        const expected = [3.0, 14.5];  // Level 0: 3; Level 1: (9+20)/2 = 14.5
+        expect(averageOfLevels(root)).toEqual(expected);
+    });
 
-  it('should handle an empty tree', () => {
-    expect(averageOfLevels(null)).toEqual([]);
-  });
+    it('should handle an unbalanced tree', () => {
+        const root = new TreeNode(1);
+        root.right = new TreeNode(2);
+        root.right.right = new TreeNode(3);
+        const expected = [1.0, 2.0, 3.0];  // Level 0: 1; Level 1: 2; Level 2: 3
+        expect(averageOfLevels(root)).toEqual(expected);
+    });
 
-  it('should handle a single node tree', () => {
-    const root = new TreeNode(5);
-    expect(averageOfLevels(root)).toEqual([5]);
-  });
+    it('should handle a tree with multiple levels', () => {
+        const root = new TreeNode(1);
+        root.left = new TreeNode(2);
+        root.right = new TreeNode(3);
+        root.left.left = new TreeNode(4);
+        root.left.right = new TreeNode(5);
+        root.right.right = new TreeNode(8);
+        const expected = [1.0, 2.5, 5.67];  // Level 0: 1; Level 1: (2+3)/2 = 2.5; Level 2: (4+5+8)/3 ≈ 5.67
+        expect(averageOfLevels(root)[2]).toBeCloseTo(expected[2], 2);
+        expect(averageOfLevels(root).slice(0, 2)).toEqual(expected.slice(0, 2));
+    });
 });
 ```
 
 ### Explanation:
-1. **TreeNode Class**: This is the same as in the Python code.
-2. **averageOfLevels Function**: This is a JavaScript implementation of the function that calculates the average values of each level in a binary tree.
-3. **Jest Test Cases**:
-   - **it('should return the average values of each level in a binary tree')**: This test constructs a sample binary tree and checks if the `averageOfLevels` function returns the correct averages for each level.
-   - **it('should handle an empty tree')**: This test checks if the function correctly handles an empty tree.
-   - **it('should handle a single node tree')**: This test checks if the function correctly handles a tree with only one node.
+1. **Class Definition**:
+   - The `TreeNode` class is defined with a constructor that initializes the node's value and its left and right children.
+   - The JSDoc comment provides detailed information about the constructor parameters.
 
-Make sure you have Jest installed in your project. If not, you can install it using npm or yarn:
+2. **Function Definition**:
+   - The `averageOfLevels` function takes the root of a binary tree as input and returns an array containing the average values of each level.
+   - The JSDoc comment provides detailed information about the function parameters and return type.
 
-```sh
-npm install --save-dev jest
-# or
-yarn add --dev jest
-```
+3. **Jest Test Suite**:
+   - The `describe` block groups the test cases under the `TestAverageOfLevels` description.
+   - Each `it` block represents a specific test case.
+   - The `expect` function is used to assert the expected outcomes.
 
-Then, you can run the tests using:
+4. **Assertions**:
+   - `toEqual` is used to check if the entire array matches the expected array.
+   - `toBeCloseTo` is used to check if a floating-point number is close to the expected value within a specified number of decimal places (`2` in this case).
+   - `slice` is used to compare slices of arrays when needed.
 
-```sh
-npx jest
-# or
-yarn jest
-```
+This Jest test suite preserves the functionality and logic of the original Python unittest class, ensuring that all assertions are mapped appropriately.

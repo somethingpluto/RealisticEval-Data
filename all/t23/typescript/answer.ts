@@ -1,26 +1,23 @@
-type Point = [number, number];
-type Segment = [Point, Point];
-
-function getLineSegmentIntersection(seg1: Segment, seg2: Segment): [number, number] | null {
+function getLineSegmentIntersection(seg1: [number, number][], seg2: [number, number][]): [number, number] | null {
     /**
      * Calculate the intersection point of two line segments, if it exists.
      *
-     * Args:
-     *     seg1: Coordinates of the first line segment, defined as ((x1, y1), (x2, y2)).
-     *     seg2: Coordinates of the second line segment, defined as ((x3, y3), (x4, y4)).
-     *
-     * Returns:
-     *     The (x, y) coordinates of the intersection point if the line segments intersect,
-     *     otherwise null.
+     * @param seg1 - Coordinates of the first line segment, defined as [[x1, y1], [x2, y2]].
+     * @param seg2 - Coordinates of the second line segment, defined as [[x3, y3], [x4, y4]].
+     * @returns The [x, y] coordinates of the intersection point if the line segments intersect,
+     *          otherwise null.
      */
-
     // Unpack segment points
-    const [[x1, y1], [x2, y2]] = seg1;
-    const [[x3, y3], [x4, y4]] = seg2;
+    const [x1, y1] = seg1[0];
+    const [x2, y2] = seg1[1];
+    const [x3, y3] = seg2[0];
+    const [x4, y4] = seg2[1];
 
     // Compute direction vectors and determinant
-    const dx1 = x2 - x1, dy1 = y2 - y1;
-    const dx2 = x4 - x3, dy2 = y4 - y3;
+    const dx1 = x2 - x1;
+    const dy1 = y2 - y1;
+    const dx2 = x4 - x3;
+    const dy2 = y4 - y3;
     const determinant = dx1 * dy2 - dx2 * dy1;
 
     // Check for parallel lines or identical segments
@@ -39,7 +36,7 @@ function getLineSegmentIntersection(seg1: Segment, seg2: Segment): [number, numb
     if (0 - tolerance <= t1 && t1 <= 1 + tolerance && 0 - tolerance <= t2 && t2 <= 1 + tolerance) {
         const x = x1 + t1 * dx1;
         const y = y1 + t1 * dy1;
-        return [Number(x.toFixed(7)), Number(y.toFixed(7))];
+        return [Math.round(x * 1e7) / 1e7, Math.round(y * 1e7) / 1e7];
     }
 
     return null;

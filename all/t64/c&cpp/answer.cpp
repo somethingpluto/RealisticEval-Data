@@ -1,56 +1,93 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <vector>
 #include <string>
+#include <vector>
+#include <filesystem>
 
-std::string csvToSQLInsert(const std::string& csvFilePath) {
-    std::ifstream csvFile(csvFilePath);
-    if (!csvFile.is_open()) {
-        return "Error opening file";
+namespace fs = std::filesystem;
+
+// Function to escape single quotes in a string
+std::string escape_single_quotes(const std::string& input) {
+    std::string result;
+    for (char c : input) {
+        if (c == '\'') {
+            result += "''";
+        } else {
+            result += c;
+        }
+    }
+    return result;
+}
+
+// Function to check if a string is a number
+bool is_number(const std::string& s) {
+    return !s.empty() && std::all_of(s.begin(), s.end(), ::isdigit);
+}
+
+// Function to convert CSV content to SQL insert statements
+std::string csv_to_sql_insert(const std::string& csv_file_path) {
+    // Extract the table name from the CSV file name, removing the suffix
+    std::string table_name = fs::path(csv_file_path).filename().replace_extension().string();
+
+    // Open the CSV file and read its contents
+    std::ifstream file(csv_file_path);
+    if (!file.is_open()) {
+        std::cerr << "Failed to open file: " << csv_file_path << std::endl;
+        return "";
     }
 
+    std::vector<std::string> headers;
     std::string line;
-    std::getline(csvFile, line); // Read the header line
-    std::istringstream ss(line);
-    std::vector<std::string> headers((std::istream_iterator<std::string>(ss)),
-                                     std::istream_iterator<std::string>());
-
-    std::string tableName = csvFilePath.substr(0, csvFilePath.find_last_of('.'));
-    std::string sqlStatements;
-
-    while (std::getline(csvFile, line)) {
-        ss.clear();
-        ss.str(line);
-        std::vector<std::string> values((std::istream_iterator<std::string>(ss)),
-                                        std::istream_iterator<std::string>());
-
-        if (values.size() != headers.size()) {
-            continue; // Skip rows with incorrect number of columns
-        }
-
-        sqlStatements += "INSERT INTO " + tableName + "(";
-        for (size_t i = 0; i < headers.size(); ++i) {
-            sqlStatements += headers[i];
-            if (i < headers.size() - 1) {
-                sqlStatements += ", ";
-            }
-        }
-        sqlStatements += ") VALUES (";
-
-        for (size_t i = 0; i < values.size(); ++i) {
-            if (values[i].find_first_not_of("0123456789.-") == std::string::npos) {
-                sqlStatements += "'" + values[i] + "'";
-            } else {
-                sqlStatements += values[i];
-            }
-            if (i < values.size() - 1) {
-                sqlStatements += ", ";
-            }
-        }
-        sqlStatements += ");\n";
+    std::getline(file, line); // Read the first line (headers)
+    std::istringstream header_stream(line);
+    std::string header;
+    while (std::getline(header_stream, header, ',')) {
+        headers.push_back(header);
     }
 
-    csvFile.close();
-    return sqlStatements;
+    // Prepare the SQL insert statements
+    std::vector<std::string> insert_statements;
+
+    while (std::getline(file, line)) {
+        std::istringstream row_stream(line);
+        std::vector<std::string> values;
+        std::string value;
+        while (std::getline(row_stream, value, ',')) {
+            if (is_number(value)) {
+                values.push_back(value);
+            } else {
+                std::string escaped_value = escape_single_quotes(value);
+                values.push_back("'" + escaped_value + "'");
+            }
+        }
+
+        // Join column names and values to form an INSERT statement
+        std::string insert_statement = "INSERT INTO " + table_name + " (" + std::accumulate(headers.begin(), headers.end(), std::string(),
+                                                                                           [](const std::string& a, const std::string& b) {
+                                                                                               return a.empty() ? b : a + ", " + b;
+                                                                                           }) + ") VALUES (" +
+                                       std::accumulate(values.begin(), values.end(), std::string(),
+                                                       [](const std::string& a, const std::string& b) {
+                                                           return a.empty() ? b : a + ", " + b;
+                                                       }) + ");";
+        insert_statements.push_back(insert_statement);
+    }
+
+    file.close();
+
+    // Combine all insert statements into a single output
+    std::ostringstream oss;
+    for (const auto& stmt : insert_statements) {
+        oss << stmt << '\n';
+    }
+
+    return oss.str();
+}
+
+int main() {
+    std::string csv_file_path = "example.csv"; // Replace with your CSV file path
+    std::string sql_insert_statements = csv_to_sql_insert(csv_file_path);
+    std::cout << sql_insert_statements << std::endl;
+    return 0;
 }

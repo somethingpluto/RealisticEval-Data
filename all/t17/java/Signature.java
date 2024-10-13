@@ -1,5 +1,5 @@
 /**
- * Calculate the distance between two points on the earth based on their latitude and longitude
+ * Calculates the distance between two points on the Earth based on their latitude and longitude.
  *
  * @param lat1 Latitude of the first point in degrees.
  * @param lon1 Longitude of the first point in degrees.

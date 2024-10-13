@@ -1,58 +1,82 @@
-Below is the equivalent C++ code using Catch2 for the provided Python unittest code:
+Certainly! Below is the equivalent C++ test class using the Catch2 testing framework. The provided Python unittest class is converted into a Catch2 test suite, ensuring that the functionality and logic of the tests are preserved.
+
+### C++ Code with Catch2 Testing Framework
 
 ```cpp
 #include <catch2/catch_test_macros.hpp>
-#include <string>
 #include <vector>
+#include <string>
 #include <regex>
 
-// Function to find placeholders in the given text
+// Function to find and return a list of all placeholders in the format {{ placeholder }} from the input text.
 std::vector<std::string> find_placeholders(const std::string& text) {
-    std::vector<std::string> placeholders;
-    std::regex pattern(R"(\{\{ (\w+) \}\})");
-    std::smatch matches;
+    // Regular expression pattern to match placeholders in the specified format
+    std::regex pattern(R"(\{\{\s*([\w\s]+)\s*\}\})");
 
-    std::string::const_iterator searchStart(text.cbegin());
-    while (std::regex_search(searchStart, text.cend(), matches, pattern)) {
-        placeholders.push_back(matches[0]);
-        searchStart = matches.suffix().first;
+    // Use std::sregex_iterator to find all matches in the input text
+    std::sregex_iterator matches_begin = std::sregex_iterator(text.begin(), text.end(), pattern);
+    std::sregex_iterator matches_end = std::sregex_iterator();
+
+    // Extract the matched placeholders and store them in a vector
+    std::vector<std::string> placeholders;
+    for (std::sregex_iterator i = matches_begin; i != matches_end; ++i) {
+        std::smatch match = *i;
+        placeholders.push_back(match[1].str());  // Extract the placeholder part
     }
 
     return placeholders;
 }
 
-// Test fixture for find_placeholders function
-TEST_CASE("find_placeholders") {
-    // Test case 1: Empty string
-    SECTION("Empty string should return empty vector") {
-        auto result = find_placeholders("");
-        REQUIRE(result.empty());
+TEST_CASE("Test find_placeholders function", "[find_placeholders]") {
+    SECTION("Test string with multiple placeholders") {
+        std::string input_text = "Here are some placeholders: {{ placeholder1 }}, {{ placeholder2 }}, and {{ placeholder3 }}.";
+        std::vector<std::string> expected_output = {"placeholder1", "placeholder2", "placeholder3"};
+        REQUIRE(find_placeholders(input_text) == expected_output);
     }
 
-    // Test case 2: String with no placeholders
-    SECTION("String without placeholders should return empty vector") {
-        auto result = find_placeholders("This is a test string.");
-        REQUIRE(result.empty());
+    SECTION("Test string with no placeholders") {
+        std::string input_text = "This string has no placeholders.";
+        std::vector<std::string> expected_output = {};
+        REQUIRE(find_placeholders(input_text) == expected_output);
     }
 
-    // Test case 3: String with placeholders
-    SECTION("String with placeholders should return them") {
-        auto result = find_placeholders("Hello {{ world }}, how are you {{ doing }}?");
-        REQUIRE(result == std::vector<std::string>({"{{ world }}", "{{ doing }}"}));
+    SECTION("Test string with a single placeholder") {
+        std::string input_text = "The only placeholder is {{ singlePlaceholder }}.";
+        std::vector<std::string> expected_output = {"singlePlaceholder"};
+        REQUIRE(find_placeholders(input_text) == expected_output);
+    }
+
+    SECTION("Test string with placeholders that have extra spaces") {
+        std::string input_text = "Placeholders with spaces: {{  placeholder_with_spaces  }} and {{ placeholder2 }}.";
+        std::vector<std::string> expected_output = {"placeholder_with_spaces", "placeholder2"};
+        REQUIRE(find_placeholders(input_text) == expected_output);
     }
 }
 ```
 
 ### Explanation:
-1. **Function Definition**: The `find_placeholders` function takes a string as input and returns a vector of strings containing all the placeholders found in the format `{{ placeholder }}`.
 
-2. **Regular Expression Pattern**: The regular expression pattern `\{\{ (\w+) \}\}` is used to match the placeholders in the format `{{ placeholder }}`. The parentheses capture the actual placeholder name.
+1. **Header Files**:
+   - `#include <catch2/catch_test_macros.hpp>` for Catch2 test macros.
+   - `#include <vector>` for using vectors.
+   - `#include <string>` for string operations.
+   - `#include <regex>` for regular expressions.
 
-3. **Regex Search Loop**: The loop continues searching for matches until no more matches are found. Each match is added to the `placeholders` vector.
+2. **Function Definition**:
+   - `find_placeholders` takes a `const std::string& text` as input and returns a `std::vector<std::string>` containing the placeholders found in the input text.
 
-4. **Test Cases**:
-   - **Empty String**: Tests if an empty string returns an empty vector.
-   - **No Placeholders**: Tests if a string with no placeholders returns an empty vector.
-   - **With Placeholders**: Tests if a string with placeholders returns the correct vector of placeholders.
+3. **Regular Expression Pattern**:
+   - The pattern `R"(\{\{\s*([\w\s]+)\s*\}\})"` is used to match placeholders in the format `{{ placeholder }}`, allowing for spaces within the placeholder.
 
-5. **Assertions**: `REQUIRE` is used to assert the expected results for each test case.
+4. **Finding Matches**:
+   - `std::sregex_iterator` is used to iterate through all matches found in the input text.
+
+5. **Extracting Placeholders**:
+   - For each match, the placeholder part is extracted using `match[1].str()` and stored in a vector.
+
+6. **Catch2 Test Suite**:
+   - The `TEST_CASE` macro defines a test case named "Test find_placeholders function".
+   - Each `SECTION` within the test case represents a specific test scenario.
+   - `REQUIRE` is used to assert that the output of `find_placeholders` matches the expected output.
+
+This translation ensures that the functionality, logic, and structure of the original Python unittest class are preserved in the C++ Catch2 test suite.

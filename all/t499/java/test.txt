@@ -1,51 +1,110 @@
-Sure! Below is the equivalent Java JUnit test case for the provided Python unittest test class. Note that I'll assume some basic structure and methods since the original Python code doesn't include specific assertions or test cases.
+Certainly! Below is the equivalent Java test class using JUnit, placed in the package `org.real.temp` and named `Tester`. The functionality and logic of the tests are preserved, and appropriate JUnit annotations and assertion methods are used.
 
 ```java
 package org.real.temp;
 
-import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
+/**
+ * Test class for the cleanPattern method.
+ */
 public class Tester {
+
+    private String pattern;
 
     @Before
     public void setUp() {
-        // Setup code if needed
+        // Set up a common regex pattern for testing
+        pattern = "(\\d+\\.?\\d*) kg";  // Regex pattern to match weight in kg
     }
 
     @Test
-    public void testCleanPattern() {
-        assertEquals("123", Tester.cleanPattern("abc123xyz", "\\d+"));
-        assertEquals("456.78", Tester.cleanPattern("uvw456.78xyz", "\\d+\\.\\d+"));
-        assertNull(Tester.cleanPattern("no numbers here", "\\d+"));
-        assertNull(Tester.cleanPattern(null, "\\d+"));
+    public void testValidIntegerWeight() {
+        // Test case for valid integer weight
+        String inputString = "The weight is 25 kg";
+        Object result = cleanPattern(inputString, pattern);
+        assertEquals(25.0f, result);
     }
 
-    public static String cleanPattern(String x, String pattern) {
-        if (x == null || x.isEmpty()) {
-            return null;
-        }
-        try {
-            return x.replaceAll("[^0-9.]", "").trim();
-        } catch (Exception e) {
-            return null;
+    @Test
+    public void testValidFloatWeight() {
+        // Test case for valid float weight
+        String inputString = "Weight measured at 15.75 kg";
+        Object result = cleanPattern(inputString, pattern);
+        assertEquals(15.75f, result);
+    }
+
+    @Test
+    public void testNoWeightFound() {
+        // Test case where no weight is present
+        String inputString = "No weight provided.";
+        Object result = cleanPattern(inputString, pattern);
+        assertEquals("", result);
+    }
+
+    @Test
+    public void testInvalidFloatConversion() {
+        // Test case for non-numeric weight
+        String inputString = "The weight is thirty kg";
+        Object result = cleanPattern(inputString, pattern);
+        assertEquals("", result);
+    }
+
+    @Test
+    public void testWeightWithExtraText() {
+        // Test case for weight with additional text
+        String inputString = "The total weight is 45.3 kg as per the last measurement.";
+        Object result = cleanPattern(inputString, pattern);
+        assertEquals(45.3f, result);
+    }
+
+    // Method to be tested
+    private Object cleanPattern(Object x, String pattern) {
+        // Convert input to string
+        String input = x.toString();
+
+        // Compile the pattern
+        Pattern compiledPattern = Pattern.compile(pattern);
+        Matcher matcher = compiledPattern.matcher(input);
+
+        if (matcher.find()) {
+            // Extract the weight value from the first matching group
+            String weight = matcher.group(1);  // Can also use matcher.group(3) if needed
+
+            try {
+                // Convert the weight to a float and return it
+                float weightValue = Float.parseFloat(weight);
+                return weightValue;
+            } catch (NumberFormatException e) {
+                // Handle cases where conversion to float fails
+                System.out.println("Warning: Unable to convert '" + weight + "' to float.");
+                return "";
+            }
+        } else {
+            return "";  // Return empty string if no match is found
         }
     }
 }
 ```
 
 ### Explanation:
+1. **Package and Class Declaration**:
+   - The package declaration `package org.real.temp;` and the class declaration `public class Tester` are included.
 
-1. **Package Declaration**: The `@Test` annotation indicates that the class contains JUnit tests.
-2. **Setup Method**: The `@Before` method can be used to set up any necessary resources before each test runs.
-3. **Test Methods**: Each method annotated with `@Test` represents a single test case.
-4. **Assertions**: The `assertEquals`, `assertNull`, etc., methods are used to assert expected outcomes.
-5. **Static Method**: The `cleanPattern` method is made static so it can be called directly in the test class without needing an instance of the class.
+2. **JUnit Annotations**:
+   - The `@Before` annotation is used to set up the common regex pattern before each test.
+   - The `@Test` annotation is used to mark each test method.
 
-### Notes:
-- The `cleanPattern` method in Java uses regular expressions to remove non-numeric characters and trims the result.
-- The `null` checks are handled within the method itself to ensure robustness.
-- The test cases cover different scenarios including valid numeric patterns, invalid patterns, and `null` inputs.
+3. **JUnit Assertions**:
+   - The `assertEquals` method is used to assert the expected results.
 
-Make sure you have JUnit added to your project dependencies if you're using a build tool like Maven or Gradle.
+4. **Test Methods**:
+   - Each test method is annotated with `@Test` and follows the naming convention similar to the Python test cases.
+   - The test methods cover various scenarios, including valid integer weights, valid float weights, no weight found, invalid float conversion, and weight with extra text.
+
+5. **Helper Method**:
+   - The `cleanPattern` method is defined within the test class to be tested by the JUnit tests.
+
+This Java test class preserves the original functionality and logic of the Python test cases while adhering to JUnit conventions and best practices.

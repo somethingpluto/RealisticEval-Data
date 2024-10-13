@@ -1,40 +1,53 @@
-Here's how you can translate your Python code into Java. Note that Java does not have native support for NumPy arrays like Python does, so we'll use the Apache Commons Math library instead:
+Here is the equivalent Java code following the package and class name requirements, along with necessary adjustments for type handling and method signatures:
 
 ```java
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.linear.Array2DRowRealMatrix;
+package org.real.temp;
+
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.factory.Nd4j;
 
 public class Answer {
-    
-    public static Array2DRowRealMatrix translatePointCloud(Array2DRowRealMatrix pointCloud, Vector3D translationVector) {
-        
-        int rows = pointCloud.getRowDimension();
-        Array2DRowRealMatrix result = new Array2DRowRealMatrix(rows, 3);
-        
-        for(int i=0; i<rows; i++) {
-            double[] row = pointCloud.getRow(i);
-            
-            // Adding translation vector to each point in the point cloud
-            double[] newRow = {row[0] + translationVector.getX(), 
-                               row[1] + translationVector.getY(),
-                               row[2] + translationVector.getZ()};
-            
-            result.setRow(i, newRow);
+
+    /**
+     * Translate the point cloud by a given vector.
+     *
+     * @param pointCloud A N x 3 INDArray representing the 3D point cloud.
+     * @param translationVector A 1 x 3 INDArray or double array representing the translation vector.
+     * @return A N x 3 INDArray of the translated point cloud.
+     */
+    public static INDArray translatePointCloud(INDArray pointCloud, double[] translationVector) {
+        // Ensure the translationVector is an INDArray for broadcasting
+        INDArray vectorNdArray = Nd4j.create(translationVector);
+
+        // Check if translationVector is of correct shape
+        if (vectorNdArray.length() != 3) {
+            throw new IllegalArgumentException("translationVector must be a 1D array of length 3");
         }
-        
-        return result;
+
+        // Translate the point cloud by adding the translation vector to each point
+        INDArray translatedPointCloud = pointCloud.add(vectorNdArray);
+
+        return translatedPointCloud;
+    }
+
+    public static void main(String[] args) {
+        // Example usage
+        double[] translationVector = {1.0, 2.0, 3.0};
+        INDArray pointCloud = Nd4j.create(new double[][]{
+            {1.0, 2.0, 3.0},
+            {4.0, 5.0, 6.0}
+        });
+
+        INDArray translatedPointCloud = translatePointCloud(pointCloud, translationVector);
+        System.out.println(translatedPointCloud);
     }
 }
 ```
 
-In this Java code, `Array2DRowRealMatrix` is used to represent the point cloud and `Vector3D` from Apache Commons Math library represents the translation vector. The method `translatePointCloud` takes a point cloud and a translation vector as input and returns a new point cloud after translating all points by the given vector. 
-
-Before running this code, make sure to include Apache Commons Math library in your project dependencies. If you're using Maven, add the following dependency to your pom.xml file:
-
-```xml
-<dependency>
-    <groupId>org.apache.commons</groupId>
-    <artifactId>commons-math3</artifactId>
-    <version>3.6.1</version>
-</dependency>
-```
+### Key Points:
+- Used `org.nd4j.linalg.api.ndarray.INDArray` from ND4J library as an equivalent to NumPy arrays.
+- Adjusted method signature to accept `INDArray` and `double[]` types.
+- Ensured the translation vector is converted to an `INDArray` for broadcasting.
+- Added a check for the shape of the translation vector.
+- Translated the point cloud using the `add` method available in ND4J.
+- Included a simple example in the `main` method to demonstrate usage.

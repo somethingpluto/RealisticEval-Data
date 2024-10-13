@@ -3,25 +3,28 @@ package org.real.temp;
 public class Answer {
 
     /**
-     * Convert the input string. First, check if it is an integer; if it is, convert to an integer.
-     * If it is not, check if it is a floating-point number; if yes, convert to a floating-point number.
-     * If neither, return the original string.
+     * Converts the input string to an integer or a float if possible.
+     * If the string cannot be converted to a number, it returns the original string.
      *
-     * @param value input value string
-     * @return converted value as Integer, Double, or String
+     * @param value the input string to be converted
+     * @return the converted value as Integer, Float, or the original String
      */
     public static Object numericalStrConvert(String value) {
         try {
-            // Try to parse as an integer
             return Integer.parseInt(value);
-        } catch (NumberFormatException e1) {
+        } catch (NumberFormatException e) {
             try {
-                // Try to parse as a double
-                return Double.parseDouble(value);
-            } catch (NumberFormatException e2) {
-                // If neither, return the original string
+                return Float.parseFloat(value);
+            } catch (NumberFormatException ex) {
                 return value;
             }
         }
+    }
+
+    public static void main(String[] args) {
+        // Example usage
+        System.out.println(numericalStrConvert("123")); // Should print 123 as an integer
+        System.out.println(numericalStrConvert("123.456")); // Should print 123.456 as a float
+        System.out.println(numericalStrConvert("abc")); // Should print "abc" as a string
     }
 }

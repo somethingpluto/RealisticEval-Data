@@ -1,50 +1,66 @@
 package org.real.temp;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+/**
+ * Test class for verifying the correctness of the printMemoryBits method.
+ */
 public class Tester {
 
+    private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+
+    @BeforeEach
+    public void setUp() {
+        // Redirect System.out to capture the output
+        System.setOut(new PrintStream(outContent));
+    }
+
+    @AfterEach
+    public void tearDown() {
+        // Restore the normal System.out
+        System.setOut(System.out);
+    }
+
     @Test
-    public void testPrintMemoryBitsSingleByte() {
-        byte[] memorySection = {0b10101010};
+    public void testSingleByte() {
+        byte[] memorySection = new byte[]{(byte) 0b10101010};
+        printMemoryBits(memorySection);
+        String output = outContent.toString().trim();
         String expectedOutput = "10101010";
-        assertEquals(expectedOutput, printMemoryBits(memorySection));
+        assertEquals(expectedOutput, output);
     }
 
     @Test
-    public void testPrintMemoryBitsMultipleBytes() {
-        byte[] memorySection = {0b11001100, 0b11110000};
+    public void testMultipleBytes() {
+        byte[] memorySection = new byte[]{(byte) 0b11001100, (byte) 0b11110000};
+        printMemoryBits(memorySection);
+        String output = outContent.toString().trim();
         String expectedOutput = "11001100\n11110000";
-        assertEquals(expectedOutput, printMemoryBits(memorySection));
+        assertEquals(expectedOutput, output);
     }
 
     @Test
-    public void testPrintMemoryBitsEmptyArray() {
-        byte[] memorySection = {};
-        String expectedOutput = "";
-        assertEquals(expectedOutput, printMemoryBits(memorySection));
+    public void testAllZeros() {
+        byte[] memorySection = new byte[]{(byte) 0b00000000};
+        printMemoryBits(memorySection);
+        String output = outContent.toString().trim();
+        String expectedOutput = "00000000";
+        assertEquals(expectedOutput, output);
     }
 
     @Test
-    public void testPrintMemoryBitsNullInput() {
-        assertThrows(NullPointerException.class, () -> printMemoryBits(null));
-    }
-
-    private String printMemoryBits(byte[] memorySection) {
-        if (memorySection == null) {
-            throw new NullPointerException("Memory section cannot be null");
-        }
-
-        StringBuilder result = new StringBuilder();
-        for (byte b : memorySection) {
-            result.append(String.format("%8s", Integer.toBinaryString(b & 0xFF)).replace(' ', '0'));
-            if (result.length() > 8) {
-                result.append('\n');
-            }
-        }
-        return result.toString().trim();
+    public void testAllOnes() {
+        byte[] memorySection = new byte[]{(byte) 0b11111111};
+        printMemoryBits(memorySection);
+        String output = outContent.toString().trim();
+        String expectedOutput = "11111111";
+        assertEquals(expectedOutput, output);
     }
 }

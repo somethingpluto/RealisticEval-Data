@@ -1,52 +1,141 @@
-Firstly, we need to install the necessary package to handle .docx files in Node.js environment. You can use a library like `docx` or `wordjs`, but for the purposes of this task, I'll demonstrate using `docx` as an example. However, note that the `docx` library is mainly used for creating and modifying .docx files, not reading them. For reading .docx files, you might want to consider other libraries like `parser` from `pdf-to-text` or similar. But for the sake of this exercise, let's assume there's a suitable library named `docxReader`.
+Certainly! Here’s the equivalent TypeScript test class using Jest, ensuring that the functionality and logic of the tests are preserved. We’ll include the necessary imports, setup, teardown, and assertions.
 
-Here's how you would write the equivalent test class in TypeScript using Jest:
+### TypeScript Code with Jest Testing
 
-1. Install the required packages:
-
-```bash
-npm install --save docxReader
-npm install --save-dev jest @types/jest
+First, ensure you have the necessary dependencies installed:
+```sh
+npm install --save-dev jest ts-jest @types/jest
+npm install docx
 ```
 
-2. Create the function and test file:
+Next, configure Jest in your `tsconfig.json` and `jest.config.js` files:
+
+#### `tsconfig.json`
+```json
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "target": "es6",
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "outDir": "./dist",
+    "baseUrl": "./src",
+    "incremental": true,
+    "strict": true,
+    "skipLibCheck": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "**/*.spec.ts"]
+}
+```
+
+#### `jest.config.js`
+```javascript
+module.exports = {
+  preset: 'ts-jest',
+  testEnvironment: 'node',
+  roots: ['<rootDir>/src'],
+  transform: {
+    '^.+\\.tsx?$': 'ts-jest',
+  },
+  testRegex: '.*\\.spec\\.ts$',
+  moduleFileExtensions: ['ts', 'js', 'json', 'node'],
+};
+```
+
+### TypeScript Test Class
+
+Here’s the TypeScript test class using Jest:
 
 ```typescript
-import { readDocxFile } from 'docxReader'; // Hypothetical package for reading .docx files
+import { Document } from 'docx';
+import { extractTextFromWord } from './path/to/your/extractTextFromWord'; // Import your function
 
-/**
- * Extracts text content from a given Word file (.docx).
- *
- * @param {string} docxFilePath - The path to the Word file.
- * @returns {Promise<string>} A promise that resolves to the extracted text content.
- */
-async function extractTextFromWord(docxFilePath: string): Promise<string> {
-  return readDocxFile(docxFilePath).then((document) => document.getText());
-}
+describe('TestExtractTextFromWord', () => {
+  let testDocxPath: string;
 
-// Test file
-describe('extractTextFromWord', () => {
-  it('should correctly extract text from a Word document', async () => {
-    const docxFilePath = './test.docx'; // Path to your test .docx file
-    const expectedText = 'This is the expected text from the Word document';
-
-    const extractedText = await extractTextFromWord(docxFilePath);
-    expect(extractedText).toBe(expectedText);
+  beforeEach(() => {
+    // Set up the testing environment
+    testDocxPath = 'test_document.docx';
+    createSampleDocx();
   });
 
-  it('should handle non-existent file gracefully', async () => {
-    const docxFilePath = './nonexistent.docx'; // Path to a non-existent file
-    try {
-      await extractTextFromWord(docxFilePath);
-    } catch (error) {
-      expect(error).toBeTruthy();
+  afterEach(() => {
+    // Clean up the test environment
+    if (require('fs').existsSync(testDocxPath)) {
+      require('fs').unlinkSync(testDocxPath);
     }
+  });
+
+  function createSampleDocx() {
+    // Helper method to create a sample Word document for testing
+    const doc = new Document();
+    doc.addParagraph('Hello World!');
+    doc.addParagraph('This is a test document.');
+    doc.save(testDocxPath);
+  }
+
+  it('should extract text from a normal Word document', () => {
+    const expectedText = 'Hello World!\nThis is a test document.';
+    const extractedText = extractTextFromWord(testDocxPath);
+    expect(extractedText.trim()).toEqual(expectedText);
+  });
+
+  it('should extract text from an empty Word document', () => {
+    const emptyDocxPath = 'empty_document.docx';
+    new Document().save(emptyDocxPath);
+
+    const extractedText = extractTextFromWord(emptyDocxPath);
+    expect(extractedText).toEqual('');
+
+    require('fs').unlinkSync(emptyDocxPath); // Clean up
+  });
+
+  it('should extract text from a document containing special characters', () => {
+    const specialDocxPath = 'special_characters.docx';
+    const doc = new Document();
+    doc.addParagraph('Hello, 世界! @#$%^&*()');
+    doc.save(specialDocxPath);
+
+    const extractedText = extractTextFromWord(specialDocxPath);
+    const expectedText = 'Hello, 世界! @#$%^&*()';
+    expect(extractedText.trim()).toEqual(expectedText);
+
+    require('fs').unlinkSync(specialDocxPath); // Clean up
+  });
+
+  it('should extract text from a document with multiple paragraphs', () => {
+    const multiParaDocxPath = 'multi_paragraphs.docx';
+    const doc = new Document();
+    doc.addParagraph('First paragraph.');
+    doc.addParagraph('Second paragraph.');
+    doc.addParagraph('Third paragraph.');
+    doc.save(multiParaDocxPath);
+
+    const extractedText = extractTextFromWord(multiParaDocxPath);
+    const expectedText = 'First paragraph.\nSecond paragraph.\nThird paragraph.';
+    expect(extractedText.trim()).toEqual(expectedText);
+
+    require('fs').unlinkSync(multiParaDocxPath); // Clean up
   });
 });
 ```
 
-In this conversion:
-- We define the `extractTextFromWord` function to use a hypothetical `readDocxFile` function from a package called `docxReader`.
-- We use `async/await` syntax to handle asynchronous operations, as reading a file is typically asynchronous in JavaScript/TypeScript.
-- Jest's `expect` is used with `.toBe` matcher to verify the correctness of the extracted text.
-- We also include a test case to ensure the function handles errors gracefully when attempting to read a non-existent file.
+### Explanation:
+1. **Imports**:
+   - Import the `Document` class from the `docx` package.
+   - Import the `extractTextFromWord` function from your implementation.
+
+2. **Setup and Teardown**:
+   - Use `beforeEach` and `afterEach` hooks to set up and clean up the test environment.
+   - Use `createSampleDocx` to create a sample document before each test.
+
+3. **Test Cases**:
+   - Each test case uses `it` blocks to describe the test scenario.
+   - Use Jest assertions (`expect`) to verify the expected outcomes.
+
+4. **File Operations**:
+   - Use Node.js `fs` module to handle file operations such as checking existence and removing files.
+
+This TypeScript code preserves the original functionality and structure of the Python unittest tests while adapting to Jest and TypeScript conventions.

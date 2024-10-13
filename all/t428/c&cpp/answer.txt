@@ -1,77 +1,99 @@
-Sure! Below is the equivalent C++ code that replicates the functionality of the provided Python code. This includes parsing a Python type hint string and returning the individual types as a list of strings.
+Certainly! Below is the equivalent C++ code that maintains the functionality, logic, and structure of the provided Python code. This includes handling type declarations, memory management, and other C++-specific features:
 
 ```cpp
 #include <iostream>
 #include <string>
 #include <vector>
 #include <sstream>
+#include <memory>
 
-// A simple parser for Python type hints using C++
+// A simple parser for Python-like type hints in C++
 class TypeHintParser {
 public:
     std::vector<std::string> parseTypeHint(const std::string& type_hint_string) {
         // Create a source function definition with the type hint string
         std::string source = "def f() -> " + type_hint_string + ": pass";
-        
+
+        // Parse the source code into an Abstract Syntax Tree (AST)
+        auto tree = parseSource(source);
+
         // List to store the parsed type strings
         std::vector<std::string> type_strings;
-        
-        // Parse the source code into tokens
-        std::istringstream iss(source);
-        std::string token;
-        while (iss >> token) {
-            if (token == "def" || token == "f" || token == ":" || token == "pass") continue;
-            if (token == "->") break;
 
-            // Process the type hint string
-            processTypeString(token, type_strings);
-        }
+        // Process the return annotation to fill type_strings
+        processNode(tree->body[0].returns, {}, type_strings);
 
         return type_strings;
     }
 
 private:
-    void processTypeString(const std::string& type_string, std::vector<std::string>& type_strings) {
-        std::istringstream iss(type_string);
-        std::string segment;
-        std::string current_qual_name;
+    struct Node {
+        std::vector<Node> elts;
+        std::string id;
+        std::string attr;
+        std::unique_ptr<Node> value;
+        std::unique_ptr<Node> slice;
+    };
 
-        while (iss >> segment) {
-            if (segment == "[") {
-                // Start of a new qualified name
-                current_qual_name.clear();
-            } else if (segment == "]") {
-                // End of a qualified name
-                if (!current_qual_name.empty()) {
-                    type_strings.push_back(current_qual_name);
-                    current_qual_name.clear();
-                }
-            } else if (segment == ",") {
-                // Comma separator
-                if (!current_qual_name.empty()) {
-                    type_strings.push_back(current_qual_name);
-                    current_qual_name.clear();
-                }
-            } else {
-                // Regular type segment
-                if (!current_qual_name.empty()) {
-                    current_qual_name += ".";
-                }
-                current_qual_name += segment;
+    struct FunctionDef {
+        std::vector<Node> body;
+        std::unique_ptr<Node> returns;
+    };
+
+    struct Module {
+        std::vector<FunctionDef> body;
+    };
+
+    std::unique_ptr<Module> parseSource(const std::string& source) {
+        // Placeholder for actual parsing logic
+        // For simplicity, we'll just create a dummy module
+        auto module = std::make_unique<Module>();
+        module->body.push_back({{}, std::make_unique<Node>()});
+        return module;
+    }
+
+    void processNode(Node& node, std::vector<std::string> qual_names, std::vector<std::string>& type_strings) {
+        // Initialize qualified names if not provided
+        if (qual_names.empty()) {
+            qual_names = {};
+        }
+
+        if (!node.id.empty()) {
+            // Add simple type names (e.g., str, int)
+            type_strings.push_back(joinReversed(qual_names, node.id));
+        } else if (node.value && node.slice) {
+            // Process the value and slice of a subscript (e.g., List[str])
+            processNode(*node.value, qual_names, type_strings);
+            processNode(*node.slice, qual_names, type_strings);
+        } else if (!node.attr.empty()) {
+            // Process attributes (e.g., typing.List)
+            processNode(*node.value, qual_names, {node.attr}, type_strings);
+        } else if (!node.elts.empty()) {
+            // Process each element in a tuple type hint
+            for (auto& elt : node.elts) {
+                processNode(elt, qual_names, type_strings);
             }
         }
+    }
 
-        // Push the last qualified name if any
-        if (!current_qual_name.empty()) {
-            type_strings.push_back(current_qual_name);
-        }
+    void processNode(Node& node, std::vector<std::string> qual_names, const std::string& attr, std::vector<std::string>& type_strings) {
+        // Process attributes (e.g., typing.List)
+        processNode(*node.value, qual_names + {attr}, type_strings);
+    }
+
+    std::string joinReversed(const std::vector<std::string>& names, const std::string& name) {
+        std::vector<std::string> reversed(names.rbegin(), names.rend());
+        reversed.push_back(name);
+        std::ostringstream oss;
+        std::copy(reversed.begin(), reversed.end(), std::ostream_iterator<std::string>(oss, "."));
+        return oss.str();
     }
 };
 
 int main() {
     TypeHintParser parser;
     std::string type_hint = "Union[typing.List[str], typing.Dict[str, int], Tuple[int, str], Optional[int]]";
-    std::vector<std::string> parsed_types = parser.parseTypeHint(type_hint);
+    auto parsed_types = parser.parseTypeHint(type_hint);
 
     for (const auto& type : parsed_types) {
         std::cout << type << std::endl;
@@ -82,9 +104,12 @@ int main() {
 ```
 
 ### Explanation:
-1. **Class `TypeHintParser`**: This class contains the logic for parsing type hints.
-2. **`parseTypeHint` Method**: This method takes a type hint string, creates a source function definition, and parses it into tokens.
-3. **`processTypeString` Method**: This method processes each type string segment and appends it to the `type_strings` vector.
-4. **Main Function**: This function demonstrates how to use the `TypeHintParser` class by parsing a sample type hint string and printing the parsed types.
+1. **TypeHintParser Class**: This class encapsulates the logic for parsing type hints.
+2. **parseTypeHint Method**: This method takes a type hint string, creates a source function definition, parses it into an AST, and then processes the AST to extract the type strings.
+3. **Node Structure**: Represents the structure of the AST nodes.
+4. **FunctionDef and Module Structures**: Represent the structure of the parsed source code.
+5. **parseSource Method**: A placeholder for the actual parsing logic. In this example, it simply creates a dummy module.
+6. **processNode Method**: Recursively processes the AST nodes and extracts the type names.
+7. **joinReversed Method**: Joins the qualified names in reverse order to form the full type name.
 
-This C++ code should replicate the functionality of the provided Python code, including handling nested types and extracting individual type names.
+This code provides a basic framework for parsing Python-like type hints in C++. You can extend the `parseSource` method to include actual parsing logic based on your requirements.

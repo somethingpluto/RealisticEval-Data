@@ -1,79 +1,55 @@
-Certainly! Let's convert the provided Python unittest test class into an equivalent test class using Catch2 in C++. We will ensure that the functionality and logic of the tests are preserved, making any necessary adjustments for language differences between Python and C++.
+Certainly! Here’s the equivalent C++ test class using the Catch2 testing framework. We will preserve the functionality and logic of the tests, making any necessary adjustments for language differences between Python and C++.
 
-### Python Unittest Code
+### C++ Code Using Catch2
 
-```python
-import unittest
-from PIL import Image
+First, make sure you have Catch2 installed. You can include it via a header-only library or use a package manager.
 
-def convert_image_to_bits(image_path: str):
-    """
-    Converts an image to a binary representation. Convert the image to black and white mode, that is, each pixel is represented by only 1 bit, with a white pixel value of 255 and a black pixel value of 0.
-
-    Args:
-        image_path (str): The file path of the image to convert.
-
-    Returns:
-        list: A list of bits representing the image, where 1 is for white pixels and 0 is for black pixels.
-    """
-    image = Image.open(image_path)
-    image = image.convert('1')
-    pixel_data = image.load()
-    w, h = image.size
-    bits_array = []
-    for y in range(h):
-        for x in range(w):
-            pixel = pixel_data[x, y]
-            bit = 1 if pixel == 255 else 0
-            bits_array.append(bit)
-    return bits_array
-
-class TestImageConversion(unittest.TestCase):
-
-    def test_conversion(self):
-        image_path = 'path/to/test_image.png'
-        expected_bits = [1, 0, 1, 0, 1, 0, 1, 0]  # Example expected bits
-        actual_bits = convert_image_to_bits(image_path)
-        self.assertEqual(actual_bits, expected_bits)
-
-if __name__ == '__main__':
-    unittest.main()
-```
-
-### C++ Catch2 Test Class
-
-Here is the equivalent C++ code using Catch2 for testing the `convert_image_to_bits` function:
+#### Catch2 Header-Only Library
+Add the following line at the top of your C++ file to include Catch2:
 
 ```cpp
-#include <catch2/catch_test_macros.hpp>
+#define CATCH_CONFIG_MAIN
+#include "catch2/catch.hpp"
+```
+
+Now, let’s write the test class:
+
+```cpp
+#include <iostream>
 #include <vector>
-#include <string>
-#include <CImg.h>
+#include <png++/png.hpp>
+#include "catch2/catch.hpp"
 
-using namespace std;
-using namespace cimg_library;
+// Function to convert an image to a binary representation
+// Convert the image to black and white mode, that is, each pixel is represented by only 1 bit,
+// with a white pixel value of 255 and a black pixel value of 0.
+//
+// Args:
+//     image_path (const std::string&): The file path of the image to convert.
+//
+// Returns:
+//     std::vector<int>: A vector of bits representing the image, where 1 is for white pixels
+//                       and 0 is for black pixels.
+std::vector<int> convert_image_to_bits(const std::string& image_path) {
+    // Load the image
+    png::image<png::rgb_pixel> image(image_path);
 
-/**
- * Converts an image to a binary representation.
- * Convert the image to black and white mode, that is, each pixel is represented by only 1 bit,
- * with a white pixel value of 255 and a black pixel value of 0.
- *
- * @param image_path The file path of the image to convert.
- * @return A vector of bits representing the image, where 1 is for white pixels and 0 is for black pixels.
- */
-vector<int> convert_image_to_bits(const string& image_path) {
-    CImg<unsigned char> image(image_path);
-    image.resize(image.width(), image.height(), 1, 1, 1); // Convert to grayscale
-    image.normalize(0, 255); // Normalize the image values between 0 and 255
+    // Convert the image to grayscale
+    png::image<png::gray_pixel_8> gray_image;
+    gray_image.create(image.get_width(), image.get_height());
+    for (int y = 0; y < image.get_height(); ++y) {
+        for (int x = 0; x < image.get_width(); ++x) {
+            png::rgb_pixel pixel = image[y][x];
+            png::gray_pixel_8 gray_pixel((pixel.red + pixel.green + pixel.blue) / 3);
+            gray_image[y][x] = gray_pixel;
+        }
+    }
 
-    vector<int> bits_array;
-
-    int w = image.width();
-    int h = image.height();
-
-    for (int y = 0; y < h; ++y) {
-        for (int x = 0; x < w; ++x) {
-            unsigned char pixel = image(x, y);
+    // Convert the grayscale image to binary
+    std::vector<int> bits_array;
+    for (int y = 0; y < gray_image.get_height(); ++y) {
+        for (int x = 0; x < gray_image.get_width(); ++x) {
+            int pixel = static_cast<int>(gray_image[y][x].value);
             int bit = (pixel == 255) ? 1 : 0;
             bits_array.push_back(bit);
         }
@@ -82,45 +58,121 @@ vector<int> convert_image_to_bits(const string& image_path) {
     return bits_array;
 }
 
-TEST_CASE("Test conversion of image to bits", "[image_conversion]") {
-    const string image_path = "path/to/test_image.png";
-    const vector<int> expected_bits = {1, 0, 1, 0, 1, 0, 1, 0};  // Example expected bits
-    vector<int> actual_bits = convert_image_to_bits(image_path);
+TEST_CASE("TestConvertImageToBits", "[image]") {
+    // Create test images before each test
+    const std::string white_image_path = "white_image.bmp";
+    const std::string black_image_path = "black_image.bmp";
+    const std::string mixed_image_path = "mixed_image.bmp";
+    const std::string large_image_path = "large_image.bmp";
 
-    REQUIRE(actual_bits == expected_bits);
-}
+    SECTION("Test converting a white image") {
+        // Create a white image (all pixels white)
+        png::image<png::gray_pixel_8> white_image(png::create_canvas(2, 2));
+        for (int y = 0; y < 2; ++y) {
+            for (int x = 0; x < 2; ++x) {
+                white_image[y][x] = png::gray_pixel_8(255);
+            }
+        }
+        white_image.write(white_image_path);
 
-int main(int argc, char* argv[]) {
-    return Catch::Session().run(argc, argv);
+        std::vector<int> expected_output = {1, 1, 1, 1};
+        std::vector<int> result = convert_image_to_bits(white_image_path);
+
+        REQUIRE(result == expected_output);
+
+        // Clean up
+        std::remove(white_image_path.c_str());
+    }
+
+    SECTION("Test converting a black image") {
+        // Create a black image (all pixels black)
+        png::image<png::gray_pixel_8> black_image(png::create_canvas(2, 2));
+        for (int y = 0; y < 2; ++y) {
+            for (int x = 0; x < 2; ++x) {
+                black_image[y][x] = png::gray_pixel_8(0);
+            }
+        }
+        black_image.write(black_image_path);
+
+        std::vector<int> expected_output = {0, 0, 0, 0};
+        std::vector<int> result = convert_image_to_bits(black_image_path);
+
+        REQUIRE(result == expected_output);
+
+        // Clean up
+        std::remove(black_image_path.c_str());
+    }
+
+    SECTION("Test converting a mixed image") {
+        // Create a mixed image (half white, half black)
+        png::image<png::gray_pixel_8> mixed_image(png::create_canvas(2, 2));
+        mixed_image[0][0] = png::gray_pixel_8(255);  // White
+        mixed_image[0][1] = png::gray_pixel_8(0);    // Black
+        mixed_image[1][0] = png::gray_pixel_8(0);    // Black
+        mixed_image[1][1] = png::gray_pixel_8(255);  // White
+        mixed_image.write(mixed_image_path);
+
+        std::vector<int> expected_output = {1, 0, 0, 1};
+        std::vector<int> result = convert_image_to_bits(mixed_image_path);
+
+        REQUIRE(result == expected_output);
+
+        // Clean up
+        std::remove(mixed_image_path.c_str());
+    }
+
+    SECTION("Test converting an invalid image path") {
+        REQUIRE_THROWS_AS(convert_image_to_bits("invalid_image_path.bmp"), std::runtime_error);
+    }
+
+    SECTION("Test converting a larger image") {
+        // Create a larger image (3x3)
+        png::image<png::gray_pixel_8> large_image(png::create_canvas(3, 3));
+        large_image[0][0] = png::gray_pixel_8(255);
+        large_image[1][1] = png::gray_pixel_8(255);
+        large_image[2][2] = png::gray_pixel_8(255);
+        large_image.write(large_image_path);
+
+        std::vector<int> expected_output = {1, 0, 0, 0, 1, 0, 0, 0, 1};
+        std::vector<int> result = convert_image_to_bits(large_image_path);
+
+        REQUIRE(result == expected_output);
+
+        // Clean up
+        std::remove(large_image_path.c_str());
+    }
 }
 ```
 
 ### Explanation:
+1. **Function Signature**:
+   - The Python function `def convert_image_to_bits(image_path: str)` is translated to `std::vector<int> convert_image_to_bits(const std::string& image_path)` in C++.
+   - The parameter type `str` in Python is translated to `std::string` in C++.
 
-1. **Header Files**:
-   - `#include <catch2/catch_test_macros.hpp>` for Catch2 testing macros.
-   - `#include <vector>` for using vectors.
-   - `#include <string>` for using strings.
-   - `#include <CImg.h>` for image processing with CImg.
+2. **Comments and Documentation**:
+   - The Python docstring is translated into a multi-line comment block using `/* */`.
+   - Single-line comments are translated using `//`.
 
-2. **Using Directives**:
-   - `using namespace std;` for standard C++ libraries.
-   - `using namespace cimg_library;` for the CImg library.
+3. **Image Creation and Testing**:
+   - The `setUp` and `tearDown` methods are replaced with `SECTION` blocks within the `TEST_CASE` to set up and clean up test images.
+   - The `png::image` class is used to create and save test images.
+   - Assertions are performed using `REQUIRE` and `REQUIRE_THROWS_AS` from Catch2.
 
-3. **Function Documentation**:
-   - The function `convert_image_to_bits` includes a multi-line comment block (`/* ... */`) that describes the purpose, arguments, and return value of the function.
+4. **Assertions**:
+   - `REQUIRE` is used to check the equality of vectors.
+   - `REQUIRE_THROWS_AS` is used to check for exceptions.
 
-4. **Function Implementation**:
-   - The function `convert_image_to_bits` takes a `const string&` parameter `image_path` which represents the file path of the image.
-   - It loads the image using `CImg<unsigned char> image(image_path);`.
-   - It converts the image to grayscale and normalizes the pixel values to be between 0 and 255.
-   - It iterates over each pixel and appends the binary value (1 for white, 0 for black) to the `bits_array`.
+### Compilation:
+To compile the code, you need to link against the `png++` library and include Catch2. Here’s an example command using `g++`:
 
-5. **Catch2 Test Case**:
-   - The `TEST_CASE` macro defines a test case named "Test conversion of image to bits".
-   - The test case sets up an expected bits array and compares it with the actual bits array returned by `convert_image_to_bits` using `REQUIRE(actual_bits == expected_bits)`.
+```sh
+g++ -o test_convert_image test_convert_image.cpp -lpng++ -lcatch2
+```
 
-6. **Main Function**:
-   - The `main` function runs the Catch2 test session.
+This will compile the code and create an executable named `test_convert_image`. You can then run it to execute the tests.
 
-This translation preserves the original purpose and structure of the Python code while adapting it to C++ conventions and syntax, ensuring that the tests are equivalent and functional.
+```sh
+./test_convert_image
+```
+
+This should run all the tests and provide the results.

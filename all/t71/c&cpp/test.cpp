@@ -1,36 +1,101 @@
-TEST_CASE("read_columns", "[read_columns]") {
-    // Create a temporary file with test data
-    const std::string temp_file_name = "temp_data.txt";
-    std::ofstream temp_file(temp_file_name);
-    temp_file << "This is a test\n"
-              << "1 2 3\n"
-              << "4 5 6\n"
-              << "/\n"
-              << "7 8 9\n"
-              << "10 11 12\n";
-    temp_file.close();
+TEST_CASE("Test read_columns function", "[read_columns]") {
+    const std::string test_file = "test_file.txt";
 
-    SECTION("File contains divider") {
-        auto result = read_columns(temp_file_name);
+    SECTION("Basic functionality") {
+        // Test reading a file with a valid structure and numerical question
+        std::string content = R"(
+Line 1
+Line 2
+/
+1.0 2.0 3.0
+4.0 5.0 6.0
+)";
+        std::ofstream file(test_file);
+        file << content;
+        file.close();
 
-        REQUIRE(result.size() == 2);
-        REQUIRE(result[0].size() == 3);
-        REQUIRE(result[1].size() == 3);
-        REQUIRE(result[0][0] == 7);
-        REQUIRE(result[0][1] == 8);
-        REQUIRE(result[0][2] == 9);
-        REQUIRE(result[1][0] == 10);
-        REQUIRE(result[1][1] == 11);
-        REQUIRE(result[1][2] == 12);
+        std::vector<std::vector<double>> result = read_columns(test_file);
+        std::vector<std::vector<double>> expected_result = {{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}};
+        REQUIRE(result == expected_result);
+
+        if (std::remove(test_file.c_str()) != 0) {
+            std::cerr << "Failed to remove test file." << std::endl;
+        }
     }
 
-    SECTION("File does not contain divider") {
-        std::ofstream empty_temp_file("empty_temp_data.txt");
-        empty_temp_file.close();
-        REQUIRE_THROWS(read_columns("empty_temp_data.txt"));
+    SECTION("No slash character") {
+        // Test that a runtime_error is raised if no '/' character is found
+        std::string content = R"(
+Line 1
+Line 2
+Line 3
+)";
+        std::ofstream file(test_file);
+        file << content;
+        file.close();
+
+        REQUIRE_THROWS_AS(read_columns(test_file), std::runtime_error);
+
+        if (std::remove(test_file.c_str()) != 0) {
+            std::cerr << "Failed to remove test file." << std::endl;
+        }
     }
 
-    // Clean up the temporary files
-    remove(temp_file_name.c_str());
-    remove("empty_temp_data.txt");
+    SECTION("File with comments and empty lines") {
+        // Test handling of comments and empty lines
+        std::string content = R"(
+Line 1
+/
+! This is a comment
+1.0 2.0 3.0
+
+4.0 5.0 6.0
+! Another comment
+)";
+        std::ofstream file(test_file);
+        file << content;
+        file.close();
+
+        std::vector<std::vector<double>> result = read_columns(test_file);
+        std::vector<std::vector<double>> expected_result = {{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}};
+        REQUIRE(result == expected_result);
+
+        if (std::remove(test_file.c_str()) != 0) {
+            std::cerr << "Failed to remove test file." << std::endl;
+        }
+    }
+
+    SECTION("Different number of columns") {
+        // Test that the function handles different number of columns correctly
+        std::string content = R"(
+Line 1
+/
+1.0 2.0
+3.0 4.0
+5.0 6.0 7.0
+)";
+        std::ofstream file(test_file);
+        file << content;
+        file.close();
+
+        REQUIRE_THROWS_AS(read_columns(test_file), std::runtime_error);
+
+        if (std::remove(test_file.c_str()) != 0) {
+            std::cerr << "Failed to remove test file." << std::endl;
+        }
+    }
+
+    SECTION("Empty file") {
+        // Test handling of an empty file
+        std::string content = "";
+        std::ofstream file(test_file);
+        file << content;
+        file.close();
+
+        REQUIRE_THROWS_AS(read_columns(test_file), std::runtime_error);
+
+        if (std::remove(test_file.c_str()) != 0) {
+            std::cerr << "Failed to remove test file." << std::endl;
+        }
+    }
 }

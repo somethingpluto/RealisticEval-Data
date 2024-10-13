@@ -1,7 +1,11 @@
+import * as fs from 'fs';
+import * as xml2js from 'xml2js';
+
 /**
- * Parses an XAML file, extracts key-value pairs within the String element, and returns them in a dictionary.
- *
- * @param {string} xamlFile - The path to the XAML file.
- * @returns {Record<string, string>} - A dictionary containing the key-value pairs extracted from 'String' elements.
+ * Parses a XAML file, extracts the key-value pairs within the 'String' elements,
+ * and returns the result in a dictionary.
+ * 
+ * @param xamlFile - Path to the XAML file.
+ * @returns A dictionary containing the key-value pairs extracted from 'String' elements.
  */
 function parseXamlToDict(xamlFile: string): Record<string, string> {}

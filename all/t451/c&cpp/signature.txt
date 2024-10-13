@@ -1,35 +1,42 @@
-Certainly! Here is the equivalent C++ code for the given Python function, including comments and documentation:
+Certainly! Here’s the equivalent C++ code for the provided Python function, including the conversion of the Python function signature, comments, and docstrings into C++ style comments and documentation.
+
+### C++ Code
 
 ```cpp
 #include <iostream>
 #include <vector>
-#include <string>
-#include <CImg.h>
+#include <png++/png.hpp>
 
-using namespace std;
-using namespace cimg_library;
+// Function to convert an image to a binary representation
+// Convert the image to black and white mode, that is, each pixel is represented by only 1 bit,
+// with a white pixel value of 255 and a black pixel value of 0.
+//
+// Args:
+//     image_path (const std::string&): The file path of the image to convert.
+//
+// Returns:
+//     std::vector<int>: A vector of bits representing the image, where 1 is for white pixels
+//                       and 0 is for black pixels.
+std::vector<int> convert_image_to_bits(const std::string& image_path) {
+    // Load the image
+    png::image<png::rgb_pixel> image(image_path);
 
-/**
- * Converts an image to a binary representation.
- * Convert the image to black and white mode, that is, each pixel is represented by only 1 bit,
- * with a white pixel value of 255 and a black pixel value of 0.
- *
- * @param image_path The file path of the image to convert.
- * @return A vector of bits representing the image, where 1 is for white pixels and 0 is for black pixels.
- */
-vector<int> convert_image_to_bits(const string& image_path) {
-    CImg<unsigned char> image(image_path);
-    image.resize(image.width(), image.height(), 1, 1, 1); // Convert to grayscale
-    image.normalize(0, 255); // Normalize the image values between 0 and 255
+    // Convert the image to grayscale
+    png::image<png::gray_pixel_8> gray_image;
+    gray_image.create(image.get_width(), image.get_height());
+    for (int y = 0; y < image.get_height(); ++y) {
+        for (int x = 0; x < image.get_width(); ++x) {
+            png::rgb_pixel pixel = image[y][x];
+            png::gray_pixel_8 gray_pixel((pixel.red + pixel.green + pixel.blue) / 3);
+            gray_image[y][x] = gray_pixel;
+        }
+    }
 
-    vector<int> bits_array;
-
-    int w = image.width();
-    int h = image.height();
-
-    for (int y = 0; y < h; ++y) {
-        for (int x = 0; x < w; ++x) {
-            unsigned char pixel = image(x, y);
+    // Convert the grayscale image to binary
+    std::vector<int> bits_array;
+    for (int y = 0; y < gray_image.get_height(); ++y) {
+        for (int x = 0; x < gray_image.get_width(); ++x) {
+            int pixel = static_cast<int>(gray_image[y][x].value);
             int bit = (pixel == 255) ? 1 : 0;
             bits_array.push_back(bit);
         }
@@ -39,40 +46,50 @@ vector<int> convert_image_to_bits(const string& image_path) {
 }
 
 int main() {
-    const string image_path = "path/to/your/image.jpg";
-    vector<int> bits = convert_image_to_bits(image_path);
+    std::string image_path = "path/to/your/image.png";
+    std::vector<int> bits = convert_image_to_bits(image_path);
 
-    // Print the bits for demonstration
+    // Print the bits array
     for (int bit : bits) {
-        cout << bit << " ";
+        std::cout << bit << " ";
     }
+    std::cout << std::endl;
 
     return 0;
 }
 ```
 
 ### Explanation:
+1. **Function Signature**:
+   - The Python function `def convert_image_to_bits(image_path: str)` is translated to `std::vector<int> convert_image_to_bits(const std::string& image_path)` in C++.
+   - The parameter type `str` in Python is translated to `std::string` in C++.
 
-1. **Header Files**:
-   - `#include <iostream>` for input/output operations.
-   - `#include <vector>` for using vectors.
-   - `#include <string>` for using strings.
-   - `#include <CImg.h>` for image processing with CImg.
+2. **Comments and Documentation**:
+   - The Python docstring is translated into a multi-line comment block using `/* */`.
+   - Single-line comments are translated using `//`.
 
-2. **Using Directives**:
-   - `using namespace std;` for standard C++ libraries.
-   - `using namespace cimg_library;` for the CImg library.
+3. **Image Loading and Conversion**:
+   - The `png::image<png::rgb_pixel>` class is used to load the image.
+   - The image is converted to grayscale by averaging the RGB values.
+   - Each grayscale pixel is converted to a binary value (1 for white, 0 for black).
 
-3. **Function Documentation**:
-   - The function `convert_image_to_bits` includes a multi-line comment block (`/* ... */`) that describes the purpose, arguments, and return value of the function.
+4. **Result**:
+   - The resulting binary values are stored in a `std::vector<int>` and returned.
 
-4. **Function Implementation**:
-   - The function `convert_image_to_bits` takes a `const string&` parameter `image_path` which represents the file path of the image.
-   - It loads the image using `CImg<unsigned char> image(image_path);`.
-   - It converts the image to grayscale and normalizes the pixel values to be between 0 and 255.
-   - It iterates over each pixel and appends the binary value (1 for white, 0 for black) to the `bits_array`.
+### Dependencies:
+- **png++**: A C++ wrapper around the libpng library for handling PNG images.
 
-5. **Main Function**:
-   - The `main` function demonstrates how to call the `convert_image_to_bits` function and prints the resulting bits.
+### Compilation:
+To compile the code, you need to link against the `png++` library. Here’s an example command using `g++`:
 
-This translation preserves the original purpose and structure of the Python code while adapting it to C++ conventions and syntax.
+```sh
+g++ -o convert_image convert_image.cpp -lpng++
+```
+
+This will compile the code and create an executable named `convert_image`. You can then run it with the path to your image file.
+
+```sh
+./convert_image
+```
+
+This should print the binary representation of the image.

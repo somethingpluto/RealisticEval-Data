@@ -1,12 +1,19 @@
-Certainly! Below is the equivalent Java method for the given Python function, including the Javadoc comments and type conversions:
+Certainly! Below is the equivalent Java code for the provided Python function, including appropriate Javadoc comments and Java conventions:
 
 ```java
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCharsets;
-import java.nio.charset.Charset;
+package org.real.temp;
 
-public class EncodingConverter {
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+
+/**
+ * This class provides methods to convert the encoding of a file from one encoding to another.
+ */
+public class Answer {
 
     /**
      * Converts the encoding of a file from one encoding to another.
@@ -14,55 +21,59 @@ public class EncodingConverter {
      * @param inputFilePath      The path to the input file.
      * @param outputFilePath     The path to the output file where the converted content is saved.
      * @param originalEncoding   The original encoding of the file (default is "cp932").
-     * @param targetEncoding     The target encoding to convert to (default is "utf-16").
+     * @param targetEncoding     The target encoding to convert to (default is "UTF-16").
      * @return                   True if the conversion was successful, or if no conversion was needed; False otherwise.
      */
     public static boolean convertEncoding(String inputFilePath, String outputFilePath, String originalEncoding, String targetEncoding) {
-        // Set default values if null is provided
-        if (originalEncoding == null || originalEncoding.isEmpty()) {
-            originalEncoding = "cp932";
-        }
-        if (targetEncoding == null || targetEncoding.isEmpty()) {
-            targetEncoding = "utf-16";
-        }
+        try (BufferedReader reader = new BufferedReader(new FileReader(inputFilePath))) {
+            StringBuilder contentBuilder = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                contentBuilder.append(line).append(System.lineSeparator());
+            }
+            String content = contentBuilder.toString();
 
-        Charset origCharset = Charset.forName(originalEncoding);
-        Charset targetCharset = Charset.forName(targetEncoding);
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputFilePath))) {
+                writer.write(content);
+                return true;
+            }
 
-        try {
-            Path inputFile = Path.of(inputFilePath);
-            byte[] contentBytes = Files.readAllBytes(inputFile);
-            String content = new String(contentBytes, origCharset);
-            byte[] encodedContent = content.getBytes(targetCharset);
-            Path outputFile = Path.of(outputFilePath);
-            Files.write(outputFile, encodedContent);
-
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
+        } catch (IOException e) {
+            // Handle encoding errors if the file was already in the target encoding
+            try (BufferedReader reader = new BufferedReader(new FileReader(inputFilePath))) {
+                reader.readLine();  // Try reading to check if it's already in target encoding
+                java.io.FileUtils.copyFile(new java.io.File(inputFilePath), new java.io.File(outputFilePath));  // Copy if no error occurs
+                System.out.println("File already in target encoding: " + inputFilePath);
+                return true;
+            } catch (IOException ex) {
+                System.out.println("Conversion failed due to encoding error: " + e.getMessage());
+                return false;
+            }
         }
+    }
+
+    /**
+     * Main method to demonstrate the usage of the convertEncoding method.
+     *
+     * @param args Command-line arguments.
+     */
+    public static void main(String[] args) {
+        String inputFilePath = "path/to/input.txt";
+        String outputFilePath = "path/to/output.txt";
+        boolean success = convertEncoding(inputFilePath, outputFilePath, "cp932", "UTF-16");
+        System.out.println("Conversion successful: " + success);
     }
 }
 ```
 
 ### Explanation:
-1. **Imports**: 
-   - `java.nio.file.Files` for file operations.
-   - `java.nio.file.Path` for representing file paths.
-   - `java.nio.file.StandardCharsets` for standard encodings.
-   - `java.nio.charset.Charset` for handling custom encodings.
+1. **Package Declaration**: The package declaration `package org.real.temp;` is included at the beginning.
+2. **Imports**: Necessary imports are added, including `BufferedReader`, `BufferedWriter`, `FileReader`, `FileWriter`, `IOException`, and `StringBuilder`.
+3. **Class Definition**: The class `Answer` is defined with a Javadoc comment explaining its purpose.
+4. **Method Definition**: The `convertEncoding` method is defined with appropriate parameters and return type.
+5. **Javadoc Comments**: Detailed Javadoc comments are provided for the method parameters and return value.
+6. **Try-with-Resources**: Java's try-with-resources statement is used to automatically close resources.
+7. **Exception Handling**: Exception handling is included to manage potential `IOExceptions`.
+8. **Main Method**: A `main` method is included to demonstrate how to use the `convertEncoding` method.
 
-2. **Class Definition**:
-   - The class `EncodingConverter` encapsulates the conversion logic.
-
-3. **Method Definition**:
-   - The method `convertEncoding` takes four parameters with default values for `originalEncoding` and `targetEncoding`.
-   - The Javadoc comment provides detailed information about the method's purpose, parameters, and return value.
-
-4. **Implementation**:
-   - The method reads the content of the input file using the specified original encoding.
-   - It then writes the content back to the output file using the target encoding.
-   - Exception handling is included to ensure robustness.
-
-This approach preserves the original functionality and structure of the Python function while adapting it to Java's conventions and syntax.
+This Java code preserves the original functionality and structure of the Python code while adhering to Java conventions and best practices.

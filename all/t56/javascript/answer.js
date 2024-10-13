@@ -1,15 +1,27 @@
 function findShiftJisNotGbk() {
-    // Define your character ranges here
-    var shiftJisChars = "Your Shift-JIS characters range";
-    var gbkChars = "Your GBK characters range";
+    // Array to store characters that are in Shift-JIS but not in GBK
+    const uniqueToShiftJis = [];
 
-    var result = [];
+    // Iterate over a range of Unicode code points
+    // The BMP goes up to U+FFFF, which is 65535 in decimal
+    for (let codepoint = 0; codepoint < 65536; codepoint++) {
+        const character = String.fromCodePoint(codepoint);
 
-    for (var i = 0; i < shiftJisChars.length; i++) {
-        if (gbkChars.indexOf(shiftJisChars[i]) === -1) {
-            result.push(shiftJisChars[i]);
+        try {
+            // Try encoding the character in Shift-JIS
+            new TextEncoder('x-user-defined').encode(character); // Using 'x-user-defined' to simulate Shift-JIS
+            try {
+                // Try encoding the character in GBK
+                new TextEncoder('gbk').encode(character);
+            } catch (gbkError) {
+                // If it fails, the character is not representable in GBK but is in Shift-JIS
+                uniqueToShiftJis.push(character);
+            }
+        } catch (shiftJisError) {
+            // If it fails, the character is not representable in Shift-JIS, so we skip it
+            continue;
         }
     }
 
-    return result;
+    return uniqueToShiftJis;
 }

@@ -1,7 +1,13 @@
 /**
- * Computes and returns the size of an object in bytes in memory.
- *
- * @param obj The object whose size is to be computed.
- * @return The size of the object in bytes in memory.
+ * @brief Computes and returns the size of an object in bytes in memory.
+ * 
+ * @tparam T The type of the object.
+ * @param obj The object to measure the memory size of.
+ * 
+ * @return size_t The size of the object in bytes in memory.
  */
-int size_in_bytes(const void* obj);
+
+template<typename T>
+size_t size_in_bytes(const T& obj) {
+    return sizeof(obj);
+}

@@ -1,127 +1,179 @@
-Sure! First, let's understand the Python function `get_min_distance` and then create an equivalent Java method with a JUnit test class.
+Certainly! Here is the equivalent Java JUnit test class for the provided Python unittest class. The Java test class will be placed in the package `org.real.temp` and named `Tester`. It will use JUnit 5 annotations and assertions.
 
-### Python Function:
-```python
-def get_min_distance(file_path, word1, word2):
-    """
-    Find the minimum distance between two specified words (word1 and word2) from the file and return in which line the distance occurred
+### Java Code
 
-    Args:
-        file_path (str): Path to the file.
-        word1 (str): First word.
-        word2 (str): Second word.
-
-    Returns:
-        int: Line number where the minimum distance occurs.
-    """
-    # Implementation goes here
-```
-
-### Java Method:
 ```java
+package org.real.temp;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.stubbing.Answer;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
-public class WordDistanceFinder {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.when;
 
-    /**
-     * Finds the minimum distance between two specified words (word1 and word2) from the file and returns the line number where the distance occurred.
-     *
-     * @param filePath Path to the file.
-     * @param word1    First word.
-     * @param word2    Second word.
-     * @return Line number where the minimum distance occurs.
-     */
-    public static int getMinDistance(String filePath, String word1, String word2) {
-        // Implementation goes here
-        return 0; // Placeholder return
-    }
-}
-```
-
-### JUnit Test Class:
-```java
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.util.Scanner;
-
+@ExtendWith(MockitoExtension.class)
 public class Tester {
 
-    private static final String TEST_FILE_PATH = "path/to/testfile.txt"; // Replace with actual path
+    @Mock
+    private BufferedReader mockReader;
+
+    private List<List<String>> sequences;
+
+    @BeforeEach
+    public void setUp() throws IOException {
+        sequences = new ArrayList<>();
+    }
 
     @Test
-    public void testGetMinDistance() throws FileNotFoundException {
-        // Arrange
-        String word1 = "hello";
-        String word2 = "world";
-        int expectedLine = 3; // Expected line number where the minimum distance occurs
+    public void testSimpleCase() throws IOException {
+        // Mock the file read operation
+        when(mockReader.readLine()).thenReturn("hello world", "hello hello world", "world hello", null);
 
-        // Act
-        int actualLine = WordDistanceFinder.getMinDistance(TEST_FILE_PATH, word1, word2);
+        List<List<String>> sequences = readFileAsSequences(mockReader);
+        Pair<Integer, Integer> result = getMinDistance(sequences, "hello", "world");
 
-        // Assert
-        assertEquals("The line number where the minimum distance occurs should be correct", expectedLine, actualLine);
+        assertEquals(new Pair<>(0, 1), result);
     }
-}
-```
 
-### Notes:
-1. **File Handling**: In Java, you need to handle file operations using `BufferedReader` and `FileReader`. You can read the file line by line and track the positions of the words.
-2. **JUnit Assertions**: Use `assertEquals` to verify the expected results.
-3. **Exception Handling**: Add `throws FileNotFoundException` to the test method since file operations might throw this exception.
+    @Test
+    public void testMultipleLines() throws IOException {
+        // Mock the file read operation
+        when(mockReader.readLine()).thenReturn("hello planet", "world hello planet", "hello world planet", null);
 
-### Implementation of `getMinDistance`:
-Here's a basic implementation of `getMinDistance` to demonstrate how it might work:
+        List<List<String>> sequences = readFileAsSequences(mockReader);
+        Pair<Integer, Integer> result = getMinDistance(sequences, "hello", "world");
 
-```java
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+        assertEquals(new Pair<>(1, 1), result);
+    }
 
-public class WordDistanceFinder {
+    @Test
+    public void testLargeDistance() throws IOException {
+        // Mock the file read operation
+        when(mockReader.readLine()).thenReturn(
+            "hello a b c d e f g h i j k l m n o p q r s t u v w x y z world", null
+        );
 
-    /**
-     * Finds the minimum distance between two specified words (word1 and word2) from the file and returns the line number where the distance occurred.
-     *
-     * @param filePath Path to the file.
-     * @param word1    First word.
-     * @param word2    Second word.
-     * @return Line number where the minimum distance occurs.
-     */
-    public static int getMinDistance(String filePath, String word1, String word2) {
-        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
-            String line;
-            int lineNumber = 1;
-            int minDistance = Integer.MAX_VALUE;
-            int currentWord1Line = -1;
-            int currentWord2Line = -1;
+        List<List<String>> sequences = readFileAsSequences(mockReader);
+        Pair<Integer, Integer> result = getMinDistance(sequences, "hello", "world");
 
-            while ((line = reader.readLine()) != null) {
-                if (line.contains(word1)) {
-                    currentWord1Line = lineNumber;
-                }
-                if (line.contains(word2)) {
-                    currentWord2Line = lineNumber;
-                }
-                if (currentWord1Line != -1 && currentWord2Line != -1) {
-                    int distance = Math.abs(currentWord1Line - currentWord2Line);
-                    if (distance < minDistance) {
-                        minDistance = distance;
-                        return lineNumber; // Return the line number where the minimum distance was found
-                    }
-                }
-                lineNumber++;
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+        assertEquals(new Pair<>(0, 27), result);
+    }
+
+    @Test
+    public void testAdjacentWords() throws IOException {
+        // Mock the file read operation
+        when(mockReader.readLine()).thenReturn("hello world", "hello hello world world", "world hello", null);
+
+        List<List<String>> sequences = readFileAsSequences(mockReader);
+        Pair<Integer, Integer> result = getMinDistance(sequences, "hello", "world");
+
+        assertEquals(new Pair<>(0, 1), result);
+    }
+
+    // Utility class to represent a pair of values
+    public static class Pair<T1, T2> {
+        private T1 first;
+        private T2 second;
+
+        public Pair(T1 first, T2 second) {
+            this.first = first;
+            this.second = second;
         }
 
-        return -1; // If no valid distance was found
+        public T1 getFirst() {
+            return first;
+        }
+
+        public T2 getSecond() {
+            return second;
+        }
+
+        @Override
+        public String toString() {
+            return "(" + first + ", " + second + ")";
+        }
+    }
+
+    // Method to read the file and convert each line into a list of words
+    private List<List<String>> readFileAsSequences(BufferedReader reader) throws IOException {
+        List<List<String>> sequences = new ArrayList<>();
+        String line;
+        while ((line = reader.readLine()) != null) {
+            String[] words = line.trim().split("\\s+");
+            List<String> wordList = new ArrayList<>();
+            for (String word : words) {
+                wordList.add(word);
+            }
+            sequences.add(wordList);
+        }
+        return sequences;
+    }
+
+    // Method to find the minimum distance between two words in a list of sequences
+    private Pair<Integer, Integer> getMinDistance(List<List<String>> sequences, String word1, String word2) {
+        int minDistance = Integer.MAX_VALUE;
+        Integer minSeqNum = null;
+
+        for (int i = 0; i < sequences.size(); i++) {
+            List<String> seq = sequences.get(i);
+            int distance = findClosestWordIndices(seq, word1, word2);
+            if (distance < minDistance) {
+                minDistance = distance;
+                minSeqNum = i;
+            }
+        }
+
+        if (minDistance == Integer.MAX_VALUE) {
+            return new Pair<>(null, null);
+        } else {
+            return new Pair<>(minSeqNum, minDistance);
+        }
+    }
+
+    // Method to find the closest word indices in a sequence
+    private int findClosestWordIndices(List<String> sequence, String word1, String word2) {
+        List<Integer> word1Indices = new ArrayList<>();
+        List<Integer> word2Indices = new ArrayList<>();
+        int minDistance = Integer.MAX_VALUE;
+
+        for (int index = 0; index < sequence.size(); index++) {
+            String word = sequence.get(index);
+            if (word.equals(word1)) {
+                word1Indices.add(index);
+            } else if (word.equals(word2)) {
+                word2Indices.add(index);
+            }
+        }
+
+        for (int index1 : word1Indices) {
+            for (int index2 : word2Indices) {
+                int distance = Math.abs(index1 - index2);
+                if (distance < minDistance) {
+                    minDistance = distance;
+                }
+            }
+        }
+
+        return minDistance;
     }
 }
 ```
 
-This implementation reads the file line by line, tracks the lines containing each word, and calculates the minimum distance. It returns the line number where the minimum distance occurred.
+### Explanation:
+1. **JUnit 5 Annotations**: The test class uses JUnit 5 annotations (`@Test`, `@BeforeEach`, `@ExtendWith`) and Mockito for mocking.
+2. **Mockito Setup**: The `@Mock` annotation is used to create a mock `BufferedReader`.
+3. **BeforeEach**: The `setUp` method initializes the `sequences` list before each test.
+4. **Test Methods**: Each test method mocks the `BufferedReader` to simulate file reading and asserts the expected results.
+5. **Utility Classes and Methods**: The `Pair` class and helper methods (`readFileAsSequences`, `getMinDistance`, `findClosestWordIndices`) are included to maintain the functionality and structure of the original Python code.
+
+This Java code preserves the original functionality and structure of the Python unittest class while adhering to Java's conventions and JUnit 5 testing framework.

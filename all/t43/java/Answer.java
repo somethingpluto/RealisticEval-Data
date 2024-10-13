@@ -2,40 +2,74 @@ package org.real.temp;
 
 public class Answer {
 
-    public static int[] rgbToHsv(int r, int g, int b) {
-        // Convert RGB values to float between 0 and 1
-        float rf = r / 255f;
-        float gf = g / 255f;
-        float bf = b / 255f;
+    /**
+     * Converts RGB color values to HSV (Hue, Saturation, Value).
+     * 
+     * @param r The red component of the color (0-255).
+     * @param g The green component of the color (0-255).
+     * @param b The blue component of the color (0-255).
+     * @return A tuple containing the HSV values (Hue, Saturation, Value).
+     */
+    public static Tuple rgbToHsv(int r, int g, int b) {
+        // Normalize the RGB values by dividing by 255
+        double rNorm = r / 255.0;
+        double gNorm = g / 255.0;
+        double bNorm = b / 255.0;
 
-        // Find the maximum and minimum of RGB values
-        float max = Math.max(Math.max(rf, gf), bf);
-        float min = Math.min(Math.min(rf, gf), bf);
+        // Find the minimum and maximum values among R, G, and B
+        double maxRgb = Math.max(rNorm, Math.max(gNorm, bNorm));
+        double minRgb = Math.min(rNorm, Math.min(gNorm, bNorm));
+        double delta = maxRgb - minRgb;
 
-        // Calculate the hue
-        float h = 0;
-        if (max == min) {
-            h = 0; // No saturation
-        } else if (max == rf) {
-            h = 60 * ((gf - bf) / (max - min));
-        } else if (max == gf) {
-            h = 60 * ((bf - rf) / (max - min)) + 120;
-        } else { // max == bf
-            h = 60 * ((rf - gf) / (max - min)) + 240;
+        // Calculate H (Hue)
+        double h = 0;
+        if (delta == 0) {
+            h = 0;
+        } else if (maxRgb == rNorm) {
+            h = ((gNorm - bNorm) / delta) % 6;
+        } else if (maxRgb == gNorm) {
+            h = ((bNorm - rNorm) / delta) + 2;
+        } else {
+            h = ((rNorm - gNorm) / delta) + 4;
         }
 
-        // Normalize hue to be within [0, 360)
-        if (h < 0) {
-            h += 360;
+        h *= 60;  // Convert to degrees on the color circle
+
+        // Calculate S (Saturation)
+        double s = 0;
+        if (maxRgb == 0) {
+            s = 0;
+        } else {
+            s = delta / maxRgb;
         }
 
-        // Calculate the saturation
-        float s = (max == 0) ? 0 : (1 - (min / max));
+        // V (Value) is equal to max_rgb
+        double v = maxRgb;
 
-        // Calculate the value
-        float v = max;
+        return new Tuple(h, s * 100, v * 100);
+    }
 
-        // Return the result as an array
-        return new int[]{(int)h, (int)(s*100), (int)(v*100)};
+    // A simple Tuple class to hold the HSV values
+    public static class Tuple {
+        private final double hue;
+        private final double saturation;
+        private final double value;
+
+        public Tuple(double hue, double saturation, double value) {
+            this.hue = hue;
+            this.saturation = saturation;
+            this.value = value;
+        }
+
+        @Override
+        public String toString() {
+            return "(" + hue + ", " + saturation + ", " + value + ")";
+        }
+    }
+
+    public static void main(String[] args) {
+        // Example usage
+        Tuple hsv = rgbToHsv(255, 0, 0); // Red color
+        System.out.println(hsv);
     }
 }

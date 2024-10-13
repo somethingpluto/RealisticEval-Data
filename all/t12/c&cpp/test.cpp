@@ -1,43 +1,48 @@
-TEST_CASE("TestCalculateDistance") {
-    SECTION("same_point") {
-        std::unordered_map<std::string, Coordinates> observations = {
-            {"agent1", {0.0, 0.0}},
-            {"agent2", {0.0, 0.0}}
+TEST_CASE("Test Calculate Distance") {
+    SECTION("Same Point") {
+        // Both agents are at the same point
+        std::map<std::string, std::map<std::string, float>> observations = {
+            {"agent1", {{"x", 0.0f}, {"y", 0.0f}}},
+            {"agent2", {{"x", 0.0f}, {"y", 0.0f}}}
         };
-        REQUIRE(calculateDistance("agent1", "agent2", observations) == Approx(0.0));
+        REQUIRE(calculate_distance("agent1", "agent2", observations) == Approx(0.0f));
     }
 
-    SECTION("horizontal_distance") {
-        std::unordered_map<std::string, Coordinates> observations = {
-            {"agent1", {0.0, 0.0}},
-            {"agent2", {3.0, 0.0}}
+    SECTION("Horizontal Distance") {
+        // Agents are horizontally apart
+        std::map<std::string, std::map<std::string, float>> observations = {
+            {"agent1", {{"x", 0.0f}, {"y", 0.0f}}},
+            {"agent2", {{"x", 3.0f}, {"y", 0.0f}}}
         };
-        REQUIRE(calculateDistance("agent1", "agent2", observations) == Approx(3.0));
+        REQUIRE(calculate_distance("agent1", "agent2", observations) == Approx(3.0f));
     }
 
-    SECTION("vertical_distance") {
-        std::unordered_map<std::string, Coordinates> observations = {
-            {"agent1", {0.0, 0.0}},
-            {"agent2", {0.0, 4.0}}
+    SECTION("Vertical Distance") {
+        // Agents are vertically apart
+        std::map<std::string, std::map<std::string, float>> observations = {
+            {"agent1", {{"x", 0.0f}, {"y", 0.0f}}},
+            {"agent2", {{"x", 0.0f}, {"y", 4.0f}}}
         };
-        REQUIRE(calculateDistance("agent1", "agent2", observations) == Approx(4.0));
+        REQUIRE(calculate_distance("agent1", "agent2", observations) == Approx(4.0f));
     }
 
-    SECTION("diagonal_distance") {
-        std::unordered_map<std::string, Coordinates> observations = {
-            {"agent1", {1.0, 2.0}},
-            {"agent2", {4.0, 6.0}}
+    SECTION("Diagonal Distance") {
+        // Agents are diagonally apart
+        std::map<std::string, std::map<std::string, float>> observations = {
+            {"agent1", {{"x", 1.0f}, {"y", 2.0f}}},
+            {"agent2", {{"x", 4.0f}, {"y", 6.0f}}}
         };
-        double expected_distance = std::sqrt(std::pow(4.0 - 1.0, 2) + std::pow(6.0 - 2.0, 2));
-        REQUIRE(calculateDistance("agent1", "agent2", observations) == Approx(expected_distance).epsilon(1e-12));
+        float expected_distance = std::sqrt(std::pow(4.0f - 1.0f, 2) + std::pow(6.0f - 2.0f, 2));
+        REQUIRE(calculate_distance("agent1", "agent2", observations) == Approx(expected_distance));
     }
 
-    SECTION("negative_coordinates") {
-        std::unordered_map<std::string, Coordinates> observations = {
-            {"agent1", {-1.0, -1.0}},
-            {"agent2", {-4.0, -5.0}}
+    SECTION("Negative Coordinates") {
+        // Agents have negative coordinates
+        std::map<std::string, std::map<std::string, float>> observations = {
+            {"agent1", {{"x", -1.0f}, {"y", -1.0f}}},
+            {"agent2", {{"x", -4.0f}, {"y", -5.0f}}}
         };
-        double expected_distance = std::sqrt(std::pow(-4.0 + 1.0, 2) + std::pow(-5.0 + 1.0, 2));
-        REQUIRE(calculateDistance("agent1", "agent2", observations) == Approx(expected_distance).epsilon(1e-12));
+        float expected_distance = std::sqrt(std::pow(-4.0f + 1.0f, 2) + std::pow(-5.0f + 1.0f, 2));
+        REQUIRE(calculate_distance("agent1", "agent2", observations) == Approx(expected_distance));
     }
 }

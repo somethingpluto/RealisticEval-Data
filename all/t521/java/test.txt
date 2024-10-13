@@ -1,132 +1,144 @@
-To convert your Python `unittest` test class to a Java JUnit test case, you'll need to follow these steps:
+Certainly! Below is the equivalent Java test class using JUnit, placed in the package `org.real.temp` and named `Tester`. The functionality and logic of the tests are preserved, and appropriate JUnit annotations and assertion methods are used.
 
-1. Create a new Java class named `Tester`.
-2. Import necessary packages.
-3. Write JUnit test methods that correspond to your Python test cases.
-4. Use assertions to verify the expected outcomes.
-
-Below is an example of how you might write the equivalent Java JUnit test case for your Python code:
+### Java Test Class
 
 ```java
 package org.real.temp;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import org.junit.jupiter.api.Test;
-
+import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Test cases for the wordFilterCounter method.
+ */
 public class Tester {
 
-    // Method under test
-    public Map<String, Integer> wordFilterCounter(String text, List<String> filterWords) {
-        Map<String, Integer> result = new HashMap<>();
-        String[] words = text.split("\\s+");
-        
-        for (String filterWord : filterWords) {
-            int count = 0;
-            for (String word : words) {
-                if (filterWord.equalsIgnoreCase(word)) {
-                    count++;
-                }
-            }
-            result.put(filterWord, count);
+    /**
+     * Test case 1: Verifies the correct count of specified words in the given text.
+     */
+    @Test
+    public void testCase1() {
+        String text = "go to the school.go to the park.";
+        List<String> filterWords = Arrays.asList("go", "to", "the", "school", "park", "play");
+        Map<String, Integer> expectedOutput = new HashMap<>();
+        expectedOutput.put("go", 2);
+        expectedOutput.put("to", 2);
+        expectedOutput.put("the", 2);
+        expectedOutput.put("school", 1);
+        expectedOutput.put("park", 1);
+        expectedOutput.put("play", 0);
+
+        Map<String, Integer> actualOutput = wordFilterCounter(text, filterWords);
+        assertEquals(expectedOutput, actualOutput);
+    }
+
+    /**
+     * Test case 2: Verifies the correct count of specified words in the given text.
+     */
+    @Test
+    public void testCase2() {
+        String text = "This is a completely different sentence.";
+        List<String> filterWords = Arrays.asList("I'll", "go", "to", "the", "school", "park", "play");
+        Map<String, Integer> expectedOutput = new HashMap<>();
+        expectedOutput.put("I'll", 0);
+        expectedOutput.put("go", 0);
+        expectedOutput.put("to", 0);
+        expectedOutput.put("the", 0);
+        expectedOutput.put("school", 0);
+        expectedOutput.put("park", 0);
+        expectedOutput.put("play", 0);
+
+        Map<String, Integer> actualOutput = wordFilterCounter(text, filterWords);
+        assertEquals(expectedOutput, actualOutput);
+    }
+
+    /**
+     * Test case 3: Verifies the correct count of specified words in the given text.
+     */
+    @Test
+    public void testCase3() {
+        String text = "I will not go to the school's park.";
+        List<String> filterWords = Arrays.asList("I", "will", "not", "go", "to", "the", "school's", "park");
+        Map<String, Integer> expectedOutput = new HashMap<>();
+        expectedOutput.put("I", 1);
+        expectedOutput.put("will", 1);
+        expectedOutput.put("not", 1);
+        expectedOutput.put("go", 1);
+        expectedOutput.put("to", 1);
+        expectedOutput.put("the", 1);
+        expectedOutput.put("school's", 1);
+        expectedOutput.put("park", 1);
+
+        Map<String, Integer> actualOutput = wordFilterCounter(text, filterWords);
+        assertEquals(expectedOutput, actualOutput);
+    }
+
+    // Method to be tested
+    private Map<String, Integer> wordFilterCounter(String text, List<String> filterWords) {
+        // Convert filter words to lowercase for case-insensitive comparison
+        Set<String> filterWordsSet = new HashSet<>();
+        for (String word : filterWords) {
+            filterWordsSet.add(word.toLowerCase());
         }
-        
-        return result;
-    }
 
-    @Test
-    public void testWordFilterCounter() {
-        String text = "Hello world hello everyone";
-        List<String> filterWords = List.of("hello", "world");
-        Map<String, Integer> expected = new HashMap<>();
-        expected.put("hello", 2);
-        expected.put("world", 1);
+        // Find all words in the text using a regex pattern
+        Pattern pattern = Pattern.compile("\\b\\w+(?:'\\w+)?\\b");
+        Matcher matcher = pattern.matcher(text.toLowerCase());
+        List<String> words = new ArrayList<>();
+        while (matcher.find()) {
+            words.add(matcher.group());
+        }
 
-        Map<String, Integer> actual = wordFilterCounter(text, filterWords);
+        // Count occurrences of filtered words
+        Map<String, Integer> wordCounts = new HashMap<>();
+        for (String word : words) {
+            if (filterWordsSet.contains(word)) {
+                wordCounts.put(word, wordCounts.getOrDefault(word, 0) + 1);
+            }
+        }
 
-        assertEquals(expected, actual);
-    }
+        // Create an ordered output based on the original order of filterWords
+        Map<String, Integer> orderedOutput = new LinkedHashMap<>();
+        for (String word : filterWords) {
+            orderedOutput.put(word, wordCounts.getOrDefault(word.toLowerCase(), 0));
+        }
 
-    @Test
-    public void testWordFilterCounterWithCaseInsensitive() {
-        String text = "Hello world hello Everyone";
-        List<String> filterWords = List.of("hello", "world");
-        Map<String, Integer> expected = new HashMap<>();
-        expected.put("hello", 2);
-        expected.put("world", 1);
-
-        Map<String, Integer> actual = wordFilterCounter(text, filterWords);
-
-        assertEquals(expected, actual);
-    }
-
-    @Test
-    public void testWordFilterCounterWithNoMatches() {
-        String text = "Goodbye cruel world";
-        List<String> filterWords = List.of("hello", "world");
-        Map<String, Integer> expected = new HashMap<>();
-        expected.put("hello", 0);
-        expected.put("world", 0);
-
-        Map<String, Integer> actual = wordFilterCounter(text, filterWords);
-
-        assertEquals(expected, actual);
-    }
-
-    @Test
-    public void testWordFilterCounterWithEmptyText() {
-        String text = "";
-        List<String> filterWords = List.of("hello", "world");
-        Map<String, Integer> expected = new HashMap<>();
-        expected.put("hello", 0);
-        expected.put("world", 0);
-
-        Map<String, Integer> actual = wordFilterCounter(text, filterWords);
-
-        assertEquals(expected, actual);
-    }
-
-    @Test
-    public void testWordFilterCounterWithEmptyFilterWords() {
-        String text = "Hello world hello Everyone";
-        List<String> filterWords = List.of();
-        Map<String, Integer> expected = new HashMap<>();
-
-        Map<String, Integer> actual = wordFilterCounter(text, filterWords);
-
-        assertEquals(expected, actual);
+        return orderedOutput;
     }
 }
 ```
 
 ### Explanation:
+1. **Package and Class Declaration**:
+   - The package declaration `package org.real.temp;` is included.
+   - The class declaration `public class Tester` is defined.
 
-- **Package Declaration**: The package declaration at the top (`package org.real.temp;`) matches the package name you specified.
-- **Class Declaration**: The Java class `Tester` corresponds to your Python class.
-- **Method Implementation**: The `wordFilterCounter` method in Java follows the same logic as your Python method but uses Java's data structures and syntax.
-- **JUnit Tests**: Several JUnit test methods (`testWordFilterCounter`, `testWordFilterCounterWithCaseInsensitive`, etc.) are written to cover different scenarios. Each test method asserts the expected output against the actual output using `assertEquals`.
+2. **JUnit Imports**:
+   - Necessary imports for JUnit are included:
+     ```java
+     import org.junit.Test;
+     import static org.junit.Assert.assertEquals;
+     import java.util.Arrays;
+     import java.util.HashMap;
+     import java.util.List;
+     import java.util.Map;
+     ```
 
-Make sure you have JUnit 5 included in your project dependencies. If you're using Maven, add the following dependency to your `pom.xml`:
+3. **JUnit Test Methods**:
+   - Each test method is annotated with `@Test` to indicate it is a test case.
+   - The test methods (`testCase1`, `testCase2`, `testCase3`) are defined with appropriate setup and assertions.
 
-```xml
-<dependency>
-    <groupId>org.junit.jupiter</groupId>
-    <artifactId>junit-jupiter-engine</artifactId>
-    <version>5.8.1</version>
-    <scope>test</scope>
-</dependency>
-```
+4. **JUnit Assertions**:
+   - The `assertEquals` method is used to verify that the actual output matches the expected output.
 
-If you're using Gradle, add the following to your `build.gradle`:
+5. **Method to be Tested**:
+   - The `wordFilterCounter` method is defined within the test class. This method implements the functionality described in the Python code.
 
-```groovy
-dependencies {
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
-}
-```
+6. **Test Data**:
+   - The test data and expected outputs are defined as maps and lists, matching the Python test cases.
 
-This should give you a good starting point for converting your Python unit tests to Java JUnit tests.
+This Java test class preserves the functionality and logic of the Python unittest test class while adhering to JUnit's syntax and conventions.

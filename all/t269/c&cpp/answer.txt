@@ -1,4 +1,4 @@
-Certainly! Below is the equivalent C++ code for the provided Python function. This code checks if the given IP address is compliant based on predefined criteria (in this case, whether the IP address is private).
+Here's the equivalent C++ code for the provided Python function:
 
 ```cpp
 #include <iostream>
@@ -9,54 +9,63 @@ Certainly! Below is the equivalent C++ code for the provided Python function. Th
 bool is_compliant_ip(const std::string& ip) {
     try {
         // Convert the input string to an IP address object
-        boost::asio::ip::address ip_obj = boost::asio::ip::address::from_string(ip);
+        boost::asio::ip::address ip_obj = boost::asio::ip::make_address(ip);
 
         // Check compliance criteria: for example, whether the IP is private
-        // Note: In Boost.Asio, there's no direct method like `is_private` available,
-        // so we need to check if the IP falls within the private ranges.
+        // Note: In Boost.Asio, there is no direct equivalent to `is_private` from Python's ipaddress,
+        // so we need to check if the IP falls within private ranges manually.
+        std::string ip_str = ip_obj.to_string();
+        // Define private IP ranges
+        bool is_private = false;
+
+        // IPv4 private ranges
         if (ip_obj.is_v4()) {
-            boost::asio::ip::address_v4 v4_addr = ip_obj.to_v4();
-            return (v4_addr.is_in_range("10.0.0.0", "10.255.255.255") ||
-                    v4_addr.is_in_range("172.16.0.0", "172.31.255.255") ||
-                    v4_addr.is_in_range("192.168.0.0", "192.168.255.255"));
-        } else if (ip_obj.is_v6()) {
-            boost::asio::ip::address_v6 v6_addr = ip_obj.to_v6();
-            return v6_addr.is_link_local() || v6_addr.is_site_local() || v6_addr.is_loopback();
+            is_private = (ip_str.find("10.") == 0 ||
+                          (ip_str.find("172.") == 0 && ip_str.find(".16.") != std::string::npos && ip_str.find(".31.") != std::string::npos) ||
+                          ip_str.find("192.168.") == 0);
         }
-    } catch (std::exception& e) {
+
+        // IPv6 private ranges (limited to commonly used ones)
+        if (ip_obj.is_v6()) {
+            is_private = (ip_str.find("fd") == 0 || ip_str.find("fe80:") == 0);
+        }
+
+        return is_private;
+    } catch (const std::exception& e) {
         // If the input is not a valid IP address, it cannot be compliant
         return false;
     }
-
-    // If none of the above conditions are met, the IP is not compliant
-    return false;
 }
 
 int main() {
+    // Example usage
     std::string ip = "192.168.1.1";
-    std::cout << "IP Address " << ip << " is " << (is_compliant_ip(ip) ? "compliant" : "not compliant") << std::endl;
+    bool result = is_compliant_ip(ip);
+    std::cout << "Is the IP compliant? " << (result ? "Yes" : "No") << std::endl;
 
     return 0;
 }
 ```
 
 ### Explanation:
-1. **Importing Libraries**: 
-   - We include the necessary headers (`<iostream>`, `<string>`, `<boost/asio.hpp>`). The `boost/asio` library provides comprehensive networking capabilities including IP address handling.
+1. **Header Files**: 
+   - `#include <iostream>` for basic I/O operations.
+   - `#include <string>` for handling strings.
+   - `#include <boost/asio.hpp>` for IP address handling using Boost.Asio library.
 
 2. **Function Definition**:
-   - The function `is_compliant_ip` takes a string `ip` as an argument and returns a boolean indicating whether the IP address is compliant.
-   
-3. **Try-Catch Block**:
-   - The `try` block attempts to convert the input string to an IP address using `boost::asio::ip::address::from_string`.
-   - If the conversion fails, a `std::exception` is caught, and the function returns `false`.
+   - The `is_compliant_ip` function takes a string (`ip`) as input and returns a boolean value indicating whether the IP address is compliant based on predefined criteria.
+
+3. **IP Address Conversion**:
+   - The `boost::asio::ip::make_address` function is used to convert the string representation of the IP address into an IP address object.
 
 4. **Compliance Check**:
-   - The function checks if the IP address is IPv4 or IPv6.
-   - For IPv4 addresses, it checks if the IP falls within the standard private IP ranges (`10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`).
-   - For IPv6 addresses, it checks if the IP is link-local, site-local, or loopback.
+   - The function checks if the IP address is private by comparing it against known private IP ranges.
+     - For IPv4, it checks if the IP starts with `10.`, `172.` (specifically between `.16.` and `.31.`), or `192.168.`.
+     - For IPv6, it checks if the IP starts with `fd` or `fe80:`.
 
-5. **Main Function**:
-   - A sample IP address is tested with the `is_compliant_ip` function, and the result is printed to the console.
+5. **Exception Handling**:
+   - A try-catch block is used to handle exceptions thrown during IP address conversion. If the input is not a valid IP address, the function returns `false`.
 
-This code ensures that the logic and functionality of the original Python code are preserved while adapting to C++ syntax and libraries.
+6. **Main Function**:
+   - An example usage of the `is_compliant_ip` function is shown in the `main` function, which prints whether the given IP address is compliant or not.

@@ -1,49 +1,82 @@
-To convert the given Python function into a C++ test class using Catch2, we need to define the function `intersect_horizontally` in C++ and then write the corresponding test cases using Catch2's assertion mechanisms. Below is the C++ implementation of the function along with the test cases:
+Certainly! Below is the equivalent C++ test class using the Catch2 testing framework. The provided Python unittest class will be converted into a set of Catch2 test cases, ensuring that the functionality and logic of the tests are preserved.
+
+First, make sure you have Catch2 installed and included in your project. You can include Catch2 using the following steps:
+
+1. Add the Catch2 header file to your project.
+2. Include the necessary headers and define the test cases.
+
+Here’s the complete C++ code:
 
 ```cpp
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <tuple>
 
 // Function to determine if two rectangles intersect horizontally
+/**
+ * Determine if two rectangles intersect horizontally.
+ *
+ * Each rectangle is defined by a tuple (x1, y1, x2, y2), where:
+ * - (x1, y1) are the coordinates of the bottom-left corner.
+ * - (x2, y2) are the coordinates of the top-right corner.
+ *
+ * @param rect1 The first rectangle defined by (x1, y1, x2, y2).
+ * @param rect2 The second rectangle defined by (x1, y1, x2, y2).
+ * @return True if the rectangles intersect horizontally, False otherwise.
+ */
 bool intersect_horizontally(const std::tuple<int, int, int, int>& rect1, const std::tuple<int, int, int, int>& rect2) {
     // Extracting coordinates from tuples
-    int x1_1 = std::get<0>(rect1);
-    int y1_1 = std::get<1>(rect1);
-    int x2_1 = std::get<2>(rect1);
-    int y2_1 = std::get<3>(rect1);
+    int x1_1, y1_1, x2_1, y2_1;
+    std::tie(x1_1, y1_1, x2_1, y2_1) = rect1;
 
-    int x1_2 = std::get<0>(rect2);
-    int y1_2 = std::get<1>(rect2);
-    int x2_2 = std::get<2>(rect2);
-    int y2_2 = std::get<3>(rect2);
+    int x1_2, y1_2, x2_2, y2_2;
+    std::tie(x1_2, y1_2, x2_2, y2_2) = rect2;
 
-    // Check if there is horizontal intersection
-    return (x2_1 >= x1_2 && x1_1 <= x2_2);
+    // Check if rectangles intersect horizontally
+    return !(x2_1 < x1_2 || x2_2 < x1_1);
 }
 
-TEST_CASE("Test intersect_horizontally") {
-    SECTION("Rectangles intersect horizontally") {
-        REQUIRE(intersect_horizontally(std::make_tuple(0, 0, 5, 5), std::make_tuple(4, 0, 9, 5)) == true);
-        REQUIRE(intersect_horizontally(std::make_tuple(-2, -2, 2, 2), std::make_tuple(0, 0, 5, 5)) == true);
-        REQUIRE(intersect_horizontally(std::make_tuple(-5, -5, 0, 0), std::make_tuple(-1, -1, 4, 4)) == true);
+TEST_CASE("Test intersect_horizontally", "[intersect_horizontally]") {
+    SECTION("Test with overlapping rectangles") {
+        auto rect1 = std::make_tuple(0, 0, 2, 2);
+        auto rect2 = std::make_tuple(1, 1, 3, 3);
+        REQUIRE(intersect_horizontally(rect1, rect2));
     }
 
-    SECTION("Rectangles do not intersect horizontally") {
-        REQUIRE(intersect_horizontally(std::make_tuple(0, 0, 5, 5), std::make_tuple(6, 0, 9, 5)) == false);
-        REQUIRE(intersect_horizontally(std::make_tuple(-2, -2, 2, 2), std::make_tuple(3, 0, 7, 5)) == false);
-        REQUIRE(intersect_horizontally(std::make_tuple(-5, -5, 0, 0), std::make_tuple(1, -1, 6, 4)) == false);
+    SECTION("Test with rectangles touching at a point (not overlapping)") {
+        auto rect1 = std::make_tuple(0, 0, 1, 1);
+        auto rect2 = std::make_tuple(1, 1, 2, 2);
+        REQUIRE(intersect_horizontally(rect1, rect2));
     }
+
+    SECTION("Test with adjacent rectangles (no overlap)") {
+        auto rect1 = std::make_tuple(0, 0, 2, 2);
+        auto rect2 = std::make_tuple(2, 0, 3, 3);
+        REQUIRE(intersect_horizontally(rect1, rect2));
+    }
+
+    SECTION("Test with one rectangle fully inside another") {
+        auto rect1 = std::make_tuple(1, 1, 4, 4);
+        auto rect2 = std::make_tuple(2, 2, 3, 3);
+        REQUIRE(intersect_horizontally(rect1, rect2));
+    }
+
+    SECTION("Test with overlapping rectangles") {
+        auto rect1 = std::make_tuple(-1, -1, 1, 1);
+        auto rect2 = std::make_tuple(0, 0, 2, 2);
+        REQUIRE(intersect_horizontally(rect1, rect2));
+    }
+}
+
+int main(int argc, char* argv[]) {
+    return Catch::Session().run(argc, argv);
 }
 ```
 
 ### Explanation:
-1. **Function Definition**: 
-   - The function `intersect_horizontally` takes two `std::tuple<int, int, int, int>` as parameters representing the rectangles.
-   - It extracts the coordinates from each tuple and checks if there is a horizontal intersection by comparing the x-coordinates.
+1. **Catch2 Header**: The Catch2 header is included at the beginning of the file.
+2. **Function Definition**: The `intersect_horizontally` function is defined with appropriate comments.
+3. **Test Cases**: Each test case from the Python unittest class is converted into a `SECTION` within a `TEST_CASE` in Catch2.
+4. **Assertions**: The `REQUIRE` macro is used to assert the expected behavior of the `intersect_horizontally` function.
+5. **Main Function**: The `main` function initializes and runs the Catch2 test session.
 
-2. **Test Class**:
-   - The `TEST_CASE` macro is used to define a test case named "Test intersect_horizontally".
-   - Inside the test case, `SECTION` macros are used to group similar test scenarios.
-   - `REQUIRE` is used to assert the expected outcome of the function calls.
-
-This setup ensures that the functionality and logic of the original Python test cases are preserved while adapting them to work within the C++ environment using Catch2.
+This setup ensures that the tests are structured and executed similarly to the original Python unittest class, providing clear and concise test cases for the `intersect_horizontally` function.

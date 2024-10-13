@@ -1,54 +1,46 @@
 package org.real.temp;
 
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.factory.Nd4j;
+
 public class Answer {
-    public static class Point3D {
-        double x;
-        double y;
-        double z;
 
-        public Point3D(double x, double y, double z) {
-            this.x = x;
-            this.y = y;
-            this.z = z;
-        }
+    /**
+     * Converts pixel coordinates to 3D coordinates using a camera intrinsic matrix and depth.
+     * 
+     * @param K A 3x3 matrix representing the camera intrinsic parameters.
+     * @param d Depth (distance along the z-axis).
+     * @param x Pixel x coordinate.
+     * @param y Pixel y coordinate.
+     * @return An array containing the 3D coordinates [x, y, z] in camera RDF coordinates.
+     */
+    public static double[] get3DCoordinates(INDArray K, double d, double x, double y) {
+        // Step 1: Convert pixel coordinates to normalized device coordinates (NDC)
+        double cx = K.getDouble(0, 2);
+        double cy = K.getDouble(1, 2);
+        double fx = K.getDouble(0, 0);
+        double fy = K.getDouble(1, 1);
 
-        @Override
-        public String toString() {
-            return "Point3D{" +
-                    "x=" + x +
-                    ", y=" + y +
-                    ", z=" + z +
-                    '}';
-        }
-    }
+        double NDC_x = (x - cx) / fx;
+        double NDC_y = (y - cy) / fy;
 
-    public static Point3D get3DCoordinates(double[][] K, double d, double x, double y) {
-        // Extracting elements from the camera intrinsic matrix K
-        double fx = K[0][0];
-        double fy = K[1][1];
-        double cx = K[0][2];
-        double cy = K[1][2];
+        // Step 2: Get the 3D world coordinates (W)
+        double W_x = NDC_x * d;
+        double W_y = NDC_y * d;
+        double W_z = d;
 
-        // Calculating 3D world coordinates
-        double X = (x - cx) * d / fx;
-        double Y = (y - cy) * d / fy;
-        double Z = d;
-
-        return new Point3D(X, Y, Z);
+        return new double[]{W_x, W_y, W_z};
     }
 
     public static void main(String[] args) {
         // Example usage
-        double[][] K = {
-                {500, 0, 320},
-                {0, 500, 240},
-                {0, 0, 1}
-        };
-        double d = 10; // Depth
-        double x = 300; // Pixel x coordinate
-        double y = 200; // Pixel y coordinate
+        INDArray K = Nd4j.create(new double[][]{
+            {500, 0, 320},
+            {0, 500, 240},
+            {0, 0, 1}
+        });
 
-        Point3D result = get3DCoordinates(K, d, x, y);
-        System.out.println(result);
+        double[] result = get3DCoordinates(K, 1000, 320, 240);
+        System.out.println("3D Coordinates: " + result[0] + ", " + result[1] + ", " + result[2]);
     }
 }

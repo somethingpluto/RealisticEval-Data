@@ -1,25 +1,33 @@
-describe('calculateEuclideanDistance', () => {
-    test('should calculate the Euclidean distance between two points correctly', () => {
-        const point1 = [3, 4];
-        const point2 = [6, 8];
-        const expectedDistance = 5;
-
+describe('TestCalculateEuclideanDistance', () => {
+    it('should calculate the distance correctly', () => {
+        const point1 = [0, 0];
+        const point2 = [3, 4];
+        const expectedDistance = 5.0;
         expect(calculateEuclideanDistance(point1, point2)).toBe(expectedDistance);
     });
 
-    test('should handle floating-point coordinates correctly', () => {
-        const point1 = [0.5, 0.5];
-        const point2 = [1.5, 2.5];
-        const expectedDistance = Math.sqrt(2);
-
-        expect(calculateEuclideanDistance(point1, point2)).toBeCloseTo(expectedDistance, 6);
-    });
-
-    test('should handle points with negative coordinates correctly', () => {
+    it('should handle negative coordinates correctly', () => {
         const point1 = [-1, -1];
-        const point2 = [1, 1];
-        const expectedDistance = 2 * Math.sqrt(2);
-
+        const point2 = [-4, -5];
+        const expectedDistance = 5.0;
         expect(calculateEuclideanDistance(point1, point2)).toBe(expectedDistance);
+    });
+
+    it('should return 0 when both points are the same', () => {
+        const point1 = [2, 3];
+        const point2 = [2, 3];
+        const expectedDistance = 0.0;
+        expect(calculateEuclideanDistance(point1, point2)).toBe(expectedDistance);
+    });
+
+    it('should handle large coordinates correctly', () => {
+        const point1 = [1e6, 1e6];
+        const point2 = [1e6 + 3, 1e6 + 4];
+        const expectedDistance = 5.0;
+        expect(calculateEuclideanDistance(point1, point2)).toBe(expectedDistance);
+    });
+
+    it('should throw a TypeError for invalid input', () => {
+        expect(() => calculateEuclideanDistance("invalid", [0, 0])).toThrow(TypeError);
     });
 });

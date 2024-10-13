@@ -1,0 +1,97 @@
+To convert the provided C++ Catch2 test cases into Python unittest test cases, you will need to follow these steps:
+Set up the testing framework: Use Python's unittest library.
+Translate the assertions: Replace Catch2's REQUIRE and REQUIRE_THROWS_AS with assertEqual and assertRaises in Python.
+Maintain the same logical flow: Keep the test cases structured similarly to the original.
+Here’s how the equivalent Python unittest code would look:
+python
+import unittest
+
+class StackOverflowError(Exception):
+    """Custom exception for stack overflow."""
+    pass
+
+class StackUnderflowError(Exception):
+    """Custom exception for stack underflow."""
+    pass
+
+class Stack:
+    MAX_SIZE = 100
+
+    def __init__(self, capacity):
+        self.stack = [0.0] * capacity
+        self.top = -1
+
+    def push(self, value: float):
+        if self.top >= len(self.stack) - 1:
+            raise StackOverflowError("Stack overflow: Cannot push onto a full stack.")
+        self.top += 1
+        self.stack[self.top] = value
+
+    def pop(self) -> float:
+        if self.top < 0:
+            raise StackUnderflowError("Stack underflow: Cannot pop from an empty stack.")
+        value = self.stack[self.top]
+        self.top -= 1
+        return value
+
+    def peek(self) -> float:
+        if self.top < 0:
+            raise StackUnderflowError("Stack underflow: Cannot peek on an empty stack.")
+        return self.stack[self.top]
+
+    def is_empty(self) -> bool:
+        return self.top < 0
+
+
+class Tester(unittest.TestCase):
+    
+    def test_stack_operations(self):
+        """Test stack_t Test Cases"""
+        stack = Stack(10)  # Provide capacity when creating the stack
+        
+        # Test Case 1: Pushing and popping a single element
+        stack.push(3.14)
+        self.assertEqual(stack.pop(), 3.14)
+        self.assertTrue(stack.is_empty())  # Change to is_empty
+        
+        # Test Case 2: Pushing multiple elements and checking peek
+        stack.push(1.23)
+        stack.push(4.56)
+        self.assertEqual(stack.peek(), 4.56)
+        self.assertEqual(stack.pop(), 4.56)
+        self.assertEqual(stack.pop(), 1.23)
+        self.assertTrue(stack.is_empty())  # Change to is_empty
+        
+        # Test Case 3: Pop from an empty stack (should throw an exception)
+        with self.assertRaises(StackUnderflowError):
+            stack.pop()
+        
+        # Test Case 4: Peek on an empty stack (should throw an exception)
+        with self.assertRaises(StackUnderflowError):
+            stack.peek()
+        
+        # Test Case 5: Push elements until stack is full and attempt to push another element
+        full_stack = Stack(100)  # Provide capacity when creating the stack
+        for i in range(100):
+            full_stack.push(float(i) + 0.5)
+        
+        with self.assertRaises(StackOverflowError):
+            full_stack.push(100.5)
+
+if __name__ == "__main__":
+    unittest.main()
+Explanation of the Code:
+Custom Exceptions:
+Defined StackOverflowError and StackUnderflowError to handle stack errors.
+Stack Class:
+Implements the push, pop, peek, and is_empty methods as in the original C++ code.
+Tester Class:
+The Tester class inherits from unittest.TestCase.
+The test_stack_operations method contains the translated test cases.
+Assertions:
+Used self.assertEqual for equality checks.
+Used self.assertTrue to check boolean conditions.
+Used self.assertRaises to test for exceptions, similar to REQUIRE_THROWS_AS.
+Main Block:
+unittest.main() is used to run the tests when the script is executed.
+This setup effectively mirrors the functionality and structure of your original C++ test cases while utilizing Python's unittest framework.

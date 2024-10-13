@@ -1,70 +1,69 @@
-Certainly! Below is the equivalent JavaScript code with the function signature and comments rewritten to conform to JSDoc format:
+Certainly! Below is the equivalent JavaScript code with the function signature and comments rewritten to conform to JSDoc standards:
 
 ```javascript
 const { exec } = require('child_process');
-const { promisify } = require('util');
-
-const execPromise = promisify(exec);
+const ipPattern = /\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/g;
 
 /**
  * Retrieve the local IP address of the specified network interface on Windows.
  * 
  * @param {string} [interface='Wi-Fi'] - The name of the network interface to check (default is 'Wi-Fi').
- * @returns {Promise<string | null>} - The local IP address if found, otherwise null.
+ * @returns {Promise<string | null>} - A promise that resolves to the local IP address if found, otherwise null.
  */
-async function getLocalIp(interface = 'Wi-Fi') {
+async function getLocalIP(interface = 'Wi-Fi') {
     try {
         // Execute the 'ipconfig' command to get addresses for the specified interface
-        const { stdout, stderr } = await execPromise('ipconfig');
+        const { stdout, stderr } = await new Promise((resolve, reject) => {
+            exec('ipconfig', (error, stdout, stderr) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve({ stdout, stderr });
+                }
+            });
+        });
 
         // Regular expression to match IPv4 addresses
-        const ipPattern = /\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/g;
-
-        // Search for IP addresses in the command output
-        const ips = stdout.match(ipPattern) || [];
-
-        // Return the first local IP found
-        for (const ip of ips) {
-            if (ip.startsWith("192.168.")) {
-                return ip;
-            }
+        const matches = stdout.match(ipPattern);
+        if (!matches) {
+            console.error('No IP addresses found.');
+            return null;
         }
 
-        return null;  // Return null if no suitable IP is found
-
+        // Filter and return the first local IP starting with "192.168."
+        const localIP = matches.find(ip => ip.startsWith('192.168.'));
+        return localIP || null;
     } catch (error) {
-        console.error(`Error executing command: ${error.message}`);
+        console.error(`Error executing command: ${error}`);
         return null;
     }
 }
 
 // Example usage
-(async () => {
-    try {
-        const ip = await getLocalIp();
-        console.log(`Local IP: ${ip}`);
-    } catch (error) {
-        console.error(`An unexpected error occurred: ${error.message}`);
-    }
-})();
+getLocalIP('Wi-Fi')
+    .then(ip => {
+        if (ip) {
+            console.log(`Local IP: ${ip}`);
+        } else {
+            console.log('No suitable IP address found.');
+        }
+    })
+    .catch(error => {
+        console.error(`An unexpected error occurred: ${error}`);
+    });
 ```
 
 ### Explanation:
-1. **Imports**:
-   - `child_process` is used to execute the `ipconfig` command.
-   - `util.promisify` is used to convert the `exec` function into a promise-based function for asynchronous execution.
+1. **Importing `child_process`**: This module allows you to spawn child processes and interact with them.
+2. **Regular Expression**: The regular expression `ipPattern` is used to match IPv4 addresses.
+3. **Function `getLocalIP`**:
+   - It uses JSDoc comments to document the function parameters and return type.
+   - It is defined as an `async` function to handle asynchronous operations.
+   - It uses a promise to execute the `ipconfig` command asynchronously.
+   - It captures the standard output and searches for IP addresses using the regular expression.
+   - If an error occurs during the execution of the command, it logs the error and returns `null`.
+   - If no IP addresses are found, it logs an error message and returns `null`.
+   - If an IP address starting with `"192.168."` is found, it returns it; otherwise, it returns `null`.
 
-2. **Function Definition**:
-   - The `getLocalIp` function is defined as an asynchronous function to handle the asynchronous nature of the `exec` command.
-   - The JSDoc comment is added to describe the function, its parameters, and its return type.
-
-3. **Regular Expression**:
-   - A regular expression `ipPattern` is used to match IPv4 addresses in the command output.
-
-4. **Error Handling**:
-   - Error handling is included to catch any exceptions that may occur during the execution of the `ipconfig` command.
-
-5. **Example Usage**:
-   - An example usage is provided at the end of the script using an immediately invoked async function to demonstrate how to call the `getLocalIp` function and handle the results.
-
-This JavaScript code preserves the purpose and structure of the original Python code while adhering to JavaScript documentation standards using JSDoc.
+### Example Usage:
+The example usage demonstrates how to call the `getLocalIP` function and handle the result or error using promises.

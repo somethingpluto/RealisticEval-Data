@@ -1,41 +1,85 @@
 #include <iostream>
-#include <string>
-#include <ctime>
-#include <fstream>
+#include <memory>
+#include <spdlog/spdlog.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
 
-enum LogLevel { DEBUG, INFO, WARNING, ERROR, CRITICAL };
+// Define logging levels for convenience
+#define SPDLOG_LEVEL_DEBUG 0
+#define SPDLOG_LEVEL_INFO 1
+#define SPDLOG_LEVEL_WARNING 2
+#define SPDLOG_LEVEL_ERROR 3
+#define SPDLOG_LEVEL_CRITICAL 4
 
 class Logger {
 public:
-    Logger(const std::string& name, LogLevel level = DEBUG)
-        : name(name), level(level) {}
+    Logger(const std::string& name, int level = SPDLOG_LEVEL_DEBUG) {
+        // Create logger
+        auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+        console_sink->set_pattern("[%H:%M:%S] [%n] [%^%l%$] [file: %s line: %#] - %v");
 
-    void log(LogLevel level, const std::string& message) {
-        if (level >= this->level) {
-            std::cout << currentDateTime() << " - " << logLevelToString(level)
-                      << " - " << name << " - " << message << std::endl;
+        // Set level
+        switch (level) {
+            case SPDLOG_LEVEL_DEBUG:
+                console_sink->set_level(spdlog::level::debug);
+                break;
+            case SPDLOG_LEVEL_INFO:
+                console_sink->set_level(spdlog::level::info);
+                break;
+            case SPDLOG_LEVEL_WARNING:
+                console_sink->set_level(spdlog::level::warn);
+                break;
+            case SPDLOG_LEVEL_ERROR:
+                console_sink->set_level(spdlog::level::err);
+                break;
+            case SPDLOG_LEVEL_CRITICAL:
+                console_sink->set_level(spdlog::level::critical);
+                break;
+            default:
+                console_sink->set_level(spdlog::level::debug); // Default to debug
+                break;
+        }
+
+        // Initialize logger with the sink
+        logger_ = std::make_shared<spdlog::logger>(name, console_sink);
+        spdlog::register_logger(logger_);
+        logger_->flush_on(spdlog::level::trace);
+    }
+
+    void log(int level, const std::string& message) {
+        switch (level) {
+            case SPDLOG_LEVEL_DEBUG:
+                logger_->debug(message);
+                break;
+            case SPDLOG_LEVEL_INFO:
+                logger_->info(message);
+                break;
+            case SPDLOG_LEVEL_WARNING:
+                logger_->warn(message);
+                break;
+            case SPDLOG_LEVEL_ERROR:
+                logger_->error(message);
+                break;
+            case SPDLOG_LEVEL_CRITICAL:
+                logger_->critical(message);
+                break;
+            default:
+                logger_->debug(message); // Default to debug
+                break;
         }
     }
 
 private:
-    std::string name;
-    LogLevel level;
-
-    std::string logLevelToString(LogLevel level) {
-        switch (level) {
-            case DEBUG: return "DEBUG";
-            case INFO: return "INFO";
-            case WARNING: return "WARNING";
-            case ERROR: return "ERROR";
-            case CRITICAL: return "CRITICAL";
-            default: return "UNKNOWN";
-        }
-    }
-
-    std::string currentDateTime() {
-        std::time_t now = std::time(nullptr);
-        char buf[20];
-        std::strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", std::localtime(&now));
-        return std::string(buf);
-    }
+    std::shared_ptr<spdlog::logger> logger_;
 };
+
+int main() {
+    Logger logger("MyLogger", SPDLOG_LEVEL_INFO);
+
+    logger.log(SPDLOG_LEVEL_DEBUG, "This is a debug message");
+    logger.log(SPDLOG_LEVEL_INFO, "This is an info message");
+    logger.log(SPDLOG_LEVEL_WARNING, "This is a warning message");
+    logger.log(SPDLOG_LEVEL_ERROR, "This is an error message");
+    logger.log(SPDLOG_LEVEL_CRITICAL, "This is a critical message");
+
+    return 0;
+}

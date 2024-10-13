@@ -1,83 +1,69 @@
-First, we'll create the TypeScript function equivalent to the Python function `prepend_to_each_line`. Then, I'll provide the Jest test suite to verify its correctness.
+Certainly! Below is the equivalent TypeScript test class using Jest. The provided Python unittest class is converted to a Jest test suite, ensuring that the functionality and logic of the tests are preserved. Type annotations and Jest assertions are used appropriately.
 
-### TypeScript Function
+### TypeScript Code with Jest Testing
 
 ```typescript
 import fs from 'fs';
 import path from 'path';
-
-function prependToEachLine(filePath: string, prefix: string): void {
-  const tempFilePath = `${filePath}.tmp`;
-
-  // Read the original file
-  fs.readFile(filePath, 'utf8', (err, data) => {
-    if (err) throw err;
-
-    // Split the content by lines
-    const lines = data.split('\n');
-
-    // Prepend the prefix to each line
-    const updatedLines = lines.map(line => prefix + line);
-
-    // Join the lines back into a single string
-    const updatedData = updatedLines.join('\n');
-
-    // Write the updated content to a temporary file
-    fs.writeFile(tempFilePath, updatedData, 'utf8', (writeErr) => {
-      if (writeErr) throw writeErr;
-
-      // Replace the original file with the temporary file
-      fs.rename(tempFilePath, filePath, (renameErr) => {
-        if (renameErr) throw renameErr;
-      });
-    });
-  });
-}
-```
-
-### Jest Test Suite
-
-Next, let's create a Jest test suite to verify the correctness of the `prependToEachLine` function.
-
-```typescript
-import fs from 'fs/promises';
-import path from 'path';
-import { prependToEachLine } from './prependToEachLine';
+import { prependToEachLine } from './prepend-to-each-line'; // Import the function to be tested
 
 describe('prependToEachLine', () => {
-  const testFilePath = path.join(__dirname, 'test.txt');
-  const tempFilePath = path.join(__dirname, 'test.tmp.txt');
-  const prefix = '>>> ';
+    let testFilePath: string;
 
-  beforeAll(async () => {
-    await fs.writeFile(testFilePath, 'line1\nline2\nline3', 'utf8');
-  });
+    beforeEach(() => {
+        // Create a temporary file for testing
+        testFilePath = 'test_file.txt';
+        fs.writeFileSync(testFilePath, 'Line 1\nLine 2\nLine 3');
+    });
 
-  afterAll(async () => {
-    await fs.unlink(testFilePath);
-    await fs.unlink(tempFilePath);
-  });
+    afterEach(() => {
+        // Remove the temporary file after testing
+        fs.unlinkSync(testFilePath);
+    });
 
-  it('should prepend the prefix to each line', async () => {
-    await prependToEachLine(testFilePath, prefix);
+    it('should prepend a simple string to the beginning of each line', () => {
+        prependToEachLine(testFilePath, 'Test: ');
+        const lines = fs.readFileSync(testFilePath, 'utf8').split('\n');
+        expect(lines).toEqual(['Test: Line 1', 'Test: Line 2', 'Test: Line 3']);
+    });
 
-    const updatedContent = await fs.readFile(testFilePath, 'utf8');
-    const expectedContent = `>>> line1
->>> line2
->>> line3`;
+    it('should prepend an empty string', () => {
+        prependToEachLine(testFilePath, '');
+        const lines = fs.readFileSync(testFilePath, 'utf8').split('\n');
+        expect(lines).toEqual(['Line 1', 'Line 2', 'Line 3']);
+    });
 
-    expect(updatedContent).toEqual(expectedContent);
-  });
+    it('should prepend special characters to the beginning of each line', () => {
+        prependToEachLine(testFilePath, '#$%^&* ');
+        const lines = fs.readFileSync(testFilePath, 'utf8').split('\n');
+        expect(lines).toEqual(['#$%^&* Line 1', '#$%^&* Line 2', '#$%^&* Line 3']);
+    });
+
+    it('should prepend a numeric string to the beginning of each line', () => {
+        prependToEachLine(testFilePath, '123 ');
+        const lines = fs.readFileSync(testFilePath, 'utf8').split('\n');
+        expect(lines).toEqual(['123 Line 1', '123 Line 2', '123 Line 3']);
+    });
+
+    it('should throw an error when the file does not exist', () => {
+        expect(() => {
+            prependToEachLine('non_existent_file.txt', 'Test: ');
+        }).toThrow(/ENOENT/); // ENOENT is the error code for file not found
+    });
 });
 ```
 
 ### Explanation:
+1. **Imports**: The `fs` module is imported for file system operations, and the `prependToEachLine` function is imported from the relevant file.
+2. **Test Suite**: The `describe` block sets up the test suite named `prependToEachLine`.
+3. **Before Each**: The `beforeEach` hook creates a temporary file for testing.
+4. **After Each**: The `afterEach` hook removes the temporary file after each test.
+5. **Test Cases**:
+   - **Simple Prepend**: Tests appending a simple string to the beginning of each line.
+   - **Empty String Prepend**: Tests appending an empty string.
+   - **Special Characters Prepend**: Tests appending special characters.
+   - **Numeric String Prepend**: Tests appending a numeric string.
+   - **File Not Found**: Tests throwing an error when the file does not exist.
+6. **Assertions**: Jest assertions (`expect`) are used to verify the expected outcomes.
 
-1. **Function Definition**: The `prependToEachLine` function reads the file, prepends the prefix to each line, and writes the updated content back to the original file.
-
-2. **Jest Test Suite**:
-   - **beforeAll**: Sets up a test file with some initial content.
-   - **afterAll**: Cleans up the test files after all tests are run.
-   - **it**: Tests the `prependToEachLine` function by verifying that the prefix has been correctly prepended to each line.
-
-This setup ensures that the TypeScript function and Jest tests are equivalent to the original Python unittest example.
+This TypeScript code preserves the original functionality and logic of the Python unittest class while adapting it to Jest's testing framework.

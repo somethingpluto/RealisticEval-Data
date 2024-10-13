@@ -1,96 +1,154 @@
-Certainly! Below is the Java equivalent of the given Python unittest example, converted into a JUnit test class within the `org.real.temp` package and named `Tester`. We'll implement the `eightQueens` method and use JUnit assertions to validate its output.
-
-Here’s how you can do it:
+Certainly! Below is the equivalent Java test class using JUnit for the provided Python unittest test class. The Java test class is placed in the package `org.real.temp` and named `Tester`. It uses appropriate JUnit annotations and assertion methods to preserve the functionality and logic of the tests.
 
 ```java
 package org.real.temp;
 
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
-import java.util.ArrayList;
-import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Test class for the Eight Queens problem.
+ */
 public class Tester {
 
-    /**
-     * Solves the Eight Queens problem.
-     * If a solution is found, it prints out the configuration of the chessboard.
-     * If all queens cannot be placed, it prints "No solution".
-     */
+    private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+
+    @BeforeEach
+    public void setUp() {
+        System.setOut(new PrintStream(outContent));
+    }
+
     @Test
-    public void testEightQueens() {
-        List<List<String>> solutions = eightQueens();
-        if (!solutions.isEmpty()) {
-            for (List<String> board : solutions) {
-                for (String row : board) {
-                    System.out.println(row);
-                }
-                System.out.println(); // Separate different solutions with a blank line
+    public void testSolutionExists() {
+        eightQueens();
+        String output = outContent.toString();
+        assertTrue(output.contains("Q"), "The board should contain at least one queen.");
+    }
+
+    @Test
+    public void testCorrectNumberOfQueens() {
+        eightQueens();
+        String output = outContent.toString().strip().split("\n\n")[0]; // Split the output into blocks for each board
+        int numQueens = output.split("\n").length; // Assuming each board is printed on separate lines
+        assertEquals(8, numQueens, "Each board should contain exactly 8 queens.");
+    }
+
+    @Test
+    public void testNoSolutionScenario() {
+        noSolutionQueens();
+        String output = outContent.toString();
+        assertTrue(output.contains("No solution"), "Should print 'No solution' when no solution exists.");
+    }
+
+    private void eightQueens() {
+        char[][] board = new char[8][8];
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                board[i][j] = '.';
             }
-        } else {
+        }
+        if (!solveQueens(board, 0)) {
             System.out.println("No solution");
         }
-        // Assuming we expect at least one solution
-        assertEquals(true, !solutions.isEmpty());
     }
 
-    private List<List<String>> eightQueens() {
-        List<List<String>> solutions = new ArrayList<>();
-        solveNQueens(8, 0, new ArrayList<>(), solutions);
-        return solutions;
+    private void noSolutionQueens() {
+        char[][] board = new char[3][3];
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                board[i][j] = '.';
+            }
+        }
+        if (!solveQueens(board, 0)) {
+            System.out.println("No solution");
+        }
     }
 
-    private boolean isSafe(List<Integer> columns, int newRow, int newCol) {
-        for (int i = 0; i < newRow; i++) {
-            if (columns.get(i) == newCol ||
-                columns.get(i) - i == newCol - newRow ||
-                columns.get(i) + i == newCol + newRow) {
+    private boolean solveQueens(char[][] board, int col) {
+        // Base case: If all queens are placed
+        if (col >= board.length) {
+            printBoard(board);
+            return true;
+        }
+
+        // Consider this column and try placing this queen in all rows one by one
+        boolean solutionFound = false;
+        for (int i = 0; i < board.length; i++) {
+            if (isSafe(board, i, col)) {
+                board[i][col] = 'Q';
+                if (solveQueens(board, col + 1)) {
+                    solutionFound = true;
+                }
+                board[i][col] = '.';  // Backtrack
+            }
+        }
+
+        return solutionFound;
+    }
+
+    private void printBoard(char[][] board) {
+        for (char[] row : board) {
+            System.out.println(new String(row).replace('.', ' ').trim());
+        }
+        System.out.println();
+    }
+
+    private boolean isSafe(char[][] board, int row, int col) {
+        // Check this row on the left side
+        for (int i = 0; i < col; i++) {
+            if (board[row][i] == 'Q') {
                 return false;
             }
         }
+
+        // Check upper diagonal on the left side
+        for (int i = row, j = col; i >= 0 && j >= 0; i--, j--) {
+            if (board[i][j] == 'Q') {
+                return false;
+            }
+        }
+
+        // Check lower diagonal on the left side
+        for (int i = row, j = col; i < board.length && j >= 0; i++, j--) {
+            if (board[i][j] == 'Q') {
+                return false;
+            }
+        }
+
         return true;
-    }
-
-    private void solveNQueens(int n, int row, List<Integer> columns, List<List<String>> solutions) {
-        if (row == n) {
-            solutions.add(generateBoard(columns));
-        } else {
-            for (int col = 0; col < n; col++) {
-                if (isSafe(columns, row, col)) {
-                    columns.add(col);
-                    solveNQueens(n, row + 1, columns, solutions);
-                    columns.remove(columns.size() - 1);
-                }
-            }
-        }
-    }
-
-    private List<String> generateBoard(List<Integer> columns) {
-        int n = columns.size();
-        List<String> board = new ArrayList<>();
-        for (int row = 0; row < n; row++) {
-            StringBuilder sb = new StringBuilder();
-            for (int col = 0; col < n; col++) {
-                if (col == columns.get(row)) {
-                    sb.append('Q');
-                } else {
-                    sb.append('.');
-                }
-            }
-            board.add(sb.toString());
-        }
-        return board;
     }
 }
 ```
 
 ### Explanation:
-1. **JUnit Test Class**: The `Tester` class is defined within the `org.real.temp` package.
-2. **JUnit Test Method**: The `testEightQueens` method is annotated with `@Test` to indicate it is a test case.
-3. **eightQueens Method**: This method solves the Eight Queens problem and returns a list of solutions.
-4. **isSafe Method**: Checks if placing a queen at a specific position is safe.
-5. **solveNQueens Method**: Recursively finds all possible solutions.
-6. **generateBoard Method**: Generates the string representation of the chessboard based on the column positions of the queens.
-7. **Assertions**: Uses `assertEquals` to ensure there is at least one solution.
+1. **Package and Class Declaration**:
+   - The Java code starts with the package declaration `package org.real.temp;` and the class declaration `public class Tester`.
 
-This setup ensures that the test runs and validates the correctness of the Eight Queens solution.
+2. **JUnit Annotations**:
+   - The `@BeforeEach` annotation is used to set up the test environment before each test.
+   - The `@Test` annotation is used to mark test methods.
+
+3. **Output Capture**:
+   - A `ByteArrayOutputStream` is used to capture the standard output during tests.
+   - `System.setOut(new PrintStream(outContent))` redirects the standard output to the `ByteArrayOutputStream`.
+
+4. **Test Methods**:
+   - `testSolutionExists`: Checks if the board contains at least one queen.
+   - `testCorrectNumberOfQueens`: Checks if each board contains exactly 8 queens.
+   - `testNoSolutionScenario`: Checks if the output is "No solution" when no solution exists.
+
+5. **Helper Methods**:
+   - `eightQueens`: Initializes the board and calls `solveQueens` to find solutions.
+   - `noSolutionQueens`: Initializes a smaller board (3x3) and checks for no solution.
+   - `solveQueens`: Recursively solves the N-Queens problem.
+   - `printBoard`: Prints the chessboard.
+   - `isSafe`: Checks if it is safe to place a queen at a given position.
+
+6. **Assertions**:
+   - `assertTrue` and `assertEquals` are used to perform assertions.
+
+This Java code preserves the original functionality and logic of the Python unittest test class while adhering to Java's syntax and conventions.

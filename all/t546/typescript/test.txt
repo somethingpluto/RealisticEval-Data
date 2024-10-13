@@ -1,77 +1,137 @@
-Sure, here's how you can convert your Python unittest test class into a TypeScript Jest test case:
+Certainly! Below is the equivalent TypeScript test class using Jest, ensuring that the functionality and logic of the tests are preserved. The necessary type annotations and Jest assertions are included.
+
+### TypeScript Code
+
+First, ensure you have the necessary dependencies installed:
+```sh
+npm install jest ts-jest @types/jest
+```
+
+Add the following configuration to your `tsconfig.json`:
+```json
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "esModuleInterop": true
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "**/*.spec.ts"]
+}
+```
+
+Add the following configuration to your `jest.config.js`:
+```javascript
+module.exports = {
+  preset: 'ts-jest',
+  testEnvironment: 'node',
+};
+```
+
+Now, here is the TypeScript test class:
 
 ```typescript
-// Import necessary libraries
+import { readTsvFromStdin } from './path/to/your/read-tsv-from-stdin'; // Import the readTsvFromStdin function
 import { describe, it, expect } from '@jest/globals';
-import * as fs from 'fs';
 
-describe('readTsvFromStdin', () => {
-  // Mocking stdin for testing
-  let originalStdin: any;
+describe('TestReadTsvFromStdin', () => {
+  it('test basic TSV input', async () => {
+    const mockStdin = 'col1\tcol2\tcol3\nval1\tval2\tval3\n';
+    process.stdin.setEncoding('utf8');
+    process.stdin.unshift(mockStdin);
 
-  beforeAll(() => {
-    originalStdin = process.stdin;
-    Object.defineProperty(process, 'stdin', {
-      value: {
-        set: jest.fn(),
-        on: jest.fn()
-      }
-    });
-  });
-
-  afterAll(() => {
-    process.stdin = originalStdin;
-  });
-
-  it('reads TSV from standard input', async () => {
-    const tsvData = "header1\theader2\nvalue1\tvalue2";
-    const expectedOutput = [["header1", "header2"], ["value1", "value2"]];
-
-    // Simulate reading from stdin
-    const mockReadline = require('readline');
-    const mockInterface = mockReadline.createInterface({
-      input: fs.ReadStream(Buffer.from(tsvData)),
-      output: process.stdout
-    });
-
-    // Spy on readline interface methods
-    const spyOnQuestion = jest.spyOn(mockInterface, 'question');
-
-    // Call the function that reads from stdin
+    const expectedOutput = [['col1', 'col2', 'col3'], ['val1', 'val2', 'val3']];
     const result = await readTsvFromStdin();
 
-    // Verify the output
     expect(result).toEqual(expectedOutput);
-
-    // Restore the original readline interface
-    spyOnQuestion.mockRestore();
   });
 
-  // Define the function to be tested
-  async function readTsvFromStdin(): Promise<string[][]> {
-    return new Promise((resolve, reject) => {
-      const lines: string[] = [];
-      const rl = require('readline').createInterface({
-        input: process.stdin,
-        output: process.stdout
-      });
+  it('test single column', async () => {
+    const mockStdin = 'col1\nval1\nval2\n';
+    process.stdin.setEncoding('utf8');
+    process.stdin.unshift(mockStdin);
 
-      rl.on('line', (line: string) => {
-        lines.push(line);
-      });
+    const expectedOutput = [['col1'], ['val1'], ['val2']];
+    const result = await readTsvFromStdin();
 
-      rl.on('close', () => {
-        resolve(lines.map(line => line.split('\t')));
-      });
-    });
-  }
+    expect(result).toEqual(expectedOutput);
+  });
 });
 ```
 
 ### Explanation:
-1. **Mocking `process.stdin`**: We replace `process.stdin` with a mock object to simulate input.
-2. **Using Jest Spies**: We use Jest's `spyOn` method to monitor calls to methods like `rl.question`.
-3. **Reading TSV Data**: We create a mock readline interface to simulate reading from `process.stdin`.
-4. **Testing the Function**: We call the `readTsvFromStdin` function and verify its output using `expect`.
 
-This setup ensures that your TypeScript Jest test accurately simulates the behavior of reading from `process.stdin`.
+1. **Imports**:
+   - Import the `readTsvFromStdin` function from the appropriate module.
+   - Import `describe`, `it`, and `expect` from `@jest/globals`.
+
+2. **Test Suite**:
+   - Use `describe` to group the tests under a common suite named `TestReadTsvFromStdin`.
+
+3. **Test Cases**:
+   - Use `it` to define individual test cases.
+   - Each test case sets up the mock input using `process.stdin`.
+   - The `setEncoding` method ensures that the input is treated as a string.
+   - The `unshift` method is used to push the mock input into `process.stdin`.
+
+4. **Assertions**:
+   - Use `expect` to assert the expected output against the actual output.
+
+### Helper Function (`readTsvFromStdin`)
+
+Here is the TypeScript implementation of the `readTsvFromStdin` function:
+
+```typescript
+import * as process from 'process';
+import * as csvParser from 'csv-parser';
+
+/**
+ * Reads tab-separated values (TSV) from standard input and returns a list of rows.
+ *
+ * Each row is represented as an array of strings. If rows have unequal lengths,
+ * they are padded with empty strings to ensure all rows have the same length.
+ *
+ * @returns {Promise<string[][]>} A promise that resolves to a list of lists, where each inner list represents a row of data.
+ */
+async function readTsvFromStdin(): Promise<string[][]> {
+  const data: string[][] = [];
+
+  // Create a CSV parser that reads from standard input with tab as the delimiter
+  const parser = csvParser({
+    delimiter: '\t',
+    trim: true
+  });
+
+  return new Promise((resolve, reject) => {
+    process.stdin.pipe(parser)
+      .on('data', (row: any) => {
+        data.push(Object.values(row));
+      })
+      .on('end', () => {
+        // Find the maximum number of columns in the input data
+        const maxColumns = data.length > 0 ? Math.max(...data.map(row => row.length)) : 0;
+
+        // Pad all rows to ensure they have the same length
+        const paddedData = data.map(row => [
+          ...row,
+          ...Array(maxColumns - row.length).fill('')
+        ]);
+
+        resolve(paddedData);
+      })
+      .on('error', (error: Error) => {
+        reject(error);
+      });
+  });
+}
+
+export { readTsvFromStdin };
+```
+
+### Running the Tests
+
+To run the tests, execute the following command:
+```sh
+npx jest
+```
+
+This setup ensures that the tests are equivalent to the Python unittests and that the functionality and logic are preserved in TypeScript using Jest.

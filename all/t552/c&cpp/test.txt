@@ -1,65 +1,95 @@
-To convert the given Python unittest test class to a C++ test case using Catch2, you'll need to define a test suite with individual test cases that correspond to the assertions in your original Python tests. Below is an example of how you might write these tests in C++:
+Certainly! Below is the equivalent C++ test class using the Catch2 testing framework. The provided Python unittest class will be converted into a Catch2 test suite, ensuring that the functionality and logic of the tests are preserved.
+
+### C++ Code with Catch2 Testing Framework
 
 ```cpp
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <set>
 #include <vector>
 #include <cmath>
 
-// Function declaration from the Python code
-bool are_sets_equal(const std::vector<double>& set1, const std::vector<double>& set2, double rtol = 1e-5, double atol = 1e-6);
-
-// Test suite for the are_sets_equal function
-TEST_CASE("are_sets_equal", "[set_comparison]") {
-    // Test case 1: Sets are exactly the same
-    SECTION("Sets are exactly the same") {
-        std::vector<double> set1 = {1.0, 2.0, 3.0};
-        std::vector<double> set2 = {1.0, 2.0, 3.0};
-        REQUIRE(are_sets_equal(set1, set2));
-    }
-
-    // Test case 2: Sets have the same elements but different order
-    SECTION("Sets have the same elements but different order") {
-        std::vector<double> set1 = {1.0, 2.0, 3.0};
-        std::vector<double> set2 = {3.0, 2.0, 1.0};
-        REQUIRE(are_sets_equal(set1, set2));
-    }
-
-    // Test case 3: Sets differ by a small amount within tolerance
-    SECTION("Sets differ by a small amount within tolerance") {
-        std::vector<double> set1 = {1.0, 2.0, 3.0};
-        std::vector<double> set2 = {1.00001, 2.00001, 3.00001};
-        REQUIRE(are_sets_equal(set1, set2));
-    }
-
-    // Test case 4: Sets differ by more than tolerance
-    SECTION("Sets differ by more than tolerance") {
-        std::vector<double> set1 = {1.0, 2.0, 3.0};
-        std::vector<double> set2 = {1.01, 2.01, 3.01};
-        REQUIRE_FALSE(are_sets_equal(set1, set2));
-    }
+// Function to compare two floating-point numbers within a relative and absolute tolerance
+bool isclose(double a, double b, double rtol, double atol) {
+    return std::abs(a - b) <= std::max(rtol * std::max(std::abs(a), std::abs(b)), atol);
 }
 
-// Implementation of the are_sets_equal function
-bool are_sets_equal(const std::vector<double>& set1, const std::vector<double>& set2, double rtol, double atol) {
-    if (set1.size() != set2.size()) {
+// Function to compare two sets of floats for equality within a relative and absolute tolerance
+bool areSetsEqual(const std::set<double>& set1, const std::set<double>& set2, double rtol = 1e-5, double atol = 1e-6) {
+    // Convert sets to sorted vectors for comparison
+    std::vector<double> list1(set1.begin(), set1.end());
+    std::vector<double> list2(set2.begin(), set2.end());
+
+    // Check if the lengths of both sets are the same
+    if (list1.size() != list2.size()) {
         return false;
     }
-    for (size_t i = 0; i < set1.size(); ++i) {
-        double diff = std::abs(set1[i] - set2[i]);
-        if (diff > atol && diff > std::abs(set1[i]) * rtol + std::abs(set2[i]) * rtol) {
+
+    // Compare each element in the two sorted vectors
+    for (size_t i = 0; i < list1.size(); ++i) {
+        if (!isclose(list1[i], list2[i], rtol, atol)) {
             return false;
         }
     }
+
     return true;
+}
+
+TEST_CASE("TestAreSetsEqual", "[areSetsEqual]") {
+    SECTION("test_identical_sets") {
+        // Test with two identical sets of floats
+        std::set<double> set1 = {1.0, 2.0, 3.0};
+        std::set<double> set2 = {1.0, 2.0, 3.0};
+        REQUIRE(areSetsEqual(set1, set2));
+    }
+
+    SECTION("test_sets_with_close_values") {
+        // Test with two sets that are close within the tolerance
+        std::set<double> set1 = {1.0, 2.00001, 3.0};
+        std::set<double> set2 = {1.0, 2.00002, 3.0};
+        REQUIRE(areSetsEqual(set1, set2, 1e-5, 1e-6));
+    }
+
+    SECTION("test_sets_with_large_difference") {
+        // Test with two sets that have large differences beyond tolerance
+        std::.set<double> set1 = {1.0, 2.0, 3.0};
+        std::.set<double> set2 = {1.0, 2.5, 3.0};
+        REQUIRE_FALSE(areSetsEqual(set1, set2));
+    }
+
+    SECTION("test_sets_with_one_different_value") {
+        // Test with two sets containing one different float
+        std::.set<double> set1 = {1.0, 2.0, 3.0};
+        std::.set<double> set2 = {1.0, 2.000001, 3.0};
+        REQUIRE(areSetsEqual(set1, set2, 1e-5, 1e-6));
+    }
+
+    SECTION("test_empty_sets") {
+        // Test with two empty sets
+        std::.set<double> set1 = {};
+        std::.set<double> set2 = {};
+        REQUIRE(areSetsEqual(set1, set2));
+    }
 }
 ```
 
 ### Explanation:
-1. **Include Catch2 Header**: The `#include <catch2/catch.hpp>` directive includes the Catch2 testing framework.
-2. **Function Declaration**: The `are_sets_equal` function is declared at the top so it can be used in the test cases.
-3. **Test Suite**: The `TEST_CASE` macro defines a test suite named "are_sets_equal".
-4. **Sections**: Each `SECTION` inside `TEST_CASE` represents a separate test case.
-5. **Assertions**: The `REQUIRE` and `REQUIRE_FALSE` macros are used to assert conditions. If any assertion fails, the test will fail.
-6. **Implementation**: The `are_sets_equal` function is implemented after the test cases. This ensures that the function is available for the test cases to call.
+1. **Catch2 Test Suite**:
+   - The `TEST_CASE` macro defines a test case named `TestAreSetsEqual`.
+   - Each `SECTION` macro defines a separate test section within the test case.
 
-This setup allows you to run the tests using a Catch2-compatible test runner, such as `ctest`.
+2. **Function Definitions**:
+   - `isclose`: A helper function to compare two floating-point numbers within a relative and absolute tolerance.
+   - `areSetsEqual`: The main function that compares two sets of doubles for equality within a tolerance.
+
+3. **Test Sections**:
+   - `test_identical_sets`: Tests two identical sets of floats.
+   - `test_sets_with_close_values`: Tests two sets that are close within the tolerance.
+   - `test_sets_with_large_difference`: Tests two sets with large differences beyond the tolerance.
+   - `test_sets_with_one_different_value`: Tests two sets containing one different float.
+   - `test_empty_sets`: Tests two empty sets.
+
+4. **Assertions**:
+   - `REQUIRE`: Used to assert that a condition is true.
+   - `REQUIRE_FALSE`: Used to assert that a condition is false.
+
+This C++ code preserves the functionality and logic of the original Python unittest class while adhering to the Catch2 testing framework conventions.

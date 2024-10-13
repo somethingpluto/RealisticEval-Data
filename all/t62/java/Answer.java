@@ -1,99 +1,85 @@
 package org.real.temp;
 
 public class Answer {
-    // Inner class representing a tree node
-    public static class TreeNode {
-        int val;
+    
+    static class TreeNode {
         TreeNode left;
         TreeNode right;
+        int val;
 
-        TreeNode(int key) {
-            this.val = key;
+        public TreeNode(int key) {
             this.left = null;
             this.right = null;
+            this.val = key;
         }
     }
 
-    // Class representing the binary tree
-    public static class BinaryTree {
-        private TreeNode root;
+    private TreeNode root;
 
-        public BinaryTree() {
-            this.root = null;
+    public Answer() {
+        this.root = null;
+    }
+
+    public void insert(int key) {
+        if (this.root == null) {
+            this.root = new TreeNode(key);
+        } else {
+            insertRecursive(this.root, key);
         }
+    }
 
-        // Public method to insert a new key into the binary tree
-        public void insert(int key) {
-            if (this.root == null) {
-                this.root = new TreeNode(key);
+    private void insertRecursive(TreeNode node, int key) {
+        if (key < node.val) {
+            if (node.left == null) {
+                node.left = new TreeNode(key);
             } else {
-                this._insert(this.root, key);
+                insertRecursive(node.left, key);
+            }
+        } else {
+            if (node.right == null) {
+                node.right = new TreeNode(key);
+            } else {
+                insertRecursive(node.right, key);
             }
         }
+    }
 
-        // Private recursive method to insert a new key into the binary tree
-        private void _insert(TreeNode node, int key) {
-            if (key < node.val) {
-                if (node.left == null) {
-                    node.left = new TreeNode(key);
-                } else {
-                    this._insert(node.left, key);
-                }
-            } else if (key > node.val) {
-                if (node.right == null) {
-                    node.right = new TreeNode(key);
-                } else {
-                    this._insert(node.right, key);
-                }
-            }
-        }
+    public int[] inorderTraversal() {
+        return inorderTraversalRecursive(this.root, new java.util.ArrayList<Integer>()).stream().mapToInt(i -> i).toArray();
+    }
 
-        // Public method to perform an inorder traversal of the binary tree
-        public List<Integer> inorderTraversal() {
-            List<Integer> result = new ArrayList<>();
-            this._inorderTraversal(this.root, result);
-            return result;
+    private java.util.List<Integer> inorderTraversalRecursive(TreeNode node, java.util.List<Integer> result) {
+        if (node != null) {
+            inorderTraversalRecursive(node.left, result);
+            result.add(node.val);
+            inorderTraversalRecursive(node.right, result);
         }
+        return result;
+    }
 
-        // Private recursive method to perform an inorder traversal of the binary tree
-        private void _inorderTraversal(TreeNode node, List<Integer> result) {
-            if (node != null) {
-                this._inorderTraversal(node.left, result);
-                result.add(node.val);
-                this._inorderTraversal(node.right, result);
-            }
-        }
+    public int[] preorderTraversal() {
+        return preorderTraversalRecursive(this.root, new java.util.ArrayList<Integer>()).stream().mapToInt(i -> i).toArray();
+    }
 
-        // Public method to perform a preorder traversal of the binary tree
-        public List<Integer> preorderTraversal() {
-            List<Integer> result = new ArrayList<>();
-            this._preorderTraversal(this.root, result);
-            return result;
+    private java.util.List<Integer> preorderTraversalRecursive(TreeNode node, java.util.List<Integer> result) {
+        if (node != null) {
+            result.add(node.val);
+            preorderTraversalRecursive(node.left, result);
+            preorderTraversalRecursive(node.right, result);
         }
+        return result;
+    }
 
-        // Private recursive method to perform a preorder traversal of the binary tree
-        private void _preorderTraversal(TreeNode node, List<Integer> result) {
-            if (node != null) {
-                result.add(node.val);
-                this._preorderTraversal(node.left, result);
-                this._preorderTraversal(node.right, result);
-            }
-        }
+    public int[] postorderTraversal() {
+        return postorderTraversalRecursive(this.root, new java.util.ArrayList<Integer>()).stream().mapToInt(i -> i).toArray();
+    }
 
-        // Public method to perform a postorder traversal of the binary tree
-        public List<Integer> postorderTraversal() {
-            List<Integer> result = new ArrayList<>();
-            this._postorderTraversal(this.root, result);
-            return result;
+    private java.util.List<Integer> postorderTraversalRecursive(TreeNode node, java.util.List<Integer> result) {
+        if (node != null) {
+            postorderTraversalRecursive(node.left, result);
+            postorderTraversalRecursive(node.right, result);
+            result.add(node.val);
         }
-
-        // Private recursive method to perform a postorder traversal of the binary tree
-        private void _postorderTraversal(TreeNode node, List<Integer> result) {
-            if (node != null) {
-                this._postorderTraversal(node.left, result);
-                this._postorderTraversal(node.right, result);
-                result.add(node.val);
-            }
-        }
+        return result;
     }
 }

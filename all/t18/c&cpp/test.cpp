@@ -1,31 +1,38 @@
-TEST_CASE("TestFloatToRGB", "[floatToRGB]") {
-
-    SECTION("Test pure red") {
+TEST_CASE("Test Float to RGB Conversion") {
+    SECTION("Pure Red") {
         // Value at the lower boundary (0.0) should return pure red
-        auto result = floatToRGB(0.0f);
-        CHECK(result == std::make_tuple(255, 0, 0));
+        auto result = float_to_rgb(0.0f);
+        REQUIRE(std::get<0>(result) == 255);
+        REQUIRE(std::get<1>(result) == 0);
+        REQUIRE(std::get<2>(result) == 0);
     }
 
-    SECTION("Test pure green") {
+    SECTION("Pure Green") {
         // Value at the upper boundary (1.0) should return pure green
-        auto result = floatToRGB(1.0f);
-        CHECK(result == std::make_tuple(0, 255, 0));
+        auto result = float_to_rgb(1.0f);
+        REQUIRE(std::get<0>(result) == 0);
+        REQUIRE(std::get<1>(result) == 255);
+        REQUIRE(std::get<2>(result) == 0);
     }
 
-    SECTION("Test midpoint") {
-        // Value at 0.5 should return an equal mix of red and green
-        auto result = floatToRGB(0.5f);
-        CHECK(result == std::make_tuple(127, 127, 0));
+    SECTION("Midpoint") {
+        // Value at 0.5 should return an equal mix of red and green, resulting in yellow
+        auto result = float_to_rgb(0.5f);
+        REQUIRE(std::get<0>(result) == 127);
+        REQUIRE(std::get<1>(result) == 127);
+        REQUIRE(std::get<2>(result) == 0);
     }
 
-    SECTION("Test quarter point") {
+    SECTION("Quarter Point") {
         // Value at 0.25 should return more red than green
-        auto result = floatToRGB(0.25f);
-        CHECK(result == std::make_tuple(191, 63, 0));
+        auto result = float_to_rgb(0.25f);
+        REQUIRE(std::get<0>(result) == 191);
+        REQUIRE(std::get<1>(result) == 63);
+        REQUIRE(std::get<2>(result) == 0);
     }
 
-    SECTION("Test invalid value") {
+    SECTION("Invalid Value") {
         // Value outside the range [0, 1] should throw an exception
-        CHECK_THROWS_AS(floatToRGB(1.5f), std::out_of_range);
+        REQUIRE_THROWS_AS(float_to_rgb(1.5f), std::invalid_argument);
     }
 }

@@ -1,75 +1,160 @@
-Sure, let's first define the function `prepend_to_each_line` in JavaScript and then write the corresponding Jest test cases. 
+Certainly! Below is the equivalent Jest test suite for the given Python unittest class. The conversion includes maintaining the functionality and logic of the tests, as well as documenting any necessary changes due to language differences between Python and JavaScript.
 
-### Step 1: Convert the Python Function to JavaScript
+### Python Code:
+```python
+import unittest
+import os
 
-Here's how you would implement the `prepend_to_each_line` function in JavaScript:
+def prepend_to_each_line(file_path, prefix):
+    """
+    Appends the specified string to the beginning of each line of the file.
 
-```javascript
+    Args:
+    file_path (str): Path to the file whose lines will be modified.
+    prefix (str): String to append to the beginning of each line.
+    """
+    import os
+    temp_file_path = file_path + ".tmp"
+
+    with open(file_path, 'r') as file, open(temp_file_path, 'w') as temp_file:
+        for line in file:
+            temp_file.write(prefix + line)
+
+    # Replace the original file with the modified file
+    os.replace(temp_file_path, file_path)
+
+
+class TestPrependToEachLine(unittest.TestCase):
+    def setUp(self):
+        """Create a temporary file for testing."""
+        self.test_file_path = "test_file.txt"
+        with open(self.test_file_path, 'w') as f:
+            f.write("Line 1\nLine 2\nLine 3")
+
+    def tearDown(self):
+        """Remove the temporary file after testing."""
+        os.remove(self.test_file_path)
+
+    def test_prepend_string(self):
+        """Test appending a simple string to the beginning of each line."""
+        prepend_to_each_line(self.test_file_path, "Test: ")
+        with open(self.test_file_path, 'r') as f:
+            lines = f.readlines()
+            self.assertEqual(lines, ["Test: Line 1\n", "Test: Line 2\n", "Test: Line 3"])
+
+    def test_prepend_empty_string(self):
+        """Test appending an empty string."""
+        prepend_to_each_line(self.test_file_path, "")
+        with open(self.test_file_path, 'r') as f:
+            lines = f.readlines()
+            self.assertEqual(lines, ["Line 1\n", "Line 2\n", "Line 3"])
+
+    def test_prepend_special_characters(self):
+        """Test appending special characters to the beginning of each line."""
+        prepend_to_each_line(self.test_file_path, "#$%^&* ")
+        with open(self.test_file_path, 'r') as f:
+            lines = f.readlines()
+            self.assertEqual(lines, ["#$%^&* Line 1\n", "#$%^&* Line 2\n", "#$%^&* Line 3"])
+
+    def test_prepend_numeric_string(self):
+        """Test appending numeric string to the beginning of each line."""
+        prepend_to_each_line(self.test_file_path, "123 ")
+        with open(self.test_file_path, 'r') as f:
+            lines = f.readlines()
+            self.assertEqual(lines, ["123 Line 1\n", "123 Line 2\n", "123 Line 3"])
+
+    def test_file_not_found(self):
+        """Test the response when the file does not exist."""
+        with self.assertRaises(FileNotFoundError):
+            prepend_to_each_line("non_existent_file.txt", "Test: ")
+
+
+# Import necessary modules for Jest
 const fs = require('fs').promises;
-const path = require('path');
+const os = require('os');
 
-async function prepend_to_each_line(file_path, prefix) {
-    try {
-        const data = await fs.readFile(file_path, 'utf8');
-        const lines = data.split('\n');
-        const updatedLines = lines.map(line => prefix + line);
-        const updatedData = updatedLines.join('\n');
-        await fs.writeFile(file_path, updatedData, 'utf8');
-    } catch (error) {
-        console.error('Error processing file:', error);
-    }
+function prependToEachLine(file_path, prefix) {
+    const tempFilePath = file_path + ".tmp";
+
+    // Read the original file
+    const fileContent = fs.readFile(file_path, 'utf8');
+    return fileContent.then(content => {
+        const lines = content.split(os.EOL);
+
+        // Write the modified content to a temporary file
+        let modifiedContent = '';
+        for (const line of lines) {
+            modifiedContent += prefix + line + os.EOL;
+        }
+
+        return fs.writeFile(tempFilePath, modifiedContent).then(() => {
+            // Replace the original file with the modified file
+            return fs.rename(tempFilePath, file_path);
+        });
+    });
 }
-```
 
-### Step 2: Write Jest Test Cases
+describe('TestPrependToEachLine', () => {
+    let testFilePath;
 
-Now, we'll write Jest test cases for this function. We'll use Jest's `beforeEach` hook to set up a temporary directory and files for our tests.
-
-```javascript
-const fs = require('fs').promises;
-const path = require('path');
-const { tmpdir } = require('os');
-
-// The function to be tested
-const prepend_to_each_line = require('./prepend_to_each_line');
-
-describe('prepend_to_each_line', () => {
-    let tempDir;
-    let filePath;
-
-    beforeEach(async () => {
-        tempDir = tmpdir();
-        filePath = path.join(tempDir, 'test.txt');
-
-        // Create a temporary file with some content
-        await fs.writeFile(filePath, 'line 1\nline 2\nline 3', 'utf8');
+    beforeAll(() => {
+        testFilePath = 'test_file.txt';
+        return fs.writeFile(testFilePath, 'Line 1\nLine 2\nLine 3');
     });
 
-    afterEach(async () => {
-        // Clean up the temporary file after each test
-        await fs.unlink(filePath);
+    afterAll(() => {
+        return fs.unlink(testFilePath);
     });
 
-    it('should prepend the specified string to the beginning of each line', async () => {
-        const prefix = 'prefix-';
-        await prepend_to_each_line(filePath, prefix);
+    it('should prepend a simple string to each line', async () => {
+        await prependToEachLine(testFilePath, 'Test: ');
+        const content = await fs.readFile(testFilePath, 'utf8');
+        const lines = content.split(os.EOL);
+        expect(lines).toEqual(['Test: Line 1', 'Test: Line 2', 'Test: Line 3']);
+    });
 
-        const updatedContent = await fs.readFile(filePath, 'utf8');
-        expect(updatedContent).toBe(`prefix-line 1\nprefix-line 2\nprefix-line 3`);
+    it('should prepend an empty string', async () => {
+        await prependToEachLine(testFilePath, '');
+        const content = await fs.readFile(testFilePath, 'utf8');
+        const lines = content.split(os.EOL);
+        expect(lines).toEqual(['Line 1', 'Line 2', 'Line 3']);
+    });
+
+    it('should prepend special characters to each line', async () => {
+        await prependToEachLine(testFilePath, '#$%^&* ');
+        const content = await fs.readFile(testFilePath, 'utf8');
+        const lines = content.split(os.EOL);
+        expect(lines).toEqual(['#$%^&* Line 1', '#$%^&* Line 2', '#$%^&* Line 3']);
+    });
+
+    it('should prepend a numeric string to each line', async () => {
+        await prependToEachLine(testFilePath, '123 ');
+        const content = await fs.readFile(testFilePath, 'utf8');
+        const lines = content.split(os.EOL);
+        expect(lines).toEqual(['123 Line 1', '123 Line 2', '123 Line 3']);
+    });
+
+    it('should throw an error if the file does not exist', async () => {
+        await expect(prependToEachLine('non_existent_file.txt', 'Test: '))
+            .rejects.toThrowError(/ENOENT/);
     });
 });
 ```
 
-### Explanation of Changes
+### Explanation:
+1. **Setup and Teardown**:
+   - `beforeAll`: Creates the test file before running the tests.
+   - `afterAll`: Removes the test file after all tests have run.
 
-1. **File Handling**: In Python, file operations are handled using built-in functions. In JavaScript, we use the `fs.promises` API for asynchronous file operations.
+2. **Test Cases**:
+   - Each test case uses `async` functions and `await` to handle asynchronous operations.
+   - Assertions are made using Jest's `expect` function.
 
-2. **Testing Framework**: Jest provides a different set of assertion methods compared to Python's `unittest`. We use `expect` for assertions.
+3. **File Operations**:
+   - `fs.promises` is used for asynchronous file operations.
+   - `os.EOL` is used to determine the end-of-line character specific to the operating system.
 
-3. **Temporary Directory Setup**: To avoid modifying any existing files, we create a temporary file in the system's temporary directory using `tmpdir`.
+4. **Error Handling**:
+   - The `test_file_not_found` test case uses `expect(...).rejects.toThrowError` to check for errors when the file does not exist.
 
-4. **Asynchronous Testing**: Jest supports asynchronous testing using `async/await`, which makes handling file operations easier.
-
-5. **Test Cleanup**: We use `afterEach` to clean up the temporary file after each test to ensure the test environment remains clean for the next test.
-
-This setup ensures that the functionality and logic of the tests are maintained while adapting to JavaScript's syntax and Jest's testing framework.
+This conversion ensures that the functionality and logic of the tests are preserved while adapting to JavaScript's Jest testing framework.

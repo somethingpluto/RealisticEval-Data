@@ -1,27 +1,31 @@
+#include <iostream>
 #include <vector>
 #include <string>
-using namespace std;
 
-vector<string> remove_triple_backticks(vector<string>& string_list) {
-    vector<string> result;
-
-    for(auto str : string_list) {
-        string temp = "";
-
-        for(size_t i=0; i<str.size()-2; i++){
-            if(str[i]!='`' || str[i+1]!='`' || str[i+2]!='`') {
-                temp += str[i];
-            } else {
-                i += 2;
-            }
+// Function to remove all occurrences of three consecutive backticks from each string in the list
+std::vector<std::string> remove_triple_backticks(const std::vector<std::string>& string_list) {
+    std::vector<std::string> processed_list;
+    for (const auto& s : string_list) {
+        std::string processed_string = s;
+        size_t pos = 0;
+        // Find and replace all occurrences of '```' with an empty string
+        while ((pos = processed_string.find("```", pos)) != std::string::npos) {
+            processed_string.erase(pos, 3);
         }
+        processed_list.push_back(processed_string);
+    }
+    return processed_list;
+}
 
-        // Append remaining characters
-        if(str.size()>2){
-            temp += str.substr(str.size()-2);
-        }
-        result.push_back(temp);
+int main() {
+    // Example usage
+    std::vector<std::string> string_list = {"Hello ``` World", "This is a test ```", "No backticks here"};
+    std::vector<std::string> result = remove_triple_backticks(string_list);
+
+    // Output the results
+    for (const auto& s : result) {
+        std::cout << s << std::endl;
     }
 
-    return result;
+    return 0;
 }

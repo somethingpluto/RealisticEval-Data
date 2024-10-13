@@ -1,0 +1,75 @@
+Here’s how you can convert the provided Java JUnit test cases into Python using the unittest framework. The Python code will maintain the same functionality as the Java version, testing the modify_line_in_file method of the Answer class.
+python
+import unittest
+import os
+
+# Assuming the Answer class is already defined and imported
+# from the module where it's defined.
+
+class TestAnswer(unittest.TestCase):
+    TEST_FILE = "testFile.txt"
+
+    def setUp(self):
+        self.answer = Answer()
+        # Create a test file with initial content
+        with open(self.TEST_FILE, 'w') as writer:
+            writer.write("Line 1\n")
+            writer.write("Line 2\n")
+            writer.write("Line 3\n")
+
+    def tearDown(self):
+        # Clean up the test file after each test
+        try:
+            os.remove(self.TEST_FILE)
+        except FileNotFoundError:
+            pass  # File might already be deleted
+
+    def test_modify_line_success(self):
+        self.answer.modify_line_in_file(self.TEST_FILE, 2, "Updated Line 2")
+        with open(self.TEST_FILE, 'r') as reader:
+            self.assertEqual("Line 1\n", reader.readline())
+            self.assertEqual("Updated Line 2\n", reader.readline())
+            self.assertEqual("Line 3\n", reader.readline())
+
+    def test_modify_first_line(self):
+        self.answer.modify_line_in_file(self.TEST_FILE, 1, "Updated Line 1")
+        with open(self.TEST_FILE, 'r') as reader:
+            self.assertEqual("Updated Line 1\n", reader.readline())
+            self.assertEqual("Line 2\n", reader.readline())
+            self.assertEqual("Line 3\n", reader.readline())
+
+    def test_modify_last_line(self):
+        self.answer.modify_line_in_file(self.TEST_FILE, 3, "Updated Line 3")
+        with open(self.TEST_FILE, 'r') as reader:
+            self.assertEqual("Line 1\n", reader.readline())
+            self.assertEqual("Line 2\n", reader.readline())
+            self.assertEqual("Updated Line 3\n", reader.readline())
+
+    def test_modify_non_existent_line(self):
+        with self.assertRaises(ValueError):
+            self.answer.modify_line_in_file(self.TEST_FILE, 4, "Should Fail")
+
+    def test_modify_negative_line_number(self):
+        with self.assertRaises(ValueError):
+            self.answer.modify_line_in_file(self.TEST_FILE, 0, "Should Fail")
+
+
+if __name__ == "__main__":
+    unittest.main()
+Explanation of the Python Code:
+Imports: We import the unittest module for testing and os for file operations.
+Class Definition: TestAnswer is the test case class, similar to the JUnit class.
+Constants: TEST_FILE is defined as a class attribute to be used in tests.
+Setup and Teardown:
+setUp: This method creates the test file and writes initial content before each test runs.
+tearDown: This method deletes the test file after each test to ensure a clean slate.
+Test Methods: Each method is prefixed with test_, which is required by unittest to recognize it as a test case:
+test_modify_line_success: Tests modifying a specific line successfully.
+test_modify_first_line: Tests modifying the first line.
+test_modify_last_line: Tests modifying the last line.
+test_modify_non_existent_line: Checks if a ValueError is raised when trying to modify a non-existent line.
+test_modify_negative_line_number: Checks if a ValueError is raised for a negative line number.
+Assertions: The assertEqual method checks if the expected value matches the actual value read from the file, while assertRaises checks for exceptions.
+Notes:
+Make sure the Answer class is properly defined and available for import in your test file.
+The file handling in Python uses the with statement to automatically close files after their suite finishes, ensuring that resources are managed properly.

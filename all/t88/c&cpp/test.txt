@@ -1,0 +1,92 @@
+Certainly! Here’s how you can translate the Jest test cases to C++ using Catch2 for testing. Catch2 is a popular C++ testing framework that provides a similar structure and readability to Jest.
+
+First, make sure you have Catch2 installed in your project. You can include Catch2 via a header-only library or through a package manager like vcpkg or Conan.
+
+Here’s the complete translation of your Jest test cases to C++ using Catch2:
+
+### C++ Code with Catch2 Test Cases
+
+```cpp
+#include <catch2/catch_test_macros.hpp>
+#include <string>
+#include <sstream>
+#include <vector>
+#include <algorithm>
+
+// Function to check if the cron expression has any hour between 2 and 4 AM
+bool isCronBetween2And4AM(const std::string& cronExpression) {
+    std::istringstream iss(cronExpression);
+    std::vector<int> hours;
+
+    // Extract the hour part from the cron expression
+    std::string hourPart;
+    std::string token;
+    int tokenCount = 0;
+    while (std::getline(iss, token, ' ')) {
+        if (++tokenCount == 2) {
+            hourPart = token;
+            break;
+        }
+    }
+
+    // Split the hour part by commas and convert to integers
+    std::istringstream hourStream(hourPart);
+    std::string hourToken;
+    while (std::getline(hourStream, hourToken, ',')) {
+        try {
+            int hour = std::stoi(hourToken);
+            hours.push_back(hour);
+        } catch (const std::invalid_argument&) {
+            // Ignore invalid tokens
+        }
+    }
+
+    // Check if any hour is between 2 and 4 AM
+    return std::any_of(hours.begin(), hours.end(), [](int hour) {
+        return hour >= 2 && hour < 4;
+    });
+}
+
+TEST_CASE("isCronBetween2And4AM", "[cron]") {
+    SECTION("should return true for specific hours 2, 3, and 4") {
+        REQUIRE(isCronBetween2And4AM("0 2,3,4 * * *") == true);
+    }
+
+    SECTION("should return false for range that includes 2 to 4 a.m.") {
+        REQUIRE(isCronBetween2And4AM("0 1-5 * * *") == false);
+    }
+
+    SECTION("should return false for range that excludes 2 to 4 a.m.") {
+        REQUIRE(isCronBetween2And4AM("0 0-1,5-23 * * *") == false);
+    }
+
+    SECTION("should return true for wildcard in hour field") {
+        REQUIRE(isCronBetween2And4AM("0 * * * *") == true); // Note: This should actually be false based on the logic
+    }
+}
+```
+
+### Explanation:
+1. **Catch2 Headers**:
+   - Include the necessary Catch2 headers.
+
+2. **Function Definition**:
+   - Define the `isCronBetween2And4AM` function as previously provided.
+
+3. **Test Case Structure**:
+   - Use `TEST_CASE` to define the test suite.
+   - Use `SECTION` within the test case to define individual test sections.
+   - Use `REQUIRE` to assert the expected behavior of the function.
+
+### Notes:
+- The last test case (`should return true for wildcard in hour field`) should actually return `false` based on the logic implemented in the function. If you want it to return `true`, you would need to modify the function accordingly.
+
+### Running the Tests
+To run the tests, you can compile your code with Catch2 included. For example, if you have Catch2 installed via a header-only library, you can compile the code using a command like:
+
+```sh
+g++ -std=c++17 -o test test.cpp -I/path/to/catch2/include
+./test
+```
+
+Make sure to adjust the path to the Catch2 include directory as needed.

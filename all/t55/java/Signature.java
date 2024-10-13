@@ -1,11 +1,11 @@
-import java.util.List;
 /**
- * Given an integer array, calculate the minimum number of elements to delete so that the elements in the array are not duplicate.
- * For example:
- *      input: [3, 3, 1, 2, 2, 1]
- *      output: 3
- *
- * @param nums integer array of nums
- * @return minimum number of moves to make every value in nums unique
+ * Calculates the minimum number of elements to delete so that the elements in the array are not duplicate.
+ * 
+ * Example:
+ *     Input: [3, 3, 1, 2, 2, 1]
+ *     Output: 3
+ * 
+ * @param nums The integer array.
+ * @return The minimum number of moves to make every value in the array unique.
  */
 public static int minRemovalsToMakeUnique(List<Integer> nums) {}

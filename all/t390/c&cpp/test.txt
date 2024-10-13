@@ -1,83 +1,87 @@
-Sure! Below is the equivalent C++ code with the test class using Catch2. This includes the `split_into_sentences` function and the corresponding tests:
+Certainly! Below is the equivalent C++ test class using the Catch2 testing framework. The provided Python unittest class will be converted into a Catch2 test suite, ensuring that the functionality and logic of the tests are preserved.
+
+### C++ Code with Catch2 Testing Framework
 
 ```cpp
 #include <catch2/catch_test_macros.hpp>
 #include <string>
 #include <vector>
-#include <sstream>
+#include <regex>
 
 // Function to split the input text string into sentences
 std::vector<std::string> split_into_sentences(const std::string& text) {
+    // Check if the input is a string (in C++, this is always true since it's a function parameter)
+    if (text.empty()) {
+        throw std::invalid_argument("Input must be a non-empty string.");
+    }
+
+    // Regular expression to split the text where there is a punctuation followed by space or end of string
+    // This handles situations where punctuation might be followed by a quotation mark or other punctuation
+    std::regex sentence_delimiters(R"((?<=[.!?]["”’])\s+(?=[A-Z]))");
+
+    // Split the text using the defined regular expression
+    std::sregex_token_iterator iter(text.begin(), text.end(), sentence_delimiters, -1);
+    std::sregex_token_iterator end;
+
     std::vector<std::string> sentences;
-    std::istringstream iss(text);
-    std::string sentence;
-    while (getline(iss, sentence, '.')) {
-        // Trim leading and trailing whitespace
+    for (; iter != end; ++iter) {
+        std::string sentence = *iter;
+        // Remove any leading or trailing whitespace from each sentence
         auto start = sentence.find_first_not_of(" \t\n\r\f\v");
         auto end = sentence.find_last_not_of(" \t\n\r\f\v");
         if (start != std::string::npos) {
             sentences.push_back(sentence.substr(start, (end - start + 1)));
         }
     }
+
+    // Return the cleaned list of sentences
     return sentences;
 }
 
-TEST_CASE("Test split_into_sentences") {
-    SECTION("Empty string") {
-        REQUIRE(split_into_sentences("").empty());
+TEST_CASE("TestSplitIntoSentences", "[split_into_sentences]") {
+    SECTION("test_basic_splitting") {
+        // Test splitting a basic text with clear punctuation
+        std::string text = "Hello world! How are you? I am fine.";
+        std::vector<std::string> expected = {"Hello world!", "How are you?", "I am fine."};
+        std::vector<std::string> result = split_into_sentences(text);
+        REQUIRE(result == expected);
     }
 
-    SECTION("Single sentence") {
-        REQUIRE_THAT(split_into_sentences("This is a single sentence."),
-                     Catch::Matchers::Equals(std::vector<std::string>{"This is a single sentence"}));
+    SECTION("test_complex_punctuation") {
+        // Test splitting text that includes quotes and commas
+        std::string text = "He said, This is amazing! Then he left.";
+        std::vector<std::string> expected = {"He said, This is amazing!", "Then he left."};
+        std::vector<std::string> result = split_into_sentences(text);
+        REQUIRE(result == expected);
     }
 
-    SECTION("Multiple sentences") {
-        REQUIRE_THAT(split_into_sentences("This is the first sentence. This is the second sentence. This is the third sentence."),
-                     Catch::Matchers::Equals(std::vector<std::string>{
-                         "This is the first sentence",
-                         "This is the second sentence",
-                         "This is the third sentence"
-                     }));
+    SECTION("test_with_no_punctuation") {
+        // Test text that has no punctuation marks
+        std::string text = "Hello world how are you";
+        std::vector<std::string> expected = {"Hello world how are you"};
+        std::vector<std::string> result = split_into_sentences(text);
+        REQUIRE(result == expected);
     }
 
-    SECTION("Trailing period") {
-        REQUIRE_THAT(split_into_sentences("This is a sentence with a trailing period..."),
-                     Catch::Matchers::Equals(std::vector<std::string>{
-                         "This is a sentence with a trailing period"
-                     }));
-    }
-
-    SECTION("Leading and trailing spaces") {
-        REQUIRE_THAT(split_into_sentences("   Leading and trailing spaces.   "),
-                     Catch::Matchers::Equals(std::vector<std::string>{"Leading and trailing spaces"}));
-    }
-
-    SECTION("Consecutive periods") {
-        REQUIRE_THAT(split_into_sentences("Consecutive periods.."),
-                     Catch::Matchers::Equals(std::vector<std::string>{
-                         "Consecutive periods",
-                         ""
-                     }));
+    SECTION("test_empty_string") {
+        // Test empty string input
+        std::string text = "";
+        std::vector<std::string> expected = {};
+        std::vector<std::string> result = split_into_sentences(text);
+        REQUIRE(result == expected);
     }
 }
 ```
 
 ### Explanation:
+1. **Header Files**: Includes necessary headers (`<catch2/catch_test_macros.hpp>`, `<string>`, `<vector>`, `<regex>`).
+2. **Function Definition**: `split_into_sentences` takes a `const std::string&` as input and returns a `std::vector<std::string>`.
+3. **Documentation**: Single-line comments (`//`) are used to describe the function and sections within the test cases.
+4. **Regular Expression**: Uses a regex pattern to match sentence delimiters, similar to the Python version.
+5. **Splitting Text**: Uses `std::sregex_token_iterator` to split the text based on the regex pattern.
+6. **Whitespace Removal**: Removes leading and trailing whitespace from each sentence.
+7. **Exception Handling**: Throws an exception if the input string is empty.
+8. **Catch2 Test Suite**: Defines a test suite `TestSplitIntoSentences` with multiple sections to cover different test cases.
+9. **Assertions**: Uses `REQUIRE` to check that the results match the expected values.
 
-1. **Function Definition**: 
-   - The `split_into_sentences` function takes a string and returns a vector of strings representing the sentences in the input text.
-   - It uses `std::istringstream` to split the text by periods (`.`).
-   - It trims leading and trailing whitespace from each sentence before adding it to the result vector.
-
-2. **Test Class**:
-   - The `TEST_CASE` macro defines a test case named "Test split_into_sentences".
-   - Each `SECTION` defines a specific scenario or test case.
-   - `REQUIRE` is used to check boolean conditions.
-   - `REQUIRE_THAT` with `Catch::Matchers::Equals` is used to compare vectors of strings.
-
-3. **Assertions**:
-   - The `REQUIRE` macro checks if the function returns an empty vector when given an empty string.
-   - The `REQUIRE_THAT` macro checks if the function returns the expected vector of sentences for different inputs.
-
-This setup ensures that the functionality and logic of the tests are preserved, making the transition from Python's unittest to C++'s Catch2 seamless.
+This C++ code maintains the same functionality and structure as the original Python unittest class, including the test cases and assertions.

@@ -1,16 +1,25 @@
 #include <iostream>
 #include <vector>
-#include <algorithm>
+#include <unordered_set>
+#include <unordered_map>
 
-int minRemovalsToMakeUnique(std::vector<int> nums) {
-    std::sort(nums.begin(), nums.end());
-    int count = 0;
-    for(int i = 1; i < nums.size(); ++i){
-        if(nums[i] <= nums[i-1]){
-            int diff = nums[i-1] - nums[i];
-            nums[i] += diff + 1;
-            count += diff + 1;
+int minRemovalsToMakeUnique(std::vector<int>& nums) {
+    std::unordered_set<int> numbers;
+    int minimumDistinct = 0;
+
+    for (int number : nums) {
+        if (numbers.find(number) != numbers.end()) {
+            minimumDistinct += 1;
+        } else {
+            numbers.insert(number);
         }
     }
-    return count;
+
+    return minimumDistinct;
+}
+
+int main() {
+    std::vector<int> nums = {1, 2, 3, 2, 4, 3, 5};
+    std::cout << "Minimum removals to make unique: " << minRemovalsToMakeUnique(nums) << std::endl;
+    return 0;
 }

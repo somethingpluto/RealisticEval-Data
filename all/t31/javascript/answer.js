@@ -1,11 +1,12 @@
 /**
  * Calculate the proportion of red in a list of pixels.
  *
- * @param {Array.<Array.<number, number, number>>} pixels - A list of pixels, where each pixel is represented as an array of [R, G, B].
+ * @param {Array<Array<number>>} pixels - A list of pixels, where each pixel is represented as an array [R, G, B].
  * @returns {number} The proportion of red in the list of pixels, as a value between 0 and 1.
  */
 function calculateRedProportion(pixels) {
-    if (!pixels || pixels.length === 0) {
+
+    if (!pixels.length) {
         return 0.0;
     }
 

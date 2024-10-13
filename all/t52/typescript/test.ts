@@ -1,25 +1,36 @@
-describe('renameFilePath', () => {
-  it('replaces colons in the filename with underscores', () => {
-    const inputPath = 'C:\\Users\\Username\\Documents\\file:name.txt';
-    const expectedOutput = 'C:\\Users\\Username\\Documents\\file_name.txt';
-    expect(renameFilePath(inputPath)).toBe(expectedOutput);
+describe('TestRenameFilePath', () => {
+  it('should rename with colon in the filename', () => {
+    // Test path with colon in the filename
+    const path = 'C:\\Users\\example\\Documents\\report:2023.txt';
+    const expected = 'C:\\Users\\example\\Documents\\report_2023.txt';
+    expect(renameFilePath(path)).toEqual(expected);
   });
 
-  it('does not modify paths without colons', () => {
-    const inputPath = 'C:\\Users\\Username\\Documents\\filename.txt';
-    const expectedOutput = 'C:\\Users\\Username\\Documents\\filename.txt';
-    expect(renameFilePath(inputPath)).toBe(expectedOutput);
+  it('should rename without colon in the filename', () => {
+    // Test path without colon in the filename
+    const path = 'C:\\Users\\example\\Documents\\report2023.txt';
+    const expected = 'C:\\Users\\example\\Documents\\report2023.txt';
+    expect(renameFilePath(path)).toEqual(expected);
   });
 
-  it('handles multiple colons in the filename', () => {
-    const inputPath = 'C:\\Users\\Username\\Documents\\file::name.txt';
-    const expectedOutput = 'C:\\Users\\Username\\Documents\\file__name.txt';
-    expect(renameFilePath(inputPath)).toBe(expectedOutput);
+  it('should rename with multiple colons in the filename', () => {
+    // Test path with multiple colons in the filename
+    const path = 'C:\\Users\\example\\Documents\\project:report:2023.txt';
+    const expected = 'C:\\Users\\example\\Documents\\project_report_2023.txt';
+    expect(renameFilePath(path)).toEqual(expected);
   });
 
-  it('works with relative paths', () => {
-    const inputPath = 'relative:path\\to\\file:name.txt';
-    const expectedOutput = 'relative:path\\to\\file_name.txt';
-    expect(renameFilePath(inputPath)).toBe(expectedOutput);
+  it('should rename with colon at the end of the filename', () => {
+    // Test path with a colon at the end of the filename
+    const path = 'C:\\Users\\example\\Documents\\backup:';
+    const expected = 'C:\\Users\\example\\Documents\\backup_';
+    expect(renameFilePath(path)).toEqual(expected);
+  });
+
+  it('should rename with colon at the start of the filename', () => {
+    // Test path with a colon at the start of the filename
+    const path = 'C:\\Users\\example\\Documents\\:initial_setup.txt';
+    const expected = 'C:\\Users\\example\\Documents\\_initial_setup.txt';
+    expect(renameFilePath(path)).toEqual(expected);
   });
 });

@@ -1,110 +1,120 @@
-Sure! Below is the equivalent TypeScript code using Jest for testing the `handle_nested_data` function. I'll include the function definition as well as the Jest test cases.
-
-First, let's define the function and its expected behavior:
+Certainly! Here is the equivalent Jest test class in TypeScript, including the necessary type annotations and Jest assertions:
 
 ```typescript
-import { deepStrictEqual } from 'assert';
+import { handleNestedData } from './path-to-handle-nested-data'; // Import the handleNestedData function
 
-type Question = {
-  [key: string]: any;
-};
+describe('TestHandleNestedData', () => {
+    it('test simple dictionary', () => {
+        const data = { name: b"Alice", age: "30" };
+        const expected = { name: "Alice", age: 30 };
+        expect(handleNestedData(data)).toEqual(expected);
+    });
 
-function handleNestedData(data: Question): Question {
-  if (typeof data === 'object' && data !== null) {
-    if (Array.isArray(data)) {
-      return data.map((item) => handleNestedData(item));
-    }
-    const result: Question = {};
-    for (const key in data) {
-      if (data.hasOwnProperty(key)) {
-        result[key] = handleNestedData(data[key]);
-      }
-    }
-    return result;
-  } else if (typeof data === 'string' && data.startsWith('b\'') && data.endsWith('\'')) {
-    // Decode bytes to UTF8-string
-    return data.slice(2, -1);
-  } else if (typeof data === 'number') {
-    // Convert number to integer or floating point number
-    return Math.floor(data) === data ? Math.floor(data) : data;
-  }
-  return data;
-}
+    it('test nested dictionary', () => {
+        const data = { user: { name: b"Bob", details: { age: "25", height: "175.5" } } };
+        const expected = { user: { name: "Bob", details: { age: 25, height: 175.5 } } };
+        expect(handleNestedData(data)).toEqual(expected);
+    });
 
-// Example usage
-const exampleData: Question = {
-  key1: "value1",
-  key2: [1, 2, "b'bytes'", { key3: "value3", key4: 3.14 }],
-  key5: { key6: "b'another bytes'" },
-};
+    it('test list of mixed data types', () => {
+        const data = ["100", b"200", 300.0, "400.5"];
+        const expected = [100, "200", 300.0, 400.5];
+        expect(handleNestedData(data)).toEqual(expected);
+    });
 
-console.log(handleNestedData(exampleData));
-```
+    it('test incorrect byte decoding', () => {
+        const data = { invalid_bytes: b"\xff\xfe\xfd\xfc" };
+        expect(() => handleNestedData(data)).toThrow(/UnicodeDecodeError/);
+    });
 
-Now, let's write the Jest test cases:
-
-```typescript
-import { deepStrictEqual } from 'assert';
-
-describe('handleNestedData', () => {
-  it('should correctly handle nested data', () => {
-    const input: Question = {
-      key1: "value1",
-      key2: [1, 2, "b'bytes'", { key3: "value3", key4: 3.14 }],
-      key5: { key6: "b'another bytes'" },
-    };
-
-    const expectedOutput: Question = {
-      key1: "value1",
-      key2: [1, 2, "bytes", { key3: "value3", key4: 3.14 }],
-      key5: { key6: "another bytes" },
-    };
-
-    const output = handleNestedData(input);
-    expect(output).toEqual(expectedOutput);
-  });
-
-  it('should correctly handle simple data types', () => {
-    const input: Question = {
-      key1: "value1",
-      key2: 3.14,
-      key3: "b'bytes'",
-    };
-
-    const expectedOutput: Question = {
-      key1: "value1",
-      key2: 3.14,
-      key3: "bytes",
-    };
-
-    const output = handleNestedData(input);
-    expect(output).toEqual(expectedOutput);
-  });
-
-  it('should correctly handle arrays', () => {
-    const input: Question[] = [
-      "value1",
-      3.14,
-      "b'bytes'",
-      ["b'inner bytes'", 2],
-    ];
-
-    const expectedOutput: Question[] = [
-      "value1",
-      3.14,
-      "bytes",
-      ["inner bytes", 2],
-    ];
-
-    const output = handleNestedData(input);
-    expect(output).toEqual(expectedOutput);
-  });
+    it('test complex nested structure', () => {
+        const data = {
+            team: [
+                { name: b"Charlie", scores: ["1000", "2000.2"] },
+                { name: b"Daisy", skills: [b"Coding", "Design"], age: "22" }
+            ]
+        };
+        const expected = {
+            team: [
+                { name: "Charlie", scores: [1000, 2000.2] },
+                { name: "Daisy", skills: ["Coding", "Design"], age: 22 }
+            ]
+        };
+        expect(handleNestedData(data)).toEqual(expected);
+    });
 });
 ```
 
-In this conversion:
-- The `handleNestedData` function is defined with the expected behavior.
-- The Jest test cases use `expect` and `toEqual` to verify the correctness of the function.
-- The test cases cover handling nested data, simple data types, and arrays.
+### Explanation:
+1. **Import Statements**:
+   - Import the `handleNestedData` function from the appropriate module.
 
-This should provide a complete and equivalent conversion from the Python unittest to Jest in TypeScript.
+2. **Describe Block**:
+   - Use the `describe` block to group the test cases under a single test suite named `TestHandleNestedData`.
+
+3. **Test Cases**:
+   - Each test case is defined using the `it` block, which takes a description and a test function.
+
+4. **Assertions**:
+   - Use `expect` and `toEqual` to compare the actual result with the expected result.
+   - Use `toThrow` to check for exceptions.
+
+5. **Byte Buffer Handling**:
+   - Since TypeScript does not have a built-in `Buffer` type like Python’s `bytes`, you need to import `Buffer` from the `buffer` module and use it appropriately.
+
+### Example with Buffer Import:
+If you need to use `Buffer` for byte handling, you can include the following import statement at the beginning of your file:
+
+```typescript
+import { Buffer } from 'buffer';
+```
+
+And adjust the test data accordingly:
+
+```typescript
+import { Buffer } from 'buffer';
+import { handleNestedData } from './path-to-handle-nested-data'; // Import the handleNestedData function
+
+describe('TestHandleNestedData', () => {
+    it('test simple dictionary', () => {
+        const data = { name: Buffer.from("Alice"), age: "30" };
+        const expected = { name: "Alice", age: 30 };
+        expect(handleNestedData(data)).toEqual(expected);
+    });
+
+    it('test nested dictionary', () => {
+        const data = { user: { name: Buffer.from("Bob"), details: { age: "25", height: "175.5" } } };
+        const expected = { user: { name: "Bob", details: { age: 25, height: 175.5 } } };
+        expect(handleNestedData(data)).toEqual(expected);
+    });
+
+    it('test list of mixed data types', () => {
+        const data = [Buffer.from("100"), Buffer.from("200"), 300.0, "400.5"];
+        const expected = [100, "200", 300.0, 400.5];
+        expect(handleNestedData(data)).toEqual(expected);
+    });
+
+    it('test incorrect byte decoding', () => {
+        const data = { invalid_bytes: Buffer.from("\xff\xfe\xfd\xfc") };
+        expect(() => handleNestedData(data)).toThrow(/UnicodeDecodeError/);
+    });
+
+    it('test complex nested structure', () => {
+        const data = {
+            team: [
+                { name: Buffer.from("Charlie"), scores: ["1000", "2000.2"] },
+                { name: Buffer.from("Daisy"), skills: [Buffer.from("Coding"), Buffer.from("Design")], age: "22" }
+            ]
+        };
+        const expected = {
+            team: [
+                { name: "Charlie", scores: [1000, 2000.2] },
+                { name: "Daisy", skills: ["Coding", "Design"], age: 22 }
+            ]
+        };
+        expect(handleNestedData(data)).toEqual(expected);
+    });
+});
+```
+
+This TypeScript code preserves the original functionality and logic of the Python unittest test class, with appropriate adjustments for Jest and TypeScript's static type system.

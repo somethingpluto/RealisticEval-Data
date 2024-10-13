@@ -1,114 +1,108 @@
-Given the Python function `eight_queens` which solves the Eight Queens problem, we need to create a Jest test suite in TypeScript to validate the correctness of this function. Below is the equivalent TypeScript code using Jest for testing the `eight_queens` function.
+Certainly! Below is the TypeScript code that converts the provided Python unittest test class into an equivalent test class using Jest. The functionality and logic of the tests are preserved, and the necessary type annotations are included. The assert methods from `unittest` are mapped to the appropriate Jest assertions.
 
-First, let's define the TypeScript function that represents the `eight_queens` algorithm. Then we'll write the Jest test suite to validate the function.
-
-### TypeScript Function Implementation
+### TypeScript Code with Jest Testing
 
 ```typescript
-function printChessBoard(board: string[][]): void {
-    board.forEach(row => {
-        console.log(row.join(' '));
+import { eightQueens, printBoard, isSafe, solveQueens } from './eightQueens'; // Import the functions from your eightQueens module
+
+describe('TestEightQueens', () => {
+    beforeEach(() => {
+        // Setup can be done here if needed
     });
-}
 
-function isSafe(board: string[][], row: number, col: number): boolean {
-    // Check this row on left side
-    for (let i = 0; i < col; i++) {
-        if (board[row][i] === 'Q') {
-            return false;
+    it('should contain at least one queen', () => {
+        const originalConsoleLog = console.log;
+        let fakeOut = '';
+
+        // Mock console.log to capture output
+        console.log = jest.fn((output) => {
+            fakeOut += output;
+        });
+
+        eightQueens();
+
+        // Restore original console.log
+        console.log = originalConsoleLog;
+
+        expect(fakeOut.includes('Q')).toBe(true, 'The board should contain at least one queen.');
+    });
+
+    it('should contain exactly 8 queens', () => {
+        const originalConsoleLog = console.log;
+        let fakeOut = '';
+
+        // Mock console.log to capture output
+        console.log = jest.fn((output) => {
+            fakeOut += output;
+        });
+
+        eightQueens();
+
+        // Restore original console.log
+        console.log = originalConsoleLog;
+
+        const boards = fakeOut.trim().split('\n\n'); // Split the output into blocks for each board
+        for (const board of boards) {
+            const numQueens = (board.match(/Q/g) || []).length;
+            expect(numQueens).toBe(8, 'Each board should contain exactly 8 queens.');
         }
-    }
+    });
 
-    // Check upper diagonal on left side
-    for (let i = row, j = col; i >= 0 && j >= 0; i--, j--) {
-        if (board[i][j] === 'Q') {
-            return false;
-        }
-    }
+    it('should print "No solution" when no solution exists', () => {
+        const originalConsoleLog = console.log;
+        let fakeOut = '';
 
-    // Check lower diagonal on left side
-    for (let i = row, j = col; j >= 0 && i < board.length; i++, j--) {
-        if (board[i][j] === 'Q') {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-function eightQueens(): void {
-    const N = 8;
-    const board: string[][] = Array.from({ length: N }, () => Array(N).fill('.'));
-    function solveNQ(col: number): boolean {
-        if (col >= N) {
-            printChessBoard(board);
-            return true;
-        }
-
-        let res = false;
-        for (let i = 0; i < N; i++) {
-            if (isSafe(board, i, col)) {
-                board[i][col] = 'Q';
-                res = solveNQ(col + 1) || res;
-                board[i][col] = '.'; // BACKTRACK
+        // Define a function that simulates a scenario with no solution
+        function noSolutionQueens() {
+            const board: string[][] = Array.from({ length: 3 }, () => Array(3).fill('.'));
+            if (!solveQueens(board, 0)) {
+                console.log("No solution");
             }
         }
-        return res;
-    }
 
-    if (!solveNQ(0)) {
-        console.log("No solution");
-    }
-}
-
-// Example usage
-eightQueens();
-```
-
-### Jest Test Suite
-
-Now, let's create a Jest test suite to verify the correctness of the `eightQueens` function.
-
-```typescript
-import { captureConsole } from '@testing-library/node';
-
-describe('eightQueens', () => {
-    it('should solve the Eight Queens problem', async () => {
-        const expectedOutput = [
-            '. . Q . . . . .',
-            '. . . . Q . . .',
-            '. Q . . . . . .',
-            '. . . . . . . Q',
-            '. . . . . Q . .',
-            '. . . Q . . . .',
-            '. . . . . . Q .',
-            'Q . . . . . . .',
-        ].join('\n');
-
-        const output = await captureConsole(async () => {
-            eightQueens();
+        // Mock console.log to capture output
+        console.log = jest.fn((output) => {
+            fakeOut += output;
         });
 
-        expect(output.stdout).toContain(expectedOutput);
-    });
+        noSolutionQueens();
 
-    it('should handle no solution scenario', async () => {
-        // Mocking the function to simulate no solution
-        const originalSolveNQ = eightQueens;
-        eightQueens = jest.fn(() => {
-            console.log("No solution");
-        });
+        // Restore original console.log
+        console.log = originalConsoleLog;
 
-        const output = await captureConsole(async () => {
-            eightQueens();
-        });
-
-        expect(output.stdout).toContain("No solution");
-
-        // Restore the original function after the test
-        eightQueens = originalSolveNQ;
+        expect(fakeOut.includes('No solution')).toBe(true, 'Should print "No solution" when no solution exists.');
     });
 });
 ```
 
-In this Jest test suite, we use the `@testing-library/node` package to capture the console output generated by the `eightQueens` function. We then compare the captured output with the expected output using Jest's `expect` assertion method. This ensures that the function behaves as expected when solving the Eight Queens problem.
+### Explanation:
+1. **Imports**:
+   - Import the necessary functions (`eightQueens`, `printBoard`, `isSafe`, `solveQueens`) from the `eightQueens` module.
+
+2. **Describe Block**:
+   - Use `describe` to group the test cases under `TestEightQueens`.
+
+3. **Before Each Hook**:
+   - Use `beforeEach` to set up any common setup logic if needed.
+
+4. **Test Cases**:
+   - **`it('should contain at least one queen')`**:
+     - Mock `console.log` to capture the output.
+     - Call `eightQueens` and check if the output contains at least one 'Q'.
+   - **`it('should contain exactly 8 queens')`**:
+     - Mock `console.log` to capture the output.
+     - Call `eightQueens` and split the output into boards.
+     - Count the number of 'Q's in each board and verify that it is exactly 8.
+   - **`it('should print "No solution" when no solution exists')`**:
+     - Define a function `noSolutionQueens` that simulates a scenario with no solution.
+     - Mock `console.log` to capture the output.
+     - Call `noSolutionQueens` and verify that the output contains "No solution".
+
+5. **Mocking Console Log**:
+   - Use Jest's `jest.fn` to mock `console.log` and capture the output.
+   - Restore the original `console.log` after the test.
+
+6. **Assertions**:
+   - Use Jest's `expect` to perform assertions.
+
+This TypeScript code preserves the original functionality and logic of the Python unittest test class while adapting it to Jest's testing framework.

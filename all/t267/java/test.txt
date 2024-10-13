@@ -1,73 +1,147 @@
-Sure! Below is the Java equivalent of the given Python code using JUnit for testing. I'll start by defining the method `extractSldTld` and then provide the JUnit test class.
+Certainly! Here’s the equivalent Java test class using JUnit for the provided Python unittest class. The Java test class will be placed in the package `org.real.temp` and named `Tester`.
 
-### Java Method Definition
-
-First, let's define the method `extractSldTld`:
-
-```java
-import java.util.Arrays;
-import java.util.List;
-
-public class DomainExtractor {
-
-    /**
-     * Extracts the second-level and top-level domain names from the fully qualified domain name (FQDN).
-     * 
-     * @param fqdn The fully qualified domain name.
-     * @return An array containing the second-level domain and top-level domain.
-     */
-    public static String[] extractSldTld(String fqdn) {
-        List<String> parts = Arrays.asList(fqdn.split("\\."));
-        
-        if (parts.size() < 2) {
-            throw new IllegalArgumentException("Invalid FQDN");
-        }
-        
-        String tld = parts.get(parts.size() - 1);
-        String sld = parts.get(parts.size() - 2);
-        
-        return new String[]{sld, tld};
-    }
-}
-```
-
-### JUnit Test Class
-
-Now, let's create the JUnit test class:
+### Java Code Using JUnit
 
 ```java
 import org.junit.Test;
-import org.junit.Assert;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
-import org.real.temp.Tester;
+import static org.junit.Assert.assertEquals;
+import org.real.temp.Answer;
 
-@RunWith(JUnit4.class)
 public class Tester {
 
     @Test
-    public void testExtractSldTld() {
-        // Test cases to verify the correctness of the method
-        String[] result1 = DomainExtractor.extractSldTld("example.com");
-        Assert.assertArrayEquals(new String[]{"example", "com"}, result1);
+    public void testStandardFqdn() {
+        // Test a typical FQDN
+        SimpleEntry<String, String> result = Answer.extractSldTld("www.example.com");
+        assertEquals(new SimpleEntry<>("example", "com"), result);
+    }
 
-        String[] result2 = DomainExtractor.extractSldTld("subdomain.example.co.uk");
-        Assert.assertArrayEquals(new String[]{"subdomain.example", "co.uk"}, result2);
+    @Test
+    public void testStandardFqdn2() {
+        // Test a typical FQDN
+        SimpleEntry<String, String> result = Answer.extractSldTld("www.example.xyz");
+        assertEquals(new SimpleEntry<>("example", "xyz"), result);
+    }
 
-        // Add more test cases as needed
+    @Test
+    public void testFqdnWithSubdomains() {
+        // Test an FQDN with multiple subdomains
+        SimpleEntry<String, String> result = Answer.extractSldTld("blog.subdomain.example.com");
+        assertEquals(new SimpleEntry<>("example", "com"), result);
+    }
+
+    @Test
+    public void testNumericTld() {
+        // Test a numeric TLD, which can occur in private networks
+        SimpleEntry<String, String> result = Answer.extractSldTld("server.example.123");
+        assertEquals(new SimpleEntry<>("example", "123"), result);
     }
 }
 ```
 
-### Explanation
+### Explanation:
+1. **Package and Class Definition**:
+   - The Java test class is defined within the package `org.real.temp` and named `Tester`.
 
-1. **Method Definition**: The method `extractSldTld` is defined in the `DomainExtractor` class. It takes a fully qualified domain name (`fqdn`) and returns an array containing the second-level domain and top-level domain.
+2. **JUnit Annotations**:
+   - Each test method is annotated with `@Test` to indicate that it is a test case.
 
-2. **JUnit Test Class**:
-   - The test class is annotated with `@RunWith(JUnit4.class)` to specify the runner for the JUnit tests.
-   - The `@Test` annotation is used to mark the test method.
-   - The `Assert.assertArrayEquals` method is used to check the correctness of the returned array against expected values.
+3. **Assertion Methods**:
+   - The `assertEquals` method from JUnit is used to assert the expected results.
 
-3. **Package Declaration**: The test class is placed in the package `org.real.temp`.
+4. **Import Statements**:
+   - Import statements are added for JUnit assertions and the `Answer` class.
 
-This setup ensures that the functionality and logic of the tests are preserved while adapting to Java's syntax and structure.
+5. **Test Methods**:
+   - Each test method is named according to the functionality it tests.
+   - The `SimpleEntry` class is used to represent pairs of values, similar to the Python tuples.
+
+### Full Java Code Including the `Answer` Class
+
+For completeness, here is the full Java code including the `Answer` class and the `Tester` class:
+
+```java
+import java.util.AbstractMap.SimpleEntry;
+import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+
+public class Answer {
+
+    /**
+     * Extracts the second-level domain (SLD) and top-level domain (TLD) from a fully qualified domain name (FQDN).
+     * 
+     * @param fqdn The fully qualified domain name.
+     * @return A pair containing the second-level domain and top-level domain.
+     * @throws IllegalArgumentException if the provided FQDN does not contain enough parts to extract SLD and TLD.
+     */
+    public static SimpleEntry<String, String> extractSldTld(String fqdn) {
+        // Split the FQDN into parts
+        String[] parts = fqdn.split("\\.");
+
+        // Check if there are enough parts to extract SLD and TLD
+        if (parts.length < 2) {
+            throw new IllegalArgumentException("The provided FQDN does not contain enough parts to extract SLD and TLD.");
+        }
+
+        // Extract the SLD and TLD
+        String sld = parts[parts.length - 2];  // Second to last item is the SLD
+        String tld = parts[parts.length - 1];  // Last item is the TLD
+
+        return new SimpleEntry<>(sld, tld);
+    }
+
+    public static void main(String[] args) {
+        // Example usage
+        try {
+            SimpleEntry<String, String> result = extractSldTld("example.com");
+            System.out.println("SLD: " + result.getKey());
+            System.out.println("TLD: " + result.getValue());
+        } catch (IllegalArgumentException e) {
+            System.err.println(e.getMessage());
+        }
+    }
+}
+
+// Test class
+package org.real.temp;
+
+import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import org.real.temp.Answer;
+
+public class Tester {
+
+    @Test
+    public void testStandardFqdn() {
+        // Test a typical FQDN
+        SimpleEntry<String, String> result = Answer.extractSldTld("www.example.com");
+        assertEquals(new SimpleEntry<>("example", "com"), result);
+    }
+
+    @Test
+    public void testStandardFqdn2() {
+        // Test a typical FQDN
+        SimpleEntry<String, String> result = Answer.extractSldTld("www.example.xyz");
+        assertEquals(new SimpleEntry<>("example", "xyz"), result);
+    }
+
+    @Test
+    public void testFqdnWithSubdomains() {
+        // Test an FQDN with multiple subdomains
+        SimpleEntry<String, String> result = Answer.extractSldTld("blog.subdomain.example.com");
+        assertEquals(new SimpleEntry<>("example", "com"), result);
+    }
+
+    @Test
+    public void testNumericTld() {
+        // Test a numeric TLD, which can occur in private networks
+        SimpleEntry<String, String> result = Answer.extractSldTld("server.example.123");
+        assertEquals(new SimpleEntry<>("example", "123"), result);
+    }
+}
+```
+
+### Summary:
+- The `Answer` class contains the `extractSldTld` method.
+- The `Tester` class contains JUnit test methods to verify the correctness of the `extractSldTld` method.
+- JUnit annotations and assertion methods are used to ensure the tests are structured and executed correctly.

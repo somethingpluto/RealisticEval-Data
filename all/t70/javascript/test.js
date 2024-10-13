@@ -1,16 +1,77 @@
-describe('codeBlockRemover', () => {
-  it('should return an empty array when there are no code blocks in the input', () => {
-    const markdownString = 'This is a sample text without any code blocks.';
-    expect(codeBlockRemover(markdownString)).toEqual([]);
+describe('TestCodeBlockRemover', () => {
+  it('should handle a single code block', () => {
+      const markdown = `
+      This is a markdown with a code block.
+
+      \`\`\`python
+      print("Hello, World!")
+      \`\`\`
+
+      End of markdown.
+      `;
+      const expected = ['print("Hello, World!")'];
+      const result = codeBlockRemover(markdown);
+      expect(result).toEqual(expected);
   });
 
-  it('should return an array with one element when there is one code block in the input', () => {
-    const markdownString = 'This is a sample text with a `code block` inside.';
-    expect(codeBlockRemover(markdownString)).toEqual(['code block']);
+  it('should handle multiple code blocks', () => {
+      const markdown = `
+      First code block:
+
+      \`\`\`python
+      print("Hello, World!")
+      \`\`\`
+
+      Second code block:
+
+      \`\`\`javascript
+      console.log("Hello, World!");
+      \`\`\`
+      `;
+      const expected = [
+          'print("Hello, World!")',
+          'console.log("Hello, World!");'
+      ];
+      const result = codeBlockRemover(markdown);
+      expect(result).toEqual(expected);
   });
 
-  it('should return an array with multiple elements when there are multiple code blocks in the input', () => {
-    const markdownString = 'This is a sample text with a `first code block`, and another `second code block` inside.';
-    expect(codeBlockRemover(markdownString)).toEqual(['first code block', 'second code block']);
+  it('should handle no code blocks', () => {
+      const markdown = `
+      This markdown has no code blocks.
+
+      Just some plain text.
+      `;
+      const expected = [];
+      const result = codeBlockRemover(markdown);
+      expect(result).toEqual(expected);
+  });
+
+  it('should handle an empty code block', () => {
+      const markdown = `
+      Here is an empty code block:
+
+      \`\`\`python
+      \`\`\`
+
+      End of markdown.
+      `;
+      const expected = [''];
+      const result = codeBlockRemover(markdown);
+      expect(result).toEqual(expected);
+  });
+
+  it('should handle a malformed code block', () => {
+      const markdown = `
+      This code block is missing ending:
+
+      \`\`\`python
+      print("Hello, World!")
+
+      And some more text.
+      `;
+      const expected = [];
+      const result = codeBlockRemover(markdown);
+      expect(result).toEqual(expected);
   });
 });

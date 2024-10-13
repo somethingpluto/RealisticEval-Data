@@ -1,31 +1,30 @@
 #include <iostream>
+#include <fstream>
 #include <vector>
 #include <map>
 #include <string>
-#include <tinyxml2.h>
+#include <pugixml.hpp>
 
-using namespace tinyxml2;
+// Function to convert an XML file into a vector of maps
+std::vector<std::map<std::string, std::string>> xml_to_vector_of_maps(const std::string& xml_file) {
+    // Parse the XML file
+    pugi::xml_document doc;
+    if (!doc.load_file(xml_file.c_str())) {
+        std::cerr << "Failed to load XML file: " << xml_file << std::endl;
+        return {};
+    }
 
-std::vector<std::map<std::string, std::string>> xml_to_data(const std::string& xml_file) {
+    // Prepare a vector to hold all rows
     std::vector<std::map<std::string, std::string>> rows;
 
-    XMLDocument doc;
-    if (doc.LoadFile(xml_file.c_str()) != XML_SUCCESS) {
-        std::cerr << "Error loading XML file" << std::endl;
-        return rows;
-    }
-
-    XMLElement* root = doc.RootElement();
-    if (!root) {
-        std::cerr << "Error finding root element" << std::endl;
-        return rows;
-    }
-
-    for (XMLElement* sequence = root->FirstChildElement("sequence"); sequence != nullptr; sequence = sequence->NextSiblingElement("sequence")) {
+    // Iterate over each <sequence> element in the XML file
+    for (pugi::xml_node sequence : doc.child("root").children("sequence")) {
         std::map<std::string, std::string> row_data;
 
-        for (XMLElement* child = sequence->FirstChildElement(); child != nullptr; child = child->NextSiblingElement()) {
-            row_data[child->Name()] = child->GetText() ? child->GetText() : "";
+        // Iterate over each child of the <sequence> element
+        for (pugi::xml_node child : sequence.children()) {
+            // Use the tag as the column name and the text content as the value
+            row_data[child.name()] = child.text().get();
         }
 
         rows.push_back(row_data);
@@ -35,15 +34,17 @@ std::vector<std::map<std::string, std::string>> xml_to_data(const std::string& x
 }
 
 int main() {
-    std::string xml_file = "path_to_your_xml_file.xml"; // replace with your XML file path
-    std::vector<std::map<std::string, std::string>> data = xml_to_data(xml_file);
+    std::string xml_file = "example.xml";  // Replace with the path to your XML file
 
-    // Printing the data to verify
+    // Convert the XML file into a vector of maps
+    std::vector<std::map<std::string, std::string>> data = xml_to_vector_of_maps(xml_file);
+
+    // Print the data
     for (const auto& row : data) {
-        for (const auto& [key, value] : row) {
-            std::cout << key << ": " << value << ", ";
+        for (const auto& entry : row) {
+            std::cout << entry.first << ": " << entry.second << std::endl;
         }
-        std::cout << std::endl;
+        std::cout << "-----------------" << std::endl;
     }
 
     return 0;

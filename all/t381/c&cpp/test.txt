@@ -1,63 +1,95 @@
-To convert the provided Python function into a C++ test class using Catch2, we first need to define the function `extract_email_details` in C++. After that, we can write the corresponding test cases using Catch2's assertion mechanisms.
+Certainly! Below is the equivalent C++ test class using the Catch2 testing framework. The provided Python unittest class will be converted into a set of Catch2 test cases, ensuring that the functionality and logic of the tests are preserved.
 
-Here’s how you can do it:
+### C++ Code with Catch2 Testing Framework
 
-1. **Define the Function**:
-   ```cpp
-   #include <string>
-   #include <utility> // For std::pair
+First, make sure you have Catch2 installed and included in your project. You can include Catch2 via a header-only library or through a package manager.
 
-   std::pair<std::string, std::string> extract_email_details(const std::string& email) {
-       size_t at_pos = email.find('@');
-       if (at_pos == std::string::npos) {
-           return std::make_pair("", "");
-       }
-       std::string username = email.substr(0, at_pos);
-       std::string domain = email.substr(at_pos + 1);
-       return std::make_pair(username, domain);
-   }
-   ```
+Here is the complete C++ code:
 
-2. **Write the Test Class Using Catch2**:
-   ```cpp
-   #include "catch.hpp"
+```cpp
+#include <catch2/catch_test_macros.hpp>
+#include <string>
+#include <stdexcept>
+#include <utility> // For std::pair
 
-   TEST_CASE("Extract Email Details", "[email]") {
-       SECTION("Valid email") {
-           auto result = extract_email_details("xxx@gmail.com");
-           REQUIRE(result.first == "xxx");
-           REQUIRE(result.second == "gmail.com");
-       }
+// Extracts the username and mailbox suffix from an email address.
+// Example: extract_email_details("xxx@gmail.com") returns ("xxx", "gmail.com")
+//
+// Args:
+//     email (std::string): the email address to extract details from
+//
+// Returns:
+//     std::pair<std::string, std::string>: (username, domain)
+std::pair<std::string, std::string> extract_email_details(const std::string& email) {
+    // Check if '@' is in the email
+    size_t at_pos = email.find('@');
+    if (at_pos == std::string::npos) {
+        throw std::invalid_argument("Invalid email address. Email must contain an '@' character.");
+    }
 
-       SECTION("Email without @") {
-           auto result = extract_email_details("invalidemail");
-           REQUIRE(result.first.empty());
-           REQUIRE(result.second.empty());
-       }
+    // Extract the username and domain
+    std::string username = email.substr(0, at_pos);
+    std::string domain = email.substr(at_pos + 1);
 
-       SECTION("Email with multiple @") {
-           auto result = extract_email_details("xxx@invalid@.com");
-           REQUIRE(result.first == "xxx");
-           REQUIRE(result.second == "invalid@.com");
-       }
+    return {username, domain};
+}
 
-       SECTION("Empty email") {
-           auto result = extract_email_details("");
-           REQUIRE(result.first.empty());
-           REQUIRE(result.second.empty());
-       }
+TEST_CASE("TestExtractEmailDetails", "[email]") {
+    SECTION("test_valid_email") {
+        // Test with a typical email address
+        std::string email = "user@example.com";
+        std::pair<std::string, std::string> expected = {"user", "example.com"};
+        auto result = extract_email_details(email);
+        REQUIRE(result == expected);
+    }
 
-       SECTION("Email with leading/trailing spaces") {
-           auto result = extract_email_details(" xxx @ gmail . com ");
-           REQUIRE(result.first == "xxx");
-           REQUIRE(result.second == "gmail.com");
-       }
-   }
-   ```
+    SECTION("test_valid_email_with_subdomain") {
+        // Test with an email that includes a subdomain
+        std::string email = "user@mail.office.com";
+        std::pair<std::string, std::string> expected = {"user", "mail.office.com"};
+        auto result = extract_email_details(email);
+        REQUIRE(result == expected);
+    }
+
+    SECTION("test_email_without_at_symbol") {
+        // Test with an email that lacks an '@' symbol
+        std::string email = "userexample.com";
+        REQUIRE_THROWS_AS(extract_email_details(email), std::invalid_argument);
+    }
+
+    SECTION("test_empty_email") {
+        // Test with an empty string as an email
+        std::string email = "";
+        REQUIRE_THROWS_AS(extract_email_details(email), std::invalid_argument);
+    }
+}
+```
 
 ### Explanation:
-- **Function Definition**: The function `extract_email_details` takes a string representing an email and uses `std::string::find` to locate the '@' character. It then extracts the username and domain parts accordingly.
-- **Test Class**: The `TEST_CASE` macro is used to define a test case named "Extract Email Details". Each `SECTION` represents a different scenario or condition to test the function against.
-- **Assertions**: `REQUIRE` is used to assert the expected outcomes of each section. If any of the assertions fail, the test will report the failure.
+1. **Include Directives**:
+   - `#include <catch2/catch_test_macros.hpp>`: For Catch2 test macros.
+   - `#include <string>`: For string manipulation.
+   - `#include <stdexcept>`: For throwing exceptions.
+   - `#include <utility>`: For using `std::pair`.
 
-This setup ensures that the functionality and logic of the original Python unittest are preserved in the C++ version using Catch2.
+2. **Function Documentation**:
+   - The Python docstring is translated into C++ comments using `//` for single-line comments and `/* */` for multi-line comments.
+   - The function documentation includes the example usage, arguments, and return value.
+
+3. **Function Signature**:
+   - The Python function `def extract_email_details(email: str)` is translated to `std::pair<std::string, std::string> extract_email_details(const std::string& email)`.
+
+4. **Implementation**:
+   - The function checks if the '@' character is present in the email.
+   - If not, it throws a `std::invalid_argument`.
+   - Otherwise, it extracts the `username` and `domain` using `std::string::substr`.
+
+5. **Catch2 Test Cases**:
+   - Each Python test method is translated into a `SECTION` within a `TEST_CASE`.
+   - `REQUIRE` is used for assertions.
+   - `REQUIRE_THROWS_AS` is used to check for specific exception types.
+
+6. **Main Function**:
+   - The `main` function is typically not needed when using Catch2, as it handles the test execution automatically.
+
+This code preserves the original functionality and logic of the Python tests while adhering to C++ syntax and the Catch2 testing framework.

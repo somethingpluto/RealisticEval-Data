@@ -1,14 +1,14 @@
 function minRemovalsToMakeUnique(nums: number[]): number {
-    let count = 0;
-    const set = new Set<number>();
+    let numbers: Set<number> = new Set();
+    let minimumDistinct: number = 0;
 
-    for(let i=0; i<nums.length; i++) {
-        while(set.has(nums[i])) {
-            nums[i]++;
-            count++;
+    for (let number of nums) {
+        if (numbers.has(number)) {
+            minimumDistinct += 1;
+        } else {
+            numbers.add(number);
         }
-        set.add(nums[i]);
     }
 
-    return count;
+    return minimumDistinct;
 }

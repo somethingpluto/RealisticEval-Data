@@ -1,0 +1,79 @@
+Here’s how you can convert the provided TypeScript Jest test cases into Python unit tests using the unittest framework. The tests will mock the current date to ensure consistent results.
+Python Code with Unittest
+python
+import unittest
+from unittest.mock import patch
+from datetime import datetime, timedelta
+
+# Assuming the get_relative_time function is defined in a module named `module_name`
+# from module_name import get_relative_time
+
+def get_relative_time(message_date: datetime) -> str:
+    """
+    Returns a string representing the relative time since the given message was created.
+    """
+    now = datetime.now()
+    time_difference = now - message_date
+    one_day = timedelta(days=1)
+    
+    # Calculate the number of days difference
+    days_difference = time_difference // one_day
+    
+    # Check if the message was created today
+    if days_difference == 0:
+        return "Today"
+    # Check if the message was created yesterday
+    elif days_difference == 1:
+        return "Yesterday"
+    # Check if the message was created within the past week (not today or yesterday)
+    elif days_difference < 7:
+        days_of_week = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+        return days_of_week[message_date.weekday()]  # Get the day of the week
+    # If the message was created earlier than one week ago
+    else:
+        # Format the date to a readable string (e.g., "MM/DD/YYYY")
+        return message_date.strftime("%Y/%m/%d")
+
+class TestGetRelativeTime(unittest.TestCase):
+
+    @patch('datetime.datetime')
+    def setUp(self, mock_datetime):
+        # Mock the current date to ensure consistent test results
+        self.mock_now = datetime(2024, 10, 1)
+        mock_datetime.now.return_value = self.mock_now
+
+    def test_should_return_today_for_a_message_created_today(self):
+        message_date = datetime.now()  # Current date
+        self.assertEqual(get_relative_time(message_date), "Today")
+
+    def test_should_return_yesterday_for_a_message_created_yesterday(self):
+        message_date = datetime.now() - timedelta(days=1)  # Yesterday
+        self.assertEqual(get_relative_time(message_date), "Yesterday")
+
+    def test_should_return_formatted_date_string_for_a_message_created_10_days_ago(self):
+        message_date = datetime.now() - timedelta(days=10)  # 10 days ago
+        self.assertEqual(get_relative_time(message_date), "2024/09/21")  # Adjust based on the mock date
+
+    def test_should_return_formatted_date_string_for_a_message_created_15_days_ago(self):
+        message_date = datetime.now() - timedelta(days=15)  # 15 days ago
+        self.assertEqual(get_relative_time(message_date), "2024/09/16")  # Adjust based on the mock date
+
+if __name__ == '__main__':
+    unittest.main()
+Key Components Explained:
+Imports:
+unittest for the testing framework.
+patch from unittest.mock to mock the current date.
+datetime and timedelta to handle date and time operations.
+Function Definition:
+The get_relative_time function is included for context. You would typically import this function from the module where it is defined.
+Test Class:
+TestGetRelativeTime is the test case class that inherits from unittest.TestCase.
+setUp Method:
+setUp is called before every test. It mocks the current date using @patch, setting it to October 1, 2024.
+Test Methods:
+Each test method corresponds to a test case in the original TypeScript Jest code. They use self.assertEqual to verify the expected outcomes.
+Each method checks a specific condition: whether the message date falls today, yesterday, or is a formatted string for dates older than one week.
+Running the Tests:
+if __name__ == '__main__': allows the script to be run directly to execute the tests.
+This Python implementation replicates the behavior of the original TypeScript Jest test cases while adhering to Python's unittest framework conventions. Let me know if you need any further modifications or explanations!

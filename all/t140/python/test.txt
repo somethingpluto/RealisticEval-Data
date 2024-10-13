@@ -1,78 +1,68 @@
-To convert the provided TypeScript Jest test cases into Python's unittest framework, we'll follow a similar structure. The unittest module allows you to create and run test cases, similar to Jest. Here's how you can translate your TypeScript Jest test cases into Python:
-Converted Python Test Case Using unittest
+Here's how you can convert the TypeScript Jest test cases to Python's unittest framework. This code retains the structure and logic of the original tests, adapted for Python.
+Converted Python Test Cases Using unittest
 python
 import unittest
 from datetime import datetime, timedelta
 
-# Assuming the function get_time_since_born_until_now is defined here
+# Assuming the function get_time_since_born_until_now is already defined above
 
 class TestGetTimeSinceBornUntilNow(unittest.TestCase):
 
-    def setUp(self):
-        # Set the system time to a fixed date
-        self.fixed_time = datetime(2024, 8, 23, 15, 45)
-        # Mock datetime.now() for the tests
-        self.original_datetime_now = datetime.now
+    @classmethod
+    def setUpClass(cls):
+        # Set a fixed current time for all tests
+        cls.fixed_time = datetime(2024, 8, 23, 15, 45)
+        cls.original_datetime = datetime.now  # Save original datetime
 
-        def mock_datetime_now():
-            return self.fixed_time
-        
-        datetime.now = mock_datetime_now
+        # Override the datetime.now method
+        def fixed_now():
+            return cls.fixed_time
 
-    def tearDown(self):
-        # Restore original datetime.now
-        datetime.now = self.original_datetime_now
+        datetime.now = fixed_now
+
+    @classmethod
+    def tearDownClass(cls):
+        # Restore the original datetime.now method
+        datetime.now = cls.original_datetime
 
     def test_typical_birth_date(self):
         birth_date = datetime(1990, 5, 15, 10, 30)
         result = get_time_since_born_until_now(birth_date)
-        self.assertEqual(result, (34, 3, 8, 5, 15))  # 34 years, 3 months, 8 days, 5 hours, 15 minutes
+        self.assertEqual(result, (34, 3, 8, 5, 15))  # Expected output
 
     def test_recent_birth_date(self):
         birth_date = datetime(2024, 8, 20, 12, 0)
         result = get_time_since_born_until_now(birth_date)
-        self.assertEqual(result, (0, 0, 3, 3, 45))  # 3 days, 3 hours, 45 minutes
+        self.assertEqual(result, (0, 0, 3, 3, 45))  # Expected output
 
     def test_edge_case_end_of_year(self):
         birth_date = datetime(2023, 12, 31, 23, 59)
         result = get_time_since_born_until_now(birth_date)
-        self.assertEqual(result, (0, 7, 22, 15, 46))  # 7 months, 22 days, 15 hours, 46 minutes
+        self.assertEqual(result, (0, 7, 22, 15, 46))  # Expected output
 
-    def test_birthday_earlier_in_month(self):
+    def test_birthdays_early_in_current_month(self):
         birth_date = datetime(2024, 8, 1, 0, 0)
         result = get_time_since_born_until_now(birth_date)
-        self.assertEqual(result, (0, 0, 22, 15, 45))  # 22 days, 15 hours, 45 minutes
+        self.assertEqual(result, (0, 0, 22, 15, 45))  # Expected output
 
-    def test_birthday_later_in_year_before_month(self):
+    def test_birthdays_later_in_current_year(self):
         birth_date = datetime(2024, 1, 1, 1, 0)
         result = get_time_since_born_until_now(birth_date)
-        self.assertEqual(result, (0, 7, 22, 14, 45))  # 7 months, 22 days, 14 hours, 45 minutes
+        self.assertEqual(result, (0, 7, 22, 14, 45))  # Expected output
 
-    def test_birthday_previous_month(self):
+    def test_birthdays_previous_month_same_year(self):
         birth_date = datetime(2024, 7, 30, 10, 0)
         result = get_time_since_born_until_now(birth_date)
-        self.assertEqual(result, (0, 0, 24, 5, 45))  # 24 days, 5 hours, 45 minutes
+        self.assertEqual(result, (0, 0, 24, 5, 45))  # Expected output
 
 if __name__ == '__main__':
     unittest.main()
-Explanation of the Code:
-Imports:
-The unittest module is imported to allow for the creation of test cases.
-The datetime module is imported for working with dates and times.
-Test Class:
-A class TestGetTimeSinceBornUntilNow is defined, which inherits from unittest.TestCase.
-setUp Method:
-This method is called before each test. It sets a fixed time (2024-08-23T15:45:00) to mock the current time.
-The original datetime.now() method is saved, and a mock method is defined to return the fixed time.
-tearDown Method:
-This method is called after each test. It restores the original datetime.now() method.
-Test Methods:
-Each test method uses self.assertEqual() to check if the result of get_time_since_born_until_now matches the expected output.
-The test methods correspond to the different scenarios provided in the original Jest test cases.
-Main Block:
-The unittest.main() call runs the tests when the script is executed directly.
-How to Run the Tests:
-To run the tests, save the above code in a Python file (e.g., test_time_calculation.py), and execute the file from the command line:
-bash
-python -m unittest test_time_calculation.py
-This will execute all the defined test cases and display the results.
+Explanation of Changes:
+Imports: The code imports the unittest module for creating the test cases and datetime for handling date and time.
+Test Class: The test class TestGetTimeSinceBornUntilNow inherits from unittest.TestCase, which allows us to use various assertion methods.
+setUpClass and tearDownClass:
+The setUpClass method sets a fixed system time (similar to Jest's beforeAll with jest.useFakeTimers()), overriding the datetime.now method to return a constant value for all tests.
+The tearDownClass method restores the original datetime.now after all tests are run (similar to Jest's afterAll).
+Test Methods: Each test case is defined as a method within the class. Each method calls the function get_time_since_born_until_now with a specific birth date and checks the result against the expected output using self.assertEqual().
+Execution: The test suite runs when the script is executed directly.
+This structure mimics the Jest test cases while adhering to Python's conventions and practices for unit testing.

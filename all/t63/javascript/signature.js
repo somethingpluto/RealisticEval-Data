@@ -1,12 +1,18 @@
 /**
- * Convert a DataFrame object to a table in markdown format.
+ * Converts a DataFrame object to a table in Markdown format.
+ * 
+ * Example:
+ *   Input: dataframe {'Name': ['Alice', 'Bob'], 'Age': [25, 30]}
+ *   Output: 
+ *   ```
+ *   | Name | Age |
+ *   | --- | --- |
+ *   | Alice | 25 |
+ *   | Bob | 30 |
+ *   ```
  *
- * For example:
- *   Input: dataframe {Name: ['Alice', 'Bob'], Age: [25, 30]}
- *   Output: | Name | Age |\n| --- | --- |\n| Alice | 25 |\n| Bob | 30 |\n
- *
- * @param {Object} df - DataFrame type question
- * @param {string} mdPath - Output MD file path
- * @returns {string} Markdown file content string
+ * @param {Array<Object>} data - An array of objects representing the DataFrame rows.
+ * @param {string} mdPath - The output Markdown file path.
+ * @returns {string} The Markdown file content.
  */
-function dataframeToMarkdown(df, mdPath) {}
+function dataframeToMarkdown(data, mdPath) {}

@@ -1,4 +1,4 @@
-Sure, here is the JavaScript equivalent of your Python function, keeping the same structure and comments:
+Certainly! Below is the equivalent JavaScript code with the function signature and comments rewritten to conform to JSDoc format:
 
 ```javascript
 /**
@@ -13,8 +13,72 @@ Sure, here is the JavaScript equivalent of your Python function, keeping the sam
  * @returns {string} - A string containing the filtered content with additional context.
  */
 function filterContentWithContext(content, keywords, linesBefore = 1, linesAfter = 1) {
-    // Your implementation goes here
+    // Split the content into individual lines
+    const lines = content.split('\n');
+    const matchedLines = new Set();  // Use a Set to avoid duplicate lines
+
+    // Iterate over each line to find matches
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        for (const keyword of keywords) {
+            // Use a regular expression to find whole word matches with exact case
+            if (new RegExp(`\\b${escapeRegExp(keyword)}\\b`).test(line)) {
+                // Determine the range of lines to include for context
+                const contextRange = Array.from({
+                    length: linesAfter - linesBefore + 1
+                }, (_, k) => Math.max(0, i + k - linesBefore))
+                    .filter(index => index < lines.length);
+                contextRange.forEach(index => matchedLines.add(index));  // Add the context lines to the set
+            }
+        }
+    }
+
+    // Extract the matched lines and their context, sorted by their original order
+    const filteredLines = Array.from(matchedLines).sort((a, b) => a - b).map(i => lines[i]);
+
+    // Join the filtered lines back into a single string
+    const filteredContent = filteredLines.join('\n');
+
+    return filteredContent;
+}
+
+// Helper function to escape special characters for regular expressions
+function escapeRegExp(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+// Polyfill for Set.prototype.addAll if not available
+if (!Set.prototype.addAll) {
+    Set.prototype.addAll = function addAll(iterable) {
+        for (const item of iterable) {
+            this.add(item);
+        }
+    };
 }
 ```
 
-Please note that in JavaScript, you would need to implement the actual logic inside the `filterContentWithContext` function, which is not provided in the original Python code snippet.
+### Explanation:
+1. **Function Signature**:
+   - The function signature is rewritten to include default values for `linesBefore` and `linesAfter`.
+   - The parameter types and descriptions are documented using JSDoc format.
+
+2. **JSDoc Comments**:
+   - The function documentation is rewritten using JSDoc format, including `@param` and `@returns` tags.
+
+3. **Regular Expression Matching**:
+   - The regular expression is constructed to match whole words (`\b`) with exact case sensitivity.
+
+4. **Context Range Calculation**:
+   - The context range is determined based on the `linesBefore` and `linesAfter` parameters.
+   - The context lines are added to a `Set` to avoid duplicates.
+
+5. **Sorting and Joining**:
+   - The matched lines are sorted by their original order and joined back into a single string.
+
+6. **Helper Function**:
+   - The `escapeRegExp` function is included to escape special characters for regular expressions.
+
+7. **Polyfill for `Set.prototype.addAll`**:
+   - A polyfill is provided for `Set.prototype.addAll` if it is not available.
+
+This JavaScript code preserves the functionality, logic, and structure of the original Python code while adhering to JavaScript documentation standards.

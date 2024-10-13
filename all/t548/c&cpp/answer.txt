@@ -1,34 +1,88 @@
-Here is an equivalent C++ code for your Python function:
+Certainly! Below is the equivalent C++ code for the provided Python script. This code reads a text file, wraps its content in JSON brackets, and attempts to parse it using a JSON parsing library. For this example, I will use the `nlohmann/json` library, which is a popular JSON library for C++.
 
-```c++
+First, you need to include the `nlohmann/json` library. You can install it via vcpkg or another package manager, or include it directly in your project.
+
+Here's the C++ code:
+
+```cpp
+#include <iostream>
 #include <fstream>
 #include <string>
-#include <iostream>
+#include <vector>
 #include <nlohmann/json.hpp>
 
-using namespace std;
 using json = nlohmann::json;
 
-vector<json> read_txt_add_json_bracket(const string &filename) {
-    ifstream file(filename);
-    if (!file.is_open()) throw runtime_error("File not found");
-
-    string content((istreambuf_iterator<char>(file)), istreambuf_iterator<char>());
-    file.close();
-
+// Function to read a text file, wrap its content in JSON brackets, and parse it into a JSON object
+std::vector<std::string> read_txt_add_json_bracket(const std::string& filename) {
     try {
-        // Wrap content with JSON brackets
-        string jsonContent = "[" + content + "]";
+        // Open the file
+        std::ifstream data_file(filename);
+        if (!data_file.is_open()) {
+            std::cerr << "Error: File not found." << std::endl;
+            return {};
+        }
 
-        // Parse JSON
-        vector<json> result = json::parse(jsonContent);
+        // Read the entire content of the file
+        std::string text((std::istreambuf_iterator<char>(data_file)), std::istreambuf_iterator<char>());
+        data_file.close();
+
+        // Wrap the text in square brackets to form a valid JSON array
+        text = "[" + text + "]";
+
+        // Parse the JSON content into a JSON object
+        json data = json::parse(text);
+
+        // Convert the JSON object to a vector of strings
+        std::vector<std::string> result;
+        for (const auto& item : data) {
+            result.push_back(item.get<std::string>());
+        }
 
         return result;
-    } catch (json::exception &e) {
-        cerr << "JSON parsing error: " << e.what() << endl;
-        throw runtime_error("Invalid JSON format");
+
+    } catch (const std::ifstream::failure& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+        return {};
+    } catch (const std::exception& e) {
+        std::cerr << "Error decoding JSON: " << e.what() << std::endl;
+        return {};
     }
+}
+
+int main() {
+    std::string filename = "example.txt";
+    std::vector<std::string> result = read_txt_add_json_bracket(filename);
+
+    // Print the result
+    for (const auto& item : result) {
+        std::cout << item << std::endl;
+    }
+
+    return 0;
 }
 ```
 
-Note that this C++ code uses the nlohmann/json library to parse JSON. If you don't have this library installed, you can get it via `vcpkg install nlohmann-json` or download it from [here](https://github.com/nlohmann/json).
+### Explanation:
+1. **Header Files**: 
+   - `#include <iostream>` for input/output operations.
+   - `#include <fstream>` for file handling.
+   - `#include <string>` for string manipulation.
+   - `#include <vector>` for using vectors.
+   - `#include <nlohmann/json.hpp>` for JSON parsing.
+
+2. **Using Alias**: 
+   - `using json = nlohmann::json;` makes it easier to use the `json` namespace.
+
+3. **Function Definition**:
+   - `read_txt_add_json_bracket`: This function reads the file, wraps the content in JSON brackets, and parses it into a JSON object.
+   - Error handling is done using exceptions.
+
+4. **Main Function**:
+   - Calls `read_txt_add_json_bracket` and prints the result.
+
+5. **JSON Parsing**:
+   - Uses `json::parse` to parse the JSON content.
+   - Converts the JSON object to a vector of strings.
+
+This code should provide the same functionality as the Python script but adapted to C++ syntax and libraries.

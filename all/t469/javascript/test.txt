@@ -1,150 +1,133 @@
-Certainly! Below is the equivalent JavaScript test class using Jest, which ensures that the functionality and logic of the tests are maintained. I'll also document any necessary changes due to language differences between Python and JavaScript.
+Certainly! Below is the equivalent Jest test suite for the given Python unittest class. The goal is to maintain the same functionality and logic while adapting to Jest's syntax and conventions.
 
-### Python Test Class
+### JavaScript Code with Jest Testing Framework
 
-```python
-import unittest
-import numpy as np
-
-from typing import Tuple
-
-def get_scale(matrix: np.ndarray) -> Tuple[np.float64, np.float64]:
-    """
-    Given a 3x3 affine transformation matrix, return the corresponding scaling factors
-    along the x and y axes.
-
-    Args:
-        matrix (np.ndarray): A 3x3 affine transformation matrix.
-
-    Returns:
-        Tuple[np.float64, np.float64]: A tuple containing the scale factors (scale_x, scale_y).
-    """
-    if not isinstance(matrix, np.ndarray) or matrix.shape != (3, 3):
-        raise ValueError("Input must be a 3x3 affine transformation matrix.")
-
-    scale_x = np.linalg.norm(matrix[0:2, 0])
-    scale_y = np.linalg.norm(matrix[0:2, 1])
-
-    return float(scale_x), float(scale_y)
-
-class TestGetScale(unittest.TestCase):
-
-    def test_identity_matrix(self):
-        matrix = np.array([
-            [1, 0, 0],
-            [0, 1, 0],
-            [0, 0, 1]
-        ])
-        expected = (1.0, 1.0)
-        self.assertEqual(get_scale(matrix), expected)
-
-    def test_scaling_matrix(self):
-        matrix = np.array([
-            [2, 0, 0],
-            [0, 3, 0],
-            [0, 0, 1]
-        ])
-        expected = (2.0, 3.0)
-        self.assertEqual(get_scale(matrix), expected)
-
-    def test_invalid_matrix(self):
-        matrix = np.array([
-            [2, 0, 0],
-            [0, 3, 0]
-        ])
-        with self.assertRaises(ValueError):
-            get_scale(matrix)
-
-if __name__ == '__main__':
-    unittest.main()
-```
-
-### JavaScript Test Class Using Jest
-
-First, make sure you have Jest installed in your project:
+First, ensure you have Jest installed in your project:
 
 ```bash
 npm install --save-dev jest
 ```
 
-Then, create the JavaScript test file:
+Then, create a test file (e.g., `getScale.test.js`) and include the following code:
 
 ```javascript
 const math = require('mathjs');
+const getScale = require('./getScale'); // Assuming getScale is defined in a separate file
 
-/**
- * Given a 3x3 affine transformation matrix, return the corresponding scaling factors
- * along the x and y axes.
- *
- * @param {Array<Array<number>>} matrix - A 3x3 affine transformation matrix.
- * @returns {[number, number]} A tuple containing the scale factors (scale_x, scale_y).
- */
+describe('TestGetScaleFunction', () => {
+    it('test for the identity matrix (no scaling)', () => {
+        const matrix = [
+            [1, 0, 0],
+            [0, 1, 0],
+            [0, 0, 1]
+        ];
+        const expectedScale = [1.0, 1.0];
+        expect(getScale(matrix)).toEqual(expectedScale);
+    });
+
+    it('test for a scaling matrix (2x in x and 3x in y)', () => {
+        const matrix = [
+            [2, 0, 0],
+            [0, 3, 0],
+            [0, 0, 1]
+        ];
+        const expectedScale = [2.0, 3.0];
+        expect(getScale(matrix)).toEqual(expectedScale);
+    });
+
+    it('test case with uniform scaling', () => {
+        const matrix = [
+            [2, 0, 0],
+            [0, 2, 0],
+            [0, 0, 1]
+        ];
+        const expectedScale = [2.0, 2.0];
+        expect(getScale(matrix)).toEqual(expectedScale);
+    });
+
+    it('test case with non-uniform scaling', () => {
+        const matrix = [
+            [3, 0, 0],
+            [0, 5, 0],
+            [0, 0, 1]
+        ];
+        const expectedScale = [3.0, 5.0];
+        expect(getScale(matrix)).toEqual(expectedScale);
+    });
+
+    it('test case with reflection matrix', () => {
+        const matrix = [
+            [-1, 0, 0],
+            [0, 1, 0],
+            [0, 0, 1]
+        ];
+        const expectedScale = [1.0, 1.0];
+        expect(getScale(matrix)).toEqual(expectedScale);
+    });
+});
+
+// Utility function to calculate the scale factors
 function getScale(matrix) {
     // Ensure the matrix is a 3x3 array
-    if (!Array.isArray(matrix) || matrix.length !== 3 || matrix.some(row => !Array.isArray(row) || row.length !== 3)) {
+    if (!Array.isArray(matrix) || matrix.length !== 3 || matrix.some(row => row.length !== 3)) {
         throw new Error("Input must be a 3x3 affine transformation matrix.");
     }
 
     // Calculate the scale factors using the norm of the columns
-    const scaleX = math.norm(math.matrix(matrix.slice(0, 2).map(row => row[0])));
-    const scaleY = math.norm(math.matrix(matrix.slice(0, 2).map(row => row[1])));
+    const subMatrixX = [matrix[0].slice(0, 2), matrix[1].slice(0, 2)];
+    const subMatrixY = [matrix[0].slice(1, 3), matrix[1].slice(1, 3)];
 
-    return [parseFloat(scaleX), parseFloat(scaleY)];
+    const scaleX = math.norm(math.column(subMatrixX, 0));
+    const scaleY = math.norm(math.column(subMatrixY, 1));
+
+    return [parseFloat(scaleX.toFixed(15)), parseFloat(scaleY.toFixed(15))];
 }
 
-describe('Test Get Scale Function', () => {
-    describe('Valid Matrices', () => {
-        test('Identity Matrix', () => {
-            const matrix = [
-                [1, 0, 0],
-                [0, 1, 0],
-                [0, 0, 1]
-            ];
-            const expected = [1.0, 1.0];
-            expect(getScale(matrix)).toEqual(expected);
-        });
-
-        test('Scaling Matrix', () => {
-            const matrix = [
-                [2, 0, 0],
-                [0, 3, 0],
-                [0, 0, 1]
-            ];
-            const expected = [2.0, 3.0];
-            expect(getScale(matrix)).toEqual(expected);
-        });
-    });
-
-    describe('Invalid Matrices', () => {
-        test('Invalid Matrix', () => {
-            const matrix = [
-                [2, 0, 0],
-                [0, 3, 0]
-            ];
-            expect(() => getScale(matrix)).toThrowError('Input must be a 3x3 affine transformation matrix.');
-        });
-    });
-});
-
-// Example usage
-const exampleMatrix = [
-    [1, 0, 0],
-    [0, 1, 0],
-    [0, 0, 1]
-];
-
-console.log(getScale(exampleMatrix));  // Output should be [1, 1]
+module.exports = getScale;
 ```
 
 ### Explanation:
-1. **Importing Mathjs**: The `mathjs` library is used for numerical operations similar to NumPy in Python.
-2. **Function Definition**: The `getScale` function is defined to mimic the behavior of the Python function.
-3. **Jest Test Suite**:
-   - The `describe` block groups related tests.
-   - The `test` function defines individual test cases.
-4. **Assertions**:
-   - `expect(getScale(matrix)).toEqual(expected)` is used to check if the output matches the expected values.
-   - `expect(() => getScale(matrix)).toThrowError('Input must be a 3x3 affine transformation matrix.')` is used to check if the function throws the correct error for invalid inputs.
-5. **Example Usage**: An example usage is provided at the end for demonstration purposes.
 
-This JavaScript code preserves the functionality and logic of the original Python test class and uses Jest for testing.
+1. **Importing `mathjs`**:
+   ```javascript
+   const math = require('mathjs');
+   ```
+
+2. **Importing `getScale` Function**:
+   ```javascript
+   const getScale = require('./getScale'); // Assuming getScale is defined in a separate file
+   ```
+
+3. **Describe Block**:
+   ```javascript
+   describe('TestGetScaleFunction', () => {
+       // Test cases go here
+   });
+   ```
+
+4. **Test Cases**:
+   Each test case is defined using `it` blocks with descriptive names and assertions using `expect`.
+
+5. **Assertions**:
+   - `toEqual` is used to check if the returned scale factors match the expected values.
+
+6. **Utility Function `getScale`**:
+   This function is defined to calculate the scale factors based on the input matrix. It includes validation and calculation logic.
+
+### Running the Tests
+
+To run the tests, add the following script to your `package.json`:
+
+```json
+"scripts": {
+    "test": "jest"
+}
+```
+
+Then, run the tests using:
+
+```bash
+npm test
+```
+
+This setup ensures that the functionality and logic of the tests are preserved while adapting to Jest's syntax and conventions.

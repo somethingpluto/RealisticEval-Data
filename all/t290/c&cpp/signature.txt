@@ -1,22 +1,67 @@
-Sure, here is the equivalent C++ code for the given Python function:
+Certainly! Here is the equivalent C++ code for the provided Python function, including the translation of type annotations, comments, and documentation:
 
 ```cpp
+#include <iostream>
 #include <string>
-#include <map>
+#include <nlohmann/json.hpp>
 
-// Converts the question in RDF JSON-LD format to NGSI-LD format
-// Parameters:
-//      rdf_jsonld: A string containing the RDF JSON-LD formatted question.
-//
-// Returns:
-//      A map representing data formatted according to NGSI-LD specifications.
-std::map<std::string, std::string> rdf_jsonld_to_ngsild(const std::string& rdf_jsonld) {
-    // Implementation goes here
+using json = nlohmann::json;
+
+// Function to convert the question in RDF JSON-LD format to NGSI-LD format
+json rdf_jsonld_to_ngsild(const std::string& rdf_jsonld) {
+    /*
+     * Convert the question in RDF JSON-LD format to NGSI-LD format.
+     *
+     * Args:
+     *     rdf_jsonld (std::string): RDF JSON-LD formatted question as a string.
+     *
+     * Returns:
+     *     Data formatted according to NGSI-LD specifications.
+     */
+    
+    json parsed_json = json::parse(rdf_jsonld);
+
+    json ngsi_ld = {
+        {"id", parsed_json.value("@id", "urn:ngsi-ld:unknown:id")},
+        {"type", parsed_json.value("@type", "UnknownType")},
+        {"@context", parsed_json.value("@context", "https://schema.lab.fiware.org/ld/context")},
+        {"attributes", json::array()}
+    };
+
+    // Assuming simple attribute structure conversion
+    for (auto it = parsed_json.begin(); it != parsed_json.end(); ++it) {
+        std::string key = it.key();
+        if (key != "@context" && key != "@id" && key != "@type") {
+            json attribute = {
+                {"type", "Property"},
+                {"name", key},
+                {"value", it.value()}
+            };
+            ngsi_ld["attributes"].push_back(attribute);
+        }
+    }
+
+    return ngsi_ld;
+}
+
+int main() {
+    // Example usage
+    std::string input_json_str = R"({"@id": "urn:ngsi-ld:example:id", "@type": "ExampleType", "attr1": "value1", "attr2": "value2"})";
+    json result = rdf_jsonld_to_ngsild(input_json_str);
+    std::cout << result.dump(4) << std::endl;  // Pretty print the result
+
+    return 0;
 }
 ```
 
-In this C++ version:
-- The `from typing import Dict` is translated to including `<map>` and `<string>` headers.
-- The function `rdf_jsonld_to_ngsild` is defined with a `const std::string&` parameter for the input `rdf_jsonld`.
-- The return type is `std::map<std::string, std::string>` which corresponds to `Dict[str, str]` in Python.
-- The docstring is converted into C++ style comments, explaining the purpose of the function, parameters, and return value.
+### Explanation:
+1. **Headers**: We include the necessary headers (`<iostream>`, `<string>`, and `nlohmann/json.hpp`) for basic I/O operations, string manipulation, and JSON handling.
+2. **Using Alias**: We define an alias `json` for `nlohmann::json` to make the code more readable.
+3. **Function Definition**: The `rdf_jsonld_to_ngsild` function takes a `std::string` as input and returns a `json` object.
+4. **Documentation**: The Python docstring is translated into a multi-line comment block in C++ using `/* */`.
+5. **JSON Parsing**: We parse the input string using `json::parse` to get a `json` object.
+6. **JSON Initialization**: We initialize the `ngsi_ld` JSON object with default values using the `.value()` method, which provides a default value if the key is not found.
+7. **Looping Through JSON**: We iterate through the keys of the input JSON object using a range-based for loop. If the key is not one of the reserved keys (`"@context"`, `"@id"`, `"@type"`), we add it to the `attributes` array.
+8. **Main Function**: An example usage is provided in the `main` function, where we parse a sample JSON string, call the `rdf_jsonld_to_ngsild` function, and print the result.
+
+This ensures that the functionality, logic, and structure of the original Python code are preserved in the C++ version.

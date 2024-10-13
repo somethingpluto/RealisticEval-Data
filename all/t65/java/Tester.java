@@ -1,46 +1,56 @@
-package org.real.temp;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
+import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 public class Tester {
 
-    private DuplicateIpFinder duplicateIpFinder;
-
-    @BeforeEach
-    public void setUp() {
-        duplicateIpFinder = new DuplicateIpFinder();
+    @Test
+    public void testBasicDuplicates() {
+        List<String> ipList = Arrays.asList("192.168.1.1", "192.168.1.2", "192.168.1.1");
+        List<String> ignoreList = Arrays.asList();
+        assertEquals(Arrays.asList("192.168.1.1"), findDuplicateIps(ipList, ignoreList));
     }
 
     @Test
-    public void testFindDuplicateIps() {
-        List<String> ipList = Arrays.asList("192.168.1.1", "10.0.0.1", "192.168.1.1", "172.16.0.1");
-        List<String> ignoreList = Arrays.asList("10.0.0.1");
-
-        List<String> result = duplicateIpFinder.findDuplicateIps(ipList, ignoreList);
-
-        assertEquals(1, result.size());
-        assertTrue(result.contains("192.168.1.1"));
+    public void testIgnoredDuplicates() {
+        List<String> ipList = Arrays.asList("192.168.1.1", "192.168.1.1", "192.168.1.2");
+        List<String> ignoreList = Arrays.asList("192.168.1.1");
+        assertEquals(Arrays.asList(), findDuplicateIps(ipList, ignoreList));
     }
-}
 
-class DuplicateIpFinder {
+    @Test
+    public void testNoDuplicates() {
+        List<String> ipList = Arrays.asList("192.168.1.1", "192.168.1.2", "192.168.1.3");
+        List<String> ignoreList = Arrays.asList();
+        assertEquals(Arrays.asList(), findDuplicateIps(ipList, ignoreList));
+    }
 
-    /**
-     * Find duplicate IPs in the given IP list excluding specified IPs to ignore.
-     *
-     * @param ipList    List of IP addresses
-     * @param ignoreList List of IP addresses to ignore
-     * @return A list of duplicate IPs excluding those in the ignore list.
-     */
-    public List<String> findDuplicateIps(List<String> ipList, List<String> ignoreList) {
-        // Implementation goes here
-        return null; // Placeholder return value
+    @Test
+    public void testMixedDuplicates() {
+        List<String> ipList = Arrays.asList("192.168.1.1", "192.168.1.1", "10.0.0.1", "192.168.1.2");
+        List<String> ignoreList = Arrays.asList("192.168.1.2");
+        assertEquals(Arrays.asList("192.168.1.1"), findDuplicateIps(ipList, ignoreList));
+    }
+
+    @Test
+    public void testEmptyInput() {
+        List<String> ipList = Arrays.asList();
+        List<String> ignoreList = Arrays.asList();
+        assertEquals(Arrays.asList(), findDuplicateIps(ipList, ignoreList));
+    }
+
+    @Test
+    public void testOnlyIgnoredIPs() {
+        List<String> ipList = Arrays.asList("192.168.1.1", "192.168.1.1");
+        List<String> ignoreList = Arrays.asList("192.168.1.1");
+        assertEquals(Arrays.asList(), findDuplicateIps(ipList, ignoreList));
+    }
+
+    @Test
+    public void testAllDuplicates() {
+        List<String> ipList = Arrays.asList("192.168.1.1", "192.168.1.1", "192.168.1.1");
+        List<String> ignoreList = Arrays.asList();
+        assertEquals(Arrays.asList("192.168.1.1"), findDuplicateIps(ipList, ignoreList));
     }
 }

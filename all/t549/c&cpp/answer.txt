@@ -1,21 +1,66 @@
-Here is an equivalent C++ code:
+Certainly! Below is the equivalent C++ code for the provided Python script. This code includes the necessary type checking and conversions, along with handling scalar values and tuples (represented as `std::tuple` in C++):
 
-```c++
+```cpp
 #include <cmath>
-#include <stdexcept>
 #include <tuple>
+#include <stdexcept>
+#include <iostream>
 
-const double k_B_over_keV = 8.617333262145e-5;
+// Define the constant for conversion: Boltzmann constant in keV/K
+const double k_B_over_keV = 8.617333262145e-5; // eV/K to keV/K
 
+// Helper function to check if a value is a scalar (int or float)
 template<typename T>
-auto get_T_in_log10_Kelvin(T T_keV) -> decltype(std::log10((double)T_keV / k_B_over_keV)) {
-    return std::log10(static_cast<double>(T_keV) / k_B_over_keV);
+bool is_scalar(const T& value) {
+    return std::is_same<T, int>::value || std::is_same<T, float>::value || std::is_same<T, double>::value;
 }
 
-template<>
-auto get_T_in_log10_Kelvin(const std::tuple<float>& T_keV) -> decltype(std::make_tuple(get_T_in_log10_Kelvin(std::get<0>(T_keV)))) {
-    return std::make_tuple(get_T_in_log10_Kelvin(std::get<0>(T_keV)));
+// Function to convert temperature from keV to log10(K)
+template<typename T>
+auto get_T_in_log10_Kelvin(T T_keV) -> decltype(std::log10(T_keV / k_B_over_keV)) {
+    if constexpr (is_scalar<T>::value) {
+        // Calculate log10(K) for the scalar value
+        return std::log10(T_keV / k_B_over_keV);
+    } else if constexpr (std::is_same<T, std::tuple<double>>::value) {
+        // Calculate log10(K) for each element in the tuple
+        auto result = std::make_tuple();
+        std::apply([&](auto&&... args) {
+            result = std::make_tuple(std::log10(args / k_B_over_keV)...);
+        }, T_keV);
+        return result;
+    } else {
+        throw std::invalid_argument("Input must be a scalar (int or float) or a tuple of temperatures.");
+    }
+}
+
+int main() {
+    try {
+        // Example usage for scalar
+        double scalar_temp = 1.0;
+        std::cout << "Scalar: " << get_T_in_log10_Kelvin(scalar_temp) << std::endl;
+
+        // Example usage for tuple
+        std::tuple<double> tuple_temp = std::make_tuple(1.0, 2.0, 3.0);
+        auto tuple_result = get_T_in_log10_Kelvin(tuple_temp);
+        std::apply([](auto&&... args) {
+            (std::cout << "Tuple: " << args << " "), ...;
+        }, tuple_result);
+        std::cout << std::endl;
+    } catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+    }
+
+    return 0;
 }
 ```
 
-This C++ code uses templates to handle both single values and tuples of floats. Note that C++ does not have built-in support for tuples with different types, so you would need to define a custom structure if your tuple can contain elements of different types. Also, unlike Python, C++ does not have type hinting, so we use template arguments to indicate the expected types.
+### Explanation:
+1. **Constants**: The Boltzmann constant `k_B_over_keV` is defined as a `const double`.
+2. **Type Checking**: A helper function `is_scalar` is used to check if a value is a scalar (`int`, `float`, or `double`).
+3. **Function Definition**: The `get_T_in_log10_Kelvin` function is templated to handle both scalar and tuple inputs.
+   - For scalar inputs, it calculates `std::log10(T_keV / k_B_over_keV)`.
+   - For tuple inputs, it applies the calculation to each element using `std::apply`.
+4. **Error Handling**: An exception is thrown if the input is neither a scalar nor a tuple.
+5. **Example Usage**: The `main` function demonstrates how to use the `get_T_in_log10_Kelvin` function with both scalar and tuple inputs.
+
+This code ensures that the functionality, logic, and structure of the original Python code are preserved while adapting to C++ syntax and features.

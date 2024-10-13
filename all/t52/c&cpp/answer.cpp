@@ -1,8 +1,48 @@
+#include <iostream>
+#include <filesystem>
 #include <string>
-#include <algorithm>
+
+// Use the filesystem namespace for convenience
+namespace fs = std::filesystem;
 
 std::string rename_file_path(const std::string& path) {
-    std::string result = path;
-    std::replace(result.begin(), result.end(), ':', '_');
-    return result;
+    /**
+     * Renames a Windows file path by replacing colons in the filename with underscores.
+     *
+     * Parameters:
+     *     path (std::string): The original file path.
+     *
+     * Returns:
+     *     std::string: The modified file path with colons in the filename replaced by underscores.
+     */
+    
+    // Split the path into directory and filename
+    fs::path p = path;
+    std::string directory = p.parent_path().string();
+    std::string filename = p.filename().string();
+
+    // Replace colons in the filename with underscores
+    std::string sanitized_filename;
+    for (char c : filename) {
+        if (c == ':') {
+            sanitized_filename += '_';
+        } else {
+            sanitized_filename += c;
+        }
+    }
+
+    // Reconstruct the full path with the sanitized filename
+    std::string new_path = fs::path(directory) / sanitized_filename;
+
+    return new_path;
+}
+
+int main() {
+    // Example usage
+    std::string path = "C:\\Users\\Example\\Documents\\file:name.txt";
+    std::string new_path = rename_file_path(path);
+    std::cout << "Original Path: " << path << std::endl;
+    std::cout << "New Path: " << new_path << std::endl;
+
+    return 0;
 }

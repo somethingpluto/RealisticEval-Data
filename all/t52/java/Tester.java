@@ -1,30 +1,68 @@
 package org.real.temp;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
+/**
+ * Test cases for the renameFilePath method.
+ */
 public class Tester {
 
+    /**
+     * Tests renaming a file path with a colon in the filename.
+     */
     @Test
-    public void testRenameFilePath() {
-        // Test data
-        String inputPath = "C:\\Users\\Username\\Documents\\file:name.txt";
-        String expectedOutput = "C:\\Users\\Username\\Documents\\file_name.txt";
-
-        // Call the method under test
-        String actualOutput = renameFilePath(inputPath);
-
-        // Assert the result
-        assertEquals(expectedOutput, actualOutput);
+    public void testRenameWithColonInFilename() {
+        // Test path with colon in the filename
+        String path = "C:\\Users\\example\\Documents\\report:2023.txt";
+        String expected = "C:\\Users\\example\\Documents\\report_2023.txt";
+        assertEquals(expected, renameFilePath(path));
     }
 
     /**
-     * Renames a Windows file path by replacing colons in the filename with underscores.
-     *
-     * @param path The original file path.
-     * @return The modified file path with colons in the filename replaced by underscores.
+     * Tests renaming a file path without a colon in the filename.
      */
-    public static String renameFilePath(String path) {
-        return path.replace(":", "_");
+    @Test
+    public void testRenameWithoutColonInFilename() {
+        // Test path without colon in the filename
+        String path = "C:\\Users\\example\\Documents\\report2023.txt";
+        String expected = "C:\\Users\\example\\Documents\\report2023.txt";
+        assertEquals(expected, renameFilePath(path));
+    }
+
+    /**
+     * Tests renaming a file path with multiple colons in the filename.
+     */
+    @Test
+    public void testRenameWithMultipleColonsInFilename() {
+        // Test path with multiple colons in the filename
+        String path = "C:\\Users\\example\\Documents\\project:report:2023.txt";
+        String expected = "C:\\Users\\example\\Documents\\project_report_2023.txt";
+        assertEquals(expected, renameFilePath(path));
+    }
+
+    /**
+     * Tests renaming a file path with a colon at the end of the filename.
+     */
+    @Test
+    public void testRenameWithColonAtEndOfFilename() {
+        // Test path with a colon at the end of the filename
+        String path = "C:\\Users\\example\\Documents\\backup:";
+        String expected = "C:\\Users\\example\\Documents\\backup_";
+        assertEquals(expected, renameFilePath(path));
+    }
+
+    /**
+     * Tests renaming a file path with a colon at the start of the filename.
+     */
+    @Test
+    public void testRenameWithColonAtStartOfFilename() {
+        // Test path with a colon at the start of the filename
+        String path = "C:\\Users\\example\\Documents\\:initial_setup.txt";
+        String expected = "C:\\Users\\example\\Documents\\_initial_setup.txt";
+        assertEquals(expected, renameFilePath(path));
     }
 }

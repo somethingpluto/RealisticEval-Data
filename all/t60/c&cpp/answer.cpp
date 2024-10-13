@@ -1,46 +1,59 @@
 #include <iostream>
-#include <fstream>
+#include <filesystem>
 #include <vector>
 #include <set>
-#include <string>
-#include <filesystem>
+#include <fstream>
+#include <sstream>
+#include <unordered_map>
 
-namespace fs = std::filesystem;
+// Function to read a CSV file and return its column names
+std::vector<std::string> readCSVColumns(const std::string& filepath) {
+    std::ifstream file(filepath);
+    std::string line;
+    std::getline(file, line); // Read the first line which contains headers
+    std::istringstream ss(line);
+    std::string column;
+    std::vector<std::string> columns;
 
-std::vector<std::string> findCommonColumns(const std::string& directory) {
-    if (!fs::exists(directory) || !fs::is_directory(directory)) {
-        throw std::invalid_argument("Invalid directory");
+    while (std::getline(ss, column, ',')) {
+        columns.push_back(column);
     }
 
-    std::set<std::string> commonColumns;
-    bool firstFile = true;
+    return columns;
+}
 
-    for (const auto& entry : fs::directory_iterator(directory)) {
-        if (entry.is_regular_file() && entry.path().extension() == ".csv") {
-            std::ifstream file(entry.path());
-            if (!file.is_open()) {
-                throw std::runtime_error("Failed to open file: " + entry.path().string());
-            }
-
-            std::string line;
-            if (std::getline(file, line)) { // Read the header line
-                std::istringstream iss(line);
-                std::string column;
-                while (std::getline(iss, column, ',')) {
-                    if (firstFile) {
-                        commonColumns.insert(column);
-                    } else {
-                        commonColumns.erase(column);
-                    }
-                }
-            }
-            file.close();
+std::set<std::string> findCommonColumns(const std::string& directory) {
+    std::vector<std::set<std::string>> columnSets;
+    
+    for (const auto& entry : std::filesystem::directory_iterator(directory)) {
+        if (entry.path().extension() == ".csv") {
+            std::vector<std::string> columns = readCSVColumns(entry.path().string());
+            columnSets.emplace_back(columns.begin(), columns.end());
         }
     }
 
-    if (firstFile) {
-        throw std::runtime_error("No CSV files found in the directory");
+    if (!columnSets.empty()) {
+        std::set<std::string> commonColumns = columnSets[0];
+        for (size_t i = 1; i < columnSets.size(); ++i) {
+            std::set<std::string> tempSet;
+            std::set_intersection(commonColumns.begin(), commonColumns.end(),
+                                  columnSets[i].begin(), columnSets[i].end(),
+                                  std::inserter(tempSet, tempSet.begin()));
+            commonColumns = std::move(tempSet);
+        }
+        return commonColumns;
+    } else {
+        return {};
+    }
+}
+
+int main() {
+    std::string directory = "path/to/your/directory";
+    std::set<std::string> commonColumns = findCommonColumns(directory);
+
+    for (const auto& column : commonColumns) {
+        std::cout << column << std::endl;
     }
 
-    return std::vector<std::string>(commonColumns.begin(), commonColumns.end());
+    return 0;
 }

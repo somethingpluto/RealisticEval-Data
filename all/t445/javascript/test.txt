@@ -1,158 +1,125 @@
-Certainly! Below is the equivalent Jest test suite for the given Python unittest test class. I will provide the Jest test suite along with explanations of the necessary changes due to language differences between Python and JavaScript.
+Certainly! Below is the equivalent Jest test suite for the given Python unittest class. The goal is to maintain the same functionality and logic while adapting to Jest's syntax and assertion methods.
 
-### Python Unittest Code
+### Python Code
 
 ```python
 import unittest
 import numpy as np
-
-def create_rot_matrix(angle_deg: float, axis: str) -> np.ndarray:
-    """
-    Create a pose matrix representing a rotation about a given axis.
-
-    Args:
-        angle_deg (float): Rotation angle in degrees.
-        axis (str): Axis to rotate about, must be one of 'X', 'Y', or 'Z'.
-
-    Returns:
-        numpy.ndarray: 4x4 pose matrix representing the rotation.
-    """
-    angle_rad = np.deg2rad(angle_deg)
-    if axis.lower() == 'x':
-        rotation_matrix = np.array([
-            [1, 0, 0, 0],
-            [0, np.cos(angle_rad), -np.sin(angle_rad), 0],
-            [0, np.sin(angle_rad), np.cos(angle_rad), 0],
-            [0, 0, 0, 1]
-        ])
-    elif axis.lower() == 'y':
-        rotation_matrix = np.array([
-            [np.cos(angle_rad), 0, np.sin(angle_rad), 0],
-            [0, 1, 0, 0],
-            [-np.sin(angle_rad), 0, np.cos(angle_rad), 0],
-            [0, 0, 0, 1]
-        ])
-    elif axis.lower() == 'z':
-        rotation_matrix = np.array([
-            [np.cos(angle_rad), -np.sin(angle_rad), 0, 0],
-            [np.sin(angle_rad), np.cos(angle_rad), 0, 0],
-            [0, 0, 1, 0],
-            [0, 0, 0, 1]
-        ])
-    else:
-        raise ValueError("Invalid axis. Must be one of 'X', 'Y', or 'Z'.")
-    return rotation_matrix
+from numpy.testing import assert_array_almost_equal
 
 class TestCreateRotMatrix(unittest.TestCase):
-
-    def test_rotation_x_axis(self):
+    def test_rotation_x_90_degrees(self):
+        """ Test rotation around X-axis for 90 degrees """
         expected_matrix = np.array([
             [1, 0, 0, 0],
-            [0, 0.70710678, -0.70710678, 0],
-            [0, 0.70710678, 0.70710678, 0],
-            [0, 0, 0, 1]
-        ])
-        result = create_rot_matrix(45, 'X')
-        np.testing.assert_array_almost_equal(result, expected_matrix)
-
-    def test_rotation_y_axis(self):
-        expected_matrix = np.array([
-            [0.70710678, 0, 0.70710678, 0],
+            [0, 0, -1, 0],
             [0, 1, 0, 0],
-            [-0.70710678, 0, 0.70710678, 0],
             [0, 0, 0, 1]
         ])
-        result = create_rot_matrix(45, 'Y')
-        np.testing.assert_array_almost_equal(result, expected_matrix)
+        result_matrix = create_rot_matrix(90, 'x')
+        assert_array_almost_equal(result_matrix, expected_matrix)
 
-    def test_rotation_z_axis(self):
+    def test_rotation_y_180_degrees(self):
+        """ Test rotation around Y-axis for 180 degrees """
         expected_matrix = np.array([
-            [0.70710678, -0.70710678, 0, 0],
-            [0.70710678, 0.70710678, 0, 0],
+            [-1, 0, 0, 0],
+            [0, 1, 0, 0],
+            [0, 0, -1, 0],
+            [0, 0, 0, 1]
+        ])
+        result_matrix = create_rot_matrix(180, 'y')
+        assert_array_almost_equal(result_matrix, expected_matrix)
+
+    def test_rotation_z_270_degrees(self):
+        """ Test rotation around Z-axis for 270 degrees (or -90 degrees) """
+        expected_matrix = np.array([
+            [0, 1, 0, 0],
+            [-1, 0, 0, 0],
             [0, 0, 1, 0],
             [0, 0, 0, 1]
         ])
-        result = create_rot_matrix(45, 'Z')
-        np.testing.assert_array_almost_equal(result, expected_matrix)
+        result_matrix = create_rot_matrix(270, 'z')
+        assert_array_almost_equal(result_matrix, expected_matrix)
 
     def test_invalid_axis(self):
+        """ Test behavior with invalid axis input """
         with self.assertRaises(ValueError):
-            create_rot_matrix(45, 'A')
+            create_rot_matrix(90, 'a')
 
-if __name__ == '__main__':
-    unittest.main()
+    def test_zero_rotation(self):
+        """ Test zero degree rotation which should lead to identity matrix """
+        expected_matrix = np.eye(4)
+        result_matrix = create_rot_matrix(0, 'x')
+        assert_array_almost_equal(result_matrix, expected_matrix)
 ```
 
 ### Equivalent Jest Test Suite
 
 ```javascript
-const { createRotMatrix } = require('./path/to/your/file');
+const expect = require('expect'); // Import expect from Jest
 
-describe('createRotMatrix', () => {
-    describe('Rotation around X axis', () => {
-        it('should create the correct rotation matrix for X axis', () => {
-            const expectedMatrix = [
-                [1, 0, 0, 0],
-                [0, 0.70710678, -0.70710678, 0],
-                [0, 0.70710678, 0.70710678, 0],
-                [0, 0, 0, 1]
-            ];
-            const result = createRotMatrix(45, 'X');
-            expect(result).toEqual(expectedMatrix);
-        });
+describe('TestCreateRotMatrix', () => {
+    it('test_rotation_x_90_degrees', () => {
+        /** Test rotation around X-axis for 90 degrees */
+        const expectedMatrix = [
+            [1, 0, 0, 0],
+            [0, 0, -1, 0],
+            [0, 1, 0, 0],
+            [0, 0, 0, 1]
+        ];
+        const resultMatrix = createRotMatrix(90, 'x');
+        expect(resultMatrix).toEqual(expectedMatrix);
     });
 
-    describe('Rotation around Y axis', () => {
-        it('should create the correct rotation matrix for Y axis', () => {
-            const expectedMatrix = [
-                [0.70710678, 0, 0.70710678, 0],
-                [0, 1, 0, 0],
-                [-0.70710678, 0, 0.70710678, 0],
-                [0, 0, 0, 1]
-            ];
-            const result = createRotMatrix(45, 'Y');
-            expect(result).toEqual(expectedMatrix);
-        });
+    it('test_rotation_y_180_degrees', () => {
+        /** Test rotation around Y-axis for 180 degrees */
+        const expectedMatrix = [
+            [-1, 0, 0, 0],
+            [0, 1, 0, 0],
+            [0, 0, -1, 0],
+            [0, 0, 0, 1]
+        ];
+        const resultMatrix = createRotMatrix(180, 'y');
+        expect(resultMatrix).toEqual(expectedMatrix);
     });
 
-    describe('Rotation around Z axis', () => {
-        it('should create the correct rotation matrix for Z axis', () => {
-            const expectedMatrix = [
-                [0.70710678, -0.70710678, 0, 0],
-                [0.70710678, 0.70710678, 0, 0],
-                [0, 0, 1, 0],
-                [0, 0, 0, 1]
-            ];
-            const result = createRotMatrix(45, 'Z');
-            expect(result).toEqual(expectedMatrix);
-        });
+    it('test_rotation_z_270_degrees', () => {
+        /** Test rotation around Z-axis for 270 degrees (or -90 degrees) */
+        const expectedMatrix = [
+            [0, 1, 0, 0],
+            [-1, 0, 0, 0],
+            [0, 0, 1, 0],
+            [0, 0, 0, 1]
+        ];
+        const resultMatrix = createRotMatrix(270, 'z');
+        expect(resultMatrix).toEqual(expectedMatrix);
     });
 
-    describe('Invalid axis', () => {
-        it('should throw an error for invalid axis', () => {
-            expect(() => createRotMatrix(45, 'A')).toThrow('Invalid axis. Must be one of \'X\', \'Y\', or \'Z\'.');
-        });
+    it('test_invalid_axis', () => {
+        /** Test behavior with invalid axis input */
+        expect(() => createRotMatrix(90, 'a')).toThrow('Invalid axis. Must be one of \'X\', \'Y\', or \'Z\'.');
+    });
+
+    it('test_zero_rotation', () => {
+        /** Test zero degree rotation which should lead to identity matrix */
+        const expectedMatrix = [
+            [1, 0, 0, 0],
+            [0, 1, 0, 0],
+            [0, 0, 1, 0],
+            [0, 0, 0, 1]
+        ];
+        const resultMatrix = createRotMatrix(0, 'x');
+        expect(resultMatrix).toEqual(expectedMatrix);
     });
 });
 ```
 
 ### Explanation:
+1. **Import `expect`**: Jest uses `expect` for assertions. We import it from Jest.
+2. **Describe Block**: The `describe` block is used to group the tests together.
+3. **It Blocks**: Each `it` block represents a single test case.
+4. **Assertions**:
+   - `expect(resultMatrix).toEqual(expectedMatrix)`: This checks if the `resultMatrix` is equal to the `expectedMatrix`. Note that `toEqual` is used for deep equality checks.
+   - `expect(() => createRotMatrix(90, 'a')).toThrow('Invalid axis. Must be one of \'X\', \'Y\', or \'Z\'.')`: This checks if the function throws the expected error message.
 
-1. **Importing the Function**:
-   - In JavaScript, you need to import the `createRotMatrix` function from the file where it is defined.
-
-2. **Describe Blocks**:
-   - Jest uses `describe` blocks to group related tests. Each `it` block represents a specific test case.
-
-3. **Assertions**:
-   - In Jest, `expect` is used for assertions.
-   - `toEqual` is used to check deep equality of arrays.
-   - `toThrow` is used to check if a function throws an error with a specific message.
-
-4. **Test Cases**:
-   - Each test case is structured similarly to the Python unittest cases, ensuring that the functionality and logic are preserved.
-
-5. **Error Handling**:
-   - The `toThrow` assertion checks that the function throws the expected error message when an invalid axis is provided.
-
-By following these steps, the Jest test suite maintains the same functionality and structure as the original Python unittest class.
+This ensures that the Jest test suite maintains the same functionality and logic as the original Python unittest class.

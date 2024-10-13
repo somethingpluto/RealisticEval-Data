@@ -1,46 +1,7 @@
-Certainly! Below is the equivalent Java test class using JUnit for the provided Python `unittest` test class. The Java test class will be placed in the package `org.real.temp` and named `Tester`.
+Certainly! Below is the equivalent Java JUnit test class for the provided Python unittest class. The Java test class will be placed in the package `org.real.temp` and named `Tester`. It includes appropriate JUnit annotations and assertion methods to ensure the functionality and logic of the tests are preserved.
 
-### Python Code:
-```python
-import re
+### Java Code
 
-
-def safe_format(template, **kwargs):
-    """
-    Safely formats a template string by replacing placeholders with corresponding values
-    from the provided keyword arguments. If a placeholder does not have a corresponding
-    value in kwargs, it remains unchanged.
-
-    Args:
-        template (str): The string template containing placeholders in the form {key}.
-        **kwargs: Keyword arguments that map keys to their replacement values.
-
-    Returns:
-        str: The formatted string with placeholders replaced by values.
-    """
-
-    # Compile a regex pattern to match placeholders in the form {key}
-    pattern = re.compile(r'\{(\w+)\}')
-
-    def replacer(match):
-        """
-        Replacement function for the regex sub method.
-
-        Args:
-            match (re.Match): A regex match object containing the matched placeholder.
-
-        Returns:
-            str: The replacement value if the key exists in kwargs, otherwise the original placeholder.
-        """
-        key = match.group(1)  # Extract the placeholder key
-        # Return the corresponding value from kwargs, or the original placeholder if not found
-        return str(kwargs[key]) if key in kwargs else match.group(0)
-
-    # Replace placeholders in the template using the replacer function
-    return pattern.sub(replacer, template)
-```
-
-### Java Test Class Using JUnit:
 ```java
 package org.real.temp;
 
@@ -48,21 +9,66 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class Tester {
 
     /**
-     * Safely formats a template string by replacing placeholders with corresponding values
-     * from the provided keyword arguments. If a placeholder does not have a corresponding
-     * value in the keyword arguments, it remains unchanged.
-     *
-     * @param template The string template containing placeholders in the form {key}.
-     * @param kwargs   A map of keyword arguments that map keys to their replacement values.
-     * @return The formatted string with placeholders replaced by values.
+     * Tests the safeFormat method with all placeholders having corresponding values.
      */
-    public static String safeFormat(String template, Map<String, Object> kwargs) {
+    @Test
+    public void testFullReplacement() {
+        String template = "Hello, {name}! Welcome to {place}.";
+        String result = safeFormat(template, Map.of("name", "Alice", "place", "Wonderland"));
+        String expected = "Hello, Alice! Welcome to Wonderland.";
+        assertEquals(expected, result);
+    }
+
+    /**
+     * Tests the safeFormat method with some placeholders missing corresponding values.
+     */
+    @Test
+    public void testPartialReplacement() {
+        String template = "Hello, {name}! Welcome to {place}.";
+        String result = safeFormat(template, Map.of("name", "Alice"));
+        String expected = "Hello, Alice! Welcome to {place}.";
+        assertEquals(expected, result);
+    }
+
+    /**
+     * Tests the safeFormat method when no placeholders are provided.
+     */
+    @Test
+    public void testNoReplacement() {
+        String template = "Hello, world!";
+        String result = safeFormat(template);
+        String expected = "Hello, world!";
+        assertEquals(expected, result);
+    }
+
+    /**
+     * Tests the safeFormat method with a placeholder that has no corresponding value.
+     */
+    @Test
+    public void testMissingPlaceholder() {
+        String template = "My name is {name}, and I live in {city}.";
+        String result = safeFormat(template, Map.of("name", "Alice"));
+        String expected = "My name is Alice, and I live in {city}.";
+        assertEquals(expected, result);
+    }
+
+    /**
+     * Tests the safeFormat method with numeric values as replacements.
+     */
+    @Test
+    public void testNumericValues() {
+        String template = "Your score is {score} out of {total}.";
+        String result = safeFormat(template, Map.of("score", 85, "total", 100));
+        String expected = "Your score is 85 out of 100.";
+        assertEquals(expected, result);
+    }
+
+    // Utility method to simulate the safe_format function
+    private String safeFormat(String template, Map<String, Object> kwargs) {
         // Compile a regex pattern to match placeholders in the form {key}
         Pattern pattern = Pattern.compile("\\{\\w+\\}");
 
@@ -71,9 +77,9 @@ public class Tester {
         StringBuffer result = new StringBuffer();
 
         while (matcher.find()) {
-            String key = matcher.group().substring(1, matcher.group().length() - 1); // Extract the placeholder key
+            String key = matcher.group(1);  // Extract the placeholder key
             // Return the corresponding value from kwargs, or the original placeholder if not found
-            String replacement = kwargs.containsKey(key) ? kwargs.get(key).toString() : matcher.group();
+            String replacement = kwargs.containsKey(key) ? kwargs.get(key).toString() : matcher.group(0);
             matcher.appendReplacement(result, replacement);
         }
         matcher.appendTail(result);
@@ -81,37 +87,24 @@ public class Tester {
         return result.toString();
     }
 
-    @Test
-    public void testSafeFormat() {
-        // Test case 1: All placeholders are present in kwargs
-        Map<String, Object> kwargs1 = Map.of("name", "Alice", "age", 30);
-        String template1 = "Hello, my name is {name} and I am {age} years old.";
-        assertEquals("Hello, my name is Alice and I am 30 years old.", safeFormat(template1, kwargs1));
-
-        // Test case 2: Some placeholders are missing in kwargs
-        Map<String, Object> kwargs2 = Map.of("name", "Bob");
-        String template2 = "Hello, my name is {name} and I am {age} years old.";
-        assertEquals("Hello, my name is Bob and I am {age} years old.", safeFormat(template2, kwargs2));
-
-        // Test case 3: No placeholders in the template
-        String template3 = "Hello, world!";
-        assertEquals("Hello, world!", safeFormat(template3, Map.of()));
-
-        // Test case 4: Empty template
-        String template4 = "";
-        assertEquals("", safeFormat(template4, Map.of()));
+    // Utility method to simulate the safe_format function without kwargs
+    private String safeFormat(String template) {
+        return safeFormat(template, Map.of());
     }
 }
 ```
 
 ### Explanation:
 1. **JUnit Annotations**: The `@Test` annotation is used to mark each test method.
-2. **Assertion Methods**: The `assertEquals` method is used to verify the expected output.
-3. **Method Implementation**: The `safeFormat` method is implemented within the `Tester` class.
-4. **Test Cases**:
-   - **Test Case 1**: All placeholders are present in `kwargs`.
-   - **Test Case 2**: Some placeholders are missing in `kwargs`.
-   - **Test Case 3**: No placeholders in the template.
-   - **Test Case 4**: Empty template.
+2. **Assertion Methods**: The `assertEquals` method from JUnit is used to assert the expected results.
+3. **Utility Methods**: Two utility methods `safeFormat` are defined to simulate the behavior of the Python `safe_format` function:
+   - `safeFormat(String template, Map<String, Object> kwargs)` handles the case where keyword arguments are provided.
+   - `safeFormat(String template)` handles the case where no keyword arguments are provided.
+4. **Test Methods**:
+   - `testFullReplacement`: Tests with all placeholders having corresponding values.
+   - `testPartialReplacement`: Tests with some placeholders missing corresponding values.
+   - `testNoReplacement`: Tests when no placeholders are provided.
+   - `testMissingPlaceholder`: Tests with a placeholder that has no corresponding value.
+   - `testNumericValues`: Tests with numeric values as replacements.
 
-This Java test class preserves the original functionality and logic of the Python tests while adhering to JUnit conventions and best practices.
+This Java code preserves the original functionality and structure of the Python unittest class while adhering to Java's conventions and syntax.

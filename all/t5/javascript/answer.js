@@ -1,14 +1,22 @@
-/**
- * Implementing matrix multiplication
- *
- * @param {Array<Array<number>>} matrixA - Matrix A
- * @param {Array<Array<number>>} matrixB - Matrix B
- * @returns {Array<Array<number>>} - The result of multiplying matrixA and matrixB
- */
 function matrixMultiply(matrixA, matrixB) {
-    // Check if the number of columns in matrixA is equal to the number of rows in matrixB
+    /**
+     * Implementing matrix multiplication
+     * @param {Array<Array<number>>} matrixA - matrix A
+     * @param {Array<Array<number>>} matrixB - matrix B
+     * @returns {Array<Array<number>>} matrixA * matrixB multiplication result
+     */
+
+    // Check if either matrix is empty or has no elements
+    if (!matrixA || !matrixB || !matrixA[0] || !matrixB[0]) {
+        return [];
+    }
+
+    // Ensure matrix dimensions are compatible for multiplication
     if (matrixA[0].length !== matrixB.length) {
-        throw new Error('The number of columns in matrixA must be equal to the number of rows in matrixB');
+        throw new Error(
+            "The number of columns in the first matrix must be equal to the number of rows in the second matrix."
+        );
+
     }
 
     // Initialize the result matrix with zeros

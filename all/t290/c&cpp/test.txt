@@ -1,48 +1,129 @@
-To convert the provided Python unittest test class into an equivalent test class using Catch2 in C++, we need to first define the function `rdf_jsonld_to_ngsild` and then create a test case using Catch2's syntax and assertions. Below is the C++ code that accomplishes this:
+Certainly! Here is the equivalent C++ test class using the Catch2 testing framework. The provided Python unittest class will be converted into a Catch2 test suite, ensuring that the functionality and logic of the tests are preserved.
+
+### C++ Code with Catch2 Testing Framework
+
+First, include the necessary headers and setup the Catch2 framework:
 
 ```cpp
 #include <catch2/catch_test_macros.hpp>
+#include <nlohmann/json.hpp>
 #include <string>
-#include <map>
 
-// Define the function that converts RDF JSON-LD to NGSI-LD format
-std::map<std::string, std::string> rdf_jsonld_to_ngsild(const std::string& rdf_jsonld) {
-    // Implementation of the conversion logic
-    // This is just a placeholder implementation for demonstration purposes
-    std::map<std::string, std::string> ngsild_data;
-    // Example conversion logic
-    if (rdf_jsonld == "example_rdf_jsonld") {
-        ngsild_data["key"] = "value";
+using json = nlohmann::json;
+
+// Function to convert RDF JSON-LD to NGSI-LD format
+json rdf_jsonld_to_ngsild(const std::string& rdf_jsonld) {
+    json parsed_json = json::parse(rdf_jsonld);
+
+    json ngsi_ld = {
+        {"id", parsed_json.value("@id", "urn:ngsi-ld:unknown:id")},
+        {"type", parsed_json.value("@type", "UnknownType")},
+        {"@context", parsed_json.value("@context", "https://schema.lab.fiware.org/ld/context")},
+        {"attributes", json::array()}
+    };
+
+    // Assuming simple attribute structure conversion
+    for (auto it = parsed_json.begin(); it != parsed_json.end(); ++it) {
+        std::string key = it.key();
+        if (key != "@context" && key != "@id" && key != "@type") {
+            json attribute = {
+                {"type", "Property"},
+                {"name", key},
+                {"value", it.value()}
+            };
+            ngsi_ld["attributes"].push_back(attribute);
+        }
     }
-    return ngsild_data;
+
+    return ngsi_ld;
 }
 
-TEST_CASE("Test rdf_jsonld_to_ngsild function", "[rdf_jsonld_to_ngsild]") {
-    SECTION("Converts example RDF JSON-LD to NGSI-LD") {
-        const std::string example_rdf_jsonld = "example_rdf_jsonld";
-        auto result = rdf_jsonld_to_ngsild(example_rdf_jsonld);
-        
-        REQUIRE(result.size() == 1);
-        REQUIRE(result.count("key") == 1);
-        REQUIRE(result.at("key") == "value");
+TEST_CASE("Test RDF JSON-LD to NGSI-LD Conversion") {
+    SECTION("Basic conversion") {
+        // Test a basic and correct conversion from JSON-LD to NGSI-LD
+        std::string rdf_jsonld = R"({"@context": "http://schema.org/", "@id": "urn:ngsi-ld:Vehicle:A123", "@type": "Vehicle", "speed": {"value": 60, "unitCode": "KMH"}})";
+        json expected_ngsild = {
+            {"id", "urn:ngsi-ld:Vehicle:A123"},
+            {"type", "Vehicle"},
+            {"@context", "http://schema.org/"},
+            {"attributes", json::array({
+                {"type", "Property"},
+                {"name", "speed"},
+                {"value", json::object({{"value", 60}, {"unitCode", "KMH"}})}
+            })}
+        };
+        json result = rdf_jsonld_to_ngsild(rdf_jsonld);
+        REQUIRE(result == expected_ngsild);
     }
 
-    SECTION("Handles empty input") {
-        const std::string empty_input = "";
-        auto result = rdf_jsonld_to_ngsild(empty_input);
+    SECTION("Missing @id and @type") {
+        // Test conversion when @id and @type are missing
+        std::string rdf_jsonld = R"({"@context": "http://schema.org/", "speed": {"value": 60, "unitCode": "KMH"}})";
+        json expected_ngsild = {
+            {"id", "urn:ngsi-ld:unknown:id"},
+            {"type", "UnknownType"},
+            {"@context", "http://schema.org/"},
+            {"attributes", json::array({
+                {"type", "Property"},
+                {"name", "speed"},
+                {"value", json::object({{"value", 60}, {"unitCode", "KMH"}})}
+            })}
+        };
+        json result = rdf_jsonld_to_ngsild(rdf_jsonld);
+        REQUIRE(result == expected_ngsild);
+    }
 
-        REQUIRE(result.empty());
+    SECTION("With nested objects") {
+        // Test conversion with nested objects
+        std::string rdf_jsonld = R"({"@context": "http://schema.org/", "@id": "urn:ngsi-ld:Vehicle:A123", "@type": "Vehicle", "location": {"latitude": 48.8566, "longitude": 2.3522}})";
+        json expected_ngsild = {
+            {"id", "urn:ngsi-ld:Vehicle:A123"},
+            {"type", "Vehicle"},
+            {"@context", "http://schema.org/"},
+            {"attributes", json::array({
+                {"type", "Property"},
+                {"name", "location"},
+                {"value", json::object({{"latitude", 48.8566}, {"longitude", 2.3522}})}
+            })}
+        };
+        json result = rdf_jsonld_to_ngsild(rdf_jsonld);
+        REQUIRE(result == expected_ngsild);
+    }
+
+    SECTION("Invalid JSON input") {
+        // Test the function's response to invalid JSON input
+        std::string rdf_jsonld = "This is not a valid JSON";
+        REQUIRE_THROWS_AS(rdf_jsonld_to_ngsild(rdf_jsonld), std::exception);
+    }
+
+    SECTION("Empty JSON-LD document") {
+        // Test the conversion of an empty JSON-LD document
+        std::string rdf_jsonld = R"({})";
+        json expected_ngsild = {
+            {"id", "urn:ngsi-ld:unknown:id"},
+            {"type", "UnknownType"},
+            {"@context", "https://schema.lab.fiware.org/ld/context"},
+            {"attributes", json::array()}
+        };
+        json result = rdf_jsonld_to_ngsild(rdf_jsonld);
+        REQUIRE(result == expected_ngsild);
     }
 }
 ```
 
 ### Explanation:
-1. **Header Files**: Include the necessary headers for Catch2 and standard library components like `std::string` and `std::map`.
+1. **Headers**: We include the necessary headers (`<catch2/catch_test_macros.hpp>` and `<nlohmann/json.hpp>`) for Catch2 testing and JSON handling.
+2. **Using Alias**: We define an alias `json` for `nlohmann::json` to make the code more readable.
+3. **Function Definition**: The `rdf_jsonld_to_ngsild` function takes a `std::string` as input and returns a `json` object.
+4. **Test Class**: The `TEST_CASE` macro defines the test suite, and each `SECTION` macro defines individual test cases.
+5. **Assertions**:
+   - `REQUIRE(result == expected_ngsild)` checks if the result matches the expected JSON object.
+   - `REQUIRE_THROWS_AS(rdf_jsonld_to_ngsild(rdf_jsonld), std::exception)` checks if the function throws an exception for invalid JSON input.
+6. **Test Cases**:
+   - **Basic Conversion**: Tests a basic and correct conversion from JSON-LD to NGSI-LD.
+   - **Missing @id and @type**: Tests conversion when `@id` and `@type` are missing.
+   - **With Nested Objects**: Tests conversion with nested objects.
+   - **Invalid JSON Input**: Tests the function's response to invalid JSON input.
+   - **Empty JSON-LD Document**: Tests the conversion of an empty JSON-LD document.
 
-2. **Function Definition**: Define the `rdf_jsonld_to_ngsild` function with the same signature but using C++ types (`std::string` and `std::map`).
-
-3. **Test Case**: Use Catch2's `TEST_CASE` macro to define the test case. Inside the test case, use `SECTION` macros to group different scenarios.
-
-4. **Assertions**: Use Catch2's assertion macros such as `REQUIRE` to check the correctness of the function's output.
-
-This setup ensures that the functionality and logic of the tests are preserved while adapting to C++ and the Catch2 testing framework.
+This ensures that the functionality and logic of the original Python unittest class are preserved in the C++ version using Catch2.

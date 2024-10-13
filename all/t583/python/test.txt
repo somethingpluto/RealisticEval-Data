@@ -1,0 +1,70 @@
+Here's how to convert the provided TypeScript Jest test cases into Python unit tests using the unittest framework. The conversion maintains the structure and logic of the original tests while adapting them to Python syntax and conventions.
+Converted Python Test Cases
+python
+import unittest
+
+def remove_query_param(url: str, key: str) -> str:
+    from urllib.parse import urlparse, urlunparse, parse_qs, urlencode
+
+    # Parse the URL into its components
+    url_parts = list(urlparse(url))
+    
+    # Parse the query parameters into a dictionary
+    query_params = parse_qs(url_parts[4])
+    
+    # Remove the specified key if it exists
+    if key in query_params:
+        del query_params[key]
+    
+    # Rebuild the query string from the remaining parameters
+    url_parts[4] = urlencode(query_params, doseq=True)
+    
+    # Return the modified URL
+    return urlunparse(url_parts)
+
+class TestRemoveQueryParam(unittest.TestCase):
+
+    def test_remove_existing_parameter(self):
+        url = 'https://example.com?page=1&sort=asc&filter=red'
+        result = remove_query_param(url, 'sort')
+        self.assertEqual(result, 'https://example.com/?page=1&filter=red')
+
+    def test_no_modification_if_parameter_does_not_exist(self):
+        url = 'https://example.com?page=1&filter=red'
+        result = remove_query_param(url, 'sort')
+        self.assertEqual(result, 'https://example.com/?page=1&filter=red')
+
+    def test_return_original_url_if_no_query_parameters(self):
+        url = 'https://example.com'
+        result = remove_query_param(url, 'sort')
+        self.assertEqual(result, 'https://example.com/')
+
+    def test_remove_multiple_occurrences_of_a_parameter(self):
+        url = 'https://example.com?page=1&filter=red&filter=blue'
+        result = remove_query_param(url, 'filter')
+        self.assertEqual(result, 'https://example.com/?page=1')
+
+    def test_handle_encoded_characters_in_parameter(self):
+        url = 'https://example.com?page=1&sort=asc&filter=hello%20world'
+        result = remove_query_param(url, 'filter')
+        self.assertEqual(result, 'https://example.com/?page=1&sort=asc')
+
+    def test_handle_case_when_parameter_is_only_one_in_url(self):
+        url = 'https://example.com?sort=asc'
+        result = remove_query_param(url, 'sort')
+        self.assertEqual(result, 'https://example.com/')
+
+if __name__ == '__main__':
+    unittest.main()
+Explanation of the Converted Code:
+Importing Modules:
+The unittest module is imported for creating the test cases.
+The remove_query_param function is defined as in the previous conversion to allow testing.
+Test Class:
+A class TestRemoveQueryParam is created, inheriting from unittest.TestCase. This class will contain all the test methods.
+Test Methods:
+Each test method corresponds to a Jest test. The names of the methods are adapted to follow Python's naming conventions and clearly state what each test is validating.
+The self.assertEqual() method is used to check if the result of the remove_query_param function matches the expected output.
+Running the Tests:
+The if __name__ == '__main__': block ensures that the tests run when the script is executed directly.
+This Python implementation using unittest mirrors the functionality and intent of the original TypeScript Jest test cases.

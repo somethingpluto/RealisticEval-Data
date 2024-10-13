@@ -1,73 +1,110 @@
-Sure! Below is the equivalent JavaScript test case using Jest for the provided Python function `rotate_point_cloud`. Note that in JavaScript, we'll need to use a library like `mathjs` to handle matrix operations similar to NumPy's functionality.
+Certainly! Below is the equivalent Jest test suite for the given Python unittest class. I'll ensure that the functionality and logic of the tests are maintained, and I'll document any necessary changes due to language differences between Python and JavaScript.
 
-First, make sure you have Jest and mathjs installed:
+### Python Code:
+```python
+import unittest
+import numpy as np
 
-```bash
-npm install --save-dev jest mathjs
+class TestRotatePointCloud(unittest.TestCase):
+
+    def test_no_rotation(self):
+        """Test when rotation angle is 0 (should return the same point cloud)."""
+        point_cloud = np.array([[1.0, 2.0, 3.0]])
+        rotation_angle = 0
+        expected_output = point_cloud
+        np.testing.assert_array_almost_equal(rotate_point_cloud(point_cloud, rotation_angle), expected_output)
+
+    def test_180_degree_rotation(self):
+        """Test rotation of 180 degrees (π radians) around Y axis."""
+        point_cloud = np.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]])
+        rotation_angle = np.pi  # 180 degrees
+        expected_output = np.array([[-1.0, 0.0, 0.0], [0.0, 1.0, 0.0]])  # [1,0,0] -> [-1,0,0]
+        np.testing.assert_array_almost_equal(rotate_point_cloud(point_cloud, rotation_angle), expected_output)
+
+    def test_full_rotation(self):
+        """Test rotation of 360 degrees (2π radians) around Y axis (should return same point cloud)."""
+        point_cloud = np.array([[1.0, 2.0, 3.0]])
+        rotation_angle = 2 * np.pi  # 360 degrees
+        expected_output = point_cloud  # Should return the same point cloud
+        np.testing.assert_array_almost_equal(rotate_point_cloud(point_cloud, rotation_angle), expected_output)
 ```
 
-Then, create your JavaScript test file (e.g., `testRotatePointCloud.js`) with the following content:
+### Equivalent Jest Test Suite:
+
+First, ensure you have the necessary dependencies installed:
+
+```bash
+npm install mathjs
+```
+
+Here is the Jest test suite:
 
 ```javascript
-const { sin, cos, multiply } = require('mathjs');
+const math = require('mathjs');
+const { rotatePointCloud } = require('./rotatePointCloud'); // Import your rotatePointCloud function
 
-// Define the function to be tested
-function rotatePointCloud(pointCloud, rotationAngle) {
-    // Create a rotation matrix around the Y-axis
-    const rotationMatrix = [
-        [cos(rotationAngle), 0, -sin(rotationAngle)],
-        [0, 1, 0],
-        [sin(rotationAngle), 0, cos(rotationAngle)]
-    ];
+describe('TestRotatePointCloud', () => {
+    it('test_no_rotation', () => {
+        /** 
+         * Test when rotation angle is 0 (should return the same point cloud).
+         */
+        const pointCloud = [[1.0, 2.0, 3.0]];
+        const rotationAngle = 0;
+        const expectedOutput = pointCloud;
 
-    // Apply the rotation matrix to each point in the point cloud
-    return pointCloud.map(point => multiply(rotationMatrix, point));
-}
+        const rotatedPointCloud = rotatePointCloud(pointCloud, rotationAngle);
+        expect(rotatedPointCloud).toEqual(expectedOutput);
+    });
 
-// Import Jest for testing
-const { describe, it, expect } = require('@jest/globals');
+    it('test_180_degree_rotation', () => {
+        /** 
+         * Test rotation of 180 degrees (π radians) around Y axis.
+         */
+        const pointCloud = [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]];
+        const rotationAngle = Math.PI; // 180 degrees
+        const expectedOutput = [[-1.0, 0.0, 0.0], [0.0, 1.0, 0.0]]; // [1,0,0] -> [-1,0,0]
 
-describe('rotatePointCloud', () => {
-    it('should rotate a point cloud around the Y-axis by a given angle', () => {
-        const pointCloud = [
-            [1, 2, 3],
-            [4, 5, 6]
-        ];
-        const rotationAngle = Math.PI / 2; // 90 degrees in radians
+        const rotatedPointCloud = rotatePointCloud(pointCloud, rotationAngle);
+        expect(rotatedPointCloud).toEqual(expectedOutput);
+    });
 
-        const expectedOutput = [
-            [-3, 2, 1],
-            [-6, 5, 4]
-        ];
+    it('test_full_rotation', () => {
+        /** 
+         * Test rotation of 360 degrees (2π radians) around Y axis (should return same point cloud).
+         */
+        const pointCloud = [[1.0, 2.0, 3.0]];
+        const rotationAngle = 2 * Math.PI; // 360 degrees
+        const expectedOutput = pointCloud; // Should return the same point cloud
 
-        const result = rotatePointCloud(pointCloud, rotationAngle);
-
-        expect(result).toEqual(expectedOutput);
+        const rotatedPointCloud = rotatePointCloud(pointCloud, rotationAngle);
+        expect(rotatedPointCloud).toEqual(expectedOutput);
     });
 });
+
+// Example implementation of rotatePointCloud function (for demonstration purposes)
+function rotatePointCloud(pointCloud, rotationAngle) {
+    const rotationMatrix = math.matrix([
+        [math.cos(rotationAngle), 0, math.sin(rotationAngle)],
+        [0, 1, 0],
+        [-math.sin(rotationAngle), 0, math.cos(rotationAngle)]
+    ]);
+
+    const pointCloudMatrix = math.matrix(pointCloud);
+    const rotatedPointCloudMatrix = math.multiply(pointCloudMatrix, rotationMatrix);
+    const rotatedPointCloud = math.toArray(rotatedPointCloudMatrix);
+
+    return rotatedPointCloud;
+}
 ```
 
 ### Explanation:
+1. **Importing Dependencies**: We import the `mathjs` library and the `rotatePointCloud` function from the relevant module.
+2. **Jest Describe Block**: We use the `describe` block to group the tests under a single test suite.
+3. **Test Cases**:
+   - `test_no_rotation`: Tests the case where the rotation angle is 0.
+   - `test_180_degree_rotation`: Tests the case where the rotation angle is 180 degrees (π radians).
+   - `test_full_rotation`: Tests the case where the rotation angle is 360 degrees (2π radians).
+4. **Assertions**: We use `expect` with `toEqual` to check if the rotated point cloud matches the expected output.
+5. **Example Implementation**: Provided an example implementation of the `rotatePointCloud` function for demonstration purposes.
 
-1. **Importing Required Functions**: We import `sin`, `cos`, and `multiply` from the `mathjs` library to perform matrix operations.
-2. **Function Definition**: The `rotatePointCloud` function creates a rotation matrix around the Y-axis using the given angle and applies this matrix to each point in the input point cloud.
-3. **Testing with Jest**:
-   - We use `describe` to group related tests together.
-   - Inside `describe`, we use `it` to define individual test cases.
-   - We use `expect` to assert that the output of our function matches the expected result.
-
-To run the tests, add the following script to your `package.json`:
-
-```json
-"scripts": {
-    "test": "jest"
-}
-```
-
-Then, run the tests using:
-
-```bash
-npm test
-```
-
-This will execute the test case and verify if the `rotatePointCloud` function works correctly.
+This ensures that the functionality and logic of the tests are preserved in the Jest test suite.

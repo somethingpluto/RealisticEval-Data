@@ -1,84 +1,154 @@
-Sure! Below is the equivalent Java test class using JUnit for the provided Python code. I will assume that the `handle_nested_data` function is implemented elsewhere in your Java project, and we are focusing on writing the test cases here.
-
-First, let's define the Java method that you want to test. This is just a placeholder implementation:
-
-```java
-package org.real.temp;
-
-import java.util.Map;
-import java.nio.charset.StandardCharsets;
-
-public class DataHandler {
-
-    /**
-     * Handle nested data structures, decode bytes to UTF8-strings, and convert numbers to integers or floating point numbers.
-     *
-     * @param data the input data
-     * @return the processed data
-     */
-    public Map<String, Object> handleNestedData(Map<String, Object> data) {
-        // Placeholder implementation
-        return data;  // Actual implementation goes here
-    }
-}
-```
-
-Now, let's create the JUnit test class:
+Certainly! Here is the equivalent Java test class using JUnit, placed in the package `org.real.temp` and named `Tester`. The functionality and logic of the tests are preserved, and appropriate JUnit annotations and assertion methods are used.
 
 ```java
 package org.real.temp;
 
 import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.Assert;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Tester {
 
-    private final DataHandler dataHandler = new DataHandler();
+    @Test
+    public void testSimpleDictionary() {
+        Map<String, Object> data = new HashMap<>();
+        data.put("name", "Alice".getBytes());
+        data.put("age", "30");
+
+        Map<String, Object> expected = new HashMap<>();
+        expected.put("name", "Alice");
+        expected.put("age", 30);
+
+        Assert.assertEquals(expected, handleNestedData(data));
+    }
 
     @Test
-    public void testHandleNestedData() {
-        // Test case 1: Basic dictionary with nested structures
-        Map<String, Object> input1 = new HashMap<>();
-        input1.put("key1", "value1");
-        Map<String, Object> nestedMap = new HashMap<>();
-        nestedMap.put("nestedKey1", "nestedValue1");
-        input1.put("key2", nestedMap);
+    public void testNestedDictionary() {
+        Map<String, Object> nestedDetails = new HashMap<>();
+        nestedDetails.put("age", "25");
+        nestedDetails.put("height", "175.5");
 
-        Map<String, Object> output1 = dataHandler.handleNestedData(input1);
-        assertNotNull(output1);
-        assertEquals("value1", output1.get("key1"));
-        Map<String, Object> nestedOutput1 = (Map<String, Object>) output1.get("key2");
-        assertEquals("nestedValue1", nestedOutput1.get("nestedKey1"));
+        Map<String, Object> nestedUser = new HashMap<>();
+        nestedUser.put("name", "Bob".getBytes());
+        nestedUser.put("details", nestedDetails);
 
-        // Test case 2: Dictionary with byte arrays
-        Map<String, Object> input2 = new HashMap<>();
-        input2.put("byteKey", "some value".getBytes(StandardCharsets.UTF_8));
+        Map<String, Object> data = new HashMap<>();
+        data.put("user", nestedUser);
 
-        Map<String, Object> output2 = dataHandler.handleNestedData(input2);
-        assertNotNull(output2);
-        assertEquals("some value", output2.get("byteKey"));
+        Map<String, Object> expectedDetails = new HashMap<>();
+        expectedDetails.put("age", 25);
+        expectedDetails.put("height", 175.5);
 
-        // Test case 3: Dictionary with numbers
-        Map<String, Object> input3 = new HashMap<>();
-        input3.put("intKey", 100L);
-        input3.put("floatKey", 100.5f);
+        Map<String, Object> expectedUser = new HashMap<>();
+        expectedUser.put("name", "Bob");
+        expectedUser.put("details", expectedDetails);
 
-        Map<String, Object> output3 = dataHandler.handleNestedData(input3);
-        assertNotNull(output3);
-        assertEquals(100, output3.get("intKey"));
-        assertEquals(100.5, ((Number) output3.get("floatKey")).doubleValue(), 0.001);
+        Map<String, Object> expected = new HashMap<>();
+        expected.put("user", expectedUser);
+
+        Assert.assertEquals(expected, handleNestedData(data));
+    }
+
+    @Test
+    public void testListOfMixedDataTypes() {
+        List<Object> data = Arrays.asList("100", "200".getBytes(), 300.0, "400.5");
+
+        List<Object> expected = Arrays.asList(100, "200", 300.0, 400.5);
+
+        Assert.assertEquals(expected, handleNestedData(data));
+    }
+
+    @Test(expected = UnicodeDecodeError.class)
+    public void testIncorrectByteDecoding() {
+        Map<String, Object> data = new HashMap<>();
+        data.put("invalid_bytes", new byte[]{(byte) 0xff, (byte) 0xfe, (byte) 0xfd, (byte) 0xfc});
+
+        handleNestedData(data);
+    }
+
+    @Test
+    public void testComplexNestedStructure() {
+        Map<String, Object> charlieScores = new HashMap<>();
+        charlieScores.put("name", "Charlie".getBytes());
+        charlieScores.put("scores", Arrays.asList("1000", "2000.2"));
+
+        Map<String, Object> daisySkills = new HashMap<>();
+        daisySkills.put("name", "Daisy".getBytes());
+        daisySkills.put("skills", Arrays.asList("Coding".getBytes(), "Design".getBytes()));
+        daisySkills.put("age", "22");
+
+        List<Object> team = Arrays.asList(charlieScores, daisySkills);
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("team", team);
+
+        Map<String, Object> expectedCharlieScores = new HashMap<>();
+        expectedCharlieScores.put("name", "Charlie");
+        expectedCharlieScores.put("scores", Arrays.asList(1000, 2000.2));
+
+        Map<String, Object> expectedDaisySkills = new HashMap<>();
+        expectedDaisySkills.put("name", "Daisy");
+        expectedDaisySkills.put("skills", Arrays.asList("Coding", "Design"));
+        expectedDaisySkills.put("age", 22);
+
+        List<Object> expectedTeam = Arrays.asList(expectedCharlieScores, expectedDaisySkills);
+
+        Map<String, Object> expected = new HashMap<>();
+        expected.put("team", expectedTeam);
+
+        Assert.assertEquals(expected, handleNestedData(data));
+    }
+
+    private Object handleNestedData(Object data) {
+        if (data instanceof Map) {
+            // If it's a Map, apply the function recursively to each value
+            Map<?, ?> map = (Map<?, ?>) data;
+            Map<Object, Object> newMap = new HashMap<>();
+            for (Map.Entry<?, ?> entry : map.entrySet()) {
+                newMap.put(entry.getKey(), handleNestedData(entry.getValue()));
+            }
+            return newMap;
+        } else if (data instanceof List) {
+            // If it's a List, apply the function recursively to each item
+            List<?> list = (List<?>) data;
+            List<Object> newList = new ArrayList<>();
+            for (Object item : list) {
+                newList.add(handleNestedData(item));
+            }
+            return newList;
+        } else if (data instanceof byte[]) {
+            // If it's bytes, decode to a UTF-8 string
+            byte[] bytes = (byte[]) data;
+            return new String(bytes, java.nio.charset.StandardCharsets.UTF_8);
+        } else if (data instanceof Integer || data instanceof Float || data instanceof Double) {
+            // If it's already a number, return as is
+            return data;
+        } else if (data instanceof String) {
+            // Try to convert strings that represent integers or floats to their numeric forms
+            String str = (String) data;
+            try {
+                return Integer.parseInt(str);
+            } catch (NumberFormatException e) {
+                try {
+                    return Double.parseDouble(str);
+                } catch (NumberFormatException ex) {
+                    return str;  // Return the original string if it's not a number
+                }
+            }
+        }
+        return data;  // Return the input as is for any other type
     }
 }
 ```
 
-In this Java code:
+### Explanation:
+1. **JUnit Annotations**: Each test method is annotated with `@Test`.
+2. **Assertions**: Assertions are performed using `Assert.assertEquals`.
+3. **Byte Handling**: Byte arrays are created using `new byte[]{...}` and decoded using `new String(bytes, StandardCharsets.UTF_8)`.
+4. **Test Data**: Test data is constructed using `HashMap` and `ArrayList` to match the Python dictionary and list structures.
+5. **Exception Handling**: The `testIncorrectByteDecoding` method uses `@Test(expected = UnicodeDecodeError.class)` to handle the expected exception. Note that `UnicodeDecodeError` is not a standard Java exception, so you may need to define a custom exception or use a different approach (e.g., `assertThrows`).
 
-1. We define a `DataHandler` class with the `handleNestedData` method.
-2. We create a test class `Tester` within the `org.real.temp` package.
-3. We use JUnit's `@Test` annotation to mark our test methods.
-4. We use JUnit's assertion methods like `assertNotNull`, `assertEquals` to verify the correctness of the `handleNestedData` method.
-5. We provide different test cases to cover various scenarios (basic dictionary, byte arrays, numbers).
-
-This setup ensures that the functionality and logic of the tests are preserved, and it uses appropriate JUnit annotations and assertion methods.
+This Java code preserves the functionality and structure of the original Python unittests while adhering to JUnit conventions and syntax.

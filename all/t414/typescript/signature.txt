@@ -1,29 +1,84 @@
-Here's the equivalent TypeScript code for the given Python function, including the documentation comments:
+Certainly! Here’s the equivalent TypeScript code, including proper type annotations and JSDoc-style documentation:
 
 ```typescript
+import * as fs from 'fs';
+import * as xregexp from 'xregexp';
+
 /**
  * Extracts the title, author, and year from a BibTeX file.
  * Example BibTeX file content:
- * 
  * @article{sample2024,
  *   author = {John Doe and Jane Smith},
  *   title = {A Comprehensive Study on AI},
  *   year = {2024}
  * }
- * 
- * @param bibFile - The path to the BibTeX file.
- * @returns An array of objects, each containing title, author, and year for each article.
+ *
+ * @param bibFile The path to the BibTeX file.
+ * @returns An array of objects containing the title, author, and year for each article.
  */
-function extractBibInfo(bibFile: string): { title: string; author: string; year: string }[] {
-    // Function implementation would go here
+function extractBibInfo(bibFile: string): Array<{ title?: string; author?: string; year?: string }> {
+    const articles: Array<{ title?: string; author?: string; year?: string }> = [];
+
+    // Regular expressions to match title, author, and year
+    const titlePattern = xregexp('title\\s*=\\s*{([^}]*)}', 'i');
+    const authorPattern = xregexp('author\\s*=\\s*{([^}]*)}', 'i');
+    const yearPattern = xregexp('year\\s*=\\s*{([^}]*)}', 'i');
+
+    try {
+        const content = fs.readFileSync(bibFile, 'utf8');
+
+        // Split the content into individual entries based on '@'
+        const entries = content.split('@').slice(1);  // Skip the first split, which is empty
+
+        for (const entry of entries) {
+            const titleMatch = xregexp.exec(entry, titlePattern);
+            const authorMatch = xregexp.exec(entry, authorPattern);
+            const yearMatch = xregexp.exec(entry, yearPattern);
+
+            // Extracting matched groups if found
+            articles.push({
+                title: titleMatch ? titleMatch[1] : undefined,
+                author: authorMatch ? authorMatch[1] : undefined,
+                year: yearMatch ? yearMatch[1] : undefined
+            });
+        }
+    } catch (error) {
+        if (error.code === 'ENOENT') {
+            console.error(`Error: The file '${bibFile}' was not found.`);
+        } else {
+            throw error;
+        }
+    }
+
+    return articles;
 }
 ```
 
-In this TypeScript code:
+### Explanation:
+1. **Imports**:
+   - `fs` is used for file system operations.
+   - `xregexp` is used for regular expressions with additional flags support (similar to Python's `re` module).
 
-- The function `extract_bib_info` is renamed to `extractBibInfo` to follow the camelCase naming convention commonly used in TypeScript.
-- The parameter `bib_file` is renamed to `bibFile` for consistency with camelCase naming.
-- The return type annotation `{ title: string; author: string; year: string }[]` specifies an array of objects with properties `title`, `author`, and `year`.
-- The Python docstring is converted to JSDoc-style comments, which are commonly used in TypeScript for documentation and type checking.
+2. **Function Definition**:
+   - The function `extractBibInfo` takes a `bibFile` parameter and returns an array of objects with optional properties (`title`, `author`, `year`).
 
-You can fill in the actual implementation of the function within the body of `extractBibInfo`.
+3. **JSDoc Documentation**:
+   - The JSDoc-style documentation provides detailed information about the function, its parameters, and its return type.
+
+4. **Regular Expressions**:
+   - Regular expressions are defined using `xregexp` to handle case-insensitive matching.
+
+5. **File Reading**:
+   - `fs.readFileSync` is used to read the file synchronously. This is a simple example, but for production code, consider using asynchronous methods.
+
+6. **Content Splitting**:
+   - The content is split into individual entries based on `'@'`.
+
+7. **Pattern Matching**:
+   - Each entry is searched for matches using the regular expressions.
+   - Matched groups are extracted and added to the `articles` array.
+
+8. **Error Handling**:
+   - A `try-catch` block is used to handle potential errors, specifically checking for `ENOENT` (file not found) and rethrowing other errors.
+
+This TypeScript code maintains the same functionality and structure as the original Python code, with appropriate adjustments for TypeScript syntax and library usage.

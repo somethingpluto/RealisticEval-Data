@@ -1,6 +1,6 @@
 /**
- * Calculate the distance between two points on the Earth using the Haversine formula.
- *
+ * Calculate the distance between two points on the Earth based on their latitude and longitude.
+ * 
  * @param lat1 - Latitude of the first point in degrees.
  * @param lon1 - Longitude of the first point in degrees.
  * @param lat2 - Latitude of the second point in degrees.

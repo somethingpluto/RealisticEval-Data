@@ -1,48 +1,53 @@
-TEST_CASE("Test YAML to JSON Conversion") {
-    std::string output_json = "output.json";
+TEST_CASE("Test conversion of YAML files to JSON") {
+    // Create temporary YAML files for testing
+    const std::string simple_yaml = "simple.yaml";
+    const std::string nested_yaml = "nested.yaml";
+    const std::string empty_yaml = "empty.yaml";
+    const std::string list_yaml = "list.yaml";
+    const std::string invalid_yaml = "invalid.yaml";
 
-    auto setupFile = [](const std::string& filename, const std::string& content) {
-        std::ofstream file(filename);
-        REQUIRE(file.is_open());
-        file << content;
-        file.close();
-    };
+    SECTION("Setup temporary files") {
+        // Write simple YAML file
+        std::ofstream simpleFile(simple_yaml);
+        simpleFile << "name: John Doe\nage: 30\n";
+        simpleFile.close();
 
-    auto teardownFile = [](const std::string& filename) {
-        std::remove(filename.c_str());
-    };
+        // Write nested YAML file
+        std::ofstream nestedFile(nested_yaml);
+        nestedFile << "person:\n  name: Jane Doe\n  age: 25\n  address:\n    city: New York\n    zip: 10001\n";
+        nestedFile.close();
 
-    SECTION("Simple YAML Conversion") {
-        std::string simple_yaml = "simple.yaml";
-        setupFile(simple_yaml, "name: John Doe\nage: 30\n");
+        // Write empty YAML file
+        std::ofstream emptyFile(empty_yaml);
+        emptyFile.close();
 
-        convertYamlToJson(simple_yaml, output_json);
+        // Write list YAML file
+        std::ofstream listFile(list_yaml);
+        listFile << "- item1\n- item2\n- item3\n";
+        listFile.close();
 
-        std::ifstream jf(output_json);
-        REQUIRE(jf.is_open());
-        nlohmann::json data;
-        jf >> data;
-        jf.close();
-
-        nlohmann::json expected = {{"name", "John Doe"}, {"age", 30}};
-        REQUIRE(data == expected);
-
-        teardownFile(simple_yaml);
+        // Write invalid YAML file
+        std::ofstream invalidFile(invalid_yaml);
+        invalidFile << "{ invalid: YAML: structure }\n";
+        invalidFile.close();
     }
 
-    SECTION("Nested YAML Conversion") {
-        std::string nested_yaml = "nested.yaml";
-        setupFile(nested_yaml, "person:\n  name: Jane Doe\n  age: 25\n  address:\n    city: New York\n    zip: 10001\n");
+    SECTION("Test simple YAML conversion") {
+        convertYamlToJson(simple_yaml, "output.json");
+        std::ifstream jsonFile("output.json");
+        REQUIRE(jsonFile.is_open());
+        json jsonData;
+        jsonFile >> jsonData;
+        REQUIRE(jsonData == (json{{"name", "John Doe"}, {"age", 30}}));
+    }
 
-        convertYamlToJson(nested_yaml, output_json);
-
-        std::ifstream jf(output_json);
-        REQUIRE(jf.is_open());
-        nlohmann::json data;
-        jf >> data;
-        jf.close();
-
-        nlohmann::json expected = {
+    SECTION("Test nested YAML conversion") {
+        convertYamlToJson(nested_yaml, "output.json");
+        std::ifstream jsonFile("output.json");
+        REQUIRE(jsonFile.is_open());
+        json jsonData;
+        jsonFile >> jsonData;
+        REQUIRE(jsonData == (json{
             {"person", {
                 {"name", "Jane Doe"},
                 {"age", 25},
@@ -51,59 +56,39 @@ TEST_CASE("Test YAML to JSON Conversion") {
                     {"zip", 10001}
                 }}
             }}
-        };
-        REQUIRE(data == expected);
-
-        teardownFile(nested_yaml);
+        }));
     }
 
-    SECTION("Empty YAML Conversion") {
-        std::string empty_yaml = "empty.yaml";
-        setupFile(empty_yaml, "");
-
-        convertYamlToJson(empty_yaml, output_json);
-
-        std::ifstream jf(output_json);
-        REQUIRE(jf.is_open());
-        nlohmann::json data;
-        jf >> data;
-        jf.close();
-
-        REQUIRE(data.is_null());
-
-        teardownFile(empty_yaml);
+    SECTION("Test empty YAML conversion") {
+        convertYamlToJson(empty_yaml, "output.json");
+        std::ifstream jsonFile("output.json");
+        REQUIRE(jsonFile.is_open());
+        json jsonData;
+        jsonFile >> jsonData;
+        REQUIRE(jsonData.is_null());
     }
 
-    SECTION("List YAML Conversion") {
-        std::string list_yaml = "list.yaml";
-        setupFile(list_yaml, "- item1\n- item2\n- item3\n");
-
-        convertYamlToJson(list_yaml, output_json);
-
-        std::ifstream jf(output_json);
-        REQUIRE(jf.is_open());
-        nlohmann::json data;
-        jf >> data;
-        jf.close();
-
-        nlohmann::json expected = {"item1", "item2", "item3"};
-        REQUIRE(data == expected);
-
-        teardownFile(list_yaml);
+    SECTION("Test list YAML conversion") {
+        convertYamlToJson(list_yaml, "output.json");
+        std::ifstream jsonFile("output.json");
+        REQUIRE(jsonFile.is_open());
+        json jsonData;
+        jsonFile >> jsonData;
+        REQUIRE(jsonData == (json{"item1", "item2", "item3"}));
     }
 
-    SECTION("Invalid YAML Conversion") {
-        std::string invalid_yaml = "invalid.yaml";
-        setupFile(invalid_yaml, "{ invalid: YAML: structure }\n");
-
-        REQUIRE_THROWS_AS(
-            convertYamlToJson(invalid_yaml, output_json),
-            YAML::ParserException
-        );
-
-        teardownFile(invalid_yaml);
+    SECTION("Test invalid YAML conversion") {
+        REQUIRE_THROWS_AS(convertYamlToJson(invalid_yaml, "output.json"), YAML::Exception);
     }
 
-    // Clean up
-    teardownFile(output_json);
+    SECTION("Teardown temporary files") {
+        std::remove(simple_yaml.c_str());
+        std::remove(nested_yaml.c_str());
+        std::remove(empty_yaml.c_str());
+        std::remove(list_yaml.c_str());
+        std::remove(invalid_yaml.c_str());
+        if (std::ifstream("output.json").is_open()) {
+            std::remove("output.json");
+        }
+    }
 }

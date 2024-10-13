@@ -1,53 +1,81 @@
-Here's the equivalent TypeScript code for your Python function:
+Certainly! Below is the equivalent TypeScript code for the provided Python script. This code will read TSV (tab-separated values) data from standard input, pad the rows to ensure they have the same length, and return the resulting data.
 
 ```typescript
-import * as readline from 'readline';
+import * as process from 'process';
+import * as csvParser from 'csv-parser';
 
-async function readTsvFromStdin(): Promise<string[][]> {
-    const rl = readline.createInterface({
-        input: process.stdin,
-        output: process.stdout,
-        terminal: false
+/**
+ * Reads TSV data from standard input, pads the rows to ensure they have the same length,
+ * and returns the resulting data.
+ * 
+ * @returns {Promise<string[][]>} A promise that resolves to the padded data.
+ */
+function readTsvFromStdin(): Promise<string[][]> {
+    return new Promise((resolve, reject) => {
+        const data: string[][] = [];
+
+        // Create a CSV parser that reads from standard input with tab as the delimiter
+        const parser = csvParser({
+            delimiter: '\t',
+            trim: true
+        });
+
+        process.stdin.pipe(parser)
+            .on('data', (row: any) => {
+                data.push(Object.values(row));
+            })
+            .on('end', () => {
+                // Find the maximum number of columns in the input data
+                const maxColumns = data.length > 0 ? Math.max(...data.map(row => row.length)) : 0;
+
+                // Pad all rows to ensure they have the same length
+                const paddedData = data.map(row => [
+                    ...row,
+                    ...Array(maxColumns - row.length).fill('')
+                ]);
+
+                resolve(paddedData);
+            })
+            .on('error', (error: Error) => {
+                reject(error);
+            });
     });
-
-    let tsvData: string[][] = [];
-    let maxLength = 0;
-
-    for await (const line of rl) {
-        const rowData = line.split('\t');
-        if (rowData.length > maxLength) {
-            maxLength = rowData.length;
-        }
-        tsvData.push(rowData);
-    }
-
-    // Pad shorter rows with empty strings
-    for (let i = 0; i < tsvData.length; i++) {
-        while (tsvData[i].length < maxLength) {
-            tsvData[i].push('');
-        }
-    }
-
-    return tsvData;
 }
 
 // Example usage:
 (async () => {
     try {
-        const data = await readTsvFromStdin();
-        console.log(data);
+        const result = await readTsvFromStdin();
+        console.log(result);
     } catch (error) {
-        console.error('Error reading TSV:', error);
+        console.error('Error reading TSV data:', error);
     }
 })();
 ```
 
 ### Explanation:
-1. **Importing `readline`**: The `readline` module in Node.js is used to read data from the standard input line by line.
-2. **Creating a Readable Stream**: We create a readable stream using `readline.createInterface` which reads from `process.stdin`.
-3. **Reading Lines**: We use an asynchronous loop (`for await`) to read each line from the input.
-4. **Splitting Lines into Rows**: Each line is split by tabs (`\t`) to get the row data.
-5. **Padding Rows**: We keep track of the maximum row length and pad any shorter rows with empty strings.
-6. **Returning Data**: Finally, we return the array of padded rows.
+1. **Imports**:
+   - `process` is used to access standard input (`process.stdin`).
+   - `csv-parser` is a library that can parse CSV data.
 
-This TypeScript code should work similarly to your original Python code, reading TSV data from standard input and padding rows to ensure uniformity.
+2. **Function Definition**:
+   - `readTsvFromStdin` is an asynchronous function that returns a `Promise` which resolves to the padded data.
+
+3. **CSV Parser Setup**:
+   - The `csv-parser` library is configured to use a tab as the delimiter and trim whitespace from the values.
+
+4. **Reading Data**:
+   - The `process.stdin` stream is piped through the CSV parser.
+   - Each row is collected in the `data` array.
+
+5. **Padding Rows**:
+   - After all rows are read, the maximum number of columns is determined.
+   - Each row is then padded with empty strings to match the maximum number of columns.
+
+6. **Example Usage**:
+   - An example usage block demonstrates how to call the function and handle the result or any errors.
+
+Make sure you have the `csv-parser` package installed in your project by running:
+```sh
+npm install csv-parser
+```

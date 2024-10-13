@@ -1,21 +1,23 @@
-function findDuplicateIps(ipList: string[], ignoreList: string[]): string[] {
-    /**
-     * Find duplicate IPs in the given IP list excluding specified IPs to ignore.
-     *
-     * @param {string[]} ipList - List of IP addresses
-     * @param {string[]} ignoreList - List of IP addresses to ignore
-     *
-     * @returns {string[]} A list of duplicate IPs excluding those in the ignore list.
-     */
+function findDuplicateIPs(ipList: string[], ignoreList: string[]): string[] {
+    // Convert ignoreList to a Set for faster lookups
+    const ignoreSet = new Set(ignoreList);
 
-    const ipCounts = new Map<string, number>();
+    // Object to count occurrences of each IP
+    const ipCount: Record<string, number> = {};
+
+    // Count occurrences of each IP, excluding ignored IPs
     for (const ip of ipList) {
-        if (!ignoreList.includes(ip)) {
-            ipCounts.set(ip, (ipCounts.get(ip) || 0) + 1);
+        if (!ignoreSet.has(ip)) {
+            if (ip in ipCount) {
+                ipCount[ip] += 1;
+            } else {
+                ipCount[ip] = 1;
+            }
         }
     }
 
-    return Array.from(ipCounts.entries())
-                .filter(([_, count]) => count > 1)
-                .map(([ip]) => ip);
+    // Collect duplicate IPs
+    const duplicates = Object.entries(ipCount).filter(([ip, count]) => count > 1).map(([ip]) => ip);
+
+    return duplicates;
 }

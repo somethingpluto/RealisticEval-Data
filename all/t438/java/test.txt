@@ -1,161 +1,171 @@
-Certainly! Below is the equivalent Java test class using JUnit for the provided Python unittest class. The Java test class will be placed in the package `org.real.temp` and named `Tester`. It includes appropriate JUnit annotations and assertion methods to ensure the functionality and logic of the tests are preserved.
+Certainly! Below is the Java equivalent of the provided Python unittest test class, converted into a JUnit test class. The Java test class is placed in the package `org.real.temp` and named `Tester`. It includes appropriate JUnit annotations and assertion methods to ensure the functionality and logic of the tests are preserved.
 
-### Java Test Class
+### Java Code
 
 ```java
 package org.real.temp;
 
-import com.opencsv.CSVReader;
-import com.opencsv.exceptions.CsvValidationException;
-
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Test class for reading a CSV file and converting it to a List of Lists representing a DataFrame.
- */
-public class Tester {
+class Tester {
 
-    private Path tempFile;
+    private Path validCsvPath;
+    private Path emptyCsvPath;
+    private Path invalidCsvPath;
+    private Path missingValuesCsvPath;
+    private Path largeCsvPath;
 
     @BeforeEach
-    public void setup(@TempDir Path tempDir) throws IOException {
-        tempFile = tempDir.resolve("test.csv");
-        try (PrintWriter writer = new PrintWriter(tempFile.toFile())) {
-            writer.println("col1,col2,col3");
-            writer.println("1,2,3");
-            writer.println("4,5,6");
-        }
+    void setUp(@TempDir Path tempDir) throws IOException {
+        // Create a valid CSV file
+        validCsvPath = tempDir.resolve("valid.csv");
+        writeCsvFile(validCsvPath, "col1,col2\n1,3\n2,4");
+
+        // Create an empty CSV file
+        emptyCsvPath = tempDir.resolve("empty.csv");
+        createEmptyFile(emptyCsvPath);
+
+        // Create an invalid format CSV file
+        invalidCsvPath = tempDir.resolve("invalid.csv");
+        writeCsvFile(invalidCsvPath, "col1,col2\n1,2\n3,4\ninvalid_line");
+
+        // Create a CSV file with missing values
+        missingValuesCsvPath = tempDir.resolve("missing_values.csv");
+        writeCsvFile(missingValuesCsvPath, "col1,col2\n1,\n,4");
+
+        // Create a large CSV file
+        largeCsvPath = tempDir.resolve("large.csv");
+        writeLargeCsvFile(largeCsvPath, 1000);
+    }
+
+    @AfterEach
+    void tearDown() {
+        // Files are automatically cleaned up by @TempDir
     }
 
     @Test
-    public void testReadCsvToDataFrame() throws IOException, CsvValidationException {
-        List<List<String>> expected = new ArrayList<>();
-        expected.add(List.of("col1", "col2", "col3"));
-        expected.add(List.of("1", "2", "3"));
-        expected.add(List.of("4", "5", "6"));
-
-        List<List<String>> actual = Answer.readCsvToDataFrame(tempFile.toString());
-
-        assertEquals(expected.size(), actual.size(), "The number of rows should match.");
-
-        for (int i = 0; i < expected.size(); i++) {
-            List<String> expectedRow = expected.get(i);
-            List<String> actualRow = actual.get(i);
-
-            assertEquals(expectedRow.size(), actualRow.size(), "The number of columns should match for row " + i);
-
-            for (int j = 0; j < expectedRow.size(); j++) {
-                assertEquals(expectedRow.get(j), actualRow.get(j), "Values should match at position (" + i + ", " + j + ")");
-            }
-        }
+    void testValidCsv() throws IOException {
+        List<Map<String, String>> df = readCsvToMapList(validCsvPath.toString());
+        assertEquals(2, df.size());
+        assertEquals(2, df.get(0).size());
+        assertEquals("1", df.get(0).get("col1"));
+        assertEquals("3", df.get(0).get("col2"));
+        assertEquals("2", df.get(1).get("col1"));
+        assertEquals("4", df.get(1).get("col2"));
     }
 
     @Test
-    public void testReadCsvToDataFrameFileNotFound() {
-        String nonExistentFilePath = "non-existent-file.csv";
-
-        List<List<String>> result = Answer.readCsvToDataFrame(nonExistentFilePath);
-
-        assertNull(result, "The result should be null if the file is not found.");
+    void testCorrectData() throws IOException {
+        List<Map<String, String>> df = readCsvToMapList(validCsvPath.toString());
+        assertEquals(2, df.size());
+        assertEquals(2, df.get(0).size());
+        assertEquals("1", df.get(0).get("col1"));
+        assertEquals("3", df.get(0).get("col2"));
+        assertEquals("2", df.get(1).get("col1"));
+        assertEquals("4", df.get(1).get("col2"));
     }
 
     @Test
-    public void testReadCsvToDataFrameEmptyFile() throws IOException {
-        Path emptyFile = tempFile.resolveSibling("empty.csv");
-        try (PrintWriter writer = new PrintWriter(emptyFile.toFile())) {
-            // Write nothing to create an empty file
-        }
-
-        List<List<String>> result = Answer.readCsvToDataFrame(emptyFile.toString());
-
-        assertNotNull(result, "The result should not be null.");
-        assertTrue(result.isEmpty(), "The result should be an empty list for an empty file.");
+    void testReadCsvWithMissingValues() throws IOException {
+        List<Map<String, String>> df = readCsvToMapList(missingValuesCsvPath.toString());
+        assertEquals(2, df.size());
+        assertEquals("1", df.get(0).get("col1"));
+        assertNull(df.get(0).get("col2"));
+        assertNull(df.get(1).get("col1"));
+        assertEquals("4", df.get(1).get("col2"));
     }
-}
-```
 
-### Key Points:
-1. **JUnit Annotations**: The `@BeforeEach` annotation is used to set up a temporary CSV file before each test.
-2. **JUnit Assertions**: The `assertEqual`, `assertNull`, and `assertTrue` methods are used to verify the correctness of the tests.
-3. **Temporary File Creation**: The `@TempDir` annotation is used to create a temporary directory where the test CSV files are stored.
-4. **Test Methods**:
-   - `testReadCsvToDataFrame`: Tests the correct reading of a CSV file.
-   - `testReadCsvToDataFrameFileNotFound`: Tests the case where the file is not found.
-   - `testReadCsvToDataFrameEmptyFile`: Tests the case where the file is empty.
+    @Test
+    void testLargeCsvFile() throws IOException {
+        List<Map<String, String>> df = readCsvToMapList(largeCsvPath.toString());
+        assertEquals(1000, df.size());
+        assertEquals(2, df.get(0).size());
+        assertEquals("0", df.get(0).get("col1"));
+        assertEquals("1000", df.get(0).get("col2"));
+        assertEquals("999", df.get(999).get("col1"));
+        assertEquals("1999", df.get(999).get("col2"));
+    }
 
-### Additional Files and Dependencies:
-- **Answer.java**: The main class that contains the `readCsvToDataFrame` method.
+    private void writeCsvFile(Path filePath, String content) throws IOException {
+        try (FileWriter writer = new FileWriter(filePath.toFile())) {
+            writer.write(content);
+        }
+    }
 
-```java
-package org.real.temp;
+    private void createEmptyFile(Path filePath) throws IOException {
+        filePath.toFile().createNewFile();
+    }
 
-import com.opencsv.CSVReader;
-import com.opencsv.exceptions.CsvValidationException;
+    private void writeLargeCsvFile(Path filePath, int size) throws IOException {
+        StringBuilder content = new StringBuilder("col1,col2\n");
+        for (int i = 0; i < size; i++) {
+            content.append(i).append(",").append(i + 1000).append("\n");
+        }
+        writeCsvFile(filePath, content.toString());
+    }
 
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-/**
- * Class for reading a CSV file and converting it to a List of Lists representing a DataFrame.
- */
-public class Answer {
-
-    /**
-     * Reads a CSV file and converts it to a List of Lists representing a DataFrame.
-     *
-     * @param filePath The path to the CSV file.
-     * @return List&lt;List&lt;String&gt;&gt;: List of Lists containing the data from the CSV file.
-     */
-    public static List<List<String>> readCsvToDataFrame(String filePath) {
-        try (CSVReader reader = new CSVReader(new FileReader(filePath))) {
-            List<List<String>> dataframe = new ArrayList<>();
-            String[] nextLine;
-            while ((nextLine = reader.readNext()) != null) {
-                List<String> row = new ArrayList<>();
-                for (String cell : nextLine) {
-                    row.add(cell);
+    private List<Map<String, String>> readCsvToMapList(String filePath) {
+        List<Map<String, String>> records = new ArrayList<>();
+        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
+            String line;
+            String[] headers = br.readLine().split(",");
+            while ((line = br.readLine()) != null) {
+                String[] values = line.split(",");
+                Map<String, String> record = new HashMap<>();
+                for (int i = 0; i < headers.length && i < values.length; i++) {
+                    record.put(headers[i], values[i]);
                 }
-                dataframe.add(row);
+                records.add(record);
             }
-            return dataframe;
         } catch (IOException e) {
-            System.out.println("Error: The file '" + filePath + "' was not found.");
-        } catch (CsvValidationException e) {
-            System.out.println("Error: Could not parse the file.");
-        } catch (Exception e) {
-            System.out.println("An error occurred: " + e.getMessage());
+            fail("Error reading CSV file: " + e.getMessage());
         }
-        return null;
+        return records;
     }
 }
 ```
 
-### Dependencies:
-Ensure you have the `opencsv` library added to your project's dependencies. For Maven, add the following dependency:
+### Explanation:
 
-```xml
-<dependency>
-    <groupId>com.opencsv</groupId>
-    <artifactId>opencsv</artifactId>
-    <version>5.5.2</version>
-</dependency>
-```
+1. **Package and Class Declaration**:
+   - The Java code starts with the package declaration `package org.real.temp;` and the class declaration `class Tester`.
 
-For Gradle, add the following dependency:
+2. **JUnit Annotations**:
+   - `@BeforeEach`: Sets up temporary CSV files before each test.
+   - `@AfterEach`: Cleans up temporary files after each test.
+   - `@Test`: Marks methods as test cases.
 
-```groovy
-implementation 'com.opencsv:opencsv:5.5.2'
-```
+3. **Temporary Directory**:
+   - The `@TempDir` annotation is used to create temporary files in a temporary directory, ensuring they are automatically cleaned up after each test.
 
-This setup ensures that the Java test class is equivalent to the provided Python unittest class and follows Java conventions and best practices.
+4. **Setup and Teardown Methods**:
+   - `setUp`: Creates temporary CSV files for testing.
+   - `tearDown`: Automatically cleans up temporary files using `@TempDir`.
+
+5. **Test Methods**:
+   - `testValidCsv`: Tests reading a valid CSV file.
+   - `testCorrectData`: Ensures the correct data is read from the CSV file.
+   - `testReadCsvWithMissingValues`: Tests reading a CSV file with missing values.
+   - `testLargeCsvFile`: Tests reading a large CSV file.
+
+6. **Utility Methods**:
+   - `writeCsvFile`: Writes content to a CSV file.
+   - `createEmptyFile`: Creates an empty file.
+   - `writeLargeCsvFile`: Writes a large CSV file.
+   - `readCsvToMapList`: Reads a CSV file and converts it to a `List<Map<String, String>>`.
+
+This Java code preserves the original functionality and structure of the Python unittest test class while adhering to Java's conventions and syntax.

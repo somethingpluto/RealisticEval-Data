@@ -1,21 +1,45 @@
-describe('get_current_date_info', () => {
-    it('should return correct date info for a given date', () => {
-        const testDate = new Date(2024, 1, 29); // February 29, 2024
-        const result = get_current_date_info(testDate);
-        expect(result).toEqual({
-            'year': 2024,
-            'month': 'February',
-            'week_of_the_month': 5,
-            'day_of_the_week': 'Wednesday'
-        });
+describe('TestGetCurrentDateInfo', () => {
+    it('should return correct info for the beginning of the month', () => {
+      const result = getCurrentDateInfo(DateTime.fromJSDate(new Date(2023, 0, 1)));
+      const expected = {
+        year: 2023,
+        month: 'January',
+        weekOfTheMonth: 1,
+        dayOfWeek: 'Sunday'
+      };
+      expect(result).toEqual(expected);
     });
-
-    it('should return correct date info for today\'s date', () => {
-        const today = new Date();
-        const result = get_current_date_info(today);
-        expect(result.year).toBe(today.getFullYear());
-        expect(result.month).toBe(today.toLocaleString('default', { month: 'long' }));
-        expect(result.week_of_the_month).toBe(Math.ceil(today.getDate() / 7));
-        expect(result.day_of_the_week).toBe(today.toLocaleString('default', { weekday: 'long' }));
+  
+    it('should return correct info for the middle of the month', () => {
+      const result = getCurrentDateInfo(DateTime.fromJSDate(new Date(2023, 0, 15)));
+      const expected = {
+        year: 2023,
+        month: 'January',
+        weekOfTheMonth: 3,
+        dayOfWeek: 'Sunday'
+      };
+      expect(result).toEqual(expected);
     });
-});
+  
+    it('should return correct info for a leap year', () => {
+      const result = getCurrentDateInfo(DateTime.fromJSDate(new Date(2024, 1, 29)));
+      const expected = {
+        year: 2024,
+        month: 'February',
+        weekOfTheMonth: 5,
+        dayOfWeek: 'Thursday'
+      };
+      expect(result).toEqual(expected);
+    });
+  
+    it('should return correct info for the change of year', () => {
+      const result = getCurrentDateInfo(DateTime.fromJSDate(new Date(2022, 11, 31)));
+      const expected = {
+        year: 2022,
+        month: 'December',
+        weekOfTheMonth: 5,
+        dayOfWeek: 'Saturday'
+      };
+      expect(result).toEqual(expected);
+    });
+  });

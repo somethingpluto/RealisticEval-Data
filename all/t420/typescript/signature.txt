@@ -1,22 +1,102 @@
-Sure, here’s the equivalent TypeScript code for the given Python function, including the documentation comments in the JSDoc style:
+Certainly! Here is the equivalent TypeScript code for the provided Python function, including proper type annotations and JSDoc-style documentation comments:
 
 ```typescript
+import * as fs from 'fs';
+
 /**
- * Find the minimum distance between two specified words (word1 and word2) from the file and return in which line the distance occurred.
- * 
- * @param file_path - The path to the file.
- * @param word1 - The first word to find.
- * @param word2 - The second word to find.
- * @returns The line number where the minimum distance occurred.
+ * Finds the minimum distance between two specified words (word1 and word2) in a file and returns the line number where the distance occurred.
+ *
+ * @param {string} filePath - The path to the file.
+ * @param {string} word1 - The first word to search for.
+ * @param {string} word2 - The second word to search for.
+ * @returns {[number | null, number | null]} A tuple containing the line number and the minimum distance, or [null, null] if no valid distance is found.
  */
-function getMinDistance(file_path: string, word1: string, word2: string): number {
-    // Implementation of the function goes here.
+function getMinDistance(filePath: string, word1: string, word2: string): [number | null, number | null] {
+    const sequences = readFileAsSequences(filePath);
+    let minDistance = Infinity;
+    let minSeqNum: number | null = null;
+
+    sequences.forEach((seq, i) => {
+        const distance = findClosestWordIndices(seq, word1, word2);
+        if (distance < minDistance) {
+            minDistance = distance;
+            minSeqNum = i;
+        }
+    });
+
+    if (minDistance === Infinity) {
+        return [null, null];
+    }
+
+    return [minSeqNum, minDistance];
 }
+
+/**
+ * Reads the file and converts each line into a list of words.
+ *
+ * @param {string} filePath - The path to the file.
+ * @returns {string[][]} An array of arrays, where each inner array represents a line of words.
+ */
+function readFileAsSequences(filePath: string): string[][] {
+    const fileContent = fs.readFileSync(filePath, 'utf-8');
+    return fileContent.split('\n').map(line => line.trim().split(' '));
+}
+
+/**
+ * Finds the indices of two words in a sequence and calculates their closest distances.
+ *
+ * @param {string[]} sequence - The sequence of words.
+ * @param {string} word1 - The first word to search for.
+ * @param {string} word2 - The second word to search for.
+ * @returns {number} The minimum distance between the two words.
+ */
+function findClosestWordIndices(sequence: string[], word1: string, word2: string): number {
+    let word1Indices: number[] = [];
+    let word2Indices: number[] = [];
+    let minDistance = Infinity;
+
+    // Gather indices for both words
+    sequence.forEach((word, index) => {
+        if (word === word1) {
+            word1Indices.push(index);
+        } else if (word === word2) {
+            word2Indices.push(index);
+        }
+    });
+
+    // Calculate the minimum distance between all pairs of indices
+    word1Indices.forEach(index1 => {
+        word2Indices.forEach(index2 => {
+            const distance = Math.abs(index1 - index2);
+            if (distance < minDistance) {
+                minDistance = distance;
+            }
+        });
+    });
+
+    return minDistance;
+}
+
+// Example usage
+const filePath = 'example.txt';
+const word1 = 'apple';
+const word2 = 'banana';
+console.log(getMinDistance(filePath, word1, word2));
 ```
 
-In this TypeScript code:
-- The function `getMinDistance` has been defined with the same name and parameters as the Python function.
-- Type annotations have been added for each parameter (`file_path`, `word1`, and `word2`) and the return type.
-- The JSDoc-style documentation comments have been included to describe the purpose of the function, its parameters, and the return value.
+### Explanation:
+1. **JSDoc Documentation Comments**:
+   - The JSDoc comments provide detailed descriptions of the parameters and return values for each function.
 
-Feel free to implement the logic inside the function as needed.
+2. **Type Annotations**:
+   - All function parameters and return types are explicitly annotated to match the Python types.
+
+3. **Function Definitions**:
+   - `getMinDistance`: This function reads the file, processes each line, and finds the minimum distance between the specified words.
+   - `readFileAsSequences`: This function reads the file and converts each line into an array of words.
+   - `findClosestWordIndices`: This function finds the indices of the specified words and calculates the minimum distance between them.
+
+4. **Example Usage**:
+   - An example usage is included at the end to demonstrate how to call the `getMinDistance` function.
+
+This TypeScript code preserves the original functionality and structure of the Python code while adhering to TypeScript's static type system and best practices.

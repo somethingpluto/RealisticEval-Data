@@ -1,10 +1,73 @@
-TEST_CASE("Get Current Date Info") {
-    auto now = std::localtime(nullptr);
-    DateInfo result = get_current_date_info(*now);
+TEST_CASE("TestGetCurrentDateInfo") {
+    SECTION("Beginning of the month") {
+        std::tm date = {};
+        date.tm_year = 2023 - 1900; // Year since 1900
+        date.tm_mon = 0; // Month (0-based)
+        date.tm_mday = 1; // Day of the month
+        date.tm_isdst = -1; // Daylight saving time flag
 
-    REQUIRE(result.year == now->tm_year + 1900); // Year since 1900
-    REQUIRE(result.month == { "January", "February", "March", "April", "May", "June",
-                              "July", "August", "September", "October", "November", "December" }[now->tm_mon]);
-    REQUIRE(result.weekOfTheMonth == ((now->tm_mday - 1) / 7) + 1);
-    REQUIRE(result.dayOfWeek == { "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" }[now->tm_wday]);
+        auto result = getCurrentDateInfo(&date);
+        std::map<std::string, std::string> expected = {
+            {"year", "2023"},
+            {"month", "January"},
+            {"week_of_the_month", "1"},
+            {"day_of_the_week", "Sunday"}
+        };
+
+        REQUIRE(result == expected);
+    }
+
+    SECTION("Middle of the month") {
+        std::tm date = {};
+        date.tm_year = 2023 - 1900; // Year since 1900
+        date.tm_mon = 0; // Month (0-based)
+        date.tm_mday = 15; // Day of the month
+        date.tm_isdst = -1; // Daylight saving time flag
+
+        auto result = getCurrentDateInfo(&date);
+        std::map<std::string, std::string> expected = {
+            {"year", "2023"},
+            {"month", "January"},
+            {"week_of_the_month", "3"},
+            {"day_of_the_week", "Sunday"}
+        };
+
+        REQUIRE(result == expected);
+    }
+
+    SECTION("Leap year") {
+        std::tm date = {};
+        date.tm_year = 2024 - 1900; // Year since 1900
+        date.tm_mon = 1; // Month (0-based)
+        date.tm_mday = 29; // Day of the month
+        date.tm_isdst = -1; // Daylight saving time flag
+
+        auto result = getCurrentDateInfo(&date);
+        std::map<std::string, std::string> expected = {
+            {"year", "2024"},
+            {"month", "February"},
+            {"week_of_the_month", "5"},
+            {"day_of_the_week", "Thursday"}
+        };
+
+        REQUIRE(result == expected);
+    }
+
+    SECTION("Change of year") {
+        std::tm date = {};
+        date.tm_year = 2022 - 1900; // Year since 1900
+        date.tm_mon = 11; // Month (0-based)
+        date.tm_mday = 31; // Day of the month
+        date.tm_isdst = -1; // Daylight saving time flag
+
+        auto result = getCurrentDateInfo(&date);
+        std::map<std::string, std::string> expected = {
+            {"year", "2022"},
+            {"month", "December"},
+            {"week_of_the_month", "5"},
+            {"day_of_the_week", "Saturday"}
+        };
+
+        REQUIRE(result == expected);
+    }
 }

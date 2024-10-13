@@ -3,42 +3,59 @@ package org.real.temp;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Answer {
 
+    public static void main(String[] args) {
+        String csvFilePath = "path/to/your/csvfile.csv";
+        System.out.println(csvToSqlInsert(csvFilePath));
+    }
+
     public static String csvToSqlInsert(String csvFilePath) {
-        StringBuilder sb = new StringBuilder();
+        // Extract the table name from the CSV file name, removing the suffix
+        Path path = Paths.get(csvFilePath);
+        String tableName = Files.getFileStore(path).name().replaceFirst("[.][^.]+$", "");
 
-        try (BufferedReader br = new BufferedReader(new FileReader(csvFilePath))) {
-            String line;
+        // Open the CSV file and read its contents
+        List<String> insertStatements = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(csvFilePath))) {
+            String line = reader.readLine(); // Skip the first line (header)
+            if (line != null) {
+                String[] headers = line.split(",");
+                
+                String currentLine;
+                while ((currentLine = reader.readLine()) != null) {
+                    String[] row = currentLine.split(",");
+                    List<String> values = new ArrayList<>();
+                    
+                    for (String value : row) {
+                        // Handle different types of values (e.g., strings, numbers)
+                        if (value.matches("\\d+")) {  // If value is a digit, no quotes needed
+                            values.add(value);
+                        } else {  // Assume it's a string otherwise
+                            String escapedValue = value.replace("'", "''");  // Escape single quotes
+                            values.add("'" + escapedValue + "'");  // Use double quotes outside
+                        }
+                    }
 
-            while ((line = br.readLine()) != null) {
-                // Assuming that the CSV has headers and each row represents a record
-                String[] values = line.split(",");
-
-                if (sb.length() > 0)
-                    sb.append("\n");
-
-                // Replace "table_name" with your actual table name without suffix
-                sb.append("INSERT INTO table_name VALUES (");
-
-                for (int i = 0; i < values.length; ++i) {
-                    if (i > 0)
-                        sb.append(", ");
-
-                    // If the value contains commas or single quotes, enclose it in single quotes
-                    if (values[i].contains(",") || values[i].contains("'"))
-                        sb.append("'").append(values[i]).append("'");
-                    else
-                        sb.append(values[i]);
+                    // Join column names and values to form an INSERT statement
+                    String insertStatement = String.format("INSERT INTO %s (%s) VALUES (%s);",
+                            tableName,
+                            String.join(", ", headers),
+                            String.join(", ", values));
+                    insertStatements.add(insertStatement);
                 }
-
-                sb.append(");");
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        return sb.toString();
+        // Combine all insert statements into a single output
+        return String.join("\n", insertStatements);
     }
 }

@@ -1,22 +1,17 @@
 /**
- * Binary Tree Node
+ * Represents a binary tree node.
  */
 class TreeNode {
-    /**
-     * Value of the node.
-     */
     value: number;
-
-    /**
-     * Left child of the node.
-     */
     left: TreeNode | null;
-
-    /**
-     * Right child of the node.
-     */
     right: TreeNode | null;
 
+    /**
+     * Constructs a new TreeNode.
+     * @param value The value of the node.
+     * @param left The left child of the node.
+     * @param right The right child of the node.
+     */
     constructor(value: number = 0, left: TreeNode | null = null, right: TreeNode | null = null) {
         this.value = value;
         this.left = left;
@@ -25,45 +20,43 @@ class TreeNode {
 }
 
 /**
- * Binary Tree
+ * Represents a binary tree.
  */
 class BinaryTree {
-    /**
-     * Root of the binary tree.
-     */
     root: TreeNode | null;
 
+    /**
+     * Constructs a new BinaryTree.
+     * @param root The root node of the binary tree.
+     */
     constructor(root: TreeNode | null = null) {
         this.root = root;
     }
 
     /**
-     * Perform Pre-Order Traversal on the binary tree.
-     * @param node - The current node being visited.
-     * @param result - Array to store traversal results.
+     * Performs a recursive preorder traversal.
+     * @param node The current node being traversed.
+     * @param result The array to store the traversal results.
+     * @returns An array containing the preorder traversal results.
      */
-    preorderTraversal(node: TreeNode | null, result: number[] = []): number[] {
-        // Implementation goes here
-        return result;
+    preorderTraversal(node: TreeNode | null, result?: number[]): number[] {
     }
 
     /**
-     * Perform In-Order Traversal on the binary tree.
-     * @param node - The current node being visited.
-     * @param result - Array to store traversal results.
+     * Performs a recursive inorder traversal.
+     * @param node The current node being traversed.
+     * @param result The array to store the traversal results.
+     * @returns An array containing the inorder traversal results.
      */
-    inorderTraversal(node: TreeNode | null, result: number[] = []): number[] {
-        // Implementation goes here
-        return result;
+    inorderTraversal(node: TreeNode | null, result?: number[]): number[] {
     }
 
     /**
-     * Perform Post-Order Traversal on the binary tree.
-     * @param node - The current node being visited.
-     * @param result - Array to store traversal results.
+     * Performs a recursive postorder traversal.
+     * @param node The current node being traversed.
+     * @param result The array to store the traversal results.
+     * @returns An array containing the postorder traversal results.
      */
-    postorderTraversal(node: TreeNode | null, result: number[] = []): number[] {
-        // Implementation goes here
-        return result;
+    postorderTraversal(node: TreeNode | null, result?: number[]): number[] {
     }
 }

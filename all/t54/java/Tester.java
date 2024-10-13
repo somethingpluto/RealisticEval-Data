@@ -1,39 +1,49 @@
 package org.real.temp;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.api.Test; // JUnit 5 Test annotation
+import static org.junit.jupiter.api.Assertions.assertEquals; // JUnit 5 assertion method
 import java.util.Arrays;
 import java.util.List;
-import org.junit.Test;
 
 public class Tester {
 
-    /**
-     * Processes a list of strings, removing the three consecutive backticks from each string.
-     *
-     * @param stringList The list of strings to process.
-     * @return A new list with all instances of three consecutive backticks removed from each string.
-     */
-    public List<String> removeTripleBackticks(List<String> stringList) {
-        return stringList.stream()
-                         .map(s -> s.replaceAll("```", ""))
-                         .toList();
+    @Test
+    public void testRemoveTripleBackticksBasic() {
+        // Test basic functionality
+        List<String> inputStrings = Arrays.asList("Here is ```code``` example", "Another ```example``` here", "No backticks here");
+        List<String> expectedOutput = Arrays.asList("Here is code example", "Another example here", "No backticks here");
+        assertEquals(expectedOutput, removeTripleBackticks(inputStrings));
     }
 
     @Test
-    public void testRemoveTripleBackticks() {
-        // Test case 1
-        List<String> input1 = Arrays.asList("This is a ```test``` string.");
-        List<String> expectedOutput1 = Arrays.asList("This is a test string.");
-        assertEquals(expectedOutput1, removeTripleBackticks(input1));
+    public void testStringsWithMultipleInstances() {
+        // Test strings containing multiple instances of triple backticks
+        List<String> inputStrings = Arrays.asList("Multiple ```backticks``` in ```one``` string");
+        List<String> expectedOutput = Arrays.asList("Multiple backticks in one string");
+        assertEquals(expectedOutput, removeTripleBackticks(inputStrings));
+    }
 
-        // Test case 2
-        List<String> input2 = Arrays.asList("No triple backticks here!");
-        List<String> expectedOutput2 = Arrays.asList("No triple backticks here!");
-        assertEquals(expectedOutput2, removeTripleBackticks(input2));
+    @Test
+    public void testEmptyStrings() {
+        // Test with empty strings
+        List<String> inputStrings = Arrays.asList("");
+        List<String> expectedOutput = Arrays.asList("");
+        assertEquals(expectedOutput, removeTripleBackticks(inputStrings));
+    }
 
-        // Test case 3
-        List<String> input3 = Arrays.asList("````This is a test```string.", "Another ```test```");
-        List<String> expectedOutput3 = Arrays.asList("`This is a teststring.", "Another `test`");
-        assertEquals(expectedOutput3, removeTripleBackticks(input3));
+    @Test
+    public void testNoTripleBackticks() {
+        // Test strings that do not contain triple backticks
+        List<String> inputStrings = Arrays.asList("Just a normal string", "Another normal string");
+        List<String> expectedOutput = Arrays.asList("Just a normal string", "Another normal string");
+        assertEquals(expectedOutput, removeTripleBackticks(inputStrings));
+    }
+
+    @Test
+    public void testEdgeCases() {
+        // Test edge cases like strings made entirely of triple backticks
+        List<String> inputStrings = Arrays.asList("```", "```more```", "text``````");
+        List<String> expectedOutput = Arrays.asList("", "more", "text");
+        assertEquals(expectedOutput, removeTripleBackticks(inputStrings));
     }
 }

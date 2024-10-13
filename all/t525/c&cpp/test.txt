@@ -1,106 +1,117 @@
-To convert your Python `unittest` test class to a C++ test case using Catch2, you'll need to follow these steps:
+Certainly! Below is the equivalent C++ test class using the Catch2 testing framework. The provided Python unittest class will be converted into a Catch2 test suite, ensuring that the functionality and logic of the tests are preserved.
 
-1. **Include Necessary Headers**: Include Catch2 headers and any other necessary libraries.
-2. **Define the Function**: Ensure that the function `flip_point_cloud` is available in your C++ project.
-3. **Write Test Cases**: Use Catch2's macros to write test cases for the `flip_point_cloud` function.
+### C++ Code with Catch2
 
-Here’s how you can do it:
+First, make sure you have the Catch2 library included in your project. You can install it via package managers or include it manually.
 
-### Step 1: Include Necessary Headers
+#### Catch2 Header File
+Make sure you have the Catch2 header file included in your project. You can download it from [here](https://github.com/catchorg/Catch2) or include it via a package manager.
 
-```cpp
-#include <catch2/catch.hpp>
-#include <Eigen/Dense> // Assuming Eigen is used for matrix operations
-```
-
-### Step 2: Define the Function
-
-Ensure that the function `flip_point_cloud` is defined somewhere in your project. For simplicity, let's assume it's defined in a file named `point_cloud.cpp`.
+### C++ Code
 
 ```cpp
-// point_cloud.cpp
-#include "point_cloud.h"
+#include <catch2/catch_test_macros.hpp>
+#include <Eigen/Dense>
+#include <stdexcept>
 
-Eigen::MatrixXd flip_point_cloud(const Eigen::MatrixXd& point_cloud, int axis) {
-    Eigen::MatrixXd flipped = point_cloud;
-    if (axis == 0) {
-        flipped.col(0) *= -1;
-    } else if (axis == 1) {
-        flipped.col(1) *= -1;
-    } else if (axis == 2) {
-        flipped.col(2) *= -1;
+using Eigen::MatrixXd;
+
+/**
+ * Flip the point cloud across a specified axis.
+ *
+ * @param pointCloud A N x 3 matrix representing the 3D point cloud.
+ * @param axis An integer specifying the axis to flip (0 for x, 1 for y, 2 for z).
+ * @return A N x 3 matrix of the flipped point cloud.
+ */
+MatrixXd flipPointCloud(const MatrixXd& pointCloud, int axis) {
+    // Validate the axis input
+    if (axis < 0 || axis > 2) {
+        throw std::invalid_argument("Axis must be 0 (x-axis), 1 (y-axis), or 2 (z-axis).");
     }
-    return flipped;
+
+    // Create a scaling factor vector with -1 for the specified axis and 1 for others
+    VectorXd flipFactors(3);
+    flipFactors << (axis != 0 ? 1 : -1), (axis != 1 ? 1 : -1), (axis != 2 ? 1 : -1);
+
+    // Flip the point cloud by multiplying with the scaling factor vector
+    MatrixXd flippedPointCloud = pointCloud.unaryExpr([flipFactors](double val, int row, int col) {
+        return val * flipFactors(col);
+    });
+
+    return flippedPointCloud;
+}
+
+TEST_CASE("TestFlipPointCloud", "[FlipPointCloud]") {
+    SECTION("test_flip_x_axis") {
+        // Test flipping the point cloud across the x-axis.
+        MatrixXd pointCloud(2, 3);
+        pointCloud << 1.0, 2.0, 3.0,
+                      4.0, 5.0, 6.0;
+
+        MatrixXd expectedOutput(2, 3);
+        expectedOutput << 1.0, -2.0, 3.0,
+                         4.0, -5.0, 6.0;
+
+        MatrixXd flippedPointCloud = flipPointCloud(pointCloud, 1);
+        REQUIRE(flippedPointCloud.isApprox(expectedOutput));
+    }
+
+    SECTION("test_flip_y_axis") {
+        // Test flipping the point cloud across the y-axis.
+        MatrixXd pointCloud(2, 3);
+        pointCloud << 1.0, 2.0, 3.0,
+                      4.0, 5.0, 6.0;
+
+        MatrixXd expectedOutput(2, 3);
+        expectedOutput << -1.0, 2.0, 3.0,
+                          -4.0, 5.0, 6.0;
+
+        MatrixXd flippedPointCloud = flipPointCloud(pointCloud, 0);
+        REQUIRE(flippedPointCloud.isApprox(expectedOutput));
+    }
+
+    SECTION("test_flip_z_axis") {
+        // Test flipping the point cloud across the z-axis.
+        MatrixXd pointCloud(2, 3);
+        pointCloud << 1.0, 2.0, 3.0,
+                      4.0, 5.0, 6.0;
+
+        MatrixXd expectedOutput(2, 3);
+        expectedOutput << 1.0, 2.0, -3.0,
+                         4.0, 5.0, -6.0;
+
+        MatrixXd flippedPointCloud = flipPointCloud(pointCloud, 2);
+        REQUIRE(flippedPointCloud.isApprox(expectedOutput));
+    }
+
+    SECTION("test_invalid_axis") {
+        // Test handling of an invalid axis.
+        MatrixXd pointCloud(1, 3);
+        pointCloud << 1.0, 2.0, 3.0;
+
+        REQUIRE_THROWS_AS(flipPointCloud(pointCloud, 3), std::invalid_argument);
+    }
+
+    SECTION("test_empty_point_cloud") {
+        // Test flipping an empty point cloud.
+        MatrixXd pointCloud(0, 3);
+        MatrixXd expectedOutput(0, 3);
+
+        MatrixXd flippedPointCloud = flipPointCloud(pointCloud, 0);
+        REQUIRE(flippedPointCloud.rows() == expectedOutput.rows());
+        REQUIRE(flippedPointCloud.cols() == expectedOutput.cols());
+    }
 }
 ```
 
-### Step 3: Write Test Cases
+### Explanation:
+1. **Catch2 Header**: The `#include <catch2/catch_test_macros.hpp>` line includes the necessary Catch2 headers.
+2. **Eigen Library**: The `#include <Eigen/Dense>` line includes the necessary Eigen headers.
+3. **Function Definition**: The `flipPointCloud` function is defined with the same logic as the Python version.
+4. **Test Class**: The `TEST_CASE` macro defines the test suite, and each `SECTION` macro defines individual test cases.
+5. **Assertions**:
+   - `REQUIRE(flippedPointCloud.isApprox(expectedOutput))`: Checks if the flipped point cloud is approximately equal to the expected output.
+   - `REQUIRE_THROWS_AS(flipPointCloud(pointCloud, 3), std::invalid_argument)`: Checks if the function throws the correct exception for an invalid axis.
+   - `REQUIRE(flippedPointCloud.rows() == expectedOutput.rows())` and `REQUIRE(flippedPointCloud.cols() == expectedOutput.cols())`: Check if the dimensions of the flipped point cloud match the expected dimensions for an empty point cloud.
 
-Create a new file named `test_point_cloud.cpp` and write your test cases using Catch2 macros.
-
-```cpp
-// test_point_cloud.cpp
-#define CATCH_CONFIG_MAIN
-#include <catch2/catch.hpp>
-#include "point_cloud.h" // Include the header where flip_point_cloud is declared
-
-TEST_CASE("Flip Point Cloud Across X Axis", "[flip_point_cloud]") {
-    Eigen::MatrixXd point_cloud(3, 3);
-    point_cloud << 1, 2, 3,
-                    4, 5, 6,
-                    7, 8, 9;
-
-    Eigen::MatrixXd expected_result(3, 3);
-    expected_result << -1, 2, 3,
-                       -4, 5, 6,
-                       -7, 8, 9;
-
-    Eigen::MatrixXd result = flip_point_cloud(point_cloud, 0);
-
-    REQUIRE(result.isApprox(expected_result));
-}
-
-TEST_CASE("Flip Point Cloud Across Y Axis", "[flip_point_cloud]") {
-    Eigen::MatrixXd point_cloud(3, 3);
-    point_cloud << 1, 2, 3,
-                    4, 5, 6,
-                    7, 8, 9;
-
-    Eigen::MatrixXd expected_result(3, 3);
-    expected_result << 1, -2, 3,
-                       4, -5, 6,
-                       7, -8, 9;
-
-    Eigen::MatrixXd result = flip_point_cloud(point_cloud, 1);
-
-    REQUIRE(result.isApprox(expected_result));
-}
-
-TEST_CASE("Flip Point Cloud Across Z Axis", "[flip_point_cloud]") {
-    Eigen::MatrixXd point_cloud(3, 3);
-    point_cloud << 1, 2, 3,
-                    4, 5, 6,
-                    7, 8, 9;
-
-    Eigen::MatrixXd expected_result(3, 3);
-    expected_result << 1, 2, -3,
-                       4, 5, -6,
-                       7, 8, -9;
-
-    Eigen::MatrixXd result = flip_point_cloud(point_cloud, 2);
-
-    REQUIRE(result.isApprox(expected_result));
-}
-```
-
-### Explanation
-
-- **Catch2 Macros**:
-  - `#define CATCH_CONFIG_MAIN`: This macro tells Catch2 to generate the main function.
-  - `TEST_CASE("Description", "[tag]")`: Defines a test case with a description and optional tags.
-  - `REQUIRE(condition)`: Checks if the condition is true; if not, the test fails.
-
-- **Eigen Library**:
-  - The Eigen library is used here for matrix operations. Make sure you have Eigen installed and properly linked in your project.
-
-This should give you a good starting point for converting your Python tests to C++ using Catch2. Adjust the paths and dependencies according to your specific project setup.
+This code ensures that the functionality and logic of the tests are preserved while adapting to the syntax and features of C++ and the Catch2 testing framework.

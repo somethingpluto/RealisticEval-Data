@@ -1,86 +1,79 @@
-Here is the equivalent Java code for the provided Python code, organized within the `org.real.temp` package and the `Answer` class:
+Here is the equivalent Java code for the provided Python script, organized within the `org.real.temp` package and the `Answer` class:
 
 ```java
 package org.real.temp;
 
 import java.util.HashMap;
 import java.util.Map;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class Answer {
 
-    public static void main(String[] args) {
-        // Example usage
-        String rdfJsonLdString = "{\"@id\": \"urn:ngsi-ld:example\", \"@type\": \"ExampleType\", \"attr1\": \"value1\"}";
-        Map<String, Object> ngsiLdData = rdfJsonldToNgSILD(rdfJsonLdString);
-        System.out.println(ngsiLdData);
-    }
+    private static final String DEFAULT_CONTEXT = "https://schema.lab.fiware.org/ld/context";
+    private static final String UNKNOWN_ID = "urn:ngsi-ld:unknown:id";
+    private static final String UNKNOWN_TYPE = "UnknownType";
 
     /**
      * Convert RDF JSON-LD question to NGSI-LD format.
      *
-     * @param rdfJsonld RDF JSON-LD formatted question as a string or map.
+     * @param rdfJsonLd RDF JSON-LD formatted question as a string or map.
      * @return Data formatted according to NGSI-LD specifications.
      */
-    public static Map<String, Object> rdfJsonldToNgSILD(Object rdfJsonld) {
-        Map<String, Object> parsedRdfJsonld;
-        if (rdfJsonld instanceof String) {
-            parsedRdfJsonld = JsonUtil.parse((String) rdfJsonld);
-        } else {
-            parsedRdfJsonld = (Map<String, Object>) rdfJsonld;
-        }
-
+    public Map<String, Object> rdfJsonldToNgSILD(Object rdfJsonLd) {
+        ObjectMapper objectMapper = new ObjectMapper();
         Map<String, Object> ngsiLd = new HashMap<>();
-        ngsiLd.put("id", parsedRdfJsonld.getOrDefault("@id", "urn:ngsi-ld:unknown:id"));
-        ngsiLd.put("type", parsedRdfJsonld.getOrDefault("@type", "UnknownType"));
-        ngsiLd.put("@context", parsedRdfJsonld.getOrDefault("@context", "https://schema.lab.fiware.org/ld/context"));
-        ngsiLd.put("attributes", new HashMap<>());
 
-        // Assuming simple attribute structure conversion
-        for (Map.Entry<String, Object> entry : parsedRdfJsonld.entrySet()) {
-            String key = entry.getKey();
-            Object value = entry.getValue();
-            if (!key.equals("@context") && !key.equals("@id") && !key.equals("@type")) {
-                Map<String, Object> attribute = new HashMap<>();
-                attribute.put("type", "Property");
-                attribute.put("name", key);
-                attribute.put("value", value);
-
-                ((Map<String, Object>) ngsiLd.get("attributes")).put(key, attribute);
+        try {
+            if (rdfJsonLd instanceof String) {
+                JsonNode jsonNode = objectMapper.readTree((String) rdfJsonLd);
+                rdfJsonLd = objectMapper.convertValue(jsonNode, Map.class);
             }
+
+            Map<String, Object> rdfJsonLdMap = (Map<String, Object>) rdfJsonLd;
+
+            ngsiLd.put("id", rdfJsonLdMap.getOrDefault("@id", UNKNOWN_ID));
+            ngsiLd.put("type", rdfJsonLdMap.getOrDefault("@type", UNKNOWN_TYPE));
+            ngsiLd.put("@context", rdfJsonLdMap.getOrDefault("@context", DEFAULT_CONTEXT));
+            ngsiLd.put("attributes", new ArrayList<>());
+
+            // Assuming simple attribute structure conversion
+            for (Map.Entry<String, Object> entry : rdfJsonLdMap.entrySet()) {
+                String key = entry.getKey();
+                Object value = entry.getValue();
+                if (!key.equals("@context") && !key.equals("@id") && !key.equals("@type")) {
+                    Map<String, Object> attribute = new HashMap<>();
+                    attribute.put("type", "Property");
+                    attribute.put("name", key);
+                    attribute.put("value", value);
+                    ((List<Map<String, Object>>) ngsiLd.get("attributes")).add(attribute);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         return ngsiLd;
     }
 
-    private static class JsonUtil {
-        public static Map<String, Object> parse(String jsonString) {
-            // Implement JSON parsing logic here
-            // For simplicity, we'll use a dummy implementation
-            try {
-                return JsonParser.parse(jsonString);
-            } catch (Exception e) {
-                throw new RuntimeException("Error parsing JSON", e);
-            }
-        }
-    }
-
-    private static class JsonParser {
-        public static Map<String, Object> parse(String jsonString) throws Exception {
-            // Dummy implementation of JSON parsing
-            // In a real scenario, you would use a library like Jackson or Gson
-            Map<String, Object> result = new HashMap<>();
-            result.put("@id", "dummy_id");
-            result.put("@type", "DummyType");
-            result.put("attr1", "dummy_value");
-            return result;
-        }
+    public static void main(String[] args) {
+        Answer answer = new Answer();
+        // Example usage
+        String rdfJsonLdStr = "{\"@id\": \"urn:ngsi-ld:example\", \"@type\": \"ExampleType\", \"attr1\": \"value1\", \"attr2\": 42}";
+        Map<String, Object> result = answer.rdfJsonldToNgSILD(rdfJsonLdStr);
+        System.out.println(result);
     }
 }
 ```
 
 ### Explanation:
-1. **Package and Class**: The code is organized within the `org.real.temp` package and the `Answer` class.
-2. **Method Signature**: The method `rdfJsonldToNgSILD` takes an `Object` as input (either a `String` or a `Map`) and returns a `Map<String, Object>` representing the converted data.
-3. **JSON Parsing**: A utility class `JsonUtil` is used to parse the JSON string. For simplicity, a dummy `JsonParser` class is included, which would typically be replaced with a real JSON parsing library such as Jackson or Gson.
-4. **Type Checking and Conversion**: The method checks the type of the input and parses it if it is a string.
-5. **Attribute Conversion**: The attributes are converted and added to the resulting `ngsiLd` map.
+1. **Package and Class Definition**: The Java code is defined within the `org.real.temp` package and the `Answer` class.
+2. **Imports**: Necessary imports are added for handling JSON data using `ObjectMapper` from the Jackson library.
+3. **Method Signature**: The method `rdfJsonldToNgSILD` takes an `Object` as input to handle both `String` and `Map` types.
+4. **JSON Parsing**: If the input is a `String`, it is parsed into a `Map` using `ObjectMapper`.
+5. **NGSI-LD Object Creation**: The `ngsiLd` object is created and populated based on the input `rdfJsonLd`.
+6. **Attribute Conversion**: Attributes are extracted from the input and added to the `ngsiLd` object.
+7. **Error Handling**: Exception handling is included to catch any parsing errors.
+8. **Main Method**: An example usage of the method is provided in the `main` method.
+
+This Java code maintains the functionality and logic of the original Python script while adhering to Java's syntax and best practices.

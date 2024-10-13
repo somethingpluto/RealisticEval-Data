@@ -1,9 +1,8 @@
 /**
- * Convert the input string. First, check if it is an integer; if so, convert it to an integer.
- * If it is not an integer, check if it is a floating point number; if yes, convert it to a floating point number.
- * If neither, return the original string.
+ * Converts the input string to an integer or a floating-point number if possible.
+ * If the string cannot be converted to a number, it returns the original string.
  *
- * @param value - The input value as a string.
- * @returns The converted value, which can be a number (int or float) or the original string.
+ * @param value - The input string to convert.
+ * @returns The converted integer, floating-point number, or the original string if conversion is not possible.
  */
 function numericalStrConvert(value: string): number | string {}

@@ -1,7 +1,9 @@
+import * as fs from 'fs';
+import * as path from 'path';
+
 /**
- * Find the common columns of all CSV files in a directory and return these column names as an array.
- *
+ * Finds the common columns of all CSV files in a directory and returns these column names as a list.
  * @param directory - The directory path.
- * @returns A promise that resolves to the list of common column names.
+ * @returns An array of common column names.
  */
-async function findCommonColumns(directory: string): Promise<string[]> {}
+function findCommonColumns(directory: string): string[] {}

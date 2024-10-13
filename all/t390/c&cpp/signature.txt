@@ -1,25 +1,73 @@
-Here’s the equivalent C++ function signature with comments:
+Certainly! Below is the equivalent C++ code that preserves the functionality, structure, and documentation of the provided Python code:
 
 ```cpp
+#include <iostream>
 #include <string>
 #include <vector>
+#include <regex>
+#include <stdexcept>
 
-// Split the input text string into sentences.
-// 
-// Args:
-//     text (std::string): The input text to be split into sentences.
-// 
-// Returns:
-//     std::vector<std::string>: A vector of sentences extracted from the input text, cleaned and stripped of leading/trailing whitespace.
+/**
+ * Split the input text string into sentences.
+ *
+ * Args:
+ *     text (const std::string&): The input text to be split into sentences.
+ *
+ * Returns:
+ *     std::vector<std::string>: A vector of sentences extracted from the input text, cleaned and stripped of leading/trailing whitespace.
+ */
 std::vector<std::string> split_into_sentences(const std::string& text) {
-    // Implementation goes here.
+    // Check if the input is a string (in C++, this is always true since it's a function parameter)
+    if (text.empty()) {
+        throw std::invalid_argument("Input must be a non-empty string.");
+    }
+
+    // Regular expression to split the text where there is a punctuation followed by space or end of string
+    // This handles situations where punctuation might be followed by a quotation mark or other punctuation
+    std::regex sentence_delimiters(R"((?<=[.!?]["”’])\s+(?=[A-Z]))");
+
+    // Split the text using the defined regular expression
+    std::sregex_token_iterator iter(text.begin(), text.end(), sentence_delimiters, -1);
+    std::sregex_token_iterator end;
+
+    std::vector<std::string> sentences;
+    for (; iter != end; ++iter) {
+        std::string sentence = *iter;
+        // Remove any leading or trailing whitespace from each sentence
+        auto start = sentence.find_first_not_of(" \t\n\r\f\v");
+        auto end = sentence.find_last_not_of(" \t\n\r\f\v");
+        if (start != std::string::npos) {
+            sentences.push_back(sentence.substr(start, (end - start + 1)));
+        }
+    }
+
+    // Return the cleaned list of sentences
+    return sentences;
+}
+
+int main() {
+    try {
+        std::string text = "Hello world! This is a test. Isn't it great? Yes, it is.";
+        std::vector<std::string> sentences = split_into_sentences(text);
+        for (const auto& sentence : sentences) {
+            std::cout << sentence << std::endl;
+        }
+    } catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+    }
+
+    return 0;
 }
 ```
 
-In this translation:
+### Explanation:
+1. **Header Files**: Includes necessary headers (`<iostream>`, `<string>`, `<vector>`, `<regex>`, `<stdexcept>`).
+2. **Function Definition**: `split_into_sentences` takes a `const std::string&` as input and returns a `std::vector<std::string>`.
+3. **Documentation**: Multi-line comments (`/* */`) are used to document the function, arguments, and return values.
+4. **Regular Expression**: Uses a regex pattern to match sentence delimiters, similar to the Python version.
+5. **Splitting Text**: Uses `std::sregex_token_iterator` to split the text based on the regex pattern.
+6. **Whitespace Removal**: Removes leading and trailing whitespace from each sentence.
+7. **Exception Handling**: Throws an exception if the input string is empty.
+8. **Main Function**: Demonstrates usage with sample text and prints the resulting sentences.
 
-- The Python `def` keyword becomes `std::vector<std::string> split_into_sentences(const std::string& text)` in C++.
-- The Python `str` type annotation is translated to `std::string` in C++.
-- The return type `List[str]` is translated to `std::vector<std::string>` in C++.
-- The docstring is converted into a multi-line comment using `/* */` before the function definition.
-- Single-line comments within the docstring are converted to use `//` in C++.
+This C++ code maintains the same functionality and structure as the original Python code, including the documentation and type annotations.

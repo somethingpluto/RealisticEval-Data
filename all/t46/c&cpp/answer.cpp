@@ -1,68 +1,118 @@
 #include <iostream>
 #include <vector>
+using namespace std;
 
-// Define the TreeNode structure
-struct TreeNode {
+// TreeNode class definition
+class TreeNode {
+public:
     int value;
     TreeNode* left;
     TreeNode* right;
 
-    // Constructor
-    TreeNode(int val = 0) : value(val), left(nullptr), right(nullptr) {}
+    TreeNode(int val = 0, TreeNode* l = nullptr, TreeNode* r = nullptr) : value(val), left(l), right(r) {}
 };
 
-// Define the BinaryTree class
+// BinaryTree class definition
 class BinaryTree {
-private:
+public:
     TreeNode* root;
 
-public:
-    // Constructor
-    BinaryTree(TreeNode* root = nullptr) : root(root) {}
+    BinaryTree(TreeNode* r = nullptr) : root(r) {}
 
-    // Preorder traversal
-    void preorderTraversal(TreeNode* node, std::vector<int>& result) const {
-        if (node != nullptr) {
-            result.push_back(node->value);
-            preorderTraversal(node->left, result);
-            preorderTraversal(node->right, result);
+    // Recursive Preorder Traversal
+    vector<int> preorder_traversal(TreeNode* node, vector<int>* result = nullptr) {
+        if (result == nullptr) {
+            result = new vector<int>();
         }
+        if (node != nullptr) {
+            result->push_back(node->value);
+            preorder_traversal(node->left, result);
+            preorder_traversal(node->right, result);
+        }
+        return *result;
     }
 
-    // Inorder traversal
-    void inorderTraversal(TreeNode* node, std::vector<int>& result) const {
-        if (node != nullptr) {
-            inorderTraversal(node->left, result);
-            result.push_back(node->value);
-            inorderTraversal(node->right, result);
+    // Recursive Inorder Traversal
+    vector<int> inorder_traversal(TreeNode* node, vector<int>* result = nullptr) {
+        if (result == nullptr) {
+            result = new vector<int>();
         }
+        if (node != nullptr) {
+            inorder_traversal(node->left, result);
+            result->push_back(node->value);
+            inorder_traversal(node->right, result);
+        }
+        return *result;
     }
 
-    // Postorder traversal
-    void postorderTraversal(TreeNode* node, std::vector<int>& result) const {
-        if (node != nullptr) {
-            postorderTraversal(node->left, result);
-            postorderTraversal(node->right, result);
-            result.push_back(node->value);
+    // Recursive Postorder Traversal
+    vector<int> postorder_traversal(TreeNode* node, vector<int>* result = nullptr) {
+        if (result == nullptr) {
+            result = new vector<int>();
         }
+        if (node != nullptr) {
+            postorder_traversal(node->left, result);
+            postorder_traversal(node->right, result);
+            result->push_back(node->value);
+        }
+        return *result;
     }
 
-    // Helper functions to start traversals from the root
-    std::vector<int> getPreorderTraversal() const {
-        std::vector<int> result;
-        preorderTraversal(root, result);
+    // Iterative Preorder Traversal
+    vector<int> iterative_preorder() {
+        if (root == nullptr) {
+            return {};
+        }
+        vector<int> result;
+        vector<TreeNode*> stack = {root};
+        while (!stack.empty()) {
+            TreeNode* node = stack.back();
+            stack.pop_back();
+            if (node != nullptr) {
+                result.push_back(node->value);
+                stack.push_back(node->right);
+                stack.push_back(node->left);
+            }
+        }
         return result;
     }
 
-    std::vector<int> getInorderTraversal() const {
-        std::vector<int> result;
-        inorderTraversal(root, result);
+    // Iterative Inorder Traversal
+    vector<int> iterative_inorder() {
+        vector<int> result;
+        vector<TreeNode*> stack;
+        TreeNode* current = root;
+        while (!stack.empty() || current != nullptr) {
+            while (current != nullptr) {
+                stack.push_back(current);
+                current = current->left;
+            }
+            current = stack.back();
+            stack.pop_back();
+            result.push_back(current->value);
+            current = current->right;
+        }
         return result;
     }
 
-    std::vector<int> getPostorderTraversal() const {
-        std::vector<int> result;
-        postorderTraversal(root, result);
+    // Iterative Postorder Traversal
+    vector<int> iterative_postorder() {
+        if (root == nullptr) {
+            return {};
+        }
+        vector<int> result;
+        vector<TreeNode*> stack = {root};
+        while (!stack.empty()) {
+            TreeNode* node = stack.back();
+            stack.pop_back();
+            result.insert(result.begin(), node->value);
+            if (node->left != nullptr) {
+                stack.push_back(node->left);
+            }
+            if (node->right != nullptr) {
+                stack.push_back(node->right);
+            }
+        }
         return result;
     }
 };

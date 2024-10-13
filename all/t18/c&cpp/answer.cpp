@@ -1,10 +1,12 @@
-#include <tuple>
-#include <stdexcept>
 #include <iostream>
+#include <stdexcept>
+#include <utility>
 
-std::tuple<int, int, int> floatToRGB(float value) {
+// Function to convert a floating-point number between 0 and 1 to a color from red to green in RGB format.
+std::tuple<int, int, int> float_to_rgb(float value) {
+    // Check if the value is within the valid range
     if (value < 0.0f || value > 1.0f) {
-        throw std::out_of_range("Value must be between 0 and 1 inclusive.");
+        throw std::invalid_argument("Value must be between 0 and 1 inclusive.");
     }
 
     // Calculate the red and green components
@@ -15,4 +17,15 @@ std::tuple<int, int, int> floatToRGB(float value) {
     int blue = 0;
 
     return std::make_tuple(red, green, blue);
+}
+
+int main() {
+    try {
+        float value = 0.5; // Example value
+        auto rgb = float_to_rgb(value);
+        std::cout << "RGB: (" << std::get<0>(rgb) << ", " << std::get<1>(rgb) << ", " << std::get<2>(rgb) << ")" << std::endl;
+    } catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+    }
+    return 0;
 }

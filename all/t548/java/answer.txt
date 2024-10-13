@@ -1,34 +1,81 @@
-Here's how you can convert the given Python code into Java:
+Sure! Below is the equivalent Java code for the provided Python script, organized within the package `org.real.temp` and the class `Answer`. This Java code will read a text file, wrap its content in JSON brackets, parse it into a Java object, and handle exceptions accordingly.
 
 ```java
+package org.real.temp;
+
+import java.io.BufferedReader;
 import java.io.FileReader;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
-import org.json.JSONArray;
-import org.json.JSONException;
+import java.util.List;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class Answer {
-    public static ArrayList<Object> readTxtAddJsonBracket(String filename) throws FileNotFoundException, JSONException {
-        try (FileReader reader = new FileReader(filename)) {
-            StringBuilder sb = new StringBuilder();
-            int i;
-            while ((i = reader.read()) != -1) {
-                sb.append((char) i);
+
+    /**
+     * Reads a text file, wraps its content in JSON brackets, and parses it into a Java object.
+     *
+     * @param filename The path to the text file to be read.
+     * @return A list parsed from the JSON content wrapped in brackets.
+     */
+    public static List<JsonNode> readTxtAddJsonBracket(String filename) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
+            StringBuilder text = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                text.append(line).append("\n");
             }
-            String content = "[" + sb.toString() + "]";
-            JSONArray jsonArray = new JSONArray(content);
-            ArrayList<Object> result = new ArrayList<>();
-            for (int j = 0; j < jsonArray.length(); j++) {
-                result.add(jsonArray.get(j));
+
+            // Wrap the text in square brackets to form a valid JSON array
+            String wrappedText = "[" + text.toString().trim() + "]";
+
+            // Parse the JSON content into a Java object
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode data = objectMapper.readTree(wrappedText);
+
+            if (data.isArray()) {
+                return data instanceof ArrayList ? (List<JsonNode>) data : new ArrayList<>(data);
+            } else {
+                return new ArrayList<>();
             }
-            return result;
-        } catch (FileNotFoundException e) {
-            throw new FileNotFoundException("The specified file does not exist.");
-        } catch (JSONException e) {
-            throw new JSONException("The content cannot be parsed as JSON.");
+
+        } catch (IOException e) {
+            System.out.println("Error: " + e.getMessage());
+            return new ArrayList<>();
+        } catch (Exception e) {
+            System.out.println("Error decoding JSON: " + e.getMessage());
+            return new ArrayList<>();
         }
+    }
+
+    public static void main(String[] args) {
+        // Example usage
+        List<JsonNode> result = readTxtAddJsonBracket("path/to/your/file.txt");
+        result.forEach(node -> System.out.println(node));
     }
 }
 ```
 
-This Java code reads a text file, wraps its content in JSON brackets, and parses it into an `ArrayList` of objects using the `org.json` library. Note that you need to add the `json.jar` to your project dependencies if you're not using Maven or Gradle. Also, make sure to handle exceptions properly in your actual implementation.
+### Key Points:
+1. **File Reading**: Uses `BufferedReader` and `FileReader` to read the file content.
+2. **JSON Parsing**: Utilizes `ObjectMapper` from the Jackson library to parse the JSON content.
+3. **Exception Handling**: Proper exception handling to manage `IOException` and other potential errors.
+4. **Return Type**: The method returns a `List<JsonNode>` which can represent any JSON structure.
+
+Make sure you have the Jackson library included in your project to use `ObjectMapper`. You can add it via Maven or Gradle:
+
+#### Maven Dependency:
+```xml
+<dependency>
+    <groupId>com.fasterxml.jackson.core</groupId>
+    <artifactId>jackson-databind</artifactId>
+    <version>2.15.2</version>
+</dependency>
+```
+
+#### Gradle Dependency:
+```groovy
+implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
+```

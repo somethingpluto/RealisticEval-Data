@@ -1,33 +1,40 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import * as csvParser from 'csv-parser';
 
 function csvToSqlInsert(csvFilePath: string): string {
-    /**
-     * Converts the contents of a csv file into an SQL insert statement with a table name with the suffix removed.
-     *
-     * @param {string} csvFilePath - csv file path
-     * @returns {string} - parsed sql str
-     */
-    const tableName = path.basename(csvFilePath).replace('.csv', '');
-    let sqlStr = `INSERT INTO ${tableName} VALUES\n(`;
+    // Extract the table name from the CSV file name, removing the suffix
+    const tableName = path.basename(csvFilePath, path.extname(csvFilePath));
 
-    // Read and parse CSV content
-    const fileContent = fs.readFileSync(csvFilePath, 'utf8');
-    const rows = fileContent.split('\n');
+    // Initialize an array to store the SQL insert statements
+    let insertStatements: string[] = [];
 
-    for(let i = 1; i < rows.length; i++) {
-        const rowValues = rows[i].split(',');
-        sqlStr += '(';
-        for(let j = 0; j < rowValues.length; j++) {
-            sqlStr += `'${rowValues[j]}',`;
-        }
-        sqlStr = sqlStr.slice(0, -1); // Remove last comma
-        sqlStr += '),\n';
-    }
+    // Read the CSV file
+    fs.createReadStream(csvFilePath)
+        .pipe(csvParser())
+        .on('data', (row: any) => {
+            // Skip the header row
+            if (!insertStatements.length) {
+                return;
+            }
 
-    // Remove last comma and newline character
-    sqlStr = sqlStr.slice(0, -2);
-    sqlStr += ';';
+            // Prepare the values for the SQL insert statement
+            const values = Object.values(row).map(value => {
+                if (!isNaN(Number(value))) {
+                    return value; // If value is a number, no quotes needed
+                } else {
+                    // Escape single quotes and wrap in double quotes
+                    return `'${value.replace(/'/g, "''")}'`;
+                }
+            });
 
-    return sqlStr;
+            // Form the SQL insert statement
+            const headers = Object.keys(row);
+            const insertStatement = `INSERT INTO ${tableName} (${headers.join(', ')}) VALUES (${values.join(', ')});`;
+            insertStatements.push(insertStatement);
+        })
+        .on('end', () => {
+            // Combine all insert statements into a single output
+            console.log(insertStatements.join('\n'));
+        });
 }

@@ -1,52 +1,76 @@
+import { writeFileSync, existsSync, unlinkSync } from 'fs';
+
 describe('readColumns', () => {
-  it('should read numerical columns from a file starting from the line after the last line containing \'/\'', async () => {
-    const fileName = 'path/to/your/file.txt'; // Replace with your actual file path
-    const mockFileContent = `
-      line1
-      line2/
-      line3
-      1 2 3
-      4 5 6
-    `;
+    const testFile = 'test_file.txt';
 
-    // Create a temporary file for testing
-    const tempFilePath = '/tmp/tempfile.txt';
-    fs.writeFileSync(tempFilePath, mockFileContent);
+    beforeEach(() => {
+        // Setup a temporary directory to use for each test
+    });
 
-    try {
-      const result = await readColumns(tempFilePath);
-      expect(result).toEqual([
-        [1, 2, 3],
-        [4, 5, 6]
-      ]);
-    } finally {
-      // Clean up the temporary file
-      fs.unlinkSync(tempFilePath);
-    }
-  });
+    afterEach(() => {
+        // Clean up the temporary file after each test
+        if (existsSync(testFile)) {
+            unlinkSync(testFile);
+        }
+    });
 
-  it('should throw an error if the file does not contain any \'/\' character', async () => {
-    const fileName = 'path/to/your/file.txt'; // Replace with your actual file path
-    const mockFileContent = `
-      line1
-      line2
-      line3
-      1 2 3
-      4 5 6
-    `;
+    it('should read a file with a valid structure and numerical data', () => {
+        const content = `Line 1
+Line 2
+/
+1.0 2.0 3.0
+4.0 5.0 6.0`;
 
-    // Create a temporary file for testing
-    const tempFilePath = '/tmp/tempfile.txt';
-    fs.writeFileSync(tempFilePath, mockFileContent);
+        writeFileSync(testFile, content);
 
-    try {
-      await readColumns(tempFilePath);
-      fail('Expected an error to be thrown');
-    } catch (error) {
-      expect(error.message).toBe('The file does not contain any \'=\' character.');
-    } finally {
-      // Clean up the temporary file
-      fs.unlinkSync(tempFilePath);
-    }
-  });
+        const result = readColumns(testFile);
+        const expectedResult = [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]];
+        expect(result).toEqual(expectedResult);
+    });
+
+    it('should throw an error if no \'/\' character is found', () => {
+        const content = `Line 1
+Line 2
+Line 3`;
+
+        writeFileSync(testFile, content);
+
+        expect(() => readColumns(testFile)).toThrow('File does not contain \'/\' character');
+    });
+
+    it('should handle comments and empty lines correctly', () => {
+        const content = `Line 1
+/
+! This is a comment
+1.0 2.0 3.0
+
+4.0 5.0 6.0
+! Another comment`;
+
+        writeFileSync(testFile, content);
+
+        const result = readColumns(testFile);
+        const expectedResult = [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]];
+        expect(result).toEqual(expectedResult);
+    });
+
+    it('should throw an error if the number of columns is inconsistent', () => {
+        const content = `Line 1
+/
+1.0 2.0
+3.0 4.0
+5.0 6.0 7.0`;
+
+        writeFileSync(testFile, content);
+
+        expect(() => readColumns(testFile)).toThrow();
+    });
+
+    it('should throw an error if the file is empty', () => {
+        const content = ``;
+
+        writeFileSync(testFile, content);
+
+        expect(() => readColumns(testFile)).toThrow('File does not contain \'/\' character');
+    });
 });

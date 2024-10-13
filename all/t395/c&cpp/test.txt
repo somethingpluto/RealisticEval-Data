@@ -1,170 +1,110 @@
-To convert the given Python test class into an equivalent test class using Catch2 in C++, we need to ensure that the functionality and logic of the tests are preserved. We'll start by defining the function `sumCalibrationValues` in C++, followed by the necessary Catch2 test cases.
+Certainly! Below is the equivalent C++ test class using the Catch2 testing framework. This conversion ensures that the functionality and logic of the tests are preserved, with appropriate assertions in Catch2.
 
-Here’s how you can do it:
+First, make sure you have Catch2 installed and included in your project. You can include Catch2 via a header-only library or through a package manager.
 
-1. **Define the `sumCalibrationValues` function** in C++.
-2. **Write the equivalent test cases** using Catch2.
-
-Let’s begin with the implementation of the function and then move on to the test cases.
-
-### Step 1: Define the `sumCalibrationValues` Function
+Here’s the C++ code:
 
 ```cpp
+#include <catch2/catch_test_macros.hpp>
 #include <vector>
 #include <string>
-#include <sstream>
-#include <cassert>
+#include <cctype>
 
-// Helper function to extract the first and last digit from a string
-std::pair<int, int> extractDigits(const std::string& line) {
-    std::istringstream iss(line);
-    int firstDigit = -1, lastDigit = -1;
-    char ch;
+// Function to sum up calibration values extracted from the document.
+// Each calibration value is formed by combining the first and last digits of numbers found in each line
+// into a two-digit number.
+int sum_calibration_values(const std::vector<std::string>& calibration_document) {
+    int total_sum = 0;
 
-    // Find the first digit
-    while (iss >> ch && !isdigit(ch));
-    if (isdigit(ch)) firstDigit = ch - '0';
+    for (const auto& line : calibration_document) {
+        std::vector<char> digits;
 
-    // Find the last digit
-    iss.clear();
-    iss.seekg(0, std::ios::end);
-    while (iss >> ch && !isdigit(ch));
-    if (isdigit(ch)) lastDigit = ch - '0';
+        // Filter out non-digit characters
+        for (char ch : line) {
+            if (std::isdigit(ch)) {
+                digits.push_back(ch);
+            }
+        }
 
-    return {firstDigit, lastDigit};
-}
+        // Extract the first and last digits
+        if (!digits.empty()) {
+            char first_digit = digits.front();
+            char last_digit = digits.back();
 
-// Function to sum up calibration values
-int sumCalibrationValues(const std::vector<std::string>& calibrationDocument) {
-    int totalSum = 0;
+            // Combine to form a two-digit number
+            int calibration_value = (first_digit - '0') * 10 + (last_digit - '0');
 
-    for (const auto& line : calibrationDocument) {
-        auto [firstDigit, lastDigit] = extractDigits(line);
-        if (firstDigit != -1 && lastDigit != -1) {
-            totalSum += 10 * firstDigit + lastDigit;
+            // Add to the total sum
+            total_sum += calibration_value;
         }
     }
 
-    return totalSum;
-}
-```
-
-### Step 2: Write the Test Cases Using Catch2
-
-Now, let's write the test cases using Catch2. You will need to include the Catch2 library and define the test cases inside the `TEST_CASE` macro.
-
-```cpp
-#include "catch.hpp" // Include the Catch2 header
-
-// Test cases for sumCalibrationValues
-TEST_CASE("Test sumCalibrationValues") {
-    SECTION("Single line with digits at beginning and end") {
-        std::vector<std::string> document = {"123456"};
-        REQUIRE(sumCalibrationValues(document) == 16);
-    }
-
-    SECTION("Single line with digits scattered") {
-        std::vector<std::string> document = {"a1b2c3d4e5"};
-        REQUIRE(sumCalibrationValues(document) == 15);
-    }
-
-    SECTION("Multiple lines with mixed digits") {
-        std::vector<std::string> document = {"abc3", "def2", "ghi8"};
-        REQUIRE(sumCalibrationValues(document) == 328);
-    }
-
-    SECTION("Multiple lines with leading and trailing digits") {
-        std::vector<std::string> document = {"1abc2", "3def4", "5ghi6"};
-        REQUIRE(sumCalibrationValues(document) == 1246);
-    }
-
-    SECTION("Empty document") {
-        std::vector<std::string> document = {};
-        REQUIRE(sumCalibrationValues(document) == 0);
-    }
-
-    SECTION("No digits in some lines") {
-        std::vector<std::string> document = {"abc", "123", "def", "456"};
-        REQUIRE(sumCalibrationValues(document) == 126);
-    }
-}
-```
-
-### Final Code
-
-Combine the above code snippets into a single file, and make sure to link against the Catch2 library when compiling your tests.
-
-Here's the complete code:
-
-```cpp
-#include <vector>
-#include <string>
-#include <sstream>
-#include <cassert>
-#include "catch.hpp"
-
-std::pair<int, int> extractDigits(const std::string& line) {
-    std::istringstream iss(line);
-    int firstDigit = -1, lastDigit = -1;
-    char ch;
-
-    // Find the first digit
-    while (iss >> ch && !isdigit(ch));
-    if (isdigit(ch)) firstDigit = ch - '0';
-
-    // Find the last digit
-    iss.clear();
-    iss.seekg(0, std::ios::end);
-    while (iss >> ch && !isdigit(ch));
-    if (isdigit(ch)) lastDigit = ch - '0';
-
-    return {firstDigit, lastDigit};
+    return total_sum;
 }
 
-int sumCalibrationValues(const std::vector<std::string>& calibrationDocument) {
-    int totalSum = 0;
-
-    for (const auto& line : calibrationDocument) {
-        auto [firstDigit, lastDigit] = extractDigits(line);
-        if (firstDigit != -1 && lastDigit != -1) {
-            totalSum += 10 * firstDigit + lastDigit;
-        }
+TEST_CASE("Test sum_calibration_values", "[sum_calibration_values]") {
+    SECTION("test_basic_calculations") {
+        // Test with a simple input where lines contain at least two digits
+        std::vector<std::string> document = {
+            "Reading 1234 calibration",
+            "Measure 5678 complete",
+            "End of data 91011"
+        };
+        REQUIRE(sum_calibration_values(document) == 163);
     }
 
-    return totalSum;
-}
-
-TEST_CASE("Test sumCalibrationValues") {
-    SECTION("Single line with digits at beginning and end") {
-        std::vector<std::string> document = {"123456"};
-        REQUIRE(sumCalibrationValues(document) == 16);
+    SECTION("test_no_digits") {
+        // Test lines with no digits
+        std::vector<std::string> document = {
+            "No numbers here",
+            "Still no numbers"
+        };
+        REQUIRE(sum_calibration_values(document) == 0);
     }
 
-    SECTION("Single line with digits scattered") {
-        std::vector<std::string> document = {"a1b2c3d4e5"};
-        REQUIRE(sumCalibrationValues(document) == 15);
+    SECTION("test_empty_lines") {
+        // Test with empty lines or lines with spaces
+        std::vector<std::string> document = {
+            "",
+            "   "
+        };
+        REQUIRE(sum_calibration_values(document) == 0);
     }
 
-    SECTION("Multiple lines with mixed digits") {
-        std::vector<std::string> document = {"abc3", "def2", "ghi8"};
-        REQUIRE(sumCalibrationValues(document) == 328);
-    }
-
-    SECTION("Multiple lines with leading and trailing digits") {
-        std::vector<std::string> document = {"1abc2", "3def4", "5ghi6"};
-        REQUIRE(sumCalibrationValues(document) == 1246);
-    }
-
-    SECTION("Empty document") {
-        std::vector<std::string> document = {};
-        REQUIRE(sumCalibrationValues(document) == 0);
-    }
-
-    SECTION("No digits in some lines") {
-        std::vector<std::string> document = {"abc", "123", "def", "456"};
-        REQUIRE(sumCalibrationValues(document) == 126);
+    SECTION("test_mixed_content") {
+        // Test with a mixture of valid and invalid lines
+        std::vector<std::string> document = {
+            "Good line 1524 end",
+            "Bad line",
+            "Another good line 7681"
+        };
+        REQUIRE(sum_calibration_values(document) == 85);
     }
 }
 ```
 
-This code defines the function `sumCalibrationValues` and includes the necessary test cases using Catch2 to ensure its correctness.
+### Explanation:
+1. **Headers**:
+   - `#include <catch2/catch_test_macros.hpp>` for Catch2 test macros.
+   - `#include <vector>` for using `std::vector`.
+   - `#include <string>` for using `std::string`.
+   - `#include <cctype>` for `std::isdigit` function to check if a character is a digit.
+
+2. **Function Definition**:
+   - `sum_calibration_values` takes a `std::vector<std::string>` as input.
+   - It iterates over each string (line) in the document.
+   - It filters out non-digit characters and stores the digits in a `std::vector<char>`.
+   - If there are digits, it extracts the first and last digits, combines them into a two-digit number, and adds this value to the total sum.
+
+3. **Test Class**:
+   - `TEST_CASE` is used to define a test case.
+   - `SECTION` is used to define individual test sections within the test case.
+   - `REQUIRE` is used for assertions to ensure the expected behavior.
+
+4. **Test Sections**:
+   - `test_basic_calculations`: Tests with a simple input where lines contain at least two digits.
+   - `test_no_digits`: Tests lines with no digits.
+   - `test_empty_lines`: Tests with empty lines or lines with spaces.
+   - `test_mixed_content`: Tests with a mixture of valid and invalid lines.
+
+This C++ code closely mirrors the functionality and structure of the original Python unittest code, ensuring that the tests are equivalent and the assertions are appropriately handled in Catch2.

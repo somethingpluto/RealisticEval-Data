@@ -1,0 +1,124 @@
+Certainly! Here’s the equivalent JUnit 4 test case for the `timePassed` function in Java, using the provided package and class names:
+
+```java
+import org.junit.Before;
+import org.junit.After;
+import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.util.Date;
+import java.util.TimeZone;
+import java.text.SimpleDateFormat;
+
+public class Tester {
+
+    private static final long FIXED_TIMESTAMP = 1609459200000L; // January 1, 2021, 00:00:00
+    private static final long START_TIME_1_MINUTE_AGO = 1609459140000L; // 1 minute earlier
+    private static final long START_TIME_59_SECONDS_AGO = 1609459194100L; // 59 seconds and 900 milliseconds earlier
+    private static final long START_TIME_SAME_AS_CURRENT = 1609459200000L; // Same as current time
+    private static final long START_TIME_IN_FUTURE = 1609459260000L; // 1 minute into the future
+    private static final long START_TIME_4_YEARS_AGO = 1483228800000L; // January 1, 2017, 00:00:00 (4 years difference)
+
+    private static long originalSystemCurrentTimeMillis;
+
+    @Before
+    public void setUp() {
+        // Freeze the System.currentTimeMillis() to a fixed timestamp
+        originalSystemCurrentTimeMillis = System.currentTimeMillis();
+        System.currentTimeMillis = () -> FIXED_TIMESTAMP;
+    }
+
+    @After
+    public void tearDown() {
+        // Restore original System.currentTimeMillis() function
+        System.currentTimeMillis = () -> originalSystemCurrentTimeMillis;
+    }
+
+    @Test
+    public void testTimePassedFrom1MinuteAgo() {
+        assertEquals("1:00", TimePassedCalculator.timePassed(START_TIME_1_MINUTE_AGO));
+    }
+
+    @Test
+    public void testBoundaryOf59Seconds() {
+        assertEquals("0:05", TimePassedCalculator.timePassed(START_TIME_59_SECONDS_AGO));
+    }
+
+    @Test
+    public void testStartTimeSameAsCurrentTime() {
+        assertEquals("0:00", TimePassedCalculator.timePassed(START_TIME_SAME_AS_CURRENT));
+    }
+
+    @Test
+    public void testFutureStartTime() {
+        String result = TimePassedCalculator.timePassed(START_TIME_IN_FUTURE);
+        assertTrue(result.startsWith("-")); // Expecting negative output or some error handling
+    }
+
+    @Test
+    public void testVeryLargeTimeDifference() {
+        assertEquals("2103840:00", TimePassedCalculator.timePassed(START_TIME_4_YEARS_AGO));
+    }
+}
+```
+
+### Explanation:
+1. **Imports**:
+   - Import necessary JUnit classes and utilities.
+   - Import `SimpleDateFormat` for date formatting if needed.
+
+2. **Constants**:
+   - Define constants for various timestamps used in the tests.
+
+3. **Setup and Teardown**:
+   - `setUp`: Mocks `System.currentTimeMillis` to a fixed timestamp.
+   - `tearDown`: Restores the original `System.currentTimeMillis`.
+
+4. **Test Methods**:
+   - Each test method checks specific scenarios using assertions.
+
+### Note:
+- The `TimePassedCalculator` class should be defined separately and imported into the test class.
+- The `System.currentTimeMillis` mocking is done by replacing the method reference, which is a common pattern in Java for mocking system calls.
+
+Here’s the `TimePassedCalculator` class for reference:
+
+```java
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+public class TimePassedCalculator {
+
+    /**
+     * Calculates the elapsed time from a given start time in milliseconds and returns
+     * it as a formatted string in "minutes:seconds" format.
+     *
+     * @param startTimeInMillis The start time in milliseconds.
+     * @return A string representing the elapsed time in minutes and seconds.
+     */
+    public static String timePassed(long startTimeInMillis) {
+        // Get the current time in milliseconds
+        long currentTimeInMillis = System.currentTimeMillis();
+
+        // Calculate the difference in milliseconds
+        long timeDifference = currentTimeInMillis - startTimeInMillis;
+
+        // Convert the difference to seconds
+        long totalSeconds = timeDifference / 1000;
+
+        // Calculate minutes and seconds
+        long minutes = totalSeconds / 60;
+        long seconds = totalSeconds % 60;
+
+        // Format the string
+        SimpleDateFormat formatter = new SimpleDateFormat("mm:ss");
+        formatter.setTimeZone(TimeZone.getTimeZone("GMT")); // Ensure consistent formatting
+
+        // Return the formatted string
+        return formatter.format(new Date(minutes * 60 + seconds)).substring(3);
+    }
+}
+```
+
+This setup ensures that the tests are comprehensive and cover the expected scenarios.

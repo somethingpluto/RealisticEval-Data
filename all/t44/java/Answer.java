@@ -3,31 +3,26 @@ package org.real.temp;
 public class Answer {
 
     /**
-     * Align two lines of string to the left, supplementing with Spaces if the length is not enough
+     * Align two lines of string to the left, supplementing with spaces if the length is not enough.
      *
-     * @param str1 The first string.
-     * @param str2 The second string.
-     * @return An array containing the aligned strings.
+     * @param str1 the first string
+     * @param str2 the second string
+     * @return a pair of aligned strings (aligned str1, aligned str2)
      */
     public static String[] alignLinesLeft(String str1, String str2) {
-        // Calculate the maximum length between str1 and str2
+        // Determine the maximum length of the two strings
         int maxLength = Math.max(str1.length(), str2.length());
 
-        // Create new strings with the same length as the maximum length
-        StringBuilder sb1 = new StringBuilder(str1);
-        StringBuilder sb2 = new StringBuilder(str2);
+        // Align both strings to the left by padding with spaces
+        String alignedStr1 = String.format("%-" + maxLength + "s", str1);
+        String alignedStr2 = String.format("%-" + maxLength + "s", str2);
 
-        // Append spaces to sb1 until it reaches the maximum length
-        while(sb1.length() < maxLength){
-            sb1.append(" ");
-        }
+        return new String[]{alignedStr1, alignedStr2};
+    }
 
-        // Append spaces to sb2 until it reaches the maximum length
-        while(sb2.length() < maxLength){
-            sb2.append(" ");
-        }
-
-        // Return an array containing the aligned strings
-        return new String[]{sb1.toString(), sb2.toString()};
+    public static void main(String[] args) {
+        String[] result = alignLinesLeft("Hello", "World!");
+        System.out.println(result[0]); // Prints: Hello    
+        System.out.println(result[1]); // Prints: World!  
     }
 }

@@ -1,85 +1,75 @@
-#define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
-#include <catch2/catch.hpp>
-#include <vector>
-#include <limits>
+TEST_CASE("Test Floyd-Warshall Shortest Paths", "[floyd-warshall]") {
+    SECTION("Basic functionality") {
+        // Basic test case with a simple graph
+        std::vector<std::vector<int>> matrix = {
+            {0, 3, INT_MAX, 7},
+            {8, 0, 2, INT_MAX},
+            {5, INT_MAX, 0, 1},
+            {2, INT_MAX, INT_MAX, 0}
+        };
+        std::vector<std::vector<int>> expected = {
+            {0, 3, 5, 6},
+            {5, 0, 2, 3},
+            {3, 6, 0, 1},
+            {2, 5, 7, 0}
+        };
+        auto result = floydWarshallShortestPaths(matrix);
+        REQUIRE(result == expected);
+    }
 
-using namespace std;
+    SECTION("Single vertex graph") {
+        // Test case with a single vertex graph (1x1 matrix)
+        std::vector<std::vector<int>> matrix = {
+            {0}
+        };
+        std::vector<std::vector<int>> expected = {
+            {0}
+        };
+        auto result = floydWarshallShortestPaths(matrix);
+        REQUIRE(result == expected);
+    }
 
-const double INF = numeric_limits<double>::infinity();
+    SECTION("Two vertices graph") {
+        // Test case with two vertices
+        std::vector<std::vector<int>> matrix = {
+            {0, 1},
+            {1, 0}
+        };
+        std::vector<std::vector<int>> expected = {
+            {0, 1},
+            {1, 0}
+        };
+        auto result = floydWarshallShortestPaths(matrix);
+        REQUIRE(result == expected);
+    }
 
-// Assuming floydWarshallShortestPaths is defined somewhere
-vector<vector<double>> floydWarshallShortestPaths(vector<vector<double>>& adjacencyMatrix);
+    SECTION("Large infinite weights") {
+        // Test case with infinite weights
+        std::vector<std::vector<int>> matrix = {
+            {0, INT_MAX},
+            {INT_MAX, 0}
+        };
+        std::vector<std::vector<int>> expected = {
+            {0, INT_MAX},
+            {INT_MAX, 0}
+        };
+        auto result = floydWarshallShortestPaths(matrix);
+        REQUIRE(result == expected);
+    }
 
-TEST_CASE("Basic functionality") {
-    vector<vector<double>> matrix = {
-        {0, 3, INF, 7},
-        {8, 0, 2, INF},
-        {5, INF, 0, 1},
-        {2, INF, INF, 0}
-    };
-    vector<vector<double>> expected = {
-        {0, 3, 5, 6},
-        {5, 0, 2, 3},
-        {3, 6, 0, 1},
-        {2, 5, 7, 0}
-    };
-    vector<vector<double>> result = floydWarshallShortestPaths(matrix);
-
-    REQUIRE(result == expected);
-}
-
-TEST_CASE("Single vertex graph") {
-    vector<vector<double>> matrix = {
-        {0}
-    };
-    vector<vector<double>> expected = {
-        {0}
-    };
-    vector<vector<double>> result = floydWarshallShortestPaths(matrix);
-
-    REQUIRE(result == expected);
-}
-
-TEST_CASE("Two vertices graph") {
-    vector<vector<double>> matrix = {
-        {0, 1},
-        {1, 0}
-    };
-    vector<vector<double>> expected = {
-        {0, 1},
-        {1, 0}
-    };
-    vector<vector<double>> result = floydWarshallShortestPaths(matrix);
-
-    REQUIRE(result == expected);
-}
-
-TEST_CASE("Large infinite weights") {
-    vector<vector<double>> matrix = {
-        {0, INF},
-        {INF, 0}
-    };
-    vector<vector<double>> expected = {
-        {0, INF},
-        {INF, 0}
-    };
-    vector<vector<double>> result = floydWarshallShortestPaths(matrix);
-
-    REQUIRE(result == expected);
-}
-
-TEST_CASE("Negative cycle") {
-    vector<vector<double>> matrix = {
-        {0, 1, INF},
-        {INF, 0, -1},
-        {-1, INF, 0}
-    };
-    vector<vector<double>> expected = {
-        {-1, 0, -1},
-        {-2, -1, -2},
-        {-2, -1, -2}
-    };
-    vector<vector<double>> result = floydWarshallShortestPaths(matrix);
-
-    REQUIRE(result == expected);
+    SECTION("Negative cycle") {
+        // Test case with a negative cycle
+        std::vector<std::vector<int>> matrix = {
+            {0, 1, INT_MAX},
+            {INT_MAX, 0, -1},
+            {-1, INT_MAX, 0}
+        };
+        std::vector<std::vector<int>> expected = {
+            {-1, 0, -1},
+            {-2, -1, -2},
+            {-2, -1, -2}
+        };
+        auto result = floydWarshallShortestPaths(matrix);
+        REQUIRE(result == expected);
+    }
 }

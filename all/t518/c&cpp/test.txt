@@ -1,66 +1,154 @@
-Certainly! Below is an equivalent C++ test case using Catch2 for the provided Python `unittest` test class. Note that Catch2 is a header-only library, so you'll need to include it in your project.
+Certainly! Below is the equivalent C++ test class using the Catch2 testing framework. The provided Python unittest class will be converted into a Catch2 test suite, ensuring that the functionality and logic of the tests are preserved.
 
-First, let's define the function `convert_csv_values` in C++. Then, we'll write a test case using Catch2.
-
-### C++ Code
+### C++ Code with Catch2 Testing Framework
 
 ```cpp
-#include <catch2/catch.hpp>
-#include <string>
-#include <optional>
+#include <catch2/catch_test_macros.hpp>
 #include <map>
+#include <string>
+#include <cctype>
 
-std::map<std::string, std::optional<std::string>> convert_csv_values(const std::map<std::string, std::string>& row) {
-    std::map<std::string, std::optional<std::string>> result;
-    for (const auto& [key, value] : row) {
-        try {
-            // Attempt to convert the string to a double
-            double num = std::stod(value);
-            // Replace commas with dots
-            std::string converted_value = std::to_string(num).replace(std::string::npos, 1, ".");
-            result[key] = converted_value;
-        } catch (...) {
-            // If conversion fails, store nullptr
-            result[key] = std::nullopt;
+// Function to check if a string is numeric with possible comma and negative sign
+bool isNumeric(const std::string& value) {
+    std::string temp = value;
+    size_t commaCount = 0;
+    bool hasNegativeSign = false;
+
+    for (char& c : temp) {
+        if (c == ',') {
+            if (++commaCount > 1) return false; // More than one comma is invalid
+            c = '.'; // Replace comma with dot
+        } else if (c == '-') {
+            if (&c != &temp[0]) return false; // Negative sign must be at the beginning
+            hasNegativeSign = true;
+            c = '0'; // Replace negative sign temporarily
         }
     }
-    return result;
+
+    // Check if all remaining characters are digits
+    return std::all_of(temp.begin(), temp.end(), ::isdigit) && commaCount <= 1 && hasNegativeSign;
 }
 
-TEST_CASE("Convert CSV Values", "[convert_csv_values]") {
-    SECTION("Numeric String") {
-        std::map<std::string, std::string> input = {{"value", "123,456"}};
-        std::map<std::string, std::optional<std::string>> expected = {{"value", "123.456"}};
-        REQUIRE(convert_csv_values(input) == expected);
+// Function to convert numeric values in a CSV row from string format to a standardized format
+std::map<std::string, std::string> convertCsvValues(const std::map<std::string, std::string>& row) {
+    std::map<std::string, std::string> convertedRow;
+
+    for (const auto& item : row) {
+        const std::string& key = item.first;
+        const std::string& value = item.second;
+
+        if (isNumeric(value)) {
+            std::string newValue = value;
+            for (char& c : newValue) {
+                if (c == ',') {
+                    c = '.'; // Replace comma with dot
+                }
+            }
+            convertedRow[key] = newValue;
+        } else {
+            convertedRow[key] = ""; // Use empty string to represent None
+        }
     }
 
-    SECTION("Non-Numeric String") {
-        std::map<std::string, std::string> input = {{"value", "abc"}};
-        std::map<std::string, std::optional<std::string>> expected = {{"value", std::nullopt}};
-        REQUIRE(convert_csv_values(input) == expected);
+    return convertedRow;
+}
+
+TEST_CASE("TestConvertCsvValues", "[convertCsvValues]") {
+    SECTION("test_valid_numeric_strings") {
+        std::map<std::string, std::string> row = {
+            {"value1", "1,234"},
+            {"value2", "5,678"},
+            {"value3", "9,876"}
+        };
+        std::map<std::string, std::string> expected = {
+            {"value1", "1.234"},
+            {"value2", "5.678"},
+            {"value3", "9.876"}
+        };
+        auto result = convertCsvValues(row);
+        REQUIRE(result == expected);
     }
 
-    SECTION("Empty String") {
-        std::map<std::string, std::string> input = {{"value", ""}};
-        std::map<std::string, std::optional<std::string>> expected = {{"value", std::nullopt}};
-        REQUIRE(convert_csv_values(input) == expected);
+    SECTION("test_non_numeric_strings") {
+        std::map<std::string, std::string> row = {
+            {"value1", "not_a_number"},
+            {"value2", "hello"},
+            {"value3", "world"}
+        };
+        std::map<std::string, std::string> expected = {
+            {"value1", ""},
+            {"value2", ""},
+            {"value3", ""}
+        };
+        auto result = convertCsvValues(row);
+        REQUIRE(result == expected);
     }
 
-    SECTION("Multiple Columns") {
-        std::map<std::string, std::string> input = {{"value1", "123,456"}, {"value2", "789"}};
-        std::map<std::string, std::optional<std::string>> expected = {{"value1", "123.456"}, {"value2", "789"}};
-        REQUIRE(convert_csv_values(input) == expected);
+    SECTION("test_mixed_values") {
+        std::map<std::string, std::string> row = {
+            {"value1", "1,234"},
+            {"value2", "not_a_number"},
+            {"value3", "3,14159"}
+        };
+        std::map<std::string, std::string> expected = {
+            {"value1", "1.234"},
+            {"value2", ""},
+            {"value3", "3.14159"}
+        };
+        auto result = convertCsvValues(row);
+        REQUIRE(result == expected);
+    }
+
+    SECTION("test_no_values") {
+        std::map<std::string, std::string> row = {
+            {"value1", "aaaa"},
+            {"value2", "not_a_number"},
+            {"value3", "3,14"}
+        };
+        std::map<std::string, std::string> expected = {
+            {"value1", ""},
+            {"value2", ""},
+            {"value3", "3.14"}
+        };
+        auto result = convertCsvValues(row);
+        REQUIRE(result == expected);
+    }
+
+    SECTION("test_edge_cases") {
+        std::map<std::string, std::string> row = {
+            {"value1", ""},
+            {"value2", "0.0"},
+            {"value3", "1,23"}
+        };
+        std::map<std::string, std::string> expected = {
+            {"value1", ""},
+            {"value2", "0.0"},
+            {"value3", "1.23"}
+        };
+        auto result = convertCsvValues(row);
+        REQUIRE(result == expected);
     }
 }
 ```
 
-### Explanation
+### Explanation:
+1. **Catch2 Test Case Structure**:
+   - The `TEST_CASE` macro defines a test case named `TestConvertCsvValues`.
+   - Each `SECTION` within the test case represents a specific test scenario.
 
-1. **Function Definition**: The `convert_csv_values` function takes a `std::map<std::string, std::string>` as input and returns a `std::map<std::string, std::optional<std::string>>`. It attempts to convert each string value to a double, replaces commas with dots, and stores the result. If the conversion fails, it stores `std::nullopt`.
+2. **Function `isNumeric`**:
+   - This function checks if a given string is numeric, considering possible commas and a negative sign.
+   - It replaces commas with dots and checks if all characters are digits.
 
-2. **Catch2 Test Case**:
-   - We use the `TEST_CASE` macro to define a test case named "Convert CSV Values".
-   - Inside the test case, we use `SECTION` macros to define different scenarios.
-   - We use `REQUIRE` to assert that the output of `convert_csv_values` matches the expected result.
+3. **Function `convertCsvValues`**:
+   - This function takes a `std::map<std::string, std::string>` representing a row of CSV data.
+   - It converts numeric strings by replacing commas with dots.
+   - Non-numeric strings are represented using an empty string (`""`) to mimic the behavior of setting them to `None` in Python.
 
-Make sure you have Catch2 installed and properly configured in your project to compile and run these tests.
+4. **Assertions**:
+   - The `REQUIRE` macro is used to assert that the result matches the expected outcome.
+
+5. **Test Sections**:
+   - Each `SECTION` contains a specific test scenario, such as valid numeric strings, non-numeric strings, mixed values, no values, and edge cases.
+
+This C++ code preserves the functionality and logic of the original Python unittest class while adhering to the Catch2 testing framework's conventions.

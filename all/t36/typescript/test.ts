@@ -1,14 +1,13 @@
-import { floydWarshallShortestPaths } from './floydWarshall'; // Adjust the import based on your file structure
-
-describe('Floyd-Warshall Algorithm', () => {
-    test('basic functionality', () => {
-        const matrix: (number | Infinity)[][] = [
+describe('TestFloydWarshallShortestPaths', () => {
+    it('test basic functionality', () => {
+        // Basic test case with a simple graph
+        const matrix = [
             [0, 3, Infinity, 7],
             [8, 0, 2, Infinity],
             [5, Infinity, 0, 1],
             [2, Infinity, Infinity, 0]
         ];
-        const expected: (number | Infinity)[][] = [
+        const expected = [
             [0, 3, 5, 6],
             [5, 0, 2, 3],
             [3, 6, 0, 1],
@@ -18,23 +17,25 @@ describe('Floyd-Warshall Algorithm', () => {
         expect(result).toEqual(expected);
     });
 
-    test('single vertex graph', () => {
-        const matrix: (number | Infinity)[][] = [
+    it('test single vertex graph', () => {
+        // Test case with a single vertex graph (1x1 matrix)
+        const matrix = [
             [0]
         ];
-        const expected: (number | Infinity)[][] = [
+        const expected = [
             [0]
         ];
         const result = floydWarshallShortestPaths(matrix);
         expect(result).toEqual(expected);
     });
 
-    test('two vertices graph', () => {
-        const matrix: (number | Infinity)[][] = [
+    it('test two vertices graph', () => {
+        // Test case with two vertices
+        const matrix = [
             [0, 1],
             [1, 0]
         ];
-        const expected: (number | Infinity)[][] = [
+        const expected = [
             [0, 1],
             [1, 0]
         ];
@@ -42,12 +43,13 @@ describe('Floyd-Warshall Algorithm', () => {
         expect(result).toEqual(expected);
     });
 
-    test('large infinite weights', () => {
-        const matrix: (number | Infinity)[][] = [
+    it('test large infinite weights', () => {
+        // Test case with infinite weights
+        const matrix = [
             [0, Infinity],
             [Infinity, 0]
         ];
-        const expected: (number | Infinity)[][] = [
+        const expected = [
             [0, Infinity],
             [Infinity, 0]
         ];
@@ -55,13 +57,14 @@ describe('Floyd-Warshall Algorithm', () => {
         expect(result).toEqual(expected);
     });
 
-    test('negative cycle', () => {
-        const matrix: (number | Infinity)[][] = [
+    it('test negative cycle', () => {
+        // Test case with a negative cycle
+        const matrix = [
             [0, 1, Infinity],
             [Infinity, 0, -1],
             [-1, Infinity, 0]
         ];
-        const expected: (number | Infinity)[][] = [
+        const expected = [
             [-1, 0, -1],
             [-2, -1, -2],
             [-2, -1, -2]

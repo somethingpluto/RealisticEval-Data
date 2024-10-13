@@ -1,0 +1,117 @@
+Certainly! Below is the equivalent C++ test case using Catch2, which is a popular C++ testing framework. I'll provide the complete setup including the test cases and the necessary imports.
+
+### C++ Code with Catch2 Test Cases
+
+First, make sure you have Catch2 installed in your project. You can include it via a header-only library or install it through a package manager.
+
+Here's the complete code:
+
+```cpp
+#include <catch2/catch_test_macros.hpp>
+#include <vector>
+#include <string>
+#include <ctime>
+#include <sstream>
+
+// Define a structure for the objects with a timestamp
+struct Object {
+    int id;
+    std::string timestamp;
+};
+
+// Comparator function to sort objects by their timestamp
+bool compareByTimestamp(const Object& a, const Object& b) {
+    std::tm tm_a = {};
+    std::istringstream ss_a(a.timestamp);
+    ss_a >> std::get_time(&tm_a, "%Y-%m-%dT%H:%M:%SZ"); // Adjust format as needed
+    std::time_t timestampA = std::mktime(&tm_a);
+
+    std::tm tm_b = {};
+    std::istringstream ss_b(b.timestamp);
+    ss_b >> std::get_time(&tm_b, "%Y-%m-%dT%H:%M:%SZ"); // Adjust format as needed
+    std::time_t timestampB = std::mktime(&tm_b);
+
+    return timestampA < timestampB;
+}
+
+/**
+ * Sorts a vector of objects by the timestamp property.
+ *
+ * @param std::vector<Object>& objects - The vector of objects to be sorted.
+ * @returns std::vector<Object> The sorted vector, based on the timestamp property.
+ */
+std::vector<Object> sortByTimestamp(std::vector<Object>& objects) {
+    std::sort(objects.begin(), objects.end(), compareByTimestamp);
+    return objects;
+}
+
+TEST_CASE("sortByTimestamp function", "[sortByTimestamp]") {
+    SECTION("should return an empty array when input is empty") {
+        std::vector<Object> emptyArray = {};
+        std::vector<Object> sortedEmptyArray = sortByTimestamp(emptyArray);
+        REQUIRE(sortedEmptyArray.empty());
+    }
+
+    SECTION("should correctly handle an array with a single element") {
+        std::vector<Object> singleElementArray = {
+            {1, "2021-07-03T12:00:00Z"}
+        };
+        std::vector<Object> sortedSingleElementArray = sortByTimestamp(singleElementArray);
+        REQUIRE(sortedSingleElementArray == singleElementArray);
+    }
+
+    SECTION("should sort an array of objects by timestamps correctly") {
+        std::vector<Object> testData = {
+            {3, "2021-07-01T09:45:00Z"},
+            {1, "2021-07-03T12:00:00Z"},
+            {2, "2021-07-02T15:30:00Z"}
+        };
+        std::vector<Object> expected = {
+            {3, "2021-07-01T09:45:00Z"},
+            {2, "2021-07-02T15:30:00Z"},
+            {1, "2021-07-03T12:00:00Z"}
+        };
+        std::vector<Object> sortedTestData = sortByTimestamp(testData);
+        REQUIRE(sortedTestData == expected);
+    }
+
+    SECTION("should not alter array if already sorted") {
+        std::vector<Object> sortedArray = {
+            {1, "2021-07-01T09:45:00Z"},
+            {2, "2021-07-02T15:30:00Z"},
+            {3, "2021-07-03T12:00:00Z"}
+        };
+        std::vector<Object> sortedSortedArray = sortByTimestamp(sortedArray);
+        REQUIRE(sortedSortedArray == sortedArray);
+    }
+
+    SECTION("should handle mixed format timestamps correctly") {
+        std::vector<Object> mixedFormats = {
+            {1, "2021/07/03 12:00:00"},
+            {2, "July 2, 2021 15:30:00"},
+            {3, "2021-07-01T09:45:00Z"}
+        };
+        std::vector<Object> expected = {
+            {3, "2021-07-01T09:45:00Z"},
+            {2, "July 2, 2021 15:30:00"},
+            {1, "2021/07/03 12:00:00"}
+        };
+        std::vector<Object> sortedMixedFormats = sortByTimestamp(mixedFormats);
+        REQUIRE(sortedMixedFormats == expected);
+    }
+}
+
+int main(int argc, char* argv[]) {
+    return Catch::Session().run(argc, argv);
+}
+```
+
+### Explanation:
+1. **Header Includes**: Include the necessary headers for Catch2, vectors, strings, and time handling.
+2. **Struct Definition**: Define the `Object` struct with `id` and `timestamp` members.
+3. **Comparator Function**: Define the `compareByTimestamp` function to compare objects based on their `timestamp`.
+4. **Sorting Function**: Define the `sortByTimestamp` function to sort the vector of `Object` instances.
+5. **Test Cases**: Use Catch2 to define test cases within the `TEST_CASE` macro. Each `SECTION` represents a specific test case.
+6. **Main Function**: Run the Catch2 test suite from the `main` function.
+
+This setup ensures that the test cases are structured similarly to the Jest tests and cover the same scenarios.

@@ -1,18 +1,18 @@
 const path = require('path');
 
 function simplifyWindowsPath(inputPath) {
-    // Extract the drive and the rest of the path
+    // Split the input path into drive and path components
     const drive = path.parse(inputPath).root;
-    let pathWithoutDrive = inputPath.substring(drive.length);
+    const pathWithoutDrive = inputPath.slice(drive.length);
 
-    // Simplify the drive (replace colon ':' with underscore '_')
-    let simplifiedDrive = drive.replace(':', '_');
+    // Simplify the drive component by replacing ':' with '_'
+    const simplifiedDrive = drive.replace(':', '_');
 
-    // Replace backslashes '\' with underscores '_' and remove leading and trailing underscores
-    let simplifiedPath = pathWithoutDrive.replace(/\\/g, '_').replace(/^_+|_+$/g, '');
+    // Replace backslashes with underscores and strip any trailing underscore
+    const simplifiedPath = pathWithoutDrive.replace(/\\/g, '_').replace(/_+$/, '');
 
-    // Concatenate the simplified drive and the rest of the simplified path
-    let finalPath = simplifiedDrive + simplifiedPath;
+    // Concatenate the simplified drive and the remaining path
+    const finalPath = simplifiedDrive + simplifiedPath;
 
     return finalPath;
 }

@@ -1,26 +1,77 @@
-describe('readColumns', () => {
-    it('should read numerical columns correctly', () => {
-        // Mock the file content
-        const mockFilePath = path.join(__dirname, 'mock.txt');
-        const mockContent = `line1\nline2/with/some/data\n4 5 6\n7 8 9`;
-        fs.writeFileSync(mockFilePath, mockContent);
+const fs = require('fs');
+const path = require('path');
 
-        const result = readColumns(mockFilePath);
-        expect(result).toEqual([[4, 5, 6], [7, 8, 9]]);
+describe('TestReadColumns', () => {
+    const testFile = 'test_file.txt';
 
-        // Clean up the mock file
-        fs.unlinkSync(mockFilePath);
+    beforeEach(() => {
+        // Setup a temporary directory to use for each test
     });
 
-    it('should throw an error if no \'/\' character is found', () => {
-        // Mock the file content without a '/'
-        const mockFilePath = path.join(__dirname, 'mock_no_slash.txt');
-        const mockContent = `line1\nline2\n3 4 5`;
-        fs.writeFileSync(mockFilePath, mockContent);
+    afterEach(() => {
+        // Clean up the temporary file after each test
+        if (fs.existsSync(testFile)) {
+            fs.unlinkSync(testFile);
+        }
+    });
 
-        expect(() => readColumns(mockFilePath)).toThrow('File does not contain any \'/\' character.');
+    it('should handle basic functionality', () => {
+        const content = `Line 1
+Line 2
+/
+1.0 2.0 3.0
+4.0 5.0 6.0`;
 
-        // Clean up the mock file
-        fs.unlinkSync(mockFilePath);
+        fs.writeFileSync(testFile, content);
+
+        const result = readColumns(testFile);
+        const expectedResult = [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]];
+        expect(result).toEqual(expectedResult);
+    });
+
+    it('should throw an error if no "/" character is found', () => {
+        const content = `Line 1
+Line 2
+Line 3`;
+
+        fs.writeFileSync(testFile, content);
+
+        expect(() => readColumns(testFile)).toThrow('File does not contain \'/\' character');
+    });
+
+    it('should handle comments and empty lines', () => {
+        const content = `Line 1
+/
+! This is a comment
+1.0 2.0 3.0
+
+4.0 5.0 6.0
+! Another comment`;
+
+        fs.writeFileSync(testFile, content);
+
+        const result = readColumns(testFile);
+        const expectedResult = [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]];
+        expect(result).toEqual(expectedResult);
+    });
+
+    it('should throw an error if the number of columns is inconsistent', () => {
+        const content = `Line 1
+/
+1.0 2.0
+3.0 4.0
+5.0 6.0 7.0`;
+
+        fs.writeFileSync(testFile, content);
+
+        expect(() => readColumns(testFile)).toThrow('File does not contain \'/\' character');
+    });
+
+    it('should throw an error if the file is empty', () => {
+        const content = ``;
+
+        fs.writeFileSync(testFile, content);
+
+        expect(() => readColumns(testFile)).toThrow('File does not contain \'/\' character');
     });
 });

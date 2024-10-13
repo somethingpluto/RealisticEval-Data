@@ -1,77 +1,61 @@
 package org.real.temp;
 
-import static org.junit.Assert.*;
-import org.junit.Before;
 import org.junit.Test;
+import static org.junit.Assert.assertArrayEquals;
 
-import java.util.Arrays;
-import java.util.List;
-
+/**
+ * Test class for BinaryTree operations.
+ */
 public class Tester {
 
-    private BinaryTree binaryTree;
-
-    @Before
-    public void setUp() {
-        binaryTree = new BinaryTree();
+    @Test
+    public void testEmptyTree() {
+        BinaryTree bt = new BinaryTree();
+        assertArrayEquals(new int[]{}, bt.inorderTraversal());
+        assertArrayEquals(new int[]{}, bt.preorderTraversal());
+        assertArrayEquals(new int[]{}, bt.postorderTraversal());
     }
 
     @Test
-    public void testInsert() {
-        binaryTree.insert(10);
-        binaryTree.insert(5);
-        binaryTree.insert(15);
-
-        assertEquals(Integer.valueOf(10), binaryTree.root.val);
-        assertEquals(Integer.valueOf(5), binaryTree.root.left.val);
-        assertEquals(Integer.valueOf(15), binaryTree.root.right.val);
+    public void testSingleNodeTree() {
+        BinaryTree bt = new BinaryTree();
+        bt.insert(10);
+        assertArrayEquals(new int[]{10}, bt.inorderTraversal());
+        assertArrayEquals(new int[]{10}, bt.preorderTraversal());
+        assertArrayEquals(new int[]{10}, bt.postorderTraversal());
     }
 
     @Test
-    public void testInorderTraversal() {
-        binaryTree.insert(10);
-        binaryTree.insert(5);
-        binaryTree.insert(15);
-        binaryTree.insert(3);
-        binaryTree.insert(7);
-        binaryTree.insert(12);
-        binaryTree.insert(18);
-
-        List<Integer> expected = Arrays.asList(3, 5, 7, 10, 12, 15, 18);
-        List<Integer> actual = binaryTree.inorderTraversal();
-
-        assertEquals(expected, actual);
+    public void testBalancedTree() {
+        BinaryTree bt = new BinaryTree();
+        int[] elements = {8, 3, 10, 1, 6, 9, 14};
+        for (int elem : elements) {
+            bt.insert(elem);
+        }
+        assertArrayEquals(new int[]{1, 3, 6, 8, 9, 10, 14}, bt.inorderTraversal());
+        assertArrayEquals(new int[]{8, 3, 1, 6, 10, 9, 14}, bt.preorderTraversal());
+        assertArrayEquals(new int[]{1, 6, 3, 9, 14, 10, 8}, bt.postorderTraversal());
     }
 
     @Test
-    public void testPreorderTraversal() {
-        binaryTree.insert(10);
-        binaryTree.insert(5);
-        binaryTree.insert(15);
-        binaryTree.insert(3);
-        binaryTree.insert(7);
-        binaryTree.insert(12);
-        binaryTree.insert(18);
-
-        List<Integer> expected = Arrays.asList(10, 5, 3, 7, 15, 12, 18);
-        List<Integer> actual = binaryTree.preorderTraversal();
-
-        assertEquals(expected, actual);
+    public void testLeftHeavyTree() {
+        BinaryTree bt = new BinaryTree();
+        for (int i = 10; i > 0; i--) {
+            bt.insert(i);
+        }
+        assertArrayEquals(new int[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}, bt.inorderTraversal());
+        assertArrayEquals(new int[]{10, 9, 8, 7, 6, 5, 4, 3, 2, 1}, bt.preorderTraversal());
+        assertArrayEquals(new int[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}, bt.postorderTraversal());
     }
 
     @Test
-    public void testPostorderTraversal() {
-        binaryTree.insert(10);
-        binaryTree.insert(5);
-        binaryTree.insert(15);
-        binaryTree.insert(3);
-        binaryTree.insert(7);
-        binaryTree.insert(12);
-        binaryTree.insert(18);
-
-        List<Integer> expected = Arrays.asList(3, 7, 5, 12, 18, 15, 10);
-        List<Integer> actual = binaryTree.postorderTraversal();
-
-        assertEquals(expected, actual);
+    public void testRightHeavyTree() {
+        BinaryTree bt = new BinaryTree();
+        for (int i = 1; i <= 10; i++) {
+            bt.insert(i);
+        }
+        assertArrayEquals(new int[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}, bt.inorderTraversal());
+        assertArrayEquals(new int[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}, bt.preorderTraversal());
+        assertArrayEquals(new int[]{10, 9, 8, 7, 6, 5, 4, 3, 2, 1}, bt.postorderTraversal());
     }
 }

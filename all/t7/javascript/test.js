@@ -1,21 +1,25 @@
 describe('Logger', () => {
+    let loggerName;
     let logger;
 
     beforeEach(() => {
-        logger = new Logger('test-logger');
+        loggerName = 'TestLogger';
+        logger = new Logger(loggerName);
     });
 
-    it('should log an info message', async () => {
-        const spy = jest.spyOn(console, 'log');
-        logger.log('info', 'This is an info message');
-        expect(spy).toHaveBeenCalledWith(expect.any(Object));
-        spy.mockRestore();
+    it('initializes with the correct name and level', () => {
+        expect(logger.logger.name).toBe(loggerName);
+        expect(logger.logger.level).toBe('debug');
     });
 
-    it('should log a debug message', async () => {
-        const spy = jest.spyOn(console, 'log');
-        logger.log('debug', 'This is a debug message');
-        expect(spy).toHaveBeenCalledWith(expect.any(Object));
-        spy.mockRestore();
+    it('defaults to DEBUG level if not specified', () => {
+        const loggerDefault = new Logger('DefaultLogger');
+        expect(loggerDefault.logger.level).toBe('debug');
+    });
+
+    it('adds a console handler to the logger', () => {
+        const handlers = logger.logger.transports;
+        expect(handlers.length).toBeGreaterThan(0);
+        expect(handlers[0] instanceof winston.transports.Console).toBe(true);
     });
 });

@@ -1,8 +1,9 @@
 /**
- * @brief Implementing matrix multiplication
+ * @brief Implements matrix multiplication.
  *
- * @param matrixA Matrix A
- * @param matrixB Matrix B
- * @return std::vector<std::vector<int>> Result of matrix A and matrix B multiplication
+ * @param matrixA The first matrix.
+ * @param matrixB The second matrix.
+ *
+ * @return std::vector<std::vector<int>> The result of multiplying matrixA by matrixB.
  */
-vector<vector<int>> matrix_multiply(const vector<vector<int>>& matrixA, const vector<vector<int>>& matrixB) {}
+std::vector<std::vector<int>> matrix_multiply(const std::vector<std::vector<int>>& matrixA, const std::vector<std::vector<int>>& matrixB) {}

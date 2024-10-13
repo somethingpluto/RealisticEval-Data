@@ -1,56 +1,25 @@
-#define CATCH_CONFIG_MAIN
-#include <catch2/catch.hpp>
-#include <sstream>
-#include <iostream>
-#include "Logger.h"  // Assuming the logger implementation is in this file
+TEST_CASE("TestLogger", "[Logger]") {
+    SECTION("Initialization") {
+        const std::string logger_name = "TestLogger";
+        Logger logger(logger_name);
 
-TEST_CASE("Logger tests", "[logger]") {
-    std::string loggerName = "test_logger";
-    std::stringstream buffer;
-    Logger logger(loggerName, DEBUG);
-
-    // Redirect cout to buffer
-    auto* oldBuf = std::cout.rdbuf(buffer.rdbuf());
-
-    SECTION("Debug logging") {
-        std::string message = "This is a debug message";
-        logger.log(DEBUG, message);
-        std::string output = buffer.str();
-        REQUIRE(output.find(message) != std::string::npos);
+        REQUIRE(logger.logger_->name() == logger_name);
+        REQUIRE(logger.logger_->level() == spdlog::level::debug);
     }
 
-    SECTION("Info logging") {
-        buffer.str(""); // Clear buffer
-        std::string message = "This is an info message";
-        logger.log(INFO, message);
-        std::string output = buffer.str();
-        REQUIRE(output.find(message) != std::string::npos);
+    SECTION("Default Logging Level") {
+        const std::string logger_name = "DefaultLogger";
+        Logger logger(logger_name);
+
+        REQUIRE(logger.logger_->level() == spdlog::level::debug);
     }
 
-    SECTION("Warning logging") {
-        buffer.str(""); // Clear buffer
-        std::string message = "This is a warning message";
-        logger.log(WARNING, message);
-        std::string output = buffer.str();
-        REQUIRE(output.find(message) != std::string::npos);
-    }
+    SECTION("Console Handler Added") {
+        const std::string logger_name = "TestLogger";
+        Logger logger(logger_name);
 
-    SECTION("Error logging") {
-        buffer.str(""); // Clear buffer
-        std::string message = "This is an error message";
-        logger.log(ERROR, message);
-        std::string output = buffer.str();
-        REQUIRE(output.find(message) != std::string::npos);
+        auto handlers = logger.logger_->sinks();
+        REQUIRE(handlers.size() > 0);
+        REQUIRE(std::dynamic_pointer_cast<spdlog::sinks::stdout_color_sink_mt>(handlers[0]) != nullptr);
     }
-
-    SECTION("Critical logging") {
-        buffer.str(""); // Clear buffer
-        std::string message = "This is a critical message";
-        logger.log(CRITICAL, message);
-        std::string output = buffer.str();
-        REQUIRE(output.find(message) != std::string::npos);
-    }
-
-    // Reset cout to original buffer
-    std::cout.rdbuf(oldBuf);
 }

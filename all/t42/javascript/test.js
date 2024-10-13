@@ -1,8 +1,25 @@
 describe('replacePhoneNumbers', () => {
-    it('should replace all phone numbers in the string with "[PHONE_NUM]"', () => {
-        expect(replacePhoneNumbers('Call me at 123-456-7890.')).toBe('Call me at [PHONE_NUM].');
-        expect(replacePhoneNumbers('Reach out at +1 (123) 456-7890 for more info.')).toBe('Reach out at [PHONE_NUM] for more info.');
-        expect(replacePhoneNumbers('No phone number here!')).toBe('No phone number here!');
-        expect(replacePhoneNumbers('Multiple numbers: 123-456-7890 and +1 (123) 456-7890.')).toBe('Multiple numbers: [PHONE_NUM] and [PHONE_NUM].');
+    it('should replace a basic phone number', () => {
+        const msg = "Call me at 123-456-7890.";
+        const expected = "Call me at [PHONE_NUM].";
+        expect(replacePhoneNumbers(msg)).toBe(expected);
+    });
+
+    it('should replace a phone number with parentheses', () => {
+        const msg = "Our office number is 123 456-7890.";
+        const expected = "Our office number is [PHONE_NUM].";
+        expect(replacePhoneNumbers(msg)).toBe(expected);
+    });
+
+    it('should replace a phone number with dots', () => {
+        const msg = "Fax us at 123.456.7890.";
+        const expected = "Fax us at [PHONE_NUM].";
+        expect(replacePhoneNumbers(msg)).toBe(expected);
+    });
+
+    it('should not replace text without a phone number', () => {
+        const msg = "Hello, please reply to this email.";
+        const expected = "Hello, please reply to this email.";
+        expect(replacePhoneNumbers(msg)).toBe(expected);
     });
 });

@@ -1,12 +1,12 @@
 describe('parseMarkdownTable', () => {
-    test('should parse a standard table', () => {
+    test('should correctly parse a standard table', () => {
         const mdTable = `
         | Header 1 | Header 2 | Header 3 |
         |----------|----------|----------|
         | Row1Col1 | Row1Col2 | Row1Col3 |
         | Row2Col1 | Row2Col2 | Row2Col3 |
         `;
-        const expected: Array<[string, ...string[]]> = [
+        const expected = [
             ['Header 1', 'Header 2', 'Header 3'],
             ['Row1Col1', 'Row1Col2', 'Row1Col3'],
             ['Row2Col1', 'Row2Col2', 'Row2Col3']
@@ -15,14 +15,14 @@ describe('parseMarkdownTable', () => {
         expect(result).toEqual(expected);
     });
 
-    test('should handle inconsistent columns', () => {
+    test('should correctly parse a table with inconsistent columns', () => {
         const mdTable = `
         | Header 1 | Header 2 |
         |----------|----------|
         | Row1     | Row1Col2 | ExtraCol |
         | Row2     |
         `;
-        const expected: Array<[string, ...string[]]> = [
+        const expected = [
             ['Header 1', 'Header 2'],
             ['Row1', 'Row1Col2', 'ExtraCol'],
             ['Row2']
@@ -31,14 +31,14 @@ describe('parseMarkdownTable', () => {
         expect(result).toEqual(expected);
     });
 
-    test('should handle empty cells', () => {
+    test('should correctly parse a table with empty cells', () => {
         const mdTable = `
         | Header 1 | Header 2 | Header 3 |
         |----------|----------|----------|
         |          | Row1Col2 |          |
         | Row2Col1 |          | Row2Col3 |
         `;
-        const expected: Array<[string, ...string[]]> = [
+        const expected = [
             ['Header 1', 'Header 2', 'Header 3'],
             ['', 'Row1Col2', ''],
             ['Row2Col1', '', 'Row2Col3']
@@ -47,14 +47,14 @@ describe('parseMarkdownTable', () => {
         expect(result).toEqual(expected);
     });
 
-    test('should handle all empty rows', () => {
+    test('should correctly parse a table with all empty rows', () => {
         const mdTable = `
         | Header 1 | Header 2 | Header 3 |
         |----------|----------|----------|
         |          |          |          |
         |          |          |          |
         `;
-        const expected: Array<[string, ...string[]]> = [
+        const expected = [
             ['Header 1', 'Header 2', 'Header 3'],
             ['', '', ''],
             ['', '', '']
@@ -63,14 +63,14 @@ describe('parseMarkdownTable', () => {
         expect(result).toEqual(expected);
     });
 
-    test('should handle excessive whitespace', () => {
+    test('should correctly parse a table with excessive whitespace', () => {
         const mdTable = `
         |  Header 1  |  Header 2  |  Header 3  |
         |------------|------------|------------|
         |  Row1Col1  |  Row1Col2  |  Row1Col3  |
         |  Row2Col1  |  Row2Col2  |  Row2Col3  |
         `;
-        const expected: Array<[string, ...string[]]> = [
+        const expected = [
             ['Header 1', 'Header 2', 'Header 3'],
             ['Row1Col1', 'Row1Col2', 'Row1Col3'],
             ['Row2Col1', 'Row2Col2', 'Row2Col3']

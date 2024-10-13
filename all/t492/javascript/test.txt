@@ -1,54 +1,150 @@
-Sure! Below is an example of how you can convert the given Python unittest test class to a Jest test case in JavaScript. Note that I'll assume you have a function `saveContentToFile` that corresponds to your `save_content_to_file` function.
+Certainly! Below is the equivalent Jest test suite for the given Python unittest class. The goal is to maintain the same functionality and logic while adapting to Jest's syntax and conventions.
 
-First, let's define the `saveContentToFile` function in JavaScript:
+### Python Code
 
-```javascript
-// Assuming you're using Node.js and fs module for file operations
-const fs = require('fs');
+```python
+import os
+import unittest
 
-function saveContentToFile(content, path) {
-    // Clean up redundant whitespace
-    const cleanedContent = content.replace(/\s+/g, ' ').trim();
-    
-    // Save the cleaned content to the specified file
-    fs.writeFileSync(path, cleanedContent);
-}
+class TestSaveContentToFile(unittest.TestCase):
+
+    def setUp(self):
+        """Set up a temporary file path for testing."""
+        self.test_file_path = 'test_output.txt'
+
+    def tearDown(self):
+        """Clean up the test file after each test."""
+        if os.path.exists(self.test_file_path):
+            os.remove(self.test_file_path)
+
+    def test_basic_content(self):
+        """Test with basic content and check if it saves correctly."""
+        content = "Hello,  World!  "
+        expected = "Hello, World!"
+        save_content_to_file(content, self.test_file_path)
+        with open(self.test_file_path, 'r', encoding='utf-8') as file:
+            result = file.read().strip()
+        self.assertEqual(result, expected)
+
+    def test_multiple_spaces_and_empty_lines(self):
+        """Test handling of multiple spaces and empty lines."""
+        content = """
+
+        This is a    test.
+
+        Another line.      
+        """
+        expected = "This is a test. Another line."
+        save_content_to_file(content, self.test_file_path)
+        with open(self.test_file_path, 'r', encoding='utf-8') as file:
+            result = file.read().strip()
+        self.assertEqual(result, expected)
+
+    def test_only_whitespace(self):
+        """Test if only whitespace is handled correctly."""
+        content = "    \n  \n   "
+        expected = ""
+        save_content_to_file(content, self.test_file_path)
+        with open(self.test_file_path, 'r', encoding='utf-8') as file:
+            result = file.read().strip()
+        self.assertEqual(result, expected)
+
+    def test_empty_content(self):
+        """Test if empty content is saved correctly."""
+        content = ""
+        expected = ""
+        save_content_to_file(content, self.test_file_path)
+        with open(self.test_file_path, 'r', encoding='utf-8') as file:
+            result = file.read().strip()
+        self.assertEqual(result, expected)
 ```
 
-Now, let's write the Jest test case for this function:
+### Equivalent Jest Test Suite
 
 ```javascript
-const saveContentToFile = require('./path/to/saveContentToFile'); // Adjust the path accordingly
+const fs = require('fs');
+const saveContentToFile = require('./saveContentToFile'); // Import the saveContentToFile function
 
-describe('saveContentToFile', () => {
-    it('should save the content to the specified file with cleaned-up whitespace', () => {
-        const mockPath = './test-file.txt';
-        const content = "  This   is   a   test.  ";
-        
-        // Call the function
-        saveContentToFile(content, mockPath);
-        
-        // Read the file content back
-        const fileContent = fs.readFileSync(mockPath, 'utf8');
-        
-        // Check if the file content matches the expected cleaned content
-        expect(fileContent).toBe('This is a test.');
-        
-        // Clean up the temporary file
-        fs.unlinkSync(mockPath);
+describe('TestSaveContentToFile', () => {
+    let testFilePath = 'test_output.txt';
+
+    beforeAll(() => {
+        // Set up a temporary file path for testing
+        testFilePath = 'test_output.txt';
+    });
+
+    afterAll(() => {
+        // Clean up the test file after all tests
+        if (fs.existsSync(testFilePath)) {
+            fs.unlinkSync(testFilePath);
+        }
+    });
+
+    beforeEach(() => {
+        // Ensure the test file is clean before each test
+        if (fs.existsSync(testFilePath)) {
+            fs.unlinkSync(testFilePath);
+        }
+    });
+
+    afterEach(() => {
+        // Clean up the test file after each test
+        if (fs.existsSync(testFilePath)) {
+            fs.unlinkSync(testFilePath);
+        }
+    });
+
+    it('should save basic content correctly', () => {
+        const content = "Hello,  World!  ";
+        const expected = "Hello, World!";
+        saveContentToFile(content, testFilePath);
+        const result = fs.readFileSync(testFilePath, 'utf-8').trim();
+        expect(result).toEqual(expected);
+    });
+
+    it('should handle multiple spaces and empty lines correctly', () => {
+        const content = `
+
+        This is a    test.
+
+        Another line.      
+        `;
+        const expected = "This is a test. Another line.";
+        saveContentToFile(content, testFilePath);
+        const result = fs.readFileSync(testFilePath, 'utf-8').trim();
+        expect(result).toEqual(expected);
+    });
+
+    it('should handle only whitespace correctly', () => {
+        const content = "    \n  \n   ";
+        const expected = "";
+        saveContentToFile(content, testFilePath);
+        const result = fs.readFileSync(testFilePath, 'utf-8').trim();
+        expect(result).toEqual(expected);
+    });
+
+    it('should handle empty content correctly', () => {
+        const content = "";
+        const expected = "";
+        saveContentToFile(content, testFilePath);
+        const result = fs.readFileSync(testFilePath, 'utf-8').trim();
+        expect(result).toEqual(expected);
     });
 });
 ```
 
 ### Explanation:
+1. **Setup and Teardown:**
+   - `beforeAll` and `afterAll` are used to set up and clean up the test file once for all tests.
+   - `beforeEach` ensures the test file is clean before each test.
+   - `afterEach` cleans up the test file after each test.
 
-1. **Importing the Function**: We import the `saveContentToFile` function from its respective file.
-2. **Describing the Test Suite**: We use `describe` to group related tests together.
-3. **Writing the Test Case**: We use `it` to write individual test cases.
-4. **Mocking the Path**: We create a temporary file path (`mockPath`) to store the content during the test.
-5. **Calling the Function**: We call the `saveContentToFile` function with the test content and the mock path.
-6. **Reading the File Content**: We read the content back from the file to verify if it has been written correctly.
-7. **Assertions**: We use `expect` to assert that the file content matches the expected cleaned content.
-8. **Cleanup**: Finally, we clean up the temporary file using `fs.unlinkSync`.
+2. **Test Cases:**
+   - Each test case uses `it` to describe the test and `expect` to assert the expected results.
+   - The `fs.readFileSync` method is used to read the file synchronously, and `.trim()` is applied to match the behavior of Python's `strip()`.
 
-Make sure to adjust the path to the `saveContentToFile` function according to your project structure.
+3. **File Operations:**
+   - `fs.existsSync` checks if the file exists.
+   - `fs.unlinkSync` removes the file if it exists.
+
+This Jest test suite maintains the same functionality and logic as the original Python unittest class while adapting to Jest's syntax and conventions.

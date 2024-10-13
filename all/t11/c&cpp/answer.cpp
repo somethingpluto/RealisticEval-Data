@@ -1,84 +1,97 @@
+#include <iostream>
 #include <unordered_map>
 #include <string>
 
+// TrieNode class
 class TrieNode {
 public:
+    std::unordered_map<char, TrieNode*> children;
+    bool is_end_of_word;
+
     TrieNode() : is_end_of_word(false) {}
 
-    bool hasChild(char ch) const {
+    bool has_child(char ch) {
         return children.find(ch) != children.end();
     }
 
-    TrieNode* getChild(char ch) {
-        auto it = children.find(ch);
-        return it != children.end() ? it->second : nullptr;
+    TrieNode* get_child(char ch) {
+        return children[ch];
     }
 
-    void addChild(char ch) {
-        if (children.find(ch) == children.end()) {
+    void add_child(char ch) {
+        if (!has_child(ch)) {
             children[ch] = new TrieNode();
         }
     }
 
-    void setEndOfWord() {
+    void set_end_of_word() {
         is_end_of_word = true;
     }
 
-    bool isEnd() const {
+    bool is_end() const {
         return is_end_of_word;
     }
 
-private:
-    std::unordered_map<char, TrieNode*> children;
-    bool is_end_of_word;
+    ~TrieNode() {
+        for (auto& child : children) {
+            delete child.second;
+        }
+    }
 };
 
+// Trie class
 class Trie {
 public:
+    TrieNode* root;
+
     Trie() : root(new TrieNode()) {}
 
     void insert(const std::string& word) {
         TrieNode* current = root;
         for (char ch : word) {
-            current->addChild(ch);
-            current = current->getChild(ch);
+            current->add_child(ch);
+            current = current->get_child(ch);
         }
-        current->setEndOfWord();
+        current->set_end_of_word();
     }
 
-    bool search(const std::string& word) const {
+    bool search(const std::string& word) {
         TrieNode* current = root;
         for (char ch : word) {
-            if (!current->hasChild(ch)) {
+            if (!current->has_child(ch)) {
                 return false;
             }
-            current = current->getChild(ch);
+            current = current->get_child(ch);
         }
-        return current->isEnd();
+        return current->is_end();
     }
 
-    bool startsWith(const std::string& prefix) const {
+    bool starts_with(const std::string& prefix) {
         TrieNode* current = root;
         for (char ch : prefix) {
-            if (!current->hasChild(ch)) {
+            if (!current->has_child(ch)) {
                 return false;
             }
-            current = current->getChild(ch);
+            current = current->get_child(ch);
         }
         return true;
     }
 
     ~Trie() {
-        deleteTrie(root);
-    }
-
-private:
-    TrieNode* root;
-
-    void deleteTrie(TrieNode* node) {
-        for (auto& [key, child] : node->children) {
-            deleteTrie(child);
-        }
-        delete node;
+        delete root;
     }
 };
+
+int main() {
+    // Example usage
+    Trie trie;
+    trie.insert("apple");
+    trie.insert("app");
+    trie.insert("banana");
+
+    std::cout << "Search 'apple': " << trie.search("apple") << std::endl;
+    std::cout << "Starts with 'app': " << trie.starts_with("app") << std::endl;
+    std::cout << "Search 'ban': " << trie.search("ban") << std::endl;
+
+    return 0;
+}

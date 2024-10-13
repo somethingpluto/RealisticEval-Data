@@ -1,102 +1,121 @@
 #include <iostream>
 #include <vector>
 
-// Define the TreeNode structure
-struct TreeNode {
-    int val;
+class TreeNode {
+public:
+    TreeNode(int key) : val(key), left(nullptr), right(nullptr) {}
+
     TreeNode* left;
     TreeNode* right;
-
-    TreeNode(int key) : val(key), left(nullptr), right(nullptr) {}
+    int val;
 };
 
-// Define the BinaryTree class
 class BinaryTree {
-private:
-    TreeNode* root;
-
-    // Helper function for insertion
-    void _insert(TreeNode*& node, int key);
-
-    // Helper function for inorder traversal
-    void _inorderTraversal(TreeNode* node, std::vector<int>& result);
-
-    // Helper function for preorder traversal
-    void _preorderTraversal(TreeNode* node, std::vector<int>& result);
-
-    // Helper function for postorder traversal
-    void _postorderTraversal(TreeNode* node, std::vector<int>& result);
-
 public:
     BinaryTree() : root(nullptr) {}
 
-    // Function to insert a new key into the binary tree
-    void insert(int key);
+    void insert(int key) {
+        if (root == nullptr) {
+            root = new TreeNode(key);
+        } else {
+            _insert(root, key);
+        }
+    }
 
-    // Function to perform inorder traversal
-    std::vector<int> inorderTraversal();
+private:
+    TreeNode* root;
 
-    // Function to perform preorder traversal
-    std::vector<int> preorderTraversal();
+    void _insert(TreeNode* node, int key) {
+        if (key < node->val) {
+            if (node->left == nullptr) {
+                node->left = new TreeNode(key);
+            } else {
+                _insert(node->left, key);
+            }
+        } else {
+            if (node->right == nullptr) {
+                node->right = new TreeNode(key);
+            } else {
+                _insert(node->right, key);
+            }
+        }
+    }
 
-    // Function to perform postorder traversal
-    std::vector<int> postorderTraversal();
+public:
+    std::vector<int> inorder_traversal() {
+        std::vector<int> result;
+        _inorder_traversal(root, result);
+        return result;
+    }
+
+    std::vector<int> preorder_traversal() {
+        std::vector<int> result;
+        _preorder_traversal(root, result);
+        return result;
+    }
+
+    std::vector<int> postorder_traversal() {
+        std::vector<int> result;
+        _postorder_traversal(root, result);
+        return result;
+    }
+
+private:
+    void _inorder_traversal(TreeNode* node, std::vector<int>& result) {
+        if (node != nullptr) {
+            _inorder_traversal(node->left, result);
+            result.push_back(node->val);
+            _inorder_traversal(node->right, result);
+        }
+    }
+
+    void _preorder_traversal(TreeNode* node, std::vector<int>& result) {
+        if (node != nullptr) {
+            result.push_back(node->val);
+            _preorder_traversal(node->left, result);
+            _preorder_traversal(node->right, result);
+        }
+    }
+
+    void _postorder_traversal(TreeNode* node, std::vector<int>& result) {
+        if (node != nullptr) {
+            _postorder_traversal(node->left, result);
+            _postorder_traversal(node->right, result);
+            result.push_back(node->val);
+        }
+    }
 };
 
-// Implementation of helper functions
-void BinaryTree::_insert(TreeNode*& node, int key) {
-    if (node == nullptr) {
-        node = new TreeNode(key);
-    } else if (key < node->val) {
-        _insert(node->left, key);
-    } else {
-        _insert(node->right, key);
+// Example usage
+int main() {
+    BinaryTree tree;
+    tree.insert(5);
+    tree.insert(3);
+    tree.insert(7);
+    tree.insert(2);
+    tree.insert(4);
+
+    std::vector<int> inorder = tree.inorder_traversal();
+    std::vector<int> preorder = tree.preorder_traversal();
+    std::vector<int> postorder = tree.postorder_traversal();
+
+    std::cout << "Inorder Traversal: ";
+    for (int val : inorder) {
+        std::cout << val << " ";
     }
-}
+    std::cout << std::endl;
 
-void BinaryTree::_inorderTraversal(TreeNode* node, std::vector<int>& result) {
-    if (node != nullptr) {
-        _inorderTraversal(node->left, result);
-        result.push_back(node->val);
-        _inorderTraversal(node->right, result);
+    std::cout << "Preorder Traversal: ";
+    for (int val : preorder) {
+        std::cout << val << " ";
     }
-}
+    std::cout << std::endl;
 
-void BinaryTree::_preorderTraversal(TreeNode* node, std::vector<int>& result) {
-    if (node != nullptr) {
-        result.push_back(node->val);
-        _preorderTraversal(node->left, result);
-        _preorderTraversal(node->right, result);
+    std::cout << "Postorder Traversal: ";
+    for (int val : postorder) {
+        std::cout << val << " ";
     }
-}
+    std::cout << std::endl;
 
-void BinaryTree::_postorderTraversal(TreeNode* node, std::vector<int>& result) {
-    if (node != nullptr) {
-        _postorderTraversal(node->left, result);
-        _postorderTraversal(node->right, result);
-        result.push_back(node->val);
-    }
-}
-
-// Public member functions
-void BinaryTree::insert(int key) {
-    _insert(root, key);
-}
-
-std::vector<int> BinaryTree::inorderTraversal() {
-    std::vector<int> result;
-    _inorderTraversal(root, result);
-    return result;
-}
-
-std::vector<int> BinaryTree::preorderTraversal() {
-    std::vector<int> result;
-    _preorderTraversal(root, result);
-    return result;
-}
-
-std::vector<int> BinaryTree::postorderTraversal() {
-    std::vector<int> result;
-    _postorderTraversal(root, result);
-    return result;
+    return 0;
 }

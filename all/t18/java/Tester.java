@@ -1,44 +1,54 @@
 package org.real.temp;
 
-import static org.junit.jupiter.api.Assertions.*;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
-public class TestFloatToRGB {
+/**
+ * Test cases for the floatToRGB method.
+ */
+public class Tester {
 
+    /**
+     * Tests that a value at the lower boundary (0.0) returns pure red.
+     */
     @Test
     public void testPureRed() {
-        // Value at the lower boundary (0.0) should return pure red
-        int[] result = floatToRGB(0.0);
+        int[] result = floatToRGB(0.0f);
         assertArrayEquals(new int[]{255, 0, 0}, result);
     }
 
+    /**
+     * Tests that a value at the upper boundary (1.0) returns pure green.
+     */
     @Test
     public void testPureGreen() {
-        // Value at the upper boundary (1.0) should return pure green
-        int[] result = floatToRGB(1.0);
+        int[] result = floatToRGB(1.0f);
         assertArrayEquals(new int[]{0, 255, 0}, result);
     }
 
+    /**
+     * Tests that a value at 0.5 returns an equal mix of red and green, resulting in yellow.
+     */
     @Test
     public void testMidpoint() {
-        // Value at 0.5 should return an equal mix of red and green, resulting in yellow
-        int[] result = floatToRGB(0.5);
+        int[] result = floatToRGB(0.5f);
         assertArrayEquals(new int[]{127, 127, 0}, result);
     }
 
+    /**
+     * Tests that a value at 0.25 returns more red than green.
+     */
     @Test
     public void testQuarterPoint() {
-        // Value at 0.25 should return more red than green
-        int[] result = floatToRGB(0.25);
+        int[] result = floatToRGB(0.25f);
         assertArrayEquals(new int[]{191, 63, 0}, result);
     }
 
-    @Test
+    /**
+     * Tests that a value outside the range [0, 1] raises an IllegalArgumentException.
+     */
+    @Test(expected = IllegalArgumentException.class)
     public void testInvalidValue() {
-        // Value outside the range [0, 1] should raise a ValueError
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            floatToRGB(1.5);
-        });
-        assertEquals("Value must be between 0.0 and 1.0", exception.getMessage());
+        floatToRGB(1.5f);
     }
 }

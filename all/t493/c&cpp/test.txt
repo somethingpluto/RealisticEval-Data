@@ -1,62 +1,162 @@
-Sure, I can help you convert the given Python unittest test class to a C++ test case using Catch2. Below is an example of how you might write the equivalent test case in C++:
+Certainly! Below is the equivalent C++ test class using the Catch2 testing framework. The provided Python unittest class will be converted into a Catch2 test suite, ensuring that the functionality and logic of the tests are preserved.
+
+### C++ Code Using Catch2
+
+First, make sure you have Catch2 installed and included in your project. You can include Catch2 via a header-only library or through a package manager like vcpkg.
+
+Here is the complete C++ code:
 
 ```cpp
-#include <catch2/catch.hpp>
-#include <string>
+#include <catch2/catch_test_macros.hpp>
+#include <iostream>
 #include <sstream>
+#include <string>
+#include <vector>
 
-// Function to wrap content generator
-std::vector<std::string> wrap_content_generator(const std::string& content, int width = 80) {
-    std::vector<std::string> result;
-    std::istringstream iss(content);
-    std::string word;
-
-    while (iss >> word) {
-        if (result.empty() || result.back().length() + word.length() > static_cast<size_t>(width)) {
-            result.push_back(word);
-        } else {
-            result.back() += " " + word;
-        }
+// Function to split a string by newline character
+std::vector<std::string> split(const std::string &s, char delimiter) {
+    std::vector<std::string> tokens;
+    std::string token;
+    std::istringstream tokenStream(s);
+    while (std::getline(tokenStream, token, delimiter)) {
+        tokens.push_back(token);
     }
-
-    return result;
+    return tokens;
 }
 
-TEST_CASE("Wrap Content Generator", "[wrap_content_generator]") {
-    // Test case with a simple string
-    auto result1 = wrap_content_generator("This is a simple test string.");
-    REQUIRE(result1.size() == 3);
-    REQUIRE(result1[0] == "This");
-    REQUIRE(result1[1] == "is a");
-    REQUIRE(result1[2] == "simple test string.");
+// Function to wrap the text content to the specified maximum width and generate these lines line by line
+void wrap_content_generator(const std::string &content, int width = 80, std::function<void(const std::string&)> callback) {
+    /*
+     * Wrap the text content to the specified maximum width and generate these lines line by line
+     *
+     * Args:
+     *     content (std::string): The content to be wrapped and yielded line by line.
+     *     width (int): The maximum width of the lines, default is 80 characters.
+     *
+     * Yields:
+     *     std::string: Each line of the content wrapped to the specified width.
+     */
 
-    // Test case with a longer string
-    auto result2 = wrap_content_generator("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.", 50);
-    REQUIRE(result2.size() == 6);
-    REQUIRE(result2[0] == "Lorem ipsum dolor sit amet,");
-    REQUIRE(result2[1] == "consectetur adipiscing elit,");
-    REQUIRE(result2[2] == "sed do eiusmod tempor incididunt");
-    REQUIRE(result2[3] == "ut labore et dolore magna");
-    REQUIRE(result2[4] == "aliqua.");
-    REQUIRE(result2[5] == "");
+    // Split the content into lines
+    auto lines = split(content, '\n');
 
-    // Test case with a very long word
-    auto result3 = wrap_content_generator("A verylongwordthatshouldnotbepartofthesamechunkbecauseitexceedstheallowedwidth.", 10);
-    REQUIRE(result3.size() == 4);
-    REQUIRE(result3[0] == "A");
-    REQUIRE(result3[1] == "verylongwordthat");
-    REQUIRE(result3[2] == "shouldnotbepartofthe");
-    REQUIRE(result3[3] == "samechunkbecauseitexceeds");
+    for (const auto &line : lines) {
+        if (line.find_first_not_of(" \t") == std::string::npos) {  // Check if the line is essentially empty.
+            callback("\n");
+        } else {
+            std::istringstream iss(line);
+            std::string word;
+            std::string currentLine;
+            while (iss >> word) {
+                if (currentLine.length() + word.length() + 1 > width) {
+                    callback(currentLine);
+                    currentLine = word;
+                } else {
+                    if (!currentLine.empty())
+                        currentLine += " ";
+                    currentLine += word;
+                }
+            }
+            if (!currentLine.empty()) {
+                callback(currentLine);
+            }
+        }
+    }
+}
+
+TEST_CASE("TestWrapContentGenerator", "[wrap_content_generator]") {
+    SECTION("test_empty_content") {
+        std::vector<std::string> result;
+        wrap_content_generator("", 80, [&result](const std::string &line) {
+            result.push_back(line);
+        });
+        REQUIRE(result == std::vector<std::string>({"\n"}));
+    }
+
+    SECTION("test_single_line_content") {
+        std::vector<std::string> result;
+        wrap_content_generator("Hello, world!", 80, [&result](const std::string &line) {
+            result.push_back(line);
+        });
+        REQUIRE(result == std::vector<std::string>({"Hello, world!"}));
+    }
+
+    SECTION("test_multi_line_content") {
+        std::vector<std::string> result;
+        std::string content = "Hello\nWorld\nPython";
+        wrap_content_generator(content, 80, [&result](const std::string &line) {
+            result.push_back(line);
+        });
+        REQUIRE(result == std::vector<std::string>({"Hello", "World", "Python"}));
+    }
+
+    SECTION("test_long_line") {
+        std::vector<std::string> result;
+        std::string content = "This is a very long line that should definitely be wrapped around the default width of 80 characters.";
+        wrap_content_generator(content, 80, [&result](const std::string &line) {
+            result.push_back(line);
+        });
+        REQUIRE(std::all_of(result.begin(), result.end(), [](const std::string &line) {
+            return line.length() <= 80;
+        }));
+    }
+
+    SECTION("test_custom_width") {
+        std::vector<std::string> result;
+        std::string content = "This is a test for custom width setting.";
+        wrap_content_generator(content, 10, [&result](const std::string &line) {
+            result.push_back(line);
+        });
+        REQUIRE(std::all_of(result.begin(), result.end(), [](const std::string &line) {
+            return line.length() <= 10;
+        }));
+    }
+
+    SECTION("test_only_whitespaces") {
+        std::vector<std::string> result;
+        wrap_content_generator("     ", 80, [&result](const std::string &line) {
+            result.push_back(line);
+        });
+        REQUIRE(result == std::vector<std::string>({"\n"}));
+    }
 }
 ```
 
 ### Explanation:
-1. **Function `wrap_content_generator`**: This function wraps the input string into multiple lines based on the specified width. It uses a vector to store the resulting lines and processes each word one by one.
-2. **Catch2 Test Case**:
-   - `TEST_CASE("Wrap Content Generator", "[wrap_content_generator]")`: Defines a test case named "Wrap Content Generator" and associates it with the tag `[wrap_content_generator]`.
-   - `auto result1 = wrap_content_generator("This is a simple test string.");`: Calls the function with a sample string and stores the result.
-   - `REQUIRE(result1.size() == 3);`: Checks that the number of lines returned is correct.
-   - `REQUIRE(result1[0] == "This");`: Checks that the first line is as expected.
-   - Additional test cases are provided for different scenarios such as a longer string and a very long word.
+1. **Split Function**: A helper function `split` is used to split the input string by newline characters.
+2. **wrap_content_generator Function**: This function wraps the text content and generates lines using a callback function.
+3. **Catch2 Test Suite**: The `TEST_CASE` macro defines the test suite, and each `SECTION` macro defines individual test cases.
+4. **Assertions**:
+   - `REQUIRE` is used for assertions in Catch2, similar to `assertEqual` in Python's `unittest`.
+   - `std::all_of` is used to check that all lines meet the specified condition.
 
-Make sure you have Catch2 installed in your project. If not, you can add it via your package manager or download it from the [Catch2 GitHub repository](https://github.com/catchorg/Catch2).
+### Running the Tests
+To run the tests, you need to link against Catch2 and compile your code. Here’s an example of how to set up a simple CMake project:
+
+```cmake
+cmake_minimum_required(VERSION 3.10)
+project(WrapContentGeneratorTests)
+
+# Add Catch2
+include(FetchContent)
+FetchContent_Declare(
+    catch2
+    GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+    GIT_TAG v2.13.8
+)
+FetchContent_MakeAvailable(catch2)
+
+# Add executable
+add_executable(WrapContentGeneratorTests main.cpp)
+
+# Link Catch2
+target_link_libraries(WrapContentGeneratorTests PUBLIC catch2)
+
+# Main file
+file(WRITE main.cpp "#include <catch2/catch_test_macros.hpp>\n")
+
+# Run tests
+add_test(NAME WrapContentGeneratorTests COMMAND WrapContentGeneratorTests)
+```
+
+This setup ensures that the tests are compiled and executed properly. You can run the tests using CMake and a build system like `make` or `cmake --build . --target test`.

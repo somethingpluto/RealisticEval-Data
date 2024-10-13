@@ -1,24 +1,79 @@
-Here's how you could write that Python function in JavaScript using Node.js and the `pandas` library for Node.js (`node-pandas`). Note that `node-pandas` is not an official package, but it does exist.
+Certainly! Below is the equivalent JavaScript code using Node.js and the `csv-parser` and `csv-writer` packages to handle CSV reading and writing. Make sure you have these packages installed by running `npm install csv-parser csv-writer`.
+
+Here's the JavaScript code:
 
 ```javascript
-const { readCSV, writeCSV } = require('node-pandas');
+const csvParser = require('csv-parser');
+const createObjectCsvWriter = require('csv-writer').createObjectCsvWriter;
+const fs = require('fs');
+const path = require('path');
 
 async function processCSV(filePath, outputPath) {
+    /**
+     * Processes a CSV file and removes rows with two or more empty columns.
+     *
+     * Parameters:
+     * filePath (string): The path to the input CSV file.
+     * outputPath (string): The path where the processed CSV file will be saved.
+     *
+     * Returns:
+     * None
+     */
     try {
-        let df = await readCSV(filePath);
-        if(df.isEmpty()){
-            return '';
+        // Read the CSV file into an array of objects
+        const records = [];
+        await new Promise((resolve, reject) => {
+            fs.createReadStream(filePath)
+                .pipe(csvParser())
+                .on('data', (row) => {
+                    records.push(row);
+                })
+                .on('end', resolve)
+                .on('error', reject);
+        });
+
+        // Filter the records based on the number of empty columns
+        const filteredRecords = records.filter((row) => {
+            const emptyCount = Object.values(row).filter(value => value === '').length;
+            return emptyCount < 2;
+        });
+
+        // Define the CSV writer configuration
+        const csvWriter = createObjectCsvWriter({
+            path: outputPath,
+            header: Object.keys(filteredRecords[0]).map(key => ({ id: key, title: key })),
+        });
+
+        // Write the filtered records to a new CSV file
+        await csvWriter.writeRecords(filteredRecords);
+
+    } catch (error) {
+        if (error.code === 'ENOENT') {
+            // Handle the case of an empty CSV
+            fs.writeFileSync(outputPath, '');
+        } else if (error.code === 'PARSE_ERR') {
+            // Handle parsing errors (e.g., inconsistent columns in rows)
+            console.error("Error: The input CSV has inconsistent row lengths. Please check the input data.");
+        } else {
+            throw error;
         }
-        let dfWithoutEmptyColumns = df.dropna({how:'all'});
-        await writeCSV(dfWithoutEmptyColumns, outputPath);
-    } catch(error) {
-        console.error(`Error processing CSV: ${error}`);
     }
 }
 
-module.exports = processCSV;
+// Example usage
+processCSV('input.csv', 'output.csv');
 ```
 
-In this JavaScript version of your function, we're using the `readCSV()` function from the `node-pandas` library to read in the CSV file specified by `filePath`. If the DataFrame returned by `readCSV()` is empty, we return an empty string. Otherwise, we use the `dropna()` method to remove any rows that have all null values, then save the resulting DataFrame to the file specified by `outputPath` using the `writeCSV()` function.
+### Explanation:
+1. **Reading the CSV File**: We use `fs.createReadStream` to read the CSV file and pipe it through `csv-parser` to parse the CSV data into an array of objects.
+2. **Filtering Rows**: We filter the records based on the number of empty columns. An empty column is identified by an empty string (`''`).
+3. **Writing the CSV File**: We use `csv-writer` to write the filtered records back to a new CSV file.
+4. **Error Handling**: We handle specific errors such as file not found (`ENOENT`) and parsing errors (`PARSE_ERR`).
 
-Please note that the `node-pandas` library may not behave exactly like the Python version of pandas, so you should test it thoroughly to ensure that it meets your needs.
+Make sure to install the required dependencies before running this script:
+
+```sh
+npm install csv-parser csv-writer
+```
+
+This should provide the same functionality as the original Python code.

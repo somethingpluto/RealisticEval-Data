@@ -1,23 +1,41 @@
-TEST_CASE("Matrix multiplication tests") {
-
-    SECTION("Test multiply") {
-        std::vector<std::vector<int>> matrixA = {{1, 2}, {3, 4}};
-        std::vector<std::vector<int>> matrixB = {{5, 6}, {7, 8}};
+TEST_CASE("Test Matrix Multiplication", "[matrix_multiply]") {
+    SECTION("Standard Matrices") {
+        std::vector<std::vector<int>> mat1 = {{1, 2}, {3, 4}};
+        std::vector<std::vector<int>> mat2 = {{5, 6}, {7, 8}};
         std::vector<std::vector<int>> expected = {{19, 22}, {43, 50}};
-        REQUIRE(matrix_multiply(matrixA, matrixB) == expected);
+        
+        REQUIRE(matrix_multiply(mat1, mat2) == expected);
     }
 
-    SECTION("Test empty matrix") {
-        std::vector<std::vector<int>> matrixA = {};
-        std::vector<std::vector<int>> matrixB = {};
-        std::vector<std::vector<int>> expected = {};
-        REQUIRE(matrix_multiply(matrixA, matrixB) == expected);
+    SECTION("Identity Matrix") {
+        std::vector<std::vector<int>> mat1 = {{1, 0}, {0, 1}};
+        std::vector<std::vector<int>> mat2 = {{5, 6}, {7, 8}};
+        std::vector<std::vector<int>> expected = {{5, 6}, {7, 8}};
+        
+        REQUIRE(matrix_multiply(mat1, mat2) == expected);
     }
 
-    SECTION("Test compatible matrices") {
-        std::vector<std::vector<int>> matrixA = {{1, 2, 3}, {4, 5, 6}};
-        std::vector<std::vector<int>> matrixB = {{7, 8}, {9, 10}, {11, 12}};
-        std::vector<std::vector<int>> expected = {{58, 64}, {139, 154}};
-        REQUIRE(matrix_multiply(matrixA, matrixB) == expected);
+    SECTION("Zero Matrix") {
+        std::vector<std::vector<int>> mat1 = {{0, 0}, {0, 0}};
+        std::vector<std::vector<int>> mat2 = {{5, 6}, {7, 8}};
+        std::vector<std::vector<int>> expected = {{0, 0}, {0, 0}};
+        
+        REQUIRE(matrix_multiply(mat1, mat2) == expected);
+    }
+
+    SECTION("Square Matrix Multiplication") {
+        std::vector<std::vector<int>> mat1 = {{1, 2}, {3, 4}};
+        std::vector<std::vector<int>> mat2 = {{5, 6}, {7, 8}};
+        std::vector<std::vector<int>> expected = {{19, 22}, {43, 50}};
+        
+        REQUIRE(matrix_multiply(mat1, mat2) == expected);
+    }
+
+    SECTION("Large Identity Matrix") {
+        std::vector<std::vector<int>> mat1 = {{1, 0, 0}, {0, 1, 0}, {0, 0, 1}};
+        std::vector<std::vector<int>> mat2 = {{5, 6, 7}, {8, 9, 10}, {11, 12, 13}};
+        std::vector<std::vector<int>> expected = {{5, 6, 7}, {8, 9, 10}, {11, 12, 13}};
+        
+        REQUIRE(matrix_multiply(mat1, mat2) == expected);
     }
 }

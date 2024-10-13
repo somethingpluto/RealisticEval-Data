@@ -1,8 +1,9 @@
 /**
- * Implementing matrix multiplication
+ * Implements matrix multiplication.
  *
- * @param matrixA matrix A
- * @param matrixB matrix B
- * @return matrixA matrixB multiplication model_answer_result
+ * @param matrixA The first matrix.
+ * @param matrixB The second matrix.
+ * @return The result of multiplying matrixA by matrixB.
+ * @throws IllegalArgumentException If the matrices cannot be multiplied due to incompatible dimensions.
  */
-public List<List<Integer>> matrixMultiply(List<List<Integer>> matrixA, List<List<Integer>> matrixB) {}
+public static List<List<Integer>> matrixMultiply(List<List<Integer>> matrixA, List<List<Integer>> matrixB) {}

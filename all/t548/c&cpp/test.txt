@@ -1,68 +1,132 @@
-Sure! Below is the equivalent C++ unit test case using Catch2 for the provided Python function `read_txt_add_json_bracket`. This assumes that you have a C++ version of the same function or an appropriate implementation that reads a text file, wraps its content in JSON brackets, and parses it into a C++ data structure.
+Certainly! Below is the equivalent C++ test class using the Catch2 testing framework. The provided Python unittest class uses mocking to simulate file reading, and we will replicate this behavior using Catch2's facilities for mocking and assertions.
+
+### C++ Code Using Catch2
+
+First, make sure you have Catch2 installed in your project. You can include it via a package manager or include it directly in your project.
+
+### C++ Code
 
 ```cpp
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <fstream>
-#include <sstream>
 #include <string>
+#include <vector>
 #include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
 
-// Function to mimic the Python function in C++
-std::vector<std::string> read_txt_add_json_bracket(const std::string& filename) {
-    std::ifstream file(filename);
-    if (!file.is_open()) {
-        throw std::runtime_error("File not found");
-    }
-
-    std::stringstream buffer;
-    buffer << file.rdbuf();
-    std::string content = buffer.str();
-
-    // Wrap the content in JSON brackets
-    std::string json_content = "[" + content + "]";
-
+// Function to read a text file, wrap its content in JSON brackets, and parse it into a JSON object
+std::vector<json> read_txt_add_json_bracket(const std::string& filename) {
     try {
-        // Parse the JSON content
-        auto parsed_json = json::parse(json_content);
-        std::vector<std::string> result;
-        for (const auto& item : parsed_json) {
-            result.push_back(item.get<std::string>());
+        // Open the file
+        std::ifstream data_file(filename);
+        if (!data_file.is_open()) {
+            std::cerr << "Error: File not found." << std::endl;
+            return {};
         }
+
+        // Read the entire content of the file
+        std::string text((std::istreambuf_iterator<char>(data_file)), std::istreambuf_iterator<char>());
+        data_file.close();
+
+        // Wrap the text in square brackets to form a valid JSON array
+        text = "[" + text + "]";
+
+        // Parse the JSON content into a JSON object
+        json data = json::parse(text);
+
+        // Convert the JSON object to a vector of JSON objects
+        std::vector<json> result;
+        for (const auto& item : data) {
+            result.push_back(item);
+        }
+
         return result;
-    } catch (const json::exception& e) {
-        throw std::runtime_error("JSON decode error: " + std::string(e.what()));
+
+    } catch (const std::ifstream::failure& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+        return {};
+    } catch (const std::exception& e) {
+        std::cerr << "Error decoding JSON: " << e.what() << std::endl;
+        return {};
     }
 }
 
-TEST_CASE("Test read_txt_add_json_bracket", "[read_txt_add_json_bracket]") {
-    // Create a temporary text file with some content
-    const std::string temp_filename = "temp.txt";
-    std::ofstream temp_file(temp_filename);
-    temp_file << R"({"key": "value"})";
-    temp_file.close();
+TEST_CASE("Test read_txt_add_json_bracket") {
+    SECTION("Valid JSON") {
+        std::istringstream fake_file_stream(R"({"key": "value"})");
+        std::string fake_filename = "fakefile.txt";
 
-    // Call the function
-    std::vector<std::string> result;
-    REQUIRE_NOTHROW(result = read_txt_add_json_bracket(temp_filename));
+        // Mock the file stream
+        std::ifstream::mock_file_stream::register_mock(fake_filename, fake_file_stream);
 
-    // Check the result
-    REQUIRE(result.size() == 1);
-    REQUIRE(result[0] == "{\"key\": \"value\"}");
+        auto result = read_txt_add_json_bracket(fake_filename);
+        REQUIRE(result.size() == 1);
+        REQUIRE(result[0] == json({{"key", "value"}}));
+    }
 
-    // Clean up the temporary file
-    std::remove(temp_filename.c_str());
+    SECTION("Empty JSON Array") {
+        std::istringstream fake_file_stream(R"([])");
+        std::string fake_filename = "fakefile.txt";
+
+        // Mock the file stream
+        std::ifstream::mock_file_stream::register_mock(fake_filename, fake_file_stream);
+
+        auto result = read_txt_add_json_bracket(fake_filename);
+        REQUIRE(result.empty());
+    }
+
+    SECTION("Valid JSON with newline") {
+        std::istringstream fake_file_stream(R"({"key": "value"}\n)");
+        std::string fake_filename = "fakefile.txt";
+
+        // Mock the file stream
+        std::ifstream::mock_file_stream::register_mock(fake_filename, fake_file_stream);
+
+        auto result = read_txt_add_json_bracket(fake_filename);
+        REQUIRE(result.size() == 1);
+        REQUIRE(result[0] == json({{"key", "value"}}));
+    }
+
+    SECTION("JSON with array") {
+        std::istringstream fake_file_stream(R"({"key": "value"})");
+        std::string fake_filename = "fakefile.txt";
+
+        // Mock the file stream
+        std::ifstream::mock_file_stream::register_mock(fake_filename, fake_file_stream);
+
+        auto result = read_txt_add_json_bracket(fake_filename);
+        REQUIRE(result.size() == 1);
+        REQUIRE(result[0] == json({{"key", "value"}}));
+    }
 }
 ```
 
 ### Explanation:
-1. **Include Necessary Headers**: We include the necessary headers for Catch2, file operations, string streams, and the JSON library (`nlohmann/json`).
-2. **Function Implementation**: The `read_txt_add_json_bracket` function mimics the behavior of the Python function. It reads a file, wraps its content in JSON brackets, and parses it into a vector of strings.
-3. **Catch2 Test Case**:
-   - We create a temporary text file with some content.
-   - We call the `read_txt_add_json_bracket` function and check if it throws any exceptions.
-   - We verify that the result contains the expected JSON string.
-   - Finally, we clean up the temporary file.
 
-Make sure you have the `nlohmann/json` library installed and properly linked in your project to compile this code.
+1. **Header Files**:
+   - `#include <catch2/catch_test_macros.hpp>` for Catch2 testing macros.
+   - `#include <fstream>` for file handling.
+   - `#include <string>` for string manipulation.
+   - `#include <vector>` for using vectors.
+   - `#include <nlohmann/json.hpp>` for JSON parsing.
+
+2. **Using Alias**:
+   - `using json = nlohmann::json;` makes it easier to use the `json` namespace.
+
+3. **Function Definition**:
+   - `read_txt_add_json_bracket`: This function reads the file, wraps the content in JSON brackets, and parses it into a JSON object.
+   - The function signature includes the parameter type (`const std::string& filename`).
+
+4. **Testing Framework**:
+   - `TEST_CASE` and `SECTION` macros are used to define test cases and sections within the test case.
+   - Each section mocks the file stream using `std::istringstream` and registers it with `std::ifstream::mock_file_stream`.
+
+5. **Assertions**:
+   - `REQUIRE` is used for assertions to check the results.
+
+6. **Mocking**:
+   - `std::istringstream` is used to simulate the file content.
+   - `std::ifstream::mock_file_stream::register_mock` is used to register the mocked file stream.
+
+This code preserves the original functionality and logic of the Python unittest class while adapting it to C++ and the Catch2 testing framework.

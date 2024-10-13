@@ -1,23 +1,43 @@
 describe('BloomFilter', () => {
-    let bloomFilter;
+    let bf;
 
     beforeEach(() => {
-        bloomFilter = new BloomFilter(100, 2); // Initialize with a size of 100 and 2 hash functions
+        // Initialize BloomFilter with reasonable size and hash count for testing
+        bf = new BloomFilter(1000, 5);
     });
 
-    test('should add items to the bloom filter', () => {
-        bloomFilter.add('apple');
-        expect(bloomFilter.contains('apple')).toBe(true);
+    it('adds elements and reports them as present', () => {
+        // Test that added elements are reported as present
+        const testItem = "hello world";
+        bf.add(testItem);
+        expect(bf.contains(testItem)).toBe(true);
     });
 
-    test('should not contain items not added to the bloom filter', () => {
-        expect(bloomFilter.contains('banana')).toBe(false);
+    it('reports unadded elements as absent', () => {
+        // Test that an unadded element is not present
+        expect(bf.contains("random item")).toBe(false);
     });
 
-    test('should handle collisions correctly', () => {
-        bloomFilter.add('apple');
-        bloomFilter.add('apples');
-        expect(bloomFilter.contains('apple')).toBe(true);
-        expect(bloomFilter.contains('apples')).toBe(true);
+    it('checks for false positives', () => {
+        // Adding some elements and check for a false positive
+        const itemsToAdd = ["item1", "item2", "item3"];
+        itemsToAdd.forEach(item => {
+            bf.add(item);
+        });
+        // Check for an item not added, expecting a very low chance of false positive due to size and hash count
+        expect(bf.contains("item4")).toBe(false);
+    });
+
+    it('handles hash collisions correctly', () => {
+        // Test how the Bloom filter handles hash collisions by adding similar items
+        bf.add("item123");
+        bf.add("item124");
+        expect(bf.contains("item123")).toBe(true);
+        expect(bf.contains("item124")).toBe(true);
+    });
+
+    it('reports no items in an empty Bloom Filter', () => {
+        // Ensure that an empty Bloom Filter reports no items
+        expect(bf.contains("anything")).toBe(false);
     });
 });

@@ -1,72 +1,134 @@
-To convert the provided Python unittest test class into an equivalent test class using Catch2 in C++, we need to create a similar structure for the tests and use Catch2’s assertion mechanisms. Below is the equivalent C++ code using Catch2:
+Certainly! Below is the equivalent C++ test class using the Catch2 testing framework. The provided Python unittest class is translated into C++ with appropriate assertions and structure.
+
+### C++ Code Using Catch2
+
+First, make sure you have Catch2 installed and included in your project. You can include Catch2 by adding the header file and using the `CATCH_TEST_CASE` macro for defining test cases.
+
+Here is the complete C++ code:
 
 ```cpp
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <map>
+#include <vector>
 #include <string>
-#include <memory>
+#include <variant>
+#include <typeinfo>
+#include <stdexcept>
+#include <sstream>
 
-// Assuming the function handle_nested_data is defined elsewhere
-// For the purpose of this example, let's define a mock version of it
-std::map<std::string, std::shared_ptr<std::map<std::string, int>>> handle_nested_data(
-    const std::map<std::string, std::shared_ptr<std::map<std::string, std::string>>>& data)
-{
-    // Mock implementation
-    std::map<std::string, std::shared_ptr<std::map<std::string, int>>> result;
-    for (const auto& item : data) {
-        auto newItem = std::make_shared<std::map<std::string, int>>();
-        for (const auto& innerItem : *item.second) {
+// Define a variant type to handle different data types
+using VarType = std::variant<std::map<std::string, VarType>, std::vector<VarType>, std::string, int, double>;
+
+/**
+ * Handle nested data structures (e.g., dictionaries, lists, and enumerations),
+ * decode bytes to UTF-8 strings, and convert numbers to integers or floating-point numbers.
+ *
+ * @param data The input data object.
+ * @return The processed data object after conversion.
+ */
+VarType handle_nested_data(const VarType& data) {
+    if (std::holds_alternative<std::map<std::string, VarType>>(data)) {
+        auto mapData = std::get<std::map<std::string, VarType>>(data);
+        std::map<std::string, VarType> result;
+        for (const auto& pair : mapData) {
+            result[pair.first] = handle_nested_data(pair.second);
+        }
+        return result;
+    } else if (std::holds_alternative<std::vector<VarType>>(data)) {
+        auto vecData = std::get<std::vector<VarType>>(data);
+        std::vector<VarType> result;
+        for (const auto& item : vecData) {
+            result.push_back(handle_nested_data(item));
+        }
+        return result;
+    } else if (std::holds_alternative<std::string>(data)) {
+        auto strData = std::get<std::string>(data);
+        try {
+            return std::stoi(strData);
+        } catch (const std::invalid_argument&) {
             try {
-                int intValue = std::stoi(innerItem.second);
-                newItem->insert({innerItem.first, intValue});
-            } catch (...) {
-                // Handle non-convertible values if needed
+                return std::stod(strData);
+            } catch (const std::invalid_argument&) {
+                return strData; // Return the original string if it's not a number
             }
         }
-        result.insert({item.first, newItem});
+    } else if (std::holds_alternative<int>(data)) {
+        return std::get<int>(data);
+    } else if (std::holds_alternative<double>(data)) {
+        return std::get<double>(data);
     }
-    return result;
+
+    throw std::runtime_error("Unsupported data type");
 }
 
-TEST_CASE("Test handle_nested_data function", "[handle_nested_data]") {
-    // Test case 1: Basic conversion
-    SECTION("Convert simple dictionary") {
-        std::map<std::string, std::shared_ptr<std::map<std::string, std::string>>> input = {
-            {"question1", std::make_shared<std::map<std::string, std::string>>({{"answer", "42"}})}
-        };
-        auto output = handle_nested_data(input);
-        REQUIRE(output.size() == 1);
-        REQUIRE(output["question1"]->size() == 1);
-        REQUIRE((*output["question1"])["answer"] == 42);
+TEST_CASE("Test handle_nested_data function") {
+    SECTION("Simple dictionary") {
+        std::map<std::string, VarType> data = {{"name", std::string("Alice", 5)}, {"age", "30"}};
+        std::map<std::string, VarType> expected = {{"name", "Alice"}, {"age", 30}};
+        REQUIRE(handle_nested_data(data) == expected);
     }
 
-    // Test case 2: Nested conversion
-    SECTION("Convert nested dictionary") {
-        std::map<std::string, std::shared_ptr<std::map<std::string, std::string>>> input = {
-            {"question2", std::make_shared<std::map<std::string, std::string>>({{"answer", "3.14"}, {"another_answer", "50"}})}
+    SECTION("Nested dictionary") {
+        std::map<std::string, VarType> nestedData = {
+            {"user", std::map<std::string, VarType>{{"name", std::string("Bob", 3)}, {"details", std::map<std::string, VarType>{{"age", "25"}, {"height", "175.5"}}}}}
         };
-        auto output = handle_nested_data(input);
-        REQUIRE(output.size() == 1);
-        REQUIRE(output["question2"]->size() == 2);
-        REQUIRE((*output["question2"])["answer"] == 3.14);
-        REQUIRE((*output["question2"])["another_answer"] == 50);
+        std::map<std::string, VarType> expected = {
+            {"user", std::map<std::string, VarType>{{"name", "Bob"}, {"details", std::map<std::string, VarType>{{"age", 25}, {"height", 175.5}}}}}
+        };
+        REQUIRE(handle_nested_data(nestedData) == expected);
     }
 
-    // Test case 3: Empty input
-    SECTION("Empty input") {
-        std::map<std::string, std::shared_ptr<std::map<std::string, std::string>>> input = {};
-        auto output = handle_nested_data(input);
-        REQUIRE(output.empty());
+    SECTION("List of mixed data types") {
+        std::vector<VarType> data = {"100", std::string("200", 3), 300.0, "400.5"};
+        std::vector<VarType> expected = {100, std::string("200", 3), 300.0, 400.5};
+        REQUIRE(handle_nested_data(data) == expected);
+    }
+
+    SECTION("Incorrect byte decoding") {
+        std::map<std::string, VarType> data = {{"invalid_bytes", std::string("\xff\xfe\xfd\xfc", 4)}};
+        REQUIRE_THROWS_AS(handle_nested_data(data), std::invalid_argument);
+    }
+
+    SECTION("Complex nested structure") {
+        std::map<std::string, VarType> data = {
+            {"team", std::vector<VarType>{
+                std::map<std::string, VarType>{{"name", std::string("Charlie", 7)}, {"scores", std::vector<VarType>{"1000", "2000.2"}}},
+                std::map<std::string, VarType>{{"name", std::string("Daisy", 5)}, {"skills", std::vector<VarType>{std::string("Coding", 6), "Design"}}, {"age", "22"}}
+            }}
+        };
+        std::map<std::string, VarType> expected = {
+            {"team", std::vector<VarType>{
+                std::map<std::string, VarType>{{"name", "Charlie"}, {"scores", std::vector<VarType>{1000, 2000.2}}},
+                std::map<std::string, VarType>{{"name", "Daisy"}, {"skills", std::vector<VarType>{"Coding", "Design"}}, {"age", 22}}
+            }}
+        };
+        REQUIRE(handle_nested_data(data) == expected);
     }
 }
 ```
 
 ### Explanation:
-1. **Imports**: We include the necessary headers for Catch2 (`catch2/catch.hpp`) and the standard library components we need.
-2. **Function Definition**: We define `handle_nested_data` with a mock implementation that converts strings to integers where possible.
-3. **Test Cases**:
-   - **Basic Conversion**: Tests the conversion of a simple dictionary.
-   - **Nested Conversion**: Tests the conversion of a nested dictionary.
-   - **Empty Input**: Tests the behavior with an empty input.
+1. **Header Inclusion**:
+   - Include the necessary headers for Catch2 and standard libraries.
 
-This setup ensures that the functionality and logic of the tests are preserved while adapting to the syntax and conventions of C++ and Catch2.
+2. **Variant Type Definition**:
+   - Define a `VarType` using `std::variant` to handle different data types.
+
+3. **Function Definition**:
+   - Define the `handle_nested_data` function to process nested data structures.
+
+4. **Test Class**:
+   - Use `TEST_CASE` and `SECTION` macros from Catch2 to define test cases.
+
+5. **Test Cases**:
+   - Each section corresponds to a specific test case from the Python unittest class.
+   - Use `REQUIRE` for assertions to ensure the expected behavior.
+
+6. **Assertions**:
+   - `REQUIRE` is used for equality checks.
+   - `REQUIRE_THROWS_AS` is used to check for exceptions.
+
+### Example Data:
+- The test cases are structured to match the Python test cases, ensuring that the functionality is preserved.
+
+This code ensures that the tests are equivalent to the Python unittest class and uses appropriate assertions in Catch2.

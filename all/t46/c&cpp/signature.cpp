@@ -1,22 +1,31 @@
+// TreeNode class definition
+class TreeNode {
+public:
+    // Binary tree node
+    int value;
+    TreeNode* left;
+    TreeNode* right;
+
+    // Constructor for TreeNode
+    TreeNode(int val = 0, TreeNode* l = nullptr, TreeNode* r = nullptr) 
+        : value(val), left(l), right(r) {}
+};
+
+// BinaryTree class definition
 class BinaryTree {
-private:
+public:
+    // Binary tree
     TreeNode* root;
 
-public:
-    // Constructor
-    BinaryTree(TreeNode* root = nullptr);
+    // Constructor for BinaryTree
+    BinaryTree(TreeNode* r = nullptr) : root(r) {}
 
-    // Preorder traversal
-    void preorderTraversal(TreeNode* node, std::vector<int>& result) const;
+    // Recursive Preorder Traversal
+    std::vector<int> preorder_traversal(TreeNode* node, std::vector<int>* result = nullptr) {}
 
-    // Inorder traversal
-    void inorderTraversal(TreeNode* node, std::vector<int>& result) const;
+    // Recursive Inorder Traversal
+    std::vector<int> inorder_traversal(TreeNode* node, std::vector<int>* result = nullptr) {}
 
-    // Postorder traversal
-    void postorderTraversal(TreeNode* node, std::vector<int>& result) const;
-
-    // Helper functions to start traversals from the root
-    std::vector<int> getPreorderTraversal() const;
-    std::vector<int> getInorderTraversal() const;
-    std::vector<int> getPostorderTraversal() const;
+    // Recursive Postorder Traversal
+    std::vector<int> postorder_traversal(TreeNode* node, std::vector<int>* result = nullptr) {}
 };

@@ -1,47 +1,75 @@
-Sure! Below is the equivalent C++ test case using Catch2 for the provided Python `unittest` function:
+Certainly! Below is the equivalent C++ test class using the Catch2 testing framework. This conversion preserves the functionality and logic of the tests, making any necessary adjustments for language differences between Python and C++.
+
+First, make sure you have Catch2 installed and included in your project. You can include Catch2 using the following headers:
 
 ```cpp
 #include <catch2/catch_test_macros.hpp>
-#include <iostream>
+#include <catch2/generators/catch_generators_all.hpp>
+```
 
-// Function to perform modular exponentiation
-int mod_exp(int base, int exponent, int modulus) {
-    if (modulus == 1)
-        return 0;
+Here is the complete C++ code with the test class using Catch2:
+
+```cpp
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators_all.hpp>
+
+// Function to perform modular exponentiation: (base^exponent) % modulus efficiently.
+long long mod_exp(long long base, long long exponent, long long modulus) {
+    if (modulus <= 0) {
+        throw std::invalid_argument("Modulus must be a positive integer.");
+    }
+
     long long result = 1;
-    base = base % modulus;
+    base = base % modulus;  // Ensure base is within the modulus
+
     while (exponent > 0) {
-        if (exponent & 1)
+        // If exponent is odd, multiply the base with the result
+        if (exponent % 2 == 1) {
             result = (result * base) % modulus;
-        exponent = exponent >> 1;
+        }
+
+        // Right shift the exponent by 1 (equivalent to exponent //= 2)
+        exponent >>= 1;
+        // Square the base
         base = (base * base) % modulus;
     }
+
     return result;
 }
 
-TEST_CASE("Modular Exponentiation", "[mod_exp]") {
-    REQUIRE(mod_exp(3, 5, 13) == 5);
-    REQUIRE(mod_exp(7, 2, 13) == 10);
-    REQUIRE(mod_exp(5, 3, 13) == 8);
-    REQUIRE(mod_exp(4, 13, 101) == 64);
-    REQUIRE(mod_exp(10, 0, 101) == 1);
-    REQUIRE(mod_exp(2, 100, 101) == 1);
+TEST_CASE("Test modular exponentiation", "[mod_exp]") {
+    SECTION("Test with base = 2, exponent = 10, modulus = 1000") {
+        REQUIRE(mod_exp(2, 10, 1000) == 24);
+    }
+
+    SECTION("Test with base = 3, exponent = 7, modulus = 50") {
+        REQUIRE(mod_exp(3, 7, 50) == 37);
+    }
+
+    SECTION("Test with base = 5, exponent = 0, modulus = 13 (any number^0 = 1)") {
+        REQUIRE(mod_exp(5, 0, 13) == 1);
+    }
+
+    SECTION("Test with base = 7, exponent = 5, modulus = 20") {
+        REQUIRE(mod_exp(7, 5, 20) == 7);  // 7^5 = 16807, 16807 % 20 = 7
+    }
+
+    SECTION("Test with base = 10, exponent = 5, modulus = 6") {
+        REQUIRE(mod_exp(10, 5, 6) == 4);  // 10^5 = 100000, 100000 % 6 = 4
+    }
+}
+
+int main(int argc, char* argv[]) {
+    return Catch::Session().run(argc, argv);
 }
 ```
 
 ### Explanation:
-1. **Include Catch2 Header**: We include the Catch2 header file which provides the testing framework.
-2. **Function Definition**: The `mod_exp` function is defined in C++ and performs modular exponentiation similar to the Python version.
-3. **Test Case**: We define a test case using the `TEST_CASE` macro from Catch2. This macro takes two arguments: the name of the test case and a tag that can be used to group tests.
-4. **Assertions**: We use the `REQUIRE` macro to assert that the output of `mod_exp` matches the expected results.
+1. **Header Inclusion**: Include the necessary Catch2 headers.
+2. **Function Definition**: The `mod_exp` function is defined to perform modular exponentiation.
+3. **Test Class**: The `TEST_CASE` macro is used to define a test case named "Test modular exponentiation".
+4. **Sections**: Each `SECTION` corresponds to a specific test case from the Python unittest class.
+5. **Assertions**: The `REQUIRE` macro is used to assert the expected results.
+6. **Main Function**: The `main` function runs the Catch2 test suite.
 
-To run these tests, you need to have Catch2 installed and set up in your project. If you're using a CMake-based project, you can add the following lines to your `CMakeLists.txt`:
-
-```cmake
-find_package(Catch2 REQUIRED)
-
-add_executable(test_mod_exp test_mod_exp.cpp)
-target_link_libraries(test_mod_exp Catch2::Catch2WithMain)
-```
-
-This will compile and link the test executable with Catch2, allowing you to run the tests using a command like `./test_mod_exp`.
+This ensures that the functionality and logic of the original Python tests are preserved in the C++ version using Catch2.

@@ -1,109 +1,161 @@
-It seems like you've provided a docstring for a function named `extract_log_entries` but haven't provided the actual implementation or the unittest class. Let's assume the following:
+Certainly! Here is the equivalent TypeScript code using Jest for testing the `extractLogEntries` function. The test cases will be converted to Jest's testing framework, ensuring that the functionality and logic of the tests are preserved.
 
-1. The `extract_log_entries` function processes a log file and saves log entries of different levels to separate files.
-2. We need to write a test class in TypeScript using Jest that mimics the behavior of the Python unittest class.
+### TypeScript Code with Jest Testing
 
-Here's how you can structure the TypeScript Jest test class based on the given Python unittest class:
-
-### Python Unittest Class
-
-```python
-import unittest
-from pathlib import Path
-from your_module import extract_log_entries  # Assuming this is where the function is defined
-
-class TestLogExtraction(unittest.TestCase):
-
-    def setUp(self):
-        self.log_file_path = 'test_log.txt'
-        with open(self.log_file_path, 'w') as f:
-            f.write("WARNING: Something went wrong\n")
-            f.write("ERROR: Another error occurred\n")
-            f.write("CRITICAL: System failure\n")
-            f.write("ALERT: Immediate action required\n")
-
-    def test_extract_log_entries(self):
-        extract_log_entries(self.log_file_path)
-        
-        warning_file = 'warning_logs.txt'
-        error_file = 'error_logs.txt'
-        critical_file = 'critical_logs.txt'
-        alert_file = 'alert_logs.txt'
-
-        with open(warning_file, 'r') as f:
-            self.assertIn('WARNING', f.read())
-
-        with open(error_file, 'r') as f:
-            self.assertIn('ERROR', f.read())
-
-        with open(critical_file, 'r') as f:
-            self.assertIn('CRITICAL', f.read())
-
-        with open(alert_file, 'r') as f:
-            self.assertIn('ALERT', f.read())
-
-if __name__ == '__main__':
-    unittest.main()
-```
-
-### TypeScript Jest Test Class
-
-Assuming the `extract_log_entries` function is defined in a TypeScript module:
+First, let's define the `extractLogEntries` function in TypeScript:
 
 ```typescript
-// your_module.ts
-export function extract_log_entries(log_file_path: string): void {
-    // Implementation details here
+import * as fs from 'fs';
+
+/**
+ * Extract log entries from a log file for WARNING, ERROR, CRITICAL, and ALERT levels
+ * and save each type of log entry to a different file.
+ *
+ * @param logFilePath - Path to the log file.
+ */
+function extractLogEntries(logFilePath: string): void {
+    if (!fs.existsSync(logFilePath)) {
+        throw new Error(`No log file found at the specified path: ${logFilePath}`);
+    }
+
+    // Prepare objects to hold log entries for each level
+    const logs: { [key: string]: string[] } = {
+        'WARNING': [],
+        'ERROR': [],
+        'CRITICAL': [],
+        'ALERT': []
+    };
+
+    // Define output file paths
+    const outputFiles: { [key: string]: string } = {
+        'WARNING': 'warning_logs.txt',
+        'ERROR': 'error_logs.txt',
+        'CRITICAL': 'critical_logs.txt',
+        'ALERT': 'alert_logs.txt'
+    };
+
+    // Read the log file and filter entries by level
+    const fileContent = fs.readFileSync(logFilePath, 'utf-8');
+    const lines = fileContent.split('\n');
+
+    for (const line of lines) {
+        for (const level of Object.keys(logs)) {
+            if (line.includes(level)) {
+                logs[level as keyof typeof logs].push(line);
+                break;
+            }
+        }
+    }
+
+    // Write the filtered logs to separate files
+    for (const level of Object.keys(logs)) {
+        const entries = logs[level as keyof typeof logs];
+        fs.writeFileSync(outputFiles[level as keyof typeof outputFiles], entries.join('\n'));
+        console.log(`Saved ${entries.length} '${level}' entries to ${outputFiles[level as keyof typeof outputFiles]}.`);
+    }
 }
+
+export default extractLogEntries;
 ```
 
-Now, let's write the Jest test class:
+### Jest Test Class
+
+Now, let's define the Jest test class:
 
 ```typescript
-import { extract_log_entries } from './your_module';
+import { extractLogEntries } from './path/to/extractLogEntries'; // Adjust the import path as needed
 
-describe('TestLogExtraction', () => {
-    const log_file_path = 'test_log.txt';
-
-    beforeAll(() => {
-        // Write sample log entries to the test log file
-        const content = "WARNING: Something went wrong\n" +
-                        "ERROR: Another error occurred\n" +
-                        "CRITICAL: System failure\n" +
-                        "ALERT: Immediate action required\n";
-        fs.writeFileSync(log_file_path, content);
+describe('TestExtractLogEntries', () => {
+    beforeEach(() => {
+        // Setup a temporary log file with sample content for testing
+        const logFileContents = [
+            "INFO: This is an informational message.\n",
+            "WARNING: This is a warning message.\n",
+            "ERROR: This is an error message.\n",
+            "CRITICAL: This is a critical message.\n",
+            "ALERT: This is an alert message.\n"
+        ];
+        const logFilePath = 'test_log.log';
+        fs.writeFileSync(logFilePath, logFileContents.join(''));
     });
 
-    afterAll(() => {
-        // Clean up by removing the test log file and output files
-        fs.unlinkSync(log_file_path);
-        fs.unlinkSync('warning_logs.txt');
-        fs.unlinkSync('error_logs.txt');
-        fs.unlinkSync('critical_logs.txt');
-        fs.unlinkSync('alert_logs.txt');
+    afterEach(() => {
+        // Clean up after each test
+        ['warning_logs.txt', 'error_logs.txt', 'critical_logs.txt', 'alert_logs.txt'].forEach(file => {
+            if (fs.existsSync(file)) {
+                fs.unlinkSync(file);
+            }
+        });
+        if (fs.existsSync('test_log.log')) {
+            fs.unlinkSync('test_log.log');
+        }
     });
 
-    it('should extract log entries correctly', () => {
-        extract_log_entries(log_file_path);
+    it('should handle no logs of certain levels', () => {
+        const logFilePath = 'test_log.log';
+        fs.writeFileSync(logFilePath, "INFO: This is another informational message.\n");
+        extractLogEntries(logFilePath);
 
-        const warning_file = 'warning_logs.txt';
-        const error_file = 'error_logs.txt';
-        const critical_file = 'critical_logs.txt';
-        const alert_file = 'alert_logs.txt';
+        ['WARNING', 'ERROR', 'CRITICAL', 'ALERT'].forEach(level => {
+            const filePath = `${level.toLowerCase()}_logs.txt`;
+            expect(fs.existsSync(filePath)).toBe(true);
+            const content = fs.readFileSync(filePath, 'utf-8').trim();
+            expect(content).toBe('');
+        });
+    });
 
-        expect(fs.readFileSync(warning_file, 'utf8')).toContain('WARNING');
-        expect(fs.readFileSync(error_file, 'utf8')).toContain('ERROR');
-        expect(fs.readFileSync(critical_file, 'utf8')).toContain('CRITICAL');
-        expect(fs.readFileSync(alert_file, 'utf8')).toContain('ALERT');
+    it('should throw an error when the log file does not exist', () => {
+        expect(() => {
+            extractLogEntries('nonexistent.log');
+        }).toThrow(/No log file found at the specified path: nonexistent\.log/);
+    });
+
+    it('should handle an empty log file', () => {
+        const logFilePath = 'test_log.log';
+        fs.writeFileSync(logFilePath, "");
+        extractLogEntries(logFilePath);
+
+        ['WARNING', 'ERROR', 'CRITICAL', 'ALERT'].forEach(level => {
+            const filePath = `${level.toLowerCase()}_logs.txt`;
+            expect(fs.existsSync(filePath)).toBe(true);
+            const content = fs.readFileSync(filePath, 'utf-8').trim();
+            expect(content).toBe('');
+        });
+    });
+
+    it('should extract logs from a file with mixed content', () => {
+        const logFilePath = 'test_log.log';
+        fs.writeFileSync(logFilePath, [
+            "INFO: Some info.\n",
+            "WARNING: Watch out!\n",
+            "DEBUG: Debugging.\n",
+            "ERROR: Oops!\n",
+            "CRITICAL: Failed badly.\n",
+            "ALERT: High alert!\n",
+            "INFO: More info.\n"
+        ].join(''));
+
+        extractLogEntries(logFilePath);
+
+        ['WARNING', 'ERROR', 'CRITICAL', 'ALERT'].forEach(level => {
+            const filePath = `${level.toLowerCase()}_logs.txt`;
+            expect(fs.existsSync(filePath)).toBe(true);
+            const content = fs.readFileSync(filePath, 'utf-8').trim();
+            expect(content).toContain(level);
+        });
     });
 });
 ```
 
-### Explanation
+### Explanation:
+1. **Imports**: Import the `extractLogEntries` function and Jest utilities.
+2. **Before Each**: Set up a temporary log file with sample content before each test.
+3. **After Each**: Clean up the temporary files after each test.
+4. **Test Cases**:
+   - `should handle no logs of certain levels`: Tests the situation where there are no log entries for one or more levels.
+   - `should throw an error when the log file does not exist`: Tests behavior when the log file does not exist.
+   - `should handle an empty log file`: Tests behavior with an empty log file.
+   - `should extract logs from a file with mixed content`: Tests extracting logs from a file with mixed content.
+5. **Assertions**: Use Jest's assertion methods (`expect`) to verify the expected behavior.
 
-1. **Imports**: Import the necessary functions and modules.
-2. **Before All**: Set up the initial state by writing sample log entries to the test log file.
-3. **After All**: Clean up by removing the test log file and output files.
-4. **Test Case**: Use Jest's `expect` assertions to check if the log entries are correctly extracted and saved to the respective files.
-
-This conversion ensures that the functionality and logic of the tests are preserved while accounting for the differences between Python's unittest and TypeScript's Jest frameworks.
+This TypeScript code with Jest testing ensures that the functionality and logic of the tests are preserved, with appropriate type annotations and Jest assertions.

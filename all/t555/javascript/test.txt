@@ -1,29 +1,90 @@
-Here is how you can convert your Python unittest test case into a Jest test case:
+Certainly! Below is the equivalent Jest test suite for the given Python unittest class. The structure and functionality of the tests will be preserved, and all assertions will be mapped to their appropriate Jest equivalents.
 
+### Python Code:
+```python
+import math
+import unittest
+
+class TestQuaternionToAngle(unittest.TestCase):
+
+    def test_identity_quaternion(self):
+        """Test the identity quaternion (no rotation)."""
+        quaternion = (1.0, 0.0, 0.0, 0.0)
+        expected_angle = 0.0
+        self.assertAlmostEqual(quaternion_to_angle(quaternion), expected_angle)
+
+    def test_180_degrees_rotation(self):
+        """Test a quaternion representing a 180-degree rotation."""
+        quaternion = (0.0, 0.0, 1.0, 0.0)  # 180 degrees around Z axis
+        expected_angle = math.pi  # 180 degrees in radians
+        self.assertAlmostEqual(quaternion_to_angle(quaternion), expected_angle)
+
+    def test_360_degrees_rotation(self):
+        """Test a quaternion representing a full 360-degree rotation."""
+        quaternion = (1.0, 0.0, 0.0, 0.0)  # Full rotation
+        expected_angle = 0.0  # 360 degrees is equivalent to 0 degrees
+        self.assertAlmostEqual(quaternion_to_angle(quaternion), expected_angle)
+
+    def test_non_unit_quaternion(self):
+        """Test a non-unit quaternion (should still give correct angle)."""
+        quaternion = (0.5, 0.5, 0.5, 0.5)  # This is not normalized
+        # Normalize the quaternion first
+        norm = math.sqrt(sum(x ** 2 for x in quaternion))
+        normalized_quaternion = tuple(x / norm for x in quaternion)
+        expected_angle = 2 * math.acos(normalized_quaternion[0])  # Should be same angle
+        self.assertAlmostEqual(quaternion_to_angle(normalized_quaternion), expected_angle)
+
+    def test_invalid_quaternion(self):
+        """Test that an invalid quaternion raises a ValueError."""
+        with self.assertRaises(ValueError):
+            quaternion_to_angle((1.0, 0.0, 0.0))  # Only 3 components
+```
+
+### Equivalent Jest Test Suite:
 ```javascript
-const { expect } = require('@jest/globals');
-const math = require('mathjs');
+const { quaternionToAngle } = require('./quaternionToAngle');
 
-function quaternionToAngle(quaternion) {
-  // Your function implementation here...
-}
+describe('TestQuaternionToAngle', () => {
+    it('test identity quaternion (no rotation)', () => {
+        const quaternion = [1.0, 0.0, 0.0, 0.0];
+        const expectedAngle = 0.0;
+        expect(quaternionToAngle(quaternion)).toBeCloseTo(expectedAngle);
+    });
 
-describe('quaternionToAngle', () => {
-  it('should return correct angle for given quaternion', () => {
-    const quaternion = [1, 0, 0, 0]; // Example quaternion
-    const expectedAngle = 0; // Expected result
+    it('test quaternion representing a 180-degree rotation', () => {
+        const quaternion = [0.0, 0.0, 1.0, 0.0];  // 180 degrees around Z axis
+        const expectedAngle = Math.PI;  // 180 degrees in radians
+        expect(quaternionToAngle(quaternion)).toBeCloseTo(expectedAngle);
+    });
 
-    expect(quaternionToAngle(quaternion)).toBe(expectedAngle);
-  });
+    it('test quaternion representing a full 360-degree rotation', () => {
+        const quaternion = [1.0, 0.0, 0.0, 0.0];  // Full rotation
+        const expectedAngle = 0.0;  // 360 degrees is equivalent to 0 degrees
+        expect(quaternionToAngle(quaternion)).toBeCloseTo(expectedAngle);
+    });
 
-  // Add more tests as needed...
+    it('test non-unit quaternion (should still give correct angle)', () => {
+        const quaternion = [0.5, 0.5, 0.5, 0.5];  // This is not normalized
+        // Normalize the quaternion first
+        const norm = Math.sqrt(quaternion.reduce((acc, val) => acc + val ** 2, 0));
+        const normalizedQuaternion = quaternion.map(x => x / norm);
+        const expectedAngle = 2 * Math.acos(normalizedQuaternion[0]);  // Should be same angle
+        expect(quaternionToAngle(normalizedQuaternion)).toBeCloseTo(expectedAngle);
+    });
+
+    it('test invalid quaternion raises a ValueError', () => {
+        expect(() => quaternionToAngle([1.0, 0.0, 0.0])).toThrow('Quaternion must have 4 components (w, x, y, z)');
+    });
 });
 ```
 
-Please note that you need to replace `// Your function implementation here...` with your actual function implementation and adjust the test cases according to your requirements. Also, ensure that you have `@jest/globals` and `mathjs` installed in your project. If not, you can install them using npm:
+### Explanation:
+1. **Importing the Function**: The `quaternionToAngle` function is imported from the module where it is defined.
+2. **Describe Block**: The `describe` block groups the tests together under a descriptive name.
+3. **It Blocks**: Each `it` block represents a specific test case.
+4. **Assertions**:
+   - `toBeCloseTo`: Used for floating-point comparisons, similar to `assertAlmostEqual` in Python.
+   - `toThrow`: Used to check that a function throws an error with a specific message.
+5. **Normalization**: The normalization process is performed using `reduce` and `map` functions in JavaScript.
 
-```bash
-npm install @jest/globals mathjs --save-dev
-```
-
-Also, remember that Jest uses `toBe` method for exact comparison, if you want to check for approximate equality, you might want to use `toBeCloseTo` instead of `toBe`.
+This ensures that the functionality and logic of the tests are preserved while adhering to Jest's syntax and conventions.

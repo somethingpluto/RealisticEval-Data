@@ -1,31 +1,67 @@
-Sure, here's how you can convert your Python function into JavaScript:
+Sure! Below is the equivalent JavaScript code that matches the functionality, logic, and structure of the provided Python code:
 
 ```javascript
 const fs = require('fs');
-const readline = require('readline');
+const path = require('path');
 
+/**
+ * Reads a JSON Lines file and returns its content as an array of objects.
+ *
+ * @param {string} filePath The path to the JSON Lines file.
+ * @returns {Promise<Array<Object>>} A promise that resolves to an array of JSON objects parsed from the file.
+ * @throws {Error} If the specified file does not exist or there is an error parsing a line in the JSON Lines file.
+ */
 async function readJsonl(filePath) {
-  const fileStream = fs.createReadStream(filePath);
-
-  const rl = readline.createInterface({
-    input: fileStream,
-    crlfDelay: Infinity
-  });
-
-  let jsonData = [];
-
-  for await (const line of rl) {
-    try {
-      jsonData.push(JSON.parse(line));
-    } catch (error) {
-      throw new Error(`Error parsing JSON on line: ${error.message}`);
-    }
+  // Check if the file exists
+  if (!fs.existsSync(filePath)) {
+    throw new Error(`The file '${filePath}' does not exist.`);
   }
 
-  return jsonData;
+  const jsonList = [];
+  const fileStream = fs.createReadStream(filePath, { encoding: 'utf8' });
+  let data = '';
+
+  fileStream.on('data', (chunk) => {
+    data += chunk;
+  });
+
+  return new Promise((resolve, reject) => {
+    fileStream.on('end', () => {
+      const lines = data.split('\n');
+      for (let line of lines) {
+        try {
+          const jsonObj = JSON.parse(line.trim());
+          jsonList.push(jsonObj);
+        } catch (error) {
+          reject(new Error(`Error parsing line: ${line.trim()} - ${error.message}`));
+          return;
+        }
+      }
+      resolve(jsonList);
+    });
+
+    fileStream.on('error', (error) => {
+      reject(error);
+    });
+  });
 }
 
-module.exports = { readJsonl };
+// Example usage
+(async () => {
+  try {
+    const filePath = path.join(__dirname, 'example.jsonl');
+    const jsonData = await readJsonl(filePath);
+    console.log(jsonData);
+  } catch (error) {
+    console.error(error);
+  }
+})();
 ```
 
-This JavaScript version uses Node.js's built-in `fs` and `readline` modules to read the file line-by-line and parse each line as a JSON object. It also handles exceptions that may occur during parsing, similar to how the Python code raises exceptions.
+### Explanation:
+1. **File Existence Check**: The `fs.existsSync` method checks if the file exists.
+2. **Reading the File**: The file is read using a stream (`fs.createReadStream`) to handle large files efficiently.
+3. **Parsing JSON Lines**: Each line is parsed using `JSON.parse`, and any errors during parsing are caught and thrown.
+4. **Asynchronous Handling**: The function returns a promise that resolves to the array of JSON objects or rejects with an error.
+
+This JavaScript code maintains the same functionality and error handling as the original Python code.

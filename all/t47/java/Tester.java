@@ -1,50 +1,40 @@
 package org.real.temp;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
+import org.junit.jupiter.api.Test; // JUnit 5 Test annotation
+import static org.junit.jupiter.api.Assertions.assertEquals; // JUnit 5 assertion method
 import java.time.LocalDate;
-import java.time.DayOfWeek;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 public class Tester {
 
-    private LocalDate findNthWeekdayOfSpecificYear(int y, int m, int n, int k) {
-        // Implementation of the method from the provided Python code
-        // Note: Java uses DayOfWeek enum instead of integer values for weekdays
-        DayOfWeek targetDay = DayOfWeek.of(k + 1); // Adjusting for 0-based index
-
-        LocalDate firstDayOfMonth = LocalDate.of(y, m, 1);
-        LocalDate lastDayOfMonth = firstDayOfMonth.with(java.time.temporal.TemporalAdjusters.lastDayOfMonth());
-
-        LocalDate result = null;
-        int count = 0;
-
-        for (LocalDate date = firstDayOfMonth; !date.isAfter(lastDayOfMonth); date = date.plusDays(1)) {
-            if (date.getDayOfWeek() == targetDay) {
-                count++;
-                if (count == n) {
-                    result = date;
-                    break;
-                }
-            }
-        }
-
-        return result != null ? result : lastDayOfMonth.with(targetDay);
-    }
-
-    @BeforeEach
-    public void setUp() {
-        // Setup code if needed
+    @Test
+    public void testRegularOccurrence() {
+        // Test for the 2nd Monday of May 2023
+        LocalDate result = findNthWeekdayOfSpecificYear(2023, 5, 2, 0);  // Monday is 0
+        LocalDate expected = LocalDate.of(2023, 5, 8);
+        assertEquals(expected, result);
     }
 
     @Test
-    public void testFindNthWeekdayOfSpecificYear() {
-        assertEquals(LocalDate.of(2023, 4, 17), findNthWeekdayOfSpecificYear(2023, 4, 1, 5)); // First Friday in April 2023
-        assertEquals(LocalDate.of(2023, 4, 28), findNthWeekdayOfSpecificYear(2023, 4, 5, 5)); // Fifth Friday in April 2023
-        assertEquals(LocalDate.of(2023, 4, 28), findNthWeekdayOfSpecificYear(2023, 4, 6, 5)); // Sixth Friday in April 2023, falls on last day
-        assertNotNull(findNthWeekdayOfSpecificYear(2023, 4, 1, 5));
+    public void testLastOccurrence() {
+        // Test for the 5th Monday of May 2023, which doesn't exist, should return the last Monday
+        LocalDate result = findNthWeekdayOfSpecificYear(2023, 5, 5, 0);  // Monday is 0
+        LocalDate expected = LocalDate.of(2023, 5, 29);
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void testFirstDayIsWeekday() {
+        // Test for when the first day of the month is the weekday in question, 1st Tuesday of August 2023
+        LocalDate result = findNthWeekdayOfSpecificYear(2023, 8, 1, 1);  // Tuesday is 1
+        LocalDate expected = LocalDate.of(2023, 8, 1);
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void testEdgeYearTransition() {
+        // Test for the 1st Friday of December 2023
+        LocalDate result = findNthWeekdayOfSpecificYear(2023, 12, 1, 4);  // Friday is 4
+        LocalDate expected = LocalDate.of(2023, 12, 1);
+        assertEquals(expected, result);
     }
 }

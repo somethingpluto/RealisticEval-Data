@@ -1,8 +1,8 @@
 /**
- * Align two lines of string to the left, supplementing with Spaces if the length is not enough.
+ * Aligns two lines of string to the left, supplementing with spaces if the length is not enough.
  *
- * @param str1 The first string to be aligned.
- * @param str2 The second string to be aligned.
- * @return A String array containing the aligned strings [alignedStr1, alignedStr2].
+ * @param str1 the first string
+ * @param str2 the second string
+ * @return an array containing the aligned strings (aligned str1, aligned str2)
  */
 public static String[] alignLinesLeft(String str1, String str2) {}

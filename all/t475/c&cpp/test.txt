@@ -1,33 +1,30 @@
-Certainly! Below is the equivalent C++ code using the Catch2 testing framework to test the `safe_format` function. The provided Python unittest code will be converted into a Catch2 test suite, ensuring that the functionality and logic of the tests are preserved.
+Certainly! Here is the equivalent C++ test class using the Catch2 testing framework. The provided Python unittest class will be converted into a set of Catch2 test cases, ensuring that the functionality and logic of the tests are preserved.
 
-First, make sure you have Catch2 installed and included in your project. You can include Catch2 via a header-only library or through a package manager.
+### C++ Code Using Catch2
 
-### C++ Code with Catch2 Testing Framework
+First, make sure you have Catch2 installed and included in your project. You can include Catch2 using the following headers:
 
 ```cpp
-#include <iostream>
+#include <catch2/catch_test_macros.hpp>
 #include <string>
-#include <regex>
 #include <unordered_map>
-#include "catch2/catch_test_macros.hpp"
+#include <regex>
 
-// Function to safely format a template string
+// The safe_format function
 std::string safe_format(const std::string& template_str, const std::unordered_map<std::string, std::string>& kwargs) {
     // Compile a regex pattern to match placeholders in the form {key}
     std::regex pattern(R"(\{(\w+)\})");
 
-    // Lambda function to replace placeholders
+    // Lambda function for the regex_replace method
     auto replacer = [&kwargs](const std::smatch& match) -> std::string {
         // Extract the placeholder key
         std::string key = match[1];
 
-        // Find the key in the kwargs map
+        // Return the corresponding value from kwargs, or the original placeholder if not found
         auto it = kwargs.find(key);
         if (it != kwargs.end()) {
-            // If the key exists, return the corresponding value
             return it->second;
         } else {
-            // Otherwise, return the original placeholder
             return "{" + key + "}";
         }
     };
@@ -36,91 +33,86 @@ std::string safe_format(const std::string& template_str, const std::unordered_ma
     return std::regex_replace(template_str, pattern, replacer);
 }
 
-TEST_CASE("Test safe_format function") {
-    SECTION("Placeholder replacement works correctly") {
+TEST_CASE("TestSafeFormat", "[safe_format]") {
+    SECTION("test_full_replacement") {
+        // Test with all placeholders having corresponding values.
+        std::string template_str = "Hello, {name}! Welcome to {place}.";
         std::unordered_map<std::string, std::string> kwargs = {
             {"name", "Alice"},
-            {"age", "30"}
+            {"place", "Wonderland"}
         };
-
-        std::string template_str = "Hello, my name is {name} and I am {age} years old.";
-        std::string expected = "Hello, my name is Alice and I am 30 years old.";
-
-        REQUIRE(safe_format(template_str, kwargs) == expected);
+        std::string result = safe_format(template_str, kwargs);
+        std::string expected = "Hello, Alice! Welcome to Wonderland.";
+        REQUIRE(result == expected);
     }
 
-    SECTION("Unmatched placeholders remain unchanged") {
+    SECTION("test_partial_replacement") {
+        // Test with some placeholders missing corresponding values.
+        std::string template_str = "Hello, {name}! Welcome to {place}.";
         std::unordered_map<std::string, std::string> kwargs = {
-            {"name", "Bob"}
+            {"name", "Alice"}
         };
-
-        std::string template_str = "Hello, my name is {name} and I am {age} years old.";
-        std::string expected = "Hello, my name is Bob and I am {age} years old.";
-
-        REQUIRE(safe_format(template_str, kwargs) == expected);
+        std::string result = safe_format(template_str, kwargs);
+        std::string expected = "Hello, Alice! Welcome to {place}.";
+        REQUIRE(result == expected);
     }
 
-    SECTION("Empty template works correctly") {
-        std::unordered_map<std::string, std::string> kwargs = {
-            {"name", "Charlie"}
-        };
-
-        std::string template_str = "";
-        std::string expected = "";
-
-        REQUIRE(safe_format(template_str, kwargs) == expected);
-    }
-
-    SECTION("No placeholders works correctly") {
-        std::unordered_map<std::string, std::string> kwargs = {
-            {"name", "David"}
-        };
-
+    SECTION("test_no_replacement") {
+        // Test when no placeholders are provided.
         std::string template_str = "Hello, world!";
+        std::unordered_map<std::string, std::string> kwargs;
+        std::string result = safe_format(template_str, kwargs);
         std::string expected = "Hello, world!";
-
-        REQUIRE(safe_format(template_str, kwargs) == expected);
+        REQUIRE(result == expected);
     }
 
-    SECTION("Multiple placeholders work correctly") {
+    SECTION("test_missing_placeholder") {
+        // Test with a placeholder that has no corresponding value.
+        std::string template_str = "My name is {name}, and I live in {city}.";
         std::unordered_map<std::string, std::string> kwargs = {
-            {"name", "Eve"},
-            {"age", "25"},
-            {"city", "New York"}
+            {"name", "Alice"}
         };
-
-        std::string template_str = "My name is {name}, I am {age} years old, and I live in {city}.";
-        std::string expected = "My name is Eve, I am 25 years old, and I live in New York.";
-
-        REQUIRE(safe_format(template_str, kwargs) == expected);
+        std::string result = safe_format(template_str, kwargs);
+        std::string expected = "My name is Alice, and I live in {city}.";
+        REQUIRE(result == expected);
     }
-}
 
-int main(int argc, char* argv[]) {
-    return Catch::Session().run(argc, argv);
+    SECTION("test_numeric_values") {
+        // Test with numeric values as replacements.
+        std::string template_str = "Your score is {score} out of {total}.";
+        std::unordered_map<std::string, std::string> kwargs = {
+            {"score", "85"},
+            {"total", "100"}
+        };
+        std::string result = safe_format(template_str, kwargs);
+        std::string expected = "Your score is 85 out of 100.";
+        REQUIRE(result == expected);
+    }
 }
 ```
 
 ### Explanation:
-1. **Function Definition**:
-   - The `safe_format` function is defined with the same functionality as the Python version.
+1. **Header Files**:
+   - `<catch2/catch_test_macros.hpp>` for Catch2 test macros.
+   - `<string>` for string manipulation.
+   - `<unordered_map>` for storing key-value pairs.
+   - `<regex>` for regular expressions.
 
-2. **Catch2 Test Class**:
-   - The `TEST_CASE` macro defines a test case named "Test safe_format function".
-   - Each `SECTION` within the test case represents a specific test scenario.
+2. **Function Definition**:
+   - `safe_format` is defined to perform the same functionality as the Python version.
 
-3. **Assertions**:
-   - The `REQUIRE` macro is used to assert that the output of `safe_format` matches the expected result.
+3. **Test Class**:
+   - `TEST_CASE` is used to define a test case named `TestSafeFormat`.
+   - Each `SECTION` corresponds to a specific test case from the Python unittest class.
 
-4. **Main Function**:
-   - The `main` function initializes and runs the Catch2 test session.
+4. **Test Cases**:
+   - `test_full_replacement`: Tests with all placeholders having corresponding values.
+   - `test_partial_replacement`: Tests with some placeholders missing corresponding values.
+   - `test_no_replacement`: Tests when no placeholders are provided.
+   - `test_missing_placeholder`: Tests with a placeholder that has no corresponding value.
+   - `test_numeric_values`: Tests with numeric values as replacements.
 
-### Running the Tests:
-To run the tests, you need to compile the code with the Catch2 library included. You can use a build system like CMake or simply compile it directly:
+5. **Assertions**:
+   - `REQUIRE` is used to assert that the results match the expected values.
 
-```sh
-g++ -o test_safe_format test_safe_format.cpp -lcatch2
-./test_safe_format
-```
-
-This setup ensures that the functionality and logic of the Python unittests are preserved in C++ using the Catch2 testing framework.
+This C++ code preserves the functionality and logic of the Python unittest class, ensuring that each test case is accurately represented in Catch2.

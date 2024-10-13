@@ -1,96 +1,146 @@
-To convert the given Python function into a C++ program and write equivalent tests using Catch2, follow these steps:
+Certainly! Below is the equivalent C++ test class using the Catch2 testing framework. The provided Python unittest class is converted into a Catch2 test suite, ensuring that the functionality and logic of the tests are preserved.
 
-1. **Implement the `prepend_to_each_line` function in C++**.
-2. **Create a Catch2 test suite** to ensure the function behaves as expected.
-
-Here’s how you can do it:
-
-### 1. Implement the Function
-
-```cpp
-#include <fstream>
-#include <string>
-#include <iostream>
-
-// Function to prepend a prefix to each line of a file
-void prepend_to_each_line(const std::string& file_path, const std::string& prefix) {
-    // Temporary file name
-    std::string temp_file = file_path + ".tmp";
-
-    std::ifstream infile(file_path);
-    std::ofstream outfile(temp_file);
-
-    if (!infile.is_open() || !outfile.is_open()) {
-        std::cerr << "Error opening files" << std::endl;
-        return;
-    }
-
-    std::string line;
-    while (std::getline(infile, line)) {
-        outfile << prefix << line << '\n';
-    }
-
-    infile.close();
-    outfile.close();
-
-    // Replace original file with the temporary file
-    if (std::rename(temp_file.c_str(), file_path.c_str()) != 0) {
-        std::cerr << "Error replacing file" << std::endl;
-    }
-}
-```
-
-### 2. Create the Test Suite with Catch2
-
-First, include the necessary headers and define your test suite:
+### C++ Code with Catch2 Testing Framework
 
 ```cpp
 #include <catch2/catch_test_macros.hpp>
 #include <fstream>
 #include <string>
 #include <iostream>
+#include <filesystem>
 
-// Function implementation (same as above)
-void prepend_to_each_line(const std::string& file_path, const std::string& prefix);
+// Function to prepend a string to each line of a file
+void prepend_to_each_line(const std::string& file_path, const std::string& prefix) {
+    std::string temp_file_path = file_path + ".tmp";
 
-TEST_CASE("Prepend prefix to each line of a file", "[prepend_to_each_line]") {
-    // Test data
-    std::string file_path = "test.txt";
-    std::string prefix = ">> ";
+    std::ifstream file(file_path);
+    std::ofstream temp_file(temp_file_path);
 
-    // Create a test file
-    std::ofstream testFile(file_path);
-    testFile << "Hello\nWorld\n";
-    testFile.close();
+    if (!file.is_open() || !temp_file.is_open()) {
+        std::cerr << "Error opening files." << std::endl;
+        return;
+    }
 
-    // Call the function under test
-    prepend_to_each_line(file_path, prefix);
-
-    // Read the modified file and check its contents
-    std::ifstream modifiedFile(file_path);
     std::string line;
-
-    SECTION("First line is prepended correctly") {
-        REQUIRE(std::getline(modifiedFile, line));
-        REQUIRE(line == prefix + "Hello");
+    while (std::getline(file, line)) {
+        temp_file << prefix << line << '\n';
     }
 
-    SECTION("Second line is prepended correctly") {
-        REQUIRE(std::getline(modifiedFile, line));
-        REQUIRE(line == prefix + "World");
+    file.close();
+    temp_file.close();
+
+    // Replace the original file with the modified file
+    if (std::rename(temp_file_path.c_str(), file_path.c_str()) != 0) {
+        std::cerr << "Error replacing the file." << std::endl;
+    }
+}
+
+TEST_CASE("TestPrependToEachLine") {
+    std::string test_file_path = "test_file.txt";
+
+    SECTION("setUp") {
+        // Create a temporary file for testing
+        std::ofstream f(test_file_path);
+        f << "Line 1\nLine 2\nLine 3";
+        f.close();
     }
 
-    // Check for end of file
-    REQUIRE_FALSE(std::getline(modifiedFile, line));
+    SECTION("tearDown") {
+        // Remove the temporary file after testing
+        std::filesystem::remove(test_file_path);
+    }
 
-    // Clean up the test file
-    std::remove(file_path.c_str());
+    SECTION("test_prepend_string") {
+        // Test appending a simple string to the beginning of each line
+        prepend_to_each_line(test_file_path, "Test: ");
+        std::ifstream f(test_file_path);
+        std::string line;
+        std::vector<std::string> lines;
+        while (std::getline(f, line)) {
+            lines.push_back(line + "\n");
+        }
+        f.close();
+        REQUIRE(lines == std::vector<std::string>({
+            "Test: Line 1\n",
+            "Test: Line 2\n",
+            "Test: Line 3\n"
+        }));
+    }
+
+    SECTION("test_prepend_empty_string") {
+        // Test appending an empty string
+        prepend_to_each_line(test_file_path, "");
+        std::ifstream f(test_file_path);
+        std::string line;
+        std::vector<std::string> lines;
+        while (std::getline(f, line)) {
+            lines.push_back(line + "\n");
+        }
+        f.close();
+        REQUIRE(lines == std::vector<std::string>({
+            "Line 1\n",
+            "Line 2\n",
+            "Line 3\n"
+        }));
+    }
+
+    SECTION("test_prepend_special_characters") {
+        // Test appending special characters to the beginning of each line
+        prepend_to_each_line(test_file_path, "#$%^&* ");
+        std::ifstream f(test_file_path);
+        std::string line;
+        std::vector<std::string> lines;
+        while (std::getline(f, line)) {
+            lines.push_back(line + "\n");
+        }
+        f.close();
+        REQUIRE(lines == std::vector<std::string>({
+            "#$%^&* Line 1\n",
+            "#$%^&* Line 2\n",
+            "#$%^&* Line 3\n"
+        }));
+    }
+
+    SECTION("test_prepend_numeric_string") {
+        // Test appending numeric string to the beginning of each line
+        prepend_to_each_line(test_file_path, "123 ");
+        std::ifstream f(test_file_path);
+        std::string line;
+        std::vector<std::string> lines;
+        while (std::getline(f, line)) {
+            lines.push_back(line + "\n");
+        }
+        f.close();
+        REQUIRE(lines == std::vector<std::string>({
+            "123 Line 1\n",
+            "123 Line 2\n",
+            "123 Line 3\n"
+        }));
+    }
+
+    SECTION("test_file_not_found") {
+        // Test the response when the file does not exist
+        REQUIRE_THROWS_AS(prepend_to_each_line("non_existent_file.txt", "Test: "), std::runtime_error);
+    }
+}
+
+int main(int argc, char* argv[]) {
+    return Catch::Session().run(argc, argv);
 }
 ```
 
-### Explanation
+### Explanation:
+1. **Header Files**: The necessary header files (`<catch2/catch_test_macros.hpp>`, `<fstream>`, `<string>`, `<iostream>`, `<filesystem>`) are included.
+2. **Function Definition**: The `prepend_to_each_line` function is defined outside the test case to keep it separate from the tests.
+3. **Test Case**: The `TEST_CASE` macro is used to define the test case `TestPrependToEachLine`.
+4. **Setup and Teardown**: The `setUp` and `tearDown` sections are implemented using `SECTION` macros to create and remove the temporary file.
+5. **Test Sections**:
+   - `test_prepend_string`: Tests appending a simple string to each line.
+   - `test_prepend_empty_string`: Tests appending an empty string.
+   - `test_prepend_special_characters`: Tests appending special characters.
+   - `test_prepend_numeric_string`: Tests appending a numeric string.
+   - `test_file_not_found`: Tests the behavior when the file does not exist.
+6. **Assertions**: `REQUIRE` is used for assertions to check the expected results.
+7. **Main Function**: The `main` function initializes and runs the Catch2 test session.
 
-- **Function Implementation**: The `prepend_to_each_line` function reads each line from the input file, prepends the prefix, and writes it to a temporary file. After processing all lines, it replaces the original file with the temporary one.
-- **Test Suite**: The Catch2 test suite creates a test file, calls the function under test, and verifies the results by reading the modified file and comparing the lines against the expected values.
-
-This setup ensures that the functionality and logic of the tests are preserved while making necessary adjustments for language differences between Python and C++.
+This conversion ensures that the functionality and logic of the tests are preserved while adhering to C++ and Catch2 standards.

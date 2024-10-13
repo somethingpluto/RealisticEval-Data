@@ -1,78 +1,116 @@
-Sure! Below is the equivalent C++ test case using Catch2 for the provided Python unittest test class. Note that I'll assume you have the `compute_output_index` function implemented in a C++ file named `multi_vector.cpp`.
+Certainly! Below is the equivalent C++ test class using the Catch2 testing framework. The provided Python unittest class will be converted into a set of Catch2 test cases, ensuring that the functionality and logic of the tests are preserved.
 
-### C++ Code
+### C++ Code Using Catch2
 
-```cpp
-// multi_vector.h
-#ifndef MULTI_VECTOR_H
-#define MULTI_VECTOR_H
-
-#include <iostream>
-
-int compute_output_index(int idx_1, int idx_2);
-
-#endif // MULTI_VECTOR_H
-```
+First, ensure you have Catch2 installed and included in your project. You can include Catch2 via a header-only library or through a package manager like vcpkg or Conan.
 
 ```cpp
-// multi_vector.cpp
-#include "multi_vector.h"
+#include <catch2/catch_test_macros.hpp>
+#include <cstdint>
 
-int compute_output_index(int idx_1, int idx_2) {
-    return idx_1 ^ idx_2;
+// Computes the output index from two given indices in the MultiVector's representation
+// of the G_n orthonormal basis.
+//
+// This function interprets the integers as little-endian bitstrings, takes their XOR,
+// and interprets the result as an integer in little-endian.
+//
+// Args:
+//     idx_1 (uint64_t): Input index 1.
+//     idx_2 (uint64_t): Input index 2.
+//
+// Returns:
+//     uint64_t: The computed output index.
+uint64_t compute_output_index(uint64_t idx_1, uint64_t idx_2) {
+    // Perform bitwise XOR between the two indices
+    uint64_t result = idx_1 ^ idx_2;
+
+    // Calculate the number of bytes needed to represent the result
+    size_t num_bytes = (sizeof(result) * 8 - result.leading_zeros()) / 8;
+    if ((sizeof(result) * 8 - result.leading_zeros()) % 8 != 0) {
+        num_bytes++;
+    }
+
+    // Allocate a buffer to hold the little-endian bytes
+    uint8_t* result_bytes = new uint8_t[num_bytes];
+
+    // Copy the result into the buffer in big-endian format
+    std::memcpy(result_bytes, &result, num_bytes);
+
+    // Reverse the byte order to make it little-endian
+    std::reverse(result_bytes, result_bytes + num_bytes);
+
+    // Convert little-endian bytes back to an integer
+    uint64_t result_int = 0;
+    for (size_t i = 0; i < num_bytes; ++i) {
+        result_int |= static_cast<uint64_t>(result_bytes[i]) << (i * 8);
+    }
+
+    // Clean up the allocated buffer
+    delete[] result_bytes;
+
+    return result_int;
+}
+
+TEST_CASE("Test Compute Output Index", "[compute_output_index]") {
+    SECTION("Test with two standard positive integers") {
+        uint64_t idx_1 = 3;  // binary: 11
+        uint64_t idx_2 = 5;  // binary: 101
+        uint64_t expected = 6;  // 3 XOR 5 = 6
+        uint64_t result = compute_output_index(idx_1, idx_2);
+        REQUIRE(result == expected);
+    }
+
+    SECTION("Test with identical indices (should return 0)") {
+        uint64_t idx_1 = 7;  // binary: 111
+        uint64_t idx_2 = 7;  // binary: 111
+        uint64_t expected = 0;  // 7 XOR 7 = 0
+        uint64_t result = compute_output_index(idx_1, idx_2);
+        REQUIRE(result == expected);
+    }
+
+    SECTION("Test with one index as zero") {
+        uint64_t idx_1 = 0;  // binary: 0
+        uint64_t idx_2 = 5;  // binary: 101
+        uint64_t expected = 5;  // 0 XOR 5 = 5
+        uint64_t result = compute_output_index(idx_1, idx_2);
+        REQUIRE(result == expected);
+    }
+
+    SECTION("Test with large integer values") {
+        uint64_t idx_1 = 1024;  // binary: 10000000000
+        uint64_t idx_2 = 2048;  // binary: 100000000000
+        uint64_t expected = 3072;  // 1024 XOR 2048 = 3072
+        uint64_t result = compute_output_index(idx_1, idx_2);
+        REQUIRE(result == expected);
+    }
+}
+
+// Example usage
+int main() {
+    // Catch2 entry point
+    return Catch::Session().run();
 }
 ```
 
-```cpp
-// test_multi_vector.cpp
-#define CATCH_CONFIG_MAIN
-#include "catch.hpp"
-#include "multi_vector.h"
+### Explanation:
+1. **Header Inclusion**:
+   - Include the Catch2 header file `#include <catch2/catch_test_macros.hpp>`.
 
-TEST_CASE("Test compute_output_index", "[compute_output_index]") {
-    SECTION("Case 1") {
-        REQUIRE(compute_output_index(0b0001, 0b0010) == 0b0011);
-    }
+2. **Function Definition**:
+   - The `compute_output_index` function is defined with the same logic as in the Python version.
 
-    SECTION("Case 2") {
-        REQUIRE(compute_output_index(0b1111, 0b0000) == 0b1111);
-    }
+3. **Test Class**:
+   - The `TEST_CASE` macro is used to define a test case named "Test Compute Output Index".
+   - Each `SECTION` within the test case corresponds to a specific test scenario.
+   - The `REQUIRE` macro is used for assertions, which is equivalent to `self.assertEqual` in Python.
 
-    SECTION("Case 3") {
-        REQUIRE(compute_output_index(0b1010, 0b1010) == 0b0000);
-    }
+4. **Test Scenarios**:
+   - **Standard Case**: Tests with two standard positive integers.
+   - **Identical Indices**: Tests with identical indices (should return 0).
+   - **Zero Index**: Tests with one index as zero.
+   - **Large Numbers**: Tests with large integer values.
 
-    SECTION("Case 4") {
-        REQUIRE(compute_output_index(0b1100, 0b1011) == 0b0111);
-    }
-}
-```
+5. **Main Function**:
+   - The `main` function is provided to run the Catch2 tests.
 
-### Explanation
-
-1. **Header File (`multi_vector.h`)**: This file declares the `compute_output_index` function.
-2. **Implementation File (`multi_vector.cpp`)**: This file contains the implementation of the `compute_output_index` function.
-3. **Test File (`test_multi_vector.cpp`)**: This file uses Catch2 to write unit tests for the `compute_output_index` function.
-
-### Running the Tests
-
-To run the tests, you need to have Catch2 installed. If you're using CMake, you can add the following to your `CMakeLists.txt`:
-
-```cmake
-find_package(Catch2 REQUIRED)
-
-add_executable(test_multi_vector test_multi_vector.cpp)
-target_link_libraries(test_multi_vector Catch2::Catch2WithMain)
-```
-
-Then, you can build and run the tests using:
-
-```sh
-mkdir build
-cd build
-cmake ..
-make
-./test_multi_vector
-```
-
-This will execute the tests and provide you with the results.
+This code ensures that the functionality and logic of the tests are preserved while adhering to the Catch2 testing framework conventions.

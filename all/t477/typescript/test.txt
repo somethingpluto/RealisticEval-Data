@@ -1,121 +1,116 @@
-Certainly! Below is the equivalent TypeScript code for the provided Python function along with a Jest test suite to ensure the functionality and logic are preserved. We will include appropriate Jest assertions and type annotations.
+Certainly! Below is the equivalent TypeScript code using Jest for testing. The provided Python unittest class will be converted into a Jest test suite, ensuring that the functionality and logic of the tests are preserved. Type annotations and Jest assertions will be used appropriately.
 
 ### TypeScript Code
 
-First, let's convert the Python function to TypeScript:
+First, let's define the classes and the `canClassToDict` function in TypeScript:
 
 ```typescript
-/**
- * Check if the given object can be treated as a dictionary.
- *
- * @param obj - any type of object
- * @returns true if the object can be treated as a dictionary, false otherwise
- */
-function canClassToDict(obj: any): boolean {
-    return isDataClass(obj) || isObjectOfType(obj) || hasDictProperty(obj);
+// Define the data class equivalent in TypeScript
+class Person {
+    constructor(public name: string, public age: number) {}
 }
 
-/**
- * Check if the object is a data class (plain object).
- *
- * @param obj - the object to check
- * @returns true if the object is a plain object, false otherwise
- */
+class Car {
+    constructor(public make: string, public model: string) {}
+}
+
+class Dog {
+    constructor(public name: string, public breed: string) {
+        this._age = 5; // Private attribute
+    }
+    private _age: number;
+}
+
+class EmptyClass {
+    // Empty class
+}
+
+class Student {
+    static schoolName = "Example School";
+
+    constructor(public name: string) {
+        this.grade = "A";
+    }
+    grade: string;
+}
+
+// Utility function to mimic Python's is_dataclass functionality
 function isDataClass(obj: any): boolean {
-    return typeof obj === 'object' && obj !== null && !Array.isArray(obj);
+    return obj && typeof obj === 'object' && '__dataclass_fields__' in obj;
 }
 
-/**
- * Check if the object is a constructor function (class).
- *
- * @param obj - the object to check
- * @returns true if the object is a constructor function, false otherwise
- */
-function isObjectOfType(obj: any): boolean {
-    return typeof obj === 'function';
-}
-
-/**
- * Check if the object has a dictionary-like property.
- *
- * @param obj - the object to check
- * @returns true if the object has a dictionary-like property, false otherwise
- */
-function hasDictProperty(obj: any): boolean {
-    return '__dict__' in obj;
+// Function to check if an object can be treated as a dictionary
+function canClassToDict(obj: any): boolean {
+    return isDataClass(obj) || (typeof obj === 'object' && obj !== null && '__dict__' in obj);
 }
 ```
 
 ### Jest Test Suite
 
-Now, let's write the Jest test suite to ensure the functionality of the `canClassToDict` function is preserved:
+Now, let's write the Jest test suite:
 
 ```typescript
-import { canClassToDict, isDataClass, isObjectOfType, hasDictProperty } from './path/to/your/functions';
+import { Person, Car, Dog, EmptyClass, Student } from './path-to-your-classes';
+import { canClassToDict } from './path-to-your-function';
 
-describe('canClassToDict', () => {
-    it('should return true for a plain object', () => {
-        const plainObject = { name: 'John', age: 30 };
-        expect(canClassToDict(plainObject)).toBe(true);
+describe('TestCanClassToDict', () => {
+    describe('test_dataclass', () => {
+        it('should return true for a dataclass', () => {
+            const person = new Person("Alice", 30);
+            expect(canClassToDict(person)).toBe(true);
+        });
     });
 
-    it('should return true for a class', () => {
-        class MyClass {}
-        expect(canClassToDict(MyClass)).toBe(true);
+    describe('test_regular_class', () => {
+        it('should return true for a regular class', () => {
+            const car = new Car("Toyota", "Corolla");
+            expect(canClassToDict(car)).toBe(true);
+        });
     });
 
-    it('should return true for an object with __dict__ property', () => {
-        const objWithDict = { __dict__: {} };
-        expect(canClassToDict(objWithDict)).toBe(true);
+    describe('test_regular_class_with_private_attribute', () => {
+        it('should return true for a regular class with private attributes', () => {
+            const dog = new Dog("Buddy", "Golden Retriever");
+            expect(canClassToDict(dog)).toBe(true);
+        });
     });
 
-    it('should return false for a number', () => {
-        const number = 123;
-        expect(canClassToDict(number)).toBe(false);
+    describe('test_empty_class', () => {
+        it('should return true for an empty class', () => {
+            const empty = new EmptyClass();
+            expect(canClassToDict(empty)).toBe(true);
+        });
     });
 
-    it('should return false for an array', () => {
-        const arr = [1, 2, 3];
-        expect(canClassToDict(arr)).toBe(false);
+    describe('test_class_with_class_variable', () => {
+        it('should return true for a class with a class variable', () => {
+            const student = new Student("John");
+            expect(canClassToDict(student)).toBe(true);
+        });
     });
 
-    it('should return false for null', () => {
-        const nullObj = null;
-        expect(canClassToDict(nullObj)).toBe(false);
-    });
-
-    it('should return false for undefined', () => {
-        const undefinedObj = undefined;
-        expect(canClassToDict(undefinedObj)).toBe(false);
-    });
-
-    it('should return false for a string', () => {
-        const str = 'hello';
-        expect(canClassToDict(str)).toBe(false);
+    describe('test_non_class_object', () => {
+        it('should return false for a non-class object', () => {
+            const number = 42;
+            expect(canClassToDict(number)).toBe(false);
+        });
     });
 });
 ```
 
 ### Explanation:
+1. **Class Definitions**:
+   - The classes `Person`, `Car`, `Dog`, `EmptyClass`, and `Student` are defined with appropriate constructors and properties.
 
-1. **Function Definitions**:
-   - `canClassToDict`: Checks if the given object can be treated as a dictionary.
-   - `isDataClass`: Checks if the object is a plain JavaScript object.
-   - `isObjectOfType`: Checks if the object is a constructor function.
-   - `hasDictProperty`: Checks if the object has a `__dict__` property.
+2. **Utility Functions**:
+   - `isDataClass` is a utility function that mimics Python's `is_dataclass` functionality.
+   - `canClassToDict` checks if an object can be treated as a dictionary.
 
-2. **Jest Test Suite**:
-   - Each test case verifies different types of objects and their expected outcomes.
-   - `expect(canClassToDict(...))` is used to assert the expected boolean value.
+3. **Jest Test Suite**:
+   - Each test case is defined within a `describe` block.
+   - Jest assertions (`expect`) are used to verify the expected behavior of the `canClassToDict` function.
 
-### Importing Functions
+4. **Import Statements**:
+   - Import statements are added to include the classes and the `canClassToDict` function.
 
-Make sure to adjust the import path in the Jest test file to match the location of your functions:
-
-```typescript
-import { canClassToDict, isDataClass, isObjectOfType, hasDictProperty } from './path/to/your/functions';
-```
-
-Replace `'./path/to/your/functions'` with the actual path to the TypeScript file containing the functions.
-
-This setup ensures that the functionality and logic of the Python unittests are preserved in the Jest test suite for TypeScript.
+This TypeScript code preserves the original functionality and logic of the Python unittest class while adapting it to Jest for testing.

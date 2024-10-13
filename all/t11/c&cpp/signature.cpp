@@ -1,61 +1,49 @@
-/**
- * Implement a dictionary tree for fast string retrieval and storage
- */
+// TrieNode class
+class TrieNode {
+public:
+    std::unordered_map<char, TrieNode*> children;
+
+    TrieNode() {}
+};
+
+// Trie class
 class Trie {
 public:
     /**
-     * Insert a word into the trie
-     * @param word The word to be inserted
+     * Implement a dictionary tree for fast string retrieval and storage
      */
+    TrieNode* root;
+
+    Trie() : root(new TrieNode()) {}
+
+    ~Trie() {
+        delete root;
+    }
+
+    // Insert a word into the trie
     void insert(const std::string& word);
 
-    /**
-     * Search if a word exists in the trie
-     * @param word The word to search
-     * @return True if the word exists, false otherwise
-     */
-    bool search(const std::string& word) const;
+    // Search for a word in the trie
+    bool search(const std::string& word);
 
-    /**
-     * Check if any word in the trie starts with the given prefix
-     * @param prefix The prefix to check
-     * @return True if there is at least one word starting with the prefix, false otherwise
-     */
-    bool startsWith(const std::string& prefix) const;
-
-private:
-    /**
-     * Helper function to recursively insert a word into the trie
-     * @param node The current node in the trie
-     * @param word The word to be inserted
-     * @param index The current index of the character being processed
-     */
-    void insertHelper(TrieNode* node, const std::string& word, size_t index);
-
-    /**
-     * Helper function to recursively search for a word in the trie
-     * @param node The current node in the trie
-     * @param word The word to search
-     * @param index The current index of the character being processed
-     * @return True if the word exists, false otherwise
-     */
-    bool searchHelper(const TrieNode* node, const std::string& word, size_t index) const;
-
-    /**
-     * Helper function to recursively check if any word starts with the given prefix
-     * @param node The current node in the trie
-     * @param prefix The prefix to check
-     * @param index The current index of the character being processed
-     * @return True if there is at least one word starting with the prefix, false otherwise
-     */
-    bool startsWithHelper(const TrieNode* node, const std::string& prefix, size_t index) const;
-
-    TrieNode root; // Root of the trie
+    // Check if there is any word in the trie that starts with the given prefix
+    bool starts_with(const std::string& prefix);
 };
 
-/**
- * Node representing a character in the trie
- */
-struct TrieNode {
-    std::unordered_map<char, TrieNode*> children; // Map to store child nodes
-};
+// Implementation of the insert method
+void Trie::insert(const std::string& word) {
+    // Implementation goes here
+    // ...
+}
+
+// Implementation of the search method
+bool Trie::search(const std::string& word) {
+    // Implementation goes here
+    // ...
+}
+
+// Implementation of the starts_with method
+bool Trie::starts_with(const std::string& prefix) {
+    // Implementation goes here
+    // ...
+}

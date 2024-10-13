@@ -1,122 +1,200 @@
-Certainly! Below is the equivalent JavaScript test class using Jest, which maintains the functionality and logic of the Python unittest test class. I will also document any necessary changes due to language differences.
+Certainly! Here is the equivalent Jest test suite for the given Python unittest class. The goal is to maintain the functionality and logic of the tests while adapting them to Jest's syntax and conventions.
 
-### Python Code
+### Python Code:
 ```python
+import os
 import unittest
 from PIL import Image
 
-def convert_image_to_bits(image_path: str):
-    """
-    Converts an image to a binary representation. Converts the image to black and white mode,
-    that is, each pixel is represented by only 1 bit, with a white pixel value of 255 and a black pixel value of 0.
-
-    Args:
-        image_path (str): The file path of the image to convert.
-
-    Returns:
-        list: A list of bits representing the image, where 1 is for white pixels
-              and 0 is for black pixels.
-    """
-    image = Image.open(image_path)
-    image = image.convert('1')
-
-    pixel_data = image.load()
-
-    w, h = image.size
-
-    bits_array = []
-
-    for y in range(h):
-        for x in range(w):
-            pixel = pixel_data[x, y]
-            bit = 1 if pixel == 255 else 0
-            bits_array.append(bit)
-
-    return bits_array
-
 class TestConvertImageToBits(unittest.TestCase):
 
-    def test_convert_image_to_bits(self):
-        # Assuming 'test_image.png' is a valid image file
-        image_path = 'test_image.png'
-        expected_bits = [1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1]
+    def setUp(self):
+        """Create test images before each test."""
+        # Create a white image (all pixels white)
+        self.white_image_path = 'white_image.bmp'
+        white_image = Image.new('1', (2, 2), color=1)  # 1 is for white
+        white_image.save(self.white_image_path)
 
-        result = convert_image_to_bits(image_path)
-        self.assertEqual(result, expected_bits)
+        # Create a black image (all pixels black)
+        self.black_image_path = 'black_image.bmp'
+        black_image = Image.new('1', (2, 2), color=0)  # 0 is for black
+        black_image.save(self.black_image_path)
 
-if __name__ == '__main__':
-    unittest.main()
+        # Create a mixed image (half white, half black)
+        self.mixed_image_path = 'mixed_image.bmp'
+        mixed_image = Image.new('1', (2, 2))
+        mixed_image.putpixel((0, 0), 1)  # White
+        mixed_image.putpixel((0, 1), 0)  # Black
+        mixed_image.putpixel((1, 0), 0)  # Black
+        mixed_image.putpixel((1, 1), 1)  # White
+        mixed_image.save(self.mixed_image_path)
+
+    def tearDown(self):
+        """Remove the test images after each test."""
+        os.remove(self.white_image_path)
+        os.remove(self.black_image_path)
+        os.remove(self.mixed_image_path)
+
+    def test_white_image(self):
+        """Test converting a white image."""
+        expected_output = [1, 1, 1, 1]  # All pixels should be 1 (white)
+        result = convert_image_to_bits(self.white_image_path)
+        self.assertEqual(result, expected_output)
+
+    def test_black_image(self):
+        """Test converting a black image."""
+        expected_output = [0, 0, 0, 0]  # All pixels should be 0 (black)
+        result = convert_image_to_bits(self.black_image_path)
+        self.assertEqual(result, expected_output)
+
+    def test_mixed_image(self):
+        """Test converting a mixed image."""
+        expected_output = [1, 0, 0, 1]  # 1 white, 3 black
+        result = convert_image_to_bits(self.mixed_image_path)
+        self.assertEqual(result, expected_output)
+
+    def test_invalid_image_path(self):
+        """Test converting an invalid image path."""
+        with self.assertRaises(FileNotFoundError):
+            convert_image_to_bits('invalid_image_path.bmp')
+
+    def test_large_image(self):
+        """Test converting a larger image."""
+        # Create a larger image (3x3)
+        large_image_path = 'large_image.bmp'
+        large_image = Image.new('1', (3, 3))
+        large_image.putpixel((0, 0), 1)
+        large_image.putpixel((1, 1), 1)
+        large_image.putpixel((2, 2), 1)
+        large_image.save(large_image_path)
+
+        expected_output = [
+            1, 0, 0,
+            0, 1, 0,
+            0, 0, 1
+        ]
+        result = convert_image_to_bits(large_image_path)
+        self.assertEqual(result, expected_output)
+
+        # Clean up
+        os.remove(large_image_path)
 ```
 
-### Equivalent JavaScript Test Class Using Jest
+### JavaScript Code Using Jest:
 
 ```javascript
+const fs = require('fs');
 const Jimp = require('jimp');
-const convertImageToBits = require('./path/to/convertImageToBits'); // Import the function
 
-/**
- * Converts an image to a binary representation.
- * Converts the image to black and white mode, that is, each pixel is represented by only 1 bit,
- * with a white pixel value of 255 and a black pixel value of 0.
- *
- * @param {string} imagePath - The file path of the image to convert.
- * @returns {Promise<Array<number>>} A promise that resolves to a list of bits representing the image,
- *                                   where 1 is for white pixels and 0 is for black pixels.
- */
-async function convertImageToBits(imagePath) {
-    try {
-        const image = await Jimp.read(imagePath);
-        image.color([{ apply: 'greyscale' }]);
-        image.color([{ apply: 'threshold', params: [128] }]);
+describe('TestConvertImageToBits', () => {
+    let white_image_path = 'white_image.bmp';
+    let black_image_path = 'black_image.bmp';
+    let mixed_image_path = 'mixed_image.bmp';
 
-        const bitsArray = [];
+    beforeEach(() => {
+        // Create a white image (all pixels white)
+        Jimp.create(2, 2, 0xffffff).write(white_image_path);
 
-        for (let y = 0; y < image.bitmap.height; y++) {
-            for (let x = 0; x < image.bitmap.width; x++) {
-                const pixel = image.getPixelColor(x, y);
-                const bit = (pixel & 0xFFFFFF) === 0xFFFFFF ? 1 : 0;
-                bitsArray.push(bit);
-            }
+        // Create a black image (all pixels black)
+        Jimp.create(2, 2, 0x000000).write(black_image_path);
+
+        // Create a mixed image (half white, half black)
+        const mixedImage = new Jimp(2, 2);
+        mixedImage.setPixelColor(0xffffff, 0, 0); // White
+        mixedImage.setPixelColor(0x000000, 0, 1); // Black
+        mixedImage.setPixelColor(0x000000, 1, 0); // Black
+        mixedImage.setPixelColor(0xffffff, 1, 1); // White
+        mixedImage.write(mixed_image_path);
+    });
+
+    afterEach(() => {
+        fs.unlinkSync(white_image_path);
+        fs.unlinkSync(black_image_path);
+        fs.unlinkSync(mixed_image_path);
+    });
+
+    it('test_white_image', async () => {
+        const expected_output = [1, 1, 1, 1];  // All pixels should be 1 (white)
+        const result = await convertImageToBits(white_image_path);
+        expect(result).toEqual(expected_output);
+    });
+
+    it('test_black_image', async () => {
+        const expected_output = [0, 0, 0, 0];  // All pixels should be 0 (black)
+        const result = await convertImageToBits(black_image_path);
+        expect(result).toEqual(expected_output);
+    });
+
+    it('test_mixed_image', async () => {
+        const expected_output = [1, 0, 0, 1];  // 1 white, 3 black
+        const result = await convertImageToBits(mixed_image_path);
+        expect(result).toEqual(expected_output);
+    });
+
+    it('test_invalid_image_path', async () => {
+        try {
+            await convertImageToBits('invalid_image_path.bmp');
+        } catch (error) {
+            expect(error.code).toBe('ENOENT');
         }
+    });
 
-        return bitsArray;
-    } catch (error) {
-        throw new Error(`Failed to convert image: ${error.message}`);
-    }
-}
+    it('test_large_image', async () => {
+        const large_image_path = 'large_image.bmp';
+        const largeImage = new Jimp(3, 3);
+        largeImage.setPixelColor(0xffffff, 0, 0); // White
+        largeImage.setPixelColor(0xffffff, 1, 1); // White
+        largeImage.setPixelColor(0xffffff, 2, 2); // White
+        largeImage.write(large_image_path);
 
-describe('Test Convert Image To Bits', () => {
-    it('should correctly convert the image to bits', async () => {
-        // Assuming 'test_image.png' is a valid image file
-        const imagePath = 'test_image.png';
-        const expectedBits = [1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1];
+        const expected_output = [
+            1, 0, 0,
+            0, 1, 0,
+            0, 0, 1
+        ];
+        const result = await convertImageToBits(large_image_path);
+        expect(result).toEqual(expected_output);
 
-        const result = await convertImageToBits(imagePath);
-        expect(result).toEqual(expectedBits);
+        // Clean up
+        fs.unlinkSync(large_image_path);
     });
 });
 
-// Example usage:
-// Run the tests using Jest CLI
-// npx jest
+// Example implementation of convertImageToBits
+async function convertImageToBits(imagePath) {
+    const image = await Jimp.read(imagePath);
+    image.color([{apply: 'greyscale'}]);
+    image.color([{apply: 'threshold', params: [128]}]);
+
+    const w = image.bitmap.width;
+    const h = image.bitmap.height;
+
+    const bitsArray = [];
+
+    for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+            const pixel = image.getPixelColor(x, y);
+            const bit = (pixel === 0xffffff) ? 1 : 0;
+            bitsArray.push(bit);
+        }
+    }
+
+    return bitsArray;
+}
 ```
 
 ### Explanation:
-1. **Import Jimp**: Use `require('jimp')` to import the Jimp library.
-2. **Import Function**: Import the `convertImageToBits` function from the relevant module.
-3. **JSDoc Comments**: Add JSDoc comments to describe the function, arguments, and return values.
-4. **Async Function**: Mark the function as `async` since reading an image with Jimp returns a Promise.
-5. **Image Processing**:
-   - Read the image using `Jimp.read(imagePath)`.
-   - Convert the image to grayscale using `image.color([{ apply: 'greyscale' }])`.
-   - Apply a threshold filter to convert the image to black and white using `image.color([{ apply: 'threshold', params: [128] }])`.
-6. **Iterate Over Pixels**: Iterate over each pixel in the image using nested loops.
-7. **Extract Pixel Color**: Use `image.getPixelColor(x, y)` to get the color of the pixel at position `(x, y)`.
-8. **Check Pixel Color**: Determine if the pixel is white (fully opaque white) by checking if the color is `0xFFFFFF`.
-9. **Return Bits Array**: Return the `bitsArray` once all pixels have been processed.
-10. **Testing with Jest**:
-    - Use `describe` and `it` blocks to define the test cases.
-    - Use `expect` to make assertions on the results.
-    - Handle asynchronous operations using `async`/`await`.
+1. **Imports**: We import `fs` and `Jimp` to handle file system operations and image manipulation.
+2. **Before Each Test**: In `beforeEach`, we create the test images using `Jimp`.
+3. **After Each Test**: In `afterEach`, we clean up the test images using `fs.unlinkSync`.
+4. **Test Cases**:
+   - `test_white_image`: Tests a white image.
+   - `test_black_image`: Tests a black image.
+   - `test_mixed_image`: Tests a mixed image.
+   - `test_invalid_image_path`: Tests an invalid image path.
+   - `test_large_image`: Tests a larger image.
+5. **Assertions**: We use `expect` to assert the results.
+6. **Error Handling**: For the invalid image path test, we catch the error and assert the error code.
+7. **Example Implementation**: Provided an example implementation of `convertImageToBits` for completeness.
 
-This conversion ensures that the functionality and logic of the tests are preserved, and the structure is clear and well-documented.
+This conversion ensures that the functionality and logic of the tests are preserved while adapting to Jest's syntax and conventions.

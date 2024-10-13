@@ -1,54 +1,78 @@
-First, let's create a C++ program that includes the necessary headers and defines the function `check_xor_sum`. We'll use Catch2 for the testing framework and `std::vector` to represent the 2D array since C++ does not have a direct equivalent to NumPy arrays. 
+Certainly! Below is the equivalent C++ test class using the Catch2 testing framework. The provided Python unittest class will be converted into a Catch2 test suite, ensuring that the functionality and logic of the tests are preserved.
 
-Here's how you can define the `check_xor_sum` function and write tests for it using Catch2:
-
-1. Include the necessary headers.
-2. Define the `check_xor_sum` function.
-3. Write tests using Catch2.
+### C++ Code with Catch2 Testing Framework
 
 ```cpp
 #include <catch2/catch_test_macros.hpp>
-#include <vector>
+#include <Eigen/Dense>
 
-// Function to calculate the XOR sum of specific columns in a 2D vector
-bool check_xor_sum(const std::vector<std::vector<int>>& combination) {
-    // Initialize XOR sums for each column
-    int col0_xor = 0;
-    int col1_xor = 0;
-    int col2_xor = 0;
+// Function to check XOR sums of specific columns in a given combination matrix.
+bool check_xor_sum(const Eigen::ArrayXi& combination) {
+    // Ensure that combination is an array of integers (Eigen handles this internally).
 
-    // Calculate the XOR sum for each column
-    for (const auto& row : combination) {
-        col0_xor ^= row[0];
-        col1_xor ^= row[1];
-        col2_xor ^= row[2];
-    }
+    // Calculate XOR sums for specified columns
+    Eigen::ArrayXi xor_sum_0_3_6 = (combination.col(0) ^ combination.col(3) ^ combination.col(6)).eval();
+    Eigen::ArrayXi xor_sum_1_4_7 = (combination.col(1) ^ combination.col(4) ^ combination.col(7)).eval();
+    Eigen::ArrayXi xor_sum_2_5 = (combination.col(2) ^ combination.col(5)).eval();
 
-    // Check if the XOR sums match the required values
-    return (col0_xor == 0) && (col1_xor == 1) && (col2_xor == 1);
+    // Check if the XOR sums match the expected values
+    bool all_match = true;
+    all_match &= (xor_sum_0_3_6 == 0x6b).all();
+    all_match &= (xor_sum_1_4_7 == 0x76).all();
+    all_match &= (xor_sum_2_5 == 0x12).all();
+
+    return all_match;
 }
 
-TEST_CASE("Check XOR sums of specific columns") {
-    SECTION("Valid combination") {
-        std::vector<std::vector<int>> combination = {{0, 1, 1}, {0, 1, 1}};
-        REQUIRE(check_xor_sum(combination));
+TEST_CASE("TestCheckXorSum", "[check_xor_sum]") {
+    SECTION("test_correct_xor_sums") {
+        // Test with combination values that produce the expected XOR sums.
+        Eigen::ArrayXi combination(2, 8);
+        combination << 0x6b, 0x00, 0x12, 0x00, 0x76, 0x00, 0x00, 0x00,
+                       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00;
+        REQUIRE_FALSE(check_xor_sum(combination));
     }
 
-    SECTION("Invalid combination") {
-        std::vector<std::vector<int>> combination = {{1, 1, 1}, {0, 1, 1}};
+    SECTION("test_incorrect_xor_sums") {
+        // Test with combination values that do not meet the expected XOR sums.
+        Eigen::ArrayXi combination(2, 8);
+        combination << 0x6b, 0x00, 0x12, 0x00, 0x76, 0x00, 0x00, 0x00,
+                       0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00;
         REQUIRE_FALSE(check_xor_sum(combination));
+    }
+
+    SECTION("test_edge_case_with_zero") {
+        // Test with a combination where all values are zero.
+        Eigen::ArrayXi combination(1, 8);
+        combination.setZero();
+        REQUIRE_FALSE(check_xor_sum(combination));
+    }
+
+    SECTION("test_large_numbers") {
+        // Test with large numbers in the combination.
+        Eigen::ArrayXi combination(2, 8);
+        combination << 0x6b000000, 0x00000000, 0x00000012, 0x00000000, 0x76000000, 0x00000000, 0x00000000, 0x00000000,
+                       0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000;
+        REQUIRE_FALSE(check_xor_sum(combination));
+    }
+
+    SECTION("test_multiple_rows") {
+        // Test with a combination that contains multiple rows.
+        Eigen::ArrayXi combination(3, 8);
+        combination << 0x6b, 0x00, 0x12, 0x00, 0x76, 0x00, 0x00, 0x00,
+                       0x6b, 0x00, 0x12, 0x00, 0x76, 0x00, 0x00, 0x00,
+                       0x6b, 0x00, 0x12, 0x00, 0x76, 0x00, 0x00, 0x00;
+        REQUIRE(check_xor_sum(combination));
     }
 }
 ```
 
-### Explanation
+### Explanation:
+1. **Header Inclusion**: We include the necessary headers (`catch2/catch_test_macros.hpp` and `Eigen/Dense`).
+2. **Function Definition**: The `check_xor_sum` function is defined to take a 2D Eigen array (`Eigen::ArrayXi`) as input.
+3. **Test Class**: The `TEST_CASE` macro is used to define a test case named `TestCheckXorSum`.
+4. **Sections**: Each `SECTION` within the test case corresponds to a specific test scenario.
+5. **Assertions**: The `REQUIRE_FALSE` and `REQUIRE` macros are used to assert the expected behavior of the `check_xor_sum` function.
+6. **Data Initialization**: The test data is initialized using Eigen arrays to match the structure of the NumPy arrays in the Python code.
 
-1. **Headers**: We include the necessary headers for Catch2 and `vector`.
-
-2. **Function Definition**: The `check_xor_sum` function takes a 2D vector (`std::vector<std::vector<int>>`) as input and calculates the XOR sum for each column. It then checks if these XOR sums match the required values (0 for the first column, 1 for the second and third columns).
-
-3. **Tests**:
-   - **Valid Combination**: We test with a valid combination that should return `true`.
-   - **Invalid Combination**: We test with an invalid combination that should return `false`.
-
-This setup ensures that the functionality and logic of the original Python tests are preserved in C++ using Catch2.
+This conversion ensures that the functionality and logic of the tests are preserved while adapting to the syntax and features of C++ and the Catch2 testing framework.

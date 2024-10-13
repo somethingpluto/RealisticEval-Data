@@ -2,22 +2,27 @@
 #include <regex>
 #include <string>
 
-// Function to convert an input string with multiple separators to a comma-separated string
 std::string convert_to_comma_separated(const std::string& input_string) {
+    /**
+     * Converts an input string with multiple separators to a comma-separated string.
+     * Now handles additional separators: hyphens (-) and colons (:).
+     *
+     * Args:
+     * input_string (std::string): The input string containing various separators like *, ;, /, -, :
+     *
+     * Returns:
+     * std::string: A comma-separated string where all specified separators have been replaced with commas.
+     */
     // The pattern includes *, ;, /, -, :
-    std::regex pattern("[\\*;/\\-\\:]");  // Correctly escaped hyphen and included colon in the character class
+    std::regex pattern("[\\*;/-:]");
     std::string comma_separated_string = std::regex_replace(input_string, pattern, ",");
-
     return comma_separated_string;
 }
 
-// Main function for testing
 int main() {
-    std::string input = "one*two/three-four;five:six";
-    std::string output = convert_to_comma_separated(input);
-
-    std::cout << "Input: " << input << std::endl;
-    std::cout << "Output: " << output << std::endl;
-
+    // Example usage
+    std::string test_string = "Hello*World;Example/Text-Another:Test";
+    std::string result = convert_to_comma_separated(test_string);
+    std::cout << result << std::endl;
     return 0;
 }

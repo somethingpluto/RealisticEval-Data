@@ -1,36 +1,91 @@
-Certainly! Below is the equivalent Java test class using JUnit for the provided Python unittest test class. The Java test class will be placed in the package `org.real.temp` and named `Tester`.
+Certainly! Below is the equivalent Java test class using JUnit for the provided Python unittest test class. The Java test class will be placed in the package `org.real.temp` and named `Tester`. It will use appropriate JUnit annotations and assertion methods to ensure that the functionality and logic of the tests are preserved.
 
-### Java Test Class Using JUnit
+### Java Code
 
 ```java
 package org.real.temp;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.IOException;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 
-/**
- * Test class for the getLocalIp method.
- */
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doThrow;
+
 public class Tester {
 
-    /**
-     * Retrieves the local IP address of the specified network interface on Windows.
-     *
-     * @param interfaceName The name of the network interface to check (default is "Wi-Fi").
-     * @return The local IP address if found, otherwise null.
-     */
-    public static String getLocalIp(String interfaceName) {
+    @Mock
+    private Process processMock;
+
+    private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+
+    @BeforeEach
+    public void setUp() {
+        MockitoAnnotations.openMocks(this);
+        System.setOut(new PrintStream(outContent));
+    }
+
+    @Test
+    public void testLocalIpFound() throws IOException {
+        // Mock the output of ipconfig for a case where a local IP is found
+        when(Runtime.getRuntime().exec("ipconfig")).thenReturn(processMock);
+        when(processMock.getInputStream()).thenReturn(new ByteArrayInputStream("192.168.1.10\n".getBytes()));
+        
+        String result = getLocalIp();
+        assertEquals("192.168.1.10", result);
+    }
+
+    @Test
+    public void testNoLocalIpFound() throws IOException {
+        // Mock the output of ipconfig for a case where no local IP is found
+        when(Runtime.getRuntime().exec("ipconfig")).thenReturn(processMock);
+        when(processMock.getInputStream()).thenReturn(new ByteArrayInputStream("10.0.0.5\n".getBytes()));
+        
+        String result = getLocalIp();
+        assertNull(result);
+    }
+
+    @Test
+    public void testMultipleIpsFound() throws IOException {
+        // Mock the output with multiple local IPs
+        when(Runtime.getRuntime().exec("ipconfig")).thenReturn(processMock);
+        when(processMock.getInputStream()).thenReturn(new ByteArrayInputStream("10.0.0.5\n192.168.1.10\n".getBytes()));
+        
+        String result = getLocalIp();
+        assertEquals("192.168.1.10", result);
+    }
+
+    @Test
+    public void testInvalidCommand() {
+        // Simulate a case where subprocess.run raises a CalledProcessError
+        doThrow(new IOException("CalledProcessError")).when(Runtime.getRuntime()).exec("ipconfig");
+        
+        String result = getLocalIp();
+        assertNull(result);
+    }
+
+    @Test
+    public void testUnexpectedError() {
+        // Simulate an unexpected error
+        doThrow(new RuntimeException("Unexpected error")).when(Runtime.getRuntime()).exec("ipconfig");
+        
+        String result = getLocalIp();
+        assertNull(result);
+    }
+
+    // Utility method to simulate the getLocalIp method
+    private String getLocalIp() {
         try {
             // Execute the 'ipconfig' command to get addresses for the specified interface
             Process process = Runtime.getRuntime().exec("ipconfig");
-            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
             StringBuilder output = new StringBuilder();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
 
             String line;
             while ((line = reader.readLine()) != null) {
@@ -43,7 +98,7 @@ public class Tester {
             // Search for IP addresses in the command output
             Matcher matcher = ipPattern.matcher(output.toString());
             while (matcher.find()) {
-                String ip = matcher.group();
+                String ip = matcher.group(1);
                 if (ip.startsWith("192.168.")) {
                     return ip; // Return the first local IP found
                 }
@@ -59,42 +114,30 @@ public class Tester {
             return null;
         }
     }
-
-    /**
-     * Tests the getLocalIp method to ensure it returns a valid IP address.
-     */
-    @Test
-    public void testGetLocalIp() {
-        // Test with the default interface name "Wi-Fi"
-        String localIp = getLocalIp("Wi-Fi");
-        assertNotNull(localIp, "The local IP address should not be null");
-        assertTrue(localIp.startsWith("192.168."), "The local IP address should start with '192.168.'");
-    }
 }
 ```
 
 ### Explanation:
+1. **Package and Class Declaration**:
+   - The Java code starts with the package declaration `package org.real.temp;`.
+   - The class declaration `public class Tester` follows.
 
-1. **Package and Class Definition**:
-   - The test class is defined within the `org.real.temp` package.
-   - The class name is `Tester`.
+2. **JUnit and Mockito Annotations**:
+   - The `@Mock` annotation is used to create a mock `Process` object.
+   - The `@BeforeEach` annotation sets up the mocks before each test.
 
-2. **JUnit Annotations**:
-   - The `@Test` annotation is used to mark the test method `testGetLocalIp`.
+3. **JUnit Test Methods**:
+   - Each test method is annotated with `@Test`.
+   - The test methods use Mockito to set up the mock behavior for different scenarios.
 
-3. **JUnit Assertions**:
-   - `assertNotNull` checks that the local IP address is not null.
-   - `assertTrue` checks that the local IP address starts with "192.168.".
+4. **Mocking Behavior**:
+   - `when(Runtime.getRuntime().exec("ipconfig"))` is used to mock the `exec` method.
+   - `when(processMock.getInputStream())` is used to mock the input stream of the process.
 
-4. **Method Definition**:
-   - The `getLocalIp` method is defined within the `Tester` class.
-   - It takes a single parameter `interfaceName` of type `String` and returns a `String`.
-   - The method executes the `ipconfig` command and searches for IPv4 addresses in the output.
-   - If a suitable IP address is found, it is returned; otherwise, `null` is returned.
+5. **Assertions**:
+   - `assertEquals` and `assertNull` are used to verify the expected results.
 
-5. **Test Method**:
-   - The `testGetLocalIp` method tests the `getLocalIp` method to ensure it returns a valid IP address.
-   - It calls `getLocalIp` with the default interface name "Wi-Fi".
-   - It uses JUnit assertions to validate the results.
+6. **Utility Method**:
+   - The `getLocalIp` method simulates the actual behavior of retrieving the local IP address.
 
-This Java test class preserves the functionality and logic of the Python unittest test class while adhering to JUnit's syntax and conventions.
+This Java code preserves the original functionality and logic of the Python unittest test class while adhering to Java's conventions and syntax.

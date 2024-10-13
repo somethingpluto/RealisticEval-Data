@@ -1,67 +1,125 @@
-Certainly! Below is the equivalent Java test class using JUnit for the provided Python unittest test class. The Java test class will be placed in the package `org.real.temp` and named `Tester`. The functionality and logic of the tests will be preserved, and appropriate JUnit annotations and assertion methods will be used.
-
-### Java Test Class
+Certainly! Below is the equivalent Java test class using JUnit, placed in the package `org.real.temp` and named `Tester`. This test class preserves the functionality and logic of the provided Python unittest class, using appropriate JUnit annotations and assertion methods.
 
 ```java
 package org.real.temp;
 
-import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import javax.imageio.ImageIO;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
- * Test class for the ImageConverter utility.
+ * Test class for converting images to binary representation.
  */
 public class Tester {
 
-    /**
-     * Tests the conversion of an image to a binary representation.
-     * Verifies that the conversion produces the expected binary representation.
-     */
-    @Test
-    public void testConvertImageToBits() {
-        String imagePath = "path/to/your/test-image.jpg";
-        List<Integer> expectedBits = new ArrayList<>();
-        // Add expected bits here based on the test image
-        // For example:
-        expectedBits.add(1);
-        expectedBits.add(0);
-        expectedBits.add(1);
-        // Add more bits as needed
+    private static final String WHITE_IMAGE_PATH = "white_image.bmp";
+    private static final String BLACK_IMAGE_PATH = "black_image.bmp";
+    private static final String MIXED_IMAGE_PATH = "mixed_image.bmp";
+    private static final String LARGE_IMAGE_PATH = "large_image.bmp";
 
-        List<Integer> actualBits = ImageConverter.convertImageToBits(imagePath);
+    @Before
+    public void setUp() throws IOException {
+        // Create a white image (all pixels white)
+        BufferedImage whiteImage = new BufferedImage(2, 2, BufferedImage.TYPE_BYTE_BINARY);
+        whiteImage.setRGB(0, 0, Color.WHITE.getRGB());
+        whiteImage.setRGB(1, 0, Color.WHITE.getRGB());
+        whiteImage.setRGB(0, 1, Color.WHITE.getRGB());
+        whiteImage.setRGB(1, 1, Color.WHITE.getRGB());
+        ImageIO.write(whiteImage, "bmp", new File(WHITE_IMAGE_PATH));
 
-        assertEquals(expectedBits, actualBits, "The binary representation does not match the expected output.");
+        // Create a black image (all pixels black)
+        BufferedImage blackImage = new BufferedImage(2, 2, BufferedImage.TYPE_BYTE_BINARY);
+        blackImage.setRGB(0, 0, Color.BLACK.getRGB());
+        blackImage.setRGB(1, 0, Color.BLACK.getRGB());
+        blackImage.setRGB(0, 1, Color.BLACK.getRGB());
+        blackImage.setRGB(1, 1, Color.BLACK.getRGB());
+        ImageIO.write(blackImage, "bmp", new File(BLACK_IMAGE_PATH));
+
+        // Create a mixed image (half white, half black)
+        BufferedImage mixedImage = new BufferedImage(2, 2, BufferedImage.TYPE_BYTE_BINARY);
+        mixedImage.setRGB(0, 0, Color.WHITE.getRGB());  // White
+        mixedImage.setRGB(0, 1, Color.BLACK.getRGB());  // Black
+        mixedImage.setRGB(1, 0, Color.BLACK.getRGB());  // Black
+        mixedImage.setRGB(1, 1, Color.WHITE.getRGB());  // White
+        ImageIO.write(mixedImage, "bmp", new File(MIXED_IMAGE_PATH));
     }
-}
 
-/**
- * Utility class for converting images to binary representation.
- */
-class ImageConverter {
+    @After
+    public void tearDown() {
+        // Remove the test images after each test
+        new File(WHITE_IMAGE_PATH).delete();
+        new File(BLACK_IMAGE_PATH).delete();
+        new File(MIXED_IMAGE_PATH).delete();
+        new File(LARGE_IMAGE_PATH).delete();
+    }
 
-    /**
-     * Converts an image to a binary representation.
-     * The image is converted to black and white mode, where each pixel is represented by only 1 bit,
-     * with a white pixel value of 255 and a black pixel value of 0.
-     *
-     * @param imageFilePath The file path of the image to convert.
-     * @return A list of bits representing the image, where 1 is for white pixels and 0 is for black pixels.
-     */
-    public static List<Integer> convertImageToBits(String imageFilePath) {
-        BufferedImage image = null;
+    @Test
+    public void testWhiteImage() {
+        // Test converting a white image
+        List<Integer> expectedOutput = List.of(1, 1, 1, 1);  // All pixels should be 1 (white)
+        List<Integer> result = convertImageToBits(WHITE_IMAGE_PATH);
+        assertEquals(expectedOutput, result);
+    }
+
+    @Test
+    public void testBlackImage() {
+        // Test converting a black image
+        List<Integer> expectedOutput = List.of(0, 0, 0, 0);  // All pixels should be 0 (black)
+        List<Integer> result = convertImageToBits(BLACK_IMAGE_PATH);
+        assertEquals(expectedOutput, result);
+    }
+
+    @Test
+    public void testMixedImage() {
+        // Test converting a mixed image
+        List<Integer> expectedOutput = List.of(1, 0, 0, 1);  // 1 white, 3 black
+        List<Integer> result = convertImageToBits(MIXED_IMAGE_PATH);
+        assertEquals(expectedOutput, result);
+    }
+
+    @Test(expected = FileNotFoundException.class)
+    public void testInvalidImagePath() {
+        // Test converting an invalid image path
+        convertImageToBits("invalid_image_path.bmp");
+    }
+
+    @Test
+    public void testLargeImage() throws IOException {
+        // Test converting a larger image (3x3)
+        BufferedImage largeImage = new BufferedImage(3, 3, BufferedImage.TYPE_BYTE_BINARY);
+        largeImage.setRGB(0, 0, Color.WHITE.getRGB());
+        largeImage.setRGB(1, 1, Color.WHITE.getRGB());
+        largeImage.setRGB(2, 2, Color.WHITE.getRGB());
+        ImageIO.write(largeImage, "bmp", new File(LARGE_IMAGE_PATH));
+
+        List<Integer> expectedOutput = List.of(
+            1, 0, 0,
+            0, 1, 0,
+            0, 0, 1
+        );
+        List<Integer> result = convertImageToBits(LARGE_IMAGE_PATH);
+        assertEquals(expectedOutput, result);
+
+        // Clean up
+        new File(LARGE_IMAGE_PATH).delete();
+    }
+
+    // Helper method to convert an image to bits
+    private static List<Integer> convertImageToBits(String imagePath) {
+        BufferedImage image;
         try {
-            image = ImageIO.read(new File(imageFilePath));
+            image = ImageIO.read(new File(imagePath));
         } catch (IOException e) {
-            System.err.println("Error reading the image file: " + imageFilePath);
-            return new ArrayList<>();
+            throw new RuntimeException("Error reading the image file: " + imagePath, e);
         }
+
+        image = convertToBinary(image);
 
         int width = image.getWidth();
         int height = image.getHeight();
@@ -70,37 +128,55 @@ class ImageConverter {
 
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
-                Color pixelColor = new Color(image.getRGB(x, y));
-                int grayValue = (pixelColor.getRed() + pixelColor.getGreen() + pixelColor.getBlue()) / 3;
-                int threshold = 128; // Adjust this value as needed
-                int bit = grayValue > threshold ? 1 : 0;
+                int pixel = image.getRGB(x, y);
+                int bit = (pixel == -1) ? 0 : 1; // -1 represents black, other values represent white
                 bitsArray.add(bit);
             }
         }
 
         return bitsArray;
     }
+
+    // Helper method to convert an image to binary format
+    private static BufferedImage convertToBinary(BufferedImage image) {
+        BufferedImage binaryImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_BYTE_BINARY);
+        binaryImage.getGraphics().drawImage(image, 0, 0, null);
+        return binaryImage;
+    }
 }
 ```
 
 ### Explanation:
+1. **Package Declaration**:
+   - `package org.real.temp;`: Declares the package name.
 
-1. **Package and Class Definition**:
-   - The Java test class is placed in the `org.real.temp` package and named `Tester`.
+2. **Imports**:
+   - `javax.imageio.ImageIO`: Used for reading and writing images.
+   - `java.awt.Color`: Used to set pixel colors.
+   - `java.awt.image.BufferedImage`: Represents an image with an associated color model.
+   - `java.io.File`: Used to handle file paths.
+   - `java.io.IOException`: Thrown when there is an issue reading or writing files.
+   - `org.junit.After`: Annotation for teardown methods.
+   - `org.junit.Before`: Annotation for setup methods.
+   - `org.junit.Test`: Annotation for test methods.
+   - `static org.junit.Assert.*`: Static imports for assertion methods.
 
-2. **JUnit Annotations**:
-   - The `@Test` annotation is used to mark the test method.
+3. **Class Definition**:
+   - `public class Tester`: Defines the test class `Tester`.
 
-3. **JUnit Assertions**:
-   - The `assertEquals` method is used to verify that the actual bits match the expected bits.
+4. **Setup and Teardown Methods**:
+   - `@Before`: Sets up the test images before each test.
+   - `@After`: Cleans up the test images after each test.
 
-4. **Test Method**:
-   - The `testConvertImageToBits` method tests the `convertImageToBits` method by providing a test image path and comparing the expected bits with the actual bits returned by the method.
+5. **Test Methods**:
+   - `testWhiteImage`: Tests converting a white image.
+   - `testBlackImage`: Tests converting a black image.
+   - `testMixedImage`: Tests converting a mixed image.
+   - `testInvalidImagePath`: Tests converting an invalid image path.
+   - `testLargeImage`: Tests converting a larger image.
 
-5. **Utility Class**:
-   - The `ImageConverter` class contains the `convertImageToBits` method, which converts an image to a binary representation.
+6. **Helper Methods**:
+   - `convertImageToBits`: Converts an image to a binary representation.
+   - `convertToBinary`: Converts an image to a binary format.
 
-6. **File Path and Expected Bits**:
-   - You need to provide the path to a test image and define the expected bits based on the content of the test image.
-
-This Java test class ensures that the functionality and logic of the tests are preserved, and it adheres to JUnit's conventions and structure.
+This Java test class preserves the original functionality and structure of the Python unittest class while adhering to JUnit conventions and providing clear documentation through JUnit annotations and assertions.

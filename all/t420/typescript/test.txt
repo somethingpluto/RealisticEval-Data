@@ -1,98 +1,154 @@
-Sure, let's convert the given Python function and its test cases into TypeScript using Jest.
-
-First, we'll define the `getMinDistance` function in TypeScript:
+Certainly! Here is the equivalent Jest test class in TypeScript, including the necessary type annotations and Jest assertions:
 
 ```typescript
 import * as fs from 'fs';
+import { readFileSync } from 'fs';
 
-interface LineWords {
-  line: number;
-  words: string[];
-}
+/**
+ * Finds the minimum distance between two specified words (word1 and word2) in a file and returns the line number where the distance occurred.
+ *
+ * @param {string} filePath - The path to the file.
+ * @param {string} word1 - The first word to search for.
+ * @param {string} word2 - The second word to search for.
+ * @returns {[number | null, number | null]} A tuple containing the line number and the minimum distance, or [null, null] if no valid distance is found.
+ */
+function getMinDistance(filePath: string, word1: string, word2: string): [number | null, number | null] {
+    const sequences = readFileAsSequences(filePath);
+    let minDistance = Infinity;
+    let minSeqNum: number | null = null;
 
-function getLines(filePath: string): LineWords[] {
-  const lines = fs.readFileSync(filePath, 'utf-8').split('\n');
-  return lines.map((line, index) => ({
-    line: index + 1,
-    words: line.split(/\s+/),
-  }));
+    sequences.forEach((seq, i) => {
+        const distance = findClosestWordIndices(seq, word1, word2);
+        if (distance < minDistance) {
+            minDistance = distance;
+            minSeqNum = i;
+        }
+    });
+
+    if (minDistance === Infinity) {
+        return [null, null];
+    }
+
+    return [minSeqNum, minDistance];
 }
 
 /**
- * Find the minimum distance between two specified words (word1 and word2) from the file and return in which line the distance occurred.
+ * Reads the file and converts each line into a list of words.
  *
- * @param {string} filePath - Path to the file.
- * @param {string} word1 - First word.
- * @param {string} word2 - Second word.
- * @returns {{line: number, distance: number}} - Object containing the line number and the minimum distance.
+ * @param {string} filePath - The path to the file.
+ * @returns {string[][]} An array of arrays, where each inner array represents a line of words.
  */
-function getMinDistance(filePath: string, word1: string, word2: string): { line: number; distance: number } {
-  const lines = getLines(filePath);
-  let minDistance = Infinity;
-  let minDistanceLine = 0;
-
-  lines.forEach(({ line, words }) => {
-    const indices = words.reduce<{ [key: string]: number }>((acc, curr, index) => {
-      if (curr === word1 || curr === word2) {
-        acc[curr] = index;
-      }
-      return acc;
-    }, {});
-
-    if (indices[word1] !== undefined && indices[word2] !== undefined) {
-      const distance = Math.abs(indices[word1] - indices[word2]);
-      if (distance < minDistance) {
-        minDistance = distance;
-        minDistanceLine = line;
-      }
-    }
-  });
-
-  return { line: minDistanceLine, distance: minDistance };
+function readFileAsSequences(filePath: string): string[][] {
+    const fileContent = fs.readFileSync(filePath, 'utf-8');
+    return fileContent.split('\n').map(line => line.trim().split(' '));
 }
-```
 
-Now, let's write the Jest test suite for this function:
+/**
+ * Finds the indices of two words in a sequence and calculates their closest distances.
+ *
+ * @param {string[]} sequence - The sequence of words.
+ * @param {string} word1 - The first word to search for.
+ * @param {string} word2 - The second word to search for.
+ * @returns {number} The minimum distance between the two words.
+ */
+function findClosestWordIndices(sequence: string[], word1: string, word2: string): number {
+    let word1Indices: number[] = [];
+    let word2Indices: number[] = [];
+    let minDistance = Infinity;
 
-```typescript
-import { getMinDistance } from './path/to/getMinDistance'; // Adjust the path as needed
+    // Gather indices for both words
+    sequence.forEach((word, index) => {
+        if (word === word1) {
+            word1Indices.push(index);
+        } else if (word === word2) {
+            word2Indices.push(index);
+        }
+    });
 
-describe('getMinDistance', () => {
-  const testFilePath = './testFile.txt'; // Adjust the path to your test file
+    // Calculate the minimum distance between all pairs of indices
+    word1Indices.forEach(index1 => {
+        word2Indices.forEach(index2 => {
+            const distance = Math.abs(index1 - index2);
+            if (distance < minDistance) {
+                minDistance = distance;
+            }
+        });
+    });
 
-  beforeEach(() => {
-    fs.writeFileSync(testFilePath, 'word1 word2 otherWord word1\nword1 word2 word3 word2\nword2 word1 word4\n');
-  });
+    return minDistance;
+}
 
-  afterEach(() => {
-    fs.unlinkSync(testFilePath);
-  });
+// Jest test suite
+describe('TestGetMinDistance', () => {
+    beforeEach(() => {
+        jest.spyOn(fs, 'readFileSync').mockImplementation(() => '');
+    });
 
-  it('should find the minimum distance correctly', () => {
-    const result = getMinDistance(testFilePath, 'word1', 'word2');
-    expect(result).toEqual({ line: 1, distance: 1 });
-  });
+    afterEach(() => {
+        jest.restoreAllMocks();
+    });
 
-  it('should handle cases where words are not in the same line', () => {
-    const result = getMinDistance(testFilePath, 'word1', 'word4');
-    expect(result).toEqual({ line: 3, distance: 1 });
-  });
+    it('should handle a simple case', () => {
+        const mockFileContent = [
+            "hello world",
+            "hello hello world",
+            "world hello"
+        ].join('\n');
 
-  it('should handle cases where one of the words does not exist in the file', () => {
-    const result = getMinDistance(testFilePath, 'word1', 'nonexistentWord');
-    expect(result).toEqual({ line: 0, distance: Infinity });
-  });
+        jest.spyOn(fs, 'readFileSync').mockImplementation(() => mockFileContent);
+
+        expect(getMinDistance('dummy_file.txt', 'hello', 'world')).toEqual([0, 1]);
+    });
+
+    it('should handle multiple lines', () => {
+        const mockFileContent = [
+            "hello planet",
+            "world hello planet",
+            "hello world planet"
+        ].join('\n');
+
+        jest.spyOn(fs, 'readFileSync').mockImplementation(() => mockFileContent);
+
+        expect(getMinDistance('dummy_file.txt', 'hello', 'world')).toEqual([1, 1]);
+    });
+
+    it('should handle large distances', () => {
+        const mockFileContent = [
+            "hello a b c d e f g h i j k l m n o p q r s t u v w x y z world"
+        ].join('\n');
+
+        jest.spyOn(fs, 'readFileSync').mockImplementation(() => mockFileContent);
+
+        expect(getMinDistance('dummy_file.txt', 'hello', 'world')).toEqual([0, 27]);
+    });
+
+    it('should handle adjacent words', () => {
+        const mockFileContent = [
+            "hello world",
+            "hello hello world world",
+            "world hello"
+        ].join('\n');
+
+        jest.spyOn(fs, 'readFileSync').mockImplementation(() => mockFileContent);
+
+        expect(getMinDistance('dummy_file.txt', 'hello', 'world')).toEqual([0, 1]);
+    });
 });
 ```
 
 ### Explanation:
-1. **Function Definition**: 
-   - We define a helper function `getLines` to read the file and split it into lines and words.
-   - `getMinDistance` iterates over each line, finds the indices of `word1` and `word2`, calculates the distance, and keeps track of the minimum distance found.
+1. **TypeScript Functions**:
+   - The functions `getMinDistance`, `readFileAsSequences`, and `findClosestWordIndices` are defined with proper type annotations.
 
-2. **Test Suite**:
-   - `beforeEach` sets up a temporary test file with predefined content.
-   - `afterEach` cleans up the test file after each test case.
-   - Each test case verifies specific scenarios using Jest's `expect` assertions.
+2. **Jest Setup**:
+   - The `beforeEach` hook sets up a spy on `fs.readFileSync` to mock file reading operations.
+   - The `afterEach` hook restores all mocks to ensure clean state between tests.
 
-This setup ensures that the functionality of the original Python unittest is preserved and adapted to Jest in TypeScript.
+3. **Test Cases**:
+   - Each test case uses `jest.spyOn` to mock the file content and `expect` to assert the expected results.
+   - The file content is constructed and passed to `fs.readFileSync` using `mockImplementation`.
+
+4. **Jest Assertions**:
+   - The `expect` function is used to verify the output of `getMinDistance` against the expected results.
+
+This TypeScript code preserves the original functionality and logic of the Python unittest class while adapting it to Jest's testing framework.

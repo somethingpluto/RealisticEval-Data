@@ -1,43 +1,61 @@
-Here is the equivalent TypeScript code for your provided Python function:
+Sure! Here is the equivalent TypeScript code, including proper type definitions and error handling:
 
 ```typescript
 import fs from 'fs';
-import { parse } from 'json5';
+import * as JSON from 'json5'; // Using json5 for convenience with parsing
 
+/**
+ * Reads a text file, wraps its content in JSON brackets, and parses it into a JavaScript object.
+ *
+ * @param filename - The path to the text file to be read.
+ * @returns A list parsed from the JSON content wrapped in brackets.
+ * @throws {FileNotFoundError} If the specified file does not exist.
+ * @throws {JSONDecodeError} If the content cannot be parsed as JSON.
+ */
 function readTxtAddJsonBracket(filename: string): any[] {
     try {
-        const data = fs.readFileSync(filename, 'utf8');
-        return parse(`[${data}]`);
+        const text = fs.readFileSync(filename, { encoding: 'utf-8' });
+
+        // Wrap the text in square brackets to form a valid JSON array
+        const wrappedText = `[${text.trim()}]`;
+
+        // Parse the JSON content into a JavaScript object
+        const data = JSON.parse(wrappedText);
+
+        return data;
+
     } catch (error) {
         if (error.code === 'ENOENT') {
-            throw new Error('File not found');
+            console.error(`Error: ${error.message}`);
+            return [];
         } else if (error instanceof SyntaxError) {
-            throw new Error('Cannot parse as JSON');
+            console.error(`Error decoding JSON: ${error.message}`);
+            return [];
+        } else {
+            throw error; // Re-throw other unexpected errors
         }
-        throw error;
     }
 }
+
+// Example usage
+const filename = './example.txt';
+console.log(readTxtAddJsonBracket(filename));
 ```
 
-Please note that I've used `json5` library instead of standard `JSON.parse` because it can handle trailing commas and other non-standard features which are often present in human-readable JSON files. If you're sure that your input will always be valid JSON, you can replace `parse` with `JSON.parse`.
+### Explanation:
+1. **Imports**: 
+   - `fs` is used for file system operations.
+   - `json5` is used for parsing JSON-like strings. If you prefer using standard JSON, you can replace `json5` with `JSON`.
 
-Also, the `readFileSync` method is synchronous. If you want to make it asynchronous, you can use `readFile` method instead:
+2. **Function Definition**:
+   - The function `readTxtAddJsonBracket` reads the content of the specified file, wraps it in square brackets, and parses it into a JavaScript object.
 
-```typescript
-import fs from 'fs/promises';
-import { parse } from 'json5';
+3. **Error Handling**:
+   - The function catches `FileNotFoundError` by checking the error code (`ENOENT`) and logs an appropriate message.
+   - It also catches `JSONDecodeError` by checking if the error is a `SyntaxError` and logs an appropriate message.
+   - Other unexpected errors are re-thrown.
 
-async function readTxtAddJsonBracket(filename: string): Promise<any[]> {
-    try {
-        const data = await fs.readFile(filename, 'utf8');
-        return parse(`[${data}]`);
-    } catch (error) {
-        if (error.code === 'ENOENT') {
-            throw new Error('File not found');
-        } else if (error instanceof SyntaxError) {
-            throw new Error('Cannot parse as JSON');
-        }
-        throw error;
-    }
-}
-```
+4. **Example Usage**:
+   - An example usage is provided at the end to demonstrate how to call the function.
+
+This TypeScript code maintains the same functionality and logic as the original Python code, with necessary adjustments for TypeScript syntax and conventions.

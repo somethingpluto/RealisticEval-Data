@@ -1,50 +1,79 @@
-Sure! Below is the equivalent TypeScript code for your Python function `process_csv`. This TypeScript code uses the `pandas` library, which you can install using npm (`npm install pandas`). Note that TypeScript does not have built-in support for reading and writing CSV files in the same way Python does, so we'll use Node.js's built-in `fs` module to handle file operations.
+Certainly! Below is the equivalent TypeScript code for processing a CSV file and removing rows with two or more empty columns. This code uses the `csv-parser` and `csv-writer` libraries to handle CSV reading and writing, as it’s not possible to directly use Pandas in TypeScript. 
+
+First, you need to install the required dependencies:
+
+```sh
+npm install csv-parser csv-writer fs path
+```
+
+Here is the TypeScript code:
 
 ```typescript
 import * as fs from 'fs';
-import * as pandas as pd;
+import * as createCsvParser from 'csv-parser';
+import * as createCsvWriter from 'csv-writer';
+import { parse } from 'path';
 
-async function processCsv(filePath: string, outputPath: string): Promise<void> {
-    try {
-        // Read the CSV file
-        const data = await fs.promises.readFile(filePath, 'utf8');
-        
-        // Convert the CSV data to a DataFrame
-        const df = pd.DataFrame(data);
-
-        // Remove rows with two or more empty columns
-        const cleanedDf = df.dropna(thresh=1);
-
-        // Check if the DataFrame is empty
-        if (cleanedDf.isEmpty()) {
-            fs.writeFileSync(outputPath, '');
-            return;
-        }
-
-        // Convert the DataFrame back to CSV format
-        const csvData = cleanedDf.toCSV();
-
-        // Write the processed CSV data to the output file
-        fs.writeFileSync(outputPath, csvData);
-    } catch (error) {
-        console.error('Error processing CSV:', error);
-    }
+interface Row {
+    [key: string]: string | null;
 }
 
-// Example usage:
-const filePath = 'input.csv';
-const outputPath = 'output.csv';
+function processCsv(file_path: string, output_path: string): void {
+    const results: Row[] = [];
 
-processCsv(filePath, outputPath)
-    .then(() => console.log('CSV processed successfully'))
-    .catch(error => console.error('Error processing CSV:', error));
+    // Read the CSV file and store the rows
+    fs.createReadStream(file_path)
+        .pipe(createCsvParser())
+        .on('data', (row: Row) => {
+            results.push(row);
+        })
+        .on('end', () => {
+            // Process the rows
+            const filteredResults = results.filter((row) => {
+                const emptyCount = Object.values(row).filter(value => value === '').length;
+                return emptyCount < 2;
+            });
+
+            // Write the processed rows back to a new CSV file
+            const csvWriter = createCsvWriter.createObjectCsvWriter({
+                path: output_path,
+                header: Object.keys(results[0]).map(key => ({ id: key, title: key })),
+            });
+
+            csvWriter.writeRecords(filteredResults)
+                .then(() => console.log('CSV file was written successfully'))
+                .catch(error => console.error('Error writing CSV file:', error));
+        });
+}
+
+// Error handling functions
+function handleEmptyDataError(outputPath: string): void {
+    fs.writeFileSync(outputPath, '');
+}
+
+function handleParserError(): void {
+    console.error("Error: The input CSV has inconsistent row lengths. Please check the input data.");
+}
+
+try {
+    processCsv('input.csv', 'output.csv');
+} catch (error) {
+    if (error instanceof SyntaxError || error instanceof TypeError) {
+        handleParserError();
+    } else if (error instanceof fs.Error && error.code === 'ENOENT') {
+        handleEmptyDataError('output.csv');
+    } else {
+        throw error; // Re-throw other unexpected errors
+    }
+}
 ```
 
 ### Explanation:
-1. **Reading the CSV File**: We use `fs.promises.readFile` to read the CSV file asynchronously.
-2. **Converting to DataFrame**: We convert the CSV data into a `DataFrame` using `pd.DataFrame`.
-3. **Removing Rows with Empty Columns**: We use `df.dropna(thresh=1)` to remove rows with one or more empty columns. If you want to remove rows with exactly two or more empty columns, you can adjust the threshold accordingly.
-4. **Checking if DataFrame is Empty**: If the cleaned DataFrame is empty, we write an empty string to the output file.
-5. **Writing to Output File**: We convert the cleaned DataFrame back to CSV format and write it to the specified output file using `fs.writeFileSync`.
+1. **Dependencies**: We use `csv-parser` for reading CSV files and `csv-writer` for writing CSV files.
+2. **Row Interface**: We define a generic interface `Row` to represent the structure of a CSV row.
+3. **Reading CSV**: We read the CSV file using `fs.createReadStream` and `csv-parser`.
+4. **Filtering Rows**: We filter the rows based on the number of empty columns.
+5. **Writing CSV**: We write the filtered rows back to a new CSV file using `csv-writer`.
+6. **Error Handling**: We handle specific errors such as empty data and parsing errors.
 
-Make sure to install the required dependencies by running `npm install pandas`. Also, ensure that you have Node.js installed on your system to run this TypeScript code.
+This TypeScript code replicates the functionality of the Python script while adapting to TypeScript's static type system and using appropriate libraries for CSV processing.

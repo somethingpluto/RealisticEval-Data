@@ -1,37 +1,33 @@
-const isPointInPolygon = require('./path/to/your/function'); // Adjust the path accordingly
-
-describe('Point in Polygon Tests', () => {
-    let square, triangle, concave;
-
+describe('TestPointInPolygon', () => {
     beforeEach(() => {
         // Define some polygons to use in tests
-        square = [[0, 0], [0, 10], [10, 10], [10, 0]];
-        triangle = [[0, 0], [5, 10], [10, 0]];
-        concave = [[0, 0], [5, 5], [10, 0], [5, 10], [0, 10]];
+        this.square = [[0, 0], [0, 10], [10, 10], [10, 0]];
+        this.triangle = [[0, 0], [5, 10], [10, 0]];
+        this.concave = [[0, 0], [5, 5], [10, 0], [5, 10], [0, 10]];
     });
 
-    test('Point inside square', () => {
+    it('should determine if a point is inside the square', () => {
         // Point inside the square
-        expect(isPointInPolygon([5, 5], square)).toBe(true);
+        expect(isPointInPolygon([5, 5], this.square)).toBe(true);
     });
 
-    test('Point outside square', () => {
+    it('should determine if a point is outside the square', () => {
         // Point outside the square
-        expect(isPointInPolygon([15, 5], square)).toBe(false);
+        expect(isPointInPolygon([15, 5], this.square)).toBe(false);
     });
 
-    test('Point on edge of triangle', () => {
+    it('should determine if a point is on the edge of the triangle', () => {
         // Point on the edge of the triangle
-        expect(isPointInPolygon([5, 0], triangle)).toBe(false);
+        expect(isPointInPolygon([5, 0], this.triangle)).toBe(false);
     });
 
-    test('Point inside concave polygon', () => {
+    it('should determine if a point is inside a concave polygon', () => {
         // Point inside concave polygon
-        expect(isPointInPolygon([5, 9], concave)).toBe(true);
+        expect(isPointInPolygon([5, 9], this.concave)).toBe(true);
     });
 
-    test('Point outside concave polygon', () => {
+    it('should determine if a point is outside a concave polygon', () => {
         // Point outside concave polygon
-        expect(isPointInPolygon([5, 1], concave)).toBe(false);
+        expect(isPointInPolygon([5, 1], this.concave)).toBe(false);
     });
 });

@@ -1,26 +1,27 @@
-Certainly! Below is the equivalent C++ code using the Catch2 testing framework to test the `get_local_ip` function. This includes the conversion of the Python unittest class into a Catch2 test suite, along with appropriate assertions.
+Certainly! Below is the equivalent C++ test class using the Catch2 testing framework. The provided Python unittest class will be converted into a Catch2 test suite, ensuring that the functionality and logic of the tests are preserved.
 
 ### C++ Code with Catch2 Testing Framework
 
 ```cpp
 #include <catch2/catch_test_macros.hpp>
-#include <iostream>
 #include <string>
 #include <optional>
 #include <regex>
 #include <windows.h>
-#include <shlwapi.h>
+#include <Shlwapi.h>
 
-#pragma comment(lib, "shlwapi.lib")
+#pragma comment(lib, "Shlwapi.lib")
 
-// Retrieve the local IP address of the specified network interface on Windows.
-//
-// Args:
-//     interface (std::string): The name of the network interface to check (default is "Wi-Fi").
-//
-// Returns:
-//     std::optional<std::string>: The local IP address if found, otherwise std::nullopt.
-std::optional<std::string> get_local_ip(const std::string& interface = "Wi-Fi") {
+// Define a type alias for optional strings
+using OptionalString = std::optional<std::string>;
+
+/**
+ * Retrieve the local IP address of the specified network interface on Windows.
+ *
+ * @param interface The name of the network interface to check (default is "Wi-Fi").
+ * @return The local IP address if found, otherwise std::nullopt.
+ */
+OptionalString get_local_ip(const std::string& interface = "Wi-Fi") {
     try {
         // Execute the 'ipconfig' command to get addresses for the specified interface
         STARTUPINFOA si;
@@ -30,69 +31,26 @@ std::optional<std::string> get_local_ip(const std::string& interface = "Wi-Fi") 
         si.cb = sizeof(si);
         ZeroMemory(&pi, sizeof(pi));
 
+        // Start the child process
         if (!CreateProcessA(NULL, const_cast<char*>("ipconfig"), NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi)) {
-            std::cerr << "Failed to execute command: " << GetLastError() << std::endl;
+            std::cerr << "Error executing command." << std::endl;
             return std::nullopt;
         }
 
-        HANDLE hStdoutRead = pi.hStdout;
-        HANDLE hStdoutWrite = GetStdHandle(STD_OUTPUT_HANDLE);
-
-        SECURITY_ATTRIBUTES sa;
-        sa.nLength = sizeof(SECURITY_ATTRIBUTES);
-        sa.bInheritHandle = TRUE;
-        sa.lpSecurityDescriptor = NULL;
-
-        HANDLE pipe[2];
-        if (!CreatePipe(&pipe[0], &pipe[1], &sa, 0)) {
-            std::cerr << "Failed to create pipe." << std::endl;
-            CloseHandle(hStdoutRead);
-            CloseHandle(hStdoutWrite);
-            CloseHandle(pi.hProcess);
-            CloseHandle(pi.hThread);
-            return std::nullopt;
-        }
-
-        if (!SetHandleInformation(pipe[0], HANDLE_FLAG_INHERIT, 0)) {
-            std::cerr << "Failed to set handle information." << std::endl;
-            CloseHandle(hStdoutRead);
-            CloseHandle(hStdoutWrite);
-            CloseHandle(pi.hProcess);
-            CloseHandle(pi.hThread);
-            return std::nullopt;
-        }
-
-        if (!RedirectHandle(pi.hProcess, STD_OUTPUT_HANDLE, pipe[1], TRUE)) {
-            std::cerr << "Failed to redirect handle." << std::endl;
-            CloseHandle(hStdoutRead);
-            CloseHandle(hStdoutWrite);
-            CloseHandle(pi.hProcess);
-            CloseHandle(pi.hThread);
-            return std::nullopt;
-        }
-
-        CloseHandle(pipe[1]);
-
-        DWORD exitCode;
-        WaitForSingleObject(pi.hProcess, INFINITE);
-        GetExitCodeProcess(pi.hProcess, &exitCode);
-
-        CloseHandle(hStdoutRead);
-        CloseHandle(hStdoutWrite);
-        CloseHandle(pi.hProcess);
-        CloseHandle(pi.hThread);
-
-        // Read data from pipe
-        char buffer[4096];
+        // Read the output of the command
+        HANDLE hStdout = pi.hProcess;
+        char buffer[256];
         DWORD bytesRead;
         std::string output;
 
-        while (ReadFile(pipe[0], buffer, sizeof(buffer) - 1, &bytesRead, NULL) && bytesRead > 0) {
+        while (ReadFile(hStdout, buffer, sizeof(buffer) - 1, &bytesRead, NULL) && bytesRead > 0) {
             buffer[bytesRead] = '\0';
             output += buffer;
         }
 
-        CloseHandle(pipe[0]);
+        // Close process handles
+        CloseHandle(pi.hProcess);
+        CloseHandle(pi.hThread);
 
         // Regular expression to match IPv4 addresses
         std::regex ip_pattern(R"((\d+\.\d+\.\d+\.\d+))");
@@ -100,18 +58,12 @@ std::optional<std::string> get_local_ip(const std::string& interface = "Wi-Fi") 
         // Search for IP addresses in the command output
         std::smatch matches;
         std::string::const_iterator searchStart(output.cbegin());
-        std::vector<std::string> ips;
-
         while (std::regex_search(searchStart, output.cend(), matches, ip_pattern)) {
-            ips.push_back(matches[0]);
-            searchStart = matches.suffix().first;
-        }
-
-        // Return the first local IP found
-        for (const auto& ip : ips) {
-            if (ip.find("192.168.") == 0) {
+            std::string ip = matches[0];
+            if (PathIsLocalMachineA(ip.c_str())) {
                 return ip;
             }
+            searchStart = matches.suffix().first;
         }
 
         return std::nullopt;  // Return std::nullopt if no suitable IP is found
@@ -122,47 +74,73 @@ std::optional<std::string> get_local_ip(const std::string& interface = "Wi-Fi") 
     }
 }
 
-TEST_CASE("Test get_local_ip function", "[get_local_ip]") {
-    SECTION("Test with default interface") {
-        auto ip = get_local_ip();
-        REQUIRE(ip.has_value());
-        REQUIRE(ip.value().find("192.168.") == 0);
+TEST_CASE("Test Get Local IP", "[get_local_ip]") {
+    SECTION("Local IP Found") {
+        // Mock the output of ipconfig for a case where a local IP is found
+        std::istringstream mock_output("192.168.1.10\n");
+        std::streambuf* old_cout = std::cout.rdbuf(mock_output.rdbuf());
+
+        OptionalString result = get_local_ip();
+        REQUIRE(result.has_value());
+        REQUIRE(*result == "192.168.1.10");
+
+        std::cout.rdbuf(old_cout); // Restore the original stream buffer
     }
 
-    SECTION("Test with specified interface") {
-        auto ip = get_local_ip("Wi-Fi");
-        REQUIRE(ip.has_value());
-        REQUIRE(ip.value().find("192.168.") == 0);
+    SECTION("No Local IP Found") {
+        // Mock the output of ipconfig for a case where no local IP is found
+        std::istringstream mock_output("10.0.0.5\n");
+        std::streambuf* old_cout = std::cout.rdbuf(mock_output.rdbuf());
+
+        OptionalString result = get_local_ip();
+        REQUIRE(!result.has_value());
+
+        std::cout.rdbuf(old_cout); // Restore the original stream buffer
     }
 
-    SECTION("Test with non-existent interface") {
-        auto ip = get_local_ip("NonExistentInterface");
-        REQUIRE(!ip.has_value());
-    }
-}
+    SECTION("Multiple IPs Found") {
+        // Mock the output with multiple local IPs
+        std::istringstream mock_output("10.0.0.5\n192.168.1.10\n");
+        std::streambuf* old_cout = std::cout.rdbuf(mock_output.rdbuf());
 
-int main(int argc, char* argv[]) {
-    int result = Catch::Session().run(argc, argv);
-    return result;
+        OptionalString result = get_local_ip();
+        REQUIRE(result.has_value());
+        REQUIRE(*result == "192.168.1.10");
+
+        std::cout.rdbuf(old_cout); // Restore the original stream buffer
+    }
+
+    SECTION("Invalid Command") {
+        // Simulate a case where CreateProcessA fails
+        std::istringstream mock_output("");
+        std::streambuf* old_cout = std::cout.rdbuf(mock_output.rdbuf());
+
+        OptionalString result = get_local_ip();
+        REQUIRE(!result.has_value());
+
+        std::cout.rdbuf(old_cout); // Restore the original stream buffer
+    }
+
+    SECTION("Unexpected Error") {
+        // Simulate an unexpected error
+        std::istringstream mock_output("");
+        std::streambuf* old_cout = std::cout.rdbuf(mock_output.rdbuf());
+
+        OptionalString result = get_local_ip();
+        REQUIRE(!result.has_value());
+
+        std::cout.rdbuf(old_cout); // Restore the original stream buffer
+    }
 }
 ```
 
 ### Explanation:
+1. **Headers**: The necessary headers (`<catch2/catch_test_macros.hpp>`, `<string>`, `<optional>`, `<regex>`, `<windows.h>`, `<Shlwapi.h>`) are included.
+2. **Type Alias**: A type alias `OptionalString` is defined for `std::optional<std::string>` to match the Python `Optional[str]` type.
+3. **Function Definition**: The function `get_local_ip` is defined with a default parameter value.
+4. **Test Class**: The `TEST_CASE` macro is used to define the test suite, and each `SECTION` macro defines individual test cases.
+5. **Mocking Output**: To simulate the output of `ipconfig`, we redirect `std::cout` to a mock `std::istringstream`. This simulates the behavior of mocking `subprocess.run` in Python.
+6. **Assertions**: Catch2 assertions (`REQUIRE`) are used to verify the expected behavior of the function.
+7. **Restoring Stream Buffer**: After each test section, the original stream buffer is restored to avoid side effects.
 
-1. **Imports**:
-   - The necessary headers (`catch2/catch_test_macros.hpp`, `iostream`, `string`, `optional`, `regex`, `windows.h`, `shlwapi.h`) are included.
-   - The `shlwapi.lib` library is linked with `#pragma comment(lib, "shlwapi.lib")`.
-
-2. **Function Definition**:
-   - The `get_local_ip` function is defined with a default parameter value.
-   - It uses Windows API functions (`CreateProcessA`, `CreatePipe`, `SetHandleInformation`, `RedirectHandle`, etc.) to execute the `ipconfig` command and capture its output.
-
-3. **Catch2 Test Suite**:
-   - The `TEST_CASE` macro is used to define a test case named "Test get_local_ip function".
-   - The `SECTION` macro is used to define individual test sections within the test case.
-   - Assertions (`REQUIRE`) are used to check the correctness of the function.
-
-4. **Main Function**:
-   - The `main` function initializes and runs the Catch2 test suite.
-
-This ensures that the functionality and logic of the tests are preserved, and appropriate assertions are used in Catch2.
+This translation preserves the original functionality and logic of the Python unittest class while adapting it to the Catch2 testing framework in C++.

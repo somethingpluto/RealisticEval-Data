@@ -1,34 +1,35 @@
-describe('probabilityRedBalls', () => {
-  it('should return the correct probability when all drawn balls are red', () => {
-    const x = 2;
-    const n = 3;
-    const m = 1;
-    const expectedProbability = 0.5; // Example expected result, adjust as needed
+const { comb } = require('js-combinatorics');
 
-    expect(probabilityRedBalls(x, n, m)).toBeCloseTo(expectedProbability, 6); // Use toBeCloseTo for floating-point comparison
+describe('TestProbabilityRedBalls', () => {
+  describe('test_all_red', () => {
+      it('should return 1 when all balls are red', () => {
+          expect(probabilityRedBalls(5, 5, 0)).toBe(1);
+      });
   });
 
-  it('should return 0 if more balls are requested than available', () => {
-    const x = 4;
-    const n = 3;
-    const m = 1;
-    const expectedProbability = 0;
-
-    expect(probabilityRedBalls(x, n, m)).toBeCloseTo(expectedProbability, 6);
+  describe('test_no_red', () => {
+      it('should return 0 when no red balls are available', () => {
+          expect(probabilityRedBalls(1, 0, 5)).toBe(0);
+      });
   });
 
-  it('should handle edge cases where there are no balls or only one type of ball', () => {
-    const x1 = 0;
-    const n1 = 3;
-    const m1 = 0;
-    const expectedProbability1 = 1;
+  describe('test_typical_case', () => {
+      it('should return the correct probability in a typical scenario', () => {
+          const expectedProbability = comb(10, 2) / comb(15, 2);
+          expect(probabilityRedBalls(2, 10, 5)).toBeCloseTo(expectedProbability, 10); // Adjust precision as needed
+      });
+  });
 
-    const x2 = 3;
-    const n2 = 0;
-    const m2 = 3;
-    const expectedProbability2 = 0;
+  describe('test_impossible_case', () => {
+      it('should return 0 when more balls are requested than available', () => {
+          expect(probabilityRedBalls(6, 5, 4)).toBe(0);
+      });
+  });
 
-    expect(probabilityRedBalls(x1, n1, m1)).toBeCloseTo(expectedProbability1, 6);
-    expect(probabilityRedBalls(x2, n2, m2)).toBeCloseTo(expectedProbability2, 6);
+  describe('test_high_combinations', () => {
+      it('should return the correct probability with higher number of combinations', () => {
+          const expectedProbability = comb(20, 3) / comb(50, 3);
+          expect(probabilityRedBalls(3, 20, 30)).toBeCloseTo(expectedProbability, 10); // Adjust precision as needed
+      });
   });
 });

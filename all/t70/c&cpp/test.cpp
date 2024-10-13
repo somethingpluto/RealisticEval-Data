@@ -1,24 +1,76 @@
-TEST_CASE("code_block_remover tests", "[code_block_remover]") {
-    SECTION("Empty markdown string") {
-        REQUIRE(code_block_remover("") == std::vector<std::string>());
+TEST_CASE("Test code_block_remover", "[code_block_remover]") {
+    SECTION("Single code block") {
+        std::string markdown = R"(
+        This is a markdown with a code block.
+
+        ```python
+        print("Hello, World!")
+        ```
+
+        End of markdown.
+        )";
+        std::vector<std::string> expected = {"print(\"Hello, World!\")"};
+        std::vector<std::string> result = code_block_remover(markdown);
+        REQUIRE(result == expected);
     }
 
-    SECTION("Markdown with no code blocks") {
-        REQUIRE(code_block_remover("This is some text without any code blocks.") == std::vector<std::string>());
+    SECTION("Multiple code blocks") {
+        std::string markdown = R"(
+        First code block:
+
+        ```python
+        print("Hello, World!")
+        ```
+
+        Second code block:
+
+        ```javascript
+        console.log("Hello, World!");
+        )";
+        std::vector<std::string> expected = {
+            "print(\"Hello, World!\")",
+            "console.log(\"Hello, World!\");"
+        };
+        std::vector<std::string> result = code_block_remover(markdown);
+        REQUIRE(result == expected);
     }
 
-    SECTION("Markdown with one code block") {
-        std::vector<std::string> expected = {"This is a code block."};
-        REQUIRE(code_block_remover("Some text before\n```\nThis is a code block.\n```") == expected);
+    SECTION("No code block") {
+        std::string markdown = R"(
+        This markdown has no code blocks.
+
+        Just some plain text.
+        )";
+        std::vector<std::string> expected = {};
+        std::vector<std::string> result = code_block_remover(markdown);
+        REQUIRE(result == expected);
     }
 
-    SECTION("Markdown with multiple code blocks") {
-        std::vector<std::string> expected = {"This is the first code block.", "This is the second code block."};
-        REQUIRE(code_block_remover("Some text before\n```\nThis is the first code block.\n```\nAnd here is another one:\n```\nThis is the second code block.\n```") == expected);
+    SECTION("Empty code block") {
+        std::string markdown = R"(
+        Here is an empty code block:
+
+        ```python
+        ```
+
+        End of markdown.
+        )";
+        std::vector<std::string> expected = {""};
+        std::vector<std::string> result = code_block_remover(markdown);
+        REQUIRE(result == expected);
     }
 
-    SECTION("Markdown with code blocks separated by other elements") {
-        std::vector<std::string> expected = {"This is the first code block.", "This is the second code block."};
-        REQUIRE(code_block_remover("Some text before\n```\nThis is the first code block.\n```\nMore text in between\n```\nThis is the second code block.\n```") == expected);
+    SECTION("Malformed code block") {
+        std::string markdown = R"(
+        This code block is missing ending:
+
+        ```python
+        print("Hello, World!")
+
+        And some more text.
+        )";
+        std::vector<std::string> expected = {};
+        std::vector<std::string> result = code_block_remover(markdown);
+        REQUIRE(result == expected);
     }
 }

@@ -3,32 +3,37 @@ package org.real.temp;
 public class Answer {
 
     /**
-     * Check whether point C is on a line formed by two points A and B.
-     *
-     * @param A The coordinates of point A [x, y].
-     * @param B The coordinates of point B [x, y].
-     * @param C The coordinates of point C [x, y].
-     * @return true if point C lies on the line formed by points A and B, false otherwise.
+     * Check whether point C is on the line formed by points A and B.
+     * 
+     * @param A point A coordinates (x, y)
+     * @param B point B coordinates (x, y)
+     * @param C point C coordinates (x, y)
+     * @return true if point C is on the line formed by A and B, false otherwise
      */
     public static boolean isPointOnLine(int[] A, int[] B, int[] C) {
-        // Calculate the area of the triangle ABC using the determinant method
-        double area = 0.5 * Math.abs(
-                A[0] * (B[1] - C[1]) +
-                        B[0] * (C[1] - A[1]) +
-                        C[0] * (A[1] - B[1])
-        );
+        int xA = A[0];
+        int yA = A[1];
+        int xB = B[0];
+        int yB = B[1];
+        int xC = C[0];
+        int yC = C[1];
 
-        // If the area is zero, then points A, B, and C are collinear
-        return area == 0;
+        // Handle the vertical line case where the x-coordinates of points A and B are the same
+        if (xA == xB) {
+            return xC == xA;  // C must also have the same x-coordinate
+        }
+
+        // Calculate slopes using the formula (y2 - y1) / (x2 - x1)
+        // Check if slopes of AC and BC are equal
+        return (yC - yA) * (xB - xA) == (yB - yA) * (xC - xA);
     }
 
     public static void main(String[] args) {
         // Example usage
-        int[] A = {0, 0};
-        int[] B = {4, 4};
-        int[] C = {2, 2};
+        int[] A = {1, 2};
+        int[] B = {4, 6};
+        int[] C = {2, 4};
 
-        boolean result = isPointOnLine(A, B, C);
-        System.out.println("Is point C on line AB? " + result);
+        System.out.println(isPointOnLine(A, B, C));  // Output: true or false based on the points
     }
 }

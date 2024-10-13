@@ -1,58 +1,55 @@
-Sure! Here’s the equivalent TypeScript code for the provided Python function, including proper type definitions and adjustments for TypeScript:
+Certainly! Below is the equivalent TypeScript code for the provided Python function. This TypeScript code will prepend a specified string to the beginning of each line in a file:
 
 ```typescript
 import fs from 'fs';
 import path from 'path';
 
 function prependToEachLine(filePath: string, prefix: string): void {
-    /**
-     * Appends the specified string to the beginning of each line of the file.
-     *
-     * @param filePath - Path to the file whose lines will be modified.
-     * @param prefix - String to append to the beginning of each line.
-     */
     const tempFilePath = filePath + ".tmp";
 
-    const readStream = fs.createReadStream(filePath, { encoding: 'utf8' });
-    const writeStream = fs.createWriteStream(tempFilePath, { encoding: 'utf8' });
+    // Read the original file and write to a temporary file
+    fs.readFile(filePath, 'utf8', (err, data) => {
+        if (err) {
+            console.error('Error reading the file:', err);
+            return;
+        }
 
-    readStream.on('data', (chunk: string) => {
-        const lines = chunk.split('\n');
-        lines.forEach((line, index) => {
-            if (index > 0) {
-                writeStream.write('\n');
+        const lines = data.split('\n');
+        let newData = '';
+
+        for (const line of lines) {
+            newData += prefix + line + '\n';
+        }
+
+        // Write the new data to the temporary file
+        fs.writeFile(tempFilePath, newData, 'utf8', (writeErr) => {
+            if (writeErr) {
+                console.error('Error writing to the temporary file:', writeErr);
+                return;
             }
-            writeStream.write(prefix + line);
+
+            // Replace the original file with the modified file
+            fs.rename(tempFilePath, filePath, (renameErr) => {
+                if (renameErr) {
+                    console.error('Error replacing the original file:', renameErr);
+                    return;
+                }
+            });
         });
-    });
-
-    readStream.on('end', () => {
-        writeStream.end();
-        fs.rename(tempFilePath, filePath, (err) => {
-            if (err) throw err;
-        });
-    });
-
-    readStream.on('error', (err) => {
-        throw err;
-    });
-
-    writeStream.on('error', (err) => {
-        throw err;
     });
 }
 
 // Example usage
-prependToEachLine('/path/to/your/file.txt', 'prefix: ');
+prependToEachLine('/path/to/file.txt', '>>> ');
 ```
 
 ### Explanation:
-1. **Imports**: We use `fs` and `path` modules from Node.js to handle file system operations.
-2. **Function Definition**: The function `prependToEachLine` takes two parameters, `filePath` and `prefix`, both of which are strings.
+1. **Imports**: The `fs` module is used for file system operations, and `path` is used for handling file paths.
+2. **Function Definition**: The `prependToEachLine` function takes two parameters: `filePath` and `prefix`.
 3. **Temporary File Path**: A temporary file path is created by appending `.tmp` to the original file path.
-4. **File Streams**: We use `createReadStream` and `createWriteStream` to read and write the file content, respectively.
-5. **Data Event**: When data is read from the file, it is split into lines, and each line is prefixed with the specified `prefix`.
-6. **End Event**: Once all data is read, the temporary file is renamed to replace the original file.
-7. **Error Handling**: Errors during reading or writing are handled by throwing exceptions.
+4. **Reading the File**: The `fs.readFile` method reads the content of the file synchronously.
+5. **Processing Lines**: Each line is processed by adding the prefix and then concatenated back together.
+6. **Writing to Temporary File**: The new content is written to the temporary file using `fs.writeFile`.
+7. **Replacing Original File**: The temporary file is renamed to replace the original file using `fs.rename`.
 
-This TypeScript code maintains the same functionality and logic as the Python code, but it uses asynchronous file operations and stream handling which are idiomatic in Node.js.
+This TypeScript code maintains the same functionality as the Python code but uses asynchronous file operations provided by Node.js.

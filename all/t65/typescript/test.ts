@@ -1,28 +1,43 @@
 describe('findDuplicateIPs', () => {
-  it('should return duplicates excluding those in the ignore list', () => {
-    const ipList = ['192.168.1.1', '10.0.0.1', '192.168.1.1', '172.16.0.1'];
-    const ignoreList = ['10.0.0.1'];
-
-    const result = findDuplicateIPs(ipList, ignoreList);
-
-    expect(result).toEqual(['192.168.1.1']);
+  it('should handle basic duplicates', () => {
+      const ipList = ["192.168.1.1", "192.168.1.2", "192.168.1.1"];
+      const ignoreList = [];
+      expect(findDuplicateIPs(ipList, ignoreList)).toEqual(["192.168.1.1"]);
   });
 
-  it('should handle empty input lists', () => {
-    const ipList: string[] = [];
-    const ignoreList: string[] = [];
-
-    const result = findDuplicateIPs(ipList, ignoreList);
-
-    expect(result).toEqual([]);
+  it('should handle ignored duplicates', () => {
+      const ipList = ["192.168.1.1", "192.168.1.1", "192.168.1.2"];
+      const ignoreList = ["192.168.1.1"];
+      expect(findDuplicateIPs(ipList, ignoreList)).toEqual([]);
   });
 
   it('should handle no duplicates', () => {
-    const ipList = ['192.168.1.1', '10.0.0.1', '172.16.0.1'];
-    const ignoreList = ['10.0.0.1'];
+      const ipList = ["192.168.1.1", "192.168.1.2", "192.168.1.3"];
+      const ignoreList = [];
+      expect(findDuplicateIPs(ipList, ignoreList)).toEqual([]);
+  });
 
-    const result = findDuplicateIPs(ipList, ignoreList);
+  it('should handle mixed duplicates', () => {
+      const ipList = ["192.168.1.1", "192.168.1.1", "10.0.0.1", "192.168.1.2"];
+      const ignoreList = ["192.168.1.2"];
+      expect(findDuplicateIPs(ipList, ignoreList)).toEqual(["192.168.1.1"]);
+  });
 
-    expect(result).toEqual([]);
+  it('should handle empty input', () => {
+      const ipList = [];
+      const ignoreList = [];
+      expect(findDuplicateIPs(ipList, ignoreList)).toEqual([]);
+  });
+
+  it('should handle only ignored IPs', () => {
+      const ipList = ["192.168.1.1", "192.168.1.1"];
+      const ignoreList = ["192.168.1.1"];
+      expect(findDuplicateIPs(ipList, ignoreList)).toEqual([]);
+  });
+
+  it('should handle all duplicates', () => {
+      const ipList = ["192.168.1.1", "192.168.1.1", "192.168.1.1"];
+      const ignoreList = [];
+      expect(findDuplicateIPs(ipList, ignoreList)).toEqual(["192.168.1.1"]);
   });
 });

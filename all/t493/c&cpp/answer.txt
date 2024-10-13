@@ -1,31 +1,102 @@
-Here is how you can write your Python code in C++:
+Sure! Below is the equivalent C++ code for the provided Python code. This code will wrap the text content to a specified maximum width and generate these lines one by one. It uses the `<sstream>` library for string manipulation and splitting.
 
-```c++
+```cpp
 #include <iostream>
-#include <string>
 #include <sstream>
+#include <string>
+#include <vector>
 
-std::istringstream stream;
-std::string word;
+// Function to split a string by newline character
+std::vector<std::string> split(const std::string &s, char delimiter) {
+    std::vector<std::string> tokens;
+    std::string token;
+    std::istringstream tokenStream(s);
+    while (std::getline(tokenStream, token, delimiter)) {
+        tokens.push_back(token);
+    }
+    return tokens;
+}
 
-void wrap_content_generator(const std::string &content, int width = 80) {
-    stream.clear();
-    stream.str(content);
-    
-    while(getline(stream, word, ' ')) {
-        if(word.length() > width) {
-            for(int i = 0; i < word.length(); i++) {
-                if(i % width == 0 && i != 0)
-                    std::cout << '\n';
-                std::cout << word[i];
+// Function to wrap text
+class TextWrapper {
+public:
+    TextWrapper(int width = 80) : m_width(width) {}
+
+    // Generator function to wrap and yield lines
+    class LineGenerator {
+    private:
+        std::string m_line;
+        int m_width;
+        std::istringstream m_stream;
+
+    public:
+        LineGenerator(const std::string &line, int width)
+            : m_line(line), m_width(width), m_stream(line) {}
+
+        bool next(std::string &wrappedLine) {
+            std::string temp;
+            std::string currentLine;
+            while (m_stream >> temp) {
+                if (currentLine.length() + temp.length() + 1 > m_width) {
+                    wrappedLine = currentLine;
+                    currentLine.clear();
+                    if (!temp.empty()) {
+                        m_stream.unget(); // Put back the last word to process it in the next iteration
+                    }
+                    return true;
+                }
+                if (!currentLine.empty())
+                    currentLine += " ";
+                currentLine += temp;
             }
-        } else {
-            std::cout << word << ' ';
+            if (!currentLine.empty()) {
+                wrappedLine = currentLine;
+                return true;
+            }
+            return false;
+        }
+    };
+
+    // Function to wrap and yield lines from the input content
+    void wrapContent(const std::string &content, std::function<void(const std::string&)> callback) {
+        auto lines = split(content, '\n');
+        for (const auto &line : lines) {
+            if (line.find_first_not_of(" \t") == std::string::npos) {  // Check if the line is essentially empty.
+                callback("\n");
+            } else {
+                LineGenerator generator(line, m_width);
+                std::string wrappedLine;
+                while (generator.next(wrappedLine)) {
+                    callback(wrappedLine);
+                }
+            }
         }
     }
+
+private:
+    int m_width;
+};
+
+// Example usage
+int main() {
+    std::string content = "This is a sample text that needs to be wrapped to a specified width. "
+                          "The text should be split into multiple lines, each not exceeding the given width.";
+
+    TextWrapper wrapper(40);  // Set the width to 40 characters
+
+    wrapper.wrapContent(content, [](const std::string &line) {
+        std::cout << line << std::endl;
+    });
+
+    return 0;
 }
 ```
 
-This C++ function does exactly what your Python function does. It takes a string `content` and an optional integer `width`, then prints out each word from `content` on a new line when it reaches the specified `width`.
+### Explanation:
+1. **Split Function**: A helper function `split` is used to split the input string by newline characters.
+2. **TextWrapper Class**: This class contains the logic for wrapping text.
+   - **LineGenerator Class**: An inner class that generates wrapped lines.
+   - **wrapContent Function**: This function processes the input content, splits it into lines, checks for empty lines, and wraps non-empty lines using the `LineGenerator`.
+3. **Main Function**: Demonstrates how to use the `TextWrapper` class to wrap and print lines.
 
-Please note that the C++ version doesn't handle multi-line strings or complex text formatting like Python's `textwrap`. If you need those features in C++, you might want to use a library like Boost.TextProcessing or implement them yourself.
+This code maintains the functionality of the original Python script while adapting to C++ syntax and features.

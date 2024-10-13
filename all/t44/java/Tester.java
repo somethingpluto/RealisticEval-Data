@@ -1,35 +1,109 @@
 package org.real.temp;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Test; // Updated import for JUnit 5 Test annotation
+import static org.junit.jupiter.api.Assertions.assertEquals; // Updated import for assertEquals in JUnit 5
 
+
+/**
+ * Test class for aligning strings to the left.
+ */
 public class Tester {
 
+    /**
+     * Tests aligning strings of equal length.
+     */
     @Test
-    public void testAlignLinesLeft() {
-        // Test case 1: Both strings have equal length
-        String result1 = alignLinesLeft("hello", "world");
-        assertEquals("hello world", result1);
-
-        // Test case 2: First string is longer than second string
-        String result2 = alignLinesLeft("hello", "hi");
-        assertEquals("hello hi   ", result2);
-
-        // Test case 3: Second string is longer than first string
-        String result3 = alignLinesLeft("hi", "hello");
-        assertEquals("hi   hello", result3);
-
-        // Test case 4: Both strings are empty
-        String result4 = alignLinesLeft("", "");
-        assertEquals("       ", result4);
-
-        // Test case 5: One string is empty and the other has content
-        String result5 = alignLinesLeft("hello", "");
-        assertEquals("hello      ", result5);
+    public void testEqualLengthStrings() {
+        String str1 = "Hello";
+        String str2 = "World";
+        String expectedStr1 = "Hello";
+        String expectedStr2 = "World";
+        String[] alignedStrings = alignLinesLeft(str1, str2);
+        assertEquals(expectedStr1, alignedStrings[0]);
+        assertEquals(expectedStr2, alignedStrings[1]);
     }
 
-    private String alignLinesLeft(String str1, String str2) {
-        int maxLength = Math.max(str1.length(), str2.length());
-        return String.format("%-" + maxLength + "s %-" + maxLength + "s", str1, str2).replaceAll("\\s+$", "");
+    /**
+     * Tests aligning strings where the first string is longer.
+     */
+    @Test
+    public void testFirstStringLonger() {
+        String str1 = "Hello, World!";
+        String str2 = "Hi";
+        String expectedStr1 = "Hello, World!";
+        String expectedStr2 = "Hi           ";  // 14 spaces after "Hi"
+        String[] alignedStrings = alignLinesLeft(str1, str2);
+        assertEquals(expectedStr1, alignedStrings[0]);
+        assertEquals(expectedStr2, alignedStrings[1]);
+    }
+
+    /**
+     * Tests aligning strings where the second string is longer.
+     */
+    @Test
+    public void testSecondStringLonger() {
+        String str1 = "Hey";
+        String str2 = "Goodbye, friend!";
+        String expectedStr1 = "Hey             ";  // 15 spaces after "Hey"
+        String expectedStr2 = "Goodbye, friend!";
+        String[] alignedStrings = alignLinesLeft(str1, str2);
+        assertEquals(expectedStr1, alignedStrings[0]);
+        assertEquals(expectedStr2, alignedStrings[1]);
+    }
+
+    /**
+     * Tests aligning strings where the first string is empty.
+     */
+    @Test
+    public void testEmptyFirstString() {
+        String str1 = "";
+        String str2 = "World";
+        String expectedStr1 = "     ";  // 5 spaces
+        String expectedStr2 = "World";
+        String[] alignedStrings = alignLinesLeft(str1, str2);
+        assertEquals(expectedStr1, alignedStrings[0]);
+        assertEquals(expectedStr2, alignedStrings[1]);
+    }
+
+    /**
+     * Tests aligning strings where the second string is empty.
+     */
+    @Test
+    public void testEmptySecondString() {
+        String str1 = "Hello";
+        String str2 = "";
+        String expectedStr1 = "Hello";
+        String expectedStr2 = "     ";  // 5 spaces
+        String[] alignedStrings = alignLinesLeft(str1, str2);
+        assertEquals(expectedStr1, alignedStrings[0]);
+        assertEquals(expectedStr2, alignedStrings[1]);
+    }
+
+    /**
+     * Tests aligning strings where both strings are empty.
+     */
+    @Test
+    public void testBothStringsEmpty() {
+        String str1 = "";
+        String str2 = "";
+        String expectedStr1 = "";
+        String expectedStr2 = "";
+        String[] alignedStrings = alignLinesLeft(str1, str2);
+        assertEquals(expectedStr1, alignedStrings[0]);
+        assertEquals(expectedStr2, alignedStrings[1]);
+    }
+
+    /**
+     * Tests aligning strings with trailing spaces.
+     */
+    @Test
+    public void testStringsWithSpaces() {
+        String str1 = "Hello ";
+        String str2 = "World  ";
+        String expectedStr1 = "Hello  ";
+        String expectedStr2 = "World  ";
+        String[] alignedStrings = alignLinesLeft(str1, str2);
+        assertEquals(expectedStr1, alignedStrings[0]);
+        assertEquals(expectedStr2, alignedStrings[1]);
     }
 }

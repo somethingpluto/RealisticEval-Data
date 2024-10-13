@@ -1,22 +1,104 @@
 package org.real.temp;
 
-import static org.junit.Assert.assertEquals;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 
 public class Tester {
 
-    @Test
-    public void testFindCommonColumns() {
-        // Assuming you have a method to call that returns the common columns
-        List<String> commonColumns = findCommonColumns("directoryPath");
+    private static final String TEST_DIR = "test_dir";
 
-        // Add assertions to verify the correctness of the returned list
-        assertEquals(expectedCommonColumns, commonColumns);
+    @Before
+    public void setUp() throws IOException {
+        // Set up a temporary directory
+        Files.createDirectories(new File(TEST_DIR).toPath());
     }
 
-    // Dummy implementation of findCommonColumns for testing purposes
-    private List<String> findCommonColumns(String directory) {
-        // Your implementation here
-        return null; // Replace with actual implementation
+    @After
+    public void tearDown() throws IOException {
+        // Remove created files and directory after each test
+        File dir = new File(TEST_DIR);
+        File[] files = dir.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                file.delete();
+            }
+        }
+        dir.delete();
+    }
+
+    @Test
+    public void testAllSameColumns() throws IOException {
+        // All CSV files have the same columns
+        String data1 = "A,B,C\n1,2,3";
+        String data2 = "A,B,C\n4,5,6";
+        String data3 = "A,B,C\n7,8,9";
+        List<String> filenames = Arrays.asList("file1.csv", "file2.csv", "file3.csv");
+        List<String> datas = Arrays.asList(data1, data2, data3);
+
+        writeFiles(filenames, datas);
+
+        assertEquals(Set.of("A", "B", "C"), findCommonColumns(TEST_DIR));
+    }
+
+    @Test
+    public void testNoCommonColumns() throws IOException {
+        // No common columns
+        String data1 = "A,B,C\n1,2,3";
+        String data2 = "D,E,F\n4,5,6";
+        String data3 = "G,H,I\n7,8,9";
+        List<String> filenames = Arrays.asList("file1.csv", "file2.csv", "file3.csv");
+        List<String> datas = Arrays.asList(data1, data2, data3);
+
+        writeFiles(filenames, datas);
+
+        assertEquals(Set.of(), findCommonColumns(TEST_DIR));
+    }
+
+    @Test
+    public void testSomeCommonColumns() throws IOException {
+        // Some common columns
+        String data1 = "A,B,C\n1,2,3";
+        String data2 = "B,C,D\n4,5,6";
+        String data3 = "C,D,E\n7,8,9";
+        List<String> filenames = Arrays.asList("file1.csv", "file2.csv", "file3.csv");
+        List<String> datas = Arrays.asList(data1, data2, data3);
+
+        writeFiles(filenames, datas);
+
+        assertEquals(Set.of("C"), findCommonColumns(TEST_DIR));
+    }
+
+    @Test
+    public void testMixedCommonAndUniqueColumns() throws IOException {
+        // Mixed common and unique columns
+        String data1 = "A,B,C\n1,2,3";
+        String data2 = "B,C,D\n4,5,6";
+        String data3 = "B,C,E\n7,8,9";
+        List<String> filenames = Arrays.asList("file1.csv", "file2.csv", "file3.csv");
+        List<String> datas = Arrays.asList(data1, data2, data3);
+
+        writeFiles(filenames, datas);
+
+        assertEquals(Set.of("B", "C"), findCommonColumns(TEST_DIR));
+    }
+
+    private void writeFiles(List<String> filenames, List<String> datas) throws IOException {
+        for (int i = 0; i < filenames.size(); i++) {
+            String filename = filenames.get(i);
+            String data = datas.get(i);
+            File file = new File(TEST_DIR, filename);
+            try (FileWriter writer = new FileWriter(file)) {
+                writer.write(data);
+            }
+        }
     }
 }

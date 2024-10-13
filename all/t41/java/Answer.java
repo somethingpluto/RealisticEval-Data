@@ -1,66 +1,79 @@
 package org.real.temp;
 
-import java.util.BitSet;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.BitSet;
 
-public class BloomFilter {
-    private BitSet bitSet;
-    private int[] seeds;
+public class Answer {
 
-    public BloomFilter(int size, int hashCount) {
-        this.bitSet = new BitSet(size);
-        this.seeds = new int[hashCount];
-        
-        for (int i = 0; i < hashCount; i++) {
-            seeds[i] = i * 16777619 + 23333333; // Just some prime numbers
+    public static class BloomFilter {
+        private final int size;
+        private final int hashCount;
+        private final BitSet bitArray;
+
+        public BloomFilter(int size, int hashCount) {
+            this.size = size;
+            this.hashCount = hashCount;
+            this.bitArray = new BitSet(size);
+        }
+
+        private Iterable<Integer> hashes(String item) {
+            return () -> new java.util.Iterator<>() {
+                private int index = 0;
+
+                @Override
+                public boolean hasNext() {
+                    return index < hashCount;
+                }
+
+                @Override
+                public Integer next() {
+                    if (!hasNext()) {
+                        throw new java.util.NoSuchElementException();
+                    }
+                    byte[] itemBytes = item.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+                    try {
+                        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+                        byte[] hashResult = digest.digest(itemBytes);
+                        long hashValue = bytesToLong(hashResult);
+                        index++;
+                        return (int) (hashValue + index) % size;
+                    } catch (NoSuchAlgorithmException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+
+                private long bytesToLong(byte[] bytes) {
+                    long result = 0;
+                    for (byte b : bytes) {
+                        result = (result << 8) | (b & 0xFF);
+                    }
+                    return result;
+                }
+            };
+        }
+
+        public void add(String item) {
+            for (int hashValue : hashes(item)) {
+                bitArray.set(hashValue);
+            }
+        }
+
+        public boolean contains(String item) {
+            for (int hashValue : hashes(item)) {
+                if (!bitArray.get(hashValue)) {
+                    return false;
+                }
+            }
+            return true;
         }
     }
 
-    public void add(String item) {
-        byte[] bytes = item.getBytes();
-        for (int seed : seeds) {
-            MessageDigest digest = null;
-            try {
-                digest = MessageDigest.getInstance("MD5");
-            } catch (NoSuchAlgorithmException e) {
-                e.printStackTrace();
-            }
-            digest.update(bytes);
-            long hash = ((long)digest.digest()[i] & 0xFF) << 56 |
-                    ((long)digest.digest()[i+1] & 0xFF) << 48 |
-                    ((long)digest.digest()[i+2] & 0xFF) << 40 |
-                    ((long)digest.digest()[i+3] & 0xFF) << 32 |
-                    ((long)digest.digest()[i+4] & 0xFF) << 24 |
-                    ((long)digest.digest()[i+5] & 0xFF) << 16 |
-                    ((long)digest.digest()[i+6] & 0xFF) << 8 |
-                    ((long)digest.digest()[i+7] & 0xFF);
-            hash = hash % bitSet.size(); // To make sure it fits within the BitSet
-            bitSet.set((int)hash);
-        }
-    }
-
-    public boolean contains(String item) {
-        byte[] bytes = item.getBytes();
-        for (int seed : seeds) {
-            MessageDigest digest = null;
-            try {
-                digest = MessageDigest.getInstance("MD5");
-            } catch (NoSuchAlgorithmException e) {
-                e.printStackTrace();
-            }
-            digest.update(bytes);
-            long hash = ((long)digest.digest()[i] & 0xFF) << 56 |
-                    ((long)digest.digest()[i+1] & 0xFF) << 48 |
-                    ((long)digest.digest()[i+2] & 0xFF) << 40 |
-                    ((long)digest.digest()[i+3] & 0xFF) << 32 |
-                    ((long)digest.digest()[i+4] & 0xFF) << 24 |
-                    ((long)digest.digest()[i+5] & 0xFF) << 16 |
-                    ((long)digest.digest()[i+6] & 0xFF) << 8 |
-                    ((long)digest.digest()[i+7] & 0xFF);
-            hash = hash % bitSet.size();
-            if (!bitSet.get((int)hash)) return false;
-        }
-        return true;
+    public static void main(String[] args) {
+        // Example usage
+        BloomFilter bloomFilter = new BloomFilter(1000, 5);
+        bloomFilter.add("example");
+        System.out.println(bloomFilter.contains("example")); // Expected: true
+        System.out.println(bloomFilter.contains("not_in_filter")); // Expected: false
     }
 }

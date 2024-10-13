@@ -1,78 +1,128 @@
-Sure! Below is the equivalent TypeScript test case using Jest for the provided Python function `read_txt_add_json_bracket`.
+Certainly! Here’s the equivalent TypeScript code using Jest for testing the `readTxtAddJsonBracket` function. We will use Jest’s mocking capabilities to simulate file reads and assert the expected results.
+
+### TypeScript Code with Jest Testing
+
+First, let's define the `readTxtAddJsonBracket` function in TypeScript:
 
 ```typescript
 import fs from 'fs';
-import { parse } from 'json5'; // Using json5 to handle JSON-like strings that may not be perfectly valid JSON
 
-describe('read_txt_add_json_bracket', () => {
-  const mockFileName = 'mockFile.txt';
-
-  beforeAll(() => {
-    // Mocking the file system to return a specific content when read
-    jest.spyOn(fs, 'readFileSync').mockImplementation((filePath) => {
-      if (filePath === mockFileName) {
-        return '[{"key": "value"}]'; // Example JSON string
-      }
-      throw new Error(`ENOENT: no such file or directory, open '${filePath}'`);
-    });
-  });
-
-  afterAll(() => {
-    jest.clearAllMocks();
-  });
-
-  it('reads a text file, wraps its content in JSON brackets, and parses it into a Python object', async () => {
+/**
+ * Reads a text file, wraps its content in JSON brackets, and parses it into a JavaScript object.
+ *
+ * @param filename - The path to the text file to be read.
+ * @returns A list parsed from the JSON content wrapped in brackets.
+ * @throws {Error} If the specified file does not exist.
+ * @throws {Error} If the content cannot be parsed as JSON.
+ */
+function readTxtAddJsonBracket(filename: string): any[] {
     try {
-      const result = await read_txt_add_json_bracket(mockFileName);
-      expect(result).toEqual([{ key: 'value' }]);
+        const text = fs.readFileSync(filename, { encoding: 'utf-8' });
+
+        // Wrap the text in square brackets to form a valid JSON array
+        const wrappedText = `[${text.trim()}]`;
+
+        // Parse the JSON content into a JavaScript object
+        const data = JSON.parse(wrappedText);
+
+        return data;
+
     } catch (error) {
-      fail(error.message);
+        if (error.code === 'ENOENT') {
+            console.error(`Error: ${error.message}`);
+            return [];
+        } else if (error instanceof SyntaxError) {
+            console.error(`Error decoding JSON: ${error.message}`);
+            return [];
+        } else {
+            throw error; // Re-throw other unexpected errors
+        }
     }
-  });
-
-  it('throws an error if the specified file does not exist', async () => {
-    const nonExistentFileName = 'nonExistentFile.txt';
-    try {
-      await read_txt_add_json_bracket(nonExistentFileName);
-      fail('Expected an error to be thrown');
-    } catch (error) {
-      expect(error.message).toBe(`ENOENT: no such file or directory, open '${nonExistentFileName}'`);
-    }
-  });
-
-  it('throws an error if the content cannot be parsed as JSON', async () => {
-    jest.spyOn(fs, 'readFileSync').mockImplementation(() => {
-      return 'This is not valid JSON'; // Invalid JSON string
-    });
-
-    const invalidJsonFileName = 'invalidJsonFile.txt';
-    try {
-      await read_txt_add_json_bracket(invalidJsonFileName);
-      fail('Expected an error to be thrown');
-    } catch (error) {
-      expect(error.message).toContain('Unexpected token T in JSON at position 0');
-    }
-  });
-});
-
-async function read_txt_add_json_bracket(filename: string): Promise<any[]> {
-  try {
-    const fileContent = fs.readFileSync(filename, 'utf8');
-    const jsonContent = `[${fileContent}]`;
-    return parse(jsonContent); // Using json5 to parse JSON-like strings
-  } catch (error) {
-    if (error.code === 'ENOENT') {
-      throw new Error('File not found');
-    }
-    throw new Error('Invalid JSON content');
-  }
 }
+
+export default readTxtAddJsonBracket;
+```
+
+### Jest Test Class
+
+Now, let's write the Jest test class to verify the behavior of `readTxtAddJsonBracket`:
+
+```typescript
+import { readTxtAddJsonBracket } from './path/to/read-txt-add-json-bracket'; // Adjust the import path as needed
+
+describe('TestReadTxtAddJsonBracket', () => {
+    it('should handle valid JSON', () => {
+        const mockData = '{"key": "value"}';
+        const mockFile = jest.fn().mockImplementation(() => ({
+            readFileSync: jest.fn().mockReturnValue(mockData),
+        }));
+
+        global.fs = mockFile;
+
+        const result = readTxtAddJsonBracket('fakefile.txt');
+        expect(result).toEqual([{"key": "value"}]);
+    });
+
+    it('should handle an empty JSON array', () => {
+        const mockData = '[]';
+        const mockFile = jest.fn().mockImplementation(() => ({
+            readFileSync: jest.fn().mockReturnValue(mockData),
+        }));
+
+        global.fs = mockFile;
+
+        const result = readTxtAddJsonBracket('fakefile.txt');
+        expect(result).toEqual([[]]);
+    });
+
+    it('should handle valid JSON with a newline', () => {
+        const mockData = '{"key": "value"}\n';
+        const mockFile = jest.fn().mockImplementation(() => ({
+            readFileSync: jest.fn().mockReturnValue(mockData),
+        }));
+
+        global.fs = mockFile;
+
+        const result = readTxtAddJsonBracket('fakefile.txt');
+        expect(result).toEqual([{"key": "value"}]);
+    });
+
+    it('should handle JSON with an array', () => {
+        const mockData = '{"key": "value"}';
+        const mockFile = jest.fn().mockImplementation(() => ({
+            readFileSync: jest.fn().mockReturnValue(mockData),
+        }));
+
+        global.fs = mockFile;
+
+        const result = readTxtAddJsonBracket('fakefile.txt');
+        expect(result).toEqual([{"key": "value"}]);
+    });
+});
 ```
 
 ### Explanation:
-1. **Mocking the File System**: We use Jest's `spyOn` method to mock the `fs.readFileSync` function to return a predefined JSON string when called with the mock file name.
-2. **Testing Normal Case**: We test that the function correctly reads the file, wraps its content in JSON brackets, and parses it into a Python object.
-3. **Testing File Not Found Error**: We test that the function throws an error if the specified file does not exist.
-4. **Testing Invalid JSON Content**: We test that the function throws an error if the content of the file cannot be parsed as JSON.
 
-Note: This TypeScript code assumes you have a function `read_txt_add_json_bracket` defined in your project. If you need to define this function, make sure it matches the provided Python function signature and logic.
+1. **Importing the Function**:
+   - Import the `readTxtAddJsonBracket` function from the TypeScript module.
+
+2. **Jest Test Suite**:
+   - Use `describe` to group the tests.
+   - Each `it` block represents a test case.
+
+3. **Mocking `fs.readFileSync`**:
+   - Jest mocks are used to simulate the behavior of `fs.readFileSync`.
+   - The `mockFile` function is set up to return the desired mock data.
+
+4. **Assertions**:
+   - Use `expect` to assert the expected results.
+
+### Running the Tests
+
+To run the tests, you can use the following command in your project directory:
+
+```sh
+npm test
+```
+
+This setup ensures that the tests are equivalent to the Python unittests, with proper Jest assertions and mocking.

@@ -1,58 +1,66 @@
-Sure! Here is the equivalent TypeScript code for the provided Python script:
+Here is the equivalent TypeScript code:
 
 ```typescript
 function formatText(inputFile: string = 'input.txt', outputFile: string = 'output.txt'): void {
     try {
-        // Read the content of the input file
-        const fs = require('fs');
-        const lines = fs.readFileSync(inputFile, 'utf8').split('\n');
+        // Open the input file in read mode
+        const fs = require('fs').promises;
+        const content = fs.readFile(inputFile, 'utf8');
 
-        // Process each line
-        const processedLines: string[] = [];
-        for (const line of lines) {
-            // Remove newline characters and add a space
-            const processedLine = line.trimEnd();
-            processedLines.push(processedLine);  // Append the processed line
-        }
+        // Read the content of the input file line by line
+        content.then((data) => {
+            const lines = data.split('\n');
 
-        // Join the processed lines with spaces
-        const contentWithoutNewlines = processedLines.join(' ');
+            // Process each line
+            const processedLines: string[] = [];
+            for (const line of lines) {
+                // Remove newline characters and add a space
+                const processedLine = line.trimEnd();
+                processedLines.push(processedLine);  // Append the processed line
+            }
 
-        // Write the content without newlines to the output file
-        fs.writeFileSync(outputFile, contentWithoutNewlines);
+            // Join the processed lines with spaces
+            const contentWithoutNewlines = processedLines.join(' ');
 
-        console.log("Line breaks removed and spaces added. Output written to", outputFile);
-
+            // Open the output file in write mode
+            fs.writeFile(outputFile, contentWithoutNewlines)
+                .then(() => {
+                    console.log("Line breaks removed and spaces added. Output written to", outputFile);
+                })
+                .catch((error) => {
+                    console.error("Error writing to output file:", error);
+                });
+        })
+        .catch((error) => {
+            if (error.code === 'ENOENT') {
+                console.error("Input file not found.");
+            } else {
+                console.error("Error reading input file:", error);
+            }
+        });
     } catch (error) {
-        if (error.code === 'ENOENT') {
-            console.error("Input file not found.");
-        } else {
-            throw error;
-        }
+        console.error("An unexpected error occurred:", error);
     }
 }
+
+// Example usage
+formatText();
 ```
 
 ### Explanation:
-1. **File System Module**: 
-   - In TypeScript/JavaScript, you need to use the `fs` module to handle file operations.
-   - Import the `fs` module using `require('fs')`.
+1. **File Handling**:
+   - In TypeScript/JavaScript, we use `fs.promises` for asynchronous file operations.
+   - `readFile` and `writeFile` methods are used to read and write files asynchronously.
 
-2. **Reading File**:
-   - Use `fs.readFileSync` to read the entire content of the input file synchronously.
-   - Split the content by newline characters (`\n`) to get an array of lines.
+2. **Error Handling**:
+   - The `try-catch` block is used to handle errors during file operations.
+   - Specific error handling is added for `FileNotFoundError` using the `error.code` property.
 
 3. **Processing Lines**:
-   - Iterate over each line and remove trailing newline characters using `trimEnd()` (equivalent to `rstrip('\n')` in Python).
-   - Append each processed line to an array.
+   - The lines are read from the file and split by newline characters.
+   - Each line is trimmed to remove trailing newline characters and then joined with spaces.
 
-4. **Joining Lines**:
-   - Join the processed lines with spaces using `join(' ')`.
+4. **Output**:
+   - The processed content is written to the output file using `writeFile`.
 
-5. **Writing to Output File**:
-   - Use `fs.writeFileSync` to write the processed content to the output file.
-
-6. **Error Handling**:
-   - Catch errors and specifically handle the case where the input file is not found (`ENOENT`).
-
-This TypeScript code maintains the same functionality as the original Python script but uses the appropriate methods and syntax for Node.js and TypeScript.
+This TypeScript code maintains the same functionality and logic as the Python code but adapts it to the asynchronous nature of Node.js file operations.

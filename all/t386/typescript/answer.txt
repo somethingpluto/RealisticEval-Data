@@ -1,17 +1,16 @@
-Certainly! Below is the equivalent TypeScript code for the provided Python script. This TypeScript version will maintain the same functionality, structure, and logic, while adhering to TypeScript's static type system and best practices.
+Here’s the equivalent TypeScript code for the provided Python function, including proper type definitions and handling:
 
 ```typescript
 import * as fs from 'fs';
 import * as path from 'path';
 import * as util from 'util';
 
-// Promisify the fs methods
 const readFileAsync = util.promisify(fs.readFile);
 const writeFileAsync = util.promisify(fs.writeFile);
 
 /**
- * Converts the encoding of a file from one encoding to another.
- * 
+ * This function converts the encoding of a file from one encoding to another.
+ *
  * @param inputFilePath - The path to the input file.
  * @param outputFilePath - The path to the output file where the converted content is saved.
  * @param originalEncoding - The original encoding of the file (default is 'cp932').
@@ -37,37 +36,34 @@ async function convertEncoding(
       try {
         // Check if the file is already in the target encoding
         await readFileAsync(inputFilePath, { encoding: targetEncoding });
-        // Copy the file if no error occurs
+        // Copy if no error occurs
         fs.copyFileSync(inputFilePath, outputFilePath);
         console.log(`File already in target encoding: ${inputFilePath}`);
         return true;
-      } catch {
-        console.error(`Conversion failed due to encoding error: ${error.message}`);
-        return false;
+      } catch (innerError) {
+        if (innerError instanceof Error && innerError.name === 'UnicodeDecodeError') {
+          console.error(`Conversion failed due to encoding error: ${error.message}`);
+          return false;
+        }
       }
-    } else {
-      console.error(`An unexpected error occurred: ${error.message}`);
-      return false;
     }
+
+    console.error(`Conversion failed due to encoding error: ${error.message}`);
+    return false;
   }
 }
 
 // Example usage
 (async () => {
-  try {
-    const result = await convertEncoding('input.txt', 'output.txt');
-    console.log('Conversion result:', result);
-  } catch (error) {
-    console.error('An error occurred during conversion:', error);
-  }
+  const result = await convertEncoding('input.txt', 'output.txt');
+  console.log(`Conversion result: ${result}`);
 })();
 ```
 
 ### Explanation:
-1. **Import Statements**: The necessary Node.js modules (`fs`, `path`, `util`) are imported to handle file operations and asynchronous functions.
-2. **Promisified File System Methods**: The `readFile` and `writeFile` methods are promisified using `util.promisify` to enable asynchronous handling.
-3. **Function Definition**: The `convertEncoding` function is defined with the appropriate types for parameters and return values.
-4. **Error Handling**: The function catches errors and handles them appropriately, including checking if the file is already in the target encoding.
-5. **Example Usage**: An example usage is provided at the end to demonstrate how to call the `convertEncoding` function asynchronously.
+1. **Imports**: TypeScript requires importing the necessary modules (`fs`, `path`, `util`) to handle file operations and asynchronous functions.
+2. **Promises**: The `convertEncoding` function uses asynchronous file operations (`readFileAsync` and `writeFileAsync`) to handle file reading and writing.
+3. **Error Handling**: The function catches errors and specifically checks for `UnicodeDecodeError`. Since Node.js does not have a built-in `UnicodeDecodeError`, we assume it's a decoding error by checking the error name.
+4. **Logging**: Console logging is used to provide feedback on the success or failure of the conversion process.
 
-This TypeScript code ensures that the file encoding conversion logic remains consistent with the original Python implementation, while leveraging TypeScript's static typing and async/await for better readability and error handling.
+This TypeScript code maintains the same functionality and logic as the Python code, adapting it to TypeScript's syntax and asynchronous capabilities.

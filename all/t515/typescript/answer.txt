@@ -1,28 +1,47 @@
-Here's how you can translate the Python function into TypeScript:
+Here’s the equivalent TypeScript code, including proper type definitions and handling:
 
 ```typescript
-import { DateTime } from 'luxon';
+import { moment } from 'moment-timezone';
 
+/**
+ * Converts a date string from the format '%a, %d %b %Y %H:%M:%S %z (%Z)'
+ * to the format '%Y-%m-%d_%H:%M:%S'.
+ * 
+ * @param dateStr - The input date string.
+ * @returns The formatted date string in the format '%Y-%m-%d_%H:%M:%S', or null if the input date string is invalid.
+ */
 function formatDateString(dateStr: string): string | null {
     try {
-        const dt = DateTime.fromFormat(dateStr, 'EEE, dd LLL yyyy HH:mm:ss ZZZ (zzzz)');
-        
-        if (!dt.isValid) {
-            return null;
+        // Convert to a moment object using the specified format
+        const dateObject = moment(dateStr, 'ddd, DD MMM YYYY HH:mm:ss ZZ (Z)', true);
+
+        if (!dateObject.isValid()) {
+            throw new Error('Invalid date format');
         }
 
-        return dt.toFormat('yyyy-MM-dd_HH:mm:ss');
+        // Convert to the desired output format
+        const formattedDate = dateObject.format('YYYY-MM-DD_HH:mm:ss');
+
+        return formattedDate;
     } catch (error) {
-        console.error(error);
+        console.error(`Error parsing date: ${error}`);
         return null;
     }
 }
+
+// Example usage
+console.log(formatDateString('Mon, 20 Mar 2023 15:45:30 +0000 (UTC)'));
 ```
 
-This TypeScript function uses the `luxon` library, which is a popular JavaScript/TypeScript library for handling dates and times. 
+### Notes:
+1. **Dependencies**: This TypeScript code uses `moment.js` for date parsing and formatting. Make sure you have `moment-timezone` installed in your project.
+2. **Error Handling**: The function catches any parsing errors and returns `null` if the input date string is invalid.
+3. **Format Strings**: The format strings used in `moment` are slightly different from those used in Python's `datetime`. Adjustments have been made accordingly.
 
-The `fromFormat` method of the `DateTime` class tries to parse the provided string according to the specified format. If the parsing is successful, it returns a `DateTime` object; otherwise, it throws an error.
+To use this code, ensure you have `moment-timezone` installed in your project:
 
-The `isValid` property checks whether the `DateTime` object represents a valid date and time. If not, it returns `false`.
+```sh
+npm install moment-timezone
+```
 
-If the parsing or validation fails, the function logs the error to the console and returns `null`. Otherwise, it formats the `DateTime` object to the desired output format using the `toFormat` method and returns the result.
+This setup ensures that the functionality remains consistent with the original Python code, while adapting it to TypeScript's static type system and idiomatic practices.

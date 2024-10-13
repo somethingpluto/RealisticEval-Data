@@ -1,14 +1,56 @@
-TEST_CASE("Dataframe to Markdown Conversion", "[dataframe_to_markdown]") {
-    // Create a sample DataFrame
-    pandas::DataFrame df = {{"Name", {"Alice", "Bob"}},
-                            {"Age", {25, 30}}};
+TEST_CASE("Test DataFrame to Markdown Conversion") {
+    SECTION("Test df_to_str") {
+        // Test that the function writes the correct markdown to a file
+        std::vector<std::vector<std::string>> data = {{"Alice", "25"}, {"Bob", "30"}};
+        std::vector<std::string> columns = {"Name", "Age"};
+        DataFrame df(data, columns);
 
-    // Specify the output MD file path
-    std::string md_path = "output.md";
+        std::string expected_markdown = "| Name   |   Age |\n|:-------|------:|\n| Alice  |    25 |\n| Bob    |    30 |";
+        std::string result = dataframe_to_markdown(df, "dummy_path.md");
+        REQUIRE(result == expected_markdown);
+    }
 
-    // Call the function with the sample DataFrame and output path
-    std::string result = dataframe_to_markdown(df, md_path);
+    SECTION("Test empty dataframe") {
+        // Test how the function handles an empty DataFrame
+        std::vector<std::vector<std::string>> data = {};
+        std::vector<std::string> columns = {};
+        DataFrame df(data, columns);
 
-    // Check if the result matches the expected markdown content
-    REQUIRE(result == "| Name | Age |\n| --- | --- |\n| Alice | 25 |\n| Bob | 30 |\n");
+        std::string expected_markdown = "";
+        std::string result = dataframe_to_markdown(df, "dummy_path.md");
+        REQUIRE(result == expected_markdown);
+    }
+
+    SECTION("Test single row dataframe") {
+        // Test with a DataFrame that contains only one row
+        std::vector<std::vector<std::string>> data = {{"Alice", "30"}};
+        std::vector<std::string> columns = {"Name", "Age"};
+        DataFrame df(data, columns);
+
+        std::string expected_markdown = "| Name   |   Age |\n|:-------|------:|\n| Alice  |    30 |";
+        std::string result = dataframe_to_markdown(df, "dummy_path.md");
+        REQUIRE(result == expected_markdown);
+    }
+
+    SECTION("Test non-string columns") {
+        // Test with non-string question types in the DataFrame
+        std::vector<std::vector<std::string>> data = {{"Alice", "25", "5.5"}, {"Bob", "30", "6.0"}};
+        std::vector<std::string> columns = {"Name", "Age", "Height"};
+        DataFrame df(data, columns);
+
+        std::string expected_markdown = "| Name   |   Age |   Height |\n|:-------|------:|---------:|\n| Alice  |    25 |      5.5 |\n| Bob    |    30 |      6   |";
+        std::string result = dataframe_to_markdown(df, "dummy_path.md");
+        REQUIRE(result == expected_markdown);
+    }
+
+    SECTION("Test special characters") {
+        // Test handling of special characters in DataFrame
+        std::vector<std::vector<std::string>> data = {{"Alice", "Good@Work!"}, {"Bob", "Excellent & Commendable"}};
+        std::vector<std::string> columns = {"Name", "Comments"};
+        DataFrame df(data, columns);
+
+        std::string expected_markdown = "| Name   | Comments                |\n|:-------|:------------------------|\n| Alice  | Good@Work!              |\n| Bob    | Excellent & Commendable |";
+        std::string result = dataframe_to_markdown(df, "dummy_path.md");
+        REQUIRE(result == expected_markdown);
+    }
 }

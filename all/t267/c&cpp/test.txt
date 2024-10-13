@@ -1,52 +1,99 @@
-To convert the provided Python unittest test class into an equivalent test class using Catch2 in C++, we first need to define the function `extract_sld_tld` in C++. Then, we can write the test cases using Catch2's syntax and assertions. Below is the equivalent C++ code:
+Certainly! Below is the equivalent C++ test class using the Catch2 testing framework. The provided Python unittest class will be converted into a Catch2 test suite, ensuring that the functionality and logic of the tests are preserved.
+
+### C++ Code with Catch2 Testing Framework
+
+First, make sure you have Catch2 installed and included in your project. You can include Catch2 via a header-only library or through a package manager.
+
+Here is the complete C++ code with the Catch2 test suite:
 
 ```cpp
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <string>
+#include <vector>
+#include <stdexcept>
 #include <utility> // For std::pair
 
-// Function to extract the second-level and top-level domain names from the fully qualified domain name
+// Function to split a string by a delimiter
+std::vector<std::string> split(const std::string& str, char delimiter) {
+    std::vector<std::string> tokens;
+    std::string token;
+    std::istringstream tokenStream(str);
+
+    while (std::getline(tokenStream, token, delimiter)) {
+        tokens.push_back(token);
+    }
+
+    return tokens;
+}
+
+// Function to extract the second-level domain (SLD) and top-level domain (TLD)
 std::pair<std::string, std::string> extract_sld_tld(const std::string& fqdn) {
-    // This is a simple example implementation.
-    // In a real-world scenario, you would have a more sophisticated logic to parse the domain.
-    size_t lastDot = fqdn.find_last_of('.');
-    if (lastDot == std::string::npos) {
-        return {"", ""};
+    // Split the FQDN into parts
+    std::vector<std::string> parts = split(fqdn, '.');
+
+    // Check if there are enough parts to extract SLD and TLD
+    if (parts.size() < 2) {
+        throw std::invalid_argument("The provided FQDN does not contain enough parts to extract SLD and TLD.");
     }
-    size_t secondLastDot = fqdn.substr(0, lastDot).find_last_of('.');
-    if (secondLastDot == std::string::npos) {
-        return {"", ""};
-    }
-    std::string sld = fqdn.substr(secondLastDot + 1, lastDot - (secondLastDot + 1));
-    std::string tld = fqdn.substr(lastDot + 1);
-    return {sld, tld};
+
+    // Extract the SLD and TLD
+    std::string sld = parts[parts.size() - 2];  // Second to last item is the SLD
+    std::string tld = parts[parts.size() - 1];  // Last item is the TLD
+
+    return std::make_pair(sld, tld);
 }
 
 TEST_CASE("Test extract_sld_tld function") {
-    SECTION("Extracting SLD and TLD from valid FQDN") {
-        auto [sld, tld] = extract_sld_tld("www.example.com");
-        REQUIRE(sld == "example");
-        REQUIRE(tld == "com");
+    SECTION("Test a typical FQDN") {
+        REQUIRE(extract_sld_tld("www.example.com") == std::make_pair("example", "com"));
     }
 
-    SECTION("Extracting SLD and TLD from invalid FQDN") {
-        auto [sld, tld] = extract_sld_tld("example.com");
-        REQUIRE(sld == "");
-        REQUIRE(tld == "");
+    SECTION("Test another typical FQDN") {
+        REQUIRE(extract_sld_tld("www.example.xyz") == std::make_pair("example", "xyz"));
     }
 
-    SECTION("Extracting SLD and TLD from single-level domain") {
-        auto [sld, tld] = extract_sld_tld("example");
-        REQUIRE(sld == "");
-        REQUIRE(tld == "");
+    SECTION("Test an FQDN with multiple subdomains") {
+        REQUIRE(extract_sld_tld("blog.subdomain.example.com") == std::make_pair("example", "com"));
+    }
+
+    SECTION("Test a numeric TLD") {
+        REQUIRE(extract_sld_tld("server.example.123") == std::make_pair("example", "123"));
     }
 }
 ```
 
 ### Explanation:
-1. **Function Definition**: The `extract_sld_tld` function is defined to take a string (fully qualified domain name) and return a pair of strings representing the second-level domain and top-level domain.
-2. **Logic**: The function uses `find_last_of` to find the positions of the last dot (for TLD) and the second-to-last dot (for SLD).
-3. **Test Cases**: The `TEST_CASE` macro is used to define a test case with multiple `SECTION`s. Each section tests different scenarios for the `extract_sld_tld` function.
-4. **Assertions**: The `REQUIRE` macro is used to assert the expected outcomes of the test cases. 
+1. **Catch2 Header**: Include the Catch2 header file `catch2/catch_test_macros.hpp`.
+2. **Split Function**: The `split` function remains the same as in the previous example.
+3. **Extract SLD and TLD Function**: The `extract_sld_tld` function remains the same as in the previous example.
+4. **Test Suite**: The `TEST_CASE` macro defines the test suite, and each `SECTION` within it defines individual test cases.
+5. **Assertions**: The `REQUIRE` macro is used to assert the expected results. It behaves similarly to `assertEqual` in Python's `unittest`.
 
-This approach ensures that the functionality and logic of the original Python tests are preserved in the C++ version using Catch2.
+### Running the Tests
+To run the tests, you need to link against Catch2. If you are using a build system like CMake, you can add the following to your `CMakeLists.txt`:
+
+```cmake
+cmake_minimum_required(VERSION 3.10)
+project(MyProject)
+
+# Find Catch2
+find_package(Catch2 REQUIRED)
+
+# Add executable
+add_executable(my_test main.cpp)
+
+# Link against Catch2
+target_link_libraries(my_test PRIVATE Catch2::Catch2)
+```
+
+In your `main.cpp`, you would typically include the Catch2 main function:
+
+```cpp
+#include <catch2/catch_test_macros.hpp>
+
+int main(int argc, char* argv[]) {
+    return Catch::Session().run(argc, argv);
+}
+```
+
+This setup ensures that the tests are executed when you run the executable.

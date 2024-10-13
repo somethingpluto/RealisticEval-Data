@@ -1,6 +1,8 @@
-Certainly! Below is the equivalent TypeScript code for the provided Python function, along with a Jest test class to verify its functionality. I'll include the necessary type annotations and Jest assertions to ensure that the tests are equivalent to the Python `unittest` tests.
+Certainly! Here is the equivalent TypeScript test class using Jest, ensuring that the functionality and logic of the tests are preserved. The provided Python unittest class will be converted to a Jest test suite in TypeScript.
 
-### TypeScript Code for `safeFormat` Function
+### TypeScript Code
+
+First, let's define the `safeFormat` function in TypeScript:
 
 ```typescript
 /**
@@ -19,8 +21,8 @@ function safeFormat(template: string, ...kwargs: [string, any][]): string {
     const replacer = (match: string, key: string): string => {
         // Extract the placeholder key
         // Return the corresponding value from kwargs, or the original placeholder if not found
-        const keyValuePairs = new Map(kwargs);
-        return keyValuePairs.has(key) ? String(keyValuePairs.get(key)) : match;
+        const value = kwargs.find(([k]) => k === key);
+        return value ? String(value[1]) : match;
     };
 
     // Replace placeholders in the template using the replacer function
@@ -30,74 +32,59 @@ function safeFormat(template: string, ...kwargs: [string, any][]): string {
 export default safeFormat;
 ```
 
-### Jest Test Class for `safeFormat` Function
+Next, let's define the Jest test suite:
 
 ```typescript
-import safeFormat from './path/to/safeFormat'; // Adjust the import path as needed
+import safeFormat from './safeFormat'; // Import the safeFormat function
 
-describe('safeFormat', () => {
-    it('should format the template with provided values', () => {
-        const template = "Hello, {name}! Today is {day}.";
-        const kwargs = [["name", "Alice"], ["day", "Monday"]];
-        const expected = "Hello, Alice! Today is Monday.";
-        expect(safeFormat(template, ...kwargs)).toBe(expected);
+describe('TestSafeFormat', () => {
+    it('test_full_replacement', () => {
+        // Test with all placeholders having corresponding values.
+        const template = "Hello, {name}! Welcome to {place}.";
+        const result = safeFormat(template, ['name', 'Alice'], ['place', 'Wonderland']);
+        const expected = "Hello, Alice! Welcome to Wonderland.";
+        expect(result).toEqual(expected);
     });
 
-    it('should leave placeholders unchanged if no corresponding values are provided', () => {
-        const template = "Hello, {name}! Today is {day}.";
-        const kwargs = [["name", "Alice"]];
-        const expected = "Hello, Alice! Today is {day}.";
-        expect(safeFormat(template, ...kwargs)).toBe(expected);
+    it('test_partial_replacement', () => {
+        // Test with some placeholders missing corresponding values.
+        const template = "Hello, {name}! Welcome to {place}.";
+        const result = safeFormat(template, ['name', 'Alice']);
+        const expected = "Hello, Alice! Welcome to {place}.";
+        expect(result).toEqual(expected);
     });
 
-    it('should handle empty templates correctly', () => {
-        const template = "";
-        const kwargs = [["name", "Alice"], ["day", "Monday"]];
-        const expected = "";
-        expect(safeFormat(template, ...kwargs)).toBe(expected);
-    });
-
-    it('should handle templates without placeholders correctly', () => {
+    it('test_no_replacement', () => {
+        // Test when no placeholders are provided.
         const template = "Hello, world!";
-        const kwargs = [["name", "Alice"], ["day", "Monday"]];
+        const result = safeFormat(template);
         const expected = "Hello, world!";
-        expect(safeFormat(template, ...kwargs)).toBe(expected);
+        expect(result).toEqual(expected);
     });
 
-    it('should handle templates with multiple placeholders', () => {
-        const template = "Hello, {name}! Today is {day} and the weather is {weather}.";
-        const kwargs = [["name", "Alice"], ["day", "Monday"], ["weather", "sunny"]];
-        const expected = "Hello, Alice! Today is Monday and the weather is sunny.";
-        expect(safeFormat(template, ...kwargs)).toBe(expected);
+    it('test_missing_placeholder', () => {
+        // Test with a placeholder that has no corresponding value.
+        const template = "My name is {name}, and I live in {city}.";
+        const result = safeFormat(template, ['name', 'Alice']);
+        const expected = "My name is Alice, and I live in {city}.";
+        expect(result).toEqual(expected);
     });
 
-    it('should handle templates with some placeholders missing values', () => {
-        const template = "Hello, {name}! Today is {day} and the weather is {weather}.";
-        const kwargs = [["name", "Alice"], ["weather", "sunny"]];
-        const expected = "Hello, Alice! Today is {day} and the weather is sunny.";
-        expect(safeFormat(template, ...kwargs)).toBe(expected);
+    it('test_numeric_values', () => {
+        // Test with numeric values as replacements.
+        const template = "Your score is {score} out of {total}.";
+        const result = safeFormat(template, ['score', 85], ['total', 100]);
+        const expected = "Your score is 85 out of 100.";
+        expect(result).toEqual(expected);
     });
 });
 ```
 
 ### Explanation:
-1. **Function Definition**:
-   - The `safeFormat` function is defined with proper type annotations.
-   - The `template` parameter is of type `string`.
-   - The `kwargs` parameter is an array of tuples `[string, any][]`.
+1. **Import Statement**: The `safeFormat` function is imported at the beginning of the test file.
+2. **Describe Block**: The `describe` block groups the test cases under the `TestSafeFormat` suite.
+3. **It Blocks**: Each `it` block represents a specific test case.
+4. **Expect Assertions**: The `expect` function is used with `toEqual` to check the equality of the results against the expected values.
+5. **Type Annotations**: The `safeFormat` function is defined with proper TypeScript type annotations, ensuring that the input and output types are correctly specified.
 
-2. **Jest Test Class**:
-   - The `describe` block defines a test suite for the `safeFormat` function.
-   - Each `it` block represents a test case.
-   - Jest assertions (`expect`) are used to check the expected behavior of the function.
-
-3. **Test Cases**:
-   - Various test cases are included to cover different scenarios:
-     - Formatting with provided values.
-     - Leaving placeholders unchanged if no corresponding values are provided.
-     - Handling empty templates.
-     - Handling templates without placeholders.
-     - Handling templates with multiple placeholders.
-     - Handling templates with some placeholders missing values.
-
-This TypeScript code and Jest test class preserve the original functionality and logic of the Python code while ensuring that the tests are equivalent and comprehensive.
+This setup ensures that the tests are structured and executed in a way that closely mirrors the original Python unittest class, while leveraging Jest's powerful assertion capabilities.

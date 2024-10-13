@@ -1,87 +1,172 @@
-Sure! Below is the equivalent JavaScript test case using Jest for the provided Python unittest test class. Note that I'll assume you want to write a test for the `read_jsonl` function, but since no actual implementation or test cases were provided in the Python code, I'll create a basic example.
+Certainly! Below is the equivalent Jest test suite for the given Python unittest class. The conversion will maintain the functionality and logic of the tests, ensuring that all assertions are appropriately mapped to Jest equivalents.
 
-First, let's define the `read_jsonl` function in JavaScript:
+### Python Code:
+```python
+import json
+import os
+import unittest
+
+class TestReadJsonl(unittest.TestCase):
+
+    def setUp(self):
+        """Create temporary JSON Lines files for testing."""
+        self.valid_jsonl_file = 'test_valid.jsonl'
+        self.invalid_jsonl_file = 'test_invalid.jsonl'
+        self.non_existent_file = 'non_existent.jsonl'
+
+        # Valid JSON Lines content
+        with open(self.valid_jsonl_file, 'w') as file:
+            file.write('{"name": "Alice", "age": 30}\n')
+            file.write('{"name": "Bob", "age": 25}\n')
+            file.write('{"name": "Charlie", "age": 35}\n')
+
+        # Invalid JSON Lines content
+        with open(self.invalid_jsonl_file, 'w') as file:
+            file.write('{"name": "Alice", "age": 30}\n')
+            file.write('{"name": "Bob", "age": "twenty-five}\n')  # Missing closing quote
+
+    def tearDown(self):
+        """Remove the temporary JSON Lines files after testing."""
+        if os.path.isfile(self.valid_jsonl_file):
+            os.remove(self.valid_jsonl_file)
+        if os.path.isfile(self.invalid_jsonl_file):
+            os.remove(self.invalid_jsonl_file)
+
+    def test_read_valid_jsonl(self):
+        """Test reading a valid JSON Lines file."""
+        expected_data = [
+            {"name": "Alice", "age": 30},
+            {"name": "Bob", "age": 25},
+            {"name": "Charlie", "age": 35}
+        ]
+        result = read_jsonl(self.valid_jsonl_file)
+        self.assertEqual(result, expected_data)
+
+    def test_file_not_found(self):
+        """Test for FileNotFoundError when the file does not exist."""
+        with self.assertRaises(FileNotFoundError):
+            read_jsonl(self.non_existent_file)
+
+    def test_empty_jsonl_file(self):
+        """Test reading an empty JSON Lines file."""
+        empty_jsonl_file = 'test_empty.jsonl'
+        with open(empty_jsonl_file, 'w') as file:
+            file.write("")  # Create an empty JSON Lines file
+
+        result = read_jsonl(empty_jsonl_file)
+        self.assertEqual(result, [])  # Expecting an empty list for empty file
+
+        os.remove(empty_jsonl_file)  # Cleanup after the test
+```
+
+### Equivalent Jest Test Suite:
 
 ```javascript
 const fs = require('fs');
-const readline = require('readline');
+const path = require('path');
 
-function readJsonl(filePath) {
-  return new Promise((resolve, reject) => {
-    const results = [];
-    const rl = readline.createInterface({
-      input: fs.createReadStream(filePath),
-      crlfDelay: Infinity
-    });
+describe('TestReadJsonl', () => {
+  let validJsonlFile = 'test_valid.jsonl';
+  let invalidJsonlFile = 'test_invalid.jsonl';
+  let nonExistentFile = 'non_existent.jsonl';
 
-    rl.on('line', (line) => {
-      try {
-        results.push(JSON.parse(line));
-      } catch (error) {
-        reject(new Error(`JSONDecodeError: ${error.message}`));
-      }
-    });
+  beforeAll(() => {
+    // Valid JSON Lines content
+    fs.writeFileSync(validJsonlFile, '{"name": "Alice", "age": 30}\n' +
+      '{"name": "Bob", "age": 25}\n' +
+      '{"name": "Charlie", "age": 35}\n');
 
-    rl.on('close', () => {
-      resolve(results);
-    });
+    // Invalid JSON Lines content
+    fs.writeFileSync(invalidJsonlFile, '{"name": "Alice", "age": 30}\n' +
+      '{"name": "Bob", "age": "twenty-five}\n');  // Missing closing quote
   });
-}
 
-module.exports = { readJsonl };
-```
+  afterAll(() => {
+    if (fs.existsSync(validJsonlFile)) {
+      fs.unlinkSync(validJsonlFile);
+    }
+    if (fs.existsSync(invalidJsonlFile)) {
+      fs.unlinkSync(invalidJsonlFile);
+    }
+  });
 
-Now, let's write a Jest test case for this function:
-
-```javascript
-const readJsonl = require('./readJsonl'); // Adjust the path as necessary
-
-describe('readJsonl', () => {
-  it('should read a valid JSONL file and return its content as a list of dictionaries', async () => {
-    const filePath = 'path/to/your/file.jsonl'; // Replace with your actual file path
-    const expectedOutput = [
-      { key1: 'value1' },
-      { key2: 'value2' }
+  it('reads a valid JSON Lines file', async () => {
+    const expectedData = [
+      {"name": "Alice", "age": 30},
+      {"name": "Bob", "age": 25},
+      {"name": "Charlie", "age": 35}
     ];
-
-    const result = await readJsonl(filePath);
-
-    expect(result).toEqual(expectedOutput);
+    const result = await readJsonl(validJsonlFile);
+    expect(result).toEqual(expectedData);
   });
 
-  it('should reject if the file does not exist', async () => {
-    const nonExistentFilePath = 'path/to/nonexistent/file.jsonl';
-
-    await expect(readJsonl(nonExistentFilePath)).rejects.toThrow('FileNotFoundError');
+  it('throws an error when the file does not exist', async () => {
+    await expect(readJsonl(nonExistentFile)).rejects.toThrow('The file \'non_existent.jsonl\' does not exist.');
   });
 
-  it('should reject if there is an error parsing a line in the JSONL file', async () => {
-    const invalidJsonFilePath = 'path/to/invalid_json_file.jsonl'; // Create a file with invalid JSON on purpose
-    const expectedErrorMessage = /JSONDecodeError/;
+  it('reads an empty JSON Lines file', async () => {
+    const emptyJsonlFile = 'test_empty.jsonl';
+    fs.writeFileSync(emptyJsonlFile, '');  // Create an empty JSON Lines file
 
-    await expect(readJsonl(invalidJsonFilePath)).rejects.toMatch(expectedErrorMessage);
+    const result = await readJsonl(emptyJsonlFile);
+    expect(result).toEqual([]);  // Expecting an empty list for empty file
+
+    fs.unlinkSync(emptyJsonlFile);  // Cleanup after the test
   });
 });
-```
 
-Make sure you have Jest installed in your project. You can install it using npm:
+// Utility function to read JSON Lines file
+async function readJsonl(filePath) {
+  // Check if the file exists
+  if (!fs.existsSync(filePath)) {
+    throw new Error(`The file '${filePath}' does not exist.`);
+  }
 
-```sh
-npm install --save-dev jest
-```
+  const jsonList = [];
+  const fileStream = fs.createReadStream(filePath, { encoding: 'utf8' });
+  let data = '';
 
-Then, add the following script to your `package.json` to run the tests:
+  fileStream.on('data', (chunk) => {
+    data += chunk;
+  });
 
-```json
-"scripts": {
-  "test": "jest"
+  return new Promise((resolve, reject) => {
+    fileStream.on('end', () => {
+      const lines = data.split('\n');
+      for (let line of lines) {
+        try {
+          const jsonObj = JSON.parse(line.trim());
+          jsonList.push(jsonObj);
+        } catch (error) {
+          reject(new Error(`Error parsing line: ${line.trim()} - ${error.message}`));
+          return;
+        }
+      }
+      resolve(jsonList);
+    });
+
+    fileStream.on('error', (error) => {
+      reject(error);
+    });
+  });
 }
 ```
 
-Finally, run the tests using:
+### Explanation:
+1. **Setup and Teardown**:
+   - `beforeAll` is used to create the temporary JSON Lines files before running the tests.
+   - `afterAll` is used to clean up the temporary files after all tests have run.
 
-```sh
-npm test
-```
+2. **Test Cases**:
+   - `it('reads a valid JSON Lines file', async () => {...})`: This test case reads a valid JSON Lines file and asserts that the result matches the expected data.
+   - `it('throws an error when the file does not exist', async () => {...})`: This test case ensures that an error is thrown when the file does not exist.
+   - `it('reads an empty JSON Lines file', async () => {...})`: This test case reads an empty JSON Lines file and asserts that the result is an empty array.
 
-This will execute the Jest test cases and verify that the `readJsonl` function works as expected.
+3. **Assertions**:
+   - `expect(result).toEqual(expectedData)` is used to check if the result matches the expected data.
+   - `await expect(readJsonl(nonExistentFile)).rejects.toThrow('The file \'non_existent.jsonl\' does not exist.')` is used to check if the promise is rejected with the expected error message.
+
+4. **Utility Function**:
+   - The `readJsonl` function is defined to read and parse the JSON Lines file, returning a promise that resolves to the parsed data or rejects with an error.
+
+This Jest test suite maintains the functionality and logic of the original Python unittest class while adhering to Jest's testing conventions.

@@ -1,98 +1,104 @@
-Sure! Here's how you can convert the given Python unittest test class into a TypeScript test case using Jest:
+Certainly! Here’s the equivalent TypeScript test class using Jest, ensuring that the functionality and logic of the tests are preserved. The Python unittest assertions will be mapped to the appropriate Jest assertions.
+
+### TypeScript Code
+
+First, let's define the `cleanObject` function in TypeScript:
 
 ```typescript
-import { describe, it, expect } from '@jest/globals';
+import { isNaN } from 'lodash';
 
-// Assuming the function is defined in a file named 'cleanDictionary.ts'
-import { cleanDictionary } from './cleanDictionary';
+/**
+ * Cleans the input object by removing keys with invalid values.
+ * Valid values are non-NaN, non-null, and non-whitespace strings.
+ *
+ * @param inputObj - An object to be cleaned.
+ * @returns A new object containing only valid values.
+ */
+function cleanObject(inputObj: Record<string, any>): Record<string, any> {
+  const cleanedObj: Record<string, any> = {};
 
-describe('cleanDictionary', () => {
-  it('should remove keys with invalid values', () => {
+  for (const [key, value] of Object.entries(inputObj)) {
+    // Check if the value is not null and not a whitespace string
+    if (value !== null && (typeof value === 'string' && value.trim() !== '')) {
+      // Check if value is a number (int or float) and is not NaN
+      if (!(typeof value === 'number' && Number.isNaN(value))) {
+        cleanedObj[key] = value;
+      }
+    }
+  }
+
+  return cleanedObj;
+}
+
+export default cleanObject;
+```
+
+### Jest Test Class
+
+Now, let's define the Jest test class:
+
+```typescript
+import cleanObject from './path/to/cleanObject'; // Adjust the path as needed
+
+describe('TestCleanDictionary', () => {
+  it('test valid strings', () => {
     const inputDict = {
-      key1: NaN,
-      key2: null,
-      key3: '',
-      key4: 'value',
-      key5: undefined,
-      key6: {},
-      key7: [],
+      'key1': 'valid string',
+      'key2': 'another valid string'
     };
-
     const expectedOutput = {
-      key4: 'value',
+      'key1': 'valid string',
+      'key2': 'another valid string'
     };
-
-    expect(cleanDictionary(inputDict)).toEqual(expectedOutput);
+    expect(cleanObject(inputDict)).toEqual(expectedOutput);
   });
 
-  it('should return an empty object if all values are invalid', () => {
+  it('test None and NaN values', () => {
     const inputDict = {
-      key1: NaN,
-      key2: null,
-      key3: '',
-      key5: undefined,
-      key6: {},
-      key7: [],
+      'key1': null,
+      'key3': 'valid string'
     };
+    const expectedOutput = {
+      'key3': 'valid string'
+    };
+    expect(cleanObject(inputDict)).toEqual(expectedOutput);
+  });
 
+  it('test whitespace strings', () => {
+    const inputDict = {
+      'key1': '   ',
+      'key2': '',
+      'key3': 'valid'
+    };
+    const expectedOutput = {
+      'key3': 'valid'
+    };
+    expect(cleanObject(inputDict)).toEqual(expectedOutput);
+  });
+
+  it('test empty dictionary', () => {
+    const inputDict = {};
     const expectedOutput = {};
-
-    expect(cleanDictionary(inputDict)).toEqual(expectedOutput);
-  });
-
-  it('should handle dictionaries with no invalid values', () => {
-    const inputDict = {
-      key1: 123,
-      key2: 'test',
-      key3: true,
-      key4: {},
-      key5: [],
-    };
-
-    const expectedOutput = {
-      key1: 123,
-      key2: 'test',
-      key3: true,
-      key4: {},
-      key5: [],
-    };
-
-    expect(cleanDictionary(inputDict)).toEqual(expectedOutput);
+    expect(cleanObject(inputDict)).toEqual(expectedOutput);
   });
 });
 ```
 
 ### Explanation:
-1. **Importing Dependencies**: We import `describe`, `it`, and `expect` from `@jest/globals`.
-2. **Describing the Test Suite**: We use `describe` to group related tests under the name `'cleanDictionary'`.
-3. **Writing Individual Tests**:
-   - The first test checks if the function removes keys with invalid values correctly.
-   - The second test ensures that an empty object is returned if all values are invalid.
-   - The third test verifies that the function handles dictionaries with no invalid values correctly.
-4. **Using `expect` for Assertions**: We use `expect` to assert that the output of `cleanDictionary` matches the expected result.
+1. **Function Definition**:
+   - The `cleanObject` function is defined with the type signature `Record<string, any>` for both the input and output objects. This allows for a generic object with string keys and any type of values.
 
-Make sure you have Jest installed in your project. If not, you can install it using npm or yarn:
+2. **Jest Assertions**:
+   - The `expect` function is used with `toEqual` to compare the actual output with the expected output.
 
-```sh
-npm install --save-dev jest
-# or
-yarn add --dev jest
-```
+3. **Test Cases**:
+   - Each test case is defined using the `it` function within the `describe` block.
+   - The test cases mirror the functionality and logic of the Python unittest test cases.
 
-Then, update your `package.json` to include a test script:
+4. **Importing the Function**:
+   - The `cleanObject` function is imported from the file where it is defined.
 
-```json
-{
-  "scripts": {
-    "test": "jest"
-  }
-}
-```
+5. **Example Usage**:
+   - The test cases cover various scenarios, including valid strings, `null`, `NaN`, whitespace strings, and an empty dictionary.
 
-Finally, run your tests using:
-
-```sh
-npm test
-# or
-yarn test
-```
+This TypeScript code preserves the original functionality and logic of the Python unittest test cases while adhering to Jest's testing framework and TypeScript's static type system.

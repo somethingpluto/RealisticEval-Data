@@ -1,6 +1,4 @@
-import { isPointInPolygon } from './path-to-your-isPointInPolygon-file'; // Adjust the import path
-
-describe('isPointInPolygon', () => {
+describe('TestPointInPolygon', () => {
     let square: [number, number][];
     let triangle: [number, number][];
     let concave: [number, number][];
@@ -12,28 +10,28 @@ describe('isPointInPolygon', () => {
         concave = [[0, 0], [5, 5], [10, 0], [5, 10], [0, 10]];
     });
 
-    test('Point inside the square', () => {
+    it('should detect a point inside the square', () => {
         // Point inside the square
         expect(isPointInPolygon([5, 5], square)).toBe(true);
     });
 
-    test('Point outside the square', () => {
+    it('should detect a point outside the square', () => {
         // Point outside the square
         expect(isPointInPolygon([15, 5], square)).toBe(false);
     });
 
-    test('Point on the edge of the triangle', () => {
+    it('should detect a point on the edge of the triangle', () => {
         // Point on the edge of the triangle
         expect(isPointInPolygon([5, 0], triangle)).toBe(false);
     });
 
-    test('Point inside concave polygon', () => {
-        // Point inside the concave polygon
+    it('should detect a point inside the concave polygon', () => {
+        // Point inside concave polygon
         expect(isPointInPolygon([5, 9], concave)).toBe(true);
     });
 
-    test('Point outside concave polygon', () => {
-        // Point outside the concave polygon
+    it('should detect a point outside the concave polygon', () => {
+        // Point outside concave polygon
         expect(isPointInPolygon([5, 1], concave)).toBe(false);
     });
 });

@@ -1,74 +1,137 @@
-Sure! Below is the equivalent Java JUnit test case for your Python unittest test class. The package name is `org.real.temp` and the class name is `Tester`.
+Certainly! Here is the equivalent Java JUnit test class for the provided Python unittest class. The Java test class will be placed in the package `org.real.temp` and named `Tester`. It will use JUnit annotations and assertions to ensure the functionality and logic of the tests are preserved.
+
+### Java JUnit Test Class
 
 ```java
 package org.real.temp;
 
-import static org.junit.jupiter.api.Assertions.*;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
+import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 import java.util.HashMap;
 import java.util.Map;
 
 public class Tester {
 
-    @BeforeEach
-    public void setUp() {
-        // Initialization if needed
+    @Test
+    public void testValidNumericStrings() {
+        Map<String, String> row = new HashMap<>();
+        row.put("value1", "1,234");
+        row.put("value2", "5,678");
+        row.put("value3", "9,876");
+
+        Map<String, String> expected = new HashMap<>();
+        expected.put("value1", "1.234");
+        expected.put("value2", "5.678");
+        expected.put("value3", "9.876");
+
+        Map<String, String> result = convertCsvValues(row);
+        assertEquals(expected, result);
     }
 
     @Test
-    public void testConvertCsvValuesNumericString() {
-        Map<String, String> input = new HashMap<>();
-        input.put("column1", "123,456");
-        input.put("column2", "789");
+    public void testNonNumericStrings() {
+        Map<String, String> row = new HashMap<>();
+        row.put("value1", "not_a_number");
+        row.put("value2", "hello");
+        row.put("value3", "world");
 
-        Map<String, Object> expectedOutput = new HashMap<>();
-        expectedOutput.put("column1", "123.456");
-        expectedOutput.put("column2", 789);
+        Map<String, String> expected = new HashMap<>();
+        expected.put("value1", null);
+        expected.put("value2", null);
+        expected.put("value3", null);
 
-        Map<String, Object> actualOutput = convertCsvValues(input);
-
-        assertEquals(expectedOutput, actualOutput);
+        Map<String, String> result = convertCsvValues(row);
+        assertEquals(expected, result);
     }
 
     @Test
-    public void testConvertCsvValuesNonNumericString() {
-        Map<String, String> input = new HashMap<>();
-        input.put("column1", "abc");
-        input.put("column2", "xyz");
+    public void testMixedValues() {
+        Map<String, String> row = new HashMap<>();
+        row.put("value1", "1,234");
+        row.put("value2", "not_a_number");
+        row.put("value3", "3,14159");
 
-        Map<String, Object> expectedOutput = new HashMap<>();
-        expectedOutput.put("column1", null);
-        expectedOutput.put("column2", null);
+        Map<String, String> expected = new HashMap<>();
+        expected.put("value1", "1.234");
+        expected.put("value2", null);
+        expected.put("value3", "3.14159");
 
-        Map<String, Object> actualOutput = convertCsvValues(input);
-
-        assertEquals(expectedOutput, actualOutput);
+        Map<String, String> result = convertCsvValues(row);
+        assertEquals(expected, result);
     }
 
-    private Map<String, Object> convertCsvValues(Map<String, String> row) {
-        Map<String, Object> result = new HashMap<>();
+    @Test
+    public void testNoValues() {
+        Map<String, String> row = new HashMap<>();
+        row.put("value1", "aaaa");
+        row.put("value2", "not_a_number");
+        row.put("value3", "3,14");
+
+        Map<String, String> expected = new HashMap<>();
+        expected.put("value1", null);
+        expected.put("value2", null);
+        expected.put("value3", "3.14");
+
+        Map<String, String> result = convertCsvValues(row);
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void testEdgeCases() {
+        Map<String, String> row = new HashMap<>();
+        row.put("value1", "");
+        row.put("value2", "0.0");
+        row.put("value3", "1,23");
+
+        Map<String, String> expected = new HashMap<>();
+        expected.put("value1", null);
+        expected.put("value2", "0.0");
+        expected.put("value3", "1.23");
+
+        Map<String, String> result = convertCsvValues(row);
+        assertEquals(expected, result);
+    }
+
+    // Method to be tested
+    private Map<String, String> convertCsvValues(Map<String, String> row) {
+        Map<String, String> convertedRow = new HashMap<>();
+
         for (Map.Entry<String, String> entry : row.entrySet()) {
-            try {
-                double value = Double.parseDouble(entry.getValue().replace(",", "."));
-                result.put(entry.getKey(), value);
-            } catch (NumberFormatException e) {
-                result.put(entry.getKey(), null);
+            String key = entry.getKey();
+            String value = entry.getValue();
+
+            // Check if the value is numeric with possible comma and negative sign
+            boolean isNumeric = value.replace(",", "").replace("-", "").matches("[0-9]+");
+
+            if (isNumeric) {
+                // Replace comma with dot for numeric conversion
+                convertedRow.put(key, value.replace(',', '.'));
+            } else {
+                // Set to null if not a valid number
+                convertedRow.put(key, null);
             }
         }
-        return result;
+
+        return convertedRow;
     }
 }
 ```
 
 ### Explanation:
-1. **Package Declaration**: The package declaration at the top specifies the package name `org.real.temp`.
-2. **Class Declaration**: The class `Tester` is declared within the specified package.
-3. **Setup Method**: The `setUp` method is annotated with `@BeforeEach`, which is used to initialize any required resources before each test method runs.
-4. **Test Methods**:
-   - `testConvertCsvValuesNumericString`: This method tests the conversion of numeric strings to doubles.
-   - `testConvertCsvValuesNonNumericString`: This method tests the handling of non-numeric strings, ensuring they are converted to `null`.
-5. **Conversion Logic**: The `convertCsvValues` method is implemented to mimic the functionality of the Python function. It iterates over the input map, attempts to parse numeric values, and handles exceptions for non-numeric values.
+1. **Package and Class Definition**:
+   - The package name `org.real.temp` is defined at the top.
+   - The class `Tester` contains the test methods.
 
-This Java code should work similarly to your original Python unittest test class.
+2. **JUnit Annotations**:
+   - Each test method is annotated with `@Test` to indicate that it is a test case.
+
+3. **JUnit Assertions**:
+   - The `assertEquals` method is used to assert the equality of the expected and actual results.
+
+4. **Test Methods**:
+   - Each test method sets up the input map, defines the expected output map, calls the `convertCsvValues` method, and asserts the results.
+
+5. **Method to Be Tested**:
+   - The `convertCsvValues` method is included within the test class for convenience. In a real-world scenario, this method would typically be in a separate utility class.
+
+This Java JUnit test class preserves the functionality and logic of the original Python unittest class while adhering to Java conventions and best practices.

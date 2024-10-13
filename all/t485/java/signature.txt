@@ -1,4 +1,4 @@
-Certainly! Below is the equivalent Java code for the provided Python function, including appropriate Java-style comments and Javadoc documentation. The Python function signature and logic have been translated to Java, ensuring that the functionality remains consistent.
+Certainly! Below is the equivalent Java code for the provided Python function, including appropriate Java-style comments and Javadoc documentation:
 
 ```java
 package org.real.temp;
@@ -7,17 +7,14 @@ import java.util.*;
 import java.util.regex.*;
 
 /**
- * This class provides methods to modify SQL queries by converting named parameters
- * (like $name, $age) into positional parameters (like $1, $2, etc.). It also returns
- * the modified SQL string along with a list of parameter values sorted according to
- * their new positions in the query.
+ * This class provides methods to modify SQL queries to use positional parameters.
  */
 public class Answer {
 
     /**
      * Modifies a SQL query string containing named parameters (like $name, $age)
      * into a format compatible with libraries that require positional parameters
-     * (like $1, $2, etc.), such as asyncpg. It returns a tuple containing the
+     * (like $1, $2, etc.), such as asyncpg. It returns a pair containing the
      * modified SQL string and a list of parameter values ordered according to
      * their new positions in the query.
      * 
@@ -30,48 +27,56 @@ public class Answer {
      * 
      * @param sql The original SQL query string with named parameters.
      * @param params A map mapping parameter names to their values.
-     * @return A tuple where the first element is the modified SQL query string with positional parameters,
+     * @return A pair where the first element is the modified SQL query string with positional parameters,
      *         and the second element is a list of parameter values sorted according to the order of the positional parameters.
      */
-    public static Tuple<String, List<Object>> prepareQuery(String sql, Map<String, Object> params) {
+    public static Pair<String, List<Object>> prepareQuery(String sql, Map<String, Object> params) {
         // Find all occurrences of named parameters in the SQL string
-        Pattern pattern = Pattern.compile("\\$(\\w+)");
+        Pattern pattern = Pattern.compile("\\$\\w+");
         Matcher matcher = pattern.matcher(sql);
         Set<String> namedParams = new LinkedHashSet<>();
 
         while (matcher.find()) {
-            namedParams.add(matcher.group(1)); // Extracting the parameter name without the '$'
+            namedParams.add(matcher.group());
         }
 
-        // Remove duplicates while preserving order
+        // Convert the set back to a list to maintain the order
         List<String> uniqueParams = new ArrayList<>(namedParams);
 
         // Substitute each named parameter with its corresponding positional parameter
         for (int index = 0; index < uniqueParams.size(); index++) {
             String param = uniqueParams.get(index);
-            String positionalParam = "$" + (index + 1);
-            sql = sql.replace("$" + param, positionalParam);
+            String replacement = "$" + (index + 1);
+            sql = sql.replace(param, replacement);
         }
 
         // Prepare the list of values corresponding to the order of the positional parameters
         List<Object> values = new ArrayList<>();
         for (String param : uniqueParams) {
-            if (params.containsKey(param)) {
-                values.add(params.get(param));
+            if (params.containsKey(param.substring(1))) { // Remove the '$' prefix
+                values.add(params.get(param.substring(1)));
             }
         }
 
-        return new Tuple<>(sql, values);
+        return new Pair<>(sql, values);
     }
 
-    // A simple Tuple class to hold two values
-    public static class Tuple<X, Y> {
-        public final X first;
-        public final Y second;
+    // A simple implementation of a Pair class since Java does not have a built-in Pair class
+    public static class Pair<T, U> {
+        private final T first;
+        private final U second;
 
-        public Tuple(X first, Y second) {
+        public Pair(T first, U second) {
             this.first = first;
             this.second = second;
+        }
+
+        public T getFirst() {
+            return first;
+        }
+
+        public U getSecond() {
+            return second;
         }
     }
 
@@ -82,19 +87,21 @@ public class Answer {
         params.put("user_id", 42);
         params.put("status", "active");
 
-        Tuple<String, List<Object>> result = prepareQuery(sql, params);
-        System.out.println("Modified SQL: " + result.first);
-        System.out.println("Values: " + result.second);
+        Pair<String, List<Object>> result = prepareQuery(sql, params);
+        System.out.println("Modified SQL: " + result.getFirst());
+        System.out.println("Values: " + result.getSecond());
     }
 }
 ```
 
 ### Explanation:
-1. **Javadoc Comments**: The Javadoc comments provide detailed explanations of the method's purpose, parameters, and return value.
-2. **Pattern and Matcher**: Used to find all named parameters in the SQL string.
-3. **LinkedHashSet**: Used to remove duplicates while preserving the order of named parameters.
-4. **Replacement Logic**: Replaces named parameters with positional parameters.
-5. **List of Values**: Constructs a list of values based on the order of positional parameters.
-6. **Tuple Class**: A simple class to hold two values, similar to Python's tuple.
+1. **Package and Class Declaration**: The code is organized within the `org.real.temp` package and the `Answer` class.
+2. **Javadoc Documentation**: The `prepareQuery` method includes detailed Javadoc comments explaining the purpose, arguments, and return value.
+3. **Regular Expression**: The regular expression `\\$\\w+` is used to find named parameters in the SQL string.
+4. **LinkedHashSet**: A `LinkedHashSet` is used to remove duplicates while preserving the order of the named parameters.
+5. **Parameter Substitution**: Each named parameter is replaced with a positional parameter.
+6. **Value Collection**: The values are collected in the order of the positional parameters.
+7. **Pair Class**: A simple `Pair` class is implemented to return the modified SQL string and the list of values.
+8. **Example Usage**: An example usage is provided in the `main` method to demonstrate how the `prepareQuery` method can be called.
 
-This Java code maintains the functionality and structure of the original Python code while adhering to Java's syntax and conventions.
+This Java code preserves the original functionality and structure of the Python code while adhering to Java conventions and best practices.

@@ -1,21 +1,41 @@
 #include <iostream>
-#include <unordered_map>
+#include <map>
 #include <cmath>
 #include <string>
 
-struct Coordinates {
-    double x;
-    double y;
-};
-
-double calculate_distance(const std::string& agent1, const std::string& agent2,
-                          const std::unordered_map<std::string, Coordinates>& observations) {
+// Function to calculate the Euclidean distance between two agents
+float calculate_distance(const std::string& agent1, const std::string& agent2, const std::map<std::string, std::map<std::string, float>>& observations) {
+    /**
+     * Calculates the Euclidean distance between two agents based on their coordinates in the observations.
+     *
+     * @param agent1: String representation of agent1's identifier.
+     * @param agent2: String representation of agent2's identifier.
+     * @param observations: Map containing observation data with agent identifiers as keys.
+     *                      Each value is a map with 'x' and 'y' keys representing coordinates.
+     * @return: Euclidean distance between the two agents.
+     */
+    
     // Extract coordinates of both agents
-    double x1 = observations.at(agent1).x;
-    double y1 = observations.at(agent1).y;
-    double x2 = observations.at(agent2).x;
-    double y2 = observations.at(agent2).y;
+    float x1 = observations.at(agent1).at("x");
+    float y1 = observations.at(agent1).at("y");
+    float x2 = observations.at(agent2).at("x");
+    float y2 = observations.at(agent2).at("y");
 
     // Calculate the Euclidean distance
-    return std::sqrt(std::pow(x1 - x2, 2) + std::pow(y1 - y2, 2));
+    float distance = std::sqrt(std::pow(x1 - x2, 2) + std::pow(y1 - y2, 2));
+
+    return distance;
+}
+
+int main() {
+    // Example usage
+    std::map<std::string, std::map<std::string, float>> observations = {
+        {"agent1", {{"x", 1.0f}, {"y", 2.0f}}},
+        {"agent2", {{"x", 4.0f}, {"y", 6.0f}}}
+    };
+
+    float distance = calculate_distance("agent1", "agent2", observations);
+    std::cout << "Distance: " << distance << std::endl;
+
+    return 0;
 }

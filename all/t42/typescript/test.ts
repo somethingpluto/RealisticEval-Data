@@ -1,9 +1,25 @@
-describe('replace_phone_numbers', () => {
-    it('should replace phone numbers in various formats', () => {
-        expect(replace_phone_numbers('Call me at 123-456-7890.')).toBe('Call me at [PHONE_NUM].');
-        expect(replace_phone_numbers('My number is (123) 456-7890.')).toBe('My number is [PHONE_NUM].');
-        expect(replace_phone_numbers('Send me an email at info@example.com.')).toBe('Send me an email at info@example.com.');
-        expect(replace_phone_numbers('Contact us at +1-123-456-7890.')).toBe('Contact us at [PHONE_NUM].');
-        expect(replace_phone_numbers('No phone number here.')).toBe('No phone number here.');
+describe('TestReplacePhoneNumbers', () => {
+    it('should replace a basic phone number', () => {
+        const msg = "Call me at 123-456-7890.";
+        const expected = "Call me at [PHONE_NUM].";
+        expect(replacePhoneNumbers(msg)).toBe(expected);
+    });
+
+    it('should replace a phone number with parentheses', () => {
+        const msg = "Our office number is 123 456-7890.";
+        const expected = "Our office number is [PHONE_NUM].";
+        expect(replacePhoneNumbers(msg)).toBe(expected);
+    });
+
+    it('should replace a phone number with dots', () => {
+        const msg = "Fax us at 123.456.7890.";
+        const expected = "Fax us at [PHONE_NUM].";
+        expect(replacePhoneNumbers(msg)).toBe(expected);
+    });
+
+    it('should not replace anything when there is no phone number', () => {
+        const msg = "Hello, please reply to this email.";
+        const expected = "Hello, please reply to this email.";
+        expect(replacePhoneNumbers(msg)).toBe(expected);
     });
 });

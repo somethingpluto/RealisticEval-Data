@@ -1,35 +1,56 @@
-TEST_CASE("Compare files with no differences", "[compare_files]") {
-    std::ofstream file1("temp_file1.txt");
-    file1 << "Hello\nWorld";
-    file1.close();
+TEST_CASE("Test Compare Files") {
+    // Create temporary files for testing
+    const std::string file1_path = "file1.txt";
+    const std::string file2_path = "file2.txt";
 
-    std::ofstream file2("temp_file2.txt");
-    file2 << "Hello\nWorld";
-    file2.close();
+    SECTION("Identical Files") {
+        std::string file1_content = "Line1\nLine2\nLine3\n";
+        std::string file2_content = "Line1\nLine2\nLine3\n";
 
-    auto result = compare_files("temp_file1.txt", "temp_file2.txt");
+        std::ofstream f1(file1_path);
+        std::ofstream f2(file2_path);
+        f1 << file1_content;
+        f2 << file2_content;
 
-    REQUIRE(result.empty());
+        REQUIRE(compare_files(file1_path, file2_path).empty());
+    }
 
-    remove("temp_file1.txt");
-    remove("temp_file2.txt");
-}
+    SECTION("Files with Differences") {
+        std::string file1_content = "Line1\nLine2\nLine3\n";
+        std::string file2_content = "Line1\nLineChanged\nLine3\n";
 
-TEST_CASE("Compare files with differences", "[compare_files]") {
-    std::ofstream file1("temp_file1.txt");
-    file1 << "Hello\nWorld";
-    file1.close();
+        std::ofstream f1(file1_path);
+        std::ofstream f2(file2_path);
+        f1 << file1_content;
+        f2 << file2_content;
 
-    std::ofstream file2("temp_file2.txt");
-    file2 << "Hello\nUniverse";
-    file2.close();
+        auto result = compare_files(file1_path, file2_path);
+        REQUIRE(!result.empty());
+    }
 
-    auto result = compare_files("temp_file1.txt", "temp_file2.txt");
+    SECTION("Nonexistent File") {
+        REQUIRE_THROWS_AS(compare_files("nonexistent.txt", file2_path), std::runtime_error);
+    }
 
-    REQUIRE(result.size() == 4);
-    REQUIRE(result[0] == "World");
-    REQUIRE(result[1] == "Universe");
+    SECTION("File Reading Error") {
+        // Simulate file reading error by creating a file that cannot be read
+        std::ofstream f1(file1_path);
+        f1 << "Line1\nLine2\nLine3\n";
 
-    remove("temp_file1.txt");
-    remove("temp_file2.txt");
+        // Change file permissions to make it unreadable
+        fs::permissions(file1_path, fs::perms::none);
+
+        REQUIRE_THROWS_AS(compare_files(file1_path, file2_path), std::runtime_error);
+
+        // Restore file permissions
+        fs::permissions(file1_path, fs::perms::owner_read | fs::perms::owner_write);
+    }
+
+    // Clean up temporary files
+    if (fs::exists(file1_path)) {
+        fs::remove(file1_path);
+    }
+    if (fs::exists(file2_path)) {
+        fs::remove(file2_path);
+    }
 }

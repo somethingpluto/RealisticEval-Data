@@ -1,25 +1,46 @@
-TEST_CASE("dictOfListsToListOfDicts", "[conversion]") {
-    SECTION("Single key-value pair") {
-        std::map<std::string, std::vector<int>> dict = {{"a", {1, 2, 3}}};
-        std::vector<std::map<std::string, int>> expected = {{{"a", 1}}, {{"a", 2}}, {{"a", 3}}};
-        REQUIRE(dictOfListsToListOfDicts(dict) == expected);
+TEST_CASE("TestDictOfListsToListOfDicts") {
+    SECTION("test_standard_conversion") {
+        // Test standard conversion with equal length lists
+        std::map<std::string, std::vector<std::string>> dict_of_lists = {
+            {"name", {"Alice", "Bob", "Charlie"}},
+            {"age", {"25", "30", "35"}},
+            {"city", {"New York", "Los Angeles", "Chicago"}}
+        };
+        std::vector<std::map<std::string, std::string>> expected_result = {
+            {{"name", "Alice"}, {"age", "25"}, {"city", "New York"}},
+            {{"name", "Bob"}, {"age", "30"}, {"city", "Los Angeles"}},
+            {{"name", "Charlie"}, {"age", "35"}, {"city", "Chicago"}}
+        };
+
+        auto result = dict_of_lists_to_list_of_dicts(dict_of_lists);
+        REQUIRE(result == expected_result);
     }
 
-    SECTION("Multiple key-value pairs") {
-        std::map<std::string, std::vector<int>> dict = {{"a", {1, 2}}, {"b", {3, 4}}, {"c", {5, 6}}};
-        std::vector<std::map<std::string, int>> expected = {{{"a", 1}, {"b", 3}, {"c", 5}}, {{"a", 2}, {"b", 4}, {"c", 6}}};
-        REQUIRE(dictOfListsToListOfDicts(dict) == expected);
+    SECTION("test_empty_lists") {
+        // Test the function with empty lists
+        std::map<std::string, std::vector<std::string>> dict_of_lists = {
+            {"name", {}},
+            {"age", {}},
+            {"city", {}}
+        };
+        std::vector<std::map<std::string, std::string>> expected_result = {};
+
+        auto result = dict_of_lists_to_list_of_dicts(dict_of_lists);
+        REQUIRE(result == expected_result);
     }
 
-    SECTION("Empty input") {
-        std::map<std::string, std::vector<int>> dict = {};
-        std::vector<std::map<std::string, int>> expected = {};
-        REQUIRE(dictOfListsToListOfDicts(dict) == expected);
-    }
+    SECTION("test_single_element_lists") {
+        // Test the function with single-element lists
+        std::map<std::string, std::vector<std::string>> dict_of_lists = {
+            {"name", {"Alice"}},
+            {"age", {"25"}},
+            {"city", {"New York"}}
+        };
+        std::vector<std::map<std::string, std::string>> expected_result = {
+            {{"name", "Alice"}, {"age", "25"}, {"city", "New York"}}
+        };
 
-    SECTION("Different lengths of lists") {
-        std::map<std::string, std::vector<int>> dict = {{"a", {1, 2}}, {"b", {3}}};
-        std::vector<std::map<std::string, int>> expected = {{{"a", 1}, {"b", 3}}, {{"a", 2}}};
-        REQUIRE(dictOfListsToListOfDicts(dict) == expected);
+        auto result = dict_of_lists_to_list_of_dicts(dict_of_lists);
+        REQUIRE(result == expected_result);
     }
 }

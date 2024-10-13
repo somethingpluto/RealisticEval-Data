@@ -1,70 +1,68 @@
-Certainly! Below is the equivalent TypeScript code for the provided Python script. This TypeScript code will handle reading a CSV file and converting it to a DataFrame using the `papaparse` library for parsing the CSV and `typeorm` for handling exceptions more statically typed manner:
+Sure! Here’s the equivalent TypeScript code using the `papaparse` library for parsing CSV files, as TypeScript does not have a direct equivalent to Pandas. We will also use Node.js's `fs` module to handle file operations:
 
-First, you need to install the necessary dependencies for parsing CSV files in TypeScript. You can use `papaparse` for this purpose.
+1. **Install Required Packages**: First, install the required packages using npm or yarn.
+   ```sh
+   npm install papaparse fs
+   ```
 
-```sh
-npm install papaparse
-```
+2. **TypeScript Code**:
+   ```typescript
+   import * as fs from 'fs';
+   import * as Papa from 'papaparse';
 
-Here is the TypeScript code:
+   interface DataFrameRow {
+       [key: string]: string | number;
+   }
 
-```typescript
-import * as Papa from 'papaparse';
-import * as fs from 'fs';
+   type DataFrame = DataFrameRow[];
 
-interface DataRecord {
-  [key: string]: string | number;
-}
+   function readCsvToDataFrame(filePath: string): DataFrame | null {
+       try {
+           const fileContent = fs.readFileSync(filePath, 'utf8');
+           const results = Papa.parse(fileContent, { header: true });
+           if (results.errors.length > 0) {
+               console.error("Error: Could not parse the file.");
+               return null;
+           }
+           return results.data as DataFrame;
+       } catch (error) {
+           if (error instanceof Error) {
+               if (error.code === 'ENOENT') {
+                   console.error(`Error: The file '${filePath}' was not found.`);
+               } else {
+                   console.error(`An error occurred: ${error.message}`);
+               }
+           }
+           return null;
+       }
+   }
 
-/**
- * Reads a CSV file and converts it to a DataFrame-like object.
- * 
- * @param filePath - The path to the CSV file.
- * @returns An array of objects representing the data from the CSV file.
- */
-function readCsvToDataframe(filePath: string): DataRecord[] | null {
-  try {
-    if (!fs.existsSync(filePath)) {
-      console.error(`Error: The file '${filePath}' was not found.`);
-      return null;
-    }
-
-    const fileContent = fs.readFileSync(filePath, 'utf8');
-    const results = Papa.parse(fileContent, { header: true });
-    
-    if (results.errors.length > 0) {
-      console.error("Error: Could not parse the file.");
-      return null;
-    }
-
-    if (results.data.length === 0) {
-      console.error("Error: The file is empty.");
-      return null;
-    }
-
-    return results.data as DataRecord[];
-  } catch (error) {
-    console.error(`An error occurred: ${error}`);
-    return null;
-  }
-}
-
-// Example usage
-const filePath = './data.csv';
-const dataframe = readCsvToDataframe(filePath);
-if (dataframe) {
-  console.log(dataframe);
-}
-```
+   // Example usage
+   const filePath = './example.csv';
+   const dataframe = readCsvToDataFrame(filePath);
+   if (dataframe) {
+       console.log(dataframe);
+   }
+   ```
 
 ### Explanation:
-1. **Imports**: We import `Papa` from `papaparse` for parsing CSV files and `fs` from Node.js for file system operations.
-2. **Interface**: We define a generic interface `DataRecord` to represent the records in the CSV file.
-3. **Function Definition**: The function `readCsvToDataframe` takes a `filePath` and returns an array of `DataRecord` objects or `null` on failure.
-4. **File Existence Check**: We check if the file exists using `fs.existsSync`.
-5. **Reading File Content**: We read the file content using `fs.readFileSync`.
-6. **Parsing CSV**: We use `Papa.parse` to parse the CSV content with headers enabled.
-7. **Error Handling**: We handle errors such as file not found, empty file, and parsing errors.
-8. **Return Data**: We return the parsed data or `null` if any error occurs.
+1. **Imports**:
+   - `fs` is used for reading the CSV file synchronously.
+   - `Papa` is used for parsing the CSV content.
 
-This TypeScript code provides similar functionality to the Python code but adapted to the TypeScript environment and using appropriate libraries for CSV parsing.
+2. **Types**:
+   - `DataFrameRow` is an interface representing a single row in the DataFrame.
+   - `DataFrame` is a type alias for an array of `DataFrameRow`.
+
+3. **Function Definition**:
+   - `readCsvToDataFrame` reads the CSV file synchronously and parses it using `Papa.parse`.
+   - It handles various errors such as file not found, parsing errors, and other exceptions.
+
+4. **Error Handling**:
+   - Uses `instanceof Error` to check if the caught error is an instance of `Error`.
+   - Checks for specific error codes like `ENOENT` for file not found.
+
+5. **Example Usage**:
+   - Demonstrates how to call the function and log the resulting DataFrame.
+
+This approach ensures that the functionality remains consistent with the original Python code, while adapting to TypeScript's static type system and idiomatic practices.

@@ -1,15 +1,12 @@
 /**
- * Convert a DataFrame object to a table in markdown format.
+ * Convert a DataFrame object to a table in Markdown format.
  *
  * Example:
- * Input: dataframe {{'Name': ['Alice', 'Bob'], 'Age': [25, 30]}}
- * Output: | Name | Age |
- *         | ---- | --- |
- *         | Alice | 25 |
- *         | Bob | 30 |
+ *     Input: DataFrame {'Name': ['Alice', 'Bob'], 'Age': [25, 30]}
+ *     Output: | Name | Age |\n| --- | --- |\n| Alice | 25 |\n| Bob | 30 |
  *
- * @param df A vector of vectors representing the DataFrame.
- * @param md_path The output Markdown file path.
- * @return The content of the Markdown file as a string.
+ * @param df DataFrame object containing the data
+ * @param md_path Path to the output Markdown file
+ * @return The content of the Markdown file as a string
  */
-std::string dataframe_to_markdown(const std::vector<std::vector<std::string>>& df, const std::string& md_path) {}
+std::string dataframe_to_markdown(const DataFrame& df, const std::string& md_path) {}

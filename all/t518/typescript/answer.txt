@@ -1,43 +1,64 @@
-Sure, here is the equivalent TypeScript code for your Python function:
+Certainly! Below is the equivalent TypeScript code for the provided Python function:
 
 ```typescript
-interface Row {
-  [key: string]: string;
-}
+import { Optional } from 'typescript-optional'; // Assuming a library for Optional
 
-function convertCsvValues(row: Row): { [key: string]: string | null } {
-  /**
-   * Convert numeric values in a CSV row from string format to a standardized format.
-   *
-   * @param {Row} row - A dictionary representing a row of CSV data where
-   *                    keys are column names and values are strings.
-   * @returns {{ [key: string]: string | null }} - A new dictionary with values converted:
-   *                                              - Numeric strings have commas replaced with dots.
-   *                                              - Non-numeric strings are set to null.
-   */
-  const result: { [key: string]: string | null } = {};
+function convertCsvValues(row: Record<string, string>): Record<string, string | null> {
+    /**
+     * Convert numeric values in a CSV row from string format to a standardized format.
+     *
+     * @param row - A dictionary representing a row of CSV data where keys are column names and values are strings.
+     * @returns A new dictionary with values converted:
+     *          - Numeric strings have commas replaced with dots.
+     *          - Non-numeric strings are set to null.
+     */
+    const convertedRow: Record<string, string | null> = {};
 
-  for (const key in row) {
-    if (row.hasOwnProperty(key)) {
-      const value = row[key];
-      if (/^\d+(\.\d+)?$/.test(value)) {
-        // It's a number, replace commas with dots
-        result[key] = value.replace(',', '.');
-      } else {
-        // Not a number, set to null
-        result[key] = null;
-      }
+    for (const [key, value] of Object.entries(row)) {
+        // Check if the value is numeric with possible comma and negative sign
+        const isNumeric = value.replace(',', '').replace('-', '').match(/^-?\d+(\.\d+)?$/) !== null;
+
+        if (isNumeric) {
+            // Replace comma with dot for numeric conversion
+            convertedRow[key] = value.replace(',', '.');
+        } else {
+            // Set to null if not a valid number
+            convertedRow[key] = null;
+        }
     }
-  }
 
-  return result;
+    return convertedRow;
 }
+
+// Example usage
+const exampleRow = {
+    'name': 'John Doe',
+    'age': '30,5',
+    'salary': '50000,75',
+    'address': '123 Main St'
+};
+
+console.log(convertCsvValues(exampleRow));
 ```
 
 ### Explanation:
-1. **Interface Definition**: The `Row` interface defines the structure of the input object, which is a dictionary where keys are strings and values are strings.
-2. **Function Signature**: The `convertCsvValues` function takes an object of type `Row` and returns another object where the values are either strings or `null`.
-3. **Regex Check**: The regular expression `/^\d+(\.\d+)?$/` checks if the string is a valid number (either integer or float).
-4. **Conversion Logic**: If the string matches the regex, it replaces commas with dots; otherwise, it sets the value to `null`.
+1. **Type Definitions**:
+   - `Record<string, string>` is used to represent the input dictionary.
+   - The return type `Record<string, string | null>` indicates that the output dictionary can have values of type `string` or `null`.
 
-This TypeScript code should achieve the same functionality as your original Python function.
+2. **Function Definition**:
+   - The function `convertCsvValues` takes a dictionary `row` as an argument.
+   - It initializes an empty object `convertedRow` to store the converted values.
+
+3. **Looping Through Dictionary Items**:
+   - `Object.entries(row)` is used to iterate over the key-value pairs of the input dictionary.
+   - For each pair, it checks if the value is numeric by removing commas and negative signs and then using a regular expression to validate the numeric format.
+
+4. **Conversion Logic**:
+   - If the value is numeric, it replaces commas with dots.
+   - Otherwise, it sets the value to `null`.
+
+5. **Example Usage**:
+   - An example row is provided to demonstrate how the function works.
+
+This TypeScript code maintains the same functionality and logic as the original Python code while adapting to TypeScript's static type system and idiomatic practices.

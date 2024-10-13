@@ -1,10 +1,7 @@
 /**
- * Converts the contents of a CSV file into an SQL insert statement with a table name with the suffix removed.
+ * Converts the contents of a CSV file into an SQL insert statement with the table name derived from the file name.
  *
- * @param csvFilePath The path to the CSV file.
- * @return The parsed SQL string.
+ * @param csvFilePath the path to the CSV file
+ * @return a string containing the SQL insert statements
  */
-public static String csvToSQLInsert(String csvFilePath) {
-    // Your implementation goes here
-    return "";
-}
+public static String csvToSqlInsert(String csvFilePath) {}

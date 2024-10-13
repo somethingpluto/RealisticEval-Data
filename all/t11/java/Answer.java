@@ -1,56 +1,81 @@
 package org.real.temp;
 
 public class Answer {
-    public static class Trie {
-        /**
-         * Implement a dictionary tree for fast string retrieval and storage
-         */
 
-        private TrieNode root;
+    static class TrieNode {
+        private final java.util.Map<Character, TrieNode> children = new java.util.HashMap<>();
+        private boolean isEndOfWord;
 
-        public Trie() {
-            root = new TrieNode();
+        public boolean hasChild(char ch) {
+            return children.containsKey(ch);
         }
 
-        public void insert(String word) {
-            TrieNode node = root;
-            for (char c : word.toCharArray()) {
-                if (!node.children.containsKey(c)) {
-                    node.children.put(c, new TrieNode());
-                }
-                node = node.children.get(c);
+        public TrieNode getChild(char ch) {
+            return children.get(ch);
+        }
+
+        public void addChild(char ch) {
+            if (!children.containsKey(ch)) {
+                children.put(ch, new TrieNode());
             }
-            node.isEndOfWord = true;
         }
 
-        public boolean search(String word) {
-            TrieNode node = searchPrefix(word);
-            return node != null && node.isEndOfWord;
+        public void setEndOfWord() {
+            this.isEndOfWord = true;
         }
 
-        public boolean startsWith(String prefix) {
-            return searchPrefix(prefix) != null;
-        }
-
-        private TrieNode searchPrefix(String prefix) {
-            TrieNode node = root;
-            for (char c : prefix.toCharArray()) {
-                if (!node.children.containsKey(c)) {
-                    return null;
-                }
-                node = node.children.get(c);
-            }
-            return node;
+        public boolean isEnd() {
+            return this.isEndOfWord;
         }
     }
 
-    public static class TrieNode {
-        private boolean isEndOfWord;
-        private final Map<Character, TrieNode> children;
+    static class Trie {
+        private final TrieNode root;
 
-        public TrieNode() {
-            isEndOfWord = false;
-            children = new HashMap<>();
+        public Trie() {
+            this.root = new TrieNode();
         }
+
+        public void insert(String word) {
+            TrieNode current = this.root;
+            for (char ch : word.toCharArray()) {
+                current.addChild(ch);
+                current = current.getChild(ch);
+            }
+            current.setEndOfWord();
+        }
+
+        public boolean search(String word) {
+            TrieNode current = this.root;
+            for (char ch : word.toCharArray()) {
+                if (!current.hasChild(ch)) {
+                    return false;
+                }
+                current = current.getChild(ch);
+            }
+            return current.isEnd();
+        }
+
+        public boolean startsWith(String prefix) {
+            TrieNode current = this.root;
+            for (char ch : prefix.toCharArray()) {
+                if (!current.hasChild(ch)) {
+                    return false;
+                }
+                current = current.getChild(ch);
+            }
+            return true;
+        }
+    }
+
+    public static void main(String[] args) {
+        // Example usage
+        Trie trie = new Trie();
+        trie.insert("hello");
+        trie.insert("world");
+
+        System.out.println(trie.search("hello")); // Should print true
+        System.out.println(trie.startsWith("he")); // Should print true
+        System.out.println(trie.search("worlds")); // Should print false
     }
 }

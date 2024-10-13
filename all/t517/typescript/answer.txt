@@ -1,60 +1,73 @@
-Sure, here's how you can convert your Python code into TypeScript:
+Certainly! Below is the equivalent TypeScript code for the provided Python script. This TypeScript code will read a JSON Lines file and return its content as an array of objects.
 
-```typescript
-import fs from 'fs';
-import { parse } from 'json5';
+First, ensure you have the necessary dependencies installed. For reading files, you can use Node.js's `fs` module. Here's how you can write the TypeScript code:
 
-interface JsonLine {
-  [key: string]: any;
-}
+1. **Install necessary dependencies**:
+   ```sh
+   npm install --save @types/node
+   ```
 
-function readJsonl(filePath: string): JsonLine[] {
-  /**
-   * Reads a JSON Lines file and returns its content as a list of dictionaries.
-   *
-   * @param filePath - The path to the JSON Lines file.
-   * @returns A list of JSON objects parsed from the file.
-   * @throws Error if the specified file does not exist or there is an error parsing a line in the JSON Lines file.
-   */
-  
-  if (!fs.existsSync(filePath)) {
-    throw new Error(`File not found: ${filePath}`);
-  }
+2. **TypeScript code**:
+   ```typescript
+   import fs from 'fs';
+   import { JSONParseError } from 'json5';
 
-  const lines = fs.readFileSync(filePath, 'utf8').split('\n');
-  const jsonLines: JsonLine[] = [];
+   /**
+    * Reads a JSON Lines file and returns its content as an array of objects.
+    *
+    * @param file_path - The path to the JSON Lines file.
+    * @returns An array of JSON objects parsed from the file.
+    * @throws {Error} If the specified file does not exist or there is an error parsing a line in the JSON Lines file.
+    */
+   function readJsonl(file_path: string): Array<{ [key: string]: any }> {
+       // Check if the file exists
+       if (!fs.existsSync(file_path)) {
+           throw new Error(`The file '${file_path}' does not exist.`);
+       }
 
-  for (const line of lines) {
-    try {
-      const jsonLine = parse(line);
-      jsonLines.push(jsonLine);
-    } catch (error) {
-      throw new Error(`Error parsing JSON line: ${line}, error: ${error.message}`);
-    }
-  }
+       const jsonList: Array<{ [key: string]: any }> = [];
+       const fileContent = fs.readFileSync(file_path, 'utf8');
+       const lines = fileContent.split('\n');
 
-  return jsonLines;
-}
-```
+       for (const line of lines) {
+           try {
+               const jsonObj = JSON.parse(line);
+               jsonList.push(jsonObj);
+           } catch (error) {
+               if (error instanceof JSONParseError) {
+                   throw new Error(`Error parsing line: ${line.trim()} - ${error.message}`);
+               }
+           }
+       }
+
+       return jsonList;
+   }
+
+   // Example usage
+   try {
+       const filePath = './example.jsonl';
+       const data = readJsonl(filePath);
+       console.log(data);
+   } catch (error) {
+       console.error(error);
+   }
+   ```
 
 ### Explanation:
+1. **Importing Dependencies**:
+   - `fs` from Node.js is used for file system operations.
+   - `JSONParseError` from `json5` is used to handle JSON parsing errors (you can also use `SyntaxError` from the standard library).
 
-1. **Importing Modules**:
-   - `fs` module is used for reading files synchronously.
-   - `parse` function from `json5` package is used to parse JSON strings. This package handles JSON5 syntax which allows comments and trailing commas among other things.
+2. **Function Definition**:
+   - The `readJsonl` function reads the file synchronously using `fs.readFileSync`.
+   - It splits the file content by newline characters to get each line.
+   - Each line is parsed using `JSON.parse`, and the resulting object is added to the `jsonList`.
 
-2. **Interface Definition**:
-   - `JsonLine` interface defines the structure of each JSON object in the list. It uses a dictionary-like type with keys as strings and values as any type.
+3. **Error Handling**:
+   - If the file does not exist, it throws an `Error`.
+   - If there is a parsing error, it throws an `Error` with a detailed message.
 
-3. **Function Implementation**:
-   - The `readJsonl` function reads the file using `fs.readFileSync`, splits it into lines, and then parses each line using `json5.parse`.
-   - If the file does not exist, it throws a custom error.
-   - If there is an error parsing a line, it also throws a custom error indicating the problematic line and the error message.
+4. **Example Usage**:
+   - The example usage demonstrates how to call the `readJsonl` function and handle any potential errors.
 
-Make sure to install the `json5` package if you haven't already:
-
-```sh
-npm install json5
-```
-
-This TypeScript version should provide similar functionality to your original Python code.
+This TypeScript code maintains the same functionality and logic as the original Python code, adapting it to TypeScript's static type system and Node.js environment.

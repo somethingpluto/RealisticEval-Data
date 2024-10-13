@@ -1,23 +1,34 @@
-import java.util.Arrays;
-import java.util.HashMap;
+package org.real.temp;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class Answer {
-    public static int minRemovalsToMakeUnique(int[] nums) {
-        Arrays.sort(nums);
-        HashMap<Integer, Integer> map = new HashMap<>();
-        int count = 0;
 
-        for (int i : nums) {
-            if (map.containsKey(i)) {
-                count++;
-                i++;
-                while (map.containsKey(i)) {
-                    i++;
-                    count++;
-                }
+    /**
+     * Calculates the minimum number of removals needed to make all elements in the list unique.
+     * 
+     * @param nums The list of integers.
+     * @return The minimum number of removals required.
+     */
+    public static int minRemovalsToMakeUnique(List<Integer> nums) {
+        List<Integer> numbers = new ArrayList<>();
+        int minimumDistinct = 0;
+        
+        for (int number : nums) {
+            if (numbers.contains(number)) {
+                minimumDistinct++;
+                numbers.remove(Integer.valueOf(number));
             }
-            map.put(i, 1);
+            numbers.add(number);
         }
-        return count;
+        
+        return minimumDistinct;
+    }
+
+    public static void main(String[] args) {
+        // Example usage
+        List<Integer> nums = List.of(1, 2, 2, 3, 4, 4, 5);
+        System.out.println(minRemovalsToMakeUnique(nums)); // Output will be the minimum number of removals
     }
 }

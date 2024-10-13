@@ -1,99 +1,283 @@
-First, let's define the JavaScript function equivalent to `extract_bib_info` and then create the Jest test suite.
+Certainly! Below is the equivalent Jest test suite for the given Python unittest class. The goal is to maintain the functionality and logic of the tests while adapting them to Jest's syntax and conventions.
 
-### JavaScript Function
+### Python Code:
+```python
+import re
+import unittest
+from unittest.mock import mock_open, patch
 
-```javascript
-function extractBibInfo(bibFileContent) {
-    /**
-     * Extracts the title, author, and year from a BibTeX file content.
-     * 
-     * Example input:
-     * "@article{sample2024,\n  author = {John Doe and Jane Smith},\n  title = {A Comprehensive Study on AI},\n  year = {2024}\n}"
-     * 
-     * Args:
-     *     bibFileContent (string): The content of the BibTeX file.
-     * 
-     * Returns:
-     *     Array of objects: An array containing objects with title, author, and year for each article.
-     */
-    
-    const entries = bibFileContent.match(/@article\{[^}]+\}/g);
-    if (!entries) return [];
+def extract_bib_info(bib_file):
+    """Extracts the title, author, and year from a BibTeX file.
 
-    return entries.map(entry => {
-        const authorMatch = entry.match(/author = \{(.+?)\}/);
-        const titleMatch = entry.match(/title = \{(.+?)\}/);
-        const yearMatch = entry.match(/year = \{(\d{4})\}/);
+    Args:
+        bib_file (str): The path to the BibTeX file.
 
-        if (!authorMatch || !titleMatch || !yearMatch) return null;
+    Returns:
+        list of dict: A list containing dictionaries with title, author, and year for each article.
+    """
+    articles = []
 
-        const author = authorMatch[1].replace(/\s+/g, ' ').trim();
-        const title = titleMatch[1].replace(/\s+/g, ' ').trim();
-        const year = parseInt(yearMatch[1], 10);
+    # Regular expressions to match title, author, and year
+    title_pattern = re.compile(r'title\s*=\s*{([^}]*)}', re.IGNORECASE)
+    author_pattern = re.compile(r'author\s*=\s*{([^}]*)}', re.IGNORECASE)
+    year_pattern = re.compile(r'year\s*=\s*{([^}]*)}', re.IGNORECASE)
 
-        return { author, title, year };
-    }).filter(item => item !== null);
-}
+    try:
+        with open(bib_file, 'r') as file:
+            content = file.read()
+
+            # Split the content into individual entries based on '@'
+            entries = content.split('@')[1:]  # Skip the first split, which is empty
+
+            for entry in entries:
+                title = title_pattern.search(entry)
+                author = author_pattern.search(entry)
+                year = year_pattern.search(entry)
+
+                # Extracting matched groups if found
+                articles.append({
+                    'title': title.group(1) if title else None,
+                    'author': author.group(1) if author else None,
+                    'year': year.group(1) if year else None
+                })
+
+    except FileNotFoundError:
+        console.error(f"Error: The file '{bib_file}' was not found.")
+
+    return articles
+
+class TestExtractBibInfo(unittest.TestCase):
+
+    def test_valid_entry(self):
+        """Test extraction from a valid BibTeX entry."""
+        mock_bib = "@article{sample2024,\n  author = {John Doe and Jane Smith},\n  title = {A Comprehensive Study on AI},\n  year = {2024}\n}"
+        with patch("builtins.open", mock_open(read_data=mock_bib)):
+            result = extract_bib_info("dummy.bib")
+            expected = [{'title': 'A Comprehensive Study on AI', 'author': 'John Doe and Jane Smith', 'year': '2024'}]
+            self.assertEqual(result, expected)
+
+    def test_multiple_entries(self):
+        """Test extraction from multiple BibTeX entries."""
+        mock_bib = (
+            "@article{sample2024,\n"
+            "  author = {John Doe},\n"
+            "  title = {A Comprehensive Study on AI},\n"
+            "  year = {2024}\n}\n"
+            "@article{sample2023,\n"
+            "  author = {Jane Smith},\n"
+            "  title = {Deep Learning Techniques},\n"
+            "  year = {2023}\n}"
+        )
+        with patch("builtins.open", mock_open(read_data=mock_bib)):
+            result = extract_bib_info("dummy.bib")
+            expected = [
+                {'title': 'A Comprehensive Study on AI', 'author': 'John Doe', 'year': '2024'},
+                {'title': 'Deep Learning Techniques', 'author': 'Jane Smith', 'year': '2023'}
+            ]
+            self.assertEqual(result, expected)
+
+    def test_missing_fields(self):
+        """Test extraction when some fields are missing."""
+        mock_bib = "@article{sample2024,\n  author = {John Doe},\n  title = {Title Missing Year}\n}"
+        with patch("builtins.open", mock_open(read_data=mock_bib)):
+            result = extract_bib_info("dummy.bib")
+            expected = [{'title': 'Title Missing Year', 'author': 'John Doe', 'year': None}]
+            self.assertEqual(result, expected)
+
+    def test_empty_file(self):
+        """Test extraction from an empty BibTeX file."""
+        mock_bib = ""
+        with patch("builtins.open", mock_open(read_data=mock_bib)):
+            result = extract_bib_info("dummy.bib")
+            expected = []
+            self.assertEqual(result, expected)
+
+    def test_incorrect_format(self):
+        """Test extraction from a badly formatted BibTeX entry."""
+        mock_bib = "@article{sample2024,\n  author = John Doe,\n  title = {Title Without Braces},\n  year = 2024\n}"
+        with patch("builtins.open", mock_open(read_data=mock_bib)):
+            result = extract_bib_info("dummy.bib")
+            expected = [{'title': 'Title Without Braces', 'author': None, 'year': None}]
+            self.assertEqual(result, expected)
+
+
+# Example usage
+# bibFilePath = './example.bib'
+# print(extract_bib_info(bibFilePath))
 ```
 
-### Jest Test Suite
-
-Now, let's create the Jest test suite:
+### Equivalent Jest Test Suite:
 
 ```javascript
-const extractBibInfo = require('./path/to/extractBibInfo');
+const fs = require('fs');
+const { mock } = require('jest-mock-extended');
+
+// Function to extract BibTeX information
+function extractBibInfo(bibFile) {
+    /**
+     * Extracts the title, author, and year from a BibTeX file.
+     *
+     * @param {string} bibFile - The path to the BibTeX file.
+     * @returns {Array<Object>} - An array containing objects with title, author, and year for each article.
+     */
+    const articles = [];
+
+    // Regular expressions to match title, author, and year
+    const titlePattern = /title\s*=\s*{([^}]*)}/i;
+    const authorPattern = /author\s*=\s*{([^}]*)}/i;
+    const yearPattern = /year\s*=\s*{([^}]*)}/i;
+
+    try {
+        const content = fs.readFileSync(bibFile, 'utf8');
+
+        // Split the content into individual entries based on '@'
+        const entries = content.split('@').slice(1);  // Skip the first split, which is empty
+
+        for (const entry of entries) {
+            const titleMatch = entry.match(titlePattern);
+            const authorMatch = entry.match(authorPattern);
+            const yearMatch = entry.match(yearPattern);
+
+            // Extracting matched groups if found
+            articles.push({
+                'title': titleMatch ? titleMatch[1] : null,
+                'author': authorMatch ? authorMatch[1] : null,
+                'year': yearMatch ? yearMatch[1] : null
+            });
+        }
+
+    } catch (error) {
+        if (error.code === 'ENOENT') {
+            console.error(`Error: The file '${bibFile}' was not found.`);
+        } else {
+            throw error;  // Re-throw the error if it's not a file not found error
+        }
+    }
+
+    return articles;
+}
 
 describe('extractBibInfo', () => {
-    it('should extract correct information from a valid BibTeX file', () => {
-        const bibFileContent = `@article{sample2024,
-            author = {John Doe and Jane Smith},
-            title = {A Comprehensive Study on AI},
-            year = {2024}
-        }`;
+    beforeEach(() => {
+        jest.spyOn(fs, 'readFileSync').mockImplementation((path, encoding) => {
+            if (path === 'dummy.bib') {
+                return 'dummy content';
+            }
+            return '';
+        });
+    });
 
-        const expectedResult = [
+    afterEach(() => {
+        jest.restoreAllMocks();
+    });
+
+    it('test extraction from a valid BibTeX entry', () => {
+        const mockBib = `
+            @article{sample2024,
+              author = {John Doe and Jane Smith},
+              title = {A Comprehensive Study on AI},
+              year = {2024}
+            }
+        `;
+        fs.readFileSync.mockReturnValue(mockBib);
+
+        const result = extractBibInfo('dummy.bib');
+        const expected = [{
+            title: 'A Comprehensive Study on AI',
+            author: 'John Doe and Jane Smith',
+            year: '2024'
+        }];
+        expect(result).toEqual(expected);
+    });
+
+    it('test extraction from multiple BibTeX entries', () => {
+        const mockBib = `
+            @article{sample2024,
+              author = {John Doe},
+              title = {A Comprehensive Study on AI},
+              year = {2024}
+            }
+            @article{sample2023,
+              author = {Jane Smith},
+              title = {Deep Learning Techniques},
+              year = {2023}
+            }
+        `;
+        fs.readFileSync.mockReturnValue(mockBib);
+
+        const result = extractBibInfo('dummy.bib');
+        const expected = [
             {
-                author: "John Doe and Jane Smith",
-                title: "A Comprehensive Study on AI",
-                year: 2024
+                title: 'A Comprehensive Study on AI',
+                author: 'John Doe',
+                year: '2024'
+            },
+            {
+                title: 'Deep Learning Techniques',
+                author: 'Jane Smith',
+                year: '2023'
             }
         ];
-
-        expect(extractBibInfo(bibFileContent)).toEqual(expectedResult);
+        expect(result).toEqual(expected);
     });
 
-    it('should handle an empty BibTeX file correctly', () => {
-        const bibFileContent = '';
+    it('test extraction when some fields are missing', () => {
+        const mockBib = `
+            @article{sample2024,
+              author = {John Doe},
+              title = {Title Missing Year}
+            }
+        `;
+        fs.readFileSync.mockReturnValue(mockBib);
 
-        const expectedResult = [];
-
-        expect(extractBibInfo(bibFileContent)).toEqual(expectedResult);
+        const result = extractBibInfo('dummy.bib');
+        const expected = [{
+            title: 'Title Missing Year',
+            author: 'John Doe',
+            year: null
+        }];
+        expect(result).toEqual(expected);
     });
 
-    it('should handle invalid BibTeX file content correctly', () => {
-        const bibFileContent = `@article{invalid,
-            author = {Invalid Author},
-            title = {Invalid Title},
-            year = {2023
-        }`;
+    it('test extraction from an empty BibTeX file', () => {
+        const mockBib = '';
+        fs.readFileSync.mockReturnValue(mockBib);
 
-        const expectedResult = [];
+        const result = extractBibInfo('dummy.bib');
+        const expected = [];
+        expect(result).toEqual(expected);
+    });
 
-        expect(extractBibInfo(bibFileContent)).toEqual(expectedResult);
+    it('test extraction from a badly formatted BibTeX entry', () => {
+        const mockBib = `
+            @article{sample2024,
+              author = John Doe,
+              title = {Title Without Braces},
+              year = 2024
+            }
+        `;
+        fs.readFileSync.mockReturnValue(mockBib);
+
+        const result = extractBibInfo('dummy.bib');
+        const expected = [{
+            title: 'Title Without Braces',
+            author: null,
+            year: null
+        }];
+        expect(result).toEqual(expected);
     });
 });
+
+// Example usage
+// const bibFilePath = './example.bib';
+// console.log(extractBibInfo(bibFilePath));
 ```
 
-### Explanation of Changes:
+### Explanation:
+1. **Function Definition**: The `extractBibInfo` function is defined with the same logic and structure as the Python version.
+2. **Jest Mocking**: Jest's `jest.spyOn` is used to mock `fs.readFileSync` to simulate different file contents.
+3. **Test Cases**: Each test case is written using Jest's `it` function and includes assertions using `expect`.
+4. **Documentation**: The JSDoc comments are added to provide clear documentation for the function and test cases.
+5. **Before and After Each Hooks**: These hooks ensure that the mocks are set up and cleaned up properly for each test.
 
-1. **Function Definition**: The Python function `def extract_bib_info(bib_file: str)` has been converted to a JavaScript function `function extractBibInfo(bibFileContent)`. Note that the argument name `bib_file` was changed to `bibFileContent` to reflect that we're working with the content of the file rather than its path.
-
-2. **Regular Expressions**: The regular expressions used to match the BibTeX entries were adjusted to work in JavaScript. The `match` method is used to find patterns in the string.
-
-3. **Parsing Data**: The data is parsed similarly to the Python version, but using JavaScript string methods like `match`, `replace`, and `trim`.
-
-4. **Test Cases**: The test cases in Python's unittest have been converted to Jest test cases. Each `it` block represents a specific test case, and `expect` is used to assert the expected behavior of the function.
-
-5. **Data Structures**: In JavaScript, arrays and objects are used to represent the extracted data, similar to Python's lists and dictionaries.
-
-This conversion ensures that the functionality and logic of the original Python tests are preserved in JavaScript using Jest.
+This conversion ensures that the functionality and logic of the tests are preserved while adapting to Jest's syntax and conventions.

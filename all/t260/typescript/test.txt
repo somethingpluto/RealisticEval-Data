@@ -1,71 +1,110 @@
-Sure! Below is the equivalent TypeScript test case using Jest for the given Python unittest test class. Note that I'll assume some basic functionality for `process_csv` based on your description. If you have additional details or specific requirements, please let me know!
+Certainly! Below is the equivalent TypeScript test class using Jest. The test cases and logic are preserved, and the necessary type annotations and Jest assertions are included.
+
+### TypeScript Code
+
+First, ensure you have the necessary dependencies installed:
+
+```sh
+npm install jest ts-jest @types/jest
+```
+
+Add the necessary Jest configuration to your `tsconfig.json` or `jest.config.js`:
+
+```json
+{
+  "preset": "ts-jest",
+  "testEnvironment": "node"
+}
+```
+
+### TypeScript Test Class
 
 ```typescript
-import { readFileSync, writeFileSync } from 'fs';
-import * as csv from 'csv-parser';
+import { processCsv } from './your_module'; // Import the processCsv function
+import { readFileSync, writeFileSync, unlinkSync } from 'fs';
+import { join } from 'path';
 
-// Assuming the function process_csv is defined somewhere in your project
-// For example:
-function processCsv(file_path: string, output_path: string) {
-    // Implementation of process_csv goes here
-}
+describe('TestProcessCSV', () => {
+  let input_data_1: string;
+  let input_data_2: string;
+  let input_data_3: string;
 
-describe('processCsv', () => {
-    it('should remove rows with two or more empty columns', () => {
-        const inputFilePath = 'path/to/input.csv';
-        const outputFilePath = 'path/to/output.csv';
+  beforeEach(() => {
+    input_data_1 = `A,B,C
+1,2,3
+4,,6
+7,8,
+9,10,11`;
 
-        // Sample input data
-        const inputData = `
-id,name,email,age
-1,Alice,,25
-2,Bob,bob@example.com,
-3,,charlie@example.com,30
-4,David,david@example.com,35
-`;
+    input_data_2 = `A,B,C,D
+,,
+1,,3,4
+2,3,,5
+,,,`;
 
-        // Write sample input data to a temporary file
-        writeFileSync(inputFilePath, inputData);
+    input_data_3 = `A
+1
+2
+3`;
+  });
 
-        // Call the function under test
-        processCsv(inputFilePath, outputFilePath);
+  const process_data = (input_data: string): string => {
+    const inputFilePath = 'input.csv';
+    const outputFilePath = 'output.csv';
 
-        // Read the output file
-        const outputFileData = readFileSync(outputFilePath, 'utf8');
+    // Write input data to a temp CSV file
+    writeFileSync(inputFilePath, input_data);
 
-        // Expected output data after processing
-        const expectedOutputData = `
-id,name,email,age
-2,Bob,bob@example.com,
-4,David,david@example.com,35
-`;
+    // Process the CSV
+    processCsv(inputFilePath, outputFilePath);
 
-        // Check if the output matches the expected data
-        expect(outputFileData.trim()).toBe(expectedOutputData.trim());
-    });
+    // Read the output
+    const outputData = readFileSync(outputFilePath, 'utf8');
 
-    it('should handle an empty input file gracefully', () => {
-        const inputFilePath = 'path/to/empty_input.csv';
-        const outputFilePath = 'path/to/empty_output.csv';
+    // Clean up temp files
+    unlinkSync(inputFilePath);
+    unlinkSync(outputFilePath);
 
-        // Create an empty input file
-        writeFileSync(inputFilePath, '');
+    return outputData;
+  };
 
-        // Call the function under test
-        processCsv(inputFilePath, outputFilePath);
+  it('should correctly process input_data_1', () => {
+    const output = process_data(input_data_1);
+    const expectedOutput = `A,B,C\n1,2.0,3.0\n4,,6.0\n7,8.0,\n9,10.0,11.0\n`;
+    expect(output).toEqual(expectedOutput);
+  });
 
-        // Check if the output file is empty
-        const outputFileData = readFileSync(outputFilePath, 'utf8');
-        expect(outputFileData).toBe('');
-    });
+  it('should correctly process input_data_2', () => {
+    const output = process_data(input_data_2);
+    const expectedOutput = `A,B,C,D\n1.0,,3.0,4.0\n2.0,3.0,,5.0\n`;
+    expect(output).toEqual(expectedOutput);
+  });
+
+  it('should correctly process input_data_3', () => {
+    const output = process_data(input_data_3);
+    const expectedOutput = `A\n1\n2\n3\n`; // Single-column CSV should remain unchanged
+    expect(output).toEqual(expectedOutput);
+  });
 });
 ```
 
 ### Explanation:
-1. **Imports**: We import necessary modules like `fs` for file operations and `csv-parser` for handling CSV files.
-2. **Function Mocking**: We assume `processCsv` is defined elsewhere in your project. If not, you need to implement it or mock it appropriately.
-3. **Test Cases**:
-   - **First Test Case**: This tests the scenario where there are rows with two or more empty columns. It writes a sample input file, calls `processCsv`, reads the output file, and checks if it matches the expected result.
-   - **Second Test Case**: This tests the scenario where the input file is empty. It creates an empty input file, calls `processCsv`, and checks if the output file is also empty.
+1. **Imports**:
+   - `processCsv` from the module where it is defined.
+   - `readFileSync`, `writeFileSync`, and `unlinkSync` from the `fs` module for file operations.
+   - `join` from the `path` module (not used in this example but can be useful for path manipulation).
 
-Make sure to adjust the file paths and data according to your actual implementation and testing environment.
+2. **Test Suite**:
+   - `describe` block sets up the test suite named `TestProcessCSV`.
+
+3. **Before Each Hook**:
+   - `beforeEach` hook initializes the input data for each test case.
+
+4. **Helper Function**:
+   - `process_data` function reads the input data, writes it to a temporary CSV file, processes the CSV, reads the output, and cleans up the temporary files.
+
+5. **Test Cases**:
+   - Each `it` block represents a test case.
+   - `expect` assertions are used to verify the output against the expected output.
+
+This TypeScript code preserves the original functionality and logic of the Python unittest test class while adapting to Jest's testing framework and TypeScript's static type system.

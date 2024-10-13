@@ -1,134 +1,71 @@
 package org.real.temp;
 
-import static org.junit.jupiter.api.Assertions.*;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Before;
+import java.util.List;
+import org.junit.jupiter.api.Test; // Test annotation
+import static org.junit.jupiter.api.Assertions.assertEquals; // Assertion method
 
+
+/**
+ * Test class for BinaryTree operations.
+ */
 public class Tester {
 
-    private BinaryTree binaryTree;
+    private BinaryTree tree;
+    private BinaryTree emptyTree;
+    private BinaryTree singleNodeTree;
 
-    @BeforeEach
+    @Before
     public void setUp() {
-        binaryTree = new BinaryTree();
+        // Tree structure:
+        //      1
+        //     / \
+        //    2   3
+        //   / \
+        //  4   5
+        tree = new BinaryTree(new TreeNode(1));
+        tree.root.left = new TreeNode(2, new TreeNode(4), new TreeNode(5));
+        tree.root.right = new TreeNode(3);
+
+        emptyTree = new BinaryTree();
+
+        singleNodeTree = new BinaryTree(new TreeNode(10));
     }
 
     @Test
     public void testPreorderTraversal() {
-        // Create a sample binary tree for testing
-        TreeNode root = new TreeNode(1);
-        TreeNode node2 = new TreeNode(2);
-        TreeNode node3 = new TreeNode(3);
-        TreeNode node4 = new TreeNode(4);
-        TreeNode node5 = new TreeNode(5);
-
-        root.left = node2;
-        root.right = node3;
-        node2.left = node4;
-        node2.right = node5;
-
-        // Expected result of preorder traversal: [1, 2, 4, 5, 3]
-        List<Integer> expectedResult = Arrays.asList(1, 2, 4, 5, 3);
-        List<Integer> actualResult = new ArrayList<>();
-        binaryTree.preorderTraversal(root, actualResult);
-
-        assertEquals(expectedResult, actualResult);
+        // Test preorder traversal
+        List<Integer> result = tree.preorderTraversal(tree.root);
+        assertEquals("[1, 2, 4, 5, 3]", result.toString());
     }
 
     @Test
     public void testInorderTraversal() {
-        // Create a sample binary tree for testing
-        TreeNode root = new TreeNode(1);
-        TreeNode node2 = new TreeNode(2);
-        TreeNode node3 = new TreeNode(3);
-        TreeNode node4 = new TreeNode(4);
-        TreeNode node5 = new TreeNode(5);
-
-        root.left = node2;
-        root.right = node3;
-        node2.left = node4;
-        node2.right = node5;
-
-        // Expected result of inorder traversal: [4, 2, 5, 1, 3]
-        List<Integer> expectedResult = Arrays.asList(4, 2, 5, 1, 3);
-        List<Integer> actualResult = new ArrayList<>();
-        binaryTree.inorderTraversal(root, actualResult);
-
-        assertEquals(expectedResult, actualResult);
+        // Test inorder traversal
+        List<Integer> result = tree.inorderTraversal(tree.root);
+        assertEquals("[4, 2, 5, 1, 3]", result.toString());
     }
 
     @Test
     public void testPostorderTraversal() {
-        // Create a sample binary tree for testing
-        TreeNode root = new TreeNode(1);
-        TreeNode node2 = new TreeNode(2);
-        TreeNode node3 = new TreeNode(3);
-        TreeNode node4 = new TreeNode(4);
-        TreeNode node5 = new TreeNode(5);
-
-        root.left = node2;
-        root.right = node3;
-        node2.left = node4;
-        node2.right = node5;
-
-        // Expected result of postorder traversal: [4, 5, 2, 3, 1]
-        List<Integer> expectedResult = Arrays.asList(4, 5, 2, 3, 1);
-        List<Integer> actualResult = new ArrayList<>();
-        binaryTree.postorderTraversal(root, actualResult);
-
-        assertEquals(expectedResult, actualResult);
-    }
-}
-
-// TreeNode class
-class TreeNode {
-    int value;
-    TreeNode left;
-    TreeNode right;
-
-    TreeNode(int value) {
-        this.value = value;
-        this.left = null;
-        this.right = null;
-    }
-}
-
-// BinaryTree class
-class BinaryTree {
-    TreeNode root;
-
-    BinaryTree(TreeNode root) {
-        this.root = root;
+        // Test postorder traversal
+        List<Integer> result = tree.postorderTraversal(tree.root);
+        assertEquals("[4, 5, 2, 3, 1]", result.toString());
     }
 
-    BinaryTree() {
-        this(null);
+    @Test
+    public void testEmptyTree() {
+        // Test traversals on an empty tree
+        assertEquals("[]", emptyTree.preorderTraversal(emptyTree.root).toString());
+        assertEquals("[]", emptyTree.inorderTraversal(emptyTree.root).toString());
+        assertEquals("[]", emptyTree.postorderTraversal(emptyTree.root).toString());
     }
 
-    void preorderTraversal(TreeNode node, List<Integer> result) {
-        if (node == null) {
-            return;
-        }
-        result.add(node.value);
-        preorderTraversal(node.left, result);
-        preorderTraversal(node.right, result);
-    }
-
-    void inorderTraversal(TreeNode node, List<Integer> result) {
-        if (node == null) {
-            return;
-        }
-        inorderTraversal(node.left, result);
-        result.add(node.value);
-        inorderTraversal(node.right, result);
-    }
-
-    void postorderTraversal(TreeNode node, List<Integer> result) {
-        if (node == null) {
-            return;
-        }
-        postorderTraversal(node.left, result);
-        postorderTraversal(node.right, result);
-        result.add(node.value);
+    @Test
+    public void testSingleNodeTree() {
+        // Test all traversals on a tree with only one node
+        assertEquals("[10]", singleNodeTree.preorderTraversal(singleNodeTree.root).toString());
+        assertEquals("[10]", singleNodeTree.inorderTraversal(singleNodeTree.root).toString());
+        assertEquals("[10]", singleNodeTree.postorderTraversal(singleNodeTree.root).toString());
     }
 }

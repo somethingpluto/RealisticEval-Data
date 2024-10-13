@@ -1,37 +1,33 @@
-describe('isValidNumber', () => {
-
-    test('should return "Not Numerical" when input is not a number', () => {
-        const result = isValidNumber('abc123');
-        expect(result).toBe("Not Numerical");
+describe('isSignificantNumber', () => {
+    test('should return true for a valid significant number with exactly 5 digits', () => {
+        expect(isSignificantNumber("12345")).toBe(true);
     });
 
-    test('should return "Invalid Length, Must Be Between 5-18" when input length is less than 5', () => {
-        const result = isValidNumber('1234');
-        expect(result).toBe("Invalid Length, Must Be Between 5-18");
+    test('should return false for a number with leading zero', () => {
+        expect(isSignificantNumber("01234")).toBe(false);
     });
 
-    test('should return "Invalid Length, Must Be Between 5-18" when input length is greater than 18', () => {
-        const result = isValidNumber('1234567890123456789');
-        expect(result).toBe("Invalid Length, Must Be Between 5-18");
+    test('should return true for a valid significant number with exactly 18 digits', () => {
+        expect(isSignificantNumber("123456789012345678")).toBe(true);
     });
 
-    test('should return true for a valid number within the length range', () => {
-        const result = isValidNumber('123456');
-        expect(result).toBe(true);
+    test('should return false for a number with less than 5 digits', () => {
+        expect(isSignificantNumber("123")).toBe(false);
     });
 
-    test('should return "Invalid Input" when an unexpected error occurs', () => {
-        // This test.js simulates an error scenario,
-        // which is tricky since the function does not throw errors naturally.
-        // Here, we use a mock to simulate this behavior.
-        const originalTrim = String.prototype.trim;
-        String.prototype.trim = () => { throw new Error(); }; // Force an error
-
-        const result = isValidNumber(' 12345 ');
-        expect(result).toBe("Invalid Input");
-
-        // Restore original trim method
-        String.prototype.trim = originalTrim;
+    test('should return false for a number with more than 18 digits', () => {
+        expect(isSignificantNumber("1234567890123456789")).toBe(false);
     });
 
+    test('should return false for a number containing non-digit characters', () => {
+        expect(isSignificantNumber("1234a")).toBe(false);
+    });
+
+    test('should return false for a single zero', () => {
+        expect(isSignificantNumber("0")).toBe(false);
+    });
+
+    test('should return false for non-string input', () => {
+        expect(isSignificantNumber(12345)).toBe(false);
+    });
 });

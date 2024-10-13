@@ -1,29 +1,54 @@
-Here's how you can convert the Python code into TypeScript:
+Sure! Here is the equivalent TypeScript code:
 
 ```typescript
-import { exec } from 'child_process';
+import * as re from 'xregexp';
 
-function cleanPattern(x: string | any, pattern: string): string | number {
-    // Convert x to string
+function cleanPattern(x: string | any, pattern: string): number | '' {
+    /**
+     * Extracts a numeric value from the input string based on the given regex pattern.
+     *
+     * @param x - The input from which to extract the value. It will be converted to a string.
+     * @param pattern - The regular expression pattern to use for matching.
+     * @returns The extracted weight value as a number if a match is found, otherwise an empty string.
+     */
+    // Convert input to string
     const inputString = String(x);
 
-    // Execute regex pattern
-    const matches = inputString.match(pattern);
-    
-    // Check if there's a match and return it
-    if (matches && matches[0]) {
-        // If match is a number, return it as a float
-        const numMatch = parseFloat(matches[0]);
-        if (!isNaN(numMatch)) {
-            return numMatch;
-        }
-        // Else return the match as a string
-        return matches[0];
-    }
+    // Search for the pattern in the input string
+    const match = re.exec(inputString, new RegExp(pattern));
 
-    // No match, return an empty string
-    return '';
+    if (match && match[1]) {
+        // Extract the weight value from the first matching group
+        const weight = match[1];
+        try {
+            // Convert the weight to a float and return it
+            const weightValue = parseFloat(weight);
+            return weightValue;
+        } catch (error) {
+            // Handle cases where conversion to float fails
+            console.warn(`Warning: Unable to convert '${weight}' to float.`);
+            return '';
+        }
+    } else {
+        return '';  // Return empty string if no match is found
+    }
 }
+
+// Example usage
+console.log(cleanPattern("The weight is 123.45 kg", "(\\d+\\.\\d+)"));
 ```
 
-Please note that the `exec` function is used here just because it was used in the provided Python code. Depending on your actual requirements, you may need to replace it with appropriate functionality in TypeScript. Also, TypeScript does not have direct equivalent of Python's `typing.Union`, but we can represent it using union types (`string | number`).
+### Explanation:
+1. **Import Statement**: TypeScript does not have a built-in `re` module like Python, so we use `xregexp` as a third-party library for regular expressions. You can install it using npm with `npm install xregexp`.
+
+2. **Function Definition**: The function `cleanPattern` is defined with typed parameters (`string | any` for `x` and `string` for `pattern`). The return type is `number | ''` to indicate that the function can return either a number or an empty string.
+
+3. **Type Conversion**: The input `x` is converted to a string using `String(x)`.
+
+4. **Regular Expression Matching**: We use `new RegExp(pattern)` to create a regular expression object and `re.exec` to search for matches.
+
+5. **Error Handling**: If the conversion to a float fails, a warning message is logged, and an empty string is returned.
+
+6. **Example Usage**: An example call to the function is included at the end to demonstrate how to use it.
+
+This TypeScript code maintains the same functionality and logic as the original Python code while adapting to TypeScript's static type system and syntax.

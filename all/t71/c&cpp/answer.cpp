@@ -1,57 +1,88 @@
 #include <iostream>
 #include <fstream>
-#include <sstream>
 #include <vector>
 #include <string>
+#include <stdexcept>
 
-// Function to split string based on delimiter
-std::vector<std::string> split(const std::string &s, char delimiter) {
-    std::vector<std::string> tokens;
-    std::string token;
-    std::istringstream tokenStream(s);
-    while (getline(tokenStream, token, delimiter)) {
-        tokens.push_back(token);
-    }
-    return tokens;
-}
+// Function to read numerical columns from a file starting from the line after the last line containing '/'
+std::vector<std::vector<double>> read_columns(const std::string& file_name) {
+    // Initialize a variable to track the last slash line index
+    int last_slash_index = -1;
+    std::vector<std::string> lines;
 
-std::vector<std::vector<double>> readColumns(const std::string &fileName) {
-    std::ifstream file(fileName);
+    // Read all lines from the file
+    std::ifstream file(file_name);
     if (!file.is_open()) {
         throw std::runtime_error("Failed to open file");
     }
-
-    std::vector<std::vector<double>> data;
-    bool foundSlash = false;
-
     std::string line;
-    while (getline(file, line)) {
-        if (line.find('/') != std::string::npos) {
-            foundSlash = true;
-            continue; // Skip lines until after the last line with '/'
+    while (std::getline(file, line)) {
+        lines.push_back(line);
+    }
+    file.close();
+
+    // Find the index of the last line that contains the "/" character
+    for (int i = 0; i < lines.size(); ++i) {
+        if (lines[i].find('/') != std::string::npos) {
+            last_slash_index = i;
         }
+    }
 
-        if (!foundSlash) continue; // Ignore lines before the slash
+    // If no "/" character was found, raise an error
+    if (last_slash_index == -1) {
+        throw std::runtime_error("File does not contain '/' character");
+    }
 
-        std::vector<std::string> tokens = split(line, ' ');
-        std::vector<double> row;
+    // Read the remaining lines in the file, starting from the line after the last "/"
+    std::vector<std::string> data_lines;
+    for (int i = last_slash_index + 1; i < lines.size(); ++i) {
+        std::string trimmed_line = lines[i];
+        trimmed_line.erase(0, trimmed_line.find_first_not_of(" \t\n\r\f\v")); // Trim leading spaces
+        trimmed_line.erase(trimmed_line.find_last_not_of(" \t\n\r\f\v") + 1); // Trim trailing spaces
+        if (!trimmed_line.empty() && !trimmed_line.starts_with('!')) {
+            data_lines.push_back(trimmed_line);
+        }
+    }
 
-        for (const auto &token : tokens) {
-            try {
-                double value = std::stod(token);
-                row.push_back(value);
-            } catch (...) {
-                // Handle non-numeric values if necessary
-                std::cerr << "Non-numeric value encountered in line: " << line << std::endl;
+    // If no valid lines remain, return an empty vector
+    if (data_lines.empty()) {
+        return {};
+    }
+
+    // Get the row and column count by counting the number of columns in the first line
+    int col_count = std::count(data_lines[0].begin(), data_lines[0].end(), ' ') + 1;
+
+    // Create an empty vector of vectors of the required size
+    std::vector<std::vector<double>> arr(data_lines.size(), std::vector<double>(col_count));
+
+    // Loop through the lines in the file
+    for (size_t i = 0; i < data_lines.size(); ++i) {
+        std::istringstream iss(data_lines[i]);
+        double num;
+        int j = 0;
+        while (iss >> num) {
+            arr[i][j++] = num;
+            if (iss.peek() == ' ') {
+                iss.ignore();
             }
         }
-
-        data.push_back(row);
     }
 
-    if (!foundSlash) {
-        throw std::runtime_error("File does not contain any '/' character");
-    }
+    // Return the array
+    return arr;
+}
 
-    return data;
+int main() {
+    try {
+        std::vector<std::vector<double>> result = read_columns("example.txt");
+        for (const auto& row : result) {
+            for (double val : row) {
+                std::cout << val << " ";
+            }
+            std::cout << std::endl;
+        }
+    } catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+    }
+    return 0;
 }

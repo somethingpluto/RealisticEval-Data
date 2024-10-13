@@ -1,6 +1,6 @@
 /**
- * Calculate the probability that x balls will be randomly drawn from a jar containing n red balls and m blue balls,
- * and all of them will be red balls.
+ * Calculates the probability that x balls will be randomly drawn from a jar containing
+ * n red balls and m blue balls, and all of them will be red balls.
  *
  * @param x Number of balls to draw.
  * @param n Number of red balls in the jar.

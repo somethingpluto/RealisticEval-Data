@@ -1,47 +1,41 @@
 /**
- * Implement a dictionary tree for fast string retrieval and storage
+ * Implements a dictionary tree (Trie) for fast string retrieval and storage.
  */
 class Trie {
-    private root: TrieNode;
-
-    constructor() {
-        this.root = new TrieNode();
-    }
-
     /**
      * Inserts a word into the trie.
-     * @param {string} word - The word to be inserted.
+     * @param word The word to insert.
      */
-    public insert(word: string): void {
-        // Implementation goes here
+    insert(word: string): void {
+      // Implementation goes here
     }
-
+  
     /**
-     * Searches if the word exists in the trie.
-     * @param {string} word - The word to search for.
-     * @returns {boolean} - True if the word exists, false otherwise.
+     * Searches for a word in the trie.
+     * @param word The word to search for.
+     * @returns true if the word is found, false otherwise.
      */
-    public search(word: string): boolean {
-        // Implementation goes here
+    search(word: string): boolean {
+      // Implementation goes here
     }
-
+  
     /**
-     * Checks if any word in the trie starts with the given prefix.
-     * @param {string} prefix - The prefix to check.
-     * @returns {boolean} - True if there's at least one word starting with the prefix, false otherwise.
+     * Checks if there is any word in the trie that starts with the given prefix.
+     * @param prefix The prefix to check.
+     * @returns true if there is any word starting with the prefix, false otherwise.
      */
-    public startsWith(prefix: string): boolean {
-        // Implementation goes here
+    startsWith(prefix: string): boolean {
+      // Implementation goes here
     }
-}
-
-/**
- * Represents a node in the trie.
- */
-class TrieNode {
-    public children: {[key: string]: TrieNode};
-
+  }
+  
+  /**
+   * Represents a node in the Trie.
+   */
+  class TrieNode {
+    children: { [key: string]: TrieNode };
+  
     constructor() {
-        this.children = {};
+      this.children = {};
     }
-}
+  }

@@ -1,75 +1,155 @@
-To convert the provided Python unittest test class into an equivalent test class using Catch2 in C++, we need to create a similar setup for solving the Eight Queens problem and then write tests to verify its correctness. Below is the equivalent C++ code using the Catch2 testing framework.
+Certainly! Below is the equivalent C++ test class using the Catch2 testing framework. The provided Python unittest class will be converted into a Catch2 test suite, ensuring that the functionality and logic of the tests are preserved. Any necessary adjustments for language differences between Python and C++ will be made, and appropriate assertions will be used in Catch2.
+
+### C++ Code Using Catch2
 
 ```cpp
 #include <catch2/catch_test_macros.hpp>
-#include <vector>
 #include <iostream>
+#include <vector>
+#include <sstream>
 
-// Define the function to solve the Eight Queens problem
-bool isSafe(const std::vector<int>& board, int row, int col) {
-    // Check this row on left side
-    for (int i = 0; i < col; ++i)
-        if (board[i] == row || board[i] - i == row - col || board[i] + i == row + col)
+// Function to print the current state of the board
+void printBoard(const std::vector<std::vector<char>>& board) {
+    for (const auto& row : board) {
+        for (char cell : row) {
+            std::cout << cell << " ";
+        }
+        std::cout << std::endl;
+    }
+    std::cout << std::endl;
+}
+
+// Function to check if it's safe to place a queen at a specific position
+bool isSafe(const std::vector<std::vector<char>>& board, int row, int col) {
+    // Check this row on the left side
+    for (int i = 0; i < col; ++i) {
+        if (board[row][i] == 'Q') {
             return false;
+        }
+    }
+
+    // Check upper diagonal on the left side
+    for (int i = row, j = col; i >= 0 && j >= 0; --i, --j) {
+        if (board[i][j] == 'Q') {
+            return false;
+        }
+    }
+
+    // Check lower diagonal on the left side
+    for (int i = row, j = col; i < board.size() && j >= 0; ++i, --j) {
+        if (board[i][j] == 'Q') {
+            return false;
+        }
+    }
+
     return true;
 }
 
-bool solveNQueens(std::vector<int>& board, int col) {
-    if (col >= 8) {
-        // A solution is found, print the configuration
-        for (int i = 0; i < 8; ++i) {
-            for (int j = 0; j < 8; ++j)
-                std::cout << (board[j] == i ? "Q " : ". ");
-            std::cout << "\n";
-        }
-        std::cout << "\n";
+// Recursive function to solve the N-Queens problem
+bool solveQueens(std::vector<std::vector<char>>& board, int col) {
+    // Base case: If all queens are placed
+    if (col >= board.size()) {
+        printBoard(board);
         return true;
     }
 
-    bool res = false;
-    for (int i = 0; i < 8; ++i) {
+    // Consider this column and try placing this queen in all rows one by one
+    bool solutionFound = false;
+    for (int i = 0; i < board.size(); ++i) {
         if (isSafe(board, i, col)) {
-            board[col] = i;
-            res = solveNQueens(board, col + 1) || res;
+            board[i][col] = 'Q';
+            if (solveQueens(board, col + 1)) {
+                solutionFound = true;
+            }
+            board[i][col] = '.';  // Backtrack
         }
     }
-    return res;
+
+    return solutionFound;
 }
 
+// Function to solve the Eight Queens problem
 void eightQueens() {
-    std::vector<int> board(8);
-    if (!solveNQueens(board, 0))
-        std::cout << "No solution\n";
+    std::vector<std::vector<char>> board(8, std::vector<char>(8, '.'));
+    if (!solveQueens(board, 0)) {
+        std::cout << "No solution" << std::endl;
+    }
 }
 
-TEST_CASE("Eight Queens Problem") {
-    SECTION("Solution Exists") {
-        std::ostringstream oss;
-        std::streambuf* prevcoutbuf = std::cout.rdbuf(oss.rdbuf());
-        
-        eightQueens();
-        
-        std::cout.rdbuf(prevcoutbuf); // Restore cout
-        
-        REQUIRE(oss.str().find("No solution") == std::string::npos);
-        // Additional checks can be added here to verify the printed solution
+// Function to solve the N-Queens problem for a 3x3 board
+void noSolutionQueens() {
+    std::vector<std::vector<char>> board(3, std::vector<char>(3, '.'));
+    if (!solveQueens(board, 0)) {
+        std::cout << "No solution" << std::endl;
+    }
+}
+
+TEST_CASE("Test Eight Queens Problem") {
+    SECTION("Test Solution Exists") {
+        std::ostringstream out;
+        {
+            std::streambuf* prevcoutbuf = std::cout.rdbuf(out.rdbuf());
+            eightQueens();
+            std::cout.rdbuf(prevcoutbuf);
+        }
+
+        REQUIRE(out.str().find("Q") != std::string::npos);
     }
 
-    SECTION("No Solution for Invalid Configuration") {
-        // This section is not applicable since the eightQueens function always finds a valid solution
-        // or prints "No solution" if none exists. There's no invalid configuration check needed.
+    SECTION("Test Correct Number of Queens") {
+        std::ostringstream out;
+        {
+            std::streambuf* prevcoutbuf = std::cout.rdbuf(out.rdbuf());
+            eightQueens();
+            std::cout.rdbuf(prevcoutbuf);
+        }
+
+        std::istringstream iss(out.str());
+        std::string line;
+        while (std::getline(iss, line)) {
+            int numQueens = std::count(line.begin(), line.end(), 'Q');
+            REQUIRE(numQueens == 8);
+        }
     }
+
+    SECTION("Test No Solution Scenario") {
+        std::ostringstream out;
+        {
+            std::streambuf* prevcoutbuf = std::cout.rdbuf(out.rdbuf());
+            noSolutionQueens();
+            std::cout.rdbuf(prevcoutbuf);
+        }
+
+        REQUIRE(out.str().find("No solution") != std::string::npos);
+    }
+}
+
+int main(int argc, char* argv[]) {
+    return Catch::Session().run(argc, argv);
 }
 ```
 
 ### Explanation:
 1. **Function Definitions**:
-   - `isSafe`: Checks if placing a queen at a given position is safe.
-   - `solveNQueens`: Recursively solves the N-Queens problem.
-   - `eightQueens`: Calls `solveNQueens` and prints the solution or "No solution".
+   - `printBoard`: Prints the current state of the board.
+   - `isSafe`: Checks if it's safe to place a queen at a specific position.
+   - `solveQueens`: Recursively solves the N-Queens problem.
+   - `eightQueens`: Initializes the board and calls `solveQueens`.
+   - `noSolutionQueens`: Solves the N-Queens problem for a 3x3 board.
 
-2. **Test Sections**:
-   - `Solution Exists`: Verifies that a solution is found by checking that "No solution" is not printed.
-   - `No Solution for Invalid Configuration`: This section is not directly applicable since the `eightQueens` function always finds a valid solution or prints "No solution". However, you can add additional checks if needed.
+2. **Testing Framework**:
+   - The Catch2 testing framework is used to define test cases.
+   - Each test case is defined using `SECTION` within the `TEST_CASE`.
 
-This conversion ensures that the functionality and logic of the original Python test are preserved in C++ using Catch2.
+3. **Capturing Output**:
+   - `std::ostringstream` is used to capture the output of `std::cout`.
+   - The original buffer of `std::cout` is restored after capturing the output.
+
+4. **Assertions**:
+   - `REQUIRE` is used for assertions in Catch2.
+   - The captured output is checked for the presence of "Q" and the correct number of queens.
+
+5. **Main Function**:
+   - The `main` function runs the Catch2 test session.
+
+This C++ code preserves the original functionality and logic of the Python unittest class, ensuring that the tests are equivalent and perform the same checks.

@@ -1,29 +1,90 @@
-Sure, here is how you can convert your Python `unittest` test class to a TypeScript test case using Jest:
+Certainly! Below is the equivalent TypeScript test class using Jest, ensuring that the functionality and logic of the tests are preserved. The necessary type annotations and Jest assertions are included.
+
+### TypeScript Code
 
 ```typescript
-import { saveContentToFile } from './path-to-your-save-content-to-file'; // Adjust the import according to your project structure
+import * as fs from 'fs';
+import { saveContentToFile } from './path/to/saveContentToFile'; // Import the saveContentToFile function
 
-describe('saveContentToFile', () => {
-  it('should save content to file after cleaning up redundant whitespace', async () => {
-    const mockFilePath = 'mock/path/to/file.txt';
-    const mockContent = "This is some   content with    extra spaces.\nAnd another line.";
-    
-    await saveContentToFile(mockContent, mockFilePath);
+describe('TestSaveContentToFile', () => {
+    let testFilePath: string;
 
-    // Assuming fs.promises.readFile exists and returns the expected content
-    const fs = require('fs').promises;
-    const savedContent = await fs.readFile(mockFilePath, 'utf8');
-    expect(savedContent).toBe("This is some content with extra spaces.\nAnd another line.");
-  });
+    beforeEach(() => {
+        // Set up a temporary file path for testing
+        testFilePath = 'test_output.txt';
+    });
+
+    afterEach(() => {
+        // Clean up the test file after each test
+        if (fs.existsSync(testFilePath)) {
+            fs.unlinkSync(testFilePath);
+        }
+    });
+
+    it('should save basic content correctly', () => {
+        const content = "Hello,  World!  ";
+        const expected = "Hello, World!";
+        saveContentToFile(content, testFilePath);
+
+        const result = fs.readFileSync(testFilePath, 'utf-8').trim();
+        expect(result).toEqual(expected);
+    });
+
+    it('should handle multiple spaces and empty lines correctly', () => {
+        const content = `
+
+        This is a    test.
+
+        Another line.      
+        `;
+        const expected = "This is a test. Another line.";
+        saveContentToFile(content, testFilePath);
+
+        const result = fs.readFileSync(testFilePath, 'utf-8').trim();
+        expect(result).toEqual(expected);
+    });
+
+    it('should handle only whitespace correctly', () => {
+        const content = "    \n  \n   ";
+        const expected = "";
+        saveContentToFile(content, testFilePath);
+
+        const result = fs.readFileSync(testFilePath, 'utf-8').trim();
+        expect(result).toEqual(expected);
+    });
+
+    it('should handle empty content correctly', () => {
+        const content = "";
+        const expected = "";
+        saveContentToFile(content, testFilePath);
+
+        const result = fs.readFileSync(testFilePath, 'utf-8').trim();
+        expect(result).toEqual(expected);
+    });
 });
 ```
 
 ### Explanation:
-1. **Import the Function**: Import the function `saveContentToFile` from its location in your project.
-2. **Describe Block**: Use `describe` to group related tests together. Here, we're grouping tests for the `saveContentToFile` function.
-3. **It Block**: Use `it` or `test` to define individual test cases. In this example, we're testing that the function saves the content to a file after cleaning up redundant whitespace.
-4. **Mock File Path and Content**: Define a mock file path and content string.
-5. **Call the Function**: Call the `saveContentToFile` function with the mock content and file path.
-6. **Read and Verify File Content**: Use Node.js's `fs.promises.readFile` to read the content of the mock file and verify it against the expected cleaned-up content using `expect`.
+1. **Imports**:
+   - Import the `fs` module for file system operations.
+   - Import the `saveContentToFile` function from the appropriate module.
 
-Make sure to adjust the import statement (`./path-to-your-save-content-to-file`) to correctly point to where your `saveContentToFile` function is located in your project.
+2. **Describe Block**:
+   - Use the `describe` block to group the tests under a common description.
+
+3. **BeforeEach and AfterEach**:
+   - `beforeEach` sets up the temporary file path for each test.
+   - `afterEach` cleans up the test file after each test.
+
+4. **Test Cases**:
+   - Each test case uses the `it` block to describe the test scenario.
+   - The `expect` function is used to assert the expected results.
+
+5. **Reading File Content**:
+   - Use `fs.readFileSync` to read the content of the file synchronously.
+   - Trim the result to ensure it matches the expected value.
+
+6. **Assertions**:
+   - Use `expect(result).toEqual(expected)` to verify that the actual result matches the expected result.
+
+This TypeScript code preserves the original functionality and logic of the Python unittest tests, ensuring that the tests are equivalent and work correctly with Jest.

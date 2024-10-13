@@ -1,9 +1,17 @@
-TEST_CASE("Simplify Windows Path", "[simplify_windows_path]") {
-    CHECK(simplify_windows_path("C:\\Users\\User\\file.txt") == "Users_User_file.txt");
-    CHECK(simplify_windows_path("D:\\Projects\\ProjectName\\main.cpp") == "Projects_ProjectName_main.cpp");
-    CHECK(simplify_windows_path("C:\\a\\b\\c\\d.txt") == "a_b_c_d.txt");
-    CHECK(simplify_windows_path("C:\\single_folder") == "single_folder");
-    CHECK(simplify_windows_path("C:\\no_extension") == "no_extension");
-    CHECK(simplify_windows_path("C:\\empty_path\\" )== "");
-    CHECK(simplify_windows_path("C:\\trailing_backslash\\") == "trailing_backslash");
+TEST_CASE("Test Simplify Windows Path") {
+    SECTION("Simple Path") {
+        CHECK(simplifyWindowsPath("C:\\Users\\User\\file.txt") == "C_Users_User_file.txt");
+    }
+
+    SECTION("Simple Path 2") {
+        CHECK(simplifyWindowsPath("D:\\User\\file.txt") == "D_User_file.txt");
+    }
+
+    SECTION("Path with Spaces") {
+        CHECK(simplifyWindowsPath("E:\\New Folder\\my file.docx") == "E_New Folder_my file.docx");
+    }
+
+    SECTION("Nested Directories") {
+        CHECK(simplifyWindowsPath("G:\\folder1\\folder2\\folder3\\file.jpeg") == "G_folder1_folder2_folder3_file.jpeg");
+    }
 }

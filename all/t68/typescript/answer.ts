@@ -1,22 +1,22 @@
-type List<T> = T[];
+function divideList(lst: number[], n: number): number[][] {
+    // Total number of elements in the list
+    const L = lst.length;
+    // Calculate the size of each part
+    const baseSize = Math.floor(L / n);
+    // Calculate the number of sections that will have an additional element
+    const remainder = L % n;
 
-function divideList<T>(lst: T[], n: number): List<List<T>> {
-    /**
-     * Divide a list evenly into n parts and return a list of these parts. If the list length is not divisible by n,
-     * additional elements are added to the previous sections one by one.
-     *
-     * @param lst - The list to be divided.
-     * @param n - The number of parts to divide the list into.
-     * @returns A list containing n sublists, where each sublist represents a part of the original list.
-     */
-    const result: List<List<T>> = [];
-    const length = lst.length;
-    const size = Math.ceil(length / n);
+    const result: number[][] = [];
+    // Start index of the sublist
+    let startIndex = 0;
 
     for (let i = 0; i < n; i++) {
-        const start = i * size;
-        const end = start + size;
-        result.push(lst.slice(start, end));
+        // Determine the size of the current part
+        const partSize = baseSize + (i < remainder ? 1 : 0);
+        // Append the sublist to the result list
+        result.push(lst.slice(startIndex, startIndex + partSize));
+        // Update the start index for the next part
+        startIndex += partSize;
     }
 
     return result;

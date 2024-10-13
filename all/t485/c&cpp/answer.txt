@@ -1,4 +1,4 @@
-Certainly! Below is the equivalent C++ code for the provided Python script. This code will perform the same functionality: it modifies a SQL query string by replacing named parameters with positional parameters and prepares a list of parameter values in the correct order.
+Certainly! Below is the equivalent C++ code for the provided Python script. This code will perform the same functionality of modifying a SQL query string by replacing named parameters with positional parameters and returning the modified SQL string along with a list of parameter values.
 
 ```cpp
 #include <iostream>
@@ -7,14 +7,14 @@ Certainly! Below is the equivalent C++ code for the provided Python script. This
 #include <map>
 #include <regex>
 
-// Function to prepare a SQL query string for libraries like asyncpg
+// Function to prepare the SQL query and parameter values
 std::pair<std::string, std::vector<std::string>> prepare_query(const std::string& sql, const std::map<std::string, std::string>& params) {
     /**
-     * Modifies a SQL query string containing named parameters (like $name, $age)
-     * into a format compatible with libraries that require positional parameters
-     * (like $1, $2, etc.), such as asyncpg. It returns a pair containing the modified
-     * SQL string and a vector of parameter values ordered according to their new positions
-     * in the query.
+     * This function modifies a SQL query string containing named parameters
+     * (like $name, $age) into a format compatible with libraries that require
+     * positional parameters (like $1, $2, etc.), such as asyncpg. It returns
+     * a pair containing the modified SQL string and a vector of parameter values
+     * ordered according to their new positions in the query.
      *
      * Args:
      *     sql (const std::string&): The original SQL query string with named parameters.
@@ -27,18 +27,22 @@ std::pair<std::string, std::vector<std::string>> prepare_query(const std::string
      */
 
     // Find all occurrences of named parameters in the SQL string
-    std::regex named_param_pattern("\\$(\\w+)");
-    std::sregex_iterator begin(sql.begin(), sql.end(), named_param_pattern);
+    std::regex named_param_pattern("\\$([a-zA-Z][a-zA-Z0-9]*)");
+    std::sregex_iterator it(sql.begin(), sql.end(), named_param_pattern);
     std::sregex_iterator end;
 
-    // Extract matches and remove duplicates while preserving order
-    std::map<std::string, bool> unique_params_map;
+    std::vector<std::string> named_params;
+    for (; it != end; ++it) {
+        named_params.push_back(it->str());
+    }
+
+    // Remove duplicates while preserving order
+    std::map<std::string, bool> seen;
     std::vector<std::string> unique_params;
-    for (std::sregex_iterator i = begin; i != end; ++i) {
-        std::smatch match = *i;
-        std::string param = match.str(1);
-        if (unique_params_map.find(param) == unique_params_map.end()) {
-            unique_params_map[param] = true;
+    for (const auto& param : named_params) {
+        std::string paramName = param.substr(1); // Remove the '$' prefix
+        if (seen.find(paramName) == seen.end()) {
+            seen[paramName] = true;
             unique_params.push_back(param);
         }
     }
@@ -46,14 +50,16 @@ std::pair<std::string, std::vector<std::string>> prepare_query(const std::string
     // Substitute each named parameter with its corresponding positional parameter
     for (size_t index = 1; index <= unique_params.size(); ++index) {
         std::string param = unique_params[index - 1];
-        std::string pattern = "\\$" + param;
-        sql = std::regex_replace(sql, std::regex(pattern), std::to_string(index));
+        std::string paramName = param.substr(1); // Remove the '$' prefix
+        std::string replacement = "$" + std::to_string(index);
+        sql = std::regex_replace(sql, std::regex("\\$" + paramName), replacement);
     }
 
-    // Prepare the vector of values corresponding to the order of the positional parameters
+    // Prepare the list of values corresponding to the order of the positional parameters
     std::vector<std::string> values;
     for (const auto& param : unique_params) {
-        auto it = params.find(param);
+        std::string paramName = param.substr(1); // Remove the '$' prefix
+        auto it = params.find(paramName);
         if (it != params.end()) {
             values.push_back(it->second);
         }
@@ -63,7 +69,6 @@ std::pair<std::string, std::vector<std::string>> prepare_query(const std::string
 }
 
 int main() {
-    // Example usage
     std::string sql = "SELECT * FROM users WHERE name = $name AND age = $age";
     std::map<std::string, std::string> params = {{"name", "Alice"}, {"age", "30"}};
 
@@ -80,12 +85,10 @@ int main() {
 ```
 
 ### Explanation:
-1. **Header Files**: The required header files (`<iostream>`, `<string>`, `<vector>`, `<map>`, `<regex>`) are included.
-2. **Function Definition**: The `prepare_query` function takes a SQL string and a map of parameters, and returns a pair consisting of the modified SQL string and a vector of values.
-3. **Regular Expressions**: Regular expressions are used to find named parameters in the SQL string.
-4. **Removing Duplicates**: A map is used to remove duplicates from the found parameters while preserving order.
-5. **Substitution**: Named parameters are replaced with positional parameters using `std::regex_replace`.
-6. **Preparing Values**: A vector is prepared to hold the parameter values in the correct order.
-7. **Example Usage**: An example usage is provided in the `main` function to demonstrate how to call the `prepare_query` function.
-
-This should provide a direct translation of the given Python code into C++, maintaining the same functionality and logic.
+1. **Header Files**: The necessary header files (`<iostream>`, `<string>`, `<vector>`, `<map>`, `<regex>`) are included.
+2. **Function Definition**: The `prepare_query` function takes a `std::string` for the SQL query and a `std::map<std::string, std::string>` for the parameters.
+3. **Regular Expression**: The regular expression `\\$([a-zA-Z][a-zA-Z0-9]*)` is used to find named parameters in the SQL string.
+4. **Removing Duplicates**: A `std::map` is used to remove duplicates while preserving the order of the named parameters.
+5. **Substitution**: Each named parameter is replaced with its corresponding positional parameter using `std::regex_replace`.
+6. **Preparing Values**: The values are collected into a `std::vector<std::string>` based on the order of the positional parameters.
+7. **Main Function**: An example usage of the `prepare_query` function is shown in the `main` function.

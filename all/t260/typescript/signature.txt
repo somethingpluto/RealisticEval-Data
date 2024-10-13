@@ -1,24 +1,94 @@
-Sure! Below is the TypeScript code signature for your Python function `process_csv`, keeping the same structure and comments intact:
+Certainly! Below is the equivalent TypeScript code for the given Python function, including proper type annotations and JSDoc-style documentation comments.
+
+### TypeScript Code
 
 ```typescript
 import * as fs from 'fs';
-import { parse, stringify } from 'csv';
+import * as csvParser from 'csv-parser';
+import * as csvWriter from 'csv-writer';
+import { parse } from 'path';
 
 /**
- * Processes a CSV file and removes rows with two or more empty columns. If the file is empty, returns an empty string.
+ * Processes a CSV file and removes rows with two or more empty columns.
+ * If the file is empty, returns an empty string.
  *
  * @param file_path - The path to the input CSV file.
  * @param output_path - The path where the processed CSV file will be saved.
  */
 function processCsv(file_path: string, output_path: string): void {
-    // Function implementation goes here
+    const results: Record<string, string | null>[] = [];
+
+    // Read the CSV file and store the rows
+    fs.createReadStream(file_path)
+        .pipe(csvParser())
+        .on('data', (row: Record<string, string | null>) => {
+            results.push(row);
+        })
+        .on('end', () => {
+            // Process the rows
+            const filteredResults = results.filter((row) => {
+                const emptyCount = Object.values(row).filter(value => value === '').length;
+                return emptyCount < 2;
+            });
+
+            // Write the processed rows back to a new CSV file
+            const csvWriter = csvWriter.createObjectCsvWriter({
+                path: output_path,
+                header: Object.keys(results[0]).map(key => ({ id: key, title: key })),
+            });
+
+            csvWriter.writeRecords(filteredResults)
+                .then(() => console.log('CSV file was written successfully'))
+                .catch(error => console.error('Error writing CSV file:', error));
+        });
+}
+
+// Error handling functions
+function handleEmptyDataError(outputPath: string): void {
+    fs.writeFileSync(outputPath, '');
+}
+
+function handleParserError(): void {
+    console.error("Error: The input CSV has inconsistent row lengths. Please check the input data.");
+}
+
+try {
+    processCsv('input.csv', 'output.csv');
+} catch (error) {
+    if (error instanceof SyntaxError || error instanceof TypeError) {
+        handleParserError();
+    } else if (error instanceof fs.Error && error.code === 'ENOENT') {
+        handleEmptyDataError('output.csv');
+    } else {
+        throw error; // Re-throw other unexpected errors
+    }
 }
 ```
 
-This TypeScript code uses the `fs` module for file operations and the `csv` package for parsing and stringifying CSV data. Make sure you have the `csv` package installed in your project:
+### Explanation:
+1. **Imports**:
+   - `fs`: For file system operations.
+   - `csvParser`: For parsing CSV files.
+   - `csvWriter`: For writing CSV files.
+   - `parse`: From the `path` module, used for path manipulation (though not explicitly used here).
 
-```sh
-npm install csv
-```
+2. **Function Definition**:
+   - `processCsv`: Takes two parameters (`file_path` and `output_path`) and processes the CSV file.
+   - Properly typed arguments and return type (`void`).
 
-The function signature includes the type annotations for the parameters and the return type (`void`).
+3. **JSDoc Comments**:
+   - Detailed documentation using JSDoc style comments.
+
+4. **Reading CSV**:
+   - Uses `fs.createReadStream` and `csvParser` to read the CSV file and store the rows.
+
+5. **Filtering Rows**:
+   - Filters rows based on the number of empty columns.
+
+6. **Writing CSV**:
+   - Writes the filtered rows back to a new CSV file using `csvWriter`.
+
+7. **Error Handling**:
+   - Handles specific errors such as empty data and parsing errors.
+
+This TypeScript code preserves the original functionality and structure of the Python code while adapting to TypeScript's static type system and using appropriate libraries for CSV processing.

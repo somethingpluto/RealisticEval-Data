@@ -1,66 +1,79 @@
-Sure! Here's how you can translate the Python function `read_tsv_from_stdin` into C++ while keeping the comments:
+Certainly! Below is the equivalent C++ code for the provided Python function, including appropriate comments and documentation:
 
 ```cpp
 #include <iostream>
 #include <vector>
 #include <string>
+#include <sstream>
 
 /**
- * @brief Reads tab-separated values (TSV) from standard input and returns a vector of vectors.
+ * Reads tab-separated values (TSV) from standard input and returns a list of rows.
  *
- * Each inner vector represents a row of data. Rows with unequal lengths are padded with empty strings
- * to ensure all rows have the same length.
+ * Each row is represented as a vector of strings. If rows have unequal lengths,
+ * they are padded with empty strings to ensure all rows have the same length.
  *
- * @return std::vector<std::vector<std::string>> A vector of vectors, where each inner vector represents a row of data.
+ * @return A vector of vectors, where each inner vector represents a row of data.
  */
 std::vector<std::vector<std::string>> read_tsv_from_stdin() {
-    std::vector<std::vector<std::string>> rows;
+    std::vector<std::vector<std::string>> data;
     std::string line;
 
-    // Read lines from standard input until EOF
+    // Read lines from standard input
     while (std::getline(std::cin, line)) {
+        std::istringstream iss(line);
         std::vector<std::string> row;
-        size_t start = 0;
-        size_t end = line.find('\t');
+        std::string value;
 
         // Split the line by tabs
-        while (end != std::string::npos) {
-            row.push_back(line.substr(start, end - start));
-            start = end + 1;
-            end = line.find('\t', start);
+        while (std::getline(iss, value, '\t')) {
+            row.push_back(value);
         }
 
-        // Add the last element if there's any trailing text after the last tab
-        if (start < line.length()) {
-            row.push_back(line.substr(start));
-        }
+        data.push_back(row);
+    }
 
-        // Pad the row with empty strings if it has fewer elements than the longest row so far
-        if (!rows.empty() && row.size() < rows.front().size()) {
-            row.resize(rows.front().size());
-        }
-
-        rows.push_back(row);
-
-        // Pad the current row with empty strings if it has more elements than the longest row so far
-        if (!rows.empty() && row.size() > rows.front().size()) {
-            for (size_t i = 0; i < rows.size(); ++i) {
-                rows[i].resize(row.size(), "");
-            }
+    // Find the maximum number of columns in the input data
+    size_t max_columns = 0;
+    if (!data.empty()) {
+        for (const auto& row : data) {
+            max_columns = std::max(max_columns, row.size());
         }
     }
 
-    return rows;
+    // Pad all rows to ensure they have the same length
+    std::vector<std::vector<std::string>> padded_data;
+    for (auto& row : data) {
+        row.resize(max_columns, "");
+        padded_data.push_back(row);
+    }
+
+    return padded_data;
+}
+
+int main() {
+    // Example usage
+    auto padded_data = read_tsv_from_stdin();
+
+    // Print the padded data
+    for (const auto& row : padded_data) {
+        for (const auto& value : row) {
+            std::cout << value << "\t";
+        }
+        std::cout << std::endl;
+    }
+
+    return 0;
 }
 ```
 
 ### Explanation:
-- **Include Headers**: The necessary headers (`<iostream>`, `<vector>`, `<string>`) are included at the top.
-- **Function Signature**: The function `read_tsv_from_stdin` is defined with a return type of `std::vector<std::vector<std::string>>`.
-- **Reading Input**: The function reads lines from standard input using `std::getline(std::cin, line)`.
-- **Splitting Lines**: The function splits each line by tabs (`'\t'`) and stores the resulting substrings in a vector.
-- **Padding Rows**: If a row has fewer elements than the longest row encountered so far, it is padded with empty strings.
-- **Handling Trailing Text**: If there is any text after the last tab, it is added as an additional element in the row.
-- **Returning Results**: The function returns the vector of vectors representing the TSV data.
+1. **Header Files**: The necessary header files (`<iostream>`, `<vector>`, `<string>`, `<sstream>`) are included at the beginning.
+2. **Function Documentation**: The function `read_tsv_from_stdin` is documented using C++ style comments.
+3. **Reading Input**: The function reads lines from standard input using `std::getline`.
+4. **Splitting Lines**: Each line is split into fields using a `std::istringstream` and the tab character (`'\t'`) as the delimiter.
+5. **Finding Maximum Columns**: The maximum number of columns across all rows is determined.
+6. **Padding Rows**: Each row is padded with empty strings to match the maximum number of columns.
+7. **Returning Padded Data**: The padded data is returned as a vector of vectors of strings.
+8. **Example Usage**: In the `main` function, the padded data is printed to demonstrate the functionality.
 
-This C++ version should perform similarly to the original Python function.
+This conversion preserves the original purpose and structure of the Python code while adhering to C++ syntax and documentation standards.

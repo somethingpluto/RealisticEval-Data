@@ -1,44 +1,52 @@
-describe('parseXamlToDict', () => {
-  it('should parse XAML and return correct dictionary', async () => {
-    const xamlContent = `
+import * as fs from 'fs';
+import * as xml2js from 'xml2js';
+
+describe('TestParseXamlToDict', () => {
+  it('should correctly parse valid strings', () => {
+    const xamlData = `
       <root>
-        <String key="key1">value1</String>
-        <String key="key2">value2</String>
+        <String Key="Username">Alice</String>
+        <String Key="Password">secret</String>
       </root>
     `;
-
-    // Write the mock XAML content to a temporary file
-    const tempFilePath = '/tmp/temp.xaml';
-    fs.writeFileSync(tempFilePath, xamlContent);
-
-    try {
-      const result = await parseXamlToDict(tempFilePath);
-      expect(result).toEqual({ key1: 'value1', key2: 'value2' });
-    } finally {
-      // Clean up the temporary file
-      fs.unlinkSync(tempFilePath);
-    }
+    const expected = { Username: 'Alice', Password: 'secret' };
+    const result = parseXamlToDict(xamlData);
+    expect(result).toEqual(expected);
   });
 
-  it('should handle empty XAML', async () => {
-    const xamlContent = '<root></root>';
-
-    // Write the mock XAML content to a temporary file
-    const tempFilePath = '/tmp/temp-empty.xaml';
-    fs.writeFileSync(tempFilePath, xamlContent);
-
-    try {
-      const result = await parseXamlToDict(tempFilePath);
-      expect(result).toEqual({});
-    } finally {
-      // Clean up the temporary file
-      fs.unlinkSync(tempFilePath);
-    }
+  it('should handle missing key attribute', () => {
+    const xamlData = `
+      <root>
+        <String>Alice</String>
+      </root>
+    `;
+    const expected = {};
+    const result = parseXamlToDict(xamlData);
+    expect(result).toEqual(expected);
   });
 
-  it('should throw an error if file does not exist', async () => {
-    const nonExistentFilePath = '/non-existent-file.xaml';
+  it('should handle no string tags', () => {
+    const xamlData = `
+      <root>
+        <Data>Some question</Data>
+      </root>
+    `;
+    const expected = {};
+    const result = parseXamlToDict(xamlData);
+    expect(result).toEqual(expected);
+  });
 
-    await expect(parseXamlToDict(nonExistentFilePath)).rejects.toThrow();
+  it('should correctly parse nested string tags', () => {
+    const xamlData = `
+      <root>
+        <Container>
+          <String Key="Username">Bob</String>
+        </Container>
+        <String Key="Location">Earth</String>
+      </root>
+    `;
+    const expected = { Username: 'Bob', Location: 'Earth' };
+    const result = parseXamlToDict(xamlData);
+    expect(result).toEqual(expected);
   });
 });

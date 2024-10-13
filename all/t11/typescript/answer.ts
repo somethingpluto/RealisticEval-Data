@@ -1,70 +1,70 @@
 class TrieNode {
     children: { [key: string]: TrieNode };
     isEndOfWord: boolean;
-
+  
     constructor() {
-        this.children = {};
-        this.isEndOfWord = false;
+      this.children = {};
+      this.isEndOfWord = false;
     }
-
+  
     hasChild(ch: string): boolean {
-        return ch in this.children;
+      return ch in this.children;
     }
-
+  
     getChild(ch: string): TrieNode | undefined {
-        return this.children[ch];
+      return this.children[ch];
     }
-
+  
     addChild(ch: string): void {
-        if (!(ch in this.children)) {
-            this.children[ch] = new TrieNode();
-        }
+      if (!this.hasChild(ch)) {
+        this.children[ch] = new TrieNode();
+      }
     }
-
+  
     setEndOfWord(): void {
-        this.isEndOfWord = true;
+      this.isEndOfWord = true;
     }
-
+  
     isEnd(): boolean {
-        return this.isEndOfWord;
+      return this.isEndOfWord;
     }
-}
-
-class Trie {
-    private root: TrieNode;
-
+  }
+  
+  class Trie {
+    root: TrieNode;
+  
     constructor() {
-        this.root = new TrieNode();
+      this.root = new TrieNode();
     }
-
+  
     insert(word: string): void {
-        let current: TrieNode = this.root;
-        for (const ch of word) {
-            current.addChild(ch);
-            current = current.getChild(ch)!; // Non-null assertion since we just added it
-        }
-        current.setEndOfWord();
+      let current = this.root;
+      for (const ch of word) {
+        current.addChild(ch);
+        current = current.getChild(ch)!;
+      }
+      current.setEndOfWord();
     }
-
+  
     search(word: string): boolean {
-        let current: TrieNode = this.root;
-        for (const ch of word) {
-            if (!current.hasChild(ch)) {
-                return false;
-            }
-            current = current.getChild(ch)!; // Non-null assertion
+      let current = this.root;
+      for (const ch of word) {
+        if (!current.hasChild(ch)) {
+          return false;
         }
-        return current.isEnd();
+        current = current.getChild(ch)!;
+      }
+      return current.isEnd();
     }
-
+  
     startsWith(prefix: string): boolean {
-        let current: TrieNode = this.root;
-        for (const ch of prefix) {
-            if (!current.hasChild(ch)) {
-                return false;
-            }
-            current = current.getChild(ch)!; // Non-null assertion
+      let current = this.root;
+      for (const ch of prefix) {
+        if (!current.hasChild(ch)) {
+          return false;
         }
-        return true;
+        current = current.getChild(ch)!;
+      }
+      return true;
     }
-}
+  }

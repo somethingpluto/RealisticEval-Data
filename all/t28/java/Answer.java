@@ -4,33 +4,22 @@ public class Answer {
 
     /**
      * Prints the status of each bit (0 or 1) in the given section of memory.
-     * For example:
-     *     input: 0b10101010
-     *     output: 10101010
-     * If have multiple bytes use \n split
-     * For example:
-     *     input: [0b11001100, 0b11110000]
-     *     output: 11001100\n11110000
      *
      * @param memorySection A byte array representing the section of memory to be read.
      */
     public static void printMemoryBits(byte[] memorySection) {
-        StringBuilder result = new StringBuilder();
-
         for (byte b : memorySection) {
-            String binaryString = String.format("%8s", Integer.toBinaryString(b & 0xFF)).replace(' ', '0');
-            if (result.length() > 0) {
-                result.append("\n");
+            for (int i = 7; i >= 0; i--) {
+                int bit = (b >> i) & 1;
+                System.out.print(bit);
             }
-            result.append(binaryString);
+            System.out.println(); // Move to the next line after printing all bits of a byte
         }
-
-        System.out.println(result.toString());
     }
 
     public static void main(String[] args) {
         // Example usage
-        byte[] memorySection = { (byte) 0b11001100, (byte) 0b11110000 };
+        byte[] memorySection = new byte[]{(byte) 0xAA, (byte) 0x55};
         printMemoryBits(memorySection);
     }
 }

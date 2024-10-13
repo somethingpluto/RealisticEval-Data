@@ -1,9 +1,10 @@
-Sure! Below is the equivalent C++ code for the given Python function `save_content_to_file`. This C++ code uses standard libraries such as `<fstream>` for file operations and `<sstream>` for string manipulation.
+Certainly! Below is the equivalent C++ code that maintains the same functionality, logic, and structure as the provided Python code:
 
 ```cpp
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <vector>
 #include <string>
 
 void save_content_to_file(const std::string& content, const std::string& path) {
@@ -11,56 +12,81 @@ void save_content_to_file(const std::string& content, const std::string& path) {
      * Saves the provided content to a specified file after cleaning up
      * redundant whitespace.
      *
-     * @param content The text content to be saved to the file.
-     * @param path The file path where the content will be saved.
+     * Args:
+     *     content (std::string): The text content to be saved to the file.
+     *     path (std::string): The file path where the content will be saved.
+     *
+     * Returns:
+     *     None
      */
-
-    // Remove redundant whitespace
-    std::stringstream ss(content);
+    
+    // Remove redundant whitespace from the content.
+    // Split the content into lines, strip leading/trailing whitespace,
+    // and filter out empty lines.
+    std::istringstream iss(content);
+    std::vector<std::string> lines;
     std::string line;
-    std::string cleanedContent;
-    bool firstLine = true;
-
-    while (std::getline(ss, line)) {
+    while (std::getline(iss, line)) {
+        line = std::string(line.begin(), line.end() - 1); // Remove trailing newline
         if (!line.empty()) {
-            if (!firstLine) {
-                cleanedContent += "\n";
+            // Strip leading and trailing whitespace
+            auto start = line.find_first_not_of(" \t\n\r\f\v");
+            auto end = line.find_last_not_of(" \t\n\r\f\v");
+            if (start != std::string::npos && end != std::string::npos) {
+                line = line.substr(start, end - start + 1);
+                lines.push_back(line);
             }
-            cleanedContent += line;
-            firstLine = false;
         }
     }
 
-    // Write the cleaned content to the file
-    std::ofstream outFile(path);
-    if (outFile.is_open()) {
-        outFile << cleanedContent;
-        outFile.close();
+    // Join the lines back together with newlines.
+    std::string cleanedContent;
+    for (const auto& l : lines) {
+        if (!cleanedContent.empty()) {
+            cleanedContent += "\n";
+        }
+        cleanedContent += l;
+    }
+
+    // Replace multiple spaces with a single space.
+    std::istringstream iss2(cleanedContent);
+    std::string finalContent;
+    std::string word;
+    while (iss2 >> word) {
+        if (!finalContent.empty()) {
+            finalContent += " ";
+        }
+        finalContent += word;
+    }
+
+    // Write the cleaned content to the specified file.
+    std::ofstream file(path);
+    if (file.is_open()) {
+        file << finalContent;
+        file.close();
     } else {
         std::cerr << "Unable to open file: " << path << std::endl;
     }
 }
 
 int main() {
-    std::string content = "  Hello   World \n\nThis is a test.\n\n\nAnother line.";
+    std::string content = "   This is a test.\n\n\nThis is another test.   \n   \nThis is yet another test.";
     std::string path = "output.txt";
-
     save_content_to_file(content, path);
-
     return 0;
 }
 ```
 
 ### Explanation:
-1. **Whitespace Cleanup**:
-   - We use a `std::stringstream` to read through each line of the input content.
-   - We concatenate non-empty lines with a newline character (`\n`) in between, ensuring that there is only one newline between lines and no leading/trailing spaces.
+1. **Header Files**: Included necessary headers (`<iostream>`, `<fstream>`, `<sstream>`, `<vector>`, `<string>`).
+2. **Function Definition**: Defined `save_content_to_file` function with the same parameters and docstring.
+3. **Removing Redundant Whitespace**:
+   - Used `std::istringstream` to split the content into lines.
+   - Stripped leading and trailing whitespace from each line.
+   - Filtered out empty lines.
+4. **Joining Lines**: Joined the cleaned lines back together with newlines.
+5. **Replacing Multiple Spaces**: Used `std::istringstream` again to read words and join them with a single space.
+6. **Writing to File**: Opened the file using `std::ofstream` and wrote the cleaned content to it.
+7. **Error Handling**: Added error handling for file opening issues.
 
-2. **File Writing**:
-   - We use `std::ofstream` to write the cleaned content to the specified file path.
-   - If the file cannot be opened, an error message is printed to the standard error stream.
-
-3. **Main Function**:
-   - A simple example is provided in the `main` function to demonstrate how to call `save_content_to_file`.
-
-This C++ code should provide similar functionality to the original Python function.
+This C++ code should perform the same functionality as the provided Python code.

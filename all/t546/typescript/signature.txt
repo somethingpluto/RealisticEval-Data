@@ -1,46 +1,88 @@
+Certainly! Below is the equivalent TypeScript code for the provided Python function, including appropriate JSDoc-style documentation comments and type annotations.
+
 ```typescript
-// Importing necessary libraries
-import * as readline from 'readline';
+import * as process from 'process';
+import * as csvParser from 'csv-parser';
 
 /**
  * Reads tab-separated values (TSV) from standard input and returns a list of rows.
- *
+ * 
  * Each row is represented as an array of strings. If rows have unequal lengths,
  * they are padded with empty strings to ensure all rows have the same length.
- *
- * @returns {string[][]} - A two-dimensional array, where each inner array represents a row of data.
+ * 
+ * @returns {Promise<string[][]>} A promise that resolves to a list of lists, where each inner list represents a row of data.
  */
-function readTsvFromStdin(): string[][] {
-    const rl = readline.createInterface({
-        input: process.stdin,
-        output: process.stdout,
-        terminal: false
+async function readTsvFromStdin(): Promise<string[][]> {
+    const data: string[][] = [];
+
+    // Create a CSV parser that reads from standard input with tab as the delimiter
+    const parser = csvParser({
+        delimiter: '\t',
+        trim: true
     });
 
-    let rows: string[][] = [];
-    let maxLength = 0;
+    return new Promise((resolve, reject) => {
+        process.stdin.pipe(parser)
+            .on('data', (row: any) => {
+                data.push(Object.values(row));
+            })
+            .on('end', () => {
+                // Find the maximum number of columns in the input data
+                const maxColumns = data.length > 0 ? Math.max(...data.map(row => row.length)) : 0;
 
-    rl.on('line', (line) => {
-        const fields = line.split('\t');
-        if (fields.length > maxLength) {
-            maxLength = fields.length;
-        }
-        rows.push(fields);
-    });
+                // Pad all rows to ensure they have the same length
+                const paddedData = data.map(row => [
+                    ...row,
+                    ...Array(maxColumns - row.length).fill('')
+                ]);
 
-    rl.on('close', () => {
-        // Padding shorter rows with empty strings
-        for (let i = 0; i < rows.length; i++) {
-            while (rows[i].length < maxLength) {
-                rows[i].push('');
-            }
-        }
-        console.log(rows); // Outputting the processed rows
+                resolve(paddedData);
+            })
+            .on('error', (error: Error) => {
+                reject(error);
+            });
     });
 }
 
 // Example usage:
-readTsvFromStdin();
+(async () => {
+    try {
+        const result = await readTsvFromStdin();
+        console.log(result);
+    } catch (error) {
+        console.error('Error reading TSV data:', error);
+    }
+})();
 ```
 
-This TypeScript code defines a function `readTsvFromStdin` that reads tab-separated values from standard input, processes them into rows, pads shorter rows with empty strings, and then outputs the processed rows. The function uses Node.js's `readline` module to handle reading from standard input line by line.
+### Explanation:
+1. **Imports**:
+   - `process` is used to access standard input (`process.stdin`).
+   - `csv-parser` is a library that can parse CSV data.
+
+2. **Function Definition**:
+   - `readTsvFromStdin` is an asynchronous function that returns a `Promise` which resolves to the padded data.
+
+3. **CSV Parser Setup**:
+   - The `csv-parser` library is configured to use a tab as the delimiter and trim whitespace from the values.
+
+4. **Reading Data**:
+   - The `process.stdin` stream is piped through the CSV parser.
+   - Each row is collected in the `data` array.
+
+5. **Padding Rows**:
+   - After all rows are read, the maximum number of columns is determined.
+   - Each row is then padded with empty strings to match the maximum number of columns.
+
+6. **JSDoc Documentation**:
+   - The function is documented using JSDoc-style comments, providing a clear description of the function's purpose and return type.
+
+7. **Example Usage**:
+   - An example usage block demonstrates how to call the function and handle the result or any errors.
+
+Make sure you have the `csv-parser` package installed in your project by running:
+```sh
+npm install csv-parser
+```
+
+This TypeScript code preserves the original functionality and structure of the Python code while adapting it to TypeScript conventions and type annotations.

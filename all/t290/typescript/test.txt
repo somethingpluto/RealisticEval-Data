@@ -1,72 +1,172 @@
-Sure, let's start by converting the Python function `rdf_jsonld_to_ngsild` to TypeScript and then create the corresponding Jest test suite.
+Certainly! Below is the equivalent TypeScript test class using Jest, ensuring that the functionality and logic of the tests are preserved. The necessary type annotations and Jest assertions are included to match the Python unittest framework.
 
-### Step 1: Convert the Function to TypeScript
-
-Here's how you would define the function in TypeScript:
+### TypeScript Code
 
 ```typescript
-import { JsonLdObject } from 'some-json-ld-library'; // Assuming there's a library for handling JSON-LD
+import { expect } from '@jest/globals';
+import * as json from 'json';
 
-/**
- * Converts the data in RDF JSON-LD format to NGSI-LD format.
- * @param rdfJsonld - RDF JSON-LD formatted data as a string.
- * @returns Data formatted according to NGSI-LD specifications.
- */
-function rdfJsonldToNgsiLd(rdfJsonld: string): object {
-  // Placeholder implementation
-  // You would need to implement the actual conversion logic here
-  return JSON.parse(rdfJsonld); // Example placeholder
+// Define the interfaces for the types used in the tests
+interface RdfJsonLd {
+  [key: string]: any;
+  '@id'?: string;
+  '@type'?: string;
+  '@context'?: string | object;
 }
 
-export default rdfJsonldToNgsiLd;
-```
+interface NgsiLd {
+  id: string;
+  type: string;
+  '@context': string | object;
+  attributes: Attribute[];
+}
 
-### Step 2: Create the Jest Test Suite
+interface Attribute {
+  type: string;
+  name: string;
+  value: any;
+}
 
-Now let's create the Jest test suite. We'll use Jest's assertion methods to validate the behavior of the function.
+// The function to be tested
+function rdfJsonldToNgsild(rdfJsonld: string | RdfJsonLd): NgsiLd {
+  let parsedRdfJsonld: RdfJsonLd;
 
-```typescript
-import rdfJsonldToNgsiLd from './path-to-your-function'; // Adjust the import path accordingly
+  if (typeof rdfJsonld === 'string') {
+    try {
+      parsedRdfJsonld = JSON.parse(rdfJsonld);
+    } catch (error) {
+      throw new Error('Invalid JSON input');
+    }
+  } else {
+    parsedRdfJsonld = rdfJsonld;
+  }
 
-describe('rdfJsonldToNgsiLd', () => {
-  it('should convert RDF JSON-LD to NGSI-LD correctly', () => {
-    const rdfJsonld = '{"@context":"http://example.com/context","@id":"http://example.com/entity/123","name":"Example Entity"}';
-    const expectedNgsiLd = {
-      "@context": "http://example.com/context",
-      "@id": "http://example.com/entity/123",
-      name: "Example Entity"
+  const ngsiLd: NgsiLd = {
+    id: parsedRdfJsonld['@id'] || 'urn:ngsi-ld:unknown:id',
+    type: parsedRdfJsonld['@type'] || 'UnknownType',
+    '@context': parsedRdfJsonld['@context'] || 'https://schema.lab.fiware.org/ld/context',
+    attributes: []
+  };
+
+  // Assuming simple attribute structure conversion
+  for (const key in parsedRdfJsonld) {
+    if (parsedRdfJsonld.hasOwnProperty(key) && !['@context', '@id', '@type'].includes(key)) {
+      ngsiLd.attributes.push({
+        type: 'Property',
+        name: key,
+        value: parsedRdfJsonld[key]
+      });
+    }
+  }
+
+  return ngsiLd;
+}
+
+describe('RDF JSON-LD to NGSI-LD Conversion', () => {
+  /**
+   * Test a basic and correct conversion from JSON-LD to NGSI-LD.
+   */
+  test('basic conversion', () => {
+    const rdfJsonld = json.stringify({
+      '@context': 'http://schema.org/',
+      '@id': 'urn:ngsi-ld:Vehicle:A123',
+      '@type': 'Vehicle',
+      speed: { value: 60, unitCode: 'KMH' }
+    });
+    const expectedNgsild: NgsiLd = {
+      id: 'urn:ngsi-ld:Vehicle:A123',
+      type: 'Vehicle',
+      '@context': 'http://schema.org/',
+      attributes: [
+        { type: 'Property', name: 'speed', value: { value: 60, unitCode: 'KMH' } }
+      ]
     };
-
-    const result = rdfJsonldToNgsiLd(rdfJsonld);
-
-    expect(result).toEqual(expectedNgsiLd);
+    const result = rdfJsonldToNgsild(rdfJsonld);
+    expect(result).toEqual(expectedNgsild);
   });
 
-  it('should handle invalid RDF JSON-LD gracefully', () => {
-    const invalidRdfJsonld = 'invalid json';
-
-    expect(() => {
-      rdfJsonldToNgsiLd(invalidRdfJsonld);
-    }).toThrow();
+  /**
+   * Test conversion when @id and @type are missing.
+   */
+  test('missing id and type', () => {
+    const rdfJsonld = json.stringify({
+      '@context': 'http://schema.org/',
+      speed: { value: 60, unitCode: 'KMH' }
+    });
+    const expectedNgsild: NgsiLd = {
+      id: 'urn:ngsi-ld:unknown:id',
+      type: 'UnknownType',
+      '@context': 'http://schema.org/',
+      attributes: [
+        { type: 'Property', name: 'speed', value: { value: 60, unitCode: 'KMH' } }
+      ]
+    };
+    const result = rdfJsonldToNgsild(rdfJsonld);
+    expect(result).toEqual(expectedNgsild);
   });
 
-  it('should handle empty input', () => {
-    const emptyInput = '';
+  /**
+   * Test conversion with nested objects.
+   */
+  test('with nested objects', () => {
+    const rdfJsonld = json.stringify({
+      '@context': 'http://schema.org/',
+      '@id': 'urn:ngsi-ld:Vehicle:A123',
+      '@type': 'Vehicle',
+      location: { latitude: 48.8566, longitude: 2.3522 }
+    });
+    const expectedNgsild: NgsiLd = {
+      id: 'urn:ngsi-ld:Vehicle:A123',
+      type: 'Vehicle',
+      '@context': 'http://schema.org/',
+      attributes: [
+        { type: 'Property', name: 'location', value: { latitude: 48.8566, longitude: 2.3522 } }
+      ]
+    };
+    const result = rdfJsonldToNgsild(rdfJsonld);
+    expect(result).toEqual(expectedNgsild);
+  });
 
-    expect(() => {
-      rdfJsonldToNgsiLd(emptyInput);
-    }).toThrow();
+  /**
+   * Test the function's response to invalid JSON input.
+   */
+  test('invalid JSON input', () => {
+    const rdfJsonld = 'This is not a valid JSON';
+    expect(() => rdfJsonldToNgsild(rdfJsonld)).toThrow('Invalid JSON input');
+  });
+
+  /**
+   * Test the conversion of an empty JSON-LD document.
+   */
+  test('empty JSON-LD', () => {
+    const rdfJsonld = json.stringify({});
+    const expectedNgsild: NgsiLd = {
+      id: 'urn:ngsi-ld:unknown:id',
+      type: 'UnknownType',
+      '@context': 'https://schema.lab.fiware.org/ld/context',
+      attributes: []
+    };
+    const result = rdfJsonldToNgsild(rdfJsonld);
+    expect(result).toEqual(expectedNgsild);
   });
 });
 ```
 
 ### Explanation:
+1. **Interfaces**:
+   - Defined interfaces `RdfJsonLd`, `NgsiLd`, and `Attribute` to represent the structures of the input and output data.
 
-1. **Function Definition**: The TypeScript function `rdfJsonldToNgsiLd` is defined with the appropriate type annotations.
-2. **Test Suite**: The Jest test suite `describe` block contains several `it` blocks for different test cases.
-3. **Test Cases**:
-   - **Conversion Test**: Checks if the function correctly converts valid RDF JSON-LD to NGSI-LD.
-   - **Invalid Input Test**: Checks if the function throws an error when given invalid RDF JSON-LD.
-   - **Empty Input Test**: Checks if the function throws an error when given an empty string.
+2. **Function Definition**:
+   - The `rdfJsonldToNgsild` function is defined with proper type annotations and handles JSON parsing and error handling.
 
-This setup ensures that the function is tested for both correct behavior and error handling.
+3. **Jest Testing Framework**:
+   - Used `describe` and `test` blocks to organize and run the tests.
+   - Used `expect` assertions to verify the correctness of the function's output.
+
+4. **Test Cases**:
+   - Each test case is documented with a description and uses appropriate Jest assertions to validate the function's behavior.
+
+5. **Error Handling**:
+   - Included error handling for invalid JSON input using `toThrow`.
+
+This TypeScript code preserves the original functionality and logic of the Python unittest tests while adhering to Jest's testing framework and TypeScript's static type system.

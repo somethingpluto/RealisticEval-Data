@@ -1,39 +1,40 @@
-describe('printMemoryBits', () => {
-    let originalConsoleLog;
+describe('TestPrintMemoryBits', () => {
+    // Helper function to capture console output
+    const captureOutput = (fn: () => void): string => {
+        const originalConsoleLog = console.log;
+        let capturedOutput = '';
 
-    beforeEach(() => {
-        // Capture the console.log output
-        originalConsoleLog = console.log;
-        console.log = jest.fn(); // Mock console.log
-    });
+        console.log = (message?: any) => {
+            capturedOutput += message + '\n';
+        };
 
-    afterEach(() => {
-        // Restore the original console.log
+        fn();
+
         console.log = originalConsoleLog;
-    });
+        return capturedOutput.trim();
+    };
 
-    test('prints a single byte', () => {
+    test('test_single_byte', () => {
         const memorySection = new Uint8Array([0b10101010]);
-        printMemoryBits(memorySection);
-        expect(console.log).toHaveBeenCalledWith('10101010');
+        const output = captureOutput(() => printMemoryBits(memorySection));
+        expect(output).toBe("10101010");
     });
 
-    test('prints multiple bytes', () => {
+    test('test_multiple_bytes', () => {
         const memorySection = new Uint8Array([0b11001100, 0b11110000]);
-        printMemoryBits(memorySection);
-        expect(console.log).toHaveBeenCalledWith('11001100');
-        expect(console.log).toHaveBeenCalledWith('11110000');
+        const output = captureOutput(() => printMemoryBits(memorySection));
+        expect(output).toBe("11001100\n11110000");
     });
 
-    test('prints all zeros', () => {
+    test('test_all_zeros', () => {
         const memorySection = new Uint8Array([0b00000000]);
-        printMemoryBits(memorySection);
-        expect(console.log).toHaveBeenCalledWith('00000000');
+        const output = captureOutput(() => printMemoryBits(memorySection));
+        expect(output).toBe("00000000");
     });
 
-    test('prints all ones', () => {
+    test('test_all_ones', () => {
         const memorySection = new Uint8Array([0b11111111]);
-        printMemoryBits(memorySection);
-        expect(console.log).toHaveBeenCalledWith('11111111');
+        const output = captureOutput(() => printMemoryBits(memorySection));
+        expect(output).toBe("11111111");
     });
 });

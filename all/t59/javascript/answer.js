@@ -1,28 +1,31 @@
+const { comb } = require('js-combinatorics');
+
 function probabilityRedBalls(x, n, m) {
     /**
-     * Calculate the probability that x balls will be randomly drawn from a jar containing n red balls and m blue balls, and all of them will be red balls
+     * Calculate the probability that x balls randomly drawn from a jar containing
+     * n red balls and m blue balls will all be red balls.
+     *
      * @param {number} x - Number of balls to draw.
      * @param {number} n - Number of red balls in the jar.
      * @param {number} m - Number of blue balls in the jar.
-     * @returns {number} The probability that all x drawn balls are red.
+     *
+     * @returns {number} - The probability that all x drawn balls are red.
      */
-
-    // Check if it's possible to draw x balls from the jar
-    if (x > n + m || x < 0) {
-        return 0;
+    if (x > n) {
+        return 0; // Not enough red balls to draw x red balls
+    }
+    const totalBalls = n + m;
+    if (x > totalBalls) {
+        return 0; // Not enough balls to draw x balls of any color
     }
 
-    // Calculate combinations using factorial
-    function factorial(num) {
-        let result = 1;
-        for(let i = num; i > 0; i--){
-            result *= i;
-        }
-        return result;
-    }
+    // Number of ways to choose x red balls from n red balls
+    const waysToChooseRed = comb(n, x);
+    // Total number of ways to choose x balls from all balls
+    const totalWaysToChooseBalls = comb(totalBalls, x);
 
-    const totalCombinations = factorial(n + m) / (factorial(x) * factorial(n + m - x));
-    const redBallCombinations = factorial(n) / (factorial(x) * factorial(n - x));
+    // Probability that all chosen balls are red
+    const probability = waysToChooseRed / totalWaysToChooseBalls;
 
-    return redBallCombinations / totalCombinations;
+    return probability;
 }

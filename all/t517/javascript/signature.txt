@@ -1,16 +1,87 @@
-Sure, here's the equivalent JavaScript function signature with comments:
+Certainly! Below is the equivalent JavaScript code with the function signature and comments rewritten to conform to JSDoc standards:
 
 ```javascript
+const fs = require('fs');
+const path = require('path');
+
 /**
- * Reads a JSON Lines file and returns its content as a list of dictionaries.
+ * Reads a JSON Lines file and returns its content as an array of objects.
  *
- * @param {string} file_path - The path to the JSON Lines file.
- * @returns {Array<Object>} A list of JSON objects parsed from the file.
- * @throws {Error} If the specified file does not exist or if there is an error parsing a line in the JSON Lines file.
+ * @param {string} filePath - The path to the JSON Lines file.
+ * @returns {Promise<Array<Object>>} A promise that resolves to an array of JSON objects parsed from the file.
+ * @throws {Error} If the specified file does not exist.
+ * @throws {SyntaxError} If there is an error parsing a line in the JSON Lines file.
  */
-function readJsonl(file_path) {
-    // Function implementation goes here
+async function readJsonl(filePath) {
+  // Check if the file exists
+  if (!fs.existsSync(filePath)) {
+    throw new Error(`The file '${filePath}' does not exist.`);
+  }
+
+  const jsonList = [];
+  const fileStream = fs.createReadStream(filePath, { encoding: 'utf8' });
+  let data = '';
+
+  fileStream.on('data', (chunk) => {
+    data += chunk;
+  });
+
+  return new Promise((resolve, reject) => {
+    fileStream.on('end', () => {
+      const lines = data.split('\n');
+      for (let line of lines) {
+        try {
+          const jsonObj = JSON.parse(line.trim());
+          jsonList.push(jsonObj);
+        } catch (error) {
+          reject(new Error(`Error parsing line: ${line.trim()} - ${error.message}`));
+          return;
+        }
+      }
+      resolve(jsonList);
+    });
+
+    fileStream.on('error', (error) => {
+      reject(error);
+    });
+  });
 }
+
+// Example usage
+(async () => {
+  try {
+    const filePath = path.join(__dirname, 'example.jsonl');
+    const jsonData = await readJsonl(filePath);
+    console.log(jsonData);
+  } catch (error) {
+    console.error(error);
+  }
+})();
 ```
 
-This JavaScript function signature maintains the same structure and purpose as your Python function, including the use of JSDoc comments for documentation. Note that JavaScript doesn't have built-in support for type annotations like Python, so the types are specified within the comments.
+### Explanation:
+1. **Function Signature**:
+   - The function `readJsonl` is defined with the parameter `filePath`.
+   - The return type is a `Promise<Array<Object>>`.
+
+2. **JSDoc Comments**:
+   - The JSDoc comments provide detailed information about the function's parameters, return type, and possible exceptions.
+   - The `@param` tag describes the input parameter.
+   - The `@returns` tag describes the return value.
+   - The `@throws` tags describe the possible exceptions that can be thrown.
+
+3. **File Existence Check**:
+   - The `fs.existsSync` method checks if the file exists.
+   - If the file does not exist, an `Error` is thrown.
+
+4. **Reading the File**:
+   - The file is read using a stream (`fs.createReadStream`) to handle large files efficiently.
+   - The data is accumulated in the `data` variable.
+
+5. **Parsing JSON Lines**:
+   - Each line is parsed using `JSON.parse`, and any errors during parsing are caught and thrown.
+
+6. **Asynchronous Handling**:
+   - The function returns a promise that resolves to the array of JSON objects or rejects with an error.
+
+This JavaScript code preserves the functionality and structure of the original Python code while adhering to JSDoc standards for documentation.

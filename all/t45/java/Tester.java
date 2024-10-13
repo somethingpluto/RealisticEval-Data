@@ -1,62 +1,82 @@
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.*;
+package org.real.temp;
 
 import java.time.LocalDate;
-import java.util.HashMap;
+import java.time.DayOfWeek;
 import java.util.Map;
+import org.junit.jupiter.api.Test; // JUnit 5 Test annotation
+import static org.junit.jupiter.api.Assertions.assertEquals; // JUnit 5 assertion methods
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.springframework.test.context.junit4.SpringRunner;
-
-@RunWith(SpringRunner.class)
 public class Tester {
 
-    @Mock
-    private LocalDate currentDate;
+    private static final Map<String, Object> getExpectedResult(LocalDate date) {
+        int year = date.getYear();
+        String month = date.getMonth().name();
+        String dayOfWeek = date.getDayOfWeek().name();
 
-    private Map<String, Object> result;
+        // Calculate the week of the month
+        LocalDate firstDayOfMonth = date.withDayOfMonth(1);
+        DayOfWeek firstDayWeekday = firstDayOfMonth.getDayOfWeek();
+        int dayOfWeekInMonth = date.getDayOfMonth() + (firstDayWeekday.getValue() - 1);
+        int weekOfMonth = (int) Math.ceil(dayOfWeekInMonth / 7.0);
 
-    @Before
-    public void setUp() {
-        MockitoAnnotations.initMocks(this);
-        result = new HashMap<>();
+        Map<String, Object> info = new HashMap<>();
+        info.put("year", year);
+        info.put("month", month);
+        info.put("week_of_the_month", weekOfMonth);
+        info.put("day_of_the_week", dayOfWeek);
+
+        return info;
     }
 
     @Test
-    public void testGetCurrentDateInfo() {
-        // Mocking the current date
-        when(currentDate.getYear()).thenReturn(2024);
-        when(currentDate.getMonthValue()).thenReturn(2); // February
-        when(currentDate.getDayOfWeek().getValue()).thenReturn(4); // Thursday
-
-        // Call the method under test
-        Map<String, Object> actualResult = get_current_date_info(currentDate);
-
-        // Verify the results
-        assertEquals(2024, actualResult.get("year"));
-        assertEquals("February", actualResult.get("month"));
-        assertEquals(1, actualResult.get("week_of_the_month")); // Assuming week starts from 1
-        assertEquals("Thursday", actualResult.get("day_of_the_week"));
+    public void testBeginningOfMonth() {
+        LocalDate testDate = LocalDate.of(2023, 1, 1);
+        Map<String, Object> result = getExpectedResult(testDate);
+        Map<String, Object> expected = Map.of(
+            "year", 2023,
+            "month", "January",
+            "week_of_the_month", 1,
+            "day_of_the_week", "SUNDAY"
+        );
+        assertEquals(expected, result);
     }
 
-    // Method to be tested
-    private Map<String, Object> get_current_date_info(LocalDate testDate) {
-        Map<String, Object> result = new HashMap<>();
+    @Test
+    public void testMiddleOfMonth() {
+        LocalDate testDate = LocalDate.of(2023, 1, 15);
+        Map<String, Object> result = getExpectedResult(testDate);
+        Map<String, Object> expected = Map.of(
+            "year", 2023,
+            "month", "January",
+            "week_of_the_month", 3,
+            "day_of_the_week", "SUNDAY"
+        );
+        assertEquals(expected, result);
+    }
 
-        int year = testDate.getYear();
-        String month = testDate.getMonth().toString();
-        int weekOfMonth = testDate.get(java.time.temporal.WeekFields.of(java.util.Locale.US).weekOfMonth());
-        String dayOfWeek = testDate.getDayOfWeek().toString();
+    @Test
+    public void testLeapYear() {
+        LocalDate testDate = LocalDate.of(2024, 2, 29);
+        Map<String, Object> result = getExpectedResult(testDate);
+        Map<String, Object> expected = Map.of(
+            "year", 2024,
+            "month", "FEBRUARY",
+            "week_of_the_month", 5,
+            "day_of_the_week", "THURSDAY"
+        );
+        assertEquals(expected, result);
+    }
 
-        result.put("year", year);
-        result.put("month", month);
-        result.put("week_of_the_month", weekOfMonth);
-        result.put("day_of_the_week", dayOfWeek);
-
-        return result;
+    @Test
+    public void testChangeOfYear() {
+        LocalDate testDate = LocalDate.of(2022, 12, 31);
+        Map<String, Object> result = getExpectedResult(testDate);
+        Map<String, Object> expected = Map.of(
+            "year", 2022,
+            "month", "DECEMBER",
+            "week_of_the_month", 5,
+            "day_of_the_week", "SATURDAY"
+        );
+        assertEquals(expected, result);
     }
 }

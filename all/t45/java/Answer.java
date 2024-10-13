@@ -1,8 +1,8 @@
 package org.real.temp;
 
 import java.time.LocalDate;
-import java.time.Month;
 import java.time.DayOfWeek;
+import java.util.Locale;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -10,34 +10,35 @@ public class Answer {
 
     /**
      * Returns the current time information including year, month, week of the month, and day of the week.
+     * Optionally takes a date object for testing purposes.
      *
      * @param testDate The date to compute information for, defaults to today's date if not provided.
      * @return A map containing the year, month, week of the month, and day of the week.
      */
     public static Map<String, Object> getCurrentDateInfo(LocalDate testDate) {
-        if (testDate == null) {
-            testDate = LocalDate.now();
-        }
-        
-        int year = testDate.getYear();
-        Month month = testDate.getMonth();
-        int dayOfMonth = testDate.getDayOfMonth();
-        DayOfWeek dayOfWeek = testDate.getDayOfWeek();
-        int weekOfMonth = testDate.get(java.time.temporal.WeekFields.of(Locale.getDefault()).weekOfMonth());
+        LocalDate today = (testDate == null) ? LocalDate.now() : testDate;
 
-        Map<String, Object> result = new HashMap<>();
-        result.put("year", year);
-        result.put("month", month.toString());
-        result.put("week_of_the_month", weekOfMonth);
-        result.put("day_of_the_week", dayOfWeek.toString());
+        int year = today.getYear();
+        String month = today.getMonth().name();
+        String dayOfWeek = today.getDayOfWeek().name();
 
-        return result;
+        // Calculate the week of the month
+        LocalDate firstDayOfMonth = today.withDayOfMonth(1);
+        DayOfWeek firstDayWeekday = firstDayOfMonth.getDayOfWeek();
+        int dayOfWeekInMonth = today.getDayOfMonth() + (firstDayWeekday.getValue() - 1);
+        int weekOfMonth = (int) Math.ceil(dayOfWeekInMonth / 7.0);
+
+        Map<String, Object> info = new HashMap<>();
+        info.put("year", year);
+        info.put("month", month);
+        info.put("week_of_the_month", weekOfMonth);
+        info.put("day_of_the_week", dayOfWeek);
+
+        return info;
     }
 
     public static void main(String[] args) {
-        // Example usage
-        LocalDate testDate = LocalDate.of(2024, 2, 1); // February 1, 2024
-        Map<String, Object> dateInfo = getCurrentDateInfo(testDate);
+        Map<String, Object> dateInfo = getCurrentDateInfo(null);
         System.out.println(dateInfo);
     }
 }

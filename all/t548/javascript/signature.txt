@@ -1,38 +1,75 @@
-Sure, here is the JavaScript code with similar functionality and comments:
+Certainly! Here is the equivalent JavaScript code with the function signature and JSDoc comments:
 
 ```javascript
-const fs = require('fs');
-const { promisify } = require('util');
+const fs = require('fs').promises;
+const JSON = require('json-bigint')({ store: [] }); // Assuming you might need to handle large integers
 
 /**
  * Reads a text file, wraps its content in JSON brackets, and parses it into a JavaScript object.
- *
+ * 
  * @param {string} filename - The path to the text file to be read.
- * @returns {Promise<Array>} A Promise that resolves to a list parsed from the JSON content wrapped in brackets.
- * @throws {Error} If the specified file does not exist or the content cannot be parsed as JSON.
+ * @returns {Promise<Array>} A promise that resolves to an array parsed from the JSON content wrapped in brackets.
+ * @throws {Error} If the specified file does not exist.
+ * @throws {SyntaxError} If the content cannot be parsed as JSON.
  */
 async function readTxtAddJsonBracket(filename) {
-  try {
-    const readFileAsync = promisify(fs.readFile);
-    let fileContent = await readFileAsync(filename, 'utf8');
-    
-    // Wrap the content in JSON brackets
-    fileContent = `[${fileContent}]`;
-    
-    return JSON.parse(fileContent);
-  } catch (error) {
-    if (error.code === 'ENOENT') {
-      throw new Error(`File ${filename} does not exist.`);
+    try {
+        const text = await fs.readFile(filename, 'utf-8');
+
+        // Wrap the text in square brackets to form a valid JSON array
+        const wrappedText = `[${text.trim()}]`;
+
+        // Parse the JSON content into a JavaScript object
+        const data = JSON.parse(wrappedText);
+
+        return data;
+    } catch (error) {
+        if (error.code === 'ENOENT') {
+            console.error(`Error: ${error.message}`);
+            return [];
+        } else if (error instanceof SyntaxError) {
+            console.error(`Error decoding JSON: ${error.message}`);
+            return [];
+        } else {
+            throw error; // Re-throw other unexpected errors
+        }
     }
-    throw new Error(`Failed to parse JSON content: ${error.message}`);
-  }
 }
+
+// Example usage
+(async () => {
+    try {
+        const result = await readTxtAddJsonBracket('example.txt');
+        console.log(result);
+    } catch (error) {
+        console.error(error);
+    }
+})();
 ```
 
 ### Explanation:
-- **Importing Modules**: We use `fs` for file system operations and `promisify` to convert `fs.readFile` into a promise-based function.
-- **Function Signature**: The function `readTxtAddJsonBracket` takes a single argument `filename` which is a string.
-- **Reading File Content**: Using `readFileAsync`, we asynchronously read the content of the file.
-- **Wrapping Content**: The content is wrapped in square brackets (`[]`) to form a valid JSON array.
-- **Parsing JSON**: The wrapped content is then parsed using `JSON.parse`.
-- **Error Handling**: If the file does not exist, an appropriate error is thrown. If there's any issue parsing the JSON, another error is thrown with a descriptive message.
+1. **Importing Modules**:
+   - `fs.promises` is used for asynchronous file operations.
+   - `json-bigint` is included to handle large integers (optional, depending on your requirements).
+
+2. **Function Signature**:
+   - The function `readTxtAddJsonBracket` is defined with the parameter `filename` annotated with JSDoc comments.
+
+3. **JSDoc Comments**:
+   - The JSDoc comments provide detailed information about the function's purpose, parameters, return type, and possible exceptions.
+
+4. **File Reading**:
+   - `fs.readFile` is used to read the file asynchronously.
+
+5. **JSON Parsing**:
+   - The text is wrapped in square brackets to form a valid JSON array.
+   - `JSON.parse` is used to parse the JSON content into a JavaScript object.
+
+6. **Error Handling**:
+   - Specific error handling is implemented to catch `ENOENT` (file not found) and `SyntaxError` (JSON parsing errors).
+   - Other unexpected errors are re-thrown.
+
+7. **Example Usage**:
+   - An example usage is provided to demonstrate how to call the function asynchronously.
+
+This code preserves the functionality, logic, and structure of the original Python code while adhering to JavaScript best practices and JSDoc documentation standards.

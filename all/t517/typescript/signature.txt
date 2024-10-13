@@ -1,45 +1,77 @@
-Sure! Here's how you can convert the Python function signature to TypeScript:
+Certainly! Below is the equivalent TypeScript code for the provided Python function, including appropriate JSDoc-style documentation comments and type annotations.
+
+### TypeScript Code
 
 ```typescript
 import fs from 'fs';
-import { promisify } from 'util';
-
-const readFileAsync = promisify(fs.readFile);
 
 /**
- * Reads a JSON Lines file and returns its content as a list of dictionaries.
+ * Reads a JSON Lines file and returns its content as an array of objects.
  *
- * @param {string} file_path - The path to the JSON Lines file.
- * @returns {Promise<Array<{ [key: string]: any }>>} A promise that resolves to a list of JSON objects parsed from the file.
- * @throws {Error} If the specified file does not exist or if there is an error parsing a line in the JSON Lines file.
+ * @param file_path - The path to the JSON Lines file.
+ * @returns An array of JSON objects parsed from the file.
+ * @throws {Error} If the specified file does not exist.
+ * @throws {SyntaxError} If there is an error parsing a line in the JSON Lines file.
  */
-async function readJsonl(file_path: string): Promise<Array<{ [key: string]: any }>> {
-    try {
-        const data = await readFileAsync(file_path, 'utf8');
-        return data.split('\n')
-            .map(line => JSON.parse(line))
-            .filter(obj => obj !== null && typeof obj === 'object');
-    } catch (error) {
-        if (error.code === 'ENOENT') {
-            throw new Error(`File not found: ${file_path}`);
-        } else if (error instanceof SyntaxError) {
-            throw new Error(`JSON decode error: ${error.message}`);
-        }
-        throw error;
+function readJsonl(file_path: string): Array<{ [key: string]: any }> {
+    // Check if the file exists
+    if (!fs.existsSync(file_path)) {
+        throw new Error(`The file '${file_path}' does not exist.`);
     }
+
+    const jsonList: Array<{ [key: string]: any }> = [];
+    const fileContent = fs.readFileSync(file_path, 'utf8');
+    const lines = fileContent.split('\n');
+
+    for (const line of lines) {
+        try {
+            const jsonObj = JSON.parse(line);
+            jsonList.push(jsonObj);
+        } catch (error) {
+            if (error instanceof SyntaxError) {
+                throw new Error(`Error parsing line: ${line.trim()} - ${error.message}`);
+            }
+        }
+    }
+
+    return jsonList;
+}
+
+// Example usage
+try {
+    const filePath = './example.jsonl';
+    const data = readJsonl(filePath);
+    console.log(data);
+} catch (error) {
+    console.error(error);
 }
 ```
 
 ### Explanation:
-1. **Importing Modules**: We use `fs` for file operations and `promisify` to convert `fs.readFile` into a promise-based function.
-2. **Type Annotations**: 
-   - `file_path` is annotated as `string`.
-   - The return type is `Promise<Array<{ [key: string]: any }>>`, indicating it returns a promise that resolves to an array of objects where each object has string keys and any values.
-3. **Error Handling**:
-   - We handle specific errors such as `ENOENT` (file not found) and `SyntaxError` (JSON decode error).
-4. **Function Body**:
-   - We read the file asynchronously using `readFileAsync`.
-   - Split the data by newline characters and parse each line as JSON.
-   - Filter out any null or non-object values.
 
-This TypeScript version maintains the same functionality and structure as your original Python code while ensuring type safety and asynchronous handling.
+1. **Importing Dependencies**:
+   - `fs` from Node.js is used for file system operations.
+
+2. **Function Definition**:
+   - The `readJsonl` function is defined with a parameter `file_path` of type `string`.
+   - The return type is `Array<{ [key: string]: any }>`, which corresponds to a list of dictionaries in Python.
+
+3. **JSDoc Documentation Comments**:
+   - The function is documented using JSDoc-style comments, providing details about the parameters, return type, and possible exceptions.
+
+4. **File Existence Check**:
+   - The function checks if the file exists using `fs.existsSync`.
+   - If the file does not exist, it throws an `Error`.
+
+5. **Reading and Parsing File Content**:
+   - The file content is read synchronously using `fs.readFileSync`.
+   - The content is split into lines, and each line is parsed using `JSON.parse`.
+   - Parsed objects are added to the `jsonList`.
+
+6. **Error Handling**:
+   - If there is a parsing error, it throws an `Error` with a detailed message.
+
+7. **Example Usage**:
+   - The example usage demonstrates how to call the `readJsonl` function and handle any potential errors.
+
+This TypeScript code preserves the original functionality and structure of the Python code, adapting it to TypeScript's static type system and Node.js environment.

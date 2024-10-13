@@ -1,78 +1,107 @@
-Sure, let's convert the Python function `decompose` and its test cases into TypeScript using Jest for testing.
-
-First, we'll define the TypeScript function `decompose`:
+Certainly! Here is the equivalent Jest test class in TypeScript, including the necessary type annotations and Jest assertions:
 
 ```typescript
-import { strict as assert } from 'assert';
+import { decompose } from './decompose'; // Import the decompose function
 
-/**
- * Decompose a flat index `n` into a multidimensional index based on the given shape.
- *
- * @param n - Flat index (non-negative integer).
- * @param shape - Array representing the dimensions of the multi-dimensional array.
- * @returns Array representing the multidimensional index corresponding to `n`.
- * @throws Error if `n` is out of bounds for the array defined by `shape`.
- */
-function decompose(n: number, shape: number[]): number[] {
-  if (n < 0) {
-    throw new Error('Index must be non-negative');
-  }
-
-  const dimensions = shape.length;
-  const indices: number[] = [];
-
-  // Calculate the strides
-  const strides = new Array(dimensions).fill(1);
-  for (let i = dimensions - 2; i >= 0; i--) {
-    strides[i] = strides[i + 1] * shape[i + 1];
-  }
-
-  // Decompose the flat index into multidimensional indices
-  for (let i = 0; i < dimensions; i++) {
-    const index = Math.floor(n / strides[i]);
-    if (index >= shape[i]) {
-      throw new Error(`Index ${n} is out of bounds for the array defined by shape ${shape}`);
-    }
-    indices.push(index);
-    n -= index * strides[i];
-  }
-
-  return indices;
-}
-
-// Example usage
-console.log(decompose(5, [3, 4])); // Output: [1, 1]
-```
-
-Next, let's write the Jest test cases for the `decompose` function:
-
-```typescript
-import { describe, it, expect } from '@jest/globals';
-
-describe('decompose', () => {
-  it('should correctly decompose flat index 5 with shape [3, 4]', () => {
-    expect(decompose(5, [3, 4])).toEqual([1, 1]);
+describe('TestDecomposeFunction', () => {
+  it('should handle edge case with larger shape', () => {
+    expect(decompose(60, [4, 4, 4])).toEqual([3, 3, 0]);
   });
 
-  it('should correctly decompose flat index 10 with shape [2, 3, 4]', () => {
-    expect(decompose(10, [2, 3, 4])).toEqual([0, 2, 2]);
+  it('should handle the last valid index', () => {
+    expect(decompose(63, [4, 4, 4])).toEqual([3, 3, 3]);
   });
 
-  it('should correctly decompose flat index 22 with shape [2, 3, 4, 5]', () => {
-    expect(decompose(22, [2, 3, 4, 5])).toEqual([0, 2, 3, 2]);
+  it('should handle single dimension case', () => {
+    expect(decompose(2, [5])).toEqual([2]);
   });
 
-  it('should throw an error for negative index', () => {
-    expect(() => decompose(-1, [3, 4])).toThrow('Index must be non-negative');
-  });
+  it('should throw an error for invalid cases', () => {
+    // Test case 5: Out of bounds case (negative index)
+    expect(() => decompose(-1, [3, 4, 5])).toThrow('Index out of bounds');
 
-  it('should throw an error when index is out of bounds', () => {
-    expect(() => decompose(12, [3, 4])).toThrow('Index 12 is out of bounds for the array defined by shape 3,4');
+    // Test case 6: Out of bounds case (index too large)
+    expect(() => decompose(100, [3, 4, 5])).toThrow('Index out of bounds');
   });
 });
 ```
 
-In this conversion:
-- We've defined the `decompose` function in TypeScript, ensuring it throws an error for invalid inputs.
-- We've used Jest's `describe`, `it`, and `expect` functions to write test cases.
-- We've mapped the Python `unittest` assertions to Jest assertions.
+### Explanation:
+1. **Import Statement**:
+   - Import the `decompose` function from the appropriate module.
+
+2. **Describe Block**:
+   - Use the `describe` block to group the test cases under a descriptive name.
+
+3. **It Blocks**:
+   - Each test case is defined using the `it` block, which takes a description and a callback function.
+
+4. **Assertions**:
+   - Use Jest assertions such as `expect` and `toEqual` to check the equality of the results.
+   - Use `toThrow` to check that the function throws the expected error.
+
+5. **Type Annotations**:
+   - The `decompose` function is assumed to be imported from another module, and its type signature is inferred from the usage.
+
+Here is the complete TypeScript code, including the `decompose` function and the Jest test class:
+
+```typescript
+// decompose.ts
+export function decompose(n: number, shape: number[]): [number, ...number[]] {
+    /**
+     * Decompose a flat index `n` into a multidimensional index based on the given shape.
+     *
+     * @param n - Flat index (non-negative integer).
+     * @param shape - Array representing the dimensions of the multi-dimensional array.
+     * @returns A tuple representing the multidimensional index corresponding to `n`.
+     * @throws {Error} If `n` is out of bounds for the array defined by `shape`.
+     */
+    // Calculate the total size of the array
+    let size = 1;
+    for (const dim of shape) {
+        size *= dim;
+    }
+
+    // Check if the index is within bounds
+    if (n < 0 || n >= size) {
+        throw new Error("Index out of bounds");
+    }
+
+    // Decompose the index
+    const result: number[] = [];
+    for (let dim of shape.slice().reverse()) {
+        result.push(n % dim);
+        n = Math.floor(n / dim);  // Update n by integer division
+    }
+
+    // Reverse the result to match the original shape order and return as tuple
+    return result.reverse() as [number, ...number[]];
+}
+
+// test-decompose.ts
+import { decompose } from './decompose';
+
+describe('TestDecomposeFunction', () => {
+  it('should handle edge case with larger shape', () => {
+    expect(decompose(60, [4, 4, 4])).toEqual([3, 3, 0]);
+  });
+
+  it('should handle the last valid index', () => {
+    expect(decompose(63, [4, 4, 4])).toEqual([3, 3, 3]);
+  });
+
+  it('should handle single dimension case', () => {
+    expect(decompose(2, [5])).toEqual([2]);
+  });
+
+  it('should throw an error for invalid cases', () => {
+    // Test case 5: Out of bounds case (negative index)
+    expect(() => decompose(-1, [3, 4, 5])).toThrow('Index out of bounds');
+
+    // Test case 6: Out of bounds case (index too large)
+    expect(() => decompose(100, [3, 4, 5])).toThrow('Index out of bounds');
+  });
+});
+```
+
+This TypeScript code preserves the functionality and logic of the original Python unittest class while adapting it to Jest's testing framework.

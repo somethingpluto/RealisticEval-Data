@@ -1,124 +1,129 @@
-Certainly! Below is the equivalent Java test class using JUnit for the provided Python unittest test class. The Java test class is placed in the package `org.real.temp` and named `Tester`. It uses appropriate JUnit annotations and assertion methods to ensure that the functionality and logic of the tests are preserved.
-
-### Java Test Class
+Certainly! Below is the equivalent Java test class using JUnit for the provided Python unittest class. The Java test class will be placed in the package `org.real.temp` and named `Tester`. It will include appropriate JUnit annotations and assertions to ensure the functionality and logic of the tests are preserved.
 
 ```java
 package org.real.temp;
 
-import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import java.util.*;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
-class Tester {
+/**
+ * Test class for the prepareQuery function.
+ */
+public class Tester {
 
     /**
-     * Tests the prepareQuery function with various inputs to ensure it correctly modifies the SQL query
-     * and returns the expected results.
+     * Tests the prepareQuery function with valid named parameters.
      */
     @Test
-    void testPrepareQuery() {
-        // Test case 1
-        String sql1 = "SELECT * FROM users WHERE id = $user_id AND status = $status";
-        Map<String, Object> params1 = new HashMap<>();
-        params1.put("user_id", 42);
-        params1.put("status", "active");
-        Tuple<String, List<Object>> result1 = Answer.prepareQuery(sql1, params1);
-        assertEquals("SELECT * FROM users WHERE id = $1 AND status = $2", result1.first);
-        assertEquals(Arrays.asList(42, "active"), result1.second);
+    public void testValidNamedParameters() {
+        String sqlQuery = "SELECT * FROM users WHERE id = $user_id AND status = $status";
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("user_id", 42);
+        parameters.put("status", "active");
 
-        // Test case 2
-        String sql2 = "SELECT * FROM products WHERE price > $price AND stock > $stock";
-        Map<String, Object> params2 = new HashMap<>();
-        params2.put("price", 100);
-        params2.put("stock", 50);
-        Tuple<String, List<Object>> result2 = Answer.prepareQuery(sql2, params2);
-        assertEquals("SELECT * FROM products WHERE price > $1 AND stock > $2", result2.first);
-        assertEquals(Arrays.asList(100, 50), result2.second);
+        Pair<String, List<Object>> result = Answer.prepareQuery(sqlQuery, parameters);
+        String newSql = result.getFirst();
+        List<Object> valueList = result.getSecond();
 
-        // Test case 3
-        String sql3 = "UPDATE accounts SET balance = $balance WHERE account_id = $account_id";
-        Map<String, Object> params3 = new HashMap<>();
-        params3.put("balance", 1500);
-        params3.put("account_id", 12345);
-        Tuple<String, List<Object>> result3 = Answer.prepareQuery(sql3, params3);
-        assertEquals("UPDATE accounts SET balance = $1 WHERE account_id = $2", result3.first);
-        assertEquals(Arrays.asList(1500, 12345), result3.second);
+        String expectedSql = "SELECT * FROM users WHERE id = $1 AND status = $2";
+        List<Object> expectedValues = Arrays.asList(42, "active");
+
+        assertEquals(expectedSql, newSql);
+        assertEquals(expectedValues, valueList);
     }
-}
-
-// The Answer class containing the prepareQuery method
-class Answer {
 
     /**
-     * Modifies a SQL query string containing named parameters (like $name, $age)
-     * into a format compatible with libraries that require positional parameters
-     * (like $1, $2, etc.), such as asyncpg. It returns a tuple containing the
-     * modified SQL string and a list of parameter values ordered according to
-     * their new positions in the query.
-     * 
-     * Example:
-     *     Input:
-     *         sql: SELECT * FROM users WHERE id = $user_id AND status = $status
-     *         params: {'user_id': 42, 'status': 'active'}
-     *     Output:
-     *         SELECT * FROM users WHERE id = $1 AND status = $2, [42, 'active']
-     * 
-     * @param sql The original SQL query string with named parameters.
-     * @param params A map mapping parameter names to their values.
-     * @return A tuple where the first element is the modified SQL query string with positional parameters,
-     *         and the second element is a list of parameter values sorted according to the order of the positional parameters.
+     * Tests the prepareQuery function with missing parameters.
      */
-    public static Tuple<String, List<Object>> prepareQuery(String sql, Map<String, Object> params) {
-        // Find all occurrences of named parameters in the SQL string
-        Pattern pattern = Pattern.compile("\\$(\\w+)");
-        Matcher matcher = pattern.matcher(sql);
-        Set<String> namedParams = new LinkedHashSet<>();
+    @Test
+    public void testMissingParameters() {
+        String sqlQuery = "SELECT * FROM users WHERE id = $user_id AND status = $status";
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("user_id", 42);  // 'status' is missing
 
-        while (matcher.find()) {
-            namedParams.add(matcher.group(1)); // Extracting the parameter name without the '$'
-        }
+        Pair<String, List<Object>> result = Answer.prepareQuery(sqlQuery, parameters);
+        String newSql = result.getFirst();
+        List<Object> valueList = result.getSecond();
 
-        // Remove duplicates while preserving order
-        List<String> uniqueParams = new ArrayList<>(namedParams);
+        String expectedSql = "SELECT * FROM users WHERE id = $1 AND status = $2";
+        List<Object> expectedValues = Arrays.asList(42);  // 'status' is not included
 
-        // Substitute each named parameter with its corresponding positional parameter
-        for (int index = 0; index < uniqueParams.size(); index++) {
-            String param = uniqueParams.get(index);
-            String positionalParam = "$" + (index + 1);
-            sql = sql.replace("$" + param, positionalParam);
-        }
-
-        // Prepare the list of values corresponding to the order of the positional parameters
-        List<Object> values = new ArrayList<>();
-        for (String param : uniqueParams) {
-            if (params.containsKey(param)) {
-                values.add(params.get(param));
-            }
-        }
-
-        return new Tuple<>(sql, values);
+        assertEquals(expectedSql, newSql);
+        assertEquals(expectedValues, valueList);
     }
 
-    // A simple Tuple class to hold two values
-    public static class Tuple<X, Y> {
-        public final X first;
-        public final Y second;
+    /**
+     * Tests the prepareQuery function with no parameters.
+     */
+    @Test
+    public void testNoParameters() {
+        String sqlQuery = "SELECT * FROM users";
+        Map<String, Object> parameters = new HashMap<>();  // No parameters provided
 
-        public Tuple(X first, Y second) {
-            this.first = first;
-            this.second = second;
-        }
+        Pair<String, List<Object>> result = Answer.prepareQuery(sqlQuery, parameters);
+        String newSql = result.getFirst();
+        List<Object> valueList = result.getSecond();
+
+        String expectedSql = "SELECT * FROM users";
+        List<Object> expectedValues = new ArrayList<>();
+
+        assertEquals(expectedSql, newSql);
+        assertEquals(expectedValues, valueList);
+    }
+
+    /**
+     * Tests the prepareQuery function with multiple same parameters.
+     */
+    @Test
+    public void testMultipleSameParameters() {
+        String sqlQuery = "SELECT * FROM users WHERE id = $user_id AND status = $user_id";
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("user_id", 42);
+
+        Pair<String, List<Object>> result = Answer.prepareQuery(sqlQuery, parameters);
+        String newSql = result.getFirst();
+        List<Object> valueList = result.getSecond();
+
+        String expectedSql = "SELECT * FROM users WHERE id = $1 AND status = $1";
+        List<Object> expectedValues = Arrays.asList(42);  // Only one value for 'user_id'
+
+        assertEquals(expectedSql, newSql);
+        assertEquals(expectedValues, valueList);
+    }
+
+    /**
+     * Tests the prepareQuery function with special characters in parameters.
+     */
+    @Test
+    public void testSpecialCharactersInParameter() {
+        String sqlQuery = "INSERT INTO users (name, email) VALUES ($name, $email)";
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("name", "John Doe");
+        parameters.put("email", "john.doe@example.com");
+
+        Pair<String, List<Object>> result = Answer.prepareQuery(sqlQuery, parameters);
+        String newSql = result.getFirst();
+        List<Object> valueList = result.getSecond();
+
+        String expectedSql = "INSERT INTO users (name, email) VALUES ($1, $2)";
+        List<Object> expectedValues = Arrays.asList("John Doe", "john.doe@example.com");
+
+        assertEquals(expectedSql, newSql);
+        assertEquals(expectedValues, valueList);
     }
 }
 ```
 
 ### Explanation:
-1. **JUnit Annotations**: The `@Test` annotation is used to mark the test method.
-2. **JUnit Assertions**: The `assertEquals` method from JUnit is used to verify the correctness of the results.
-3. **Test Cases**: Multiple test cases are provided to cover different scenarios.
-4. **Tuple Class**: A simple `Tuple` class is defined to hold two values, similar to Python's tuple.
-5. **Pattern and Matcher**: Used to find all named parameters in the SQL string.
-6. **Replacement Logic**: Replaces named parameters with positional parameters.
-7. **List of Values**: Constructs a list of values based on the order of positional parameters.
+1. **Package and Class Declaration**: The test class is placed in the `org.real.temp` package and named `Tester`.
+2. **JUnit Annotations**: Each test method is annotated with `@Test` to indicate it is a test case.
+3. **Assertions**: JUnit's `assertEquals` method is used to verify the expected results.
+4. **Test Methods**:
+   - `testValidNamedParameters`: Tests the function with valid named parameters.
+   - `testMissingParameters`: Tests the function with missing parameters.
+   - `testNoParameters`: Tests the function with no parameters.
+   - `testMultipleSameParameters`: Tests the function with multiple same parameters.
+   - `testSpecialCharactersInParameter`: Tests the function with special characters in parameters.
+5. **Helper Classes**: The `Pair` class from the `Answer` class is used to store the results of the `prepareQuery` method.
 
-This Java test class ensures that the functionality and logic of the original Python unittest test class are preserved while adhering to Java's syntax and conventions.
+This Java test class ensures that the functionality and logic of the Python unittest class are preserved and tested using JUnit.

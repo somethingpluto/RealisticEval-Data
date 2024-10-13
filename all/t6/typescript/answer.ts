@@ -1,24 +1,14 @@
-function simplifyWindowsPath(path: string): string {
-    // Function to split the drive and the rest of the path
-    function splitDrive(path: string): { drive: string, pathWithoutDrive: string } {
-        const match = /^[A-Za-z]:/.exec(path);
-        if (match) {
-            const drive = match[0];
-            const pathWithoutDrive = path.slice(drive.length);
-            return { drive, pathWithoutDrive };
-        }
-        return { drive: '', pathWithoutDrive: path };
-    }
-
-    // Split the drive and the rest of the path
-    const { drive, pathWithoutDrive } = splitDrive(path);
-    const simplifiedDrive = drive.replace(':', '_');
-
+const path = require('path')
+function simplifyWindowsPath(inputPath: string): string {
+    // Replace the drive letter and colon, e.g., 'D:' with 'D_'
+    const [drive, pathWithoutDrive] = path.parse(inputPath);
+    const simplifiedDrive = drive.replace(':', '') + '_';
+  
     // Replace backslashes with underscores and strip any trailing backslash
-    const simplifiedPath = pathWithoutDrive.replace(/\\/g, '_').replace(/^_|_$/g, '');
-
+    const simplifiedPath = pathWithoutDrive.replace(/\\/g, '_').replace(/_+$/, '');
+  
     // Concatenate the simplified drive and the remaining path
     const finalPath = simplifiedDrive + simplifiedPath;
-
+  
     return finalPath;
-}
+  }

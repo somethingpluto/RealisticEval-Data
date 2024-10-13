@@ -1,51 +1,144 @@
-To convert the provided Python unittest test class into an equivalent test class using Catch2 in C++, we need to first understand the requirements and then implement the necessary functionalities. Since the provided Python code snippet only includes a function definition without the actual test cases, I will provide a complete example including a mock implementation of `extract_text_from_word` and a Catch2 test case.
+Certainly! Here’s the equivalent C++ test class using the Catch2 testing framework. This conversion will preserve the functionality and logic of the tests, making necessary adjustments for language differences between Python and C++.
 
-Here’s how you can write the equivalent test class using Catch2 in C++:
+### C++ Code Using Catch2
+
+First, make sure you have Catch2 installed. You can install it using a package manager like vcpkg:
+
+```sh
+vcpkg install catch2
+```
+
+Here’s the C++ code:
 
 ```cpp
 #include <catch2/catch_test_macros.hpp>
-#include <string>
 #include <fstream>
+#include <sstream>
+#include <vector>
+#include <string>
+#include <docx/Document.h>
+#include <filesystem>
 
-// Mock implementation of extract_text_from_word function
+namespace fs = std::filesystem;
+
+// Function to extract text from a Word document
 std::string extract_text_from_word(const std::string& docx_file_path) {
-    // This is a mock implementation for demonstration purposes.
-    // In a real scenario, you would parse the .docx file and extract text.
-    if (docx_file_path == "valid_docx_file.docx") {
-        return "This is a valid Word document.";
-    } else if (docx_file_path == "empty_docx_file.docx") {
+    try {
+        docx::Document doc(docx_file_path);
+
+        std::vector<std::string> text_content;
+        for (const auto& para : doc.paragraphs()) {
+            text_content.push_back(para.text());
+        }
+
+        std::ostringstream joined_text;
+        for (size_t i = 0; i < text_content.size(); ++i) {
+            if (i > 0) {
+                joined_text << '\n';
+            }
+            joined_text << text_content[i];
+        }
+
+        return joined_text.str();
+
+    } catch (const std::exception& e) {
+        std::cerr << "An error occurred: " << e.what() << std::endl;
         return "";
-    } else {
-        throw std::runtime_error("File not found or invalid path.");
     }
 }
 
-TEST_CASE("Test extracting text from Word files", "[Word]") {
-    SECTION("Valid Word document") {
-        std::string docx_file_path = "valid_docx_file.docx";
-        std::string expected_text = "This is a valid Word document.";
-        REQUIRE(extract_text_from_word(docx_file_path) == expected_text);
+TEST_CASE("TestExtractTextFromWord", "[WordDocument]") {
+    const std::string test_docx_path = "test_document.docx";
+
+    SECTION("setUp") {
+        // Helper method to create a sample Word document for testing
+        void create_sample_docx(const std::string& docx_path, const std::vector<std::string>& paragraphs) {
+            docx::Document doc;
+            for (const auto& paragraph : paragraphs) {
+                doc.add_paragraph(paragraph);
+            }
+            doc.save(docx_path);
+        }
+
+        // Set up the testing environment
+        create_sample_docx(test_docx_path, {"Hello World!", "This is a test document."});
     }
 
-    SECTION("Empty Word document") {
-        std::string docx_file_path = "empty_docx_file.docx";
-        std::string expected_text = "";
-        REQUIRE(extract_text_from_word(docx_file_path) == expected_text);
+    SECTION("tearDown") {
+        // Clean up the test environment
+        if (fs::exists(test_docx_path)) {
+            fs::remove(test_docx_path);
+        }
     }
 
-    SECTION("Non-existent or invalid file path") {
-        std::string docx_file_path = "nonexistent_file.docx";
-        REQUIRE_THROWS_AS(extract_text_from_word(docx_file_path), std::runtime_error);
+    SECTION("test_extract_text_success") {
+        // Test extracting text from a normal Word document
+        const std::string expected_text = "Hello World!\nThis is a test document.";
+        std::string extracted_text = extract_text_from_word(test_docx_path);
+        REQUIRE(extracted_text == expected_text);
+    }
+
+    SECTION("test_extract_empty_document") {
+        // Test extracting text from an empty Word document
+        const std::string empty_docx_path = "empty_document.docx";
+        docx::Document().save(empty_docx_path);
+
+        std::string extracted_text = extract_text_from_word(empty_docx_path);
+        REQUIRE(extracted_text.empty());
+
+        if (fs::exists(empty_docx_path)) {
+            fs::remove(empty_docx_path);
+        }
+    }
+
+    SECTION("test_extract_text_with_special_characters") {
+        // Test extracting text from a document containing special characters
+        const std::string special_docx_path = "special_characters.docx";
+        docx::Document doc;
+        doc.add_paragraph("Hello, 世界! @#$%^&*()");
+        doc.save(special_docx_path);
+
+        std::string extracted_text = extract_text_from_word(special_docx_path);
+        const std::string expected_text = "Hello, 世界! @#$%^&*()";
+        REQUIRE(extracted_text == expected_text);
+
+        if (fs::exists(special_docx_path)) {
+            fs::remove(special_docx_path);
+        }
+    }
+
+    SECTION("test_extract_text_with_multiple_paragraphs") {
+        // Test extracting text from a document with multiple paragraphs
+        const std::string multi_para_docx_path = "multi_paragraphs.docx";
+        docx::Document doc;
+        doc.add_paragraph("First paragraph.");
+        doc.add_paragraph("Second paragraph.");
+        doc.add_paragraph("Third paragraph.");
+        doc.save(multi_para_docx_path);
+
+        std::string extracted_text = extract_text_from_word(multi_para_docx_path);
+        const std::string expected_text = "First paragraph.\nSecond paragraph.\nThird paragraph.";
+        REQUIRE(extracted_text == expected_text);
+
+        if (fs::exists(multi_para_docx_path)) {
+            fs::remove(multi_para_docx_path);
+        }
     }
 }
 ```
 
 ### Explanation:
-1. **Header Files**: We include the necessary header files, such as `<catch2/catch_test_macros.hpp>` for Catch2 and `<string>` for string operations.
-2. **Function Definition**: We define the `extract_text_from_word` function with a mock implementation that simulates different scenarios based on the input file path.
-3. **Test Cases**:
-   - **Valid Word document**: Tests extracting text from a valid Word document and checks if the extracted text matches the expected text.
-   - **Empty Word document**: Tests extracting text from an empty Word document and checks if the extracted text is an empty string.
-   - **Non-existent or invalid file path**: Tests handling of non-existent or invalid file paths by checking if it throws a `std::runtime_error`.
+1. **Headers**: Include necessary headers (`catch2/catch_test_macros.hpp`, `fstream`, `sstream`, `vector`, `string`, `docx/Document.h`, `filesystem`) for file I/O, string manipulation, and document handling.
+2. **Function Definition**: Define the `extract_text_from_word` function to extract text from a Word document.
+3. **Test Class**: Use the `TEST_CASE` macro to define the test case.
+4. **Setup and Teardown**: Use `SECTION` macros to set up and tear down the test environment.
+5. **Test Sections**:
+   - `setUp`: Create a sample Word document for testing.
+   - `tearDown`: Clean up the test environment by removing created files.
+   - `test_extract_text_success`: Test extracting text from a normal Word document.
+   - `test_extract_empty_document`: Test extracting text from an empty Word document.
+   - `test_extract_text_with_special_characters`: Test extracting text from a document containing special characters.
+   - `test_extract_text_with_multiple_paragraphs`: Test extracting text from a document with multiple paragraphs.
+6. **Assertions**: Use `REQUIRE` for assertions to ensure the correctness of the extracted text.
 
-This setup ensures that the functionality and logic of the tests are preserved while adapting to the syntax and conventions of C++ and Catch2.
+This ensures that the C++ code is well-structured and follows the same testing logic as the Python version.

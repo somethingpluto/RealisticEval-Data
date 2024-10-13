@@ -1,45 +1,53 @@
 package org.real.temp;
 
-import static org.junit.Assert.assertEquals;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.real.temp.Answer;
 
 public class Tester {
 
     @Test
-    public void testRgbToHsv() {
-        // Test case 1
-        assertEquals(new Integer[]{240, 100, 100}, rgbToHsv(0, 0, 255));
-
-        // Add more test cases as needed
+    public void testRgbToHsvRed() {
+        // Test conversion of pure red color
+        int r = 255, g = 0, b = 0;
+        Tuple<Double, Double, Double> expectedResult = new Answer.Tuple<>(0.0, 100.0, 100.0);
+        Tuple<Double, Double, Double> result = Answer.rgbToHsv(r, g, b);
+        assertEquals(expectedResult, result);
     }
 
-    /**
-     * Convert RGB color to HSV color.
-     *
-     * @param r The red component of the RGB color (0-255)
-     * @param g The green component of the RGB color (0-255)
-     * @param b The blue component of the RGB color (0-255)
-     * @return An array containing the HSV values [hue, saturation, value]
-     */
-    private Integer[] rgbToHsv(int r, int g, int b) {
-        double max = Math.max(r, Math.max(g, b));
-        double min = Math.min(r, Math.min(g, b));
-        double delta = max - min;
+    @Test
+    public void testRgbToHsvGreen() {
+        // Test conversion of pure green color
+        int r = 0, g = 255, b = 0;
+        Tuple<Double, Double, Double> expectedResult = new Answer.Tuple<>(120.0, 100.0, 100.0);
+        Tuple<Double, Double, Double> result = Answer.rgbToHsv(r, g, b);
+        assertEquals(expectedResult, result);
+    }
 
-        int hue = 0;
-        if (delta != 0) {
-            if (max == r) {
-                hue = (int) ((60 * ((g - b) / delta)) % 360);
-            } else if (max == g) {
-                hue = (int) (60 * ((b - r) / delta + 2));
-            } else if (max == b) {
-                hue = (int) (60 * ((r - g) / delta + 4));
-            }
-        }
+    @Test
+    public void testRgbToHsvBlue() {
+        // Test conversion of pure blue color
+        int r = 0, g = 0, b = 255;
+        Tuple<Double, Double, Double> expectedResult = new Answer.Tuple<>(240.0, 100.0, 100.0);
+        Tuple<Double, Double, Double> result = Answer.rgbToHsv(r, g, b);
+        assertEquals(expectedResult, result);
+    }
 
-        int saturation = (int) (max == 0 ? 0 : (delta / max) * 100);
-        int value = (int) (max / 255 * 100);
+    @Test
+    public void testRgbToHsvWhite() {
+        // Test conversion of white color
+        int r = 255, g = 255, b = 255;
+        Tuple<Double, Double, Double> expectedResult = new Answer.Tuple<>(0.0, 0.0, 100.0);
+        Tuple<Double, Double, Double> result = Answer.rgbToHsv(r, g, b);
+        assertEquals(expectedResult, result);
+    }
 
-        return new Integer[]{hue, saturation, value};
+    @Test
+    public void testRgbToHsvBlack() {
+        // Test conversion of black color
+        int r = 0, g = 0, b = 0;
+        Tuple<Double, Double, Double> expectedResult = new Answer.Tuple<>(0.0, 0.0, 0.0);
+        Tuple<Double, Double, Double> result = Answer.rgbToHsv(r, g, b);
+        assertEquals(expectedResult, result);
     }
 }

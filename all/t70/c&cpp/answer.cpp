@@ -3,19 +3,31 @@
 #include <vector>
 #include <string>
 
+// Function to extract all code block contents from a markdown string
 std::vector<std::string> code_block_remover(const std::string& markdown_string) {
-    std::vector<std::string> code_blocks;
-    std::regex code_block_regex(R"(```[\s\S]*?```)", std::regex_constants::ECMAScript);
-    auto words_begin = std::sregex_iterator(markdown_string.begin(), markdown_string.end(), code_block_regex);
-    auto words_end = std::sregex_iterator();
+    /**
+     * Extracts all code block contents from a markdown string.
+     *
+     * Args:
+     *     markdown_string (const std::string&): The input markdown string.
+     *
+     * Returns:
+     *     std::vector<std::string>: A vector of strings, each representing the content of a code block.
+     *                                Returns an empty vector if no code blocks are found.
+     */
+    
+    // Define a pattern that captures content within triple backticks, with optional language specifier
+    std::regex pattern(R"(```[a-zA-Z]*\n([\s\S]*?)```)");
 
-    for (std::sregex_iterator i = words_begin; i != words_end; ++i) {
+    // Use std::sregex_iterator to find all occurrences of the pattern
+    std::sregex_iterator matches_begin = std::sregex_iterator(markdown_string.begin(), markdown_string.end(), pattern);
+    std::sregex_iterator matches_end = std::sregex_iterator();
+
+    // Extract the matched groups and store them in a vector
+    std::vector<std::string> code_blocks;
+    for (std::sregex_iterator i = matches_begin; i != matches_end; ++i) {
         std::smatch match = *i;
-        std::string matched_string = match.str();
-        // Remove the ``` and ```, leaving only the code block content
-        size_t start = 3;
-        size_t end = matched_string.length() - 3;
-        code_blocks.push_back(matched_string.substr(start, end));
+        code_blocks.push_back(match[1].str());
     }
 
     return code_blocks;

@@ -1,59 +1,75 @@
-Here is a C++ version of your Python function:
+Sure! Here is the equivalent C++ code for the provided Python function. This code will handle both decimal and fractional inputs and will return `std::optional<float>` to represent the possibility of failure:
 
-```c++
+```cpp
+#include <iostream>
 #include <string>
+#include <optional>
 #include <sstream>
-#include <algorithm>
+#include <stdexcept>
 
-float convertScoreToDecimal(std::string scoreStr)
-{
-    std::istringstream iss(scoreStr);
-    int numerator, denominator;
-    char slash;
+// Function to convert a string representation of a score to its decimal value
+std::optional<float> convert_score_to_decimal(const std::string& score_str) {
+    try {
+        // Check if the score is a fraction
+        size_t slash_pos = score_str.find('/');
+        if (slash_pos != std::string::npos) {
+            std::string numerator = score_str.substr(0, slash_pos);
+            std::string denominator = score_str.substr(slash_pos + 1);
 
-    // Try to parse the string into a numerator, slash, and denominator
-    if (!(iss >> numerator >> slash >> denominator))
-        return -1; // Return -1 to indicate an error
+            // Convert strings to floats
+            float num = std::stof(numerator);
+            float den = std::stof(denominator);
 
-    // Check that there was only one slash in the string
-    if (std::count(scoreStr.begin(), scoreStr.end(), '/') != 1)
-        return -1; // Return -1 to indicate an error
+            // Calculate the decimal value
+            float decimal_value = num / den;
+            return decimal_value;
+        } else {
+            // Otherwise, treat it as a decimal
+            float decimal_value = std::stof(score_str);
+            return decimal_value;
+        }
+    } catch (const std::invalid_argument& ia) {
+        std::cerr << "Error converting '" << score_str << "' to decimal: " << ia.what() << std::endl;
+        return std::nullopt;
+    } catch (const std::out_of_range& oor) {
+        std::cerr << "Error converting '" << score_str << "' to decimal: " << oor.what() << std::endl;
+        return std::nullopt;
+    } catch (const std::exception& ex) {
+        std::cerr << "Error converting '" << score_str << "' to decimal: " << ex.what() << std::endl;
+        return std::nullopt;
+    }
+}
 
-    // Check that the denominator is not zero
-    if (denominator == 0)
-        return -1; // Return -1 to indicate an error
+int main() {
+    // Test the function with different inputs
+    auto result1 = convert_score_to_decimal("2.5");
+    if (result1.has_value()) {
+        std::cout << "Decimal value: " << result1.value() << std::endl;
+    } else {
+        std::cout << "Invalid input." << std::endl;
+    }
 
-    // Convert the fraction to a decimal and return it
-    return static_cast<float>(numerator) / denominator;
+    auto result2 = convert_score_to_decimal("10/4");
+    if (result2.has_value()) {
+        std::cout << "Decimal value: " << result2.value() << std::endl;
+    } else {
+        std::cout << "Invalid input." << std::endl;
+    }
+
+    auto result3 = convert_score_to_decimal("abc");
+    if (result3.has_value()) {
+        std::cout << "Decimal value: " << result3.value() << std::endl;
+    } else {
+        std::cout << "Invalid input." << std::endl;
+    }
+
+    return 0;
 }
 ```
 
-And here's the equivalent C version of the same function:
-
-```c
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-float convertScoreToDecimal(char *scoreStr)
-{
-    int numerator, denominator;
-    char slash;
-    
-    // Use sscanf to parse the string into a numerator, slash, and denominator
-    if (sscanf(scoreStr, "%d%c%d", &numerator, &slash, &denominator) != 3)
-        return -1; // Return -1 to indicate an error
-    
-    // Check that there was only one slash in the string
-    if (strchr(scoreStr, '/') != strchr(scoreStr, '\0'))
-        return -1; // Return -1 to indicate an error
-    
-    // Check that the denominator is not zero
-    if (denominator == 0)
-        return -1; // Return -1 to indicate an error
-    
-    // Convert the fraction to a decimal and return it
-    return (float)numerator / denominator;
-}
-```
-In both versions, we use `-1` to represent an error condition, which you may want to handle differently depending on your specific needs.
+### Explanation:
+1. **Function Definition**: The function `convert_score_to_decimal` takes a `std::string` as input and returns an `std::optional<float>`. This allows us to handle cases where the conversion fails gracefully.
+2. **Error Handling**: We use `try-catch` blocks to handle exceptions like `std::invalid_argument` and `std::out_of_range`, which can occur during string-to-float conversion.
+3. **Fraction Handling**: If the input string contains a `/`, we split it into numerator and denominator parts and perform the division.
+4. **Decimal Handling**: If the input string does not contain a `/`, we directly convert it to a float.
+5. **Output**: In the `main` function, we test the function with different inputs and print the results or error messages accordingly.

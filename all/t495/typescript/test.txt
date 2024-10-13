@@ -1,91 +1,105 @@
-Sure! Below is the equivalent TypeScript test case using Jest for the provided Python unittest test class. Since you didn't provide the actual test methods from your Python unittest class, I'll create some sample test cases based on typical testing scenarios for the `filter_content_with_context` function.
+Certainly! Here is the equivalent TypeScript test class using Jest, ensuring that the functionality and logic of the tests are preserved. The necessary type annotations and Jest assertions are included:
 
 ```typescript
-import { filterContentWithContext } from './yourModule'; // Adjust the path accordingly
+import { filterContentWithContext } from './path/to/your/filterContentWithContext'; // Import your function
+import { escape, search } from 'regexp';
 
-describe('filterContentWithContext', () => {
-    it('should return content with context around keywords', () => {
-        const content = `
-            Line 1
-            Line 2 keyword1
-            Line 3
-            Line 4 keyword2
-            Line 5
-        `;
-        const keywords = ['keyword1', 'keyword2'];
-        const result = filterContentWithContext(content, keywords);
+describe('TestFilterContentWithContext', () => {
+  it('test_single_keyword_match', () => {
+    // Test a single keyword match with context lines.
+    const content = `Line one.
+    This line contains a keyword.
+    Line three.`;
+    const keywords = ['keyword'];
+    const expectedOutput = `Line one.
+    This line contains a keyword.
+    Line three.`;
+    const result = filterContentWithContext(content, keywords, 1, 1);
+    expect(result.trim()).toEqual(expectedOutput.trim());
+  });
 
-        expect(result).toContain('Line 1');
-        expect(result).toContain('Line 2 keyword1');
-        expect(result).toContain('Line 3');
-        expect(result).toContain('Line 4 keyword2');
-        expect(result).toContain('Line 5');
-    });
+  it('test_no_keyword_match', () => {
+    // Test when no keywords match.
+    const content = `Line one.
+    Line two.
+    Line three.`;
+    const keywords = ['missing'];
+    const expectedOutput = '';
+    const result = filterContentWithContext(content, keywords, 1, 1);
+    expect(result.trim()).toEqual(expectedOutput);
+  });
 
-    it('should include specified number of lines before and after', () => {
-        const content = `
-            Line 1
-            Line 2 keyword1
-            Line 3
-            Line 4 keyword2
-            Line 5
-            Line 6
-            Line 7
-        `;
-        const keywords = ['keyword1', 'keyword2'];
-        const result = filterContentWithContext(content, keywords, 2, 2);
-
-        expect(result).toContain('Line 1');
-        expect(result).toContain('Line 2 keyword1');
-        expect(result).toContain('Line 3');
-        expect(result).toContain('Line 4 keyword2');
-        expect(result).toContain('Line 5');
-        expect(result).toContain('Line 6');
-        expect(result).toContain('Line 7');
-    });
-
-    it('should handle multiple occurrences of keywords', () => {
-        const content = `
-            Line 1 keyword1
-            Line 2
-            Line 3 keyword1
-            Line 4 keyword2
-            Line 5
-        `;
-        const keywords = ['keyword1', 'keyword2'];
-        const result = filterContentWithContext(content, keywords);
-
-        expect(result).toContain('Line 1 keyword1');
-        expect(result).toContain('Line 3 keyword1');
-        expect(result).toContain('Line 4 keyword2');
-    });
-
-    it('should handle case sensitivity', () => {
-        const content = `
-            Line 1 Keyword1
-            Line 2 keyword1
-            Line 3 KEYWORD1
-        `;
-        const keywords = ['Keyword1', 'keyWord1'];
-        const result = filterContentWithContext(content, keywords);
-
-        expect(result).toContain('Line 1 Keyword1');
-        expect(result).toContain('Line 2 keyword1');
-        expect(result).toContain('Line 3 KEYWORD1');
-    });
-
-    it('should return original content if no keywords found', () => {
-        const content = `
-            Line 1
-            Line 2
-            Line 3
-        `;
-        const keywords = ['nonexistent', 'keywords'];
-        const result = filterContentWithContext(content, keywords);
-
-        expect(result).toBe(content);
-    });
+  it('test_lines_before_and_after', () => {
+    // Test functionality with specified lines before and after.
+    const content = `Line one.
+    This line contains a keyword.
+    Line three.
+    Line four.
+    Line five.`;
+    const keywords = ['keyword'];
+    const expectedOutput = `Line one.
+    This line contains a keyword.
+    Line three.`;
+    const result = filterContentWithContext(content, keywords, 1, 1);
+    expect(result.trim()).toEqual(expectedOutput.trim());
+  });
 });
+
+// Helper function to escape special characters
+function escape(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+// Helper function to simulate Python's re.search
+function search(pattern: string, text: string): boolean {
+  const regex = new RegExp(pattern);
+  return regex.test(text);
+}
+
+// The main function to be tested
+function filterContentWithContext(
+  content: string,
+  keywords: string[],
+  linesBefore: number = 1,
+  linesAfter: number = 1
+): string {
+  // Split the content into individual lines
+  const lines = content.split('\n');
+  const matchedLines = new Set<number>();  // Use a set to avoid duplicate lines
+
+  // Iterate over each line to find matches
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    for (const keyword of keywords) {
+      // Use a regular expression to find whole word matches with exact case
+      if (search(`\\b${escape(keyword)}\\b`, line)) {
+        // Determine the range of lines to include for context
+        const contextRange = Array.from({
+          length: linesAfter - linesBefore + 1
+        }, (_, k) => Math.max(0, i - linesBefore + k)).filter(x => x < lines.length);
+        contextRange.forEach(index => matchedLines.add(index));  // Add the context lines to the set
+      }
+    }
+  }
+
+  // Extract the matched lines and their context, sorted by their original order
+  const filteredLines = Array.from(matchedLines).sort().map(index => lines[index]);
+
+  // Join the filtered lines back into a single string
+  const filteredContent = filteredLines.join('\n');
+
+  return filteredContent;
+}
 ```
 
-Make sure to adjust the module import path (`./yourModule`) according to where your `filterContentWithContext` function is located in your project. Also, implement the `filterContentWithContext` function in TypeScript and export it so that it can be imported in your test file.
+### Explanation:
+1. **Import Statements**: The `filterContentWithContext` function is imported from the appropriate path.
+2. **Jest Describe Block**: The `describe` block is used to group the test cases.
+3. **Test Cases**:
+   - `it` blocks are used to define individual test cases.
+   - Jest assertions (`expect`) are used to verify the results.
+   - The `trim` method is used to ensure that leading and trailing whitespace is ignored during comparison.
+4. **Helper Functions**: The `escape` and `search` helper functions are included to mimic the behavior of Python's `re` module.
+5. **Function Implementation**: The `filterContentWithContext` function is included with proper type annotations and logic.
+
+This TypeScript code preserves the original functionality and logic of the Python tests while adapting to Jest's syntax and conventions.

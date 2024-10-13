@@ -1,25 +1,80 @@
-describe('convert_png_to_ico', () => {
-  it('should convert a PNG file to an ICO file with specified sizes', async () => {
-    const pngFilePath = 'path/to/source.png';
-    const icoFilePath = 'path/to/output.ico';
-    const iconSizes = [(32, 32)];
+import { mock } from 'jest-mock-extended';
 
-    await convert_png_to_ico(pngFilePath, icoFilePath, iconSizes);
+describe('TestConvertPngToIco', () => {
+    let mockImage: any;
 
-    // Assuming there is some way to verify if the ICO file was created successfully
-    // For example, checking if the file exists at the specified path
-    expect(icoFilePath).toBeExist(); // This is a hypothetical method to check file existence
-  });
+    beforeEach(() => {
+        mockImage = mock();
+    });
 
-  it('should handle different icon sizes', async () => {
-    const pngFilePath = 'path/to/source.png';
-    const icoFilePath = 'path/to/output.ico';
-    const iconSizes = [(32, 32), (64, 64), (128, 128)];
+    describe('convertPngToIco', () => {
+        it('should save ICO with a single icon size', () => {
+            const mockOpen = jest.fn().mockReturnValue({
+                __enter__: jest.fn().mockReturnValue(mockImage),
+                __exit__: jest.fn(),
+            });
 
-    await convert_png_to_ico(pngFilePath, icoFilePath, iconSizes);
+            jest.spyOn(global, 'Image').mockImplementation(() => ({
+                open: mockOpen,
+            }));
 
-    // Similarly, verify if the ICO file contains all the specified sizes
-    // For example, checking if the file size matches the expected size
-    expect(icoFilePath).toBeSizeOf(3 * /* expected size */); // Hypothetical method to check file size
-  });
+            convertPngToIco('source.png', 'output.ico', [[64, 64]]);
+            expect(mockImage.save).toHaveBeenCalledWith('output.ico', { format: 'ICO', sizes: [[64, 64]] });
+        });
+
+        it('should save ICO with multiple icon sizes', () => {
+            const mockOpen = jest.fn().mockReturnValue({
+                __enter__: jest.fn().mockReturnValue(mockImage),
+                __exit__: jest.fn(),
+            });
+
+            jest.spyOn(global, 'Image').mockImplementation(() => ({
+                open: mockOpen,
+            }));
+
+            convertPngToIco('source.png', 'output.ico', [[16, 16], [32, 32], [64, 64]]);
+            expect(mockImage.save).toHaveBeenCalledWith('output.ico', { format: 'ICO', sizes: [[16, 16], [32, 32], [64, 64]] });
+        });
+
+        it('should save ICO with the default icon size', () => {
+            const mockOpen = jest.fn().mockReturnValue({
+                __enter__: jest.fn().mockReturnValue(mockImage),
+                __exit__: jest.fn(),
+            });
+
+            jest.spyOn(global, 'Image').mockImplementation(() => ({
+                open: mockOpen,
+            }));
+
+            convertPngToIco('source.png', 'output.ico');
+            expect(mockImage.save).toHaveBeenCalledWith('output.ico', { format: 'ICO', sizes: [[32, 32]] });
+        });
+
+        it('should handle file opening correctly', () => {
+            const mockOpen = jest.fn().mockReturnValue({
+                __enter__: jest.fn().mockReturnValue(mockImage),
+                __exit__: jest.fn(),
+            });
+
+            jest.spyOn(global, 'Image').mockImplementation(() => ({
+                open: mockOpen,
+            }));
+
+            convertPngToIco('source.png', 'output.ico');
+            expect(mockImage.save).toHaveBeenCalledTimes(1);
+            expect(mockImage.save).toHaveBeenCalledWith('output.ico', { format: 'ICO', sizes: [[32, 32]] });
+        });
+
+        it('should throw an error when the image path is invalid', () => {
+            const mockOpen = jest.fn().mockImplementation(() => {
+                throw new Error('File not found');
+            });
+
+            jest.spyOn(global, 'Image').mockImplementation(() => ({
+                open: mockOpen,
+            }));
+
+            expect(() => convertPngToIco('invalid.png', 'output.ico')).toThrow('File not found');
+        });
+    });
 });

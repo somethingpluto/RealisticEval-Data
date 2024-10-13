@@ -1,33 +1,112 @@
-Here's the equivalent C++ function signature with comments:
+Certainly! Here's the equivalent C++ code for the given Python function, including the translation of the function signature, comments, and documentation:
 
 ```cpp
-#include <string>
+#include <iostream>
+#include <fstream>
+#include <sstream>
 #include <vector>
 #include <map>
+#include <regex>
 
-// Function to extract the title, author, and year from a BibTeX file.
-// Example BibTeX file content:
-// @article{sample2024,
-//   author = {John Doe and Jane Smith},
-//   title = {A Comprehensive Study on AI},
-//   year = {2024}
-//}
-
+// Function to extract title, author, and year from a BibTeX file
 /**
  * Extracts the title, author, and year from a BibTeX file.
+ * Example BibTeX file content:
+ * @article{sample2024,
+ *   author = {John Doe and Jane Smith},
+ *   title = {A Comprehensive Study on AI},
+ *   year = {2024}
+ * }
  *
  * @param bib_file The path to the BibTeX file.
  * @return A vector containing maps with title, author, and year for each article.
  */
 std::vector<std::map<std::string, std::string>> extract_bib_info(const std::string& bib_file) {
-    // Implementation goes here
+    std::vector<std::map<std::string, std::string>> articles;
+
+    // Regular expressions to match title, author, and year
+    std::regex title_pattern(R"(title\s*=\s*{([^}]*)})", std::regex_constants::icase);
+    std::regex author_pattern(R"(author\s*=\s*{([^}]*)})", std::regex_constants::icase);
+    std::regex year_pattern(R"(year\s*=\s*{([^}]*)})", std::regex_constants::icase);
+
+    try {
+        std::ifstream file(bib_file);
+        if (!file.is_open()) {
+            throw std::runtime_error("Error: The file '" + bib_file + "' was not found.");
+        }
+
+        std::stringstream buffer;
+        buffer << file.rdbuf();
+        std::string content = buffer.str();
+
+        // Split the content into individual entries based on '@'
+        std::istringstream iss(content);
+        std::string entry;
+        while (std::getline(iss, entry, '@')) {
+            if (!entry.empty()) {
+                articles.push_back(extract_entry(entry, title_pattern, author_pattern, year_pattern));
+            }
+        }
+
+    } catch (const std::exception& e) {
+        std::cerr << e.what() << std::endl;
+    }
+
+    return articles;
+}
+
+// Helper function to extract information from a single entry
+std::map<std::string, std::string> extract_entry(const std::string& entry, 
+                                                 const std::regex& title_pattern, 
+                                                 const std::regex& author_pattern, 
+                                                 const std::regex& year_pattern) {
+    std::smatch match;
+    std::map<std::string, std::string> info;
+
+    if (std::regex_search(entry, match, title_pattern)) {
+        info["title"] = match[1];
+    } else {
+        info["title"] = "";
+    }
+
+    if (std::regex_search(entry, match, author_pattern)) {
+        info["author"] = match[1];
+    } else {
+        info["author"] = "";
+    }
+
+    if (std::regex_search(entry, match, year_pattern)) {
+        info["year"] = match[1];
+    } else {
+        info["year"] = "";
+    }
+
+    return info;
+}
+
+int main() {
+    std::string bib_file = "example.bib";  // Replace with your BibTeX file path
+    auto articles = extract_bib_info(bib_file);
+
+    for (const auto& article : articles) {
+        std::cout << "Title: " << article.at("title") << std::endl;
+        std::cout << "Author: " << article.at("author") << std::endl;
+        std::cout << "Year: " << article.at("year") << std::endl;
+        std::cout << "-----------------" << std::endl;
+    }
+
+    return 0;
 }
 ```
 
-In this translation:
+### Explanation:
+1. **Headers**: Include necessary headers (`<iostream>`, `<fstream>`, `<sstream>`, `<vector>`, `<map>`, `<regex>`).
+2. **Function Documentation**: Translate the Python docstring into a C++ multi-line comment using `/** */`.
+3. **Function Signature**: Convert the Python function signature to a C++ function signature, including the parameter type and return type.
+4. **Regular Expressions**: Define regular expressions for matching `title`, `author`, and `year`.
+5. **File Handling**: Use `std::ifstream` to read the file and check if it is open.
+6. **Content Processing**: Read the entire file content into a string and split it into individual entries based on `'@'`.
+7. **Helper Function**: Define a helper function `extract_entry` to process each entry and extract the required information using regex.
+8. **Main Function**: Call `extract_bib_info` and print the extracted information.
 
-- The Python `def` keyword is replaced with the C++ function definition syntax.
-- The Python `str` type annotation is converted to the C++ `std::string` type.
-- The Python `list of dict` return type is translated to `std::vector<std::map<std::string, std::string>>`.
-- The Python docstring is converted into a C++ style multi-line comment using `/** */`.
-- Single-line comments are preserved using `//`.
+This C++ code preserves the original functionality and structure of the Python code, including handling file I/O, regex matching, and storing the results in a vector of maps.

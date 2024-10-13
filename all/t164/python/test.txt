@@ -1,0 +1,116 @@
+Here's how you can translate the provided TypeScript Jest test cases to Python using the unittest framework. This translation keeps the same structure and assertions, allowing you to test the functionality of uint8_array_to_base64.
+TypeScript Jest Test Cases
+typescript
+describe('uint8ArrayToBase64', () => {
+    test('should convert an empty Uint8Array', () => {
+        const uint8Array = new Uint8Array([]);
+        // @ts-ignore
+        const result = uint8ArrayToBase64(uint8Array);
+        expect(result).toBe('');
+    });
+
+    test('should convert a Uint8Array with one byte', () => {
+        const uint8Array = new Uint8Array([255]);
+        // @ts-ignore
+        const result = uint8ArrayToBase64(uint8Array);
+        expect(result).toBe('/w==');
+    });
+
+    test('should convert a Uint8Array with two bytes', () => {
+        const uint8Array = new Uint8Array([255, 255]);
+        // @ts-ignore
+        const result = uint8ArrayToBase64(uint8Array);
+        expect(result).toBe('//8=');
+    });
+
+    test('should convert a Uint8Array with three bytes', () => {
+        const uint8Array = new Uint8Array([255, 255, 255]);
+        // @ts-ignore
+        const result = uint8ArrayToBase64(uint8Array);
+        expect(result).toBe('////');
+    });
+
+    test('should convert a Uint8Array with four bytes', () => {
+        const uint8Array = new Uint8Array([72, 101, 108, 108]);
+        // @ts-ignore
+        const result = uint8ArrayToBase64(uint8Array);
+        expect(result).toBe('SGVsbA==');
+    });
+});
+Python unittest Test Cases
+Here is the equivalent Python code using the unittest framework:
+python
+import unittest
+
+def uint8_array_to_base64(uint8_array: bytes) -> str:
+    """
+    The Uint8 array is converted into 4 Base64 characters as a group of 3 bytes for processing, 
+    and the output of less than 3 is filled with =, and the resulting Base64 string is returned.
+
+    :param uint8_array: The Uint8Array to be converted (as bytes).
+    :return: The resulting Base64-encoded string.
+    """
+    base64 = ""
+    characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+
+    for i in range(0, len(uint8_array), 3):
+        a = uint8_array[i]
+        b = uint8_array[i + 1] if i + 1 < len(uint8_array) else 0  # Use 0 if b is undefined
+        c = uint8_array[i + 2] if i + 2 < len(uint8_array) else 0  # Use 0 if c is undefined
+
+        index1 = a >> 2
+        index2 = ((a & 0x03) << 4) | (b >> 4)
+        index3 = ((b & 0x0f) << 2) | (c >> 6)
+        index4 = c & 0x3f
+
+        base64 += (
+            characters[index1] +
+            characters[index2] +
+            (characters[index3] if i + 1 < len(uint8_array) else "=") +
+            (characters[index4] if i + 2 < len(uint8_array) else "=")
+        )
+
+    return base64
+
+class TestUint8ArrayToBase64(unittest.TestCase):
+
+    def test_empty_uint8array(self):
+        uint8_array = bytes([])  # Empty bytearray
+        result = uint8_array_to_base64(uint8_array)
+        self.assertEqual(result, '')
+
+    def test_one_byte(self):
+        uint8_array = bytes([255])  # One byte
+        result = uint8_array_to_base64(uint8_array)
+        self.assertEqual(result, '/w==')
+
+    def test_two_bytes(self):
+        uint8_array = bytes([255, 255])  # Two bytes
+        result = uint8_array_to_base64(uint8_array)
+        self.assertEqual(result, '//8=')
+
+    def test_three_bytes(self):
+        uint8_array = bytes([255, 255, 255])  # Three bytes
+        result = uint8_array_to_base64(uint8_array)
+        self.assertEqual(result, '////')
+
+    def test_four_bytes(self):
+        uint8_array = bytes([72, 101, 108, 108])  # Four bytes (ASCII for "Hell")
+        result = uint8_array_to_base64(uint8_array)
+        self.assertEqual(result, 'SGVsbA==')
+
+if __name__ == '__main__':
+    unittest.main()
+Explanation of the Changes:
+Imports:
+Imported the unittest module for creating the test cases.
+Function Implementation:
+Included the uint8_array_to_base64 function directly in the test file for context. You can move it to a separate module if desired.
+Test Class:
+Created a class TestUint8ArrayToBase64 that inherits from unittest.TestCase.
+Test Methods:
+Each test case is defined as a method in the class, starting with test_.
+Used self.assertEqual() to assert the expected results, which is the equivalent of expect(...).toBe(...) in Jest.
+Running Tests:
+The if __name__ == '__main__': block allows the script to run the tests when executed directly.
+This Python code will perform the same tests as the TypeScript Jest tests, ensuring that the uint8_array_to_base64 function behaves as expected. Let me know if you need any further modifications or explanations!

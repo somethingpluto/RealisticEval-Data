@@ -1,30 +1,107 @@
-To convert the given Python `unittest` test class to a Jest test case in JavaScript, you can follow these steps:
+Certainly! Below is the equivalent Jest test suite for the given Python unittest class. The goal is to maintain the functionality and logic of the tests while adapting them to Jest's syntax and conventions.
 
-1. Ensure you have Jest installed in your project. If not, you can install it using npm or yarn.
-2. Create a new JavaScript file for your tests.
-3. Write equivalent Jest test cases for the provided Python function.
+### Python Unittest Code
 
-Here's how you can write the Jest test cases for the `are_sets_equal` function:
+```python
+import unittest
+
+class TestAreSetsEqual(unittest.TestCase):
+
+    def test_identical_sets(self):
+        """Test with two identical sets of floats."""
+        set1 = {1.0, 2.0, 3.0}
+        set2 = {1.0, 2.0, 3.0}
+        self.assertTrue(are_sets_equal(set1, set2))
+
+    def test_sets_with_close_values(self):
+        """Test with two sets that are close within the tolerance."""
+        set1 = {1.0, 2.00001, 3.0}
+        set2 = {1.0, 2.00002, 3.0}
+        self.assertTrue(are_sets_equal(set1, set2, rtol=1e-5, atol=1e-6))
+
+    def test_sets_with_large_difference(self):
+        """Test with two sets that have large differences beyond tolerance."""
+        set1 = {1.0, 2.0, 3.0}
+        set2 = {1.0, 2.5, 3.0}
+        self.assertFalse(are_sets_equal(set1, set2))
+
+    def test_sets_with_one_different_values(self):
+        """Test with two sets containing one different floats."""
+        set1 = {1.0, 2.0, 3.0}
+        set2 = {1.0, 2.000001, 3.0}
+        self.assertTrue(are_sets_equal(set1, set2, rtol=1e-5, atol=1e-6))
+
+    def test_empty_sets(self):
+        """Test with two empty sets."""
+        set1 = set()
+        set2 = set()
+        self.assertTrue(are_sets_equal(set1, set2))
+```
+
+### Equivalent Jest Test Suite
 
 ```javascript
-// Import necessary packages
-const assert = require('assert');
+const areSetsEqual = require('./areSetsEqual'); // Import the function from the file where it is defined
+const math = require('mathjs');
 
-/**
- * Compares two sets of floats for equality within a relative and absolute tolerance.
- *
- * @param {Array} set1 - The first set of floats.
- * @param {Array} set2 - The second set of floats.
- * @param {number} [rtol=1e-5] - The relative tolerance (default: 1e-5).
- * @param {number} [atol=1e-6] - The absolute tolerance (default: 1e-6).
- * @returns {boolean} - True if the sets are equal within the specified tolerances, false otherwise.
- */
+describe('TestAreSetsEqual', () => {
+
+    describe('test_identical_sets', () => {
+        it('should return true for two identical sets of floats', () => {
+            const set1 = new Set([1.0, 2.0, 3.0]);
+            const set2 = new Set([1.0, 2.0, 3.0]);
+            expect(areSetsEqual(set1, set2)).toBe(true);
+        });
+    });
+
+    describe('test_sets_with_close_values', () => {
+        it('should return true for two sets that are close within the tolerance', () => {
+            const set1 = new Set([1.0, 2.00001, 3.0]);
+            const set2 = new Set([1.0, 2.00002, 3.0]);
+            expect(areSetsEqual(set1, set2, 1e-5, 1e-6)).toBe(true);
+        });
+    });
+
+    describe('test_sets_with_large_difference', () => {
+        it('should return false for two sets that have large differences beyond tolerance', () => {
+            const set1 = new Set([1.0, 2.0, 3.0]);
+            const set2 = new Set([1.0, 2.5, 3.0]);
+            expect(areSetsEqual(set1, set2)).toBe(false);
+        });
+    });
+
+    describe('test_sets_with_one_different_values', () => {
+        it('should return true for two sets containing one different float', () => {
+            const set1 = new Set([1.0, 2.0, 3.0]);
+            const set2 = new Set([1.0, 2.000001, 3.0]);
+            expect(areSetsEqual(set1, set2, 1e-5, 1e-6)).toBe(true);
+        });
+    });
+
+    describe('test_empty_sets', () => {
+        it('should return true for two empty sets', () => {
+            const set1 = new Set();
+            const set2 = new Set();
+            expect(areSetsEqual(set1, set2)).toBe(true);
+        });
+    });
+
+});
+
+// Example implementation of areSetsEqual function
 function areSetsEqual(set1, set2, rtol = 1e-5, atol = 1e-6) {
-    if (set1.length !== set2.length) return false;
+    // Convert sets to sorted arrays for comparison
+    const list1 = Array.from(set1).sort((a, b) => a - b);
+    const list2 = Array.from(set2).sort((a, b) => a - b);
 
-    for (let i = 0; i < set1.length; i++) {
-        const diff = Math.abs(set1[i] - set2[i]);
-        if (diff > atol && diff / Math.max(Math.abs(set1[i]), Math.abs(set2[i])) > rtol) {
+    // Check if the lengths of both sets are the same
+    if (list1.length !== list2.length) {
+        return false;
+    }
+
+    // Compare each element in the two sorted arrays
+    for (let i = 0; i < list1.length; i++) {
+        if (!math.isEqual(math.bignumber(list1[i]), math.bignumber(list2[i]), { rtol, atol })) {
             return false;
         }
     }
@@ -32,38 +109,25 @@ function areSetsEqual(set1, set2, rtol = 1e-5, atol = 1e-6) {
     return true;
 }
 
-// Jest test cases
-describe('areSetsEqual', () => {
-    test('should return true for equal sets', () => {
-        expect(areSetsEqual([1.0, 2.0, 3.0], [1.0, 2.0, 3.0])).toBe(true);
-    });
-
-    test('should return false for different sets with default tolerances', () => {
-        expect(areSetsEqual([1.0, 2.0, 3.0], [1.00001, 2.0, 3.0])).toBe(false);
-    });
-
-    test('should return true for different sets with higher tolerances', () => {
-        expect(areSetsEqual([1.0, 2.0, 3.0], [1.00001, 2.0, 3.0], 1e-4)).toBe(true);
-    });
-
-    test('should handle empty sets', () => {
-        expect(areSetsEqual([], [])).toBe(true);
-    });
-
-    test('should return false for sets of different lengths', () => {
-        expect(areSetsEqual([1.0, 2.0], [1.0, 2.0, 3.0])).toBe(false);
-    });
-});
+module.exports = areSetsEqual;
 ```
 
 ### Explanation:
+1. **Import Statements**: 
+   - `require('mathjs')` is used to import the `mathjs` library for floating-point comparisons.
+   - `require('./areSetsEqual')` imports the `areSetsEqual` function from the file where it is defined.
 
-1. **Importing Packages**: We import the `assert` module from Node.js to use its assertion functions.
-2. **Function Definition**: The `areSetsEqual` function is defined as before.
-3. **Jest Test Cases**:
-   - `describe` block groups related tests together.
-   - Each `test` block contains an individual test case.
-   - `expect` is used to make assertions about the output of the `areSetsEqual` function.
-   - Different scenarios are tested, including equal sets, different sets with default tolerances, different sets with higher tolerances, empty sets, and sets of different lengths.
+2. **Describe Blocks**: 
+   - Each test case is wrapped in a `describe` block to group related tests.
+   - Each test case is defined using `it` blocks with descriptive messages.
 
-Make sure to run your Jest tests using the command `npm test` or `yarn test` after setting up your Jest configuration if necessary.
+3. **Assertions**:
+   - `expect(areSetsEqual(...)).toBe(true)` and `expect(areSetsEqual(...)).toBe(false)` are used to assert the expected outcomes of the tests.
+
+4. **Set Conversion**:
+   - In JavaScript, sets are created using `new Set([...])` and converted to sorted arrays using `Array.from()` and `.sort()`.
+
+5. **Function Implementation**:
+   - The `areSetsEqual` function is implemented to match the Python logic, using `math.isEqual` for floating-point comparisons.
+
+This ensures that the functionality and logic of the original Python unittest class are preserved in the Jest test suite.

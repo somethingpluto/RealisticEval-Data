@@ -1,21 +1,21 @@
-TEST_CASE("numerical_str_convert") {
-    SECTION("Convert valid integer strings") {
-        REQUIRE(std::get<int>(numerical_str_convert("42")) == 42);
-        REQUIRE(std::get<int>(numerical_str_convert("-42")) == -42);
+TEST_CASE("Test Smart Convert") {
+    SECTION("Convert Integer") {
+        REQUIRE(numericalStrConvert("123").intValue == 123);
     }
 
-    SECTION("Convert valid float strings") {
-        REQUIRE(std::get<float>(numerical_str_convert("3.14")) == Approx(3.14f));
-        REQUIRE(std::get<float>(numerical_str_convert("-3.14")) == Approx(-3.14f));
-        REQUIRE(std::get<float>(numerical_str_convert("0.001")) == Approx(0.001f));
+    SECTION("Convert Float") {
+        REQUIRE(numericalStrConvert("123.45").floatValue == Approx(123.45f));
     }
 
-    SECTION("Return original string for invalid inputs") {
-        REQUIRE(std::get<std::string>(numerical_str_convert("abc")) == "abc");
-        REQUIRE(std::get<std::string>(numerical_str_convert("3.14abc")) == "3.14abc");
+    SECTION("Convert Non-Numeric String") {
+        REQUIRE(numericalStrConvert("abc").stringValue == "abc");
     }
 
-    SECTION("Return original string for empty input") {
-        REQUIRE(std::get<std::string>(numerical_str_convert("")) == "");
+    SECTION("Convert Negative Integer") {
+        REQUIRE(numericalStrConvert("-456").intValue == -456);
+    }
+
+    SECTION("Convert Negative Float") {
+        REQUIRE(numericalStrConvert("-456.78").floatValue == Approx(-456.78f));
     }
 }

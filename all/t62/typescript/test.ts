@@ -1,112 +1,45 @@
 describe('BinaryTree', () => {
-  let binaryTree: BinaryTree;
-
-  beforeEach(() => {
-    binaryTree = new BinaryTree();
+  it('should handle an empty tree', () => {
+      const bt = new BinaryTree();
+      expect(bt.inorderTraversal()).toEqual([]);
+      expect(bt.preorderTraversal()).toEqual([]);
+      expect(bt.postorderTraversal()).toEqual([]);
   });
 
-  describe('insert method', () => {
-    it('should insert a node correctly', () => {
-      binaryTree.insert(10);
-      expect(binaryTree.root).not.toBeNull();
-      expect(binaryTree.root.val).toBe(10);
-    });
-
-    it('should insert nodes correctly with left and right children', () => {
-      binaryTree.insert(10);
-      binaryTree.insert(5);
-      binaryTree.insert(15);
-
-      expect(binaryTree.root.val).toBe(10);
-      expect(binaryTree.root.left.val).toBe(5);
-      expect(binaryTree.root.right.val).toBe(15);
-    });
+  it('should handle a single node tree', () => {
+      const bt = new BinaryTree();
+      bt.insert(10);
+      expect(bt.inorderTraversal()).toEqual([10]);
+      expect(bt.preorderTraversal()).toEqual([10]);
+      expect(bt.postorderTraversal()).toEqual([10]);
   });
 
-  describe('inorder traversal', () => {
-    it('should return correct inorder traversal for an empty tree', () => {
-      const result: number[] = [];
-      binaryTree.inorderTraversal(result);
-      expect(result).toEqual([]);
-    });
-
-    it('should return correct inorder traversal for a single node', () => {
-      binaryTree.insert(10);
-      const result: number[] = [];
-      binaryTree.inorderTraversal(result);
-      expect(result).toEqual([10]);
-    });
-
-    it('should return correct inorder traversal for multiple nodes', () => {
-      binaryTree.insert(10);
-      binaryTree.insert(5);
-      binaryTree.insert(15);
-      binaryTree.insert(3);
-      binaryTree.insert(7);
-      binaryTree.insert(12);
-      binaryTree.insert(18);
-
-      const result: number[] = [];
-      binaryTree.inorderTraversal(result);
-      expect(result).toEqual([3, 5, 7, 10, 12, 15, 18]);
-    });
+  it('should handle a balanced tree', () => {
+      const bt = new BinaryTree();
+      const elements = [8, 3, 10, 1, 6, 9, 14];
+      elements.forEach((elem) => bt.insert(elem));
+      expect(bt.inorderTraversal()).toEqual([1, 3, 6, 8, 9, 10, 14]);
+      expect(bt.preorderTraversal()).toEqual([8, 3, 1, 6, 10, 9, 14]);
+      expect(bt.postorderTraversal()).toEqual([1, 6, 3, 9, 14, 10, 8]);
   });
 
-  describe('preorder traversal', () => {
-    it('should return correct preorder traversal for an empty tree', () => {
-      const result: number[] = [];
-      binaryTree.preorderTraversal(result);
-      expect(result).toEqual([]);
-    });
-
-    it('should return correct preorder traversal for a single node', () => {
-      binaryTree.insert(10);
-      const result: number[] = [];
-      binaryTree.preorderTraversal(result);
-      expect(result).toEqual([10]);
-    });
-
-    it('should return correct preorder traversal for multiple nodes', () => {
-      binaryTree.insert(10);
-      binaryTree.insert(5);
-      binaryTree.insert(15);
-      binaryTree.insert(3);
-      binaryTree.insert(7);
-      binaryTree.insert(12);
-      binaryTree.insert(18);
-
-      const result: number[] = [];
-      binaryTree.preorderTraversal(result);
-      expect(result).toEqual([10, 5, 3, 7, 15, 12, 18]);
-    });
+  it('should handle a left-heavy tree', () => {
+      const bt = new BinaryTree();
+      for (let i = 10; i >= 1; i--) {
+          bt.insert(i);
+      }
+      expect(bt.inorderTraversal()).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+      expect(bt.preorderTraversal()).toEqual([10, 9, 8, 7, 6, 5, 4, 3, 2, 1]);
+      expect(bt.postorderTraversal()).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
   });
 
-  describe('postorder traversal', () => {
-    it('should return correct postorder traversal for an empty tree', () => {
-      const result: number[] = [];
-      binaryTree.postorderTraversal(result);
-      expect(result).toEqual([]);
-    });
-
-    it('should return correct postorder traversal for a single node', () => {
-      binaryTree.insert(10);
-      const result: number[] = [];
-      binaryTree.postorderTraversal(result);
-      expect(result).toEqual([10]);
-    });
-
-    it('should return correct postorder traversal for multiple nodes', () => {
-      binaryTree.insert(10);
-      binaryTree.insert(5);
-      binaryTree.insert(15);
-      binaryTree.insert(3);
-      binaryTree.insert(7);
-      binaryTree.insert(12);
-      binaryTree.insert(18);
-
-      const result: number[] = [];
-      binaryTree.postorderTraversal(result);
-      expect(result).toEqual([3, 7, 5, 12, 18, 15, 10]);
-    });
+  it('should handle a right-heavy tree', () => {
+      const bt = new BinaryTree();
+      for (let i = 1; i <= 10; i++) {
+          bt.insert(i);
+      }
+      expect(bt.inorderTraversal()).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+      expect(bt.preorderTraversal()).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+      expect(bt.postorderTraversal()).toEqual([10, 9, 8, 7, 6, 5, 4, 3, 2, 1]);
   });
 });

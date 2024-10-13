@@ -1,58 +1,194 @@
-Certainly! Below is the conversion of the provided Python unittest test class into a TypeScript test class using Jest. I'll make sure to include all necessary type annotations and map the unittest assertions to their Jest equivalents.
+Certainly! Below is the equivalent TypeScript test class using Jest. The test cases will be structured similarly, and the necessary type annotations and Jest assertions will be included.
 
-### Python Code (unittest)
-```python
-import unittest
+### TypeScript Code
 
-class TestStringMethods(unittest.TestCase):
-    def test_upper(self):
-        self.assertEqual('foo'.upper(), 'FOO')
+First, let's define the `formatText` function in TypeScript:
 
-    def test_isupper(self):
-        self.assertTrue('FOO'.isupper())
-        self.assertFalse('Foo'.isupper())
+```typescript
+import * as fs from 'fs';
+import * as path from 'path';
+import { tmpdir } from 'os';
 
-    def test_split(self):
-        s = 'hello world'
-        self.assertEqual(s.split(), ['hello', 'world'])
-        # check that s.split fails when the separator is not a string
-        with self.assertRaises(TypeError):
-            s.split(2)
+function formatText(inputFile: string = 'input.txt', outputFile: string = 'output.txt'): void {
+    try {
+        // Open the input file in read mode
+        fs.readFile(inputFile, 'utf8', (err, data) => {
+            if (err) {
+                console.error("Error reading input file:", err);
+                return;
+            }
 
-if __name__ == '__main__':
-    unittest.main()
+            // Process each line
+            const lines = data.split('\n');
+            const processedLines = lines.map(line => line.trimEnd());
+
+            // Join the processed lines with spaces
+            const contentWithoutNewlines = processedLines.join(' ');
+
+            // Write the content without newlines to the output file
+            fs.writeFile(outputFile, contentWithoutNewlines, (writeErr) => {
+                if (writeErr) {
+                    console.error("Error writing to output file:", writeErr);
+                } else {
+                    console.log("Line breaks removed and spaces added. Output written to", outputFile);
+                }
+            });
+        });
+    } catch (error) {
+        console.error("An unexpected error occurred:", error);
+    }
+}
+
+export default formatText;
 ```
 
-### TypeScript Code (jest)
+### Jest Test Class
+
+Now, let's create the Jest test class:
+
 ```typescript
-import { describe, it, expect } from '@jest/globals';
+import { formatText } from './path/to/formatText'; // Adjust the import path as needed
+import * as fs from 'fs';
+import * as path from 'path';
+import { tmpdir } from 'os';
 
-describe('Test String Methods', () => {
-  it('should correctly convert strings to uppercase', () => {
-    expect('foo'.toUpperCase()).toBe('FOO');
-  });
+describe('TestFormatText', () => {
+    beforeEach(() => {
+        // Before each test, clean up any temporary files
+        jest.resetModules();
+    });
 
-  it('should correctly determine if a string is uppercase', () => {
-    expect('FOO'.toUpperCase()).toBe('FOO');
-    expect('Foo'.toUpperCase()).not.toBe('FOO');
-  });
+    afterEach(() => {
+        // After each test, clean up any temporary files
+        const cleanup = (filePath: string) => {
+            if (fs.existsSync(filePath)) {
+                fs.unlinkSync(filePath);
+            }
+        };
 
-  it('should correctly split strings', () => {
-    const s = 'hello world';
-    expect(s.split(' ')).toEqual(['hello', 'world']);
-    
-    // Check that s.split fails when the separator is not a string
-    expect(() => s.split(2 as any)).toThrow(TypeError);
-  });
+        cleanup(tmpInputFilePath);
+        cleanup(tmpOutputFilePath);
+    });
+
+    let tmpInputFilePath: string;
+    let tmpOutputFilePath: string;
+
+    const createTempFile = (content: string): string => {
+        const tempFilePath = path.join(tmpdir(), `temp-${Date.now()}.txt`);
+        fs.writeFileSync(tempFilePath, content);
+        return tempFilePath;
+    };
+
+    describe('test_basic_text', () => {
+        it('should format basic text correctly', () => {
+            const inputText = "This is line one.\nThis is line two.\nThis is line three.";
+            const expectedOutput = "This is line one. This is line two. This is line three.";
+
+            tmpInputFilePath = createTempFile(inputText);
+            tmpOutputFilePath = createTempFile('');
+
+            formatText(tmpInputFilePath, tmpOutputFilePath);
+
+            return new Promise<void>((resolve, reject) => {
+                fs.readFile(tmpOutputFilePath, 'utf8', (err, data) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        expect(data.trim()).toBe(expectedOutput);
+                        resolve();
+                    }
+                });
+            });
+        });
+    });
+
+    describe('test_single_line', () => {
+        it('should format a single line correctly', () => {
+            const inputText = "This is a single line.";
+            const expectedOutput = "This is a single line.";
+
+            tmpInputFilePath = createTempFile(inputText);
+            tmpOutputFilePath = createTempFile('');
+
+            formatText(tmpInputFilePath, tmpOutputFilePath);
+
+            return new Promise<void>((resolve, reject) => {
+                fs.readFile(tmpOutputFilePath, 'utf8', (err, data) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        expect(data.trim()).toBe(expectedOutput);
+                        resolve();
+                    }
+                });
+            });
+        });
+    });
+
+    describe('test_empty_file', () => {
+        it('should handle an empty file correctly', () => {
+            const inputText = "";
+            const expectedOutput = "";
+
+            tmpInputFilePath = createTempFile(inputText);
+            tmpOutputFilePath = createTempFile('');
+
+            formatText(tmpInputFilePath, tmpOutputFilePath);
+
+            return new Promise<void>((resolve, reject) => {
+                fs.readFile(tmpOutputFilePath, 'utf8', (err, data) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        expect(data.trim()).toBe(expectedOutput);
+                        resolve();
+                    }
+                });
+            });
+        });
+    });
+
+    describe('test_file_with_no_newlines', () => {
+        it('should handle a file with no newlines correctly', () => {
+            const inputText = "This is a continuous line without breaks.";
+            const expectedOutput = "This is a continuous line without breaks.";
+
+            tmpInputFilePath = createTempFile(inputText);
+            tmpOutputFilePath = createTempFile('');
+
+            formatText(tmpInputFilePath, tmpOutputFilePath);
+
+            return new Promise<void>((resolve, reject) => {
+                fs.readFile(tmpOutputFilePath, 'utf8', (err, data) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        expect(data.trim()).toBe(expectedOutput);
+                        resolve();
+                    }
+                });
+            });
+        });
+    });
 });
 ```
 
 ### Explanation:
-1. **Imports**: We import `describe`, `it`, and `expect` from `@jest/globals` to use Jest's global functions.
-2. **Test Suite**: We define a test suite using `describe` which groups related tests together.
-3. **Test Cases**:
-   - `test_upper`: This test checks that converting `'foo'` to uppercase results in `'FOO'`.
-   - `test_isupper`: This test checks that `'FOO'` is uppercase and `'Foo'` is not.
-   - `test_split`: This test checks the splitting functionality and also verifies that passing a non-string separator results in a TypeError.
+1. **Imports**:
+   - Import necessary modules such as `fs`, `path`, and `tmpdir`.
+   - Import the `formatText` function.
 
-By following these steps, we ensure that the tests are functionally equivalent and adhere to TypeScript and Jest conventions.
+2. **Before and After Each Hooks**:
+   - `beforeEach` resets Jest modules to ensure a clean state before each test.
+   - `afterEach` cleans up temporary files after each test.
+
+3. **Helper Functions**:
+   - `createTempFile` creates a temporary file with the given content.
+   - `cleanup` removes temporary files.
+
+4. **Test Cases**:
+   - Each test case creates temporary input and output files.
+   - Calls `formatText` and reads the output file to verify the expected output.
+   - Uses Promises to handle asynchronous file operations.
+
+This setup ensures that the tests are structured similarly to the Python unittests and uses Jest's assertion methods appropriately.

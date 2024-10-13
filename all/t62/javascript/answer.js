@@ -26,7 +26,7 @@ class BinaryTree {
             } else {
                 this._insert(node.left, key);
             }
-        } else if (key > node.val) {
+        } else {
             if (node.right === null) {
                 node.right = new TreeNode(key);
             } else {
@@ -36,9 +36,7 @@ class BinaryTree {
     }
 
     inorderTraversal() {
-        const result = [];
-        this._inorderTraversal(this.root, result);
-        return result;
+        return this._inorderTraversal(this.root, []);
     }
 
     _inorderTraversal(node, result) {
@@ -47,12 +45,11 @@ class BinaryTree {
             result.push(node.val);
             this._inorderTraversal(node.right, result);
         }
+        return result;
     }
 
     preorderTraversal() {
-        const result = [];
-        this._preorderTraversal(this.root, result);
-        return result;
+        return this._preorderTraversal(this.root, []);
     }
 
     _preorderTraversal(node, result) {
@@ -61,12 +58,11 @@ class BinaryTree {
             this._preorderTraversal(node.left, result);
             this._preorderTraversal(node.right, result);
         }
+        return result;
     }
 
     postorderTraversal() {
-        const result = [];
-        this._postorderTraversal(this.root, result);
-        return result;
+        return this._postorderTraversal(this.root, []);
     }
 
     _postorderTraversal(node, result) {
@@ -75,5 +71,6 @@ class BinaryTree {
             this._postorderTraversal(node.right, result);
             result.push(node.val);
         }
+        return result;
     }
 }

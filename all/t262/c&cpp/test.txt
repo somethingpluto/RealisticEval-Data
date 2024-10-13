@@ -1,69 +1,144 @@
-To convert the given Python unittest test class to a C++ test case using Catch2, we need to define the `TreeNode` structure and implement the `average_of_levels` function. Below is the equivalent C++ code:
+Certainly! Below is the equivalent C++ test class using the Catch2 testing framework. The test cases are converted to match the functionality and logic of the provided Python unittest class.
+
+### C++ Code with Catch2 Testing Framework
+
+First, make sure you have Catch2 installed and included in your project. You can include Catch2 by adding the header file and using the `CATCH_TEST_CASE` macro for defining test cases.
+
+Here is the complete C++ code:
 
 ```cpp
 #include <iostream>
 #include <vector>
-#include <queue>
+#include <deque>
+#include <cassert>
+#include <cmath>
 #include "catch.hpp"
 
-struct TreeNode {
+// Define the TreeNode class
+class TreeNode {
+public:
     int val;
-    TreeNode* left;
-    TreeNode* right;
+    TreeNode *left;
+    TreeNode *right;
 
+    // Constructor for TreeNode
     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
 };
 
-std::vector<double> averageOfLevels(TreeNode* root) {
-    std::vector<double> averages;
-    if (!root) return averages;
-
-    std::queue<TreeNode*> q;
-    q.push(root);
-
-    while (!q.empty()) {
-        int levelSize = q.size();
-        double sum = 0;
-
-        for (int i = 0; i < levelSize; ++i) {
-            TreeNode* node = q.front();
-            q.pop();
-            sum += node->val;
-
-            if (node->left) q.push(node->left);
-            if (node->right) q.push(node->right);
-        }
-
-        averages.push_back(sum / levelSize);
+// Function to calculate the average of levels in a binary tree
+std::vector<double> average_of_levels(TreeNode* root) {
+    if (!root) {
+        return {};
     }
 
-    return averages;
+    std::vector<double> result;
+    std::deque<std::pair<TreeNode*, int>> queue; // (node, level)
+    queue.push_back(std::make_pair(root, 0));
+
+    while (!queue.empty()) {
+        std::vector<int> current_level;
+        int level_size = queue.size();
+
+        for (int i = 0; i < level_size; ++i) {
+            auto [node, level] = queue.front();
+            queue.pop_front();
+            current_level.push_back(node->val);
+
+            if (node->left) {
+                queue.push_back(std::make_pair(node->left, level + 1));
+            }
+            if (node->right) {
+                queue.push_back(std::make_pair(node->right, level + 1));
+            }
+        }
+
+        // Calculate the average for the current level
+        double level_average = std::accumulate(current_level.begin(), current_level.end(), 0) / current_level.size();
+        result.push_back(level_average);
+    }
+
+    return result;
 }
 
-TEST_CASE("Average of Levels", "[averageOfLevels]") {
-    // Test case 1: Empty tree
-    REQUIRE(averageOfLevels(nullptr).empty());
+// Test class using Catch2
+TEST_CASE("Test average_of_levels") {
+    SECTION("Empty Tree") {
+        TreeNode* root = nullptr;
+        std::vector<double> expected = {};
+        REQUIRE(average_of_levels(root) == expected);
+    }
 
-    // Test case 2: Single node tree
-    TreeNode root1(3);
-    REQUIRE(averageOfLevels(&root1) == std::vector<double>({3.0}));
+    SECTION("Single Node Tree") {
+        TreeNode* root = new TreeNode(5);
+        std::vector<double> expected = {5.0};
+        REQUIRE(average_of_levels(root) == expected);
+        delete root;
+    }
 
-    // Test case 3: Tree with multiple levels
-    TreeNode root2(3);
-    root2.left = new TreeNode(9);
-    root2.right = new TreeNode(20);
-    root2.right->left = new TreeNode(15);
-    root2.right->right = new TreeNode(7);
-    REQUIRE(averageOfLevels(&root2) == std::vector<double>({3.0, 14.5, 11.0}));
+    SECTION("Balanced Tree Two Levels") {
+        TreeNode* root = new TreeNode(3);
+        root->left = new TreeNode(9);
+        root->right = new TreeNode(20);
+        std::vector<double> expected = {3.0, 14.5};
+        REQUIRE(average_of_levels(root) == expected);
+        delete root->left;
+        delete root->right;
+        delete root;
+    }
+
+    SECTION("Unbalanced Tree") {
+        TreeNode* root = new TreeNode(1);
+        root->right = new TreeNode(2);
+        root->right->right = new TreeNode(3);
+        std::vector<double> expected = {1.0, 2.0, 3.0};
+        REQUIRE(average_of_levels(root) == expected);
+        delete root->right->right;
+        delete root->right;
+        delete root;
+    }
+
+    SECTION("Tree Multiple Levels") {
+        TreeNode* root = new TreeNode(1);
+        root->left = new TreeNode(2);
+        root->right = new TreeNode(3);
+        root->left->left = new TreeNode(4);
+        root->left->right = new TreeNode(5);
+        root->right->right = new TreeNode(8);
+        std::vector<double> expected = {1.0, 2.5, 5.67};
+        auto result = average_of_levels(root);
+        REQUIRE(result.size() == expected.size());
+        REQUIRE_THAT(result[0], Catch::Matchers::WithinAbs(expected[0], 0.01));
+        REQUIRE_THAT(result[1], Catch::Matchers::WithinAbs(expected[1], 0.01));
+        REQUIRE_THAT(result[2], Catch::Matchers::WithinAbs(expected[2], 0.01));
+        delete root->left->left;
+        delete root->left->right;
+        delete root->right->right;
+        delete root->left;
+        delete root->right;
+        delete root;
+    }
+}
+
+// Main function to run the tests
+int main(int argc, char* argv[]) {
+    int result = Catch::Session().run(argc, argv);
+    return result;
 }
 ```
 
 ### Explanation:
-1. **TreeNode Structure**: Defined in C++ with a constructor that initializes the node's value and pointers to its left and right children.
-2. **averageOfLevels Function**: Implemented to calculate the average values of nodes at each level of a binary tree using a breadth-first search approach with a queue.
-3. **Catch2 Test Cases**:
-   - **Test Case 1**: Checks the behavior of the function with an empty tree.
-   - **Test Case 2**: Checks the behavior of the function with a single-node tree.
-   - **Test Case 3**: Checks the behavior of the function with a tree having multiple levels.
+1. **TreeNode Class**:
+   - The `TreeNode` class is defined with a constructor that initializes the node's value and sets its children to `nullptr`.
 
-Make sure you have Catch2 installed and properly set up in your project to compile and run these tests.
+2. **average_of_levels Function**:
+   - The function `average_of_levels` is implemented to calculate the average value of nodes at each level in the binary tree.
+
+3. **Catch2 Test Cases**:
+   - Each test case is defined using the `SECTION` macro within the `TEST_CASE` macro.
+   - Assertions are made using `REQUIRE` and `REQUIRE_THAT` to check the correctness of the results.
+   - Proper cleanup of dynamically allocated nodes is included to avoid memory leaks.
+
+4. **Main Function**:
+   - The `main` function runs the Catch2 test suite.
+
+This C++ code preserves the original functionality and logic of the Python unittest class, ensuring that all test cases are accurately represented and verified using the Catch2 testing framework.

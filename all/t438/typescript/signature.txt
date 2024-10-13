@@ -1,77 +1,73 @@
-Certainly! Below is the equivalent TypeScript code for the provided Python function, including proper type annotations and JSDoc-style documentation comments:
+Certainly! Here’s the equivalent TypeScript code for the given Python function, including proper type annotations and JSDoc-style documentation:
 
 ```typescript
-import * as Papa from 'papaparse';
 import * as fs from 'fs';
+import * as Papa from 'papaparse';
+
+interface DataFrameRow {
+    [key: string]: string | number;
+}
+
+type DataFrame = DataFrameRow[];
 
 /**
- * Reads a CSV file and converts it to a DataFrame-like object.
+ * Reads a CSV file and converts it to a DataFrame.
  *
- * @param filePath - The path to the CSV file.
- * @returns An array of objects representing the data from the CSV file.
+ * @param file_path - The path to the CSV file.
+ * @returns A DataFrame containing the data from the CSV file.
  */
-function readCsvToDataframe(filePath: string): Record<string, any>[] | null {
-  try {
-    if (!fs.existsSync(filePath)) {
-      console.error(`Error: The file '${filePath}' was not found.`);
-      return null;
+function readCsvToDataFrame(file_path: string): DataFrame | null {
+    try {
+        const fileContent = fs.readFileSync(file_path, 'utf8');
+        const results = Papa.parse(fileContent, { header: true });
+
+        if (results.errors.length > 0) {
+            console.error("Error: Could not parse the file.");
+            return null;
+        }
+
+        return results.data as DataFrame;
+    } catch (error) {
+        if (error instanceof Error) {
+            if (error.code === 'ENOENT') {
+                console.error(`Error: The file '${file_path}' was not found.`);
+            } else {
+                console.error(`An error occurred: ${error.message}`);
+            }
+        }
+        return null;
     }
-
-    const fileContent = fs.readFileSync(filePath, 'utf8');
-    const results = Papa.parse(fileContent, { header: true });
-
-    if (results.errors.length > 0) {
-      console.error("Error: Could not parse the file.");
-      return null;
-    }
-
-    if (results.data.length === 0) {
-      console.error("Error: The file is empty.");
-      return null;
-    }
-
-    return results.data as Record<string, any>[];
-  } catch (error) {
-    console.error(`An error occurred: ${error}`);
-    return null;
-  }
 }
 
 // Example usage
-const filePath = './data.csv';
-const dataframe = readCsvToDataframe(filePath);
+const filePath = './example.csv';
+const dataframe = readCsvToDataFrame(filePath);
 if (dataframe) {
-  console.log(dataframe);
+    console.log(dataframe);
 }
 ```
 
 ### Explanation:
 1. **Imports**:
-   - We import `Papa` from `papaparse` for parsing CSV files.
-   - We import `fs` from Node.js for file system operations.
+   - `fs` is used for reading the CSV file synchronously.
+   - `Papa` is used for parsing the CSV content.
 
-2. **Type Annotations**:
-   - The function `readCsvToDataframe` takes a `string` parameter `filePath` and returns either an array of `Record<string, any>` objects or `null`.
+2. **Types**:
+   - `DataFrameRow` is an interface representing a single row in the DataFrame.
+   - `DataFrame` is a type alias for an array of `DataFrameRow`.
 
-3. **JSDoc Comments**:
-   - The JSDoc comments provide detailed documentation for the function parameters and return type.
+3. **Function Definition**:
+   - `readCsvToDataFrame` reads the CSV file synchronously and parses it using `Papa.parse`.
+   - It handles various errors such as file not found, parsing errors, and other exceptions.
 
-4. **File Existence Check**:
-   - We check if the file exists using `fs.existsSync`.
+4. **JSDoc Documentation**:
+   - The function is documented using JSDoc comments, which include the parameter description and return type.
 
-5. **Reading File Content**:
-   - We read the file content using `fs.readFileSync`.
+5. **Error Handling**:
+   - Uses `instanceof Error` to check if the caught error is an instance of `Error`.
+   - Checks for specific error codes like `ENOENT` for file not found.
 
-6. **Parsing CSV**:
-   - We use `Papa.parse` to parse the CSV content with headers enabled.
+6. **Example Usage**:
+   - Demonstrates how to call the function and log the resulting DataFrame.
 
-7. **Error Handling**:
-   - We handle errors such as file not found, empty file, and parsing errors.
-
-8. **Return Data**:
-   - We return the parsed data or `null` if any error occurs.
-
-9. **Example Usage**:
-   - An example usage of the function is provided at the end to demonstrate how to call the function and handle the returned data.
-
-This TypeScript code preserves the original functionality and structure of the Python code, while adapting it to TypeScript conventions and using appropriate libraries for CSV parsing.
+This approach ensures that the functionality remains consistent with the original Python code, while adapting to TypeScript's static type system and idiomatic practices.

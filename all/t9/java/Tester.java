@@ -1,37 +1,44 @@
-package org.real.temp;
-
-import static org.junit.Assert.assertEquals;
-import org.junit.Test;
-
+/**
+ * Test class for checking whether a point is on a line formed by two other points.
+ */
 public class Tester {
+    @Test
+    public void testPointOnLine() {
+        int[] A = {0, 0};
+        int[] B = {10, 10};
+        int[] C = {5, 5};
+        assertTrue(isPointOnLine(A, B, C));
+    }
 
     @Test
-    public void testIsPointOnLine() {
-        // Test case 1: Point C lies on the line AB
+    public void testPointNotOnLine() {
         int[] A = {0, 0};
-        int[] B = {4, 4};
-        int[] C = {2, 2};
-        boolean result = isPointOnLine(A, B, C);
-        assertEquals(true, result);
+        int[] B = {10, 10};
+        int[] C = {5, 6};
+        assertFalse(isPointOnLine(A, B, C));
+    }
 
-        // Test case 2: Point C does not lie on the line AB
-        A = new int[]{0, 0};
-        B = new int[]{4, 4};
-        C = new int[]{2, 3};
-        result = isPointOnLine(A, B, C);
-        assertEquals(false, result);
+    @Test
+    public void testVerticalLine() {
+        int[] A = {5, 0};
+        int[] B = {5, 10};
+        int[] C = {5, 5};
+        assertTrue(isPointOnLine(A, B, C));
+    }
 
-        // Test case 3: Point C is one of the endpoints of the line AB
-        A = new int[]{0, 0};
-        B = new int[]{4, 4};
-        C = new int[]{0, 0};
-        result = isPointOnLine(A, B, C);
-        assertEquals(true, result);
+    @Test
+    public void testHorizontalLine() {
+        int[] A = {0, 5};
+        int[] B = {10, 5};
+        int[] C = {5, 5};
+        assertTrue(isPointOnLine(A, B, C));
+    }
 
-        A = new int[]{0, 0};
-        B = new int[]{4, 4};
-        C = new int[]{4, 4};
-        result = isPointOnLine(A, B, C);
-        assertEquals(true, result);
+    @Test
+    public void testPointNotOnVerticalLine() {
+        int[] A = {5, 0};
+        int[] B = {5, 10};
+        int[] C = {6, 5};
+        assertFalse(isPointOnLine(A, B, C));
     }
 }

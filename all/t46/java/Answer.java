@@ -1,79 +1,143 @@
 package org.real.temp;
 
-import java.util.ArrayList;
-import java.util.List;
+public class Answer {
 
-// Define the TreeNode class
-public class TreeNode {
-    int value;
-    TreeNode left;
-    TreeNode right;
+    static class TreeNode {
+        int value;
+        TreeNode left;
+        TreeNode right;
 
-    // Constructor for TreeNode
-    public TreeNode(int value) {
-        this.value = value;
-        this.left = null;
-        this.right = null;
-    }
-}
-
-// Define the BinaryTree class
-public class BinaryTree {
-    TreeNode root;
-
-    // Constructor for BinaryTree
-    public BinaryTree(TreeNode root) {
-        this.root = root;
-    }
-
-    // Method to perform preorder traversal
-    public List<Integer> preorderTraversal(TreeNode node) {
-        List<Integer> result = new ArrayList<>();
-        preorderHelper(node, result);
-        return result;
-    }
-
-    // Helper method for preorder traversal
-    private void preorderHelper(TreeNode node, List<Integer> result) {
-        if (node == null) {
-            return;
+        public TreeNode(int value) {
+            this.value = value;
+            this.left = null;
+            this.right = null;
         }
-        result.add(node.value);
-        preorderHelper(node.left, result);
-        preorderHelper(node.right, result);
-    }
 
-    // Method to perform inorder traversal
-    public List<Integer> inorderTraversal(TreeNode node) {
-        List<Integer> result = new ArrayList<>();
-        inorderHelper(node, result);
-        return result;
-    }
-
-    // Helper method for inorder traversal
-    private void inorderHelper(TreeNode node, List<Integer> result) {
-        if (node == null) {
-            return;
+        public TreeNode(int value, TreeNode left, TreeNode right) {
+            this.value = value;
+            this.left = left;
+            this.right = right;
         }
-        inorderHelper(node.left, result);
-        result.add(node.value);
-        inorderHelper(node.right, result);
     }
 
-    // Method to perform postorder traversal
-    public List<Integer> postorderTraversal(TreeNode node) {
-        List<Integer> result = new ArrayList<>();
-        postorderHelper(node, result);
-        return result;
-    }
+    static class BinaryTree {
+        TreeNode root;
 
-    // Helper method for postorder traversal
-    private void postorderHelper(TreeNode node, List<Integer> result) {
-        if (node == null) {
-            return;
+        public BinaryTree(TreeNode root) {
+            this.root = root;
         }
-        postorderHelper(node.left, result);
-        postorderHelper(node.right, result);
-        result.add(node.value);
+
+        public BinaryTree() {
+            this(null);
+        }
+
+        public List<Integer> preorderTraversal(TreeNode node, List<Integer> result) {
+            if (result == null) {
+                result = new ArrayList<>();
+            }
+            if (node != null) {
+                result.add(node.value);
+                preorderTraversal(node.left, result);
+                preorderTraversal(node.right, result);
+            }
+            return result;
+        }
+
+        public List<Integer> inorderTraversal(TreeNode node, List<Integer> result) {
+            if (result == null) {
+                result = new ArrayList<>();
+            }
+            if (node != null) {
+                inorderTraversal(node.left, result);
+                result.add(node.value);
+                inorderTraversal(node.right, result);
+            }
+            return result;
+        }
+
+        public List<Integer> postorderTraversal(TreeNode node, List<Integer> result) {
+            if (result == null) {
+                result = new ArrayList<>();
+            }
+            if (node != null) {
+                postorderTraversal(node.left, result);
+                postorderTraversal(node.right, result);
+                result.add(node.value);
+            }
+            return result;
+        }
+
+        public List<Integer> iterativePreorder() {
+            if (root == null) {
+                return Collections.emptyList();
+            }
+            List<Integer> result = new ArrayList<>();
+            Stack<TreeNode> stack = new Stack<>();
+            stack.push(root);
+            while (!stack.isEmpty()) {
+                TreeNode node = stack.pop();
+                if (node != null) {
+                    result.add(node.value);
+                    if (node.right != null) {
+                        stack.push(node.right);
+                    }
+                    if (node.left != null) {
+                        stack.push(node.left);
+                    }
+                }
+            }
+            return result;
+        }
+
+        public List<Integer> iterativeInorder() {
+            List<Integer> result = new ArrayList<>();
+            Stack<TreeNode> stack = new Stack<>();
+            TreeNode current = root;
+            while (!stack.isEmpty() || current != null) {
+                while (current != null) {
+                    stack.push(current);
+                    current = current.left;
+                }
+                current = stack.pop();
+                result.add(current.value);
+                current = current.right;
+            }
+            return result;
+        }
+
+        public List<Integer> iterativePostorder() {
+            if (root == null) {
+                return Collections.emptyList();
+            }
+            List<Integer> result = new ArrayList<>();
+            Stack<TreeNode> stack = new Stack<>();
+            stack.push(root);
+            while (!stack.isEmpty()) {
+                TreeNode node = stack.pop();
+                result.add(0, node.value);
+                if (node.left != null) {
+                    stack.push(node.left);
+                }
+                if (node.right != null) {
+                    stack.push(node.right);
+                }
+            }
+            return result;
+        }
+    }
+
+    public static void main(String[] args) {
+        // Example usage
+        TreeNode root = new TreeNode(1,
+                new TreeNode(2, new TreeNode(4), new TreeNode(5)),
+                new TreeNode(3));
+        
+        BinaryTree tree = new BinaryTree(root);
+        System.out.println(tree.preorderTraversal(root, null));
+        System.out.println(tree.inorderTraversal(root, null));
+        System.out.println(tree.postorderTraversal(root, null));
+        System.out.println(tree.iterativePreorder());
+        System.out.println(tree.iterativeInorder());
+        System.out.println(tree.iterativePostorder());
     }
 }

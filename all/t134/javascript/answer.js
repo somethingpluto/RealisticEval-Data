@@ -1,31 +1,29 @@
 /**
- * Checks whether the username is a string of length 5 to 16 that contains only alphanumeric Spaces
+ * Checks whether the provided username is valid.
+ * A valid username is defined as a string that:
+ * - Has a length between 5 and 16 characters (inclusive).
+ * - Contains only alphanumeric characters (letters and digits) and spaces.
  *
- * @param {string} username - The input string to validate as a username.
- * @returns {string|boolean} - Returns "Invalid Length, Must Be Between 5-16" if the input length
- *                             is not within the required range, "Name Can Only Contain Letters, Numbers, and White Space"
- *                             if the input contains invalid characters, true if the input is valid,
- *                             or "Invalid Input" in case of unexpected errors.
+ * @param {string} username - The username to validate.
+ * @returns {boolean} - Returns true if the username is valid; otherwise, false.
  */
-function isValidUserName(username) {
-    try {
-        const trimmedName = username.trim();
-
-        // Check if the trimmed input length is between 5 and 16 characters
-        if (trimmedName.length < 5 || trimmedName.length > 16) {
-            return "Invalid Length, Must Be Between 5-16";
-        }
-
-        // Regular expression to validate that the name contains only letters, numbers, and white space
-        const validNameRegex = /^[a-zA-Z0-9\s]+$/;
-
-        // Check if the name matches the allowed pattern
-        if (!validNameRegex.test(trimmedName)) {
-            return "Name Can Only Contain Letters, Numbers, and White Space";
-        }
-
-        return true;
-    } catch {
-        return "Invalid Input";
+function isValidUsername(username) {
+    // Check if the input is a string
+    if (typeof username !== 'string') {
+        return false; // Return false if the input is not a string
     }
+
+    // Trim any leading or trailing whitespace from the username
+    username = username.trim();
+
+    // Check the length of the username
+    const length = username.length;
+    if (length < 5 || length > 16) {
+        return false; // Return false if length is not within the valid range
+    }
+
+    // Check if the username contains only alphanumeric characters and spaces
+    const isValid = /^[a-zA-Z0-9 ]+$/.test(username);
+    
+    return isValid; // Return true if valid, false otherwise
 }

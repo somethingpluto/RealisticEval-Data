@@ -1,85 +1,128 @@
-To convert your Python unittest test class to a C++ Catch2 test case, you need to create a new C++ file and write the test cases using Catch2's syntax. Below is an example of how you might translate a hypothetical Python unittest test class into a C++ Catch2 test case. Note that I'll assume some basic functionality for `clean_pattern` since it was not provided in your original question.
+Certainly! Here is the equivalent C++ test class using the Catch2 testing framework. The provided Python unittest class will be converted into a Catch2 test suite, ensuring that the functionality and logic of the tests are preserved.
 
-Here’s an example:
+### C++ Code Using Catch2
 
-### Python Unittest Test Class Example
+First, make sure you have Catch2 installed and included in your project. You can include Catch2 by adding the header file and using the `CATCH_TEST_CASE` macro for each test case.
 
-```python
-import unittest
-import re
-from typing import Union
-
-def clean_pattern(x: str, pattern: str) -> Union[str, float]:
-    """
-    Extracts a numeric value from the input string based on the given regex pattern.
-
-    Args:
-        x (str or any): The input from which to extract the value. It will be converted to a string.
-        pattern (str): The regular expression pattern to use for matching.
-
-    Returns:
-        Union[str,float]: The extracted weight value if a match is found, otherwise an empty string.
-    """
-    try:
-        match = re.search(pattern, str(x))
-        if match:
-            return float(match.group(0))
-        else:
-            return ""
-    except Exception as e:
-        print(f"Error occurred: {e}")
-        return ""
-
-class TestCleanPattern(unittest.TestCase):
-    def test_clean_pattern(self):
-        self.assertEqual(clean_pattern("123.45 kg", r'\d+\.\d+'), 123.45)
-        self.assertEqual(clean_pattern("Weight: 60kg", r'(\d+)'), "60")
-        self.assertEqual(clean_pattern("No number here!", r'\d+\.\d+'), "")
-        self.assertIsNone(clean_pattern(None, r'\d+\.\d+'))
-
-if __name__ == '__main__':
-    unittest.main()
-```
-
-### Corresponding C++ Catch2 Test Case
-
-First, make sure you have Catch2 installed. If you don't already have it, you can install it via vcpkg or download it directly from its GitHub repository.
-
-Create a new C++ file, say `test_clean_pattern.cpp`, and add the following content:
+Here’s the complete C++ code:
 
 ```cpp
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <string>
 #include <regex>
 
-// Assuming clean_pattern function is defined somewhere in your project
-double clean_pattern(const std::string& x, const std::string& pattern) {
-    try {
-        std::smatch match;
-        if (std::regex_search(x, match, std::regex(pattern))) {
-            return std::stod(match.str(0));
-        } else {
-            return -1.0; // Return a special value indicating no match
+// The clean_pattern function
+std::string clean_pattern(const std::string& x, const std::string& pattern) {
+    // Search for the pattern in the input string
+    std::smatch match;
+    std::regex regexPattern(pattern);
+
+    if (std::regex_search(x, match, regexPattern)) {
+        // Extract the weight value from the first matching group
+        std::string weight = match[1].str();
+
+        try {
+            // Convert the weight to a float and return it
+            float weightValue = std::stof(weight);
+            return std::to_string(weightValue);
+        } catch (const std::invalid_argument& e) {
+            // Handle cases where conversion to float fails
+            std::cerr << "Warning: Unable to convert '" << weight << "' to float." << std::endl;
+            return "";
         }
-    } catch (...) {
-        std::cerr << "Error occurred." << std::endl;
-        return -1.0; // Handle exception gracefully
+    } else {
+        return "";  // Return empty string if no match is found
     }
 }
 
-TEST_CASE("Test Clean Pattern", "[clean_pattern]") {
-    REQUIRE(clean_pattern("123.45 kg", R"(\d+\.\d+)") == 123.45);
-    REQUIRE(clean_pattern("Weight: 60kg", R"((\d+))") == 60);
-    REQUIRE(clean_pattern("No number here!", R"(\d+\.\d+)") == -1.0); // Assuming -1.0 indicates no match
-    REQUIRE(clean_pattern("", R"(\d+\.\d+)") == -1.0); // Assuming -1.0 indicates no match
-    REQUIRE(clean_pattern(nullptr, R"(\d+\.\d+)") == -1.0); // Assuming -1.0 indicates no match
+// Test class using Catch2
+TEST_CASE("TestCleanPattern", "[clean_pattern]") {
+    const std::string pattern = R"((\d+\.?\d*) kg)";  // Regex pattern to match weight in kg
+
+    SECTION("test_valid_integer_weight") {
+        std::string input_string = "The weight is 25 kg";
+        std::string result = clean_pattern(input_string, pattern);
+        REQUIRE(result == "25.0");
+    }
+
+    SECTION("test_valid_float_weight") {
+        std::string input_string = "Weight measured at 15.75 kg";
+        std::string result = clean_pattern(input_string, pattern);
+        REQUIRE(result == "15.75");
+    }
+
+    SECTION("test_no_weight_found") {
+        std::string input_string = "No weight provided.";
+        std::string result = clean_pattern(input_string, pattern);
+        REQUIRE(result.empty());
+    }
+
+    SECTION("test_invalid_float_conversion") {
+        std::string input_string = "The weight is thirty kg";
+        std::string result = clean_pattern(input_string, pattern);
+        REQUIRE(result.empty());
+    }
+
+    SECTION("test_weight_with_extra_text") {
+        std::string input_string = "The total weight is 45.3 kg as per the last measurement.";
+        std::string result = clean_pattern(input_string, pattern);
+        REQUIRE(result == "45.3");
+    }
 }
 ```
 
-### Explanation
+### Explanation:
+1. **Headers**: Include the necessary headers (`<catch2/catch_test_macros.hpp>`, `<string>`, `<regex>`).
+2. **Function Definition**: The `clean_pattern` function is defined as before.
+3. **Test Class**: The `TEST_CASE` macro is used to define the test suite named `TestCleanPattern`.
+4. **Sections**: Each test case is defined within a `SECTION` block, which corresponds to a specific test scenario.
+5. **Assertions**: The `REQUIRE` macro is used for assertions. It checks that the expected results match the actual results.
 
-- **Catch2 Macros**: Catch2 uses macros like `TEST_CASE` to define test cases and `REQUIRE` to assert conditions.
-- **Regex Handling**: In C++, you can use `<regex>` to handle regular expressions similar to Python's `re`.
-- **Special Values**: Since C++ doesn’t support returning `None` like Python, we use `-1.0` as a special value to indicate no match.
+### Running the Tests:
+To run the tests, you need to link against Catch2 and execute the test runner. Here’s how you can set up a simple CMake project to run these tests:
 
-Compile and run your tests using the Catch2 command-line tool or integrate it with your build system. Make sure to link against the Catch2 library when compiling your C++ code.
+#### CMakeLists.txt:
+```cmake
+cmake_minimum_required(VERSION 3.10)
+
+project(CleanPatternTests)
+
+# Add Catch2
+include(FetchContent)
+FetchContent_Declare(
+    catch2
+    GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+    GIT_TAG v2.13.8
+)
+FetchContent_MakeAvailable(catch2)
+
+# Add executable
+add_executable(clean_pattern_tests main.cpp test_clean_pattern.cpp)
+target_link_libraries(clean_pattern_tests PRIVATE catch2)
+
+# Main file to run tests
+add_executable(run_tests main.cpp)
+target_link_libraries(run_tests PRIVATE catch2)
+```
+
+#### main.cpp:
+```cpp
+#include <catch2/catch_test_macros.hpp>
+
+int main(int argc, char* argv[]) {
+    int result = Catch::Session().run(argc, argv);
+    return result;
+}
+```
+
+This setup ensures that the tests are executed when you build and run the project. You can compile and run the tests using the following commands:
+
+```sh
+mkdir build
+cd build
+cmake ..
+make
+./run_tests
+```
+
+This will execute the tests and provide detailed output about the test results.

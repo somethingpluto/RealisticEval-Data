@@ -1,23 +1,56 @@
-Here's the equivalent TypeScript code for the given Python function, including the documentation comments using the JSDoc style:
+Certainly! Here is the equivalent TypeScript code for the provided Python function, including proper type annotations and JSDoc-style documentation:
 
 ```typescript
+import * as ast from 'python-abstract-syntax-tree'; // Assuming a library that provides similar functionality to Python's ast module
+
 /**
- * Parses a Python type hint string and returns the individual types as an array of strings.
- * 
+ * Parses a Python type hint string and returns the individual types as a list of strings.
+ *
  * @param typeHintString - The type hint string to parse.
  * @returns The individual types parsed from the type hint string.
- * 
+ *
  * Example:
- * ```typescript
  * const typeHint = "Union[typing.List[str], typing.Dict[str, int], Tuple[int, str], Optional[int]]";
  * const parsedTypes = parseTypeHint(typeHint);
  * console.log(parsedTypes);
  * // Output: ['Union', 'typing.List', 'str', 'typing.Dict', 'str', 'int', 'Tuple', 'int', 'str', 'Optional', 'int']
- * ```
  */
 function parseTypeHint(typeHintString: string): string[] {
-    // Assuming a similar parsing logic here as the actual implementation would require a custom parser.
-    return typeHintString.replace(/\s/g, '').split(/[\[\],]/).filter(Boolean);
+    // Create a source function definition with the type hint string
+    const source = `def f() -> ${typeHintString}: pass`;
+
+    // Parse the source code into an Abstract Syntax Tree (AST)
+    const tree = ast.parse(source);
+
+    // List to store the parsed type strings
+    const typeStrings: string[] = [];
+
+    function processNode(node: any, qualNames?: string[]): void {
+        // Initialize qualified names if not provided
+        qualNames = qualNames || [];
+
+        if (node.type === 'Name') {
+            // Add simple type names (e.g., str, int)
+            typeStrings.push(qualNames.concat(node.id).reverse().join('.'));
+        } else if (node.type === 'Subscript') {
+            // Process the value and slice of a subscript (e.g., List[str])
+            processNode(node.value, qualNames);
+            processNode(node.slice, qualNames);
+        } else if (node.type === 'Attribute') {
+            // Process attributes (e.g., typing.List)
+            processNode(node.value, qualNames.concat(node.attr));
+        } else if (node.type === 'Tuple') {
+            // Process each element in a tuple type hint
+            node.elts.forEach((elt: any) => processNode(elt, qualNames));
+        }
+    }
+
+    // Extract the return annotation from the parsed tree
+    const returnsAnnotation = tree.body[0].returns;
+    // Process the return annotation to fill typeStrings
+    processNode(returnsAnnotation);
+
+    return typeStrings;
 }
 
 // Example usage
@@ -26,11 +59,52 @@ const parsedTypes = parseTypeHint(typeHint);
 console.log(parsedTypes);
 ```
 
-### Explanation
+### Explanation:
+1. **Import Statement**: 
+   ```typescript
+   import * as ast from 'python-abstract-syntax-tree';
+   ```
+   This assumes a library that provides similar functionality to Python's `ast` module.
 
-1. **Function Signature**: The Python function `parse_type_hint` is converted to a TypeScript function `parseTypeHint` with the same parameters and return type.
-2. **Documentation Comments**: The Python docstring is converted to TypeScript JSDoc comments.
-3. **Implementation**: The Python code uses `replace` and `split` methods to parse the string. The TypeScript version uses a similar approach but may need adjustments based on the exact parsing logic required.
-4. **Example Usage**: The example usage provided in the Python docstring is translated to TypeScript.
+2. **Function Definition**:
+   ```typescript
+   function parseTypeHint(typeHintString: string): string[] {
+       // Function body remains the same
+   }
+   ```
+   The function signature is defined with TypeScript types: `typeHintString` is a `string`, and the return type is `string[]`.
 
-This conversion preserves the functionality and structure of the original Python code while adapting it to TypeScript conventions.
+3. **JSDoc Documentation**:
+   ```typescript
+   /**
+    * Parses a Python type hint string and returns the individual types as a list of strings.
+    *
+    * @param typeHintString - The type hint string to parse.
+    * @returns The individual types parsed from the type hint string.
+    *
+    * Example:
+    * const typeHint = "Union[typing.List[str], typing.Dict[str, int], Tuple[int, str], Optional[int]]";
+    * const parsedTypes = parseTypeHint(typeHint);
+    * console.log(parsedTypes);
+    * // Output: ['Union', 'typing.List', 'str', 'typing.Dict', 'str', 'int', 'Tuple', 'int', 'str', 'Optional', 'int']
+    */
+   ```
+   The Python docstring is converted to JSDoc comments, providing clear documentation for the function.
+
+4. **Internal Function `processNode`**:
+   ```typescript
+   function processNode(node: any, qualNames?: string[]): void {
+       // Function body remains the same
+   }
+   ```
+   The internal helper function `processNode` is defined with TypeScript types.
+
+5. **Example Usage**:
+   ```typescript
+   const typeHint = "Union[typing.List[str], typing.Dict[str, int], Tuple[int, str], Optional[int]]";
+   const parsedTypes = parseTypeHint(typeHint);
+   console.log(parsedTypes);
+   ```
+   An example usage demonstrates how to call the function and log the results.
+
+This TypeScript code preserves the original functionality and structure of the Python code while adhering to TypeScript's type system and documentation conventions.

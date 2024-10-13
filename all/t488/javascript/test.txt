@@ -1,182 +1,176 @@
-Certainly! Below is the equivalent JavaScript test class using Jest to ensure that the functionality and logic of the tests are maintained. I will also document any necessary changes due to language differences between Python and JavaScript.
+Certainly! Below is the equivalent Jest test suite for the given Python unittest class. The goal is to maintain the same functionality and logic while converting the tests from Python's `unittest` framework to Jest.
 
 ### Python Code:
-
 ```python
 import subprocess
-import re
-from typing import Optional
+import unittest
+from unittest.mock import patch, MagicMock
 
 
-def get_local_ip(interface: str = 'Wi-Fi') -> Optional[str]:
-    """
-    Retrieve the local IP address of the specified network interface on Windows.
+class TestGetLocalIP(unittest.TestCase):
 
-    Args:
-        interface (str): The name of the network interface to check (default is 'Wi-Fi').
+    @patch('subprocess.run')
+    def test_local_ip_found(self, mock_run):
+        # Mock the output of ipconfig for a case where a local IP is found
+        mock_run.return_value = MagicMock(stdout='192.168.1.10\n')
+        result = get_local_ip()
+        self.assertEqual(result, '192.168.1.10')
 
-    Returns:
-        Optional[str]: The local IP address if found, otherwise None.
-    """
-    try:
-        # Execute the 'ipconfig' command to get addresses for the specified interface
-        result = subprocess.run(
-            ['ipconfig'],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-            check=True
-        )
+    @patch('subprocess.run')
+    def test_no_local_ip_found(self, mock_run):
+        # Mock the output of ipconfig for a case where no local IP is found
+        mock_run.return_value = MagicMock(stdout='10.0.0.5\n')
+        result = get_local_ip()
+        self.assertIsNone(result)
 
-        # Regular expression to match IPv4 addresses
-        ip_pattern = re.compile(r'(\d+\.\d+\.\d+\.\d+)')
+    @patch('subprocess.run')
+    def test_multiple_ips_found(self, mock_run):
+        # Mock the output with multiple local IPs
+        mock_run.return_value = MagicMock(stdout='10.0.0.5\n'
+                                                  '192.168.1.10\n')
+        result = get_local_ip()
+        self.assertEqual(result, '192.168.1.10')
 
-        # Search for IP addresses in the command output
-        ips: list[str] = ip_pattern.findall(result.stdout)
+    @patch('subprocess.run')
+    def test_invalid_command(self, mock_run):
+        # Simulate a case where subprocess.run raises a CalledProcessError
+        mock_run.side_effect = subprocess.CalledProcessError(1, 'ipconfig')
+        result = get_local_ip()
+        self.assertIsNone(result)
 
-        # Return the first local IP found
-        for ip in ips:
-            if ip.startswith("192.168."):
-                return ip
-
-        return None  # Return None if no suitable IP is found
-
-    except subprocess.CalledProcessError as e:
-        print(f"Error executing command: {e}")
-        return None
-    except Exception as e:
-        print(f"An unexpected error occurred: {e}")
-        return None
+    @patch('subprocess.run')
+    def test_unexpected_error(self, mock_run):
+        # Simulate an unexpected error
+        mock_run.side_effect = Exception("Unexpected error")
+        result = get_local_ip()
+        self.assertIsNone(result)
 ```
 
-### JavaScript Code with Jest Tests
-
-#### JavaScript Implementation:
-
+### Equivalent Jest Test Suite:
 ```javascript
 const { exec } = require('child_process');
-const { promisify } = require('util');
-
-const execPromise = promisify(exec);
+const ipPattern = /\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/g;
 
 /**
  * Retrieve the local IP address of the specified network interface on Windows.
  * 
  * @param {string} [interface='Wi-Fi'] - The name of the network interface to check (default is 'Wi-Fi').
- * @returns {Promise<string | null>} - The local IP address if found, otherwise null.
+ * @returns {Promise<string | null>} - A promise that resolves to the local IP address if found, otherwise null.
  */
-async function getLocalIp(interface = 'Wi-Fi') {
+async function getLocalIP(interface = 'Wi-Fi') {
     try {
         // Execute the 'ipconfig' command to get addresses for the specified interface
-        const { stdout, stderr } = await execPromise('ipconfig');
+        const { stdout, stderr } = await new Promise((resolve, reject) => {
+            exec('ipconfig', (error, stdout, stderr) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve({ stdout, stderr });
+                }
+            });
+        });
 
         // Regular expression to match IPv4 addresses
-        const ipPattern = /\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/g;
-
-        // Search for IP addresses in the command output
-        const ips = stdout.match(ipPattern) || [];
-
-        // Return the first local IP found
-        for (const ip of ips) {
-            if (ip.startsWith("192.168.")) {
-                return ip;
-            }
+        const matches = stdout.match(ipPattern);
+        if (!matches) {
+            console.error('No IP addresses found.');
+            return null;
         }
 
-        return null;  // Return null if no suitable IP is found
-
+        // Filter and return the first local IP starting with "192.168."
+        const localIP = matches.find(ip => ip.startsWith('192.168.'));
+        return localIP || null;
     } catch (error) {
-        console.error(`Error executing command: ${error.message}`);
+        console.error(`Error executing command: ${error}`);
         return null;
     }
 }
 
-module.exports = { getLocalIp };
-```
-
-#### Jest Test Class
-
-```javascript
-const { getLocalIp } = require('./path/to/getLocalIp'); // Adjust the path as needed
-
-describe('getLocalIp', () => {
-    it('should retrieve a valid local IP address', async () => {
-        // Mock the 'execPromise' function to simulate the 'ipconfig' command output
-        const mockOutput = `
-            Ethernet adapter Local Area Connection:
-                IPv4 Address. . . . . . . . . . . : 192.168.1.2
-                Subnet Mask . . . . . . . . . . . : 255.255.255.0
-                Default Gateway . . . . . . . . . : 192.168.1.1
-
-            Wireless LAN adapter Wi-Fi:
-                Connection-specific DNS Suffix  . :
-                Link-local IPv6 Address . . . . . : fe80::a254:2bff:fe7e:e54a%11
-                IPv4 Address. . . . . . . . . . . : 192.168.1.3
-                Subnet Mask . . . . . . . . . . . : 255.255.255.0
-                Default Gateway . . . . . . . . . : 192.168.1.1
-        `;
-
-        jest.spyOn(global, 'execPromise').mockResolvedValueOnce({
-            stdout: mockOutput,
-            stderr: ''
-        });
-
-        const ip = await getLocalIp('Wi-Fi');
-        expect(ip).toBe('192.168.1.3');
-    });
-
-    it('should return null if no suitable IP is found', async () => {
-        // Mock the 'execPromise' function to simulate the 'ipconfig' command output without a suitable IP
-        const mockOutput = `
-            Ethernet adapter Local Area Connection:
-                IPv4 Address. . . . . . . . . . . : 10.0.0.1
-                Subnet Mask . . . . . . . . . . . : 255.255.255.0
-                Default Gateway . . . . . . . . . : 10.0.0.1
-
-            Wireless LAN adapter Wi-Fi:
-                Connection-specific DNS Suffix  . :
-                Link-local IPv6 Address . . . . . : fe80::a254:2bff:fe7e:e54a%11
-                IPv4 Address. . . . . . . . . . . : 10.0.0.2
-                Subnet Mask . . . . . . . . . . . : 255.255.255.0
-                Default Gateway . . . . . . . . . : 10.0.0.1
-        `;
-
-        jest.spyOn(global, 'execPromise').mockResolvedValueOnce({
-            stdout: mockOutput,
-            stderr: ''
-        });
-
-        const ip = await getLocalIp('Wi-Fi');
-        expect(ip).toBeNull();
-    });
-
-    it('should handle errors when executing the command', async () => {
-        // Mock the 'execPromise' function to simulate an error
-        const mockError = new Error('Failed to execute command');
-        jest.spyOn(global, 'execPromise').mockRejectedValueOnce(mockError);
-
-        const ip = await getLocalIp('Wi-Fi');
-        expect(ip).toBeNull();
-        expect(console.error).toHaveBeenCalledWith(`Error executing command: Failed to execute command`);
+describe('TestGetLocalIP', () => {
+    beforeEach(() => {
+        jest.spyOn(console, 'error').mockImplementation(() => {});
     });
 
     afterEach(() => {
-        // Restore the original implementation of 'execPromise'
-        jest.restoreAllMocks();
+        console.error.mockRestore();
+    });
+
+    it('should find a local IP when one is present', async () => {
+        // Mock the output of ipconfig for a case where a local IP is found
+        const execMock = jest.spyOn(require('child_process'), 'exec').mockResolvedValue({
+            stdout: '192.168.1.10\n',
+            stderr: ''
+        });
+
+        const result = await getLocalIP();
+        expect(result).toBe('192.168.1.10');
+
+        execMock.mockRestore();
+    });
+
+    it('should return null when no local IP is found', async () => {
+        // Mock the output of ipconfig for a case where no local IP is found
+        const execMock = jest.spyOn(require('child_process'), 'exec').mockResolvedValue({
+            stdout: '10.0.0.5\n',
+            stderr: ''
+        });
+
+        const result = await getLocalIP();
+        expect(result).toBeNull();
+
+        execMock.mockRestore();
+    });
+
+    it('should find the correct local IP when multiple IPs are present', async () => {
+        // Mock the output with multiple local IPs
+        const execMock = jest.spyOn(require('child_process'), 'exec').mockResolvedValue({
+            stdout: '10.0.0.5\n192.168.1.10\n',
+            stderr: ''
+        });
+
+        const result = await getLocalIP();
+        expect(result).toBe('192.168.1.10');
+
+        execMock.mockRestore();
+    });
+
+    it('should return null when the command fails', async () => {
+        // Simulate a case where exec throws an error
+        const execMock = jest.spyOn(require('child_process'), 'exec').mockRejectedValue(new Error('CalledProcessError'));
+
+        const result = await getLocalIP().catch(() => null);
+        expect(result).toBeNull();
+
+        execMock.mockRestore();
+    });
+
+    it('should return null when an unexpected error occurs', async () => {
+        // Simulate an unexpected error
+        const execMock = jest.spyOn(require('child_process'), 'exec').mockRejectedValue(new Error('Unexpected error'));
+
+        const result = await getLocalIP().catch(() => null);
+        expect(result).toBeNull();
+
+        execMock.mockRestore();
     });
 });
 ```
 
 ### Explanation:
-1. **JavaScript Implementation**:
-   - The `getLocalIp` function is implemented using `child_process` and `util.promisify` to handle asynchronous execution.
-   - The function uses a regular expression to find IPv4 addresses and returns the first one that starts with "192.168.".
+1. **Importing `child_process`**: This module allows you to spawn child processes and interact with them.
+2. **Regular Expression**: The regular expression `ipPattern` is used to match IPv4 addresses.
+3. **Function `getLocalIP`**:
+   - It is defined as an `async` function to handle asynchronous operations.
+   - It uses a promise to execute the `ipconfig` command asynchronously.
+   - It captures the standard output and searches for IP addresses using the regular expression.
+   - If an error occurs during the execution of the command, it logs the error and returns `null`.
+   - If no IP addresses are found, it logs an error message and returns `null`.
+   - If an IP address starting with `"192.168."` is found, it returns it; otherwise, it returns `null`.
 
-2. **Jest Test Class**:
-   - The `describe` block defines the test suite for the `getLocalIp` function.
-   - Each `it` block represents a test case.
-   - `jest.spyOn` is used to mock the `execPromise` function to simulate different outputs from the `ipconfig` command.
-   - Assertions are made using `expect` to verify the expected behavior of the function.
-   - `afterEach` is used to restore the original implementation of `execPromise` after each test to avoid side effects.
+4. **Jest Test Suite**:
+   - Each test case uses `beforeEach` and `afterEach` hooks to set up and tear down mocks.
+   - `jest.spyOn` is used to mock the `exec` function from `child_process`.
+   - Assertions are made using Jest's `expect` function.
+   - The `catch` block is used to handle rejected promises and ensure the test does not fail due to unhandled rejections.
 
-This conversion ensures that the functionality and logic of the tests are preserved while adhering to Jest's testing standards.
+This ensures that the functionality and logic of the tests are preserved while adapting to Jest's syntax and features.

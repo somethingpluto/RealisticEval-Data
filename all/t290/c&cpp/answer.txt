@@ -1,8 +1,16 @@
-Sure! Below is the equivalent C++ code for the provided Python script. This code will handle the conversion of RDF JSON-LD data to NGSI-LD format using C++ and the `nlohmann/json` library for JSON handling.
+Sure, here is the equivalent C++ code for the provided Python function. This code will use the C++ standard library and `nlohmann/json` for JSON handling, which is a popular JSON library for C++.
 
-First, you need to include the `nlohmann/json` library, which can be included via a header file or installed in your project.
+First, you need to include the necessary headers and libraries:
 
-Here’s the C++ code:
+```cpp
+#include <iostream>
+#include <string>
+#include <nlohmann/json.hpp>
+
+using json = nlohmann::json;
+```
+
+Now, let's write the function:
 
 ```cpp
 #include <iostream>
@@ -13,20 +21,22 @@ using json = nlohmann::json;
 
 // Function to convert RDF JSON-LD to NGSI-LD format
 json rdf_jsonld_to_ngsild(const json& rdf_jsonld) {
-    json ngsi_ld;
-    ngsi_ld["id"] = rdf_jsonld.value("@id", "urn:ngsi-ld:unknown:id");
-    ngsi_ld["type"] = rdf_jsonld.value("@type", "UnknownType");
-    ngsi_ld["@context"] = rdf_jsonld.value("@context", "https://schema.lab.fiware.org/ld/context");
-    ngsi_ld["attributes"] = json::array();
+    json ngsi_ld = {
+        {"id", rdf_jsonld.value("@id", "urn:ngsi-ld:unknown:id")},
+        {"type", rdf_jsonld.value("@type", "UnknownType")},
+        {"@context", rdf_jsonld.value("@context", "https://schema.lab.fiware.org/ld/context")},
+        {"attributes", json::array()}
+    };
 
     // Assuming simple attribute structure conversion
     for (auto it = rdf_jsonld.begin(); it != rdf_jsonld.end(); ++it) {
         std::string key = it.key();
         if (key != "@context" && key != "@id" && key != "@type") {
-            json attribute;
-            attribute["type"] = "Property";
-            attribute["name"] = key;
-            attribute["value"] = it.value();
+            json attribute = {
+                {"type", "Property"},
+                {"name", key},
+                {"value", it.value()}
+            };
             ngsi_ld["attributes"].push_back(attribute);
         }
     }
@@ -36,28 +46,22 @@ json rdf_jsonld_to_ngsild(const json& rdf_jsonld) {
 
 int main() {
     // Example usage
-    std::string input_json = R"({
-        "@context": "http://example.com/context",
-        "@id": "urn:ngsi-ld:example:123",
-        "@type": "ExampleType",
-        "attribute1": "value1",
-        "attribute2": "value2"
-    })";
+    std::string input_json_str = R"({"@id": "urn:ngsi-ld:example:id", "@type": "ExampleType", "attr1": "value1", "attr2": "value2"})";
+    json input_json = json::parse(input_json_str);
 
-    json rdf_jsonld = json::parse(input_json);
-    json ngsi_ld = rdf_jsonld_to_ngsild(rdf_jsonld);
-
-    std::cout << ngsi_ld.dump(4) << std::endl;  // Pretty print the result
+    json result = rdf_jsonld_to_ngsild(input_json);
+    std::cout << result.dump(4) << std::endl;  // Pretty print the result
 
     return 0;
 }
 ```
 
 ### Explanation:
-1. **Imports**: The necessary headers are included at the beginning, including the `nlohmann/json` library for JSON handling.
-2. **Function Definition**: The function `rdf_jsonld_to_ngsild` takes a `json` object as input and returns a `json` object representing the converted data.
-3. **JSON Handling**: The `json` library provides methods for parsing, accessing, and manipulating JSON objects.
-4. **Attribute Conversion**: The loop iterates over the keys in the input JSON and constructs the attributes section accordingly.
-5. **Example Usage**: In the `main` function, an example input JSON is provided, parsed, and then converted to NGSI-LD format. The resulting JSON is printed to the console.
+1. **Headers**: We include the necessary headers (`<iostream>`, `<string>`, and `nlohmann/json.hpp`) for basic I/O operations, string manipulation, and JSON handling.
+2. **Using Alias**: We define an alias `json` for `nlohmann::json` to make the code more readable.
+3. **Function Definition**: The `rdf_jsonld_to_ngsild` function takes a `json` object as input and returns a `json` object.
+4. **JSON Initialization**: We initialize the `ngsi_ld` JSON object with default values using the `.value()` method, which provides a default value if the key is not found.
+5. **Looping Through JSON**: We iterate through the keys of the input JSON object using a range-based for loop. If the key is not one of the reserved keys (`"@context"`, `"@id"`, `"@type"`), we add it to the `attributes` array.
+6. **Main Function**: An example usage is provided in the `main` function, where we parse a sample JSON string, call the `rdf_jsonld_to_ngsild` function, and print the result.
 
-Make sure you have the `nlohmann/json` library available in your project or include it via a package manager or by downloading the single-header file.
+This should provide the same functionality as the original Python code but adapted to C++ syntax and features.

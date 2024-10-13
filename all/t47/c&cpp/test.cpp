@@ -1,37 +1,29 @@
-TEST_CASE("Find Nth Weekday of Specific Year", "[weekday]") {
-    // Test Case 1: First Monday of April 2023
-    SECTION("First Monday of April 2023") {
-        auto result = find_nth_weekday_of_specific_year(2023, 4, 1, 0);
-        REQUIRE(result == datetime::date(2023, 4, 3)); // April 3, 2023 is the first Monday
+TEST_CASE("Test find_nth_weekday_of_specific_year", "[find_nth_weekday_of_specific_year]") {
+    SECTION("Regular occurrence") {
+        // Test for the 2nd Monday of May 2023
+        auto result = find_nth_weekday_of_specific_year(2023, 5, 2, 0);  // Monday is 0
+        auto expected = std::chrono::sys_days{std::chrono::year_month_day{std::chrono::year{2023}, std::chrono::month{5}, std::chrono::day{8}}};
+        REQUIRE(result == expected);
     }
 
-    // Test Case 2: Second Wednesday of May 2023
-    SECTION("Second Wednesday of May 2023") {
-        auto result = find_nth_weekday_of_specific_year(2023, 5, 2, 2);
-        REQUIRE(result == datetime::date(2023, 5, 17)); // May 17, 2023 is the second Wednesday
+    SECTION("Last occurrence") {
+        // Test for the 5th Monday of May 2023, which doesn't exist, should return the last Monday
+        auto result = find_nth_weekday_of_specific_year(2023, 5, 5, 0);  // Monday is 0
+        auto expected = std::chrono::sys_days{std::chrono::year_month_day{std::chrono::year{2023}, std::chrono::month{5}, std::chrono::day{29}}};
+        REQUIRE(result == expected);
     }
 
-    // Test Case 3: Third Friday of June 2023
-    SECTION("Third Friday of June 2023") {
-        auto result = find_nth_weekday_of_specific_year(2023, 6, 3, 4);
-        REQUIRE(result == datetime::date(2023, 6, 16)); // June 16, 2023 is the third Friday
+    SECTION("First day is weekday") {
+        // Test for when the first day of the month is the weekday in question, 1st Tuesday of August 2023
+        auto result = find_nth_weekday_of_specific_year(2023, 8, 1, 1);  // Tuesday is 1
+        auto expected = std::chrono::sys_days{std::chrono::year_month_day{std::chrono::year{2023}, std::chrono::month{8}, std::chrono::day{1}}};
+        REQUIRE(result == expected);
     }
 
-    // Test Case 4: Fourth Saturday of July 2023
-    SECTION("Fourth Saturday of July 2023") {
-        auto result = find_nth_weekday_of_specific_year(2023, 7, 4, 5);
-        REQUIRE(result == datetime::date(2023, 7, 29)); // July 29, 2023 is the fourth Saturday
-    }
-
-    // Test Case 5: Fifth Sunday of August 2023
-    SECTION("Fifth Sunday of August 2023") {
-        auto result = find_nth_weekday_of_specific_year(2023, 8, 5, 6);
-        REQUIRE(result == datetime::date(2023, 8, 27)); // August 27, 2023 is the fifth Sunday
-    }
-
-    // Test Case 6: Non-existent occurrence, should return the last occurrence
-    SECTION("Non-existent occurrence, should return the last occurrence") {
-        auto result = find_nth_weekday_of_specific_year(2023, 2, 5, 0); // February 2023 has only 4 Mondays
-        REQUIRE(result == datetime::date(2023, 2, 20)); // Last Monday in February 2023
+    SECTION("Edge year transition") {
+        // Test for the 1st Friday of December 2023
+        auto result = find_nth_weekday_of_specific_year(2023, 12, 1, 4);  // Friday is 4
+        auto expected = std::chrono::sys_days{std::chrono::year_month_day{std::chrono::year{2023}, std::chrono::month{12}, std::chrono::day{1}}};
+        REQUIRE(result == expected);
     }
 }

@@ -1,80 +1,187 @@
-Sure, let's create the equivalent Java test class using JUnit. Since you have only provided a method definition without any unittest test cases, I will assume that you want to write test cases for this method. Here’s how you can do it:
+Certainly! Below is the equivalent Java test class using JUnit for the provided Python unittest class. The Java test class is placed in the package `org.real.temp` and named `Tester`. It includes appropriate JUnit annotations and assertion methods to preserve the functionality and logic of the tests.
 
-1. **Create a method to perform the functionality**.
-2. **Write JUnit test cases for the method**.
-
-Here's the Java code with JUnit 5:
+### Java Code:
 
 ```java
 package org.real.temp;
 
-import org.apache.poi.xwpf.usermodel.XWPFDocument;
-import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
+import org.docx4j.Docx4J;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.wml.P;
+import org.docx4j.wml.Text;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import java.util.List;
 
 public class Tester {
 
-    /**
-     * Extracts text content from a given Word file (.docx).
-     *
-     * @param docxFilePath The path to the Word file.
-     * @return The extracted text content.
-     */
-    public String extractTextFromWord(String docxFilePath) {
-        try (FileInputStream fis = new FileInputStream(new File(docxFilePath))) {
-            XWPFDocument document = new XWPFDocument(fis);
-            XWPFWordExtractor extractor = new XWPFWordExtractor(document);
-            String text = extractor.getText();
-            extractor.close();
-            return text;
-        } catch (IOException e) {
-            throw new RuntimeException("Error extracting text from Word document", e);
+    private String testDocxPath;
+    private String emptyDocxPath;
+    private String specialCharactersDocxPath;
+    private String multiParaDocxPath;
+
+    @Before
+    public void setUp() throws Docx4JException, IOException {
+        // Set up the testing environment
+        testDocxPath = "test_document.docx";
+        createSampleDocx(testDocxPath);
+
+        emptyDocxPath = "empty_document.docx";
+        Docx4J.createWordprocessingMLPackage().save(new File(emptyDocxPath));
+
+        specialCharactersDocxPath = "special_characters.docx";
+        createSampleDocxWithSpecialCharacters(specialCharactersDocxPath);
+
+        multiParaDocxPath = "multi_paragraphs.docx";
+        createSampleDocxWithMultipleParagraphs(multiParaDocxPath);
+    }
+
+    @After
+    public void tearDown() {
+        // Clean up the test environment
+        cleanUpFile(testDocxPath);
+        cleanUpFile(emptyDocxPath);
+        cleanUpFile(specialCharactersDocxPath);
+        cleanUpFile(multiParaDocxPath);
+    }
+
+    private void createSampleDocx(String filePath) throws Docx4JException, IOException {
+        // Helper method to create a sample Word document for testing
+        WordprocessingMLPackage wordMLPackage = Docx4J.createWordprocessingMLPackage();
+        wordMLPackage.getMainDocumentPart().addParagraphOfText("Hello World!");
+        wordMLPackage.getMainDocumentPart().addParagraphOfText("This is a test document.");
+        wordMLPackage.save(new File(filePath));
+    }
+
+    private void createSampleDocxWithSpecialCharacters(String filePath) throws Docx4JException, IOException {
+        // Helper method to create a sample Word document with special characters
+        WordprocessingMLPackage wordMLPackage = Docx4J.createWordprocessingMLPackage();
+        wordMLPackage.getMainDocumentPart().addParagraphOfText("Hello, 世界! @#$%^&*()");
+        wordMLPackage.save(new File(filePath));
+    }
+
+    private void createSampleDocxWithMultipleParagraphs(String filePath) throws Docx4JException, IOException {
+        // Helper method to create a sample Word document with multiple paragraphs
+        WordprocessingMLPackage wordMLPackage = Docx4J.createWordprocessingMLPackage();
+        wordMLPackage.getMainDocumentPart().addParagraphOfText("First paragraph.");
+        wordMLPackage.getMainDocumentPart().addParagraphOfText("Second paragraph.");
+        wordMLPackage.getMainDocumentPart().addParagraphOfText("Third paragraph.");
+        wordMLPackage.save(new File(filePath));
+    }
+
+    private void cleanUpFile(String filePath) {
+        // Helper method to remove created files after tests
+        File file = new File(filePath);
+        if (file.exists()) {
+            file.delete();
         }
     }
 
     @Test
-    void testExtractTextFromWord() throws IOException {
-        // Assuming "test.docx" contains some predefined text
-        String docxFilePath = "path/to/test.docx";
-        String expectedText = "This is a test document.";
+    public void testExtractTextSuccess() throws Docx4JException, IOException {
+        // Test extracting text from a normal Word document
+        String expectedText = "Hello World!\nThis is a test document.";
+        String extractedText = extractTextFromWord(testDocxPath);
+        assertEquals(expectedText, extractedText.strip());
+    }
 
-        // Extract text from the Word document
-        String actualText = extractTextFromWord(docxFilePath);
+    @Test
+    public void testExtractEmptyDocument() throws Docx4JException, IOException {
+        // Test extracting text from an empty Word document
+        String extractedText = extractTextFromWord(emptyDocxPath);
+        assertEquals("", extractedText);
+    }
 
-        // Verify the extracted text matches the expected text
-        assertNotNull(actualText, "Extracted text should not be null");
-        assertEquals(expectedText, actualText, "Extracted text does not match the expected text");
+    @Test
+    public void testExtractTextWithSpecialCharacters() throws Docx4JException, IOException {
+        // Test extracting text from a document containing special characters
+        String expectedText = "Hello, 世界! @#$%^&*()";
+        String extractedText = extractTextFromWord(specialCharactersDocxPath);
+        assertEquals(expectedText, extractedText.strip());
+    }
+
+    @Test
+    public void testExtractTextWithMultipleParagraphs() throws Docx4JException, IOException {
+        // Test extracting text from a document with multiple paragraphs
+        String expectedText = "First paragraph.\nSecond paragraph.\nThird paragraph.";
+        String extractedText = extractTextFromWord(multiParaDocxPath);
+        assertEquals(expectedText, extractedText.strip());
+    }
+
+    // Method to extract text from a Word document
+    private String extractTextFromWord(String docxFilePath) throws Docx4JException, IOException {
+        try {
+            // Open the Word document
+            WordprocessingMLPackage wordMLPackage = Docx4J.load(new File(docxFilePath));
+
+            // Extract text from each paragraph in the document
+            StringBuilder textContent = new StringBuilder();
+            List<Object> paragraphs = wordMLPackage.getMainDocumentPart().getContent();
+
+            for (Object paragraph : paragraphs) {
+                if (paragraph instanceof P) {
+                    P p = (P) paragraph;
+                    List<Text> texts = p.getContent();
+                    for (Text text : texts) {
+                        textContent.append(text.getValue());
+                    }
+                }
+            }
+
+            return textContent.toString();
+
+        } catch (Docx4JException | IOException e) {
+            System.out.println("An error occurred: " + e.getMessage());
+            return null;
+        }
     }
 }
 ```
 
 ### Explanation:
-1. **Method Definition**: `extractTextFromWord` is defined as a public method that takes a `String` representing the file path and returns the extracted text.
-2. **JUnit Test**: `testExtractTextFromWord` is a test method annotated with `@Test`. It uses the Apache POI library to read the Word document and extract text. It then verifies the extracted text against an expected value.
+1. **Package Declaration**: The Java code starts with the package declaration `package org.real.temp;`.
 
-### Dependencies:
-- Add the Apache POI dependency to your `pom.xml` or `build.gradle` to use the `XWPFDocument` and `XWPFWordExtractor` classes.
+2. **Imports**: The necessary imports are included at the beginning of the file:
+   - `org.docx4j.Docx4J`
+   - `org.docx4j.openpackaging.exceptions.Docx4JException`
+   - `org.docx4j.openpackaging.packages.WordprocessingMLPackage`
+   - `org.docx4j.wml.P`
+   - `org.docx4j.wml.Text`
+   - `org.junit.After`
+   - `org.junit.Before`
+   - `org.junit.Test`
+   - `static org.junit.Assert.assertEquals`
+   - `java.io.File`
+   - `java.io.IOException`
+   - `java.util.List`
 
-For Maven:
-```xml
-<dependency>
-    <groupId>org.apache.poi</groupId>
-    <artifactId>poi-ooxml</artifactId>
-    <version>5.2.2</version>
-</dependency>
-```
+3. **Class Definition**: The class `Tester` is defined with the necessary setup and teardown methods (`setUp` and `tearDown`) and test methods.
 
-For Gradle:
-```groovy
-implementation 'org.apache.poi:poi-ooxml:5.2.2'
-```
+4. **JUnit Annotations**:
+   - `@Before`: Used to set up the testing environment before each test.
+   - `@After`: Used to clean up the testing environment after each test.
+   - `@Test`: Used to define individual test methods.
 
-This setup ensures that the Java test class is functionally equivalent to the Python unittest class while adhering to JUnit best practices.
+5. **Helper Methods**:
+   - `createSampleDocx`: Creates a sample Word document with specified content.
+   - `createSampleDocxWithSpecialCharacters`: Creates a sample Word document with special characters.
+   - `createSampleDocxWithMultipleParagraphs`: Creates a sample Word document with multiple paragraphs.
+   - `cleanUpFile`: Removes the created files after tests.
+
+6. **Test Methods**:
+   - `testExtractTextSuccess`: Tests extracting text from a normal Word document.
+   - `testExtractEmptyDocument`: Tests extracting text from an empty Word document.
+   - `testExtractTextWithSpecialCharacters`: Tests extracting text from a document containing special characters.
+   - `testExtractTextWithMultipleParagraphs`: Tests extracting text from a document with multiple paragraphs.
+
+7. **Assertion Methods**: Uses `assertEquals` to verify the expected results.
+
+8. **Extract Text Method**: The `extractTextFromWord` method is defined to extract text from a Word document, similar to the Python function.
+
+This Java code preserves the original functionality and structure of the Python unittest class while adhering to JUnit conventions and best practices.

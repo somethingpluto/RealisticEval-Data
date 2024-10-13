@@ -1,14 +1,67 @@
-Here is the equivalent TypeScript code signature for your Python function:
+Certainly! Below is the equivalent TypeScript code for the provided Python function, including proper type annotations and JSDoc-style documentation comments.
+
+### TypeScript Code
+
+First, we'll need to use a library like `@types/ndarray` to handle NumPy-like arrays. However, since there isn't a direct equivalent of NumPy in TypeScript, we'll use `Float32Array` for simplicity.
+
+Here's the TypeScript code:
 
 ```typescript
+import { Float32Array } from "typed-array";
+
 /**
  * Translate the point cloud by a given vector.
  *
- * @param pointCloud - A N x 3 array representing the 3D point cloud.
- * @param translationVector - A 1 x 3 array or list representing the translation vector.
- * @returns A N x 3 array of the translated point cloud.
+ * @param pointCloud - A N x 3 Float32Array representing the 3D point cloud.
+ * @param translationVector - A 1 x 3 Float32Array or array representing the translation vector.
+ * @returns A N x 3 Float32Array of the translated point cloud.
  */
-function translatePointCloud(pointCloud: number[][], translationVector: number[]): number[][] {
+function translatePointCloud(pointCloud: Float32Array, translationVector: Float32Array | number[]): Float32Array {
+    // Ensure the translationVector is a Float32Array for broadcasting
+    const translationVectorTyped = new Float32Array(translationVector);
+
+    // Check if translationVector is of correct shape
+    if (translationVectorTyped.length !== 3) {
+        throw new Error("translationVector must be a 1D array of length 3");
+    }
+
+    // Calculate the number of points in the point cloud
+    const numPoints = pointCloud.length / 3;
+
+    // Create a new Float32Array for the translated point cloud
+    const translatedPointCloud = new Float32Array(pointCloud.length);
+
+    // Translate the point cloud by adding the translation vector to each point
+    for (let i = 0; i < numPoints; i++) {
+        const index = i * 3;
+        translatedPointCloud[index] = pointCloud[index] + translationVectorTyped[0];
+        translatedPointCloud[index + 1] = pointCloud[index + 1] + translationVectorTyped[1];
+        translatedPointCloud[index + 2] = pointCloud[index + 2] + translationVectorTyped[2];
+    }
+
+    return translatedPointCloud;
+}
+
+// Example usage
+const pointCloud = new Float32Array([1, 2, 3, 4, 5, 6]);
+const translationVector = [0.5, 0.5, 0.5];
+const translatedPointCloud = translatePointCloud(pointCloud, translationVector);
+console.log(translatedPointCloud); // Output: Float32Array [1.5, 2.5, 3.5, 4.5, 5.5, 6.5]
 ```
 
-Please note that TypeScript does not have a built-in type for NumPy arrays like Python does. Instead, we use `number[][]` which represents a two-dimensional array of numbers, similar to how you would represent a matrix in JavaScript/TypeScript. If you need more specific types for handling 3D points and vectors, you might consider creating custom interfaces or types.
+### Explanation
+
+1. **Type Annotations**:
+   - `pointCloud` is annotated as `Float32Array`, which represents a 32-bit floating-point array.
+   - `translationVector` can be either a `Float32Array` or an array of numbers (`number[]`).
+
+2. **JSDoc Comments**:
+   - The function is documented using JSDoc comments, providing clear descriptions of parameters and return values.
+
+3. **Error Handling**:
+   - The function checks if the `translationVector` has the correct length (3) and throws an error if it does not.
+
+4. **Translation Logic**:
+   - The function iterates over the point cloud and adds the translation vector to each point, producing the translated point cloud.
+
+This TypeScript code preserves the functionality and structure of the original Python code while adapting it to TypeScript's static type system and idiomatic practices.

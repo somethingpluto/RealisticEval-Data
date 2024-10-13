@@ -1,23 +1,25 @@
-/**
- * Implement decryption based on polynomials and keys
- * @param degree - The highest degree of a polynomial is added by one
- * @param modulus - Modulus to use when encrypting question
- * @param key - An array of encrypted keys
- * @param encryptedData - An array of encrypted question
- * @returns - decrypted question
- */
 function performPolynomialDecryption(degree: number, modulus: number, key: number[], encryptedData: number[]): number[] {
-
-    // Decrypts the polynomial based encryption by reversing the encryption steps
+    /**
+     * Implement decryption based on polynomials and keys.
+     * 
+     * @param degree - The highest degree of a polynomial plus one.
+     * @param modulus - Modulus to use when encrypting the data.
+     * @param key - An array of encrypted keys.
+     * @param encryptedData - An array of encrypted data.
+     * 
+     * @returns The decrypted data.
+     */
     const decryptedData: number[] = [];
 
     for (let index = 0; index < degree; index++) {
-        // Calculate the decrypted value considering positive modulus range
+        // Calculate the decrypted value considering the positive modulus range
         let decryptedValue = (encryptedData[index] - key[index]) % modulus;
-        // Adjust for JavaScript's behavior with negative numbers
+
+        // Adjust for TypeScript's behavior with negative numbers
         if (decryptedValue < 0) {
             decryptedValue += modulus;
         }
+
         decryptedData.push(decryptedValue);
     }
 

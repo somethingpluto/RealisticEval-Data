@@ -4,56 +4,47 @@
 #include <codecvt>
 #include <locale>
 
-std::vector<char> findShiftJisNotGbk() {
-    std::set<char> shiftJisChars;
-    std::set<char> gbkChars;
+std::vector<wchar_t> find_shiftjis_not_gbk() {
+    // List to store characters that are in Shift-JIS but not in GBK
+    std::vector<wchar_t> unique_to_shiftjis;
 
-    // Load Shift-JIS locale
-    std::locale shiftJisLocale("ja_JP.Shift_JIS");
-    std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> converter;
+    // Iterate over a range of Unicode code points
+    // The BMP goes up to U+FFFF, which is 65535 in decimal
+    for (int codepoint = 0; codepoint < 65536; ++codepoint) {
+        wchar_t character = static_cast<wchar_t>(codepoint);
 
-    // Populate shiftJisChars with characters encodable in Shift-JIS
-    for (int i = 0; i <= 255; ++i) {
-        char ch = static_cast<char>(i);
         try {
-            std::wstring wideStr = converter.from_bytes(&ch, &ch + 1);
-            if (!wideStr.empty()) {
-                std::string encodedStr = converter.to_bytes(wideStr);
-                if (encodedStr.size() == 1 && encodedStr[0] == ch) {
-                    shiftJisChars.insert(ch);
-                }
+            // Try encoding the character in Shift-JIS
+            std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+            std::string shiftjis_encoded = converter.to_bytes(character);
+            std::locale loc("ja_JP.shift_jis");
+            if (!std::use_facet<std::ctype<wchar_t>>(loc).is(std::ctype_base::print, character)) {
+                throw std::runtime_error("Character not representable in Shift-JIS");
             }
-        } catch (...) {
-            // Ignore exceptions
-        }
-    }
 
-    // Load GBK locale
-    std::locale gbkLocale("zh_CN.GBK");
-
-    // Populate gbkChars with characters encodable in GBK
-    for (int i = 0; i <= 255; ++i) {
-        char ch = static_cast<char>(i);
-        try {
-            std::wstring wideStr = converter.from_bytes(&ch, &ch + 1);
-            if (!wideStr.empty()) {
-                std::string encodedStr = converter.to_bytes(wideStr);
-                if (encodedStr.size() == 1 && encodedStr[0] == ch) {
-                    gbkChars.insert(ch);
+            try {
+                // Try encoding the character in GBK
+                std::locale gbk_loc("zh_CN.GBK");
+                if (!std::use_facet<std::ctype<wchar_t>>(gbk_loc).is(std::ctype_base::print, character)) {
+                    throw std::runtime_error("Character not representable in GBK");
                 }
+            } catch (const std::runtime_error&) {
+                // If it fails, the character is not representable in GBK but is in Shift-JIS
+                unique_to_shiftjis.push_back(character);
             }
-        } catch (...) {
-            // Ignore exceptions
+        } catch (const std::runtime_error&) {
+            // If it fails, the character is not representable in Shift-JIS, so we skip it
+            continue;
         }
     }
 
-    // Find characters unique to Shift-JIS
-    std::vector<char> result;
-    for (const auto& ch : shiftJisChars) {
-        if (gbkChars.find(ch) == gbkChars.end()) {
-            result.push_back(ch);
-        }
-    }
+    return unique_to_shiftjis;
+}
 
-    return result;
+int main() {
+    auto result = find_shiftjis_not_gbk();
+    for (wchar_t c : result) {
+        std::wcout << c << L" ";
+    }
+    return 0;
 }

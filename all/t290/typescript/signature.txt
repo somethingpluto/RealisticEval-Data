@@ -1,38 +1,73 @@
-Here's the equivalent TypeScript code for the given Python function:
+Certainly! Below is the equivalent TypeScript code for the provided Python function, including proper type annotations and JSDoc-style documentation comments:
 
 ```typescript
-import { Dict } from "some-typings"; // Assuming Dict is imported from a library
-
 /**
- * Converts the input in RDF JSON-LD format to NGSI-LD format.
+ * Converts the question in RDF JSON-LD format to NGSI-LD format.
  * 
- * @param rdfJsonLd - RDF JSON-LD formatted question as a string.
+ * @param rdfJsonld - RDF JSON-LD formatted question as a string.
  * @returns Data formatted according to NGSI-LD specifications.
  */
-function rdfJsonLdToNgSiLd(rdfJsonLd: string): Dict {
-    // Function body goes here
+function rdfJsonldToNgsild(rdfJsonld: string): Record<string, any> {
+  let parsedRdfJsonld: Record<string, any>;
+
+  if (typeof rdfJsonld === 'string') {
+    parsedRdfJsonld = JSON.parse(rdfJsonld);
+  } else {
+    parsedRdfJsonld = rdfJsonld;
+  }
+
+  const ngsiLd: Record<string, any> = {
+    id: parsedRdfJsonld['@id'] || 'urn:ngsi-ld:unknown:id',
+    type: parsedRdfJsonld['@type'] || 'UnknownType',
+    '@context': parsedRdfJsonld['@context'] || 'https://schema.lab.fiware.org/ld/context',
+    attributes: []
+  };
+
+  // Assuming simple attribute structure conversion
+  for (const key in parsedRdfJsonld) {
+    if (parsedRdfJsonld.hasOwnProperty(key) && !['@context', '@id', '@type'].includes(key)) {
+      ngsiLd.attributes.push({
+        type: 'Property',
+        name: key,
+        value: parsedRdfJsonld[key]
+      });
+    }
+  }
+
+  return ngsiLd;
 }
+
+// Example usage
+const exampleRdfJsonld = `{
+  "@id": "urn:ngsi-ld:example:id",
+  "@type": "ExampleType",
+  "@context": "https://example.com/context",
+  "attribute1": "value1",
+  "attribute2": "value2"
+}`;
+
+console.log(rdfJsonldToNgsild(exampleRdfJsonld));
 ```
 
-In this conversion:
-- The `from typing import Dict` is replaced with an import statement assuming `Dict` is a type defined elsewhere.
-- The function name `rdf_jsonld_to_ngsild` is converted to `rdfJsonLdToNgSiLd` to follow TypeScript naming conventions (camelCase).
-- The parameter name `rdf_jsonld` is converted to `rdfJsonLd`.
-- The docstring is converted to a JSDoc comment block.
-- The return type annotation `Dict` is preserved assuming it is a valid type in the context of the TypeScript code. If `Dict` is not available, you might need to define it or use a different type like `Record<string, any>`.
+### Explanation:
+1. **Function Signature**:
+   - The function signature is defined with the correct parameter type (`string`) and return type (`Record<string, any>`).
 
-If `Dict` needs to be defined explicitly, you can do so as follows:
+2. **JSDoc Documentation**:
+   - Added JSDoc-style comments to describe the function, its parameters, and its return value.
 
-```typescript
-type Dict = Record<string, any>;
+3. **Type Annotations**:
+   - Used `Record<string, any>` to represent a generic dictionary-like object, which is similar to `Dict` in Python.
 
-/**
- * Converts the input in RDF JSON-LD format to NGSI-LD format.
- * 
- * @param rdfJsonLd - RDF JSON-LD formatted question as a string.
- * @returns Data formatted according to NGSI-LD specifications.
- */
-function rdfJsonLdToNgSiLd(rdfJsonLd: string): Dict {
-    // Function body goes here
-}
-```
+4. **JSON Parsing**:
+   - If the input is a string, it is parsed using `JSON.parse`.
+   - If the input is already an object, it is used directly.
+
+5. **NGSI-LD Object Construction**:
+   - Constructed the `ngsiLd` object with default values for `id`, `type`, and `@context`.
+   - Iterated over the keys of the parsed RDF JSON-LD object to construct the `attributes` array.
+
+6. **Example Usage**:
+   - Provided an example RDF JSON-LD string and demonstrated how to call the function and log the result.
+
+This TypeScript code preserves the original functionality and structure of the Python code while adhering to TypeScript's static type system and using appropriate documentation comments.

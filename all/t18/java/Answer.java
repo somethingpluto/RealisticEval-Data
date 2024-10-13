@@ -3,22 +3,34 @@ package org.real.temp;
 public class Answer {
 
     /**
-     * Convert a floating point number between 0 and 1 to a color from red to green in the color format RGB.
-     *
+     * Converts a floating-point number between 0 and 1 to a color from red to green in RGB format.
+     * 
      * @param value A float between 0 and 1.
-     * @return A tuple representing the RGB color.
+     * @return An array representing the RGB color.
+     * @throws IllegalArgumentException If the value is not between 0 and 1 inclusive.
      */
     public static int[] floatToRGB(float value) {
-        // Check if the input value is within the valid range
-        if (value < 0 || value > 1) {
-            throw new IllegalArgumentException("Value must be between 0 and 1");
+        if (value < 0.0f || value > 1.0f) {
+            throw new IllegalArgumentException("Value must be between 0 and 1 inclusive.");
         }
 
-        // Calculate the RGB values based on the input value
-        int r = (int)(255 * (1 - value));
-        int g = (int)(255 * value);
-        int b = 0; // Blue channel is always 0
+        // Calculate the red and green components
+        int red = (int) ((1.0f - value) * 255);
+        int green = (int) (value * 255);
 
-        return new int[]{r, g, b};
+        // Blue component is always 0 for the red-to-green gradient
+        int blue = 0;
+
+        return new int[]{red, green, blue};
+    }
+
+    public static void main(String[] args) {
+        // Example usage
+        try {
+            int[] rgbColor = floatToRGB(0.5f);
+            System.out.println("RGB Color: (" + rgbColor[0] + ", " + rgbColor[1] + ", " + rgbColor[2] + ")");
+        } catch (IllegalArgumentException e) {
+            System.err.println(e.getMessage());
+        }
     }
 }

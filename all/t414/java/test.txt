@@ -1,110 +1,230 @@
-To convert the given Python unittest test class into a JUnit test class in Java, we need to define the method `extract_bib_info` first, then create the JUnit test class with the necessary assertions. Here’s how you can do it:
+Certainly! Below is the equivalent Java test class using JUnit for the provided Python unittest class. The Java test class will be placed in the package `org.real.temp` and named `Tester`. It will include appropriate JUnit annotations and assertions to ensure the functionality and logic of the tests are preserved.
 
-First, let's assume the implementation of the `extract_bib_info` method in Java:
+### Java Test Class
 
 ```java
+package org.real.temp;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.stubbing.Answer;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-public class BibInfoExtractor {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.when;
 
-    public static List<Article> extractBibInfo(String bibFile) {
-        List<Article> articles = new ArrayList<>();
-        // Implementation of reading the BibTeX file and extracting information
-        try (BufferedReader reader = new BufferedReader(new FileReader(bibFile))) {
-            String line;
-            Article currentArticle = null;
-            while ((line = reader.readLine()) != null) {
-                if (line.startsWith("@article")) {
-                    if (currentArticle != null) {
-                        articles.add(currentArticle);
-                    }
-                    currentArticle = new Article();
-                } else if (line.contains("author")) {
-                    currentArticle.setAuthor(line.substring(line.indexOf('=') + 1).trim());
-                } else if (line.contains("title")) {
-                    currentArticle.setTitle(line.substring(line.indexOf('=') + 1).trim());
-                } else if (line.contains("year")) {
-                    currentArticle.setYear(Integer.parseInt(line.substring(line.indexOf('=') + 1).trim()));
+@ExtendWith(MockitoExtension.class)
+public class Tester {
+
+    @Mock
+    private BufferedReader mockReader;
+
+    private static final String DUMMY_BIB_PATH = "dummy.bib";
+
+    @BeforeEach
+    public void setUp() throws IOException {
+        // Setup mock BufferedReader
+        when(mockReader.readLine()).thenAnswer((Answer<String>) invocation -> {
+            String[] lines = getMockBibContent().split("\n");
+            for (String line : lines) {
+                if (line != null && !line.isEmpty()) {
+                    return line;
                 }
             }
-            if (currentArticle != null) {
-                articles.add(currentArticle);
+            return null;
+        });
+    }
+
+    @Test
+    public void testValidEntry() throws IOException {
+        String mockBib = "@article{sample2024,\n  author = {John Doe and Jane Smith},\n  title = {A Comprehensive Study on AI},\n  year = {2024}\n}";
+        setMockBibContent(mockBib);
+
+        List<Dictionary> result = extractBibInfo(DUMMY_BIB_PATH);
+        List<Dictionary> expected = List.of(
+            new Dictionary()
+                .put("title", "A Comprehensive Study on AI")
+                .put("author", "John Doe and Jane Smith")
+                .put("year", "2024")
+        );
+
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void testMultipleEntries() throws IOException {
+        String mockBib = "@article{sample2024,\n  author = {John Doe},\n  title = {A Comprehensive Study on AI},\n  year = {2024}\n}\n" +
+                         "@article{sample2023,\n  author = {Jane Smith},\n  title = {Deep Learning Techniques},\n  year = {2023}\n}";
+        setMockBibContent(mockBib);
+
+        List<Dictionary> result = extractBibInfo(DUMMY_BIB_PATH);
+        List<Dictionary> expected = List.of(
+            new Dictionary()
+                .put("title", "A Comprehensive Study on AI")
+                .put("author", "John Doe")
+                .put("year", "2024"),
+            new Dictionary()
+                .put("title", "Deep Learning Techniques")
+                .put("author", "Jane Smith")
+                .put("year", "2023")
+        );
+
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void testMissingFields() throws IOException {
+        String mockBib = "@article{sample2024,\n  author = {John Doe},\n  title = {Title Missing Year}\n}";
+        setMockBibContent(mockBib);
+
+        List<Dictionary> result = extractBibInfo(DUMMY_BIB_PATH);
+        List<Dictionary> expected = List.of(
+            new Dictionary()
+                .put("title", "Title Missing Year")
+                .put("author", "John Doe")
+                .put("year", null)
+        );
+
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void testEmptyFile() throws IOException {
+        String mockBib = "";
+        setMockBibContent(mockBib);
+
+        List<Dictionary> result = extractBibInfo(DUMMY_BIB_PATH);
+        List<Dictionary> expected = List.of();
+
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void testIncorrectFormat() throws IOException {
+        String mockBib = "@article{sample2024,\n  author = John Doe,\n  title = {Title Without Braces},\n  year = 2024\n}";
+        setMockBibContent(mockBib);
+
+        List<Dictionary> result = extractBibInfo(DUMMY_BIB_PATH);
+        List<Dictionary> expected = List.of(
+            new Dictionary()
+                .put("title", "Title Without Braces")
+                .put("author", null)
+                .put("year", null)
+        );
+
+        assertEquals(expected, result);
+    }
+
+    private void setMockBibContent(String content) {
+        when(mockReader.readLine()).thenAnswer((Answer<String>) invocation -> {
+            String[] lines = content.split("\n");
+            for (String line : lines) {
+                if (line != null && !line.isEmpty()) {
+                    return line;
+                }
             }
+            return null;
+        });
+    }
+
+    private List<Dictionary> extractBibInfo(String bibFile) {
+        List<Dictionary> articles = new ArrayList<>();
+
+        // Regular expressions to match title, author, and year
+        Pattern titlePattern = Pattern.compile("title\\s*=\\s*{([^}]*)}", Pattern.CASE_INSENSITIVE);
+        Pattern authorPattern = Pattern.compile("author\\s*=\\s*{([^}]*)}", Pattern.CASE_INSENSITIVE);
+        Pattern yearPattern = Pattern.compile("year\\s*=\\s*{([^}]*)}", Pattern.CASE_INSENSITIVE);
+
+        try (BufferedReader reader = mockReader) {
+            StringBuilder content = new StringBuilder();
+            String line;
+
+            while ((line = reader.readLine()) != null) {
+                content.append(line).append("\n");
+            }
+
+            // Split the content into individual entries based on '@'
+            String[] entries = content.toString().split("@");
+
+            // Skip the first split, which is empty
+            for (int i = 1; i < entries.length; i++) {
+                Matcher titleMatcher = titlePattern.matcher(entries[i]);
+                Matcher authorMatcher = authorPattern.matcher(entries[i]);
+                Matcher yearMatcher = yearPattern.matcher(entries[i]);
+
+                Dictionary article = new Dictionary();
+
+                if (titleMatcher.find()) {
+                    article.put("title", titleMatcher.group(1));
+                } else {
+                    article.put("title", null);
+                }
+
+                if (authorMatcher.find()) {
+                    article.put("author", authorMatcher.group(1));
+                } else {
+                    article.put("author", null);
+                }
+
+                if (yearMatcher.find()) {
+                    article.put("year", yearMatcher.group(1));
+                } else {
+                    article.put("year", null);
+                }
+
+                articles.add(article);
+            }
+
         } catch (IOException e) {
-            System.out.println("Error reading the BibTeX file.");
+            System.out.println("Error: The file '" + bibFile + "' was not found.");
         }
+
         return articles;
     }
 
-    public static class Article {
-        private String author;
-        private String title;
-        private int year;
+    /**
+     * Simple implementation of a dictionary (key-value store).
+     */
+    public static class Dictionary {
+        private final java.util.Map<String, String> map = new java.util.HashMap<>();
 
-        public String getAuthor() {
-            return author;
+        /**
+         * Puts a key-value pair into the dictionary.
+         *
+         * @param key   The key.
+         * @param value The value.
+         * @return This Dictionary instance for chaining.
+         */
+        public Dictionary put(String key, String value) {
+            map.put(key, value);
+            return this;
         }
 
-        public void setAuthor(String author) {
-            this.author = author;
-        }
-
-        public String getTitle() {
-            return title;
-        }
-
-        public void setTitle(String title) {
-            this.title = title;
-        }
-
-        public int getYear() {
-            return year;
-        }
-
-        public void setYear(int year) {
-            this.year = year;
+        @Override
+        public String toString() {
+            return map.toString();
         }
     }
 }
 ```
 
-Now, let’s create the JUnit test class in the package `org.real.temp`:
+### Explanation:
+1. **Package and Class Definition**: The Java test class is defined within the package `org.real.temp` and named `Tester`.
+2. **JUnit Annotations**: The `@ExtendWith(MockitoExtension.class)` annotation is used to enable Mockito for mocking.
+3. **Mockito Setup**: The `@Mock` annotation is used to create a mock `BufferedReader`.
+4. **BeforeEach Setup**: The `@BeforeEach` method sets up the mock `BufferedReader` with the expected content.
+5. **JUnit Tests**: Each test method uses JUnit annotations (`@Test`) and assertions (`assertEquals`) to validate the behavior of the `extractBibInfo` method.
+6. **Mocking Content**: The `setMockBibContent` method is used to set the content of the mock `BufferedReader`.
+7. **Dictionary Class**: A simple `Dictionary` class is implemented to store the extracted information as key-value pairs.
+8. **Main Extraction Method**: The `extractBibInfo` method is implemented to perform the extraction logic.
 
-```java
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
-import java.util.List;
-
-public class Tester {
-
-    @Test
-    public void testExtractBibInfo() {
-        // Mock data
-        List<BibInfoExtractor.Article> expectedArticles = List.of(
-            new BibInfoExtractor.Article() {{
-                setAuthor("John Doe and Jane Smith");
-                setTitle("A Comprehensive Study on AI");
-                setYear(2024);
-            }}
-        );
-
-        // Assuming bibFile is the path to the BibTeX file or mock content
-        String bibFile = "path/to/bibtexfile.bib";
-        List<BibInfoExtractor.Article> actualArticles = BibInfoExtractor.extractBibInfo(bibFile);
-
-        assertEquals(expectedArticles.size(), actualArticles.size());
-
-        for (int i = 0; i < expectedArticles.size(); i++) {
-            assertEquals(expectedArticles.get(i).getAuthor(), actualArticles.get(i).getAuthor());
-            assertEquals(expectedArticles.get(i).getTitle(), actualArticles.get(i).getTitle());
-            assertEquals(expectedArticles.get(i).getYear(), actualArticles.get(i).getYear());
-        }
-    }
-}
-```
-
-In this example, the `testExtractBibInfo` method checks the correctness of the `extractBibInfo` method by comparing the expected output against the actual output. Adjust the `bibFile` variable according to your test setup. If you're mocking the input instead of using a real file, adjust the test accordingly.
+This Java code preserves the functionality and logic of the original Python unittest class while adhering to Java's syntax and conventions.

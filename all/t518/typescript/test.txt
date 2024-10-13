@@ -1,23 +1,124 @@
-Here is how you can write a similar test case using Jest for your Python function:
+Certainly! Below is the equivalent TypeScript test class using Jest, which preserves the functionality and logic of the provided Python unittest class. The code includes appropriate Jest assertions and type annotations.
+
+### TypeScript Code
 
 ```typescript
-import { describe, it, expect } from '@jest/globals';
+import { convertCsvValues } from './path-to-convert-csv-values'; // Import the convertCsvValues function
 
-describe('convertCsvValues', () => {
-  it('should replace numeric strings with commas with dots', () => {
-    const input = { 'Column1': '123456789' };
-    const output = { 'Column1': '123456789.00' };
+describe('TestConvertCsvValues', () => {
+    describe('testValidNumericStrings', () => {
+        it('should handle valid numeric strings including commas', () => {
+            const row = { value1: '1,234', value2: '5,678', value3: '9,876' };
+            const expected = { value1: '1.234', value2: '5.678', value3: '9.876' };
+            const result = convertCsvValues(row);
+            expect(result).toEqual(expected);
+        });
+    });
 
-    expect(convertCsvValues(input)).toEqual(output);
-  });
+    describe('testNonNumericStrings', () => {
+        it('should handle non-numeric strings', () => {
+            const row = { value1: 'not_a_number', value2: 'hello', value3: 'world' };
+            const expected = { value1: null, value2: null, value3: null };
+            const result = convertCsvValues(row);
+            expect(result).toEqual(expected);
+        });
+    });
 
-  it('should return null for non-numeric strings', () => {
-    const input = { 'Column1': 'abc' };
-    const output = { 'Column1': null };
+    describe('testMixedValues', () => {
+        it('should handle a mix of numeric and non-numeric strings', () => {
+            const row = { value1: '1,234', value2: 'not_a_number', value3: '3,14159' };
+            const expected = { value1: '1.234', value2: null, value3: '3.14159' };
+            const result = convertCsvValues(row);
+            expect(result).toEqual(expected);
+        });
+    });
 
-    expect(convertCsvValues(input)).toEqual(output);
-  });
+    describe('testNoValues', () => {
+        it('should handle a mix of non-numeric and numeric strings', () => {
+            const row = { value1: 'aaaa', value2: 'not_a_number', value3: '3,14' };
+            const expected = { value1: null, value2: null, value3: '3.14' };
+            const result = convertCsvValues(row);
+            expect(result).toEqual(expected);
+        });
+    });
+
+    describe('testEdgeCases', () => {
+        it('should handle edge cases with empty strings and negative numbers', () => {
+            const row = { value1: '', value2: '0.0', value3: '1,23' };
+            const expected = { value1: null, value2: '0.0', value3: '1.23' };
+            const result = convertCsvValues(row);
+            expect(result).toEqual(expected);
+        });
+    });
 });
 ```
 
-Please note that you would need to define the `convertCsvValues` function in TypeScript before running these tests. Also, make sure to install `@types/jest` package if not already installed, which provides type definitions for Jest.
+### Explanation:
+1. **Import Statements**:
+   - Import the `convertCsvValues` function from the appropriate module.
+
+2. **Describe Blocks**:
+   - Use `describe` blocks to group related tests together.
+   - Each `it` block represents a specific test case.
+
+3. **Test Cases**:
+   - Each test case defines the input `row`, the expected output, and asserts the equality using `expect(result).toEqual(expected)`.
+
+4. **Type Annotations**:
+   - The input `row` and expected results are typed appropriately within the test cases.
+
+5. **Jest Assertions**:
+   - Use `expect` and `toEqual` to verify the correctness of the function's output.
+
+### Example Usage
+Assuming you have the `convertCsvValues` function defined in another file, you can run these tests using Jest. Here’s an example of how you might structure your project:
+
+```plaintext
+project/
+├── src/
+│   └── convertCsvValues.ts
+└── tests/
+    └── convertCsvValues.test.ts
+```
+
+In `convertCsvValues.ts`:
+```typescript
+export function convertCsvValues(row: Record<string, string>): Record<string, string | null> {
+    const convertedRow: Record<string, string | null> = {};
+
+    for (const [key, value] of Object.entries(row)) {
+        // Check if the value is numeric with possible comma and negative sign
+        const isNumeric = value.replace(',', '').replace('-', '').match(/^-?\d+(\.\d+)?$/) !== null;
+
+        if (isNumeric) {
+            // Replace comma with dot for numeric conversion
+            convertedRow[key] = value.replace(',', '.');
+        } else {
+            // Set to null if not a valid number
+            convertedRow[key] = null;
+        }
+    }
+
+    return convertedRow;
+}
+```
+
+In `convertCsvValues.test.ts`:
+```typescript
+import { convertCsvValues } from '../src/convertCsvValues';
+
+describe('TestConvertCsvValues', () => {
+    describe('testValidNumericStrings', () => {
+        it('should handle valid numeric strings including commas', () => {
+            const row = { value1: '1,234', value2: '5,678', value3: '9,876' };
+            const expected = { value1: '1.234', value2: '5.678', value3: '9.876' };
+            const result = convertCsvValues(row);
+            expect(result).toEqual(expected);
+        });
+    });
+
+    // ... other test cases ...
+});
+```
+
+This setup ensures that the tests are structured and executed correctly using Jest.

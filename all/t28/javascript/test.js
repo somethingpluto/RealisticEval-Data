@@ -1,10 +1,11 @@
-describe('printMemoryBits', () => {
+describe('TestPrintMemoryBits', () => {
     let originalConsoleLog;
 
     beforeEach(() => {
-        // Capture the console.log output
+        // Mock console.log to capture output
+        const mockConsoleLog = jest.fn();
+        console.log = mockConsoleLog;
         originalConsoleLog = console.log;
-        console.log = jest.fn(); // Mock console.log
     });
 
     afterEach(() => {
@@ -12,28 +13,28 @@ describe('printMemoryBits', () => {
         console.log = originalConsoleLog;
     });
 
-    test('prints a single byte', () => {
+    it('should handle a single byte correctly', () => {
         const memorySection = new Uint8Array([0b10101010]);
         printMemoryBits(memorySection);
-        expect(console.log).toHaveBeenCalledWith('10101010');
+        expect(console.log).toHaveBeenCalledWith("10101010");
     });
 
-    test('prints multiple bytes', () => {
+    it('should handle multiple bytes correctly', () => {
         const memorySection = new Uint8Array([0b11001100, 0b11110000]);
         printMemoryBits(memorySection);
-        expect(console.log).toHaveBeenCalledWith('11001100');
-        expect(console.log).toHaveBeenCalledWith('11110000');
+        expect(console.log).toHaveBeenCalledWith("11001100");
+        expect(console.log).toHaveBeenCalledWith("11110000");
     });
 
-    test('prints all zeros', () => {
+    it('should handle all zeros correctly', () => {
         const memorySection = new Uint8Array([0b00000000]);
         printMemoryBits(memorySection);
-        expect(console.log).toHaveBeenCalledWith('00000000');
+        expect(console.log).toHaveBeenCalledWith("00000000");
     });
 
-    test('prints all ones', () => {
+    it('should handle all ones correctly', () => => {
         const memorySection = new Uint8Array([0b11111111]);
         printMemoryBits(memorySection);
-        expect(console.log).toHaveBeenCalledWith('11111111');
+        expect(console.log).toHaveBeenCalledWith("11111111");
     });
 });

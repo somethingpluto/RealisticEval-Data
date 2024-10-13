@@ -1,123 +1,153 @@
-Certainly! Below is the equivalent Jest test class for the given Python unittest test class. The goal is to maintain the functionality and logic of the tests while adapting them to Jest's syntax and conventions.
+Certainly! Below is the equivalent Jest test suite for the given Python unittest class. The goal is to maintain the same functionality and logic while adapting to Jest's syntax and conventions.
 
-### Python unittest Code
+### Python Unittest Code
 
 ```python
-import re
 import unittest
 
-def prepare_query(sql: str, params: dict) -> tuple:
-    """
-    This function modifies a SQL query string containing named parameters
-    (like $name, $age) into a format compatible with libraries that require
-    positional parameters (like $1, $2, etc.), such as asyncpg. It returns
-    a tuple containing the modified SQL string and a list of parameter values
-    ordered according to their new positions in the query.
-    For example:
-        input:
-            sql: SELECT * FROM users WHERE id = $user_id AND status = $status
-            params: {'user_id': 42,'status': 'active'}
-        output:
-            SELECT * FROM users WHERE id = $1 AND status = $2,[42, 'active']
-
-    Args:
-        sql (str): The original SQL query string with named parameters.
-        params (dict): A dictionary mapping parameter names to their values.
-
-    Returns:
-        tuple: A tuple where the first element is the modified SQL query string with positional parameters, and the second element is a list of parameter values sorted according to the order of the positional parameters.
-    """
-    # Find all occurrences of named parameters in the SQL string
-    named_params = re.findall(r"\$(\w+)", sql)
-
-    # Remove duplicates while preserving order
-    unique_params = list(dict.fromkeys(named_params))
-
-    # Substitute each named parameter with its corresponding positional parameter
-    for index, param in enumerate(unique_params, start=1):
-        sql = sql.replace(f"${param}", f"${index}")
-
-    # Prepare the list of values corresponding to the order of the positional parameters
-    values = [params[param] for param in unique_params if param in params]
-
-    return sql, values
+# Assuming the prepare_query function is defined above or imported
 
 class TestPrepareQuery(unittest.TestCase):
 
-    def test_prepare_query(self):
-        sql = "SELECT * FROM users WHERE id = $user_id AND status = $status"
-        params = {'user_id': 42, 'status': 'active'}
+    def test_valid_named_parameters(self):
+        sql_query = "SELECT * FROM users WHERE id = $user_id AND status = $status"
+        parameters = {
+            'user_id': 42,
+            'status': 'active'
+        }
         expected_sql = "SELECT * FROM users WHERE id = $1 AND status = $2"
         expected_values = [42, 'active']
 
-        modified_sql, values = prepare_query(sql, params)
-        self.assertEqual(modified_sql, expected_sql)
-        self.assertListEqual(values, expected_values)
+        new_sql, value_list = prepare_query(sql_query, parameters)
+        self.assertEqual(new_sql, expected_sql)
+        self.assertEqual(value_list, expected_values)
 
-if __name__ == '__main__':
-    unittest.main()
+    def test_missing_parameters(self):
+        sql_query = "SELECT * FROM users WHERE id = $user_id AND status = $status"
+        parameters = {
+            'user_id': 42  # 'status' is missing
+        }
+        expected_sql = "SELECT * FROM users WHERE id = $1 AND status = $2"
+        expected_values = [42]  # 'status' is not included
+
+        new_sql, value_list = prepare_query(sql_query, parameters)
+        self.assertEqual(new_sql, expected_sql)
+        self.assertEqual(value_list, expected_values)
+
+    def test_no_parameters(self):
+        sql_query = "SELECT * FROM users"
+        parameters = {}  # No parameters provided
+        expected_sql = "SELECT * FROM users"
+        expected_values = []
+
+        new_sql, value_list = prepare_query(sql_query, parameters)
+        self.assertEqual(new_sql, expected_sql)
+        self.assertEqual(value_list, expected_values)
+
+    def test_multiple_same_parameters(self):
+        sql_query = "SELECT * FROM users WHERE id = $user_id AND status = $user_id"
+        parameters = {
+            'user_id': 42
+        }
+        expected_sql = "SELECT * FROM users WHERE id = $1 AND status = $1"
+        expected_values = [42]  # Only one value for 'user_id'
+
+        new_sql, value_list = prepare_query(sql_query, parameters)
+        self.assertEqual(new_sql, expected_sql)
+        self.assertEqual(value_list, expected_values)
+
+    def test_special_characters_in_parameters(self):
+        sql_query = "INSERT INTO users (name, email) VALUES ($name, $email)"
+        parameters = {
+            'name': "John Doe",
+            'email': "john.doe@example.com"
+        }
+        expected_sql = "INSERT INTO users (name, email) VALUES ($1, $2)"
+        expected_values = ["John Doe", "john.doe@example.com"]
+
+        new_sql, value_list = prepare_query(sql_query, parameters)
+        self.assertEqual(new_sql, expected_sql)
+        self.assertEqual(value_list, expected_values)
 ```
 
-### Equivalent Jest Test Class
+### Equivalent Jest Test Suite
 
 ```javascript
-const re = require('re');
+const prepareQuery = require('./prepareQuery'); // Assuming prepareQuery is defined in a separate file
 
-// Function definition
-const prepareQuery = (sql, params) => {
-    // Find all occurrences of named parameters in the SQL string
-    const namedParams = sql.match(/\$(\w+)/g).map(match => match.slice(1));
+describe('TestPrepareQuery', () => {
+    it('test_valid_named_parameters', () => {
+        const sql_query = "SELECT * FROM users WHERE id = $user_id AND status = $status";
+        const parameters = {
+            'user_id': 42,
+            'status': 'active'
+        };
+        const expected_sql = "SELECT * FROM users WHERE id = $1 AND status = $2";
+        const expected_values = [42, 'active'];
 
-    // Remove duplicates while preserving order
-    const uniqueParams = [...new Set(namedParams)];
+        const [new_sql, value_list] = prepareQuery(sql_query, parameters);
+        expect(new_sql).toEqual(expected_sql);
+        expect(value_list).toEqual(expected_values);
+    });
 
-    // Substitute each named parameter with its corresponding positional parameter
-    for (let index = 0; index < uniqueParams.length; index++) {
-        const param = uniqueParams[index];
-        sql = sql.replace(new RegExp(`\\$${param}`, 'g'), `$${index + 1}`);
-    }
+    it('test_missing_parameters', () => {
+        const sql_query = "SELECT * FROM users WHERE id = $user_id AND status = $status";
+        const parameters = {
+            'user_id': 42  // 'status' is missing
+        };
+        const expected_sql = "SELECT * FROM users WHERE id = $1 AND status = $2";
+        const expected_values = [42];  // 'status' is not included
 
-    // Prepare the list of values corresponding to the order of the positional parameters
-    const values = uniqueParams.map(param => params[param]).filter(value => value !== undefined);
+        const [new_sql, value_list] = prepareQuery(sql_query, parameters);
+        expect(new_sql).toEqual(expected_sql);
+        expect(value_list).toEqual(expected_values);
+    });
 
-    return [sql, values];
-};
+    it('test_no_parameters', () => {
+        const sql_query = "SELECT * FROM users";
+        const parameters = {};  // No parameters provided
+        const expected_sql = "SELECT * FROM users";
+        const expected_values = [];
 
-// Jest test suite
-describe('prepareQuery', () => {
-    it('should modify the SQL query and return the correct parameters', () => {
-        const sql = "SELECT * FROM users WHERE id = $user_id AND status = $status";
-        const params = { user_id: 42, status: 'active' };
-        const expectedSql = "SELECT * FROM users WHERE id = $1 AND status = $2";
-        const expectedValues = [42, 'active'];
+        const [new_sql, value_list] = prepareQuery(sql_query, parameters);
+        expect(new_sql).toEqual(expected_sql);
+        expect(value_list).toEqual(expected_values);
+    });
 
-        const [modifiedSql, values] = prepareQuery(sql, params);
+    it('test_multiple_same_parameters', () => {
+        const sql_query = "SELECT * FROM users WHERE id = $user_id AND status = $user_id";
+        const parameters = {
+            'user_id': 42
+        };
+        const expected_sql = "SELECT * FROM users WHERE id = $1 AND status = $1";
+        const expected_values = [42];  // Only one value for 'user_id'
 
-        expect(modifiedSql).toEqual(expectedSql);
-        expect(values).toEqual(expectedValues);
+        const [new_sql, value_list] = prepareQuery(sql_query, parameters);
+        expect(new_sql).toEqual(expected_sql);
+        expect(value_list).toEqual(expected_values);
+    });
+
+    it('test_special_characters_in_parameters', () => {
+        const sql_query = "INSERT INTO users (name, email) VALUES ($name, $email)";
+        const parameters = {
+            'name': "John Doe",
+            'email': "john.doe@example.com"
+        };
+        const expected_sql = "INSERT INTO users (name, email) VALUES ($1, $2)";
+        const expected_values = ["John Doe", "john.doe@example.com"];
+
+        const [new_sql, value_list] = prepareQuery(sql_query, parameters);
+        expect(new_sql).toEqual(expected_sql);
+        expect(value_list).toEqual(expected_values);
     });
 });
-
-// Example usage
-if (require.main === module) {
-    console.log('Running Jest tests...');
-    require('jest').runCLI();
-}
 ```
 
 ### Explanation:
-1. **Function Definition**:
-   - The `prepareQuery` function is defined with the same logic as the Python version.
-   - The function uses `match` to find named parameters and `Set` to remove duplicates while preserving order.
-   - The `replace` method is used to substitute named parameters with positional parameters.
-   - The `map` and `filter` methods are used to create the list of values.
+1. **Import Statement**: The `prepareQuery` function is assumed to be defined in a separate file and imported at the beginning of the test suite.
+2. **Describe Block**: The `describe` block is used to group the tests under a common description.
+3. **It Blocks**: Each `it` block represents a single test case.
+4. **Assertions**: The `expect` function is used for assertions, similar to `self.assertEqual` in Python.
+5. **Array Destructuring**: The result of `prepareQuery` is destructured into `[new_sql, value_list]` to match the Python tuple unpacking.
 
-2. **Jest Test Suite**:
-   - The `describe` block sets up the test suite for `prepareQuery`.
-   - The `it` block defines a specific test case.
-   - Assertions are made using `expect` to check the modified SQL string and the list of values.
-
-3. **Example Usage**:
-   - The conditional `if` statement at the end ensures that Jest tests are run when the script is executed directly.
-
-This conversion maintains the functionality and logic of the original Python unittest test class while adapting it to Jest's syntax and conventions.
+This conversion ensures that the functionality and logic of the tests are preserved while adapting to Jest's syntax and conventions.

@@ -1,0 +1,74 @@
+Certainly! Here’s the equivalent C++ test case using Catch2, which is a popular C++ testing framework. I’ll provide the complete setup including the necessary headers and the test cases.
+
+### C++ Code with Catch2 Test Cases
+
+First, make sure you have Catch2 installed in your project. You can include it via a package manager or by downloading the single-header version.
+
+Here’s the complete code:
+
+```cpp
+#include <catch2/catch_test_macros.hpp>
+#include <string>
+#include <regex>
+
+// Function to check if the provided image data is a valid Base64 encoded image string.
+bool isBase64Image(const std::string& imageData) {
+    // Check if the input is a non-empty string
+    if (imageData.empty() || imageData.find_first_not_of(" \t\n\v\f\r") == std::string::npos) {
+        return false;
+    }
+
+    // Regular expression to validate a Base64 image string
+    std::regex base64ImagePattern("^data:image/(jpeg|png|gif|bmp|webp);base64,[A-Za-z0-9+/]+={0,2}$");
+
+    // Test the image data against the pattern
+    return std::regex_match(imageData, base64ImagePattern);
+}
+
+TEST_CASE("isBase64Image", "[isBase64Image]") {
+    SECTION("should return true for a valid PNG Base64 image string") {
+        const std::string validPng = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA";
+        REQUIRE(isBase64Image(validPng));
+    }
+
+    SECTION("should return true for a valid JPEG Base64 image string") {
+        const std::string validJpeg = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAAAAAA";
+        REQUIRE(isBase64Image(validJpeg));
+    }
+
+    SECTION("should return false for a string without the image data prefix") {
+        const std::string invalidFormat = "data:text/plain;base64,SGVsbG8gd29ybGQ=";
+        REQUIRE_FALSE(isBase64Image(invalidFormat));
+    }
+
+    SECTION("should return false for a string with invalid Base64 characters") {
+        const std::string invalidBase64 = "data:image/png;base64,invalidBase64String@#%";
+        REQUIRE_FALSE(isBase64Image(invalidBase64));
+    }
+
+    SECTION("should return false for an empty string") {
+        REQUIRE_FALSE(isBase64Image(""));
+    }
+
+    SECTION("should return false for a null input") {
+        REQUIRE_FALSE(isBase64Image(nullptr)); // This will not compile because nullptr cannot be passed to a function expecting a string.
+    }
+}
+
+int main(int argc, char* argv[]) {
+    return Catch::Session().run(argc, argv);
+}
+```
+
+### Explanation:
+1. **Headers**: Includes the necessary headers (`<catch2/catch_test_macros.hpp>`, `<string>`, `<regex>`).
+2. **Function Definition**: The `isBase64Image` function checks if the provided image data is a valid Base64 encoded image string.
+3. **Test Case**: The `TEST_CASE` macro defines the test suite, and each `SECTION` defines individual test cases.
+4. **Assertions**:
+   - `REQUIRE` is used to assert that the function returns `true`.
+   - `REQUIRE_FALSE` is used to assert that the function returns `false`.
+
+### Note on `nullptr`:
+In C++, passing `nullptr` to a function expecting a `std::string` reference will not compile. If you need to test for a null input, you might want to handle it differently, such as by using an empty string or a special value.
+
+If you need to handle `nullptr` specifically, you could modify the function to accept a `std::optional<std::string>` or another type that can represent a null value. However, in this context, testing with an empty string is sufficient.

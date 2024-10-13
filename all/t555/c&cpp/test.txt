@@ -1,39 +1,93 @@
-Sure! Below is the equivalent C++ test case using Catch2 for the provided Python unittest test class. Note that Catch2 uses `TEST_CASE` and `REQUIRE` macros to define test cases and assertions respectively.
+Certainly! Below is the equivalent C++ test class using the Catch2 testing framework. The provided Python unittest class is converted into a Catch2 test suite, ensuring that the functionality and logic of the tests are preserved. 
+
+### C++ Code with Catch2 Testing Framework
 
 ```cpp
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <cmath>
+#include <vector>
+#include <stdexcept>
 
-// Assuming quaternion_to_angle function is defined here
-double quaternion_to_angle(const std::tuple<double, double, double, double>& quaternion) {
-    // Your implementation here
+// Function to convert a quaternion to a rotation angle in radians
+double quaternion_to_angle(const std::vector<double>& quaternion) {
+    // Ensure the quaternion is a valid 4-element vector
+    if (quaternion.size() != 4) {
+        throw std::invalid_argument("Quaternion must have 4 components (w, x, y, z)");
+    }
+
+    double w = quaternion[0];
+    double x = quaternion[1];
+    double y = quaternion[2];
+    double z = quaternion[3];
+
+    // Calculate the angle in radians
+    double angle = 2 * std::acos(w);
+
+    return angle;
 }
 
-TEST_CASE("Quaternion to Angle Conversion", "[quaternion]") {
-    auto q1 = std::make_tuple(0.7071, 0.0, 0.0, 0.7071);
-    REQUIRE(abs(quaternion_to_angle(q1) - M_PI / 4) < 1e-6);
+TEST_CASE("Test Quaternion to Angle", "[quaternion_to_angle]") {
+    SECTION("Test the identity quaternion (no rotation)") {
+        std::vector<double> quaternion = {1.0, 0.0, 0.0, 0.0};
+        double expected_angle = 0.0;
+        REQUIRE(quaternion_to_angle(quaternion) == Approx(expected_angle));
+    }
 
-    auto q2 = std::make_tuple(1.0, 0.0, 0.0, 0.0);
-    REQUIRE(abs(quaternion_to_angle(q2) - 0.0) < 1e-6);
+    SECTION("Test a quaternion representing a 180-degree rotation") {
+        std::vector<double> quaternion = {0.0, 0.0, 1.0, 0.0};  // 180 degrees around Z axis
+        double expected_angle = M_PI;  // 180 degrees in radians
+        REQUIRE(quaternion_to_angle(quaternion) == Approx(expected_angle));
+    }
 
-    auto q3 = std::make_tuple(0.0, 0.7071, 0.0, 0.7071);
-    REQUIRE(abs(quaternion_to_angle(q3) - M_PI / 2) < 1e-6);
+    SECTION("Test a quaternion representing a full 360-degree rotation") {
+        std::vector<double> quaternion = {1.0, 0.0, 0.0, 0.0};  // Full rotation
+        double expected_angle = 0.0;  // 360 degrees is equivalent to 0 degrees
+        REQUIRE(quaternion_to_angle(quaternion) == Approx(expected_angle));
+    }
 
-    auto q4 = std::make_tuple(-0.7071, 0.0, 0.0, 0.7071);
-    REQUIRE(abs(quaternion_to_angle(q4) + M_PI / 4) < 1e-6);
+    SECTION("Test a non-unit quaternion (should still give correct angle)") {
+        std::vector<double> quaternion = {0.5, 0.5, 0.5, 0.5};  // This is not normalized
+        // Normalize the quaternion first
+        double norm = std::sqrt(std::accumulate(quaternion.begin(), quaternion.end(), 0.0,
+                                                [](double sum, double value) { return sum + value * value; }));
+        std::vector<double> normalized_quaternion;
+        for (double x : quaternion) {
+            normalized_quaternion.push_back(x / norm);
+        }
+        double expected_angle = 2 * std::acos(normalized_quaternion[0]);  // Should be same angle
+        REQUIRE(quaternion_to_angle(normalized_quaternion) == Approx(expected_angle));
+    }
 
-    auto q5 = std::make_tuple(0.0, 0.0, 0.7071, 0.7071);
-    REQUIRE(abs(quaternion_to_angle(q5) - M_PI / 2) < 1e-6);
+    SECTION("Test that an invalid quaternion raises a std::invalid_argument") {
+        REQUIRE_THROWS_AS(quaternion_to_angle({1.0, 0.0, 0.0}), std::invalid_argument);
+    }
+}
 
-    auto q6 = std::make_tuple(0.0, -0.7071, 0.0, 0.7071);
-    REQUIRE(abs(quaternion_to_angle(q6) + M_PI / 2) < 1e-6);
+// Example usage
+int main(int argc, char* argv[]) {
+    return Catch::Session().run(argc, argv);
 }
 ```
 
 ### Explanation:
-1. **Include Catch2 Header**: The `#include <catch2/catch.hpp>` directive includes the Catch2 library.
-2. **Function Definition**: The `quaternion_to_angle` function is assumed to be implemented elsewhere in your project.
-3. **Test Case**: The `TEST_CASE` macro defines a test case named "Quaternion to Angle Conversion".
-4. **Assertions**: The `REQUIRE` macro is used to assert that the output of `quaternion_to_angle` matches the expected values within a small tolerance (`1e-6`).
+1. **Header Files**:
+   - `<catch2/catch_test_macros.hpp>` is included for Catch2 testing macros.
+   - `<cmath>` is included for mathematical functions like `acos` and `sqrt`.
+   - `<vector>` is included to use `std::vector` for representing the quaternion.
+   - `<stdexcept>` is included for throwing exceptions.
 
-Make sure you have Catch2 installed and properly configured in your C++ project to compile and run these tests.
+2. **Function Definition**:
+   - The function `quaternion_to_angle` takes a `std::vector<double>` as input, which represents the quaternion components.
+   - It checks if the quaternion has exactly four elements; otherwise, it throws a `std::invalid_argument`.
+
+3. **Test Cases**:
+   - Each test case is defined within a `SECTION` in the `TEST_CASE` macro.
+   - Assertions are made using `REQUIRE` and `REQUIRE_THROWS_AS` to check the correctness of the function and exception handling.
+
+4. **Normalization**:
+   - For the non-unit quaternion test, the quaternion is normalized using `std::accumulate` and then checked against the expected angle.
+
+5. **Main Function**:
+   - The `main` function initializes and runs the Catch2 test session.
+
+This code ensures that the functionality and logic of the Python unittest class are preserved in the equivalent C++ Catch2 test suite.

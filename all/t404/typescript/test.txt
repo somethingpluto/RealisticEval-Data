@@ -1,80 +1,110 @@
-First, let's define the `power` function in TypeScript. We'll need to translate the Python function into a TypeScript function and then write the Jest tests for it.
+Certainly! Below is the equivalent Jest test class in TypeScript, which preserves the functionality and logic of the provided Python unittest class. The test cases are mapped to Jest assertions, and the necessary type annotations are included.
 
-Here's the TypeScript version of the `power` function:
+### TypeScript Code with Jest Tests
 
 ```typescript
-import { deepStrictEqual } from "assert";
+import { power } from './matrixPower'; // Import the power function from the matrixPower module
 
-function power(matrix: number[][], n: number): number[][] {
-  if (n < 0) throw new Error("Exponent must be non-negative.");
-  if (!Array.isArray(matrix) || !matrix.every(row => Array.isArray(row))) throw new TypeError("Matrix must be a list of lists.");
-  if (!Number.isInteger(n)) throw new TypeError("Exponent must be an integer.");
+describe('TestMatrixPower', () => {
+    describe('test_identity_matrix', () => {
+        it('should return the identity matrix when the power is 1', () => {
+            const matrix: number[][] = [[1, 0], [0, 1]];
+            const expected: number[][] = [[1, 0], [0, 1]];
+            const result = power(matrix, 1);
+            expect(result).toEqual(expected);
+        });
+    });
 
-  const multiplyMatrices = (a: number[][], b: number[][]): number[][] => {
-    const result: number[][] = Array.from({ length: a.length }, () => new Array(a[0].length).fill(0));
-    for (let i = 0; i < a.length; i++) {
-      for (let j = 0; j < b[0].length; j++) {
-        for (let k = 0; k < b.length; k++) {
-          result[i][j] += a[i][k] * b[k][j];
+    describe('test_zero_power', () => {
+        it('should return the identity matrix when the power is 0', () => {
+            const matrix: number[][] = [[2, 3], [1, 4]];
+            const expected: number[][] = [[1, 0], [0, 1]];
+            const result = power(matrix, 0);
+            expect(result).toEqual(expected);
+        });
+    });
+
+    describe('test_positive_power', () => {
+        it('should correctly compute the power of a matrix for a positive exponent', () => {
+            const matrix: number[][] = [[2, 1], [1, 3]];
+            const expected: number[][] = [[5, 5], [5, 10]]; // This is the result of matrix^2
+            const result = power(matrix, 2);
+            expect(result).toEqual(expected);
+        });
+    });
+
+    describe('test_negative_power', () => {
+        it('should throw an error when the power is negative', () => {
+            const matrix: number[][] = [[2, 1], [1, 3]];
+            expect(() => power(matrix, -1)).toThrow('The exponent n must be a non-negative integer.');
+        });
+    });
+});
+
+// Utility function to multiply matrices (for reference)
+function multiplyMatrices(A: number[][], B: number[][]): number[][] {
+    const result: number[][] = [];
+    for (let i = 0; i < A.length; i++) {
+        const row: number[] = [];
+        for (let j = 0; j < B[0].length; j++) {
+            let sum = 0;
+            for (let k = 0; k < A[0].length; k++) {
+                sum += A[i][k] * B[k][j];
+            }
+            row.push(sum);
         }
-      }
+        result.push(row);
     }
     return result;
-  };
-
-  const identityMatrix: number[][] = matrix.map((_, idx) => {
-    return matrix.map((_, idx2) => (idx === idx2 ? 1 : 0));
-  });
-
-  let result = identityMatrix;
-
-  while (n > 0) {
-    if (n % 2 === 1) {
-      result = multiplyMatrices(result, matrix);
-    }
-    matrix = multiplyMatrices(matrix, matrix);
-    n = Math.floor(n / 2);
-  }
-
-  return result;
 }
 
-export { power };
+// Power function implementation (for reference)
+function power(matrix: number[][], n: number): number[][] {
+    if (n < 0) {
+        throw new Error('The exponent n must be a non-negative integer.');
+    }
+    if (!Number.isInteger(n)) {
+        throw new TypeError('The exponent n must be an integer.');
+    }
+
+    // Identity matrix of the same size as the input matrix
+    const result: number[][] = matrix.map((_, i) =>
+        matrix.map((_, j) => i === j ? 1 : 0)
+    );
+
+    let base = [...matrix];
+
+    while (n > 0) {
+        if (n % 2 === 1) {
+            result = multiplyMatrices(result, base);
+        }
+        base = multiplyMatrices(base, base);
+        n = Math.floor(n / 2);
+    }
+
+    return result;
+}
 ```
 
-Now, let's write the Jest tests for this function:
+### Explanation:
+1. **Importing the Power Function**:
+   - The `power` function is imported from the `matrixPower` module.
 
-```typescript
-import { power } from './path-to-power-function';
+2. **Describe Blocks**:
+   - Each test case is wrapped in a `describe` block for better organization.
+   - Each `it` block contains a specific test case.
 
-describe('power', () => {
-  it('should handle basic cases', () => {
-    expect(power([[2]], 3)).toEqual([[8]]);
-    expect(power([[1, 2], [3, 4]], 2)).toEqual([[7, 10], [15, 22]]);
-  });
+3. **Test Cases**:
+   - `test_identity_matrix`: Tests the power function with an identity matrix.
+   - `test_zero_power`: Tests the power function with a zero exponent.
+   - `test_positive_power`: Tests the power function with a positive exponent.
+   - `test_negative_power`: Tests the power function with a negative exponent and expects an error.
 
-  it('should handle larger matrices', () => {
-    expect(power([[1, 2], [3, 4]], 3)).toEqual([[37, 54], [81, 118]]);
-    expect(power([[0, 1], [1, 1]], 5)).toEqual([[5, 8], [8, 13]]);
-  });
+4. **Assertions**:
+   - `expect(result).toEqual(expected)` is used to check if the result matches the expected value.
+   - `expect(() => power(matrix, -1)).toThrow('The exponent n must be a non-negative integer.')` is used to check if the function throws the expected error message.
 
-  it('should handle edge cases', () => {
-    expect(power([[1, 0], [0, 1]], 0)).toEqual([[1, 0], [0, 1]]);
-    expect(power([[2, 0], [0, 2]], 1)).toEqual([[2, 0], [0, 2]]);
-  });
+5. **Utility Functions**:
+   - `multiplyMatrices` is included for reference and can be used within the `power` function.
 
-  it('should throw errors for invalid inputs', () => {
-    expect(() => power([[1, 2], [3, 4]], -1)).toThrow('Exponent must be non-negative.');
-    expect(() => power([1, 2, 3] as any, 2)).toThrow('Matrix must be a list of lists.');
-    expect(() => power([[1, 2], [3, 4]], 2.5)).toThrow('Exponent must be an integer.');
-  });
-});
-```
-
-In this Jest test suite, we have the following test cases:
-- Basic cases with simple matrices and small exponents.
-- Larger matrices with higher exponents.
-- Edge cases such as the identity matrix and the exponent being zero.
-- Error handling for invalid inputs, including negative exponents, non-list inputs, and non-integer exponents.
-
-Make sure to adjust the import path in `import { power } from './path-to-power-function';` to the correct path where your `power` function is defined.
+This TypeScript code preserves the functionality and logic of the original Python unittest class while adapting to Jest's testing framework and TypeScript's static type system.

@@ -1,29 +1,30 @@
+const {comb}= require('mathjs')
+
+/**
+ * Calculate the probability that x balls randomly drawn from a jar containing
+ * n red balls and m blue balls will all be red balls.
+ *
+ * @param x - Number of balls to draw.
+ * @param n - Number of red balls in the jar.
+ * @param m - Number of blue balls in the jar.
+ * @returns The probability that all x drawn balls are red.
+ */
 function probabilityRedBalls(x: number, n: number, m: number): number {
-    /**
-     * Calculate the probability that x balls will be randomly drawn from a jar containing n red balls and m blue balls,
-     * and all of them will be red balls.
-     *
-     * @param {number} x - Number of balls to draw.
-     * @param {number} n - Number of red balls in the jar.
-     * @param {number} m - Number of blue balls in the jar.
-     * @returns {number} - The probability that all x drawn balls are red.
-     */
-
-    if (x > n || x > (n + m)) {
-        return 0; // It's impossible to draw more red balls than available or more balls than total
+    if (x > n) {
+        return 0; // Not enough red balls to draw x red balls
+    }
+    const totalBalls = n + m;
+    if (x > totalBalls) {
+        return 0; // Not enough balls to draw x balls of any color
     }
 
-    const totalWaysToDrawXFromNPlusM = factorial(n + m) / (factorial(x) * factorial(n + m - x));
-    const waysToDrawXRedBallsFromN = factorial(n) / (factorial(x) * factorial(n - x));
+    // Number of ways to choose x red balls from n red balls
+    const waysToChooseRed = comb(n, x);
+    // Total number of ways to choose x balls from all balls
+    const totalWaysToChooseBalls = comb(totalBalls, x);
 
-    return waysToDrawXRedBallsFromN / totalWaysToDrawXFromNPlusM;
-}
+    // Probability that all chosen balls are red
+    const probability = waysToChooseRed / totalWaysToChooseBalls;
 
-// Helper function to calculate factorial
-function factorial(num: number): number {
-    let result = 1;
-    for (let i = 2; i <= num; i++) {
-        result *= i;
-    }
-    return result;
+    return probability;
 }

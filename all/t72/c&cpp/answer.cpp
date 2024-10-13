@@ -1,17 +1,41 @@
 #include <iostream>
-#include <array>
+#include <Eigen/Dense>
 
-// Function prototype for getting 3D coordinates from 2D pixel coordinates
-std::array<double, 3> get_3d_coordinates(const std::array<std::array<double, 3>, 3>& K, double d, double x, double y);
+using Eigen::MatrixXd;
+using Eigen::VectorXd;
 
-// Implementation of the function
-std::array<double, 3> get_3d_coordinates(const std::array<std::array<double, 3>, 3>& K, double d, double x, double y) {
-    std::array<double, 3> result;
+VectorXd get_3d_coordinates(const MatrixXd& K, double d, double x, double y) {
+    // Step 1: Convert pixel coordinates to normalized device coordinates (NDC)
+    double cx = K(0, 2);
+    double cy = K(1, 2);
+    double fx = K(0, 0);
+    double fy = K(1, 1);
 
-    // Calculate 3D coordinates
-    result[0] = (x - K[0][2]) * d / K[0][0];
-    result[1] = (y - K[1][2]) * d / K[1][1];
-    result[2] = d;
+    double NDC_x = (x - cx) / fx;
+    double NDC_y = (y - cy) / fy;
 
-    return result;
+    // Step 2: Get the 3D world coordinates (W)
+    double W_x = NDC_x * d;
+    double W_y = NDC_y * d;
+    double W_z = d;
+
+    return VectorXd::Map(&W_x, 3);  // Map the array to a VectorXd
+}
+
+int main() {
+    // Example usage
+    MatrixXd K(3, 3);
+    K << 500, 0, 320,
+         0, 500, 240,
+         0, 0, 1;
+
+    double d = 10.0;
+    double x = 350.0;
+    double y = 200.0;
+
+    VectorXd result = get_3d_coordinates(K, d, x, y);
+
+    std::cout << "3D Coordinates: " << result.transpose() << std::endl;
+
+    return 0;
 }

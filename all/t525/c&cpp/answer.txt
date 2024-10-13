@@ -1,54 +1,50 @@
-Sure! Below is the equivalent C++ code that achieves the same functionality as your Python function `flip_point_cloud`. This code uses the Eigen library for handling matrices and arrays efficiently.
+Sure! Below is the equivalent C++ code for the given Python function. This code uses the `Eigen` library for handling matrices, which is a popular choice for matrix operations in C++ similar to NumPy in Python.
 
-First, make sure you have the Eigen library installed. You can install it via vcpkg or conan, or simply download it from [Eigen's official website](http://eigen.tuxfamily.org/).
+First, you need to include the Eigen library in your project. You can download it from [here](http://eigen.tuxfamily.org/index.php?title=Main_Page) or use package managers like `vcpkg`.
 
-Here is the C++ code:
+Here's the C++ code:
 
 ```cpp
 #include <iostream>
 #include <Eigen/Dense>
 
-Eigen::MatrixXd flip_point_cloud(const Eigen::MatrixXd& point_cloud, int axis) {
-    if (point_cloud.cols() != 3) {
-        throw std::invalid_argument("Point cloud must be a Nx3 matrix.");
+using Eigen::MatrixXd;
+
+// Function to flip the point cloud across a specified axis
+MatrixXd flipPointCloud(const MatrixXd& pointCloud, int axis) {
+    // Validate the axis input
+    if (axis < 0 || axis > 2) {
+        throw std::invalid_argument("Axis must be 0 (x-axis), 1 (y-axis), or 2 (z-axis).");
     }
 
-    Eigen::MatrixXd flipped_point_cloud = point_cloud;
+    // Create a scaling factor vector with -1 for the specified axis and 1 for others
+    VectorXd flipFactors(3);
+    flipFactors << (axis != 0 ? 1 : -1), (axis != 1 ? 1 : -1), (axis != 2 ? 1 : -1);
 
-    switch (axis) {
-        case 0: // Flip along x-axis
-            flipped_point_cloud.rowwise() *= -1;
-            break;
-        case 1: // Flip along y-axis
-            flipped_point_cloud.col(1).array() *= -1;
-            break;
-        case 2: // Flip along z-axis
-            flipped_point_cloud.col(2).array() *= -1;
-            break;
-        default:
-            throw std::invalid_argument("Invalid axis. Axis must be 0, 1, or 2.");
-    }
+    // Flip the point cloud by multiplying with the scaling factor vector
+    MatrixXd flippedPointCloud = pointCloud.unaryExpr([flipFactors](double val, int row, int col) {
+        return val * flipFactors(col);
+    });
 
-    return flipped_point_cloud;
+    return flippedPointCloud;
 }
 
 int main() {
-    // Example usage
-    Eigen::MatrixXd point_cloud(4, 3);
-    point_cloud << 1, 2, 3,
-                   4, 5, 6,
-                   7, 8, 9,
-                   10, 11, 12;
-
-    int axis = 1; // Flip along y-axis
-
     try {
-        Eigen::MatrixXd flipped_point_cloud = flip_point_cloud(point_cloud, axis);
+        // Example usage
+        MatrixXd pointCloud(4, 3); // 4 points, each with 3 coordinates
+        pointCloud << 1, 2, 3,
+                      4, 5, 6,
+                      7, 8, 9,
+                      10, 11, 12;
 
-        std::cout << "Original Point Cloud:\n" << point_cloud << "\n";
-        std::cout << "Flipped Point Cloud:\n" << flipped_point_cloud << "\n";
+        int axis = 1; // Flip along the y-axis
+
+        MatrixXd flippedPointCloud = flipPointCloud(pointCloud, axis);
+
+        std::cout << "Flipped Point Cloud:\n" << flippedPointCloud << std::endl;
     } catch (const std::exception& e) {
-        std::cerr << "Error: " << e.what() << "\n";
+        std::cerr << "Error: " << e.what() << std::endl;
     }
 
     return 0;
@@ -56,19 +52,11 @@ int main() {
 ```
 
 ### Explanation:
-1. **Eigen Library**: The code uses the Eigen library to handle matrices and vectors. Ensure you have it installed and properly linked in your project.
-2. **Function Definition**:
-   - `flip_point_cloud` takes an `Eigen::MatrixXd` representing the point cloud and an integer `axis`.
-   - It checks if the number of columns in the point cloud is 3.
-   - Depending on the value of `axis`, it flips the point cloud accordingly.
-3. **Main Function**:
-   - An example point cloud is defined and passed to the `flip_point_cloud` function.
-   - The original and flipped point clouds are printed to the console.
+1. **Include Eigen Library**: The `#include <Eigen/Dense>` line includes the necessary Eigen headers.
+2. **Function Definition**: The `flipPointCloud` function takes a `MatrixXd` (similar to a NumPy array) and an integer `axis`.
+3. **Validation**: The function checks if the `axis` is within the valid range `[0, 1, 2]`.
+4. **Scaling Factor Vector**: A `VectorXd` is created with `-1` for the specified axis and `1` for the other axes.
+5. **Matrix Multiplication**: The point cloud is flipped by multiplying each column with the corresponding scaling factor using `unaryExpr`.
+6. **Example Usage**: In the `main` function, an example point cloud is created and flipped along the y-axis (`axis = 1`).
 
-Make sure to compile the code with the Eigen library included. For example, using g++, you can compile it with:
-
-```sh
-g++ -I /path/to/eigen your_code.cpp -o your_program
-```
-
-Replace `/path/to/eigen` with the actual path to the Eigen headers.
+This code should provide the same functionality as the original Python code but adapted to C++ using the Eigen library.

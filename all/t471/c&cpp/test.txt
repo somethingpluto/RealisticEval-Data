@@ -1,43 +1,17 @@
-Certainly! Here’s the equivalent C++ code for the provided Python function and its corresponding test class using the Catch2 testing framework. I’ll include the necessary imports, the function definition, and the test class.
+Certainly! Here is the equivalent C++ test class using the Catch2 testing framework. The provided Python unittest class will be converted into a Catch2 test suite, ensuring that the functionality and logic of the tests are preserved.
 
-### Python Code:
-```python
-import numpy as np
+### C++ Code Using Catch2
 
-def get_rotation(matrix: np.array) -> float:
-    """
-    Given an affine transformation matrix, return the corresponding rotation angle in radians.
-
-    Args:
-        matrix (np.array): A 2D affine transformation matrix.
-
-    Returns:
-        float: The rotation angle in radians, extracted from the affine matrix.
-    """
-    if not isinstance(matrix, np.ndarray) or matrix.shape != (3, 3):
-        raise ValueError("Input must be a 3x3 affine transformation matrix.")
-
-    rotation_angle = np.arctan2(matrix[1, 0], matrix[0, 0])
-    return float(rotation_angle)
-```
-
-### C++ Code with Catch2 Testing Framework
-
-#### Dependencies:
-- Eigen library for handling matrices
-- Catch2 for testing
-
-#### C++ Code:
+First, make sure you have Catch2 installed and included in your project. You can include Catch2 via a header-only library or through a package manager.
 
 ```cpp
-#include <iostream>
+#include <catch2/catch_test_macros.hpp>
 #include <Eigen/Dense>
 #include <cmath>
-#include <catch2/catch_test_macros.hpp>
 
 // Function to calculate the rotation angle from a 3x3 affine transformation matrix
 double get_rotation(const Eigen::Matrix3d& matrix) {
-    // Ensure the matrix is a 3x3 matrix
+    // Ensure the matrix is a 3x3 affine transformation matrix
     if (matrix.rows() != 3 || matrix.cols() != 3) {
         throw std::invalid_argument("Input must be a 3x3 affine transformation matrix.");
     }
@@ -48,61 +22,65 @@ double get_rotation(const Eigen::Matrix3d& matrix) {
     return rotation_angle;
 }
 
-TEST_CASE("Test get_rotation function") {
-    SECTION("Test identity matrix") {
-        Eigen::Matrix3d identity_matrix;
-        identity_matrix << 1, 0, 0,
-                           0, 1, 0,
-                           0, 0, 1;
-
-        double angle = get_rotation(identity_matrix);
-        REQUIRE(std::abs(angle) < 1e-9); // Check if the angle is close to zero
+TEST_CASE("TestGetRotationFunction", "[rotation]") {
+    SECTION("test_rotation_0_degrees") {
+        // Test for a rotation of 0 degrees (identity matrix)
+        Eigen::Matrix3d matrix;
+        matrix << 1, 0, 0,
+                  0, 1, 0,
+                  0, 0, 1;
+        double expected_rotation = 0.0;
+        REQUIRE(std::abs(get_rotation(matrix) - expected_rotation) < 1e-6);
     }
 
-    SECTION("Test simple rotation") {
-        Eigen::Matrix3d rotation_matrix;
-        rotation_matrix << 0, 1, 0,
-                           -1, 0, 0,
-                           0, 0, 1;
-
-        double angle = get_rotation(rotation_matrix);
-        REQUIRE(std::abs(angle - M_PI_2) < 1e-9); // Check if the angle is close to pi/2
+    SECTION("test_rotation_90_degrees") {
+        // Test for a rotation of 90 degrees
+        Eigen::Matrix3d matrix;
+        matrix << 0, -1, 0,
+                  1, 0, 0,
+                  0, 0, 1;
+        double expected_rotation = M_PI / 2;  // 90 degrees in radians
+        REQUIRE(std::abs(get_rotation(matrix) - expected_rotation) < 1e-6);
     }
 
-    SECTION("Test invalid matrix") {
-        Eigen::Matrix<double, 2, 3> invalid_matrix;
-        invalid_matrix << 1, 2, 3,
-                          4, 5, 6;
-
-        REQUIRE_THROWS_AS(get_rotation(invalid_matrix), std::invalid_argument);
+    SECTION("test_rotation_180_degrees") {
+        // Test for a rotation of 180 degrees
+        Eigen::Matrix3d matrix;
+        matrix << -1, 0, 0,
+                  0, -1, 0,
+                  0, 0, 1;
+        double expected_rotation = M_PI;  // 180 degrees in radians
+        REQUIRE(std::abs(get_rotation(matrix) - expected_rotation) < 1e-6);
     }
-}
 
-int main(int argc, char* argv[]) {
-    int result = Catch::Session().run(argc, argv);
-    return result;
+    SECTION("test_rotation_negative_90_degrees") {
+        // Test for a rotation of -90 degrees
+        Eigen::Matrix3d matrix;
+        matrix << 0, 1, 0,
+                  -1, 0, 0,
+                  0, 0, 1;
+        double expected_rotation = -M_PI / 2;  // -90 degrees in radians
+        REQUIRE(std::abs(get_rotation(matrix) - expected_rotation) < 1e-6);
+    }
 }
 ```
 
 ### Explanation:
-1. **Inclusion of Libraries**:
-   - `#include <iostream>`: For basic input/output operations.
-   - `#include <Eigen/Dense>`: To handle matrices using the Eigen library.
-   - `#include <cmath>`: For mathematical functions like `atan2`.
-   - `#include <catch2/catch_test_macros.hpp>`: For Catch2 testing macros.
+1. **Imports**:
+   - `#include <catch2/catch_test_macros.hpp>`: For Catch2 test macros.
+   - `#include <Eigen/Dense>`: For matrix operations using the Eigen library.
+   - `#include <cmath>`: For trigonometric functions like `atan2`.
 
 2. **Function Definition**:
-   - `get_rotation`: This function takes a `Eigen::Matrix3d` (a 3x3 matrix) as input and returns a `double` representing the rotation angle in radians.
-   - The function includes a check to ensure the matrix is a 3x3 matrix and throws an exception if not.
-   - It calculates the rotation angle using `std::atan2` and returns the result.
+   - `get_rotation`: This function takes a `Eigen::Matrix3d` (a 3x3 matrix) as input and returns the rotation angle in radians.
+   - It checks if the matrix is indeed a 3x3 matrix and throws an exception if it is not.
 
 3. **Test Class**:
-   - `TEST_CASE("Test get_rotation function")`: Defines a test case for the `get_rotation` function.
-   - `SECTION("Test identity matrix")`: Tests the identity matrix and checks if the angle is close to zero.
-   - `SECTION("Test simple rotation")`: Tests a simple rotation matrix and checks if the angle is close to \( \frac{\pi}{2} \).
-   - `SECTION("Test invalid matrix")`: Tests an invalid matrix and checks if it throws an `std::invalid_argument` exception.
+   - `TEST_CASE`: Defines a test case named `TestGetRotationFunction`.
+   - Each `SECTION` corresponds to a specific test case from the Python unittest class.
+   - The tests use `REQUIRE` to assert the correctness of the rotation angle within a tolerance of `1e-6`.
 
-4. **Main Function**:
-   - Runs the Catch2 test suite and returns the result.
+4. **Assertions**:
+   - `REQUIRE(std::abs(get_rotation(matrix) - expected_rotation) < 1e-6)` ensures that the calculated rotation angle is close to the expected value within a small tolerance.
 
-This translation ensures that the C++ code matches the functionality and structure of the original Python code, including proper testing and error handling.
+This code preserves the functionality and logic of the original Python unittest class while adapting it to the Catch2 testing framework in C++.

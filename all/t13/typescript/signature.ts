@@ -17,4 +17,4 @@
  * | Bob      | 30  | London   |
  * `;
  */
-function parseMarkdownTable(mdTable: string): Array<[string, ...string[]]> {}
+function parseMarkdownTable(mdTable: string): Array<[string]> {}

@@ -1,38 +1,33 @@
-Certainly! Below is the equivalent C++ test class using the Catch2 testing framework. This test class will ensure that the functionality and logic of the `prepare_query` function are preserved and tested appropriately.
+Certainly! Below is the equivalent C++ test class using the Catch2 testing framework. The provided Python unittest class is converted into a C++ test class with equivalent functionality and logic, using appropriate assertions in Catch2.
 
-First, make sure you have Catch2 installed and included in your project. You can include Catch2 via a header-only library or use a package manager like vcpkg.
-
-Here’s the complete C++ code with the test class using Catch2:
-
-### C++ Code with Catch2 Test Class
-
-#### 1. Include Catch2 Header
-
-Make sure to include the Catch2 header at the beginning of your file.
+### C++ Code with Catch2 Testing Framework
 
 ```cpp
-#define CATCH_CONFIG_MAIN  // This tells Catch2 to provide a main() - only do this in one cpp file
 #include <catch2/catch_test_macros.hpp>
 #include <string>
 #include <vector>
 #include <map>
 #include <regex>
 
-// Function to prepare a SQL query string for libraries like asyncpg
+// Function to prepare the SQL query and parameter values
 std::pair<std::string, std::vector<std::string>> prepare_query(const std::string& sql, const std::map<std::string, std::string>& params) {
     // Find all occurrences of named parameters in the SQL string
-    std::regex named_param_pattern("\\$(\\w+)");
-    std::sregex_iterator begin(sql.begin(), sql.end(), named_param_pattern);
+    std::regex named_param_pattern("\\$([a-zA-Z][a-zA-Z0-9]*)");
+    std::sregex_iterator it(sql.begin(), sql.end(), named_param_pattern);
     std::sregex_iterator end;
 
-    // Extract matches and remove duplicates while preserving order
-    std::map<std::string, bool> unique_params_map;
+    std::vector<std::string> named_params;
+    for (; it != end; ++it) {
+        named_params.push_back(it->str());
+    }
+
+    // Remove duplicates while preserving order
+    std::map<std::string, bool> seen;
     std::vector<std::string> unique_params;
-    for (std::sregex_iterator i = begin; i != end; ++i) {
-        std::smatch match = *i;
-        std::string param = match.str(1);
-        if (unique_params_map.find(param) == unique_params_map.end()) {
-            unique_params_map[param] = true;
+    for (const auto& param : named_params) {
+        std::string paramName = param.substr(1); // Remove the '$' prefix
+        if (seen.find(paramName) == seen.end()) {
+            seen[paramName] = true;
             unique_params.push_back(param);
         }
     }
@@ -40,14 +35,16 @@ std::pair<std::string, std::vector<std::string>> prepare_query(const std::string
     // Substitute each named parameter with its corresponding positional parameter
     for (size_t index = 1; index <= unique_params.size(); ++index) {
         std::string param = unique_params[index - 1];
-        std::string pattern = "\\$" + param;
-        sql = std::regex_replace(sql, std::regex(pattern), std::to_string(index));
+        std::string paramName = param.substr(1); // Remove the '$' prefix
+        std::string replacement = "$" + std::to_string(index);
+        sql = std::regex_replace(sql, std::regex("\\$" + paramName), replacement);
     }
 
-    // Prepare the vector of values corresponding to the order of the positional parameters
+    // Prepare the list of values corresponding to the order of the positional parameters
     std::vector<std::string> values;
     for (const auto& param : unique_params) {
-        auto it = params.find(param);
+        std::string paramName = param.substr(1); // Remove the '$' prefix
+        auto it = params.find(paramName);
         if (it != params.end()) {
             values.push_back(it->second);
         }
@@ -56,47 +53,84 @@ std::pair<std::string, std::vector<std::string>> prepare_query(const std::string
     return {sql, values};
 }
 
-// Test class using Catch2
 TEST_CASE("Test prepare_query function") {
-    SECTION("Basic usage") {
-        std::string sql = "SELECT * FROM users WHERE id = $user_id AND status = $status";
-        std::map<std::string, std::string> params = {{"user_id", "42"}, {"status", "active"}};
+    SECTION("Valid named parameters") {
+        std::string sql_query = "SELECT * FROM users WHERE id = $user_id AND status = $status";
+        std::map<std::string, std::string> parameters = {
+            {"user_id", "42"},
+            {"status", "active"}
+        };
+        std::string expected_sql = "SELECT * FROM users WHERE id = $1 AND status = $2";
+        std::vector<std::string> expected_values = {"42", "active"};
 
-        auto result = prepare_query(sql, params);
-
-        REQUIRE(result.first == "SELECT * FROM users WHERE id = $1 AND status = $2");
-        REQUIRE_THAT(result.second, Catch::Matchers::Equals(std::vector<std::string>{"42", "active"}));
+        auto [new_sql, value_list] = prepare_query(sql_query, parameters);
+        REQUIRE(new_sql == expected_sql);
+        REQUIRE(value_list == expected_values);
     }
 
     SECTION("Missing parameters") {
-        std::string sql = "SELECT * FROM users WHERE id = $user_id AND status = $status";
-        std::map<std::string, std::string> params = {{"user_id", "42"}};
+        std::string sql_query = "SELECT * FROM users WHERE id = $user_id AND status = $status";
+        std::map<std::string, std::string> parameters = {
+            {"user_id", "42"}
+        };
+        std::string expected_sql = "SELECT * FROM users WHERE id = $1 AND status = $2";
+        std::vector<std::string> expected_values = {"42"};
 
-        auto result = prepare_query(sql, params);
-
-        REQUIRE(result.first == "SELECT * FROM users WHERE id = $1 AND status = $2");
-        REQUIRE_THAT(result.second, Catch::Matchers::Equals(std::vector<std::string>{"42"}));
+        auto [new_sql, value_list] = prepare_query(sql_query, parameters);
+        REQUIRE(new_sql == expected_sql);
+        REQUIRE(value_list == expected_values);
     }
 
-    SECTION("Duplicate parameters") {
-        std::string sql = "SELECT * FROM users WHERE id = $user_id AND status = $status AND id = $user_id";
-        std::map<std::string, std::string> params = {{"user_id", "42"}, {"status", "active"}};
+    SECTION("No parameters") {
+        std::string sql_query = "SELECT * FROM users";
+        std::map<std::string, std::string> parameters = {};
+        std::string expected_sql = "SELECT * FROM users";
+        std::vector<std::string> expected_values = {};
 
-        auto result = prepare_query(sql, params);
+        auto [new_sql, value_list] = prepare_query(sql_query, parameters);
+        REQUIRE(new_sql == expected_sql);
+        REQUIRE(value_list == expected_values);
+    }
 
-        REQUIRE(result.first == "SELECT * FROM users WHERE id = $1 AND status = $2 AND id = $1");
-        REQUIRE_THAT(result.second, Catch::Matchers::Equals(std::vector<std::string>{"42", "active"}));
+    SECTION("Multiple same parameters") {
+        std::string sql_query = "SELECT * FROM users WHERE id = $user_id AND status = $user_id";
+        std::map<std::string, std::string> parameters = {
+            {"user_id", "42"}
+        };
+        std::string expected_sql = "SELECT * FROM users WHERE id = $1 AND status = $1";
+        std::vector<std::string> expected_values = {"42"};
+
+        auto [new_sql, value_list] = prepare_query(sql_query, parameters);
+        REQUIRE(new_sql == expected_sql);
+        REQUIRE(value_list == expected_values);
+    }
+
+    SECTION("Special characters in parameters") {
+        std::string sql_query = "INSERT INTO users (name, email) VALUES ($name, $email)";
+        std::map<std::string, std::string> parameters = {
+            {"name", "John Doe"},
+            {"email", "john.doe@example.com"}
+        };
+        std::string expected_sql = "INSERT INTO users (name, email) VALUES ($1, $2)";
+        std::vector<std::string> expected_values = {"John Doe", "john.doe@example.com"};
+
+        auto [new_sql, value_list] = prepare_query(sql_query, parameters);
+        REQUIRE(new_sql == expected_sql);
+        REQUIRE(value_list == expected_values);
     }
 }
 ```
 
 ### Explanation:
-1. **Include Catch2**: The Catch2 header is included at the beginning of the file.
-2. **Function Definition**: The `prepare_query` function is defined with the same logic as the Python version.
-3. **Test Class**: The `TEST_CASE` macro is used to define a test case for the `prepare_query` function.
-4. **Sections**: Each `SECTION` within the test case represents a different scenario or test case.
-5. **Assertions**:
-   - `REQUIRE`: Used to check that the modified SQL string is correct.
-   - `REQUIRE_THAT`: Used with a matcher to check that the vector of parameter values is correct.
+1. **Header Files**: The necessary header files (`<catch2/catch_test_macros.hpp>`, `<string>`, `<vector>`, `<map>`, `<regex>`) are included.
+2. **Function Definition**: The `prepare_query` function is defined to modify the SQL query and parameters.
+3. **Test Class**: The `TEST_CASE` macro is used to define a test case, and `SECTION` macros are used to define individual test sections.
+4. **Assertions**: The `REQUIRE` macro is used for assertions to check the equality of strings and vectors.
+5. **Test Cases**:
+   - **Valid Named Parameters**: Tests the function with valid named parameters.
+   - **Missing Parameters**: Tests the function when some parameters are missing.
+   - **No Parameters**: Tests the function with no parameters.
+   - **Multiple Same Parameters**: Tests the function with multiple occurrences of the same parameter.
+   - **Special Characters in Parameters**: Tests the function with special characters in parameters.
 
-This setup ensures that the functionality and logic of the `prepare_query` function are thoroughly tested using the Catch2 testing framework.
+This ensures that the functionality and logic of the Python unittest class are preserved in the C++ Catch2 test class.

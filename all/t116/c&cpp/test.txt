@@ -1,0 +1,139 @@
+Certainly! Here’s how you can convert the Jest test cases to C++ using Catch2 for testing. Catch2 is a popular C++ testing framework that provides a similar level of readability and functionality to Jest.
+
+First, make sure you have Catch2 installed in your project. You can include it via a header-only library or through a package manager like vcpkg or Conan.
+
+### C++ Code with Catch2 Test Cases
+
+#### 1. Include Catch2 Header
+Make sure you include the Catch2 header in your test file.
+
+#### 2. Define the `Point` Structure and `toroidalDiff` Function
+Include the necessary headers and define the `Point` structure and the `toroidalDiff` function.
+
+#### 3. Write the Test Cases
+
+Here’s the complete code:
+
+```cpp
+#include <catch2/catch_test_macros.hpp>
+#include <vector>
+#include <cmath>
+
+// Define a simple Point structure
+struct Point {
+    int x;
+    int y;
+};
+
+/**
+ * Calculates the toroidal difference between two points.
+ *
+ * @param thisPoint The first point with properties x and y.
+ * @param otherPoint The second point with properties x and y.
+ * @param width The width of the toroidal space.
+ * @param height The height of the toroidal space.
+ * @returns An array containing the x and y differences, accounting for wrap-around.
+ */
+std::vector<int> toroidalDiff(const Point& thisPoint, const Point& otherPoint, int width, int height) {
+    int dx = thisPoint.x - otherPoint.x;
+    int dy = thisPoint.y - otherPoint.y;
+
+    // Handle wraparound for the x dimension
+    if (std::abs(dx) > width / 2) {
+        dx = dx > 0 ? dx - width : dx + width;
+    }
+
+    // Handle wraparound for the y dimension
+    if (std::abs(dy) > height / 2) {
+        dy = dy > 0 ? dy - height : dy + height;
+    }
+
+    return std::vector<int>{dx, dy};
+}
+
+TEST_CASE("toroidalDiff", "[toroidalDiff]") {
+    SECTION("should return the direct difference when no wrapping is needed") {
+        Point thisPoint{2, 3};
+        Point otherPoint{5, 6};
+        int width = 10;
+        int height = 10;
+        auto result = toroidalDiff(thisPoint, otherPoint, width, height);
+        REQUIRE(result == std::vector<int>{-3, -3});
+    }
+
+    SECTION("should handle wrapping around the x dimension") {
+        Point thisPoint{9, 5};
+        Point otherPoint{1, 5};
+        int width = 10;
+        int height = 10;
+        auto result = toroidalDiff(thisPoint, otherPoint, width, height);
+        REQUIRE(result == std::vector<int>{-2, 0});
+    }
+
+    SECTION("should handle wrapping around the y dimension") {
+        Point thisPoint{4, 9};
+        Point otherPoint{4, 1};
+        int width = 10;
+        int height = 10;
+        auto result = toroidalDiff(thisPoint, otherPoint, width, height);
+        REQUIRE(result == std::vector<int>{0, -2});
+    }
+
+    SECTION("should handle wrapping around both x and y dimensions") {
+        Point thisPoint{9, 9};
+        Point otherPoint{1, 1};
+        int width = 10;
+        int height = 10;
+        auto result = toroidalDiff(thisPoint, otherPoint, width, height);
+        REQUIRE(result == std::vector<int>{-2, -2});
+    }
+
+    SECTION("should return the direct difference for points at the same position") {
+        Point thisPoint{5, 5};
+        Point otherPoint{5, 5};
+        int width = 10;
+        int height = 10;
+        auto result = toroidalDiff(thisPoint, otherPoint, width, height);
+        REQUIRE(result == std::vector<int>{0, 0});
+    }
+}
+```
+
+### Explanation:
+1. **Catch2 Header**: Include the Catch2 header to use its testing macros.
+2. **Point Structure**: Define the `Point` structure to represent points.
+3. **toroidalDiff Function**: Define the `toroidalDiff` function to calculate the toroidal difference.
+4. **Test Case Definitions**:
+   - Use `TEST_CASE` to define the test suite.
+   - Use `SECTION` to define individual test cases.
+   - Use `REQUIRE` to assert the expected results.
+
+### Running the Tests
+To run the tests, you need to link against Catch2. If you are using CMake, you can add the following to your `CMakeLists.txt`:
+
+```cmake
+cmake_minimum_required(VERSION 3.10)
+project(ToroidalDiffTests)
+
+# Find Catch2
+find_package(Catch2 REQUIRED)
+
+# Add executable
+add_executable(toroidal_diff_tests main.cpp)
+
+# Link against Catch2
+target_link_libraries(toroidal_diff_tests PRIVATE Catch2::Catch2)
+```
+
+### Example `main.cpp`
+If you need a main function to run the tests, you can include the following in `main.cpp`:
+
+```cpp
+#include <catch2/catch_test_macros.hpp>
+
+int main(int argc, char* argv[]) {
+    return Catch::Session().run(argc, argv);
+}
+```
+
+This setup will allow you to run the tests and verify the correctness of the `toroidalDiff` function.

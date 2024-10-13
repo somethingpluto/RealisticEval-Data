@@ -1,24 +1,18 @@
 const fs = require('fs');
-const yaml = require('js-yaml');
+const jsYaml = require('js-yaml');
+const JSON5 = require('json5');
 
-/**
- * Convert a YAML file to a JSON file.
- *
- * @param {string} yamlFile - Path to the input YAML file.
- * @param {string} jsonFile - Path to the output JSON file.
- */
 function convertYamlToJson(yamlFile, jsonFile) {
-    try {
-        // Read the YAML file
-        const yamlData = fs.readFileSync(yamlFile, 'utf8');
-        const jsonData = yaml.load(yamlData);
+    /**
+     * Convert a YAML file to a JSON file.
+     *
+     * @param {string} yamlFile - Path to the input YAML file.
+     * @param {string} jsonFile - Path to the output JSON file.
+     */
+    // Read the YAML file
+    const yamlData = fs.readFileSync(yamlFile, 'utf-8');
+    const data = jsYaml.safeLoad(yamlData);
 
-        // Write the data to a JSON file
-        fs.writeFileSync(jsonFile, JSON.stringify(jsonData, null, 4), 'utf8');
-    } catch (e) {
-        console.error('Error converting YAML to JSON:', e);
-    }
+    // Write the data to a JSON file
+    fs.writeFileSync(jsonFile, JSON5.stringify(data, null, 4), 'utf-8');
 }
-
-// Example Usage
-// convertYamlToJson('input.yaml', 'output.json');

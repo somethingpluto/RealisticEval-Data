@@ -1,41 +1,68 @@
 package org.real.temp;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
-import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 
 public class Tester {
 
-    private Parser parser;
+    @Test
+    public void testValidStrings() {
+        String xamlData = "<root>\n" +
+                          "  <String Key=\"Username\">Alice</String>\n" +
+                          "  <String Key=\"Password\">secret</String>\n" +
+                          "</root>";
+        Map<String, String> expected = new HashMap<>();
+        expected.put("Username", "Alice");
+        expected.put("Password", "secret");
 
-    @BeforeEach
-    public void setUp() {
-        // Initialize the parser mock
-        parser = Mockito.mock(Parser.class);
+        Map<String, String> result = parseXamlToDict(xamlData);
+        assertEquals(expected, result);
     }
 
     @Test
-    public void testParseXamlToFile() throws Exception {
-        // Define the input and expected output
-        String xamlFilePath = "path/to/xaml/file.xaml";
-        Map<String, String> expectedOutput = new HashMap<>();
-        expectedOutput.put("key1", "value1");
-        expectedOutput.put("key2", "value2");
+    public void testMissingKeyAttribute() {
+        String xamlData = "<root>\n" +
+                          "  <String>Alice</String>\n" +
+                          "</root>";
+        Map<String, String> expected = new HashMap<>();
 
-        // Mock the behavior of the parser
-        when(parser.parseXamlFile(any(File.class))).thenReturn(expectedOutput);
+        Map<String, String> result = parseXamlToDict(xamlData);
+        assertEquals(expected, result);
+    }
 
-        // Call the method under test
-        Map<String, String> result = parser.parseXamlFile(new File(xamlFilePath));
+    @Test
+    public void testNoStringTags() {
+        String xamlData = "<root>\n" +
+                          "  <Data>Some question</Data>\n" +
+                          "</root>";
+        Map<String, String> expected = new HashMap<>();
 
-        // Verify the result
-        assertEquals(expectedOutput, result);
+        Map<String, String> result = parseXamlToDict(xamlData);
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void testNestedStringTags() {
+        String xamlData = "<root>\n" +
+                          "  <Container>\n" +
+                          "    <String Key=\"Username\">Bob</String>\n" +
+                          "  </Container>\n" +
+                          "  <String Key=\"Location\">Earth</String>\n" +
+                          "</root>";
+        Map<String, String> expected = new HashMap<>();
+        expected.put("Username", "Bob");
+        expected.put("Location", "Earth");
+
+        Map<String, String> result = parseXamlToDict(xamlData);
+        assertEquals(expected, result);
     }
 }

@@ -1,7 +1,11 @@
+import * as fs from 'fs';
+import * as path from 'path';
+import * as csvParser from 'csv-parser';
+
 /**
- * Converts the contents of a csv file into an SQL insert statement with a table name with the suffix removed.
- *
- * @param {string} csvFilePath - csv file path
- * @returns {string} - parsed sql string
+ * Converts the contents of a CSV file into an SQL insert statement with a table name with the suffix removed.
+ * 
+ * @param csvFilePath - The path to the CSV file.
+ * @returns A string containing the SQL insert statements.
  */
 function csvToSqlInsert(csvFilePath: string): string {}

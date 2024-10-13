@@ -1,30 +1,46 @@
 package org.real.temp;
 
 import java.util.Map;
+import java.util.HashMap;
 
 public class Answer {
-    /*
-    * Calculates the Euclidean distance between two agents based on their coordinates in the observations.
-    *
-    * @param agent1 The string representation of agent1's identifier.
-    * @param agent2 The string representation of agent2's identifier.
-    * @param observations A map containing observation questions with agent identifiers as keys. Each value is a map with 'x' and 'y' keys representing coordinates.
-    * @return The Euclidean distance between the two agents.
-    */
+
+    /**
+     * Calculates the Euclidean distance between two agents based on their coordinates in the observations.
+     *
+     * @param agent1      String representation of agent1's identifier.
+     * @param agent2      String representation of agent2's identifier.
+     * @param observations Map containing observation data with agent identifiers as keys.
+     *                     Each value is a Map with 'x' and 'y' keys representing coordinates.
+     * @return Euclidean distance between the two agents.
+     */
     public static double calculateDistance(String agent1, String agent2, Map<String, Map<String, Double>> observations) {
-        if (!observations.containsKey(agent1) || !observations.containsKey(agent2)) {
-            throw new IllegalArgumentException("One or both agents are not present in the observations.");
-        }
+        // Extract coordinates of both agents
+        double x1 = observations.get(agent1).get("x");
+        double y1 = observations.get(agent1).get("y");
+        double x2 = observations.get(agent2).get("x");
+        double y2 = observations.get(agent2).get("y");
 
-        Map<String, Double> agent1Coords = observations.get(agent1);
-        Map<String, Double> agent2Coords = observations.get(agent2);
+        // Calculate the Euclidean distance
+        double distance = Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
 
-        double x1 = agent1Coords.get("x");
-        double y1 = agent1Coords.get("y");
+        return distance;
+    }
 
-        double x2 = agent2Coords.get("x");
-        double y2 = agent2Coords.get("y");
+    public static void main(String[] args) {
+        // Example usage
+        Map<String, Map<String, Double>> observations = new HashMap<>();
+        Map<String, Double> agent1Coordinates = new HashMap<>();
+        agent1Coordinates.put("x", 1.0);
+        agent1Coordinates.put("y", 2.0);
+        Map<String, Double> agent2Coordinates = new HashMap<>();
+        agent2Coordinates.put("x", 4.0);
+        agent2Coordinates.put("y", 6.0);
 
-        return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+        observations.put("agent1", agent1Coordinates);
+        observations.put("agent2", agent2Coordinates);
+
+        double distance = calculateDistance("agent1", "agent2", observations);
+        System.out.println("The Euclidean distance is: " + distance);
     }
 }

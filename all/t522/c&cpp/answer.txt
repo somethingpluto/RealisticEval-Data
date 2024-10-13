@@ -1,64 +1,57 @@
-Sure! Here is the equivalent C++ code for the provided Python function using Eigen library:
+Here’s the equivalent C++ code for rotating a point cloud around the Y-axis by a given angle. This code uses the Eigen library for handling matrices and vectors efficiently. Make sure you have Eigen installed and included in your project.
 
 ```cpp
 #include <Eigen/Dense>
-#include <vector>
+#include <cmath>
 
-Eigen::MatrixXd rotate_point_cloud(const Eigen::MatrixXd &point_cloud, double rotation_angle) {
-    // Create a 4x4 transformation matrix with translation set to zero
-    Eigen::Matrix4d transform;
-    transform.setIdentity();
+// Function to rotate a point cloud around the Y-axis by a given angle
+Eigen::MatrixXd rotatePointCloud(const Eigen::MatrixXd& pointCloud, double rotationAngle) {
+    /**
+     * Rotate the point cloud around the Y axis by a given angle.
+     *
+     * Parameters:
+     * - pointCloud: An N x 3 Eigen matrix representing the 3D point cloud.
+     * - rotationAngle: The angle (in radians) to rotate the point cloud.
+     *
+     * Returns:
+     * - An N x 3 Eigen matrix of the rotated point cloud.
+     */
 
-    // Create a 3x3 rotation matrix around the Y-axis
-    Eigen::AngleAxisd rotation(rotation_angle, Eigen::Vector3d::UnitY());
-    Eigen::Matrix3d rotation_matrix = rotation.toRotationMatrix();
-    
-    // Set the upper-left 3x3 block of the transform matrix to the rotation matrix
-    transform.block<3, 3>(0, 0) = rotation_matrix;
+    // Create the rotation matrix for a rotation around the Y axis
+    Eigen::Matrix3d rotationMatrix;
+    rotationMatrix << cos(rotationAngle), 0, sin(rotationAngle),
+                      0, 1, 0,
+                     -sin(rotationAngle), 0, cos(rotationAngle);
 
-    // Apply the transformation to each point in the point cloud
-    int num_points = point_cloud.rows();
-    Eigen::MatrixXd rotated_point_cloud(num_points, 3);
-    for (int i = 0; i < num_points; ++i) {
-        Eigen::Vector4d point_with_homogeneous_coord(point_cloud.row(i), 1.0); // Homogeneous coordinates
-        Eigen::Vector4d transformed_point = transform * point_with_homogeneous_coord;
-        rotated_point_cloud.row(i) = transformed_point.head<3>(); // Extract the first three elements
-    }
+    // Rotate the point cloud by multiplying with the rotation matrix
+    Eigen::MatrixXd rotatedPointCloud = pointCloud * rotationMatrix;
 
-    return rotated_point_cloud;
+    return rotatedPointCloud;
 }
-```
-
-### Explanation:
-- **Eigen Library**: This library provides support for linear algebra operations including matrix and vector computations.
-- **Transform Matrix**: We create a `4x4` transformation matrix where the upper-left `3x3` block represents the rotation around the Y-axis.
-- **Homogeneous Coordinates**: Points in the point cloud are represented in homogeneous coordinates (`[x, y, z, 1]`) to handle translations if needed in future extensions.
-- **Rotation Around Y-Axis**: The `AngleAxisd` class from Eigen is used to create a rotation matrix around the Y-axis based on the provided angle.
-
-### Usage Example:
-To use this function, you need to include the Eigen library and call the function with your point cloud data:
-
-```cpp
-#include <iostream>
 
 int main() {
-    // Example point cloud
-    Eigen::MatrixXd point_cloud(3, 3);
-    point_cloud << 1.0, 2.0, 3.0,
-                   4.0, 5.0, 6.0,
-                   7.0, 8.0, 9.0;
+    // Example usage
+    Eigen::MatrixXd pointCloud(4, 3); // Example 4x3 point cloud
+    pointCloud << 1, 2, 3,
+                  4, 5, 6,
+                  7, 8, 9,
+                  10, 11, 12;
 
-    // Rotation angle in radians
-    double rotation_angle = M_PI / 4; // 45 degrees
+    double rotationAngle = M_PI / 4; // 45 degrees in radians
 
-    // Rotate the point cloud
-    Eigen::MatrixXd rotated_point_cloud = rotate_point_cloud(point_cloud, rotation_angle);
+    Eigen::MatrixXd rotatedPointCloud = rotatePointCloud(pointCloud, rotationAngle);
 
-    // Print the rotated point cloud
-    std::cout << "Rotated Point Cloud:\n" << rotated_point_cloud << std::endl;
+    std::cout << "Rotated Point Cloud:\n" << rotatedPointCloud << std::endl;
 
     return 0;
 }
 ```
 
-This example demonstrates how to rotate a simple 3x3 point cloud around the Y-axis by 45 degrees.
+### Explanation:
+1. **Eigen Library**: The Eigen library is used for matrix operations, similar to NumPy in Python.
+2. **Function Definition**: The `rotatePointCloud` function takes an `Eigen::MatrixXd` (representing the point cloud) and a `double` (rotation angle in radians) as inputs.
+3. **Rotation Matrix**: The rotation matrix is created using the cosine and sine functions from `<cmath>`.
+4. **Matrix Multiplication**: The point cloud is rotated by multiplying it with the rotation matrix.
+5. **Example Usage**: In the `main` function, an example point cloud is defined, and the `rotatePointCloud` function is called to demonstrate its usage.
+
+Make sure to include the Eigen library in your project and link against it when compiling your C++ code.

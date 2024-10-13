@@ -1,23 +1,91 @@
-Here's the equivalent C++ code signature with the same comments:
+Certainly! Below is the equivalent C++ code that preserves the functionality, structure, and documentation of the provided Python code. The Python function signature, comments, and docstrings are translated into C++ equivalents.
+
+### C++ Code:
 
 ```cpp
-#include <fstream>
 #include <iostream>
-#include <string>
+#include <fstream>
 #include <vector>
 #include <nlohmann/json.hpp>
+#include <filesystem>
 
-using namespace std;
+namespace fs = std::filesystem;
+
 using json = nlohmann::json;
+using json_list = std::vector<json>;
 
 /**
- * Reads a JSON Lines file and returns its content as a vector of JSON objects.
+ * Reads a JSON Lines file and returns its content as a list of dictionaries.
  *
  * @param file_path The path to the JSON Lines file.
- * @return A vector of JSON objects parsed from the file.
- * @throw runtime_error if the specified file does not exist or there is an error parsing a line in the JSON Lines file.
+ * @return A list of JSON objects parsed from the file.
+ * @throws std::runtime_error If the specified file does not exist.
+ * @throws std::runtime_error If there is an error parsing a line in the JSON Lines file.
  */
-vector<json> readJsonl(const string& file_path);
+json_list read_jsonl(const std::string& file_path) {
+    // Check if the file exists
+    if (!fs::exists(file_path)) {
+        throw std::runtime_error("The file '" + file_path + "' does not exist.");
+    }
+
+    json_list result;
+    std::ifstream file(file_path);
+    if (!file.is_open()) {
+        throw std::runtime_error("Failed to open file: " + file_path);
+    }
+
+    std::string line;
+    while (std::getline(file, line)) {
+        try {
+            json json_obj = json::parse(line);
+            result.push_back(json_obj);
+        } catch (const std::exception& e) {
+            throw std::runtime_error("Error parsing line: " + line + " - " + e.what());
+        }
+    }
+
+    return result;
+}
+
+int main() {
+    try {
+        std::string file_path = "example.jsonl";
+        json_list data = read_jsonl(file_path);
+
+        // Example output
+        for (const auto& obj : data) {
+            std::cout << obj.dump(4) << std::endl;
+        }
+    } catch (const std::exception& e) {
+        std::cerr << "Exception: " << e.what() << std::endl;
+    }
+
+    return 0;
+}
 ```
 
-Note that C++ doesn't have built-in support for JSON like Python does, so we're using the `nlohmann/json` library for handling JSON data. Also, instead of raising exceptions, C++ uses `throw` keyword to handle errors.
+### Explanation:
+1. **Header Files**:
+   - `#include <iostream>`: For standard input/output operations.
+   - `#include <fstream>`: For file input/output operations.
+   - `#include <vector>`: For using `std::vector`.
+   - `#include <nlohmann/json.hpp>`: For JSON parsing.
+   - `#include <filesystem>`: For filesystem operations.
+
+2. **Namespaces and Types**:
+   - `namespace fs = std::filesystem;`: Using the filesystem namespace.
+   - `using json = nlohmann::json;`: Alias for the JSON type.
+   - `using json_list = std::vector<json>;`: Alias for the list of JSON objects.
+
+3. **Function `read_jsonl`**:
+   - **Documentation**: Multi-line comments (`/* ... */`) are used to document the function, including parameters, return values, and exceptions.
+   - **File Existence Check**: Uses `fs::exists` to check if the file exists.
+   - **File Opening**: Uses `std::ifstream` to open the file.
+   - **Line Reading and Parsing**: Uses `std::getline` to read lines and `json::parse` to parse each line.
+   - **Exception Handling**: Catches exceptions during parsing and throws a `std::runtime_error`.
+
+4. **Main Function**:
+   - Calls `read_jsonl` and handles any exceptions thrown during execution.
+   - Outputs the parsed JSON objects.
+
+This code ensures that the functionality, structure, and documentation of the original Python code are preserved in C++.

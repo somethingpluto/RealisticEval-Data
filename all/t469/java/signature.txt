@@ -1,47 +1,54 @@
-Certainly! Here is the equivalent Java code for the provided Python function, including appropriate Java-style comments and Javadoc documentation:
+Certainly! Below is the equivalent Java code for the given Python function, including appropriate Javadoc comments and type conversions:
 
 ```java
 package org.real.temp;
 
-import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.factory.Nd4j;
+import java.util.Arrays;
 
-/**
- * Class to calculate scaling factors from a 3x3 affine transformation matrix.
- */
 public class Answer {
 
     /**
      * Given a 3x3 affine transformation matrix, return the corresponding scaling factors
      * along the x and y axes.
      *
-     * @param matrix A 3x3 affine transformation matrix.
-     * @return A double array containing the scale factors (scale_x, scale_y).
+     * @param matrix A 3x3 affine transformation matrix represented as a flat array.
+     * @return An array containing the scale factors (scale_x, scale_y).
+     * @throws IllegalArgumentException If the input is not a 3x3 matrix.
      */
-    public static double[] getScale(INDArray matrix) {
-        // Ensure the matrix is a 3x3 INDArray
-        if (matrix == null || matrix.rows() != 3 || matrix.columns() != 3) {
+    public static double[] getScale(double[] matrix) {
+        // Ensure the matrix is a 3x3 array
+        if (matrix == null || matrix.length != 9) {
             throw new IllegalArgumentException("Input must be a 3x3 affine transformation matrix.");
         }
 
-        // Calculate the scale factors using the norm of the columns
-        double scale_x = matrix.get(0, 2).norm2().doubleValue();  // Using the first two rows for x-scale
-        double scale_y = matrix.get(1, 2).norm2().doubleValue();  // Using the first two rows for y-scale
+        // Extract the relevant sub-matrices for calculating scale factors
+        double[] subMatrixX = Arrays.copyOfRange(matrix, 0, 2);
+        double[] subMatrixY = Arrays.copyOfRange(matrix, 3, 5);
 
-        return new double[]{scale_x, scale_y};
+        // Calculate the scale factors using the norm of the columns
+        double scaleX = calculateNorm(subMatrixX);
+        double scaleY = calculateNorm(subMatrixY);
+
+        return new double[]{scaleX, scaleY};
     }
 
     /**
-     * Example usage of the getScale method.
+     * Helper method to calculate the Euclidean norm of a vector.
+     *
+     * @param vector The vector for which to calculate the norm.
+     * @return The Euclidean norm of the vector.
      */
-    public static void main(String[] args) {
-        // Example usage
-        INDArray matrix = Nd4j.create(new double[][]{
-            {1, 0, 0},
-            {0, 1, 0},
-            {0, 0, 1}
-        });
+    private static double calculateNorm(double[] vector) {
+        double sumOfSquares = 0.0;
+        for (double value : vector) {
+            sumOfSquares += value * value;
+        }
+        return Math.sqrt(sumOfSquares);
+    }
 
+    // Example usage
+    public static void main(String[] args) {
+        double[] matrix = {1, 0, 0, 0, 1, 0, 0, 0, 1};
         double[] scales = getScale(matrix);
         System.out.println("Scale X: " + scales[0]);
         System.out.println("Scale Y: " + scales[1]);
@@ -49,24 +56,12 @@ public class Answer {
 }
 ```
 
-### Notes:
-1. **Dependency**: The Java code uses `org.nd4j.linalg` from ND4J (part of the Deeplearning4j ecosystem) to handle the matrix operations since `numpy` is not available in Java. You need to add the necessary dependency to your project.
-2. **Method Signature**: The method `getScale` takes an `INDArray` as input and returns a `double[]` array containing the scale factors.
-3. **Exception Handling**: An `IllegalArgumentException` is thrown if the input matrix is not a 3x3 array.
-4. **Javadoc Comments**: The method and class are documented using Javadoc comments for better readability and maintainability.
-5. **Main Method**: An example usage is provided in the `main` method to demonstrate how to call the `getScale` method.
+### Explanation:
+1. **Package and Class Definition**: The Java code is defined within the package `org.real.temp` and the class `Answer`.
+2. **Javadoc Comments**: The method `getScale` includes detailed Javadoc comments that describe the purpose, parameters, and return values.
+3. **Type Conversion**: The Python `np.ndarray` is converted to a `double[]` array in Java.
+4. **Exception Handling**: The method throws an `IllegalArgumentException` if the input is not a 3x3 matrix.
+5. **Helper Method**: The `calculateNorm` method is used to compute the Euclidean norm of the sub-matrices.
+6. **Main Method**: An example usage is provided in the `main` method to demonstrate how to call the `getScale` method and print the results.
 
-### Dependency Addition:
-To use `INDArray` and related methods, add the following dependency to your `pom.xml` file if you are using Maven:
-
-```xml
-<dependencies>
-    <dependency>
-        <groupId>org.nd4j</groupId>
-        <artifactId>nd4j-native-platform</artifactId>
-        <version>1.0.0-beta7</version>
-    </dependency>
-</dependencies>
-```
-
-This will ensure that the ND4J library is included in your project.
+This Java code preserves the functionality and structure of the original Python code while adhering to Java's conventions and best practices.

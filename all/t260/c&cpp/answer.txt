@@ -1,71 +1,90 @@
-Here's an example of how you can implement the Python function `process_csv` in C++. Note that the C++ code uses the CSV-parser library provided by Boost to read and write CSV files. If you don't have Boost installed on your system, you'll need to install it first.
+Certainly! Below is the equivalent C++ code for processing a CSV file and removing rows with two or more empty columns. This code uses the `csv-parser` library for reading and writing CSV files. If you do not have this library installed, you can install it using your preferred package manager or include another library if necessary.
 
 ```cpp
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <vector>
-#include <string>
-#include <boost/algorithm/string.hpp>
+#include <unordered_map>
+#include <stdexcept>
 
-struct Row {
-    std::vector<std::string> cells;
-};
+// Function to split a string by a delimiter
+std::vector<std::string> split(const std::string &s, char delimiter) {
+    std::vector<std::string> tokens;
+    std::string token;
+    std::istringstream tokenStream(s);
+    while (std::getline(tokenStream, token, delimiter)) {
+        tokens.push_back(token);
+    }
+    return tokens;
+}
 
-bool has_two_or_more_empty_columns(const Row& row) {
+// Function to count empty strings in a vector
+int countEmpty(const std::vector<std::string> &row) {
     int count = 0;
-    for (const auto& cell : row.cells) {
-        if (cell.empty()) {
-            count++;
-            if (count >= 2) {
-                return true;
+    for (const auto &item : row) {
+        if (item.empty()) {
+            ++count;
+        }
+    }
+    return count;
+}
+
+void process_csv(const std::string &file_path, const std::string &output_path) {
+    try {
+        std::ifstream input_file(file_path);
+        if (!input_file.is_open()) {
+            throw std::runtime_error("Failed to open input file.");
+        }
+
+        std::ofstream output_file(output_path);
+        if (!output_file.is_open()) {
+            throw std::runtime_error("Failed to open output file.");
+        }
+
+        std::string line;
+        std::vector<std::vector<std::string>> data;
+        std::vector<std::string> header;
+
+        // Read the CSV file line by line
+        while (std::getline(input_file, line)) {
+            if (header.empty()) {
+                header = split(line, ',');
+                output_file << line << '\n';
+                continue;
             }
-        } else {
-            count = 0;
+
+            std::vector<std::string> row = split(line, ',');
+            int empty_count = countEmpty(row);
+
+            // Filter the row based on the number of empty columns
+            if (empty_count < 2) {
+                output_file << line << '\n';
+            }
         }
+
+        input_file.close();
+        output_file.close();
+
+    } catch (const std::exception &e) {
+        std::cerr << "Error: " << e.what() << std::endl;
     }
-    return false;
 }
 
-void process_csv(const std::string& file_path, const std::string& output_path) {
-    std::ifstream file(file_path);
-    if (!file.is_open()) {
-        std::cerr << "Error opening file: " << file_path << std::endl;
-        return;
-    }
+int main() {
+    std::string file_path = "input.csv";
+    std::string output_path = "output.csv";
 
-    std::ofstream output_file(output_path);
-    if (!output_file.is_open()) {
-        std::cerr << "Error opening output file: " << output_path << std::endl;
-        return;
-    }
+    process_csv(file_path, output_path);
 
-    std::string line;
-    while (std::getline(file, line)) {
-        Row row;
-        boost::split(row.cells, line, boost::is_any_of(","));
-        if (!has_two_or_more_empty_columns(row)) {
-            std::cout << line << std::endl; // Output to console
-            output_file << line << std::endl; // Write to output file
-        }
-    }
-
-    file.close();
-    output_file.close();
+    return 0;
 }
 ```
 
-This C++ code does the following:
+### Explanation:
+1. **Splitting Strings**: The `split` function splits a string by a delimiter (`,` in this case) and returns a vector of strings.
+2. **Counting Empty Strings**: The `countEmpty` function counts the number of empty strings in a vector.
+3. **Reading and Writing CSV Files**: The `process_csv` function reads the input CSV file line by line, processes each row, and writes the filtered rows to the output CSV file.
+4. **Handling Exceptions**: Exception handling is used to manage file I/O errors and other runtime exceptions.
 
-1. Defines a `Row` struct to hold the cells of a CSV row.
-2. Implements a helper function `has_two_or_more_empty_columns` to check if a row has two or more consecutive empty columns.
-3. Defines the `process_csv` function, which reads the input CSV file line by line, processes each row, and writes non-empty rows to the output file.
-
-To use this code, make sure you have Boost installed and properly linked in your project. You can compile and run the program using a command like this:
-
-```sh
-g++ -o process_csv process_csv.cpp -lboost_system -lboost_filesystem
-./process_csv input.csv output.csv
-```
-
-This assumes you're using GCC and linking against the Boost System and Filesystem libraries. Adjust the compilation command according to your environment and compiler.
+This code should provide the same functionality as the original Python script but adapted to C++ syntax and features.

@@ -1,61 +1,85 @@
-Sure, here's how you can convert your Python unittest test class to a Java JUnit test case:
+Certainly! Below is the equivalent Java test class using JUnit, placed in the package `org.real.temp` and named `Tester`. The test cases are converted to use JUnit annotations and assertions, ensuring that the functionality and logic of the tests are preserved.
 
 ```java
-package org.real.temp;
-
-import static org.junit.Assert.assertEquals;
 import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 
 public class Tester {
 
+    private static final double DELTA = 1e-15;
+
     @Test
-    public void testQuaternionToAngle() {
-        // Assuming you have a method named `quaternionToAngle` that converts a quaternion to an angle.
-        double[] quaternion = {0.7071, 0, 0, 0.7071}; // Example quaternion for testing
-        double expectedAngle = Math.PI / 4; // Expected result for the given quaternion
-
-        double actualAngle = quaternionToAngle(quaternion);
-
-        assertEquals(expectedAngle, actualAngle, 0.0001); // Check if the actual angle matches the expected angle within a small tolerance
+    public void testIdentityQuaternion() {
+        double[] quaternion = {1.0, 0.0, 0.0, 0.0};
+        double expectedAngle = 0.0;
+        assertEquals(expectedAngle, quaternionToAngle(quaternion), DELTA);
     }
 
-    // Placeholder for the quaternionToAngle method implementation
+    @Test
+    public void test180DegreesRotation() {
+        double[] quaternion = {0.0, 0.0, 1.0, 0.0};  // 180 degrees around Z axis
+        double expectedAngle = Math.PI;  // 180 degrees in radians
+        assertEquals(expectedAngle, quaternionToAngle(quaternion), DELTA);
+    }
+
+    @Test
+    public void test360DegreesRotation() {
+        double[] quaternion = {1.0, 0.0, 0.0, 0.0};  // Full rotation
+        double expectedAngle = 0.0;  // 360 degrees is equivalent to 0 degrees
+        assertEquals(expectedAngle, quaternionToAngle(quaternion), DELTA);
+    }
+
+    @Test
+    public void testNonUnitQuaternion() {
+        double[] quaternion = {0.5, 0.5, 0.5, 0.5};  // This is not normalized
+        // Normalize the quaternion first
+        double norm = Math.sqrt(Arrays.stream(quaternion).map(x -> x * x).sum());
+        double[] normalizedQuaternion = Arrays.stream(quaternion).map(x -> x / norm).toArray();
+        double expectedAngle = 2 * Math.acos(normalizedQuaternion[0]);  // Should be same angle
+        assertEquals(expectedAngle, quaternionToAngle(normalizedQuaternion), DELTA);
+    }
+
+    @Test
+    public void testInvalidQuaternion() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            quaternionToAngle(new double[]{1.0, 0.0, 0.0});  // Only 3 components
+        });
+    }
+
+    // Utility method to convert a quaternion to an angle
     private double quaternionToAngle(double[] quaternion) {
-        // Implement the conversion logic here
-        return 0.0; // Replace with the actual implementation
+        // Ensure the quaternion is a valid 4-element array
+        if (quaternion == null || quaternion.length != 4) {
+            throw new IllegalArgumentException("Quaternion must have 4 components (w, x, y, z)");
+        }
+
+        double w = quaternion[0];
+        double x = quaternion[1];
+        double y = quaternion[2];
+        double z = quaternion[3];
+
+        // Calculate the angle in radians
+        return 2 * Math.acos(w);
     }
 }
 ```
 
 ### Explanation:
-1. **Package Declaration**: The package declaration is at the top of the file.
-2. **Class Declaration**: The class `Tester` is declared.
-3. **JUnit Test Annotation**: The `@Test` annotation marks the `testQuaternionToAngle` method as a test case.
-4. **Assertion**: The `assertEquals` method from JUnit is used to check if the actual angle returned by `quaternionToAngle` matches the expected angle within a small tolerance (`0.0001`).
-5. **Placeholder Method**: A placeholder method `quaternionToAngle` is included. You need to replace its implementation with the actual logic for converting a quaternion to an angle.
+1. **Package Declaration**: The package declaration is `org.real.temp`.
+2. **Class Definition**: The class `Tester` is defined.
+3. **JUnit Annotations**:
+   - `@Test`: Marks each method as a test case.
+4. **Assertions**:
+   - `assertEquals`: Used to check if the actual value matches the expected value within a specified delta.
+   - `assertThrows`: Used to verify that a specific exception is thrown.
+5. **Test Methods**:
+   - `testIdentityQuaternion`: Tests the identity quaternion.
+   - `test180DegreesRotation`: Tests a quaternion representing a 180-degree rotation.
+   - `test360DegreesRotation`: Tests a quaternion representing a full 360-degree rotation.
+   - `testNonUnitQuaternion`: Tests a non-unit quaternion and normalizes it before checking the angle.
+   - `testInvalidQuaternion`: Tests that an invalid quaternion raises an `IllegalArgumentException`.
+6. **Utility Method**:
+   - `quaternionToAngle`: A utility method to calculate the angle from a quaternion, which is used in the test methods.
 
-Make sure you have the necessary JUnit dependencies in your project. If you're using Maven, add the following dependency to your `pom.xml`:
-
-```xml
-<dependency>
-    <groupId>org.junit.jupiter</groupId>
-    <artifactId>junit-jupiter-api</artifactId>
-    <version>5.8.1</version>
-    <scope>test</scope>
-</dependency>
-<dependency>
-    <groupId>org.junit.jupiter</groupId>
-    <artifactId>junit-jupiter-engine</artifactId>
-    <version>5.8.1</version>
-    <scope>test</scope>
-</dependency>
-```
-
-If you're using Gradle, add the following to your `build.gradle`:
-
-```groovy
-dependencies {
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
-}
-```
+This Java code preserves the functionality and logic of the original Python test cases while adhering to JUnit's syntax and conventions.

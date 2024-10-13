@@ -1,74 +1,42 @@
-type LogLevel = 'debug' | 'info' | 'warning' | 'error' | 'critical';
+import * as log4js from 'log4js';
 
 class Logger {
-    private name: string;
-    private level: LogLevel;
-    private levelPriority: Record<LogLevel, number> = {
-        'debug': 10,
-        'info': 20,
-        'warning': 30,
-        'error': 40,
-        'critical': 50
-    };
+  private logger: log4js.Logger;
 
-    constructor(name: string, level: LogLevel = 'debug') {
-        this.name = name;
-        this.level = level;
+  constructor(name: string, level: log4js.Level = 'debug') {
+    // Configure log4js
+    log4js.configure({
+      appenders: {
+        console: { type: 'console' }
+      },
+      categories: {
+        default: { appenders: ['console'], level }
+      }
+    });
+
+    // Create logger
+    this.logger = log4js.getLogger(name);
+  }
+
+  public log(level: log4js.Level, message: string): void {
+    switch (level) {
+      case 'debug':
+        this.logger.debug(message);
+        break;
+      case 'info':
+        this.logger.info(message);
+        break;
+      case 'warn':
+        this.logger.warn(message);
+        break;
+      case 'error':
+        this.logger.error(message);
+        break;
+      case 'fatal':
+        this.logger.fatal(message);
+        break;
+      default:
+        throw new Error('Invalid log level');
     }
-
-    private log(level: LogLevel, message: string) {
-        // If the current message level is less than the logger level, do not log
-        if (this.levelPriority[level] < this.levelPriority[this.level]) {
-            return;
-        }
-
-        const timestamp = new Date().toISOString();
-        const formattedMessage = `${timestamp} - ${level.toUpperCase()} - ${this.name}: ${message}`;
-
-        switch (level) {
-            case 'debug':
-                console.debug(formattedMessage);
-                break;
-            case 'info':
-                console.info(formattedMessage);
-                break;
-            case 'warning':
-                console.warn(formattedMessage);
-                break;
-            case 'error':
-                console.error(formattedMessage);
-                break;
-            case 'critical':
-                console.error(`CRITICAL: ${formattedMessage}`);
-                break;
-        }
-    }
-
-    public debug(message: string) {
-        this.log('debug', message);
-    }
-
-    public info(message: string) {
-        this.log('info', message);
-    }
-
-    public warning(message: string) {
-        this.log('warning', message);
-    }
-
-    public error(message: string) {
-        this.log('error', message);
-    }
-
-    public critical(message: string) {
-        this.log('critical', message);
-    }
+  }
 }
-
-// Example usage:
-const logger = new Logger('myModuleName');
-logger.debug('This is a debug message.');
-logger.info('This is an info message.');
-logger.warning('This is a warning message.');
-logger.error('This is an error message.');
-logger.critical('This is a critical message.');

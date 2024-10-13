@@ -1,65 +1,96 @@
-To convert the provided Python unittest test class into a C++ Catch2 test case, we first need to define the function `rotate_point_cloud` in C++. After that, we can write the corresponding Catch2 test cases. Below is an example of how you might implement this:
+Certainly! Here is the equivalent C++ test class using the Catch2 testing framework. The goal is to preserve the functionality and logic of the tests while adapting them to C++ and Catch2.
 
-### C++ Implementation
+First, make sure you have Catch2 installed and included in your project. You can download Catch2 from [here](https://github.com/catchorg/Catch2).
+
+### C++ Code with Catch2 Testing Framework
 
 ```cpp
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <Eigen/Dense>
-
-// Function to rotate the point cloud around the Y axis by a given angle
-Eigen::MatrixXd rotate_point_cloud(const Eigen::MatrixXd& point_cloud, double rotation_angle) {
-    Eigen::Matrix3d rotation_matrix;
-    rotation_matrix << cos(rotation_angle), 0, sin(rotation_angle),
-                      0, 1, 0,
-                      -sin(rotation_angle), 0, cos(rotation_angle);
-
-    return rotation_matrix * point_cloud.transpose();
-}
-```
-
-### Catch2 Test Cases
-
-```cpp
-#include <iostream>
 #include <cmath>
-#include "point_cloud_rotation.h" // Assuming the above function is in a file named point_cloud_rotation.cpp
 
-TEST_CASE("Rotate Point Cloud", "[point_cloud]") {
-    // Define a sample point cloud
-    Eigen::MatrixXd point_cloud(3, 4);
-    point_cloud << 1, 2, 3, 4,
-                    5, 6, 7, 8,
-                    9, 10, 11, 12;
+// Function to rotate a point cloud around the Y-axis by a given angle
+Eigen::MatrixXd rotatePointCloud(const Eigen::MatrixXd& pointCloud, double rotationAngle) {
+    // Create the rotation matrix for a rotation around the Y axis
+    Eigen::Matrix3d rotationMatrix;
+    rotationMatrix << cos(rotationAngle), 0, sin(rotationAngle),
+                      0, 1, 0,
+                     -sin(rotationAngle), 0, cos(rotationAngle);
 
-    // Define the rotation angle (e.g., 90 degrees)
-    double rotation_angle = M_PI / 2; // 90 degrees in radians
+    // Rotate the point cloud by multiplying with the rotation matrix
+    Eigen::MatrixXd rotatedPointCloud = pointCloud * rotationMatrix;
 
-    // Expected result after rotating 90 degrees around the Y-axis
-    Eigen::MatrixXd expected_result(3, 4);
-    expected_result << -3, 2, -1, 4,
-                        5, 6, 7, 8,
-                        1, 10, 11, 12;
+    return rotatedPointCloud;
+}
 
-    // Call the rotation function
-    Eigen::MatrixXd actual_result = rotate_point_cloud(point_cloud, rotation_angle);
+TEST_CASE("Test Rotate Point Cloud", "[rotate_point_cloud]") {
+    SECTION("Test no rotation") {
+        Eigen::MatrixXd pointCloud(1, 3);
+        pointCloud << 1.0, 2.0, 3.0;
+        double rotationAngle = 0;
+        Eigen::MatrixXd expectedOutput(1, 3);
+        expectedOutput << 1.0, 2.0, 3.0;
 
-    // Check if the actual result matches the expected result
-    REQUIRE(actual_result.isApprox(expected_result, 1e-6));
+        Eigen::MatrixXd rotatedPointCloud = rotatePointCloud(pointCloud, rotationAngle);
+
+        REQUIRE(rotatedPointCloud.isApprox(expectedOutput));
+    }
+
+    SECTION("Test 180-degree rotation") {
+        Eigen::MatrixXd pointCloud(2, 3);
+        pointCloud << 1.0, 0.0, 0.0,
+                      0.0, 1.0, 0.0;
+        double rotationAngle = M_PI;  // 180 degrees
+        Eigen::MatrixXd expectedOutput(2, 3);
+        expectedOutput << -1.0, 0.0, 0.0,
+                           0.0, 1.0, 0.0;
+
+        Eigen::MatrixXd rotatedPointCloud = rotatePointCloud(pointCloud, rotationAngle);
+
+        REQUIRE(rotatedPointCloud.isApprox(expectedOutput));
+    }
+
+    SECTION("Test full rotation") {
+        Eigen::MatrixXd pointCloud(1, 3);
+        pointCloud << 1.0, 2.0, 3.0;
+        double rotationAngle = 2 * M_PI;  // 360 degrees
+        Eigen::MatrixXd expectedOutput(1, 3);
+        expectedOutput << 1.0, 2.0, 3.0;
+
+        Eigen::MatrixXd rotatedPointCloud = rotatePointCloud(pointCloud, rotationAngle);
+
+        REQUIRE(rotatedPointCloud.isApprox(expectedOutput));
+    }
 }
 
 int main(int argc, char* argv[]) {
-    return Catch::Session().run(argc, argv);
+    // Run all the Catch2 tests
+    int result = Catch::Session().run(argc, argv);
+    return result;
 }
 ```
 
-### Explanation
+### Explanation:
+1. **Catch2 Headers**:
+   - `#include <catch2/catch_test_macros.hpp>`: Includes the Catch2 testing macros.
 
-1. **C++ Function**:
-   - The `rotate_point_cloud` function uses Eigen's matrix operations to create a rotation matrix around the Y-axis and then applies it to the input point cloud.
+2. **Function Definition**:
+   - The `rotatePointCloud` function is defined as before, taking an `Eigen::MatrixXd` and a `double` as inputs and returning the rotated point cloud.
 
-2. **Catch2 Test Case**:
-   - We define a sample point cloud and specify a rotation angle.
-   - We calculate the expected result after applying the rotation.
-   - We call the `rotate_point_cloud` function and compare the actual result with the expected result using `REQUIRE(actual_result.isApprox(expected_result, 1e-6))`.
+3. **Test Class**:
+   - The `TEST_CASE` macro defines a test case named "Test Rotate Point Cloud".
+   - Each `SECTION` within the test case represents a specific test scenario.
+   - The `REQUIRE` macro is used to assert that the rotated point cloud matches the expected output using `isApprox` for approximate equality.
 
-Make sure to include the necessary headers for Eigen and Catch2, and adjust the file paths accordingly. This example assumes that the function is implemented in a separate file named `point_cloud_rotation.cpp`.
+4. **Main Function**:
+   - The `main` function runs all the Catch2 tests and returns the result.
+
+### Running the Tests
+To run the tests, you need to compile the code with Catch2 linked. Here is an example command using g++:
+
+```sh
+g++ -std=c++17 -o test_rotate_point_cloud test_rotate_point_cloud.cpp -lEigen -lcatch2
+./test_rotate_point_cloud
+```
+
+Ensure that you have the Eigen library and Catch2 headers properly installed and linked in your build environment. This setup will allow you to run the tests and verify the correctness of the `rotatePointCloud` function.

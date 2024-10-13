@@ -1,63 +1,38 @@
-TEST_CASE("Preorder Traversal", "[tree]") {
-    // Create a simple binary tree:     1
-    //                               / \
-    //                              2   3
-    //                             /
-    //                            4
-    TreeNode* node4 = new TreeNode(4);
-    TreeNode* node2 = new TreeNode(2, node4);
-    TreeNode* node3 = new TreeNode(3);
-    TreeNode* root = new TreeNode(1, node2, node3);
+TEST_CASE("TestBinaryTree", "[BinaryTree]") {
+    TestBinaryTree test;
 
-    BinaryTree bt(root);
-    std::vector<int> result;
-    bt.preorderTraversal(root, result);
+    SECTION("Test preorder traversal") {
+        test.setup();
+        std::vector<int> result = test.tree.preorder_traversal(test.tree.root);
+        REQUIRE_THAT(result, Catch::Matchers::Equals(std::vector<int>({1, 2, 4, 5, 3})));
+        test.teardown();
+    }
 
-    REQUIRE(result == std::vector<int>{1, 2, 4, 3});
+    SECTION("Test inorder traversal") {
+        test.setup();
+        std::vector<int> result = test.tree.inorder_traversal(test.tree.root);
+        REQUIRE_THAT(result, Catch::Matchers::Equals(std::vector<int>({4, 2, 5, 1, 3})));
+        test.teardown();
+    }
 
-    // Clean up memory
-    delete node4;
-    delete node2;
-    delete node3;
-    delete root;
-}
+    SECTION("Test postorder traversal") {
+        test.setup();
+        std::vector<int> result = test.tree.postorder_traversal(test.tree.root);
+        REQUIRE_THAT(result, Catch::Matchers::Equals(std::vector<int>({4, 5, 2, 3, 1})));
+        test.teardown();
+    }
 
-TEST_CASE("Inorder Traversal", "[tree]") {
-    // Same tree structure as above
-    TreeNode* node4 = new TreeNode(4);
-    TreeNode* node2 = new TreeNode(2, node4);
-    TreeNode* node3 = new TreeNode(3);
-    TreeNode* root = new TreeNode(1, node2, node3);
+    SECTION("Test empty tree") {
+        BinaryTree empty_tree;
+        REQUIRE_THAT(empty_tree.preorder_traversal(empty_tree.root), Catch::Matchers::Equals(std::vector<int>({})));
+        REQUIRE_THAT(empty_tree.inorder_traversal(empty_tree.root), Catch::Matchers::Equals(std::vector<int>({})));
+        REQUIRE_THAT(empty_tree.postorder_traversal(empty_tree.root), Catch::Matchers::Equals(std::vector<int>({})));
+    }
 
-    BinaryTree bt(root);
-    std::vector<int> result;
-    bt.inorderTraversal(root, result);
-
-    REQUIRE(result == std::vector<int>{4, 2, 1, 3});
-
-    // Clean up memory
-    delete node4;
-    delete node2;
-    delete node3;
-    delete root;
-}
-
-TEST_CASE("Postorder Traversal", "[tree]") {
-    // Same tree structure as above
-    TreeNode* node4 = new TreeNode(4);
-    TreeNode* node2 = new TreeNode(2, node4);
-    TreeNode* node3 = new TreeNode(3);
-    TreeNode* root = new TreeNode(1, node2, node3);
-
-    BinaryTree bt(root);
-    std::vector<int> result;
-    bt.postorderTraversal(root, result);
-
-    REQUIRE(result == std::vector<int>{4, 2, 3, 1});
-
-    // Clean up memory
-    delete node4;
-    delete node2;
-    delete node3;
-    delete root;
+    SECTION("Test single node tree") {
+        BinaryTree single_node_tree(new TreeNode(10));
+        REQUIRE_THAT(single_node_tree.preorder_traversal(single_node_tree.root), Catch::Matchers::Equals(std::vector<int>({10})));
+        REQUIRE_THAT(single_node_tree.inorder_traversal(single_node_tree.root), Catch::Matchers::Equals(std::vector<int>({10})));
+        REQUIRE_THAT(single_node_tree.postorder_traversal(single_node_tree.root), Catch::Matchers::Equals(std::vector<int>({10})));
+    }
 }

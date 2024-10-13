@@ -1,98 +1,103 @@
-To convert the given Python unittest test class into a C++ Catch2 test case, we need to follow these steps:
+Certainly! Below is the equivalent C++ test class using the Catch2 testing framework. This conversion ensures that the functionality and logic of the tests are preserved, with appropriate assertions and setup.
 
-1. Include the necessary headers for Catch2.
-2. Define the function `format_str` in C++.
-3. Write a test case using Catch2's syntax to verify the functionality of `format_str`.
-
-Here's how you can do it:
-
-### Step 1: Include Necessary Headers
-
-First, include the Catch2 header in your C++ file. Make sure you have Catch2 installed and properly linked in your project.
+First, make sure you have Catch2 installed and included in your project. You can include Catch2 using the following headers:
 
 ```cpp
-#include <catch2/catch.hpp>
-```
-
-### Step 2: Define the Function `format_str`
-
-Define the `format_str` function in C++. Note that C++ does not have type hints like Python, so we'll assume the function takes a `std::string` and returns a `std::string`.
-
-```cpp
+#include <catch2/catch_test_macros.hpp>
 #include <string>
+#include <sstream>
+#include <vector>
 
+// The function to be tested
+std::string format_str(const std::string& x);
+
+TEST_CASE("Test a simple string input", "[format_str]") {
+    std::string input_str = "Hello, World!";
+    std::string expected_output = "> Hello, World!";
+    REQUIRE(format_str(input_str) == expected_output);
+}
+
+TEST_CASE("Test a multiline string input", "[format_str]") {
+    std::string input_str = "Line 1\nLine 2\nLine 3";
+    std::string expected_output = "> Line 1\n> Line 2\n> Line 3";
+    REQUIRE(format_str(input_str) == expected_output);
+}
+
+TEST_CASE("Test a string with an even number of code block delimiters", "[format_str]") {
+    std::string input_str = "Some code:\n```\nprint('Hello')\n```";
+    std::string expected_output = "> Some code:\n> ```\n> print('Hello')\n> ```";
+    REQUIRE(format_str(input_str) == expected_output);
+}
+
+TEST_CASE("Test a string with an odd number of code block delimiters", "[format_str]") {
+    std::string input_str = "Some code:\n```\nprint('Hello')";
+    std::string expected_output = "> Some code:\n> ```\n> print('Hello')\n> ```";
+    REQUIRE(format_str(input_str) == expected_output);
+}
+
+TEST_CASE("Test non-string input (e.g., integer) to ensure it's converted", "[format_str]") {
+    int input_value = 123;
+    std::string expected_output = "> 123";
+    REQUIRE(format_str(std::to_string(input_value)) == expected_output);
+}
+
+// The function to be tested
 std::string format_str(const std::string& x) {
-    // Implementation of the format_str function goes here
-    std::string result;
-    size_t pos = 0;
-    while (pos < x.size()) {
-        if (x[pos] == '\n') {
-            result += "> ";
-            pos++;
-        } else {
-            size_t endOfLine = x.find('\n', pos);
-            if (endOfLine == std::string::npos) {
-                endOfLine = x.size();
-            }
-            result.append(x, pos, endOfLine - pos).append("\n");
-            pos = endOfLine + 1;
+    // Ensure there is a matching number of code block delimiters.
+    // If the count of delimiters is odd, append an additional one to balance.
+    size_t delimiter_count = 0;
+    for (char c : x) {
+        if (c == '`') {
+            delimiter_count++;
         }
     }
-    return result;
-}
-```
-
-### Step 3: Write a Test Case Using Catch2
-
-Now, write a test case using Catch2's syntax to verify the functionality of `format_str`. Here's an example:
-
-```cpp
-TEST_CASE("Test format_str function", "[format_str]") {
-    CHECK(format_str("") == "");
-    CHECK(format_str("Hello") == "> Hello\n");
-    CHECK(format_str("Hello\nWorld") == "> Hello\n> World\n");
-    CHECK(format_str("Code:\nint main() {\n    return 0;\n}\n") ==
-          "> Code:\n> int main() {\n>     return 0;\n> }\n>");
-}
-```
-
-### Full Example
-
-Here's the complete C++ code including the function definition and the test case:
-
-```cpp
-#include <iostream>
-#include <string>
-#include <catch2/catch.hpp>
-
-// Function to format a string
-std::string format_str(const std::string& x) {
-    std::string result;
-    size_t pos = 0;
-    while (pos < x.size()) {
-        if (x[pos] == '\n') {
-            result += "> ";
-            pos++;
-        } else {
-            size_t endOfLine = x.find('\n', pos);
-            if (endOfLine == std::string::npos) {
-                endOfLine = x.size();
-            }
-            result.append(x, pos, endOfLine - pos).append("\n");
-            pos = endOfLine + 1;
-        }
+    if (delimiter_count % 3 == 1) {
+        x += "\n```";
     }
-    return result;
+
+    // Format each line by prepending '> ' and join them with newlines.
+    std::istringstream iss(x);
+    std::vector<std::string> lines;
+    std::string line;
+    while (std::getline(iss, line)) {
+        lines.push_back("> " + line);
+    }
+
+    // Join the formatted lines with newlines.
+    std::ostringstream oss;
+    for (size_t i = 0; i < lines.size(); ++i) {
+        if (i > 0) {
+            oss << "\n";
+        }
+        oss << lines[i];
+    }
+
+    // Return the final formatted string.
+    return oss.str();
 }
 
-// Test cases using Catch2
-TEST_CASE("Test format_str function", "[format_str]") {
-    CHECK(format_str("") == "");
-    CHECK(format_str("Hello") == "> Hello\n");
-    CHECK(format_str("Hello\nWorld") == "> Hello\n> World\n");
-    CHECK(format_str("Code:\nint main() {\n    return 0;\n}\n") ==
-          "> Code:\n> int main() {\n>     return 0;\n> }\n>");
+int main() {
+    // Run all the tests
+    Catch::Session().run();
+    return 0;
 }
 ```
 
-This C++ code defines the `format_str` function and includes a set of test cases using Catch2 to ensure its correctness. Make sure to link against the Catch2 library when compiling your program.
+### Explanation:
+1. **Catch2 Headers**:
+   - Include the necessary Catch2 headers to use the testing macros.
+
+2. **Test Cases**:
+   - Each `unittest.TestCase` method is converted into a separate `TEST_CASE` in Catch2.
+   - The test cases are tagged with `[format_str]` to group them under the `format_str` function.
+
+3. **Assertions**:
+   - Use `REQUIRE` to assert the expected output matches the actual output.
+
+4. **Function Implementation**:
+   - The `format_str` function is implemented to match the Python logic, including handling code block delimiters and formatting lines.
+
+5. **Main Function**:
+   - The `main` function runs all the tests using `Catch::Session().run()`.
+
+This C++ code provides equivalent test cases and functionality as the original Python unittest code, using the Catch2 testing framework.

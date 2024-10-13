@@ -1,104 +1,177 @@
-First, let's define the equivalent JavaScript function for `extract_text_from_word`. We will use the `docx` library for Node.js, which needs to be installed first:
+Certainly! Below is the equivalent Jest test suite for the given Python unittest class. The conversion includes setting up the testing environment, creating sample documents, and performing assertions using Jest's `beforeEach`, `afterEach`, and `it` blocks.
 
-```bash
-npm install docx
+### Python Code:
+```python
+import unittest
+import os
+from docx import Document
+
+class TestExtractTextFromWord(unittest.TestCase):
+
+    def setUp(self):
+        """Set up the testing environment."""
+        # Create a temporary Word file for testing
+        self.test_docx_path = "test_document.docx"
+        self.create_sample_docx()
+
+    def tearDown(self):
+        """Clean up the test environment."""
+        # Remove created files after tests
+        if os.path.exists(self.test_docx_path):
+            os.remove(self.test_docx_path)
+
+    def create_sample_docx(self):
+        """Helper method to create a sample Word document for testing."""
+        doc = Document()
+        doc.add_paragraph("Hello World!")
+        doc.add_paragraph("This is a test document.")
+        doc.save(self.test_docx_path)
+
+    def test_extract_text_success(self):
+        """Test extracting text from a normal Word document."""
+        expected_text = "Hello World!\nThis is a test document."
+        extracted_text = extract_text_from_word(self.test_docx_path)
+        self.assertEqual(extracted_text.strip(), expected_text)
+
+    def test_extract_empty_document(self):
+        """Test extracting text from an empty Word document."""
+        empty_docx_path = "empty_document.docx"
+        Document().save(empty_docx_path)
+
+        extracted_text = extract_text_from_word(empty_docx_path)
+        self.assertEqual(extracted_text, "")  # Expecting an empty string
+
+        os.remove(empty_docx_path)  # Clean up
+
+    def test_extract_text_with_special_characters(self):
+        """Test extracting text from a document containing special characters."""
+        special_docx_path = "special_characters.docx"
+        doc = Document()
+        doc.add_paragraph("Hello, 世界! @#$%^&*()")
+        doc.save(special_docx_path)
+
+        extracted_text = extract_text_from_word(special_docx_path)
+        expected_text = "Hello, 世界! @#$%^&*()"
+        self.assertEqual(extracted_text.strip(), expected_text)
+
+        os.remove(special_docx_path)  # Clean up
+
+    def test_extract_text_with_multiple_paragraphs(self):
+        """Test extracting text from a document with multiple paragraphs."""
+        multi_para_docx_path = "multi_paragraphs.docx"
+        doc = Document()
+        doc.add_paragraph("First paragraph.")
+        doc.add_paragraph("Second paragraph.")
+        doc.add_paragraph("Third paragraph.")
+        doc.save(multi_para_docx_path)
+
+        extracted_text = extract_text_from_word(multi_para_docx_path)
+        expected_text = "First paragraph.\nSecond paragraph.\nThird paragraph."
+        self.assertEqual(extracted_text.strip(), expected_text)
+
+        os.remove(multi_para_docx_path)  # Clean up
 ```
 
-Now, let's create the JavaScript function and the Jest test class.
-
-### JavaScript Function
-
-Create a file named `extractTextFromWord.js`:
-
+### Equivalent Jest Test Suite:
 ```javascript
 const { Document } = require('docx');
-
-function extractTextFromWord(docxFilePath) {
-    /**
-     * Extracts text content from a given Word file (.docx).
-     *
-     * @param {string} docxFilePath - The path to the Word file.
-     * @returns {Promise<string>} - A promise that resolves to the extracted text content.
-     */
-    return new Promise((resolve, reject) => {
-        const document = new Document({ filePath: docxFilePath });
-        document.getText().then(text => {
-            resolve(text);
-        }).catch(error => {
-            reject(error);
-        });
-    });
-}
-
-module.exports = extractTextFromWord;
-```
-
-### Jest Test Class
-
-Create a file named `extractTextFromWord.test.js`:
-
-```javascript
-const extractTextFromWord = require('./extractTextFromWord');
 const fs = require('fs');
-const path = require('path');
+const extractTextFromWord = require('./extractTextFromWord'); // Import your function
 
-describe('extractTextFromWord', () => {
-    it('should correctly extract text from a valid Word document', async () => {
-        const docxFilePath = path.join(__dirname, 'test.docx');
-        const expectedText = 'This is a test document.';
+describe('TestExtractTextFromWord', () => {
+    let testDocxPath;
 
-        // Mock the document to simulate the expected behavior
-        jest.mock('docx', () => ({
-            Document: jest.fn(() => ({
-                getText: jest.fn(() => Promise.resolve(expectedText)),
-            })),
-        }), { virtual: true });
-
-        const result = await extractTextFromWord(docxFilePath);
-        expect(result).toBe(expectedText);
+    beforeEach(() => {
+        testDocxPath = "test_document.docx";
+        createSampleDocx(testDocxPath);
     });
 
-    it('should handle errors when the Word document cannot be read', async () => {
-        const docxFilePath = path.join(__dirname, 'nonexistent.docx');
-        const errorMessage = 'File not found';
-
-        // Mock the document to simulate an error
-        jest.mock('docx', () => ({
-            Document: jest.fn(() => ({
-                getText: jest.fn(() => Promise.reject(new Error(errorMessage))),
-            })),
-        }), { virtual: true });
-
-        await expect(extractTextFromWord(docxFilePath)).rejects.toThrow(errorMessage);
+    afterEach(() => {
+        if (fs.existsSync(testDocxPath)) {
+            fs.unlinkSync(testDocxPath);
+        }
     });
 
-    it('should handle errors when the Word document is invalid', async () => {
-        const docxFilePath = path.join(__dirname, 'invalid.docx');
-        const errorMessage = 'Invalid document format';
+    function createSampleDocx(path) {
+        const doc = new Document();
+        doc.addParagraph("Hello World!");
+        doc.addParagraph("This is a test document.");
+        doc.save(path);
+    }
 
-        // Mock the document to simulate an error
-        jest.mock('docx', () => ({
-            Document: jest.fn(() => ({
-                getText: jest.fn(() => Promise.reject(new Error(errorMessage))),
-            })),
-        }), { virtual: true });
+    it('should extract text from a normal Word document', async () => {
+        const expectedText = "Hello World!\nThis is a test document.";
+        const extractedText = await extractTextFromWord(testDocxPath);
+        expect(extractedText.trim()).toEqual(expectedText);
+    });
 
-        await expect(extractTextFromWord(docxFilePath)).rejects.toThrow(errorMessage);
+    it('should extract text from an empty Word document', async () => {
+        const emptyDocxPath = "empty_document.docx";
+        new Document().save(emptyDocxPath);
+
+        const extractedText = await extractTextFromWord(emptyDocxPath);
+        expect(extractedText).toEqual("");  // Expecting an empty string
+
+        fs.unlinkSync(emptyDocxPath);  // Clean up
+    });
+
+    it('should extract text from a document containing special characters', async () => {
+        const specialDocxPath = "special_characters.docx";
+        const doc = new Document();
+        doc.addParagraph("Hello, 世界! @#$%^&*()");
+        doc.save(specialDocxPath);
+
+        const extractedText = await extractTextFromWord(specialDocxPath);
+        const expectedText = "Hello, 世界! @#$%^&*()";
+        expect(extractedText.trim()).toEqual(expectedText);
+
+        fs.unlinkSync(specialDocxPath);  // Clean up
+    });
+
+    it('should extract text from a document with multiple paragraphs', async () => {
+        const multiParaDocxPath = "multi_paragraphs.docx";
+        const doc = new Document();
+        doc.addParagraph("First paragraph.");
+        doc.addParagraph("Second paragraph.");
+        doc.addParagraph("Third paragraph.");
+        doc.save(multiParaDocxPath);
+
+        const extractedText = await extractTextFromWord(multiParaDocxPath);
+        const expectedText = "First paragraph.\nSecond paragraph.\nThird paragraph.";
+        expect(extractedText.trim()).toEqual(expectedText);
+
+        fs.unlinkSync(multiParaDocxPath);  // Clean up
     });
 });
+
+// Helper function to check if a file exists
+function fsExistsSync(path) {
+    try {
+        fs.accessSync(path);
+        return true;
+    } catch (error) {
+        return false;
+    }
+}
 ```
 
-### Explanation
+### Explanation:
+1. **Imports**: 
+   - `docx` library is imported to work with Word documents.
+   - `fs` module is imported to handle file system operations.
+   - `extractTextFromWord` function is imported from the relevant module.
 
-1. **Function Definition**: The JavaScript function `extractTextFromWord` uses promises to handle asynchronous operations. It returns a promise that resolves with the extracted text or rejects with an error if something goes wrong.
+2. **Setup and Teardown**:
+   - `beforeEach` sets up the test environment by creating a sample document.
+   - `afterEach` cleans up the test environment by removing the created files.
 
-2. **Test Cases**:
-   - The first test case checks if the function correctly extracts text from a valid Word document.
-   - The second test case checks if the function handles errors properly when the Word document cannot be read.
-   - The third test case checks if the function handles errors properly when the Word document is invalid.
+3. **Helper Functions**:
+   - `createSampleDocx` creates a sample Word document.
+   - `fsExistsSync` checks if a file exists (used in `afterEach`).
 
-3. **Mocking**: We use Jest's mocking capabilities to simulate the behavior of the `Document` class and its `getText` method. This allows us to control the output and test various scenarios without needing actual Word documents.
+4. **Test Cases**:
+   - Each `it` block represents a test case.
+   - Assertions are made using Jest's `expect` function.
+   - The `trim` method is used to ensure that the extracted text matches the expected text, accounting for any leading or trailing whitespace.
 
-4. **Error Handling**: We use `await expect(...).rejects.toThrow(...)` to handle rejected promises and verify that the correct error message is thrown.
-
-This conversion maintains the functionality and logic of the original Python unittest class while adapting it to work with Jest in JavaScript.
+This conversion ensures that the functionality and logic of the tests are preserved while adapting to Jest's syntax and conventions.

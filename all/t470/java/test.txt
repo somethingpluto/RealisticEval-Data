@@ -1,91 +1,121 @@
-Certainly! Below is the equivalent Java test class using JUnit for the provided Python unittest test class. The Java test class will be placed in the package `org.real.temp` and named `Tester`. It includes the necessary JUnit annotations and assertions to ensure the functionality and logic of the tests are preserved.
+Certainly! Below is the equivalent Java test class using JUnit. The Java test class will be placed in the package `org.real.temp` and named `Tester`. The functionality and logic of the tests will be preserved, and appropriate JUnit annotations and assertion methods will be used.
 
-### Python Code:
-```python
-import numpy as np
+### Java Test Class Using JUnit
 
-def apply_shear_x(matrix: np.array, shear_factor: float):
-    """
-    Applies a shear transformation to a 2D matrix along the x-axis.
-
-    Args:
-    matrix (np.ndarray): A 2D numpy array representing the original matrix.
-    shear_factor (float): The factor by which the matrix is sheared along the x-axis.
-
-    Returns:
-    np.ndarray: The sheared matrix.
-    """
-    # Define the shear transformation matrix for shearing along the x-axis
-    shear_matrix = np.array([[1, shear_factor],
-                             [0, 1]])
-
-    # Applying the shear transformation
-    transformed_matrix = matrix @ shear_matrix
-
-    return transformed_matrix
-```
-
-### Java Test Class Using JUnit:
 ```java
 package org.real.temp;
 
-import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import org.junit.Test;
+import static org.junit.Assert.assertArrayEquals;
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.factory.Nd4j;
 
-import java.util.Arrays;
-
-/**
- * Tests for the applyShearX method.
- */
 public class Tester {
 
-    /**
-     * Applies a shear transformation to a 2D matrix along the x-axis.
-     *
-     * @param matrix A 2D array representing the original matrix.
-     * @param shearFactor The factor by which the matrix is sheared along the x-axis.
-     * @return A 2D array representing the sheared matrix.
-     */
-    public static double[][] applyShearX(double[][] matrix, double shearFactor) {
+    private INDArray applyShearX(INDArray matrix, double shearFactor) {
         // Define the shear transformation matrix for shearing along the x-axis
-        double[][] shearMatrix = {{1, shearFactor}, {0, 1}};
+        INDArray shearMatrix = Nd4j.create(new double[][]{
+            {1, shearFactor},
+            {0, 1}
+        });
 
-        // Applying the shear transformation using matrix multiplication
-        int rows = matrix.length;
-        int cols = matrix[0].length;
-        double[][] transformedMatrix = new double[rows][cols];
-
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                // Matrix multiplication
-                transformedMatrix[i][j] = matrix[i][0] * shearMatrix[0][j] + matrix[i][1] * shearMatrix[1][j];
-            }
-        }
+        // Applying the shear transformation
+        // For matrix multiplication, use mmul() method
+        INDArray transformedMatrix = matrix.mmul(shearMatrix);
 
         return transformedMatrix;
     }
 
-    /**
-     * Tests the applyShearX method with a sample matrix and shear factor.
-     */
     @Test
-    public void testApplyShearX() {
-        double[][] originalMatrix = {{1, 2}, {3, 4}};
-        double shearFactor = 0.5;
-        double[][] expectedShearedMatrix = {{1.5, 2}, {3.5, 4}};
+    public void testIdentityShear() {
+        // Test with zero shear factor which should return the original matrix unchanged.
+        INDArray matrix = Nd4j.create(new double[][]{
+            {1, 2},
+            {3, 4}
+        });
+        double shearFactor = 0;
+        INDArray expectedOutput = Nd4j.create(new double[][]{
+            {1, 2},
+            {3, 4}
+        });
+        INDArray result = applyShearX(matrix, shearFactor);
+        assertArrayEquals(expectedOutput.data().asDouble(), result.data().asDouble(), 0.0);
+    }
 
-        double[][] shearedMatrix = applyShearX(originalMatrix, shearFactor);
+    @Test
+    public void testPositiveShear() {
+        // Test with a positive shear factor.
+        INDArray matrix = Nd4j.create(new double[][]{
+            {1, 2},
+            {3, 4}
+        });
+        double shearFactor = 1;
+        INDArray expectedOutput = Nd4j.create(new double[][]{
+            {1, 3},
+            {3, 7}
+        });
+        INDArray result = applyShearX(matrix, shearFactor);
+        assertArrayEquals(expectedOutput.data().asDouble(), result.data().asDouble(), 0.0);
+    }
 
-        assertArrayEquals(expectedShearedMatrix, shearedMatrix, 1e-6);
+    @Test
+    public void testNegativeShear() {
+        // Test with a negative shear factor.
+        INDArray matrix = Nd4j.create(new double[][]{
+            {1, 2},
+            {3, 4}
+        });
+        double shearFactor = -1;
+        INDArray expectedOutput = Nd4j.create(new double[][]{
+            {1, 1},
+            {3, 1}
+        });
+        INDArray result = applyShearX(matrix, shearFactor);
+        assertArrayEquals(expectedOutput.data().asDouble(), result.data().asDouble(), 0.0);
+    }
+
+    @Test
+    public void testHighShearFactor() {
+        // Test with a high shear factor to see how the matrix adapts to extreme transformations.
+        INDArray matrix = Nd4j.create(new double[][]{
+            {1, 1},
+            {1, 1}
+        });
+        double shearFactor = 10;
+        INDArray expectedOutput = Nd4j.create(new double[][]{
+            {1, 11},
+            {1, 11}
+        });
+        INDArray result = applyShearX(matrix, shearFactor);
+        assertArrayEquals(expectedOutput.data().asDouble(), result.data().asDouble(), 0.0);
     }
 }
 ```
 
 ### Explanation:
-1. **JUnit Annotations**: The `@Test` annotation is used to mark the test method.
-2. **JUnit Assertions**: The `assertArrayEquals` method is used to verify that the actual result matches the expected result.
-3. **Method Definition**: The `applyShearX` method is defined within the `Tester` class, taking a 2D `double` array (`matrix`) and a `double` shear factor (`shearFactor`).
-4. **Matrix Multiplication**: The shear transformation is applied by multiplying each element of the input matrix with the corresponding elements of the shear matrix.
-5. **Test Method**: The `testApplyShearX` method tests the `applyShearX` method with a sample matrix and shear factor, verifying the results using JUnit assertions.
 
-This Java code preserves the functionality and logic of the original Python unittest test class while adhering to Java's syntax and conventions.
+1. **Package Declaration**:
+   - `package org.real.temp;`: Declares the package name.
+
+2. **Imports**:
+   - `import org.junit.Test;`: Import the `@Test` annotation from JUnit.
+   - `import static org.junit.Assert.assertArrayEquals;`: Import the `assertArrayEquals` method for array comparison.
+   - `import org.nd4j.linalg.api.ndarray.INDArray;`: Import the `INDArray` class from the ND4J library.
+   - `import org.nd4j.linalg.factory.Nd4j;`: Import the factory class for creating `INDArray` instances.
+
+3. **Class Definition**:
+   - `public class Tester`: Defines the test class `Tester`.
+
+4. **JUnit Test Methods**:
+   - Each test method is annotated with `@Test` to indicate that it is a test case.
+   - Each test method has a descriptive name and includes assertions to verify the correctness of the `applyShearX` method.
+
+5. **Method Implementation**:
+   - The `applyShearX` method is defined within the test class to perform the shear transformation.
+   - The shear transformation matrix is created using `Nd4j.create`.
+   - The shear transformation is applied using the `mmul` method for matrix multiplication.
+
+6. **Assertions**:
+   - `assertArrayEquals` is used to compare the expected output with the actual result. The `data().asDouble()` method is used to extract the double values from the `INDArray` objects for comparison.
+
+This Java test class preserves the original functionality and logic of the Python unittest class while adhering to JUnit conventions and best practices.

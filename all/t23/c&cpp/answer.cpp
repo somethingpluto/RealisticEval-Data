@@ -1,19 +1,39 @@
 #include <iostream>
+#include <utility>
 #include <cmath>
-#include <optional>
-#include <tuple>
 
-using namespace std;
+// Define a union type for the return value
+union IntersectionResult {
+    std::pair<double, double> point;
+    bool isNone;
 
-using Point = pair<double, double>;
-using Segment = pair<Point, Point>;
+    IntersectionResult() : isNone(true) {}
+    IntersectionResult(double x, double y) : point(x, y), isNone(false) {}
 
-optional<Point> get_line_segment_intersection(const Segment &seg1, const Segment &seg2) {
+    // Destructor
+    ~IntersectionResult() {}
+
+    // Equality operator for checking if the result is None
+    bool operator==(const std::pair<double, double>& p) const {
+        return !isNone && point == p;
+    }
+
+    // Equality operator for checking if the result is None
+    bool operator==(bool none) const {
+        return isNone == none;
+    }
+};
+
+IntersectionResult getLineSegmentIntersection(const std::pair<std::pair<double, double>, std::pair<double, double>>& seg1,
+                                              const std::pair<std::pair<double, double>, std::pair<double, double>>& seg2) {
     // Unpack segment points
-    auto [x1, y1] = seg1.first;
-    auto [x2, y2] = seg1.second;
-    auto [x3, y3] = seg2.first;
-    auto [x4, y4] = seg2.second;
+    auto [p1, p2] = seg1;
+    auto [p3, p4] = seg2;
+
+    double x1 = p1.first, y1 = p1.second;
+    double x2 = p2.first, y2 = p2.second;
+    double x3 = p3.first, y3 = p3.second;
+    double x4 = p4.first, y4 = p4.second;
 
     // Compute direction vectors and determinant
     double dx1 = x2 - x1, dy1 = y2 - y1;
@@ -21,8 +41,8 @@ optional<Point> get_line_segment_intersection(const Segment &seg1, const Segment
     double determinant = dx1 * dy2 - dx2 * dy1;
 
     // Check for parallel lines or identical segments
-    if (abs(determinant) < 1e-10) {
-        return nullopt;
+    if (std::abs(determinant) < 1e-10) {
+        return {};
     }
 
     // Calculate intersection parameters
@@ -36,7 +56,24 @@ optional<Point> get_line_segment_intersection(const Segment &seg1, const Segment
     if (0 - tolerance <= t1 && t1 <= 1 + tolerance && 0 - tolerance <= t2 && t2 <= 1 + tolerance) {
         double x = x1 + t1 * dx1;
         double y = y1 + t1 * dy1;
-        return make_pair(round(x * 1e7) / 1e7, round(y * 1e7) / 1e7);
+        return {round(x * 1e7) / 1e7, round(y * 1e7) / 1e7};
     }
 
-    return nullopt;
+    return {};
+}
+
+int main() {
+    // Example usage
+    auto seg1 = std::make_pair(std::make_pair(0.0, 0.0), std::make_pair(1.0, 1.0));
+    auto seg2 = std::make_pair(std::make_pair(0.0, 1.0), std::make_pair(1.0, 0.0));
+
+    auto result = getLineSegmentIntersection(seg1, seg2);
+
+    if (result != true) {
+        std::cout << "Intersection Point: (" << result.first << ", " << result.second << ")" << std::endl;
+    } else {
+        std::cout << "No Intersection" << std::endl;
+    }
+
+    return 0;
+}

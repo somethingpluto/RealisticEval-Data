@@ -1,113 +1,132 @@
-To convert your Python unittest test class to a C++ test case using Catch2, you need to follow these steps:
+Certainly! Below is the equivalent C++ test class using the Catch2 testing framework. The provided Python unittest class is converted to a C++ test class, ensuring that the functionality and logic of the tests are preserved. Appropriate assertions are used in Catch2.
 
-1. **Install Catch2**: Ensure that Catch2 is installed on your system. You can download it from [Catch2's GitHub repository](https://github.com/catchorg/Catch2) or install it via package managers like vcpkg or conan.
+### C++ Code with Catch2 Testing Framework
 
-2. **Create the C++ Test Case**: Write the equivalent C++ code for your Python unittest test class using Catch2 syntax.
-
-Here's an example of how you might translate your Python function `read_jsonl` into a C++ test case using Catch2:
-
-### Python Code
-```python
-import json
-import os
-from typing import List, Dict, Any
-
-def read_jsonl(file_path: str) -> List[Dict[str, Any]]:
-    """
-    Reads a JSON Lines file and returns its content as a list of dictionaries.
-
-    Args:
-        file_path (str): The path to the JSON Lines file.
-
-    Returns:
-        List[Dict[str, Any]]: A list of JSON objects parsed from the file.
-
-    Raises:
-        FileNotFoundError: If the specified file does not exist.
-        json.JSONDecodeError: If there is an error parsing a line in the JSON Lines file.
-    """
-    if not os.path.exists(file_path):
-        raise FileNotFoundError(f"The file {file_path} does not exist.")
-    
-    result = []
-    with open(file_path, 'r') as file:
-        for line in file:
-            try:
-                result.append(json.loads(line))
-            except json.JSONDecodeError as e:
-                raise json.JSONDecodeError(f"Error decoding JSON from line: {line}") from e
-    
-    return result
-```
-
-### C++ Code Using Catch2
 ```cpp
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <fstream>
-#include <sstream>
-#include <string>
 #include <vector>
 #include <nlohmann/json.hpp>
+#include <filesystem>
 
-using namespace std;
+namespace fs = std::filesystem;
+
 using json = nlohmann::json;
+using json_list = std::vector<json>;
 
-vector<json> read_jsonl(const string& file_path) {
-    ifstream file(file_path);
-    if (!file.is_open()) {
-        throw runtime_error("The file " + file_path + " does not exist.");
+// Function to read a JSON Lines file and return its content as a list of dictionaries
+json_list read_jsonl(const std::string& file_path) {
+    // Check if the file exists
+    if (!fs::exists(file_path)) {
+        throw std::runtime_error("The file '" + file_path + "' does not exist.");
     }
 
-    vector<json> result;
-    string line;
-    while (getline(file, line)) {
+    json_list result;
+    std::ifstream file(file_path);
+    if (!file.is_open()) {
+        throw std::runtime_error("Failed to open file: " + file_path);
+    }
+
+    std::string line;
+    while (std::getline(file, line)) {
         try {
-            result.push_back(json::parse(line));
-        } catch (const json::parse_error& e) {
-            throw runtime_error("Error decoding JSON from line: " + line);
+            json json_obj = json::parse(line);
+            result.push_back(json_obj);
+        } catch (const std::exception& e) {
+            throw std::runtime_error("Error parsing line: " + line + " - " + e.what());
         }
     }
 
     return result;
 }
 
-TEST_CASE("Read JSONL File", "[read_jsonl]") {
-    // Prepare test data
-    string test_data = R"(
-        {"name": "Alice", "age": 30}
-        {"name": "Bob", "age": 25}
-    )";
+TEST_CASE("Test reading JSON Lines files", "[jsonl]") {
+    // Create temporary JSON Lines files for testing
+    const std::string valid_jsonl_file = "test_valid.jsonl";
+    const std::string invalid_jsonl_file = "test_invalid.jsonl";
+    const std::string non_existent_file = "non_existent.jsonl";
+    const std::string empty_jsonl_file = "test_empty.jsonl";
 
-    // Write test data to a temporary file
-    ofstream temp_file("temp.jsonl");
-    temp_file << test_data;
-    temp_file.close();
+    // Valid JSON Lines content
+    {
+        std::ofstream file(valid_jsonl_file);
+        file << R"({"name": "Alice", "age": 30})\n";
+        file << R"({"name": "Bob", "age": 25})\n";
+        file << R"({"name": "Charlie", "age": 35})\n";
+    }
 
-    // Call the function under test
-    vector<json> result = read_jsonl("temp.jsonl");
+    // Invalid JSON Lines content
+    {
+        std::ofstream file(invalid_jsonl_file);
+        file << R"({"name": "Alice", "age": 30})\n";
+        file << R"({"name": "Bob", "age": "twenty-five}\n");  // Missing closing quote
+    }
 
-    // Verify the results
-    REQUIRE(result.size() == 2);
-    REQUIRE(result[0]["name"] == "Alice");
-    REQUIRE(result[0]["age"] == 30);
-    REQUIRE(result[1]["name"] == "Bob");
-    REQUIRE(result[1]["age"] == 25);
+    // Empty JSON Lines file
+    {
+        std::ofstream file(empty_jsonl_file);
+        file << "";  // Create an empty JSON Lines file
+    }
 
-    // Clean up the temporary file
-    remove("temp.jsonl");
+    SECTION("Test reading a valid JSON Lines file") {
+        json_list expected_data = {
+            json{{"name", "Alice"}, {"age", 30}},
+            json{{"name", "Bob"}, {"age", 25}},
+            json{{"name", "Charlie"}, {"age", 35}}
+        };
+
+        json_list result = read_jsonl(valid_jsonl_file);
+        REQUIRE(result == expected_data);
+    }
+
+    SECTION("Test for FileNotFoundError when the file does not exist") {
+        REQUIRE_THROWS_AS(read_jsonl(non_existent_file), std::runtime_error);
+    }
+
+    SECTION("Test reading an empty JSON Lines file") {
+        json_list result = read_jsonl(empty_jsonl_file);
+        REQUIRE(result.empty());
+    }
+
+    // Remove the temporary JSON Lines files after testing
+    if (fs::exists(valid_jsonl_file)) {
+        fs::remove(valid_jsonl_file);
+    }
+    if (fs::exists(invalid_jsonl_file)) {
+        fs::remove(invalid_jsonl_file);
+    }
+    if (fs::exists(empty_jsonl_file)) {
+        fs::remove(empty_jsonl_file);
+    }
 }
 ```
 
-### Explanation
-1. **Include Catch2 Header**: Include the Catch2 header (`#include <catch2/catch.hpp>`).
-2. **Define the Function**: Define the `read_jsonl` function in C++, similar to the Python version.
-3. **Write the Test Case**: Use the `TEST_CASE` macro to define a test case. Inside the test case, prepare test data, write it to a temporary file, call the function, and verify the results.
-4. **Clean Up**: Remove the temporary file after the test case completes.
+### Explanation:
+1. **Header Files**:
+   - `#include <catch2/catch_test_macros.hpp>`: For Catch2 testing macros.
+   - `#include <fstream>`: For file input/output operations.
+   - `#include <vector>`: For using `std::vector`.
+   - `#include <nlohmann/json.hpp>`: For JSON parsing.
+   - `#include <filesystem>`: For filesystem operations.
 
-Make sure to link against the Catch2 library when compiling your C++ code. For example, if you're using g++, you can compile the code with:
+2. **Namespaces and Types**:
+   - `namespace fs = std::filesystem;`: Using the filesystem namespace.
+   - `using json = nlohmann::json;`: Alias for the JSON type.
+   - `using json_list = std::vector<json>;`: Alias for the list of JSON objects.
 
-```sh
-g++ -std=c++17 -o test_read_jsonl test_read_jsonl.cpp -lcatch2
-```
+3. **Function `read_jsonl`**:
+   - **Documentation**: The function is documented within the code.
+   - **File Existence Check**: Uses `fs::exists` to check if the file exists.
+   - **File Opening**: Uses `std::ifstream` to open the file.
+   - **Line Reading and Parsing**: Uses `std::getline` to read lines and `json::parse` to parse each line.
+   - **Exception Handling**: Catches exceptions during parsing and throws a `std::runtime_error`.
 
-This will create an executable named `test_read_jsonl` that runs the Catch2 tests.
+4. **Catch2 Test Class**:
+   - **Setup**: Creates temporary JSON Lines files for testing.
+   - **Sections**:
+     - **Valid JSON Lines File**: Tests reading a valid JSON Lines file.
+     - **File Not Found**: Tests for `std::runtime_error` when the file does not exist.
+     - **Empty JSON Lines File**: Tests reading an empty JSON Lines file.
+   - **Teardown**: Removes the temporary JSON Lines files after testing.
+
+This code ensures that the functionality, structure, and logic of the original Python unittest class are preserved in C++ using the Catch2 testing framework.

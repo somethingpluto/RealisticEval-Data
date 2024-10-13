@@ -1,27 +1,35 @@
 #include <vector>
 #include <tuple>
+#include <iostream>
 
-double calculate_red_proportion(const std::vector<std::tuple<int, int, int>>& pixels) {
+float calculateRedProportion(const std::vector<std::tuple<int, int, int>>& pixels) {
     if (pixels.empty()) {
-        return 0.0;
+        return 0.0f;
     }
 
-    int total_red = 0;
-    int total_intensity = 0;
+    int totalRed = 0;
+    int totalIntensity = 0;
 
     for (const auto& pixel : pixels) {
         int r, g, b;
         std::tie(r, g, b) = pixel;
-
-        total_red += r;
-        total_intensity += (r + g + b);
+        totalRed += r;
+        totalIntensity += (r + g + b);
     }
 
     // Avoid division by zero
-    if (total_intensity == 0) {
-        return 0.0;
+    if (totalIntensity == 0) {
+        return 0.0f;
     }
 
-    double red_proportion = static_cast<double>(total_red) / total_intensity;
-    return red_proportion;
+    float redProportion = static_cast<float>(totalRed) / totalIntensity;
+    return redProportion;
+}
+
+int main() {
+    // Example usage
+    std::vector<std::tuple<int, int, int>> pixels = {{255, 0, 0}, {0, 255, 0}, {0, 0, 255}};
+    float result = calculateRedProportion(pixels);
+    std::cout << "Red Proportion: " << result << std::endl;
+    return 0;
 }

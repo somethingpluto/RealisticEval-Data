@@ -1,63 +1,88 @@
-Sure! Below is an equivalent C++ test case using Catch2 for the provided Python unittest function `extract_date_from_filename`. Note that the C++ version assumes you have a similar function implementation in C++ and uses regular expressions to match dates in the same format (`YYYY-MM-DD`).
+Certainly! Here is the equivalent test class using Catch2 in C++. I will include the necessary headers, setup the test cases, and use appropriate assertions to ensure the functionality and logic are preserved.
 
-First, let's define the function in C++:
+### C++ Code Using Catch2
+
+First, make sure you have Catch2 installed and included in your project. You can typically include Catch2 via a header-only library.
 
 ```cpp
-#include <string>
+#include <catch2/catch_test_macros.hpp>
 #include <regex>
+#include <string>
 
+// Function to extract the date from the filename
 std::string extract_date_from_filename(const std::string& file_name) {
-    // Regular expression to match dates in the format YYYY-MM-DD
-    std::regex date_regex(R"(\d{4}-\d{2}-\d{2})");
+    // Define the regex pattern for matching a date in the format YYYY-MM-DD
+    std::regex date_pattern(R"(\d{4}-\d{2}-\d{2})");
     
     // Search for the date pattern in the file name
-    auto match = std::smatch{};
-    if (std::regex_search(file_name, match, date_regex)) {
-        return match.str();
-    }
+    std::smatch match;
     
-    return "";
+    // If a match is found, return the matched date; otherwise, return an empty string
+    if (std::regex_search(file_name, match, date_pattern)) {
+        return match.str(0);
+    } else {
+        return "";
+    }
+}
+
+TEST_CASE("TestExtractDateFromFilename", "[extract_date_from_filename]") {
+    SECTION("test_date_extraction_success") {
+        // Test case where the date is successfully extracted.
+        const std::string file_name = "report-2023-09-28.txt";
+        const std::string expected_date = "2023-09-28";
+        REQUIRE(extract_date_from_filename(file_name) == expected_date);
+    }
+
+    SECTION("test_no_date_in_filename") {
+        // Test case where no date is present in the filename.
+        const std::string file_name = "report.txt";
+        REQUIRE(extract_date_from_filename(file_name).empty());
+    }
+
+    SECTION("test_multiple_dates_in_filename") {
+        // Test case where multiple dates are present, should return the first one.
+        const std::string file_name = "report-2023-09-28-backup-2023-10-01.txt";
+        const std::string expected_date = "2023-09-28";
+        REQUIRE(extract_date_from_filename(file_name) == expected_date);
+    }
+
+    SECTION("test_date_at_start_of_filename") {
+        // Test case where the date is at the start of the filename.
+        const std::string file_name = "2023-09-28-report.txt";
+        const std::string expected_date = "2023-09-28";
+        REQUIRE(extract_date_from_filename(file_name) == expected_date);
+    }
+
+    SECTION("test_incorrect_date_format") {
+        // Test case where the date format is incorrect.
+        const std::string file_name = "report-2023-99-99.txt";  // Invalid date
+        const std::string expected_date = "";  // Since the regex does not match, it should return an empty string
+        REQUIRE(extract_date_from_filename(file_name).empty());
+    }
 }
 ```
 
-Now, let's write the corresponding test cases using Catch2:
+### Explanation:
+1. **Header Inclusions**:
+   - `#include <catch2/catch_test_macros.hpp>`: Required for Catch2 testing macros.
+   - `#include <regex>`: Required for using regular expressions.
+   - `#include <string>`: Required for using `std::string`.
 
-```cpp
-#define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
-#include "catch.hpp"
+2. **Function Definition**:
+   - `std::string extract_date_from_filename(const std::string& file_name)`: This function extracts the date from the filename and returns an empty string if no valid date is found.
 
-// Function to be tested
-std::string extract_date_from_filename(const std::string& file_name);
+3. **Test Class**:
+   - `TEST_CASE` macro defines the test suite.
+   - Each `SECTION` macro defines individual test cases.
 
-TEST_CASE("Extract date from filename", "[date]") {
-    REQUIRE(extract_date_from_filename("report_2023-10-05.pdf") == "2023-10-05");
-    REQUIRE(extract_date_from_filename("data_backup_2022-07-15.zip") == "2022-07-15");
-    REQUIRE(extract_date_from_filename("log_file.txt") == "");
-    REQUIRE(extract_date_from_filename("archive_2021-12-31.tar.gz") == "2021-12-31");
-    REQUIRE(extract_date_from_filename("image_2020-01-01.png") == "2020-01-01");
-    REQUIRE(extract_date_from_filename("video_2019-11-11.mp4") == "2019-11-11");
-    REQUIRE(extract_date_from_filename("backup_2018-06-06.tar.bz2") == "2018-06-06");
-    REQUIRE(extract_date_from_filename("snapshot_2017-04-04.jpg") == "2017-04-04");
-    REQUIRE(extract_date_from_filename("notes_2016-12-31.docx") == "2016-12-31");
-    REQUIRE(extract_date_from_filename("summary_2015-09-09.xlsx") == "2015-09-09");
-}
+4. **Assertions**:
+   - `REQUIRE` is used for assertions. It checks that the conditions are met and stops the test if they fail.
 
-int main(int argc, char* argv[]) {
-    return Catch::Session().run(argc, argv);
-}
-```
+5. **Test Cases**:
+   - `test_date_extraction_success`: Checks if the date is successfully extracted.
+   - `test_no_date_in_filename`: Checks if no date is present in the filename.
+   - `test_multiple_dates_in_filename`: Checks if multiple dates are present and returns the first one.
+   - `test_date_at_start_of_filename`: Checks if the date is at the start of the filename.
+   - `test_incorrect_date_format`: Checks if the date format is incorrect and returns an empty string.
 
-In this C++ code:
-- We include the necessary headers for strings and regular expressions.
-- We define the `extract_date_from_filename` function, which uses a regular expression to find dates in the specified format.
-- We create a Catch2 test suite named `Extract date from filename` with several test cases to verify the functionality of our function.
-
-To run these tests, make sure you have Catch2 installed and properly configured in your build system. If you're using a modern CMake project, you can add the following lines to your `CMakeLists.txt`:
-
-```cmake
-find_package(Catch2 REQUIRED)
-add_executable(your_test_executable your_test_file.cpp)
-target_link_libraries(your_test_executable Catch2::Catch2)
-```
-
-Replace `your_test_executable` and `your_test_file.cpp` with appropriate names for your test executable and source file. Then, you can build and run your tests using your preferred build system.
+This translation ensures that the functionality and logic of the tests are preserved while adhering to C++ standards and practices.

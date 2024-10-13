@@ -1,6 +1,8 @@
 /**
  * Convert a dictionary of lists into a list of dictionaries.
- * @param {Object} dictOfLists - A dictionary where each key has a list as its value.
- * @returns {Array<Object>} - A list where each item is a dictionary formed by corresponding elements of lists in the input dictionary.
+ * 
+ * @param {Object} dictOfLists - An object where each key has an array as its value.
+ * @returns {Array} - An array where each item is an object formed by corresponding elements of arrays in the input object.
+ * @throws {Error} - If arrays in the object are of different lengths.
  */
 function dictOfListsToListOfDicts(dictOfLists) {}

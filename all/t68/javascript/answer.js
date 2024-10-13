@@ -1,19 +1,30 @@
 function divideList(lst, n) {
     /**
-     * Divide a list evenly into n parts and return a list of these parts.
-     * If the list length is not divisible by n, additional elements are added to the previous sections one by one.
+     * Divide an array into n parts as evenly as possible. Excess elements are distributed to earlier subarrays.
      *
-     * @param {Array} lst - The list to be divided.
-     * @param {number} n - The number of parts to divide the list into.
-     * @returns {Array} - A list containing n sublists, where each sublist represents a part of the original list.
+     * @param {Array} lst - The array to be divided.
+     * @param {number} n - The number of parts to divide the array into.
+     *
+     * @returns {Array<Array>} - An array containing n subarrays, where each subarray represents a part of the original array.
      */
+    // Total number of elements in the array
+    const L = lst.length;
+    // Calculate the size of each part
+    const baseSize = Math.floor(L / n);
+    // Calculate the number of sections that will have an additional element
+    const remainder = L % n;
 
-    // Calculate the size of each chunk
-    const chunkSize = Math.ceil(lst.length / n);
     const result = [];
+    // Start index of the subarray
+    let startIndex = 0;
 
-    for (let i = 0; i < lst.length; i += chunkSize) {
-        result.push(lst.slice(i, i + chunkSize));
+    for (let i = 0; i < n; i++) {
+        // Determine the size of the current part
+        const partSize = baseSize + (i < remainder ? 1 : 0);
+        // Append the subarray to the result array
+        result.push(lst.slice(startIndex, startIndex + partSize));
+        // Update the start index for the next part
+        startIndex += partSize;
     }
 
     return result;

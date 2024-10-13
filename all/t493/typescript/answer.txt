@@ -1,40 +1,45 @@
-Here's how you can write the same function in TypeScript:
+Sure! Here is the equivalent TypeScript code:
 
 ```typescript
-function* wrapContentGenerator(content: string, width = 80): Generator<string> {
+import { wrap } from 'textwrap';
+
+function* wrapContentGenerator(content: string, width: number = 80): Generator<string> {
     /**
-     * Wrap the text content to the specified maximum width and yield each line one by one.
+     * Wrap the text content to the specified maximum width and generate these lines line by line.
      *
-     * @param {string} content - The content to be wrapped and yielded line by line.
-     * @param {number} [width=80] - The maximum width of the lines, default is 80 characters.
+     * @param content - The content to be wrapped and yielded line by line.
+     * @param width - The maximum width of the lines, default is 80 characters.
      * 
-     * @yields {string} Each line of the content wrapped to the specified width.
+     * @yields Each line of the content wrapped to the specified width.
      */
-    
-    let i = 0;
-    while(i < content.length) {
-        if(content[i] === ' ') {
-            const end = Math.min(i + width, content.length);
-            const line = content.substring(i, end).trimEnd();
-            yield line;
-            i += line.length;
+    for (const line of content.split(/\r?\n/, width)) {
+        if (line.trim() === '') {  // Check if the line is essentially empty.
+            yield '\n';
         } else {
-            // Find last space before width limit or end of string
-            const end = Math.min(i + width, content.length);
-            for(let j = end; j > i; j--) {
-                if(content[j] === ' ') {
-                    yield content.substring(i, j).trimEnd();
-                    i = j;
-                    break;
-                }
-            }
-            if(i >= content.length) {
-                yield content.substring(i).trimEnd();
-                i = content.length;
+            const wrappedLines = wrap(line, { width });
+            for (const line2 of wrappedLines) {
+                yield line2;
             }
         }
     }
 }
+
+// Example usage
+const content = "This is a sample text that will be wrapped to fit within a specified width.";
+const generator = wrapContentGenerator(content, 30);
+
+for (let line of generator) {
+    console.log(line);
+}
 ```
 
-This TypeScript version uses a generator function (`function*`) to yield each line of the wrapped content, similar to the Python `yield` keyword. It also uses TypeScript's type annotations to specify the types of the function arguments and return value.
+### Explanation:
+1. **Imports**: TypeScript does not have a built-in `textwrap` module like Python. We assume you have a similar package installed, such as `textwrap` for TypeScript. If not, you can use a library like `textwrap` or implement your own wrapping logic.
+
+2. **Function Definition**: The function `wrapContentGenerator` is defined as a generator function using the `function*` syntax. It takes two parameters: `content` (a string) and `width` (an integer with a default value of 80).
+
+3. **Yielding Lines**: The function splits the input `content` into lines and processes each line. If a line is empty, it yields a newline character (`\n`). Otherwise, it wraps the line using the `wrap` function and yields each wrapped line.
+
+4. **Example Usage**: An example usage of the generator function is provided at the end, demonstrating how to iterate over the generated lines and print them.
+
+Make sure to install the required `textwrap` package or use a suitable alternative for wrapping text in TypeScript.

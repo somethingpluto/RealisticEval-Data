@@ -1,16 +1,30 @@
 #include <iostream>
 #include <string>
-#include <algorithm>
+#include <utility> // For std::pair
 
-std::pair<std::string, std::string> alignLinesLeft(const std::string& str1, const std::string& str2) {
-    size_t maxLength = std::max(str1.length(), str2.length());
-    
-    // Create new strings with padding
-    std::string paddedStr1 = str1;
-    std::string paddedStr2 = str2;
+// Function to align two lines of string to the left, supplementing with spaces if the length is not enough
+std::pair<std::string, std::string> align_lines_left(const std::string& str1, const std::string& str2) {
+    // Determine the maximum length of the two strings
+    size_t max_length = std::max(str1.length(), str2.length());
 
-    paddedStr1.resize(maxLength);
-    paddedStr2.resize(maxLength);
+    // Align both strings to the left by padding with spaces
+    std::string aligned_str1 = str1;
+    std::string aligned_str2 = str2;
 
-    return {paddedStr1, paddedStr2};
+    aligned_str1.append(max_length - str1.length(), ' ');
+    aligned_str2.append(max_length - str2.length(), ' ');
+
+    return {aligned_str1, aligned_str2};
+}
+
+int main() {
+    // Example usage
+    std::string str1 = "Hello";
+    std::string str2 = "World!";
+    auto [aligned_str1, aligned_str2] = align_lines_left(str1, str2);
+
+    std::cout << "Aligned str1: " << aligned_str1 << std::endl;
+    std::cout << "Aligned str2: " << aligned_str2 << std::endl;
+
+    return 0;
 }

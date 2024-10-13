@@ -1,4 +1,4 @@
-Certainly! Below is the equivalent C++ code that mirrors the functionality of the provided Python code:
+Certainly! Below is the equivalent C++ code for the provided Python function. This code will handle nested data structures similar to the Python version:
 
 ```cpp
 #include <iostream>
@@ -6,79 +6,76 @@ Certainly! Below is the equivalent C++ code that mirrors the functionality of th
 #include <vector>
 #include <map>
 #include <typeinfo>
-#include <exception>
+#include <stdexcept>
 
 // Function to handle nested data
-std::variant<std::nullptr_t, std::string, int, double, std::map<std::string, std::variant<std::nullptr_t, std::string, int, double, std::map<std::string, std::variant<std::nullptr_t, std::string, int, double, std::vector<std::variant<std::nullptr_t, std::string, int, double>>>>, std::vector<std::variant<std::nullptr_t, std::string, int, double>>>>> handle_nested_data(const std::variant<std::nullptr_t, std::string, int, double, std::map<std::string, std::variant<std::nullptr_t, std::string, int, double, std::map<std::string, std::variant<std::nullptr_t, std::string, int, double, std::vector<std::variant<std::nullptr_t, std::string, int, double>>>>, std::vector<std::variant<std::nullptr_t, std::string, int, double>>>>& data) {
-    if (std::holds_alternative<std::nullptr_t>(data)) {
-        return std::get<std::nullptr_t>(data);
-    } else if (std::holds_alternative<std::map<std::string, std::variant<std::nullptr_t, std::string, int, double, std::map<std::string, std::variant<std::nullptr_t, std::string, int, double, std::vector<std::variant<std::nullptr_t, std::string, int, double>>>>, std::vector<std::variant<std::nullptr_t, std::string, int, double>>>>>(data)) {
-        auto& map = std::get<std::map<std::string, std::variant<std::nullptr_t, std::string, int, double, std::map<std::string, std::variant<std::nullptr_t, std::string, int, double, std::vector<std::variant<std::nullptr_t, std::string, int, double>>>>, std::vector<std::variant<std::nullptr_t, std::string, int, double>>>>>(data);
-        std::map<std::string, std::variant<std::nullptr_t, std::string, int, double, std::map<std::string, std::variant<std::nullptr_t, std::string, int, double, std::map<std::string, std::variant<std::nullptr_t, std::string, int, double, std::vector<std::variant<std::nullptr_t, std::string, int, double>>>>, std::vector<std::variant<std::nullptr_t, std::string, int, double>>>>>> newMap;
-        for (const auto& pair : map) {
-            newMap[pair.first] = handle_nested_data(pair.second);
+std::variant<std::map<std::string, std::variant<int, double, std::string>>, std::vector<std::variant<int, double, std::string>>, std::string, int, double> handle_nested_data(const std::variant<std::map<std::string, std::variant<int, double, std::string>>, std::vector<std::variant<int, double, std::string>>, std::string, int, double>& data) {
+    using VarType = std::variant<std::map<std::string, std::variant<int, double, std::string>>, std::vector<std::variant<int, double, std::string>>, std::string, int, double>;
+
+    if (std::holds_alternative<std::map<std::string, VarType>>(data)) {
+        auto mapData = std::get<std::map<std::string, VarType>>(data);
+        std::map<std::string, VarType> result;
+        for (const auto& pair : mapData) {
+            result[pair.first] = handle_nested_data(pair.second);
         }
-        return newMap;
-    } else if (std::holds_alternative<std::vector<std::variant<std::nullptr_t, std::string, int, double>>>(data)) {
-        auto& vec = std::get<std::vector<std::variant<std::nullptr_t, std::string, int, double>>>(data);
-        std::vector<std::variant<std::nullptr_t, std::string, int, double>> newList;
-        for (const auto& item : vec) {
-            newList.push_back(handle_nested_data(item));
+        return result;
+    } else if (std::holds_alternative<std::vector<VarType>>(data)) {
+        auto vecData = std::get<std::vector<VarType>>(data);
+        std::vector<VarType> result;
+        for (const auto& item : vecData) {
+            result.push_back(handle_nested_data(item));
         }
-        return newList;
+        return result;
     } else if (std::holds_alternative<std::string>(data)) {
-        std::string str = std::get<std::string>(data);
+        auto strData = std::get<std::string>(data);
         try {
-            size_t pos;
-            int intValue = std::stoi(str, &pos);
-            if (pos == str.size()) {
-                return intValue;
+            return std::stoi(strData);
+        } catch (const std::invalid_argument&) {
+            try {
+                return std::stod(strData);
+            } catch (const std::invalid_argument&) {
+                return strData; // Return the original string if it's not a number
             }
-        } catch (std::invalid_argument&) {
-            // Not an integer
-        } catch (std::out_of_range&) {
-            // Out of range
         }
-        try {
-            size_t pos;
-            double doubleValue = std::stod(str, &pos);
-            if (pos == str.size()) {
-                return doubleValue;
-            }
-        } catch (std::invalid_argument&) {
-            // Not a double
-        } catch (std::out_of_range&) {
-            // Out of range
-        }
-        return str;
     } else if (std::holds_alternative<int>(data)) {
         return std::get<int>(data);
     } else if (std::holds_alternative<double>(data)) {
         return std::get<double>(data);
     }
-    return std::monostate();
+
+    throw std::runtime_error("Unsupported data type");
 }
 
 int main() {
     // Example usage
-    std::map<std::string, std::variant<std::nullptr_t, std::string, int, double, std::map<std::string, std::variant<std::nullptr_t, std::string, int, double, std::vector<std::variant<std::nullptr_t, std::string, int, double>>>>, std::vector<std::variant<std::nullptr_t, std::string, int, double>>>> input = {
-        {"a", "123"},
-        {"b", std::vector<std::variant<std::nullptr_t, std::string, int, double>>{456, "789"}},
-        {"c", std::map<std::string, std::variant<std::nullptr_t, std::string, int, double, std::vector<std::variant<std::nullptr_t, std::string, int, double>>>>{{"d", "hello"}, {"e", nullptr}}}
+    std::map<std::string, std::variant<int, double, std::string>> nestedData = {
+        {"a", 1},
+        {"b", "2"},
+        {"c", std::vector<std::variant<int, double, std::string>>{
+            3,
+            "4",
+            std::map<std::string, std::variant<int, double, std::string>>{
+                {"d", "5"},
+                {"e", 6}
+            }
+        }}
     };
 
-    auto result = handle_nested_data(input);
-    std::cout << "Result: " << result << std::endl;
+    auto result = handle_nested_data(nestedData);
+
+    // Print the result (for demonstration purposes)
+    std::visit([](auto&& arg) {
+        std::cout << arg << std::endl;
+    }, result);
 
     return 0;
 }
 ```
 
 ### Explanation:
-1. **Variant Type**: The `std::variant` type is used to mimic Python's dynamic typing. It can hold different types (e.g., `nullptr_t`, `std::string`, `int`, `double`, `std::map`, `std::vector`).
-2. **Type Checking**: The `std::holds_alternative` and `std::get` functions are used to check and retrieve the type of the variant.
-3. **Recursive Function**: The function is designed to be recursive, handling dictionaries, lists, strings, numbers, and bytes.
-4. **String Conversion**: Strings representing integers or floats are converted using `std::stoi` and `std::stod`.
-5. **Error Handling**: Exceptions are caught to handle invalid conversions.
+1. **Variant Type**: The `std::variant` type is used to represent multiple types in a single variable, similar to Python's `Union`.
+2. **Type Checking**: `std::holds_alternative` and `std::get` are used to check and extract the type from the variant.
+3. **Recursive Function**: The function is called recursively on nested structures.
+4. **String Conversion**: `std::stoi` and `std::stod` are used to attempt conversion of strings to numbers.
 
-This C++ code should replicate the behavior of the Python code while adhering to C++ syntax and features.
+This code should provide the same functionality as the Python version but adapted to C++ syntax and features.

@@ -1,58 +1,55 @@
-#include <iostream>
 #include <vector>
-#include <limits>
+#include <climits>
+#include <iostream>
 
-using namespace std;
-
-// Use the largest finite value representable by a float point as infinity
-const double INF = numeric_limits<double>::infinity();
-
-// This function implements the recursive part of the Floyd-Warshall algorithm
-vector<vector<double>> recursiveFloydWarshall(vector<vector<double>>& adjacencyMatrix, int k, int numVertices) {
-    // Base case: if k equals the number of vertices, return the current matrix
-    if (k == numVertices) {
-        return adjacencyMatrix;
-    }
-
-    // Update the matrix considering the k-th vertex as an intermediate vertex
-    for (int i = 0; i < numVertices; ++i) {
-        for (int j = 0; j < numVertices; ++j) {
-            adjacencyMatrix[i][j] = min(adjacencyMatrix[i][j], adjacencyMatrix[i][k] + adjacencyMatrix[k][j]);
-        }
-    }
-
-    // Recur for the next vertex
-    return recursiveFloydWarshall(adjacencyMatrix, k + 1, numVertices);
-}
-
-// This function initiates the Floyd-Warshall algorithm
-vector<vector<double>> floydWarshallShortestPaths(vector<vector<double>>& adjacencyMatrix) {
+// Function to implement the Floyd-Warshall algorithm to find the shortest paths between all pairs of vertices
+std::vector<std::vector<int>> floydWarshallShortestPaths(const std::vector<std::vector<int>>& adjacencyMatrix) {
     int numVertices = adjacencyMatrix.size();
-    return recursiveFloydWarshall(adjacencyMatrix, 0, numVertices);
+
+    // Helper function for the recursive Floyd-Warshall algorithm
+    auto recursiveFloydWarshall = [&adjacencyMatrix, numVertices](int k) -> std::vector<std::vector<int>> {
+        if (k == numVertices) {
+            return adjacencyMatrix;
+        }
+        for (int i = 0; i < numVertices; ++i) {
+            for (int j = 0; j < numVertices; ++j) {
+                // Update the distance to the minimum of the current or via vertex k
+                adjacencyMatrix[i][j] = std::min(adjacencyMatrix[i][j], adjacencyMatrix[i][k] + adjacencyMatrix[k][j]);
+            }
+        }
+        return recursiveFloydWarshall(k + 1);
+    };
+
+    // Initialize the adjacency matrix with the input values
+    std::vector<std::vector<int>> matrix = adjacencyMatrix;
+
+    // Start the recursive function with the initial vertex
+    return recursiveFloydWarshall(0);
 }
 
 int main() {
-    // Example usage:
-    // Graph represented as an adjacency matrix
-    vector<vector<double>> adjacencyMatrix = {
-        {0, 3, INF, INF},
-        {2, 0, INF, 1},
-        {INF, 7, 0, 2},
-        {INF, INF, 3, 0}
+    // Example adjacency matrix
+    std::vector<std::vector<int>> adjacencyMatrix = {
+        {0, 3, INT_MAX, 7},
+        {8, 0, 2, INT_MAX},
+        {5, INT_MAX, 0, 1},
+        {2, INT_MAX, INT_MAX, 0}
     };
 
-    vector<vector<double>> shortestPaths = floydWarshallShortestPaths(adjacencyMatrix);
+    // Compute the shortest paths
+    std::vector<std::vector<int>> shortestPaths = floydWarshallShortestPaths(adjacencyMatrix);
 
-    // Print the shortest path matrix
+    // Print the shortest paths matrix
     for (const auto& row : shortestPaths) {
-        for (double weight : row) {
-            if(weight == INF) {
-                cout << "INF ";
+        for (int val : row) {
+            if (val == INT_MAX) {
+                std::cout << "INF ";
             } else {
-                cout << weight << " ";
+                std::cout << val << " ";
             }
         }
-        cout << endl;
+        std::cout << std::endl;
     }
+
     return 0;
 }

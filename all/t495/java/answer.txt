@@ -1,55 +1,74 @@
-Here's how you might translate that Python function into Java:
+Certainly! Below is the equivalent Java code for the provided Python script, organized within the package `org.real.temp` and the class `Answer`. The Java code will maintain the same functionality, logic, and structure while adhering to Java's syntax and language features:
 
 ```java
-import java.util.ArrayList;
-import java.util.List;
+package org.real.temp;
+
+import java.util.*;
 
 public class Answer {
-    
+    /**
+     * Filters website content to include lines containing any of the specified keywords as whole words,
+     * along with a specified number of lines before and after for context. This version uses regular expressions
+     * to ensure exact, whole word matching and respects case sensitivity.
+     *
+     * @param content       The full text content of the website.
+     * @param keywords      A list of strings to search for within the content.
+     * @param linesBefore   Number of lines to include before a matching line.
+     * @param linesAfter    Number of lines to include after a matching line.
+     * @return              A string containing the filtered content with additional context.
+     */
     public static String filterContentWithContext(String content, List<String> keywords, int linesBefore, int linesAfter) {
-        
-        // Convert the input content into an array of lines
-        String[] lines = content.split("\n");
-        
-        // Create a new list to hold the filtered lines
-        List<String> filteredLines = new ArrayList<>();
-        
-        // Iterate over each line in the original content
-        for(int i=0; i<lines.length; i++) {
-            
-            // Check if the current line contains any of the keywords as whole words
-            boolean containsKeyword = false;
-            for(String keyword : keywords) {
-                // Use a regex pattern to match the keyword as a whole word
-                String patternString = "\\b" + Pattern.quote(keyword) + "\\b";
-                Pattern pattern = Pattern.compile(patternString);
-                Matcher matcher = pattern.matcher(lines[i]);
-                
-                if(matcher.find()) {
-                    containsKeyword = true;
-                    break;
-                }
-            }
-            
-            // If the current line contains a keyword, add it to the filtered list
-            // and also add the required number of lines before and after it
-            if(containsKeyword) {
-                int startLine = Math.max(i - linesBefore, 0);
-                int endLine = Math.min(i + linesAfter, lines.length-1);
-                
-                for(int j=startLine; j<=endLine; j++) {
-                    filteredLines.add(lines[j]);
+        // Split the content into individual lines
+        String[] lines = content.split("\\R");
+        Set<Integer> matchedLines = new HashSet<>();  // Use a set to avoid duplicate lines
+
+        // Compile the regular expression pattern for whole word matching
+        Pattern pattern = Pattern.compile("\\b(" + String.join("|", keywords.stream().map(Pattern::quote).toArray(String[]::new)) + ")\\b");
+
+        // Iterate over each line to find matches
+        for (int i = 0; i < lines.length; i++) {
+            Matcher matcher = pattern.matcher(lines[i]);
+            if (matcher.find()) {
+                // Determine the range of lines to include for context
+                int start = Math.max(i - linesBefore, 0);
+                int end = Math.min(i + linesAfter + 1, lines.length);
+
+                // Add the context lines to the set
+                for (int j = start; j < end; j++) {
+                    matchedLines.add(j);
                 }
             }
         }
-        
-        // Join all the filtered lines back together into a single string
+
+        // Extract the matched lines and their context, sorted by their original order
+        List<String> filteredLines = new ArrayList<>();
+        for (int i : matchedLines) {
+            filteredLines.add(lines[i]);
+        }
+
+        // Join the filtered lines back into a single string
         return String.join("\n", filteredLines);
     }
 
+    public static void main(String[] args) {
+        // Example usage
+        String content = "This is a sample text.\nIt contains some keywords like hello and world.\nhello\nworld";
+        List<String> keywords = Arrays.asList("hello", "world");
+        String filteredContent = filterContentWithContext(content, keywords, 1, 1);
+        System.out.println(filteredContent);
+    }
 }
 ```
 
-This Java code does essentially the same thing as your Python code. It splits the input `content` string into an array of individual lines, then iterates over those lines. For each line, it checks whether it contains any of the provided `keywords` as whole words using regular expressions. If a keyword is found, it adds the line itself and the appropriate number of lines before and after it to a new list of `filteredLines`. Finally, it joins all the lines in the `filteredLines` list back together into a single string and returns it.
+### Explanation:
+1. **Package and Class Declaration**: The code is organized within the package `org.real.temp` and the class `Answer`.
+2. **Method Signature**: The method `filterContentWithContext` is defined with the appropriate parameters and return type.
+3. **Regular Expression Compilation**: The regular expression pattern is compiled using `Pattern.compile` to ensure whole word matching.
+4. **Line Splitting**: The content is split into lines using `split("\\R")`, which handles different newline characters across platforms.
+5. **Matching Logic**: The method iterates over each line and checks for matches using a compiled regular expression pattern.
+6. **Context Range Calculation**: The context range is calculated and added to a `HashSet` to avoid duplicates.
+7. **Filtered Lines Extraction**: The matched lines and their context are extracted and sorted.
+8. **Joining Lines**: The filtered lines are joined back into a single string.
+9. **Example Usage**: An example usage is provided in the `main` method to demonstrate how the method can be called.
 
-Note that I've used Java's built-in `Pattern` and `Matcher` classes from the `java.util.regex` package to perform the keyword matching. Also, I've used Java's `ArrayList` and `Collections` classes instead of Python's `list` type, and Java's `split()` method instead of Python's `re.split()`.
+This Java code maintains the same functionality and logic as the provided Python script while adhering to Java's syntax and best practices.

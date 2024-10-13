@@ -1,16 +1,96 @@
-Sure! Below is the equivalent C++ code signature for the provided Python function `process_csv`, including comments:
+Certainly! Below is the equivalent C++ code for the given Python function, including the translation of comments and docstrings into C++ style comments. The function signature and type annotations are preserved as closely as possible.
 
 ```cpp
-#include <string>
+#include <iostream>
 #include <fstream>
+#include <sstream>
+#include <vector>
+#include <stdexcept>
+
+// Function to split a string by a delimiter
+std::vector<std::string> split(const std::string &s, char delimiter) {
+    std::vector<std::string> tokens;
+    std::string token;
+    std::istringstream tokenStream(s);
+    while (std::getline(tokenStream, token, delimiter)) {
+        tokens.push_back(token);
+    }
+    return tokens;
+}
+
+// Function to count empty strings in a vector
+int countEmpty(const std::vector<std::string> &row) {
+    int count = 0;
+    for (const auto &item : row) {
+        if (item.empty()) {
+            ++count;
+        }
+    }
+    return count;
+}
 
 /**
- * @brief Processes a CSV file and removes rows with two or more empty columns. If the file is empty, returns an empty string.
+ * Processes a CSV file and removes rows with two or more empty columns.
+ * If the file is empty, returns an empty string.
  *
  * @param file_path The path to the input CSV file.
  * @param output_path The path where the processed CSV file will be saved.
  */
-void process_csv(const std::string& file_path, const std::string& output_path);
+void process_csv(const std::string &file_path, const std::string &output_path) {
+    try {
+        std::ifstream input_file(file_path);
+        if (!input_file.is_open()) {
+            throw std::runtime_error("Failed to open input file.");
+        }
+
+        std::ofstream output_file(output_path);
+        if (!output_file.is_open()) {
+            throw std::runtime_error("Failed to open output file.");
+        }
+
+        std::string line;
+        std::vector<std::string> header;
+
+        // Read the CSV file line by line
+        while (std::getline(input_file, line)) {
+            if (header.empty()) {
+                header = split(line, ',');
+                output_file << line << '\n';
+                continue;
+            }
+
+            std::vector<std::string> row = split(line, ',');
+            int empty_count = countEmpty(row);
+
+            // Filter the row based on the number of empty columns
+            if (empty_count < 2) {
+                output_file << line << '\n';
+            }
+        }
+
+        input_file.close();
+        output_file.close();
+
+    } catch (const std::exception &e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+    }
+}
+
+int main() {
+    std::string file_path = "input.csv";
+    std::string output_path = "output.csv";
+
+    process_csv(file_path, output_path);
+
+    return 0;
+}
 ```
 
-This C++ function signature matches the functionality of the Python function, indicating that it takes two `std::string` parameters representing the file paths and does not return any value (`void`).
+### Explanation:
+1. **Function Signatures**: The function `process_csv` is defined with the same parameters and types as in the Python version.
+2. **Comments and Docstrings**: The Python docstring is converted into a C++ multi-line comment using `/** */`.
+3. **Type Annotations**: The Python type annotations (`str`) are directly translated to C++ types (`std::string`).
+4. **File Handling**: File I/O operations are handled using `std::ifstream` and `std::ofstream`.
+5. **Exception Handling**: Exception handling is included to manage file I/O errors and other runtime exceptions.
+
+This code preserves the original functionality and structure of the Python code while adapting it to C++ syntax and conventions.

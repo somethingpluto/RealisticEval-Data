@@ -1,16 +1,14 @@
-Certainly! Below is the equivalent C++ code that maintains the same functionality, logic, and structure as the provided Python code:
+Certainly! Below is the equivalent C++ code for the provided Python script. This code retrieves the local IP address of the specified network interface on Windows using the `ipconfig` command and regular expressions.
 
 ```cpp
 #include <iostream>
 #include <string>
 #include <vector>
 #include <regex>
-#include <filesystem>
-#include <optional>
 #include <windows.h>
-#include <shlwapi.h>
+#include <Shlwapi.h>
 
-#pragma comment(lib, "shlwapi.lib")
+#pragma comment(lib, "Shlwapi.lib")
 
 std::optional<std::string> get_local_ip(const std::string& interface = "Wi-Fi") {
     /**
@@ -22,7 +20,6 @@ std::optional<std::string> get_local_ip(const std::string& interface = "Wi-Fi") 
      * Returns:
      * std::optional<std::string>: The local IP address if found, otherwise std::nullopt.
      */
-
     try {
         // Execute the 'ipconfig' command to get addresses for the specified interface
         STARTUPINFOA si;
@@ -32,69 +29,26 @@ std::optional<std::string> get_local_ip(const std::string& interface = "Wi-Fi") 
         si.cb = sizeof(si);
         ZeroMemory(&pi, sizeof(pi));
 
+        // Start the child process
         if (!CreateProcessA(NULL, const_cast<char*>("ipconfig"), NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi)) {
-            std::cerr << "Failed to execute command: " << GetLastError() << std::endl;
+            std::cerr << "Error executing command." << std::endl;
             return std::nullopt;
         }
 
-        HANDLE hStdoutRead = pi.hStdout;
-        HANDLE hStdoutWrite = GetStdHandle(STD_OUTPUT_HANDLE);
-
-        SECURITY_ATTRIBUTES sa;
-        sa.nLength = sizeof(SECURITY_ATTRIBUTES);
-        sa.bInheritHandle = TRUE;
-        sa.lpSecurityDescriptor = NULL;
-
-        HANDLE pipe[2];
-        if (!CreatePipe(&pipe[0], &pipe[1], &sa, 0)) {
-            std::cerr << "Failed to create pipe." << std::endl;
-            CloseHandle(hStdoutRead);
-            CloseHandle(hStdoutWrite);
-            CloseHandle(pi.hProcess);
-            CloseHandle(pi.hThread);
-            return std::nullopt;
-        }
-
-        if (!SetHandleInformation(pipe[0], HANDLE_FLAG_INHERIT, 0)) {
-            std::cerr << "Failed to set handle information." << std::endl;
-            CloseHandle(hStdoutRead);
-            CloseHandle(hStdoutWrite);
-            CloseHandle(pi.hProcess);
-            CloseHandle(pi.hThread);
-            return std::nullopt;
-        }
-
-        if (!RedirectHandle(pi.hProcess, STD_OUTPUT_HANDLE, pipe[1], TRUE)) {
-            std::cerr << "Failed to redirect handle." << std::endl;
-            CloseHandle(hStdoutRead);
-            CloseHandle(hStdoutWrite);
-            CloseHandle(pi.hProcess);
-            CloseHandle(pi.hThread);
-            return std::nullopt;
-        }
-
-        CloseHandle(pipe[1]);
-
-        DWORD exitCode;
-        WaitForSingleObject(pi.hProcess, INFINITE);
-        GetExitCodeProcess(pi.hProcess, &exitCode);
-
-        CloseHandle(hStdoutRead);
-        CloseHandle(hStdoutWrite);
-        CloseHandle(pi.hProcess);
-        CloseHandle(pi.hThread);
-
-        // Read data from pipe
-        char buffer[4096];
+        // Read the output of the command
+        HANDLE hStdout = pi.hProcess;
+        char buffer[256];
         DWORD bytesRead;
         std::string output;
 
-        while (ReadFile(pipe[0], buffer, sizeof(buffer) - 1, &bytesRead, NULL) && bytesRead > 0) {
+        while (ReadFile(hStdout, buffer, sizeof(buffer) - 1, &bytesRead, NULL) && bytesRead > 0) {
             buffer[bytesRead] = '\0';
             output += buffer;
         }
 
-        CloseHandle(pipe[0]);
+        // Close process handles
+        CloseHandle(pi.hProcess);
+        CloseHandle(pi.hThread);
 
         // Regular expression to match IPv4 addresses
         std::regex ip_pattern(R"((\d+\.\d+\.\d+\.\d+))");
@@ -102,18 +56,12 @@ std::optional<std::string> get_local_ip(const std::string& interface = "Wi-Fi") 
         // Search for IP addresses in the command output
         std::smatch matches;
         std::string::const_iterator searchStart(output.cbegin());
-        std::vector<std::string> ips;
-
         while (std::regex_search(searchStart, output.cend(), matches, ip_pattern)) {
-            ips.push_back(matches[0]);
-            searchStart = matches.suffix().first;
-        }
-
-        // Return the first local IP found
-        for (const auto& ip : ips) {
-            if (ip.find("192.168.") == 0) {
+            std::string ip = matches[0];
+            if (PathIsLocalMachineA(ip.c_str())) {
                 return ip;
             }
+            searchStart = matches.suffix().first;
         }
 
         return std::nullopt;  // Return std::nullopt if no suitable IP is found
@@ -125,9 +73,9 @@ std::optional<std::string> get_local_ip(const std::string& interface = "Wi-Fi") 
 }
 
 int main() {
-    auto ip = get_local_ip();
+    auto ip = get_local_ip("Wi-Fi");
     if (ip) {
-        std::cout << "Local IP address: " << *ip << std::endl;
+        std::cout << "Local IP: " << *ip << std::endl;
     } else {
         std::cout << "No suitable IP address found." << std::endl;
     }
@@ -137,19 +85,11 @@ int main() {
 ```
 
 ### Explanation:
-1. **Imports**: 
-   - The necessary headers (`iostream`, `string`, `vector`, `regex`, `filesystem`, `optional`, `windows.h`, `shlwapi.h`) are included.
-   - The `shlwapi.lib` library is linked with `#pragma comment(lib, "shlwapi.lib")`.
-
-2. **Function Definition**:
-   - The `get_local_ip` function is defined with a default parameter value.
-   - It uses Windows API functions (`CreateProcessA`, `CreatePipe`, `SetHandleInformation`, `RedirectHandle`, etc.) to execute the `ipconfig` command and capture its output.
-
-3. **Regular Expression**:
-   - A regular expression is used to match IPv4 addresses in the command output.
-
-4. **Error Handling**:
-   - Exception handling is implemented to catch and report any unexpected errors.
-
-5. **Main Function**:
-   - The `main` function demonstrates how to call `get_local_ip` and handle the returned optional string.
+1. **Headers**: The necessary headers (`<iostream>`, `<string>`, `<vector>`, `<regex>`, `<windows.h>`, `<Shlwapi.h>`) are included.
+2. **Function Definition**: The function `get_local_ip` is defined to retrieve the local IP address.
+3. **Process Creation**: The `CreateProcessA` function is used to execute the `ipconfig` command.
+4. **Reading Output**: The output of the `ipconfig` command is read using `ReadFile`.
+5. **Regular Expression Matching**: A regex pattern is used to find IPv4 addresses in the output.
+6. **Checking Local IP**: The `PathIsLocalMachineA` function from `Shlwapi.h` is used to check if the IP address is local.
+7. **Exception Handling**: Exceptions are caught and handled appropriately.
+8. **Main Function**: The `main` function demonstrates how to call `get_local_ip` and handle the returned value.

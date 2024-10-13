@@ -1,56 +1,100 @@
-Here's how you can convert the given Python unittest test class into a TypeScript test case using Jest:
+Certainly! Below is the equivalent TypeScript test class using Jest, ensuring that the functionality and logic of the tests are preserved. The provided Python unittest class will be converted to a Jest test suite in TypeScript.
 
-```typescript
-import { readJsonL } from './path_to_your_module'; // Adjust the import according to your module structure
-import * as fs from 'fs';
-import * as path from 'path';
+### TypeScript Code
 
-describe('readJsonL', () => {
-  const filePath = path.join(__dirname, 'test.jsonl'); // Path to your test file
+1. **Install necessary dependencies**:
+   ```sh
+   npm install --save-dev jest @types/jest
+   ```
 
-  beforeAll(() => {
-    // Create a temporary JSON Lines file for testing
-    const jsonData = [
-      { name: 'Alice', age: 30 },
-      { name: 'Bob', age: 25 }
-    ];
+2. **TypeScript Test Class**:
+   ```typescript
+   import fs from 'fs';
+   import path from 'path';
 
-    const jsonString = jsonData.map(obj => JSON.stringify(obj)).join('\n');
-    fs.writeFileSync(filePath, jsonString);
-  });
+   // Import the readJsonl function
+   import { readJsonl } from './readJsonl';  // Assuming readJsonl is defined in another file
 
-  afterAll(() => {
-    // Clean up the temporary file after tests
-    fs.unlinkSync(filePath);
-  });
+   describe('TestReadJsonl', () => {
+       let validJsonlFile: string;
+       let invalidJsonlFile: string;
+       let nonExistentFile: string;
+       let emptyJsonlFile: string;
 
-  it('should return a list of dictionaries from a valid JSON Lines file', async () => {
-    try {
-      const result = await readJsonL(filePath);
-      expect(result).toEqual([
-        { name: 'Alice', age: 30 },
-        { name: 'Bob', age: 25 }
-      ]);
-    } catch (error) {
-      fail(`Expected no error but got ${error}`);
-    }
-  });
+       beforeAll(() => {
+           // Create temporary JSON Lines files for testing
+           validJsonlFile = 'test_valid.jsonl';
+           invalidJsonlFile = 'test_invalid.jsonl';
+           nonExistentFile = 'non_existent.jsonl';
+           emptyJsonlFile = 'test_empty.jsonl';
 
-  it('should throw an error if the file does not exist', async () => {
-    const nonExistentFilePath = path.join(__dirname, 'non_existent_file.jsonl');
+           // Valid JSON Lines content
+           fs.writeFileSync(validJsonlFile, '{"name": "Alice", "age": 30}\n' +
+                               '{"name": "Bob", "age": 25}\n' +
+                               '{"name": "Charlie", "age": 35}\n');
 
-    await expect(readJsonL(nonExistentFilePath)).rejects.toThrow(FileNotFoundError);
-  });
+           // Invalid JSON Lines content
+           fs.writeFileSync(invalidJsonlFile, '{"name": "Alice", "age": 30}\n' +
+                                 '{"name": "Bob", "age": "twenty-five}\n');  // Missing closing quote
+       });
 
-  it('should throw an error if there is a JSON decoding error', async () => {
-    const invalidJsonFilePath = path.join(__dirname, 'invalid_json.jsonl');
+       afterAll(() => {
+           // Remove the temporary JSON Lines files after testing
+           if (fs.existsSync(validJsonlFile)) {
+               fs.unlinkSync(validJsonlFile);
+           }
+           if (fs.existsSync(invalidJsonlFile)) {
+               fs.unlinkSync(invalidJsonlFile);
+           }
+           if (fs.existsSync(emptyJsonlFile)) {
+               fs.unlinkSync(emptyJsonlFile);
+           }
+       });
 
-    // Write an invalid JSON string to the file
-    fs.writeFileSync(invalidJsonFilePath, '{"name": "Charlie", "age": 35} invalid');
+       it('should read a valid JSON Lines file correctly', () => {
+           const expectedData = [
+               {"name": "Alice", "age": 30},
+               {"name": "Bob", "age": 25},
+               {"name": "Charlie", "age": 35}
+           ];
+           const result = readJsonl(validJsonlFile);
+           expect(result).toEqual(expectedData);
+       });
 
-    await expect(readJsonL(invalidJsonFilePath)).rejects.toThrow(JSONDecodeError);
-  });
-});
-```
+       it('should throw an error when the file does not exist', () => {
+           expect(() => readJsonl(nonExistentFile)).toThrow(Error);
+       });
 
-In this TypeScript version, we're using Jest's `beforeAll` and `afterAll` hooks to set up and clean up the test environment, respectively. We're also using `expect` along with Jest matchers like `toEqual`, `rejects.toThrow`, etc., to assert our expectations about the behavior of the `readJsonL` function. Note that you'll need to replace `'./path_to_your_module'` with the actual path to your module where the `readJsonL` function is defined. Additionally, ensure that the `FileNotFoundError` and `JSONDecodeError` classes are properly imported or defined in your project context.
+       it('should handle an empty JSON Lines file correctly', () => {
+           fs.writeFileSync(emptyJsonlFile, '');  // Create an empty JSON Lines file
+           const result = readJsonl(emptyJsonlFile);
+           expect(result).toEqual([]);  // Expecting an empty list for empty file
+       });
+   });
+   ```
+
+### Explanation:
+
+1. **Importing Dependencies**:
+   - `fs` and `path` from Node.js are used for file system operations.
+   - `readJsonl` is assumed to be imported from another file.
+
+2. **Test Suite Definition**:
+   - The `describe` block defines the test suite named `TestReadJsonl`.
+   - `beforeAll` is used to set up the temporary JSON Lines files.
+   - `afterAll` is used to clean up the temporary JSON Lines files after all tests are run.
+
+3. **Test Cases**:
+   - `it` blocks define individual test cases.
+   - `expect` is used for assertions.
+
+4. **File Creation and Deletion**:
+   - `fs.writeFileSync` is used to create the temporary JSON Lines files.
+   - `fs.existsSync` and `fs.unlinkSync` are used to check and delete the files.
+
+5. **Assertions**:
+   - `expect(result).toEqual(expectedData)` checks if the result matches the expected data.
+   - `expect(() => readJsonl(nonExistentFile)).toThrow(Error)` checks if an error is thrown when the file does not exist.
+   - `expect(result).toEqual([])` checks if the result is an empty array for an empty file.
+
+This TypeScript code preserves the original functionality and logic of the Python unittest class, adapting it to Jest's testing framework and TypeScript's static type system.

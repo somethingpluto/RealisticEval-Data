@@ -1,11 +1,14 @@
-/**
- * Check whether point C is on a line formed by points A and B
- * @param {number[]} A - point A [x, y]
- * @param {number[]} B - point B [x, y]
- * @param {number[]} C - point C [x, y]
- * @returns {boolean} - true if C is on the line formed by A and B, false otherwise
- */
 function isPointOnLine(A, B, C) {
+    /**
+     * Check whether a point is on a line formed by two points.
+     * For example, check if point C is on the line formed by points A and B.
+     * 
+     * @param {Array} A - point A [x, y]
+     * @param {Array} B - point B [x, y]
+     * @param {Array} C - point C [x, y]
+     * @returns {boolean} - true if C is on the line formed by A and B, false otherwise
+     */
+
     const [x_a, y_a] = A;
     const [x_b, y_b] = B;
     const [x_c, y_c] = C;

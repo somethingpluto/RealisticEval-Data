@@ -1,61 +1,75 @@
-Sure! Below is an example of how you can translate your Python unittest test class into a C++ test case using Catch2. First, let's define the function `snake_to_camel` in C++. Then, we'll write the corresponding test cases using Catch2.
+Certainly! Here is the equivalent C++ test class using the Catch2 testing framework. This will ensure that the functionality and logic of the tests are preserved, and appropriate assertions are used.
 
-### C++ Code
+First, make sure you have Catch2 installed and included in your project. You can include Catch2 using the following headers:
 
 ```cpp
+#include <catch2/catch_test_macros.hpp>
 #include <string>
 #include <sstream>
-#include <cctype>
+#include <vector>
 
+// Function to convert a snake_case string to CamelCase.
+//
+// Args:
+//     snake_str (std::string): The snake_case string to convert.
+//
+// Returns:
+//     std::string: The converted CamelCase string.
 std::string snake_to_camel(const std::string& snake_str) {
-    std::stringstream ss;
-    bool next_upper = false;
+    std::istringstream iss(snake_str); // Use istringstream to split the string
+    std::vector<std::string> words;
+    std::string word;
 
-    for (char ch : snake_str) {
-        if (ch == '_') {
-            next_upper = true;
-        } else {
-            if (next_upper) {
-                ss << static_cast<char>(toupper(ch));
-                next_upper = false;
-            } else {
-                ss << ch;
-            }
+    // Split the snake_case string into words
+    while (std::getline(iss, word, '_')) {
+        words.push_back(word);
+    }
+
+    // Capitalize the first letter of each word and join them
+    std::string camel_case_str;
+    for (const auto& w : words) {
+        if (!w.empty()) {
+            w[0] = std::toupper(w[0]); // Capitalize the first character
+            camel_case_str += w;
         }
     }
 
-    return ss.str();
+    return camel_case_str;
+}
+
+TEST_CASE("Test basic snake_case to CamelCase conversion", "[snake_to_camel]") {
+    CHECK(snake_to_camel("hello_world") == "HelloWorld");
+}
+
+TEST_CASE("Test conversion of a snake_case string with multiple words", "[snake_to_camel]") {
+    CHECK(snake_to_camel("this_is_a_test") == "ThisIsATest");
+}
+
+TEST_CASE("Test conversion with numbers in the string", "[snake_to_camel]") {
+    CHECK(snake_to_camel("convert_this_123_string") == "ConvertThis123String");
+}
+
+TEST_CASE("Test conversion with leading and trailing underscores", "[snake_to_camel]") {
+    CHECK(snake_to_camel("_leading_and_trailing_") == "LeadingAndTrailing");
+    CHECK(snake_to_camel("___multiple___underscores___") == "MultipleUnderscores");
+}
+
+TEST_CASE("Test conversion of an empty string", "[snake_to_camel]") {
+    CHECK(snake_to_camel("") == "");
+}
+
+int main() {
+    // Run all the tests
+    return Catch::Session().run();
 }
 ```
 
-### Catch2 Test Cases
+### Explanation:
+1. **Headers**: Included `<catch2/catch_test_macros.hpp>` for Catch2 testing macros, and `<string>`, `<sstream>`, and `<vector>` for string manipulation and vector usage.
+2. **Function Definition**: The `snake_to_camel` function is defined as before, with the same logic for converting snake_case strings to CamelCase.
+3. **Test Cases**:
+   - Each test case from the Python unittest class is translated into a `TEST_CASE` macro in Catch2.
+   - The `CHECK` macro is used to assert the expected results.
+4. **Main Function**: The `main` function runs all the tests using `Catch::Session().run()`.
 
-To write the test cases using Catch2, you need to include the Catch2 header and write the tests within the `TEST_CASE` macro. Here's an example:
-
-```cpp
-#define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
-#include "catch.hpp"
-
-#include "snake_to_camel.h"  // Include the header where snake_to_camel is defined
-
-TEST_CASE("Snake to Camel Conversion") {
-    REQUIRE(snake_to_camel("hello_world") == "HelloWorld");
-    REQUIRE(snake_to_camel("this_is_a_test_string") == "ThisIsATestString");
-    REQUIRE(snake_to_camel("singleword") == "Singleword");
-    REQUIRE(snake_to_camel("") == "");
-    REQUIRE(snake_to_camel("with__multiple___underscores") == "WithMultipleUnderscores");
-    REQUIRE(snake_to_camel("alreadyCamelCase") == "AlreadyCamelCase");  // Should handle already camel-cased strings
-}
-```
-
-### Explanation
-
-1. **Function Definition**: The `snake_to_camel` function converts a snake_case string to CamelCase by iterating through each character and converting underscores to uppercase letters while removing them.
-2. **Catch2 Test Cases**:
-   - `CATCH_CONFIG_MAIN`: This macro tells Catch to automatically generate a main function that runs all the tests.
-   - `#include "catch.hpp"`: Includes the Catch2 library.
-   - `#include "snake_to_camel.h"`: Includes the header file where `snake_to_camel` is defined.
-   - `TEST_CASE("Snake to Camel Conversion")`: Defines a test case with a descriptive name.
-   - `REQUIRE`: A macro used to assert that the condition is true. If it's not, the test will fail.
-
-Make sure you have Catch2 installed in your project. You can download it from [Catch2's GitHub repository](https://github.com/catchorg/Catch2). Once you have it set up, compile and run your test cases.
+This setup ensures that the functionality and logic of the tests are preserved, and appropriate assertions are used in Catch2.

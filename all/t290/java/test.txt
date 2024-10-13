@@ -1,59 +1,194 @@
-Sure, let's convert the given Python unittest test class into a Java JUnit test class. Since the actual test cases are not provided, I will create a basic structure with placeholders for the test methods. 
-
-Here’s how you can set up the Java JUnit test class:
-
-1. Define the package `org.real.temp`.
-2. Name the test class `Tester`.
-3. Use JUnit annotations (`@Test`) for test methods.
-4. Include assertions where needed.
-
-Here is the Java code:
+Certainly! Here is the equivalent Java test class using JUnit, placed in the package `org.real.temp` and named `Tester`. The test cases are structured using JUnit annotations and assertions to ensure the functionality and logic are preserved.
 
 ```java
 package org.real.temp;
 
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-/**
- * Test class for converting RDF JSON-LD to NGSI-LD format.
- */
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class Tester {
 
+    private static final String DEFAULT_CONTEXT = "https://schema.lab.fiware.org/ld/context";
+    private static final String UNKNOWN_ID = "urn:ngsi-ld:unknown:id";
+    private static final String UNKNOWN_TYPE = "UnknownType";
+
+    private static final ObjectMapper objectMapper = new ObjectMapper();
+
     /**
-     * Converts a question in RDF JSON-LD format to NGSI-LD format.
+     * Converts the question in RDF JSON-LD format to NGSI-LD format.
      *
-     * @param rdfJsonld RDF JSON-LD formatted question as a string.
-     * @return Data formatted according to NGSI-LD specifications.
+     * @param rdfJsonLd The RDF JSON-LD formatted question as a string.
+     * @return A map containing data formatted according to NGSI-LD specifications.
      */
-    public static Object rdfJsonldToNgSild(String rdfJsonld) {
-        // Placeholder implementation
-        // Replace this with the actual conversion logic
-        return null;
+    public Map<String, Object> rdfJsonldToNgSILD(String rdfJsonLd) {
+        try {
+            if (rdfJsonLd == null || rdfJsonLd.trim().isEmpty()) {
+                throw new IllegalArgumentException("Invalid JSON input");
+            }
+
+            JsonNode jsonNode = objectMapper.readTree(rdfJsonLd);
+            Map<String, Object> rdfJsonLdMap = objectMapper.convertValue(jsonNode, Map.class);
+
+            Map<String, Object> ngsiLd = new HashMap<>();
+            ngsiLd.put("id", rdfJsonLdMap.getOrDefault("@id", UNKNOWN_ID));
+            ngsiLd.put("type", rdfJsonLdMap.getOrDefault("@type", UNKNOWN_TYPE));
+            ngsiLd.put("@context", rdfJsonLdMap.getOrDefault("@context", DEFAULT_CONTEXT));
+            ngsiLd.put("attributes", new ArrayList<>());
+
+            // Assuming simple attribute structure conversion
+            for (Map.Entry<String, Object> entry : rdfJsonLdMap.entrySet()) {
+                String key = entry.getKey();
+                Object value = entry.getValue();
+                if (!key.equals("@context") && !key.equals("@id") && !key.equals("@type")) {
+                    Map<String, Object> attribute = new HashMap<>();
+                    attribute.put("type", "Property");
+                    attribute.put("name", key);
+                    attribute.put("value", value);
+                    ((List<Map<String, Object>>) ngsiLd.get("attributes")).add(attribute);
+                }
+            }
+
+            return ngsiLd;
+        } catch (JsonProcessingException e) {
+            throw new IllegalArgumentException("Invalid JSON input", e);
+        }
     }
 
-    /**
-     * Test method to verify the conversion from RDF JSON-LD to NGSI-LD.
-     */
     @Test
-    public void testRdfJsonldToNgSild() {
-        String input = "Sample RDF JSON-LD string";
-        Object expectedOutput = "Expected NGSI-LD output"; // This should be the expected result
+    public void testBasicConversion() throws JsonProcessingException {
+        String rdfJsonld = objectMapper.writeValueAsString(new HashMap<String, Object>() {{
+            put("@context", "http://schema.org/");
+            put("@id", "urn:ngsi-ld:Vehicle:A123");
+            put("@type", "Vehicle");
+            put("speed", new HashMap<String, Object>() {{
+                put("value", 60);
+                put("unitCode", "KMH");
+            }});
+        }});
 
-        Object actualOutput = rdfJsonldToNgSild(input);
+        Map<String, Object> expectedNgsild = new HashMap<>();
+        expectedNgsild.put("id", "urn:ngsi-ld:Vehicle:A123");
+        expectedNgsild.put("type", "Vehicle");
+        expectedNgsild.put("@context", "http://schema.org/");
+        expectedNgsild.put("attributes", new ArrayList<Map<String, Object>>() {{
+            add(new HashMap<String, Object>() {{
+                put("type", "Property");
+                put("name", "speed");
+                put("value", new HashMap<String, Object>() {{
+                    put("value", 60);
+                    put("unitCode", "KMH");
+                }});
+            }});
+        }});
 
-        // Assert that the actual output matches the expected output
-        assertEquals(expectedOutput, actualOutput);
+        Map<String, Object> result = rdfJsonldToNgSILD(rdfJsonld);
+        assertEquals(expectedNgsild, result);
     }
 
-    // Additional test methods can be added here if needed
+    @Test
+    public void testMissingIdAndType() throws JsonProcessingException {
+        String rdfJsonld = objectMapper.writeValueAsString(new HashMap<String, Object>() {{
+            put("@context", "http://schema.org/");
+            put("speed", new HashMap<String, Object>() {{
+                put("value", 60);
+                put("unitCode", "KMH");
+            }});
+        }});
+
+        Map<String, Object> expectedNgsild = new HashMap<>();
+        expectedNgsild.put("id", UNKNOWN_ID);
+        expectedNgsild.put("type", UNKNOWN_TYPE);
+        expectedNgsild.put("@context", "http://schema.org/");
+        expectedNgsild.put("attributes", new ArrayList<Map<String, Object>>() {{
+            add(new HashMap<String, Object>() {{
+                put("type", "Property");
+                put("name", "speed");
+                put("value", new HashMap<String, Object>() {{
+                    put("value", 60);
+                    put("unitCode", "KMH");
+                }});
+            }});
+        }});
+
+        Map<String, Object> result = rdfJsonldToNgSILD(rdfJsonld);
+        assertEquals(expectedNgsild, result);
+    }
+
+    @Test
+    public void testWithNestedObjects() throws JsonProcessingException {
+        String rdfJsonld = objectMapper.writeValueAsString(new HashMap<String, Object>() {{
+            put("@context", "http://schema.org/");
+            put("@id", "urn:ngsi-ld:Vehicle:A123");
+            put("@type", "Vehicle");
+            put("location", new HashMap<String, Object>() {{
+                put("latitude", 48.8566);
+                put("longitude", 2.3522);
+            }});
+        }});
+
+        Map<String, Object> expectedNgsild = new HashMap<>();
+        expectedNgsild.put("id", "urn:ngsi-ld:Vehicle:A123");
+        expectedNgsild.put("type", "Vehicle");
+        expectedNgsild.put("@context", "http://schema.org/");
+        expectedNgsild.put("attributes", new ArrayList<Map<String, Object>>() {{
+            add(new HashMap<String, Object>() {{
+                put("type", "Property");
+                put("name", "location");
+                put("value", new HashMap<String, Object>() {{
+                    put("latitude", 48.8566);
+                    put("longitude", 2.3522);
+                }});
+            }});
+        }});
+
+        Map<String, Object> result = rdfJsonldToNgSILD(rdfJsonld);
+        assertEquals(expectedNgsild, result);
+    }
+
+    @Test
+    public void testInvalidJsonInput() {
+        String rdfJsonld = "This is not a valid JSON";
+        assertThrows(IllegalArgumentException.class, () -> rdfJsonldToNgSILD(rdfJsonld));
+    }
+
+    @Test
+    public void testEmptyJsonld() throws JsonProcessingException {
+        String rdfJsonld = objectMapper.writeValueAsString(new HashMap<>());
+
+        Map<String, Object> expectedNgsild = new HashMap<>();
+        expectedNgsild.put("id", UNKNOWN_ID);
+        expectedNgsild.put("type", UNKNOWN_TYPE);
+        expectedNgsild.put("@context", DEFAULT_CONTEXT);
+        expectedNgsild.put("attributes", new ArrayList<>());
+
+        Map<String, Object> result = rdfJsonldToNgSILD(rdfJsonld);
+        assertEquals(expectedNgsild, result);
+    }
 }
 ```
 
-### Key Points:
-- **Package Declaration**: The test class is placed in the package `org.real.temp`.
-- **Class Name**: The test class is named `Tester`.
-- **JUnit Annotations**: The `@Test` annotation is used to mark the test method.
-- **Assertions**: The `assertEquals` method from JUnit is used to check the equality of the expected and actual results.
+### Explanation:
+1. **Package and Class Definition**: The Java test class is defined within the `org.real.temp` package and named `Tester`.
+2. **JUnit Annotations**: The `@Test` annotation is used to mark each test method.
+3. **JUnit Assertions**: The `assertEquals` and `assertThrows` methods are used for assertions.
+4. **Method Implementation**: The `rdfJsonldToNgSILD` method is implemented to handle JSON parsing and conversion.
+5. **Test Methods**:
+   - `testBasicConversion`: Tests a basic and correct conversion.
+   - `testMissingIdAndType`: Tests conversion when `@id` and `@type` are missing.
+   - `testWithNestedObjects`: Tests conversion with nested objects.
+   - `testInvalidJsonInput`: Tests the function's response to invalid JSON input.
+   - `testEmptyJsonld`: Tests the conversion of an empty JSON-LD document.
+6. **JSON Parsing**: The `ObjectMapper` from the Jackson library is used to parse and serialize JSON objects.
+7. **Exception Handling**: The `IllegalArgumentException` is thrown for invalid JSON input.
 
-Make sure to replace the placeholder implementation of the `rdfJsonldToNgSild` method with the actual conversion logic and adjust the test method accordingly.
+This Java code preserves the functionality and logic of the original Python test cases while adhering to JUnit conventions and best practices.

@@ -1,68 +1,101 @@
+package org.real.temp;
+
 /**
- * Implement a dictionary tree for fast string retrieval and storage
+ * Implements a dictionary tree (Trie) for fast string retrieval and storage.
  */
 public class Trie {
-    
-    private TrieNode root;
 
-    public Trie() {
-        root = new TrieNode();
+    /**
+     * Inserts a word into the Trie.
+     *
+     * @param word the word to insert
+     */
+    public void insert(String word) {
+        // Implementation goes here
     }
 
     /**
-     * Inserts a word into the trie.
+     * Searches for a word in the Trie.
      *
-     * @param word the word to be inserted
+     * @param word the word to search for
+     * @return true if the word is found, false otherwise
      */
-    public void insert(String word) {}
+    public boolean search(String word) {
+        // Implementation goes here
+    }
 
     /**
-     * Returns if the word is in the trie.
+     * Checks if there is any word in the Trie that starts with the given prefix.
      *
-     * @param word the word to search
-     * @return true if the word exists in the trie, false otherwise
+     * @param prefix the prefix to check
+     * @return true if there is a word starting with the prefix, false otherwise
      */
-    public boolean search(String word) {}
-
-    /**
-     * Returns if there is any word in the trie that starts with the given prefix.
-     *
-     * @param prefix the prefix to search
-     * @return true if there is any word starting with the prefix, false otherwise
-     */
-    public boolean startsWith(String prefix) {}
+    public boolean startsWith(String prefix) {
+        // Implementation goes here
+    }
 }
 
 /**
- * Represents a node in the trie.
+ * Represents a node in the Trie.
  */
-class TrieNode {
-    private Map<Character, TrieNode> children;
+public class TrieNode {
 
+    /**
+     * A map of child nodes indexed by characters.
+     */
+    private final java.util.Map<Character, TrieNode> children = new java.util.HashMap<>();
+
+    /**
+     * Constructs a new TrieNode.
+     */
     public TrieNode() {
-        children = new HashMap<>();
+        // Constructor implementation goes here
     }
 
     /**
-     * Gets the child node associated with the given character.
+     * Checks if this node has a child with the specified character.
      *
-     * @param ch the character to look up
-     * @return the child node or null if it does not exist
+     * @param ch the character to check
+     * @return true if the child exists, false otherwise
      */
-    public TrieNode getChild(char ch) {}
+    public boolean hasChild(char ch) {
+        return children.containsKey(ch);
+    }
 
     /**
-     * Adds a child node associated with the given character.
+     * Gets the child node with the specified character.
      *
-     * @param ch the character to add
-     * @param node the child node to add
+     * @param ch the character of the child
+     * @return the child node, or null if it does not exist
      */
-    public void addChild(char ch, TrieNode node) {}
+    public TrieNode getChild(char ch) {
+        return children.get(ch);
+    }
 
     /**
-     * Checks if this node has any children.
+     * Adds a child node with the specified character.
      *
-     * @return true if this node has no children, false otherwise
+     * @param ch the character of the child
      */
-    public boolean hasChildren() {}
+    public void addChild(char ch) {
+        if (!children.containsKey(ch)) {
+            children.put(ch, new TrieNode());
+        }
+    }
+
+    /**
+     * Sets the end-of-word flag for this node.
+     */
+    public void setEndOfWord() {
+        // Implementation goes here
+    }
+
+    /**
+     * Checks if this node represents the end of a word.
+     *
+     * @return true if this node is the end of a word, false otherwise
+     */
+    public boolean isEndOfWord() {
+        // Implementation goes here
+    }
 }

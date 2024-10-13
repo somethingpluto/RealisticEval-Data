@@ -1,32 +1,59 @@
 import * as fs from 'fs';
-import * as path from 'path';
+import * as xml2js from 'xml2js';
 
-interface Dictionary {
-  [key: string]: string;
-}
+/**
+ * Parse a XAML file and extract key-value pairs from 'String' elements.
+ *
+ * @param xamlFile - Path to the XAML file.
+ * @returns A dictionary containing the key-value pairs extracted from 'String' elements.
+ */
+function parseXamlToDict(xamlFile: string): Record<string, string> {
+    try {
+        // Read the XAML file
+        const xamlContent = fs.readFileSync(xamlFile, 'utf-8');
 
-function parseXamlToDict(xamlFilePath: string): Dictionary {
-  /**
-   * Parses the XAML file, extracts the key-value pairs within the String element, and returns the model_answer_result in a dictionary
-   * @param {string} xamlFilePath - Path to the XAML file.
-   * @returns {Dictionary} - A dictionary containing the key-value pairs extracted from 'String' elements.
-   */
+        // Parse the XAML content
+        const parser = new xml2js.Parser();
+        let result: any;
+        parser.parseString(xamlContent, (err, res) => {
+            if (err) {
+                console.error(`Error parsing the XAML file: ${err}`);
+                result = {};
+            } else {
+                result = res;
+            }
+        });
 
-  // Read the content of the XAML file
-  const xamlContent = fs.readFileSync(xamlFilePath, 'utf8');
+        // Wait for the asynchronous parsing to complete
+        while (!result) {}
 
-  // Regular expression to match <String> tags with key-value pairs
-  const regex = /<String\s+Key="([^"]+)"\s*Value="([^"]+)"/g;
+        // Dictionary to hold the key-value pairs
+        const resultDict: Record<string, string> = {};
 
-  let match;
-  const result: Dictionary = {};
+        // Iterate through all 'String' elements in the XAML file
+        if (result.ResourceDictionary && result.ResourceDictionary.String) {
+            const stringElements = Array.isArray(result.ResourceDictionary.String)
+                ? result.ResourceDictionary.String
+                : [result.ResourceDictionary.String];
 
-  // Extract key-value pairs using the regular expression
-  while ((match = regex.exec(xamlContent)) !== null) {
-    const key = match[1];
-    const value = match[2];
-    result[key] = value;
-  }
+            for (const stringElement of stringElements) {
+                const key = stringElement['@_Key'];
+                if (key) {
+                    const value = stringElement._ ? String(stringElement._) : '';
+                    resultDict[key] = value;
+                }
+            }
+        }
 
-  return result;
+        return resultDict;
+
+    } catch (error) {
+        if (error.code === 'ENOENT') {
+            console.error(`Error: The file ${xamlFile} does not exist.`);
+            return {};
+        } else {
+            console.error(`Error parsing the XAML file: ${error}`);
+            return {};
+        }
+    }
 }

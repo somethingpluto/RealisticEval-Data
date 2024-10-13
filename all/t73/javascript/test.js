@@ -1,35 +1,46 @@
-describe('dictOfListsToListOfDicts', () => {
-  it('should convert a dictionary of lists into a list of dictionaries', () => {
-    const dictOfLists = {
-      a: [1, 2, 3],
-      b: ['x', 'y', 'z'],
-      c: [true, false, true]
-    };
-
-    const expectedResult = [
-      { a: 1, b: 'x', c: true },
-      { a: 2, b: 'y', c: false },
-      { a: 3, b: 'z', c: true }
-    ];
-
-    expect(dictOfListsToListOfDicts(dictOfLists)).toEqual(expectedResult);
+describe('TestDictOfListsToListOfDicts', () => {
+  describe('test_standard_conversion', () => {
+      it('should correctly convert a dictionary of lists into a list of dictionaries with equal length lists', () => {
+          const dictOfLists = {
+              name: ['Alice', 'Bob', 'Charlie'],
+              age: [25, 30, 35],
+              city: ['New York', 'Los Angeles', 'Chicago']
+          };
+          const expectedResult = [
+              { name: 'Alice', age: 25, city: 'New York' },
+              { name: 'Bob', age: 30, city: 'Los Angeles' },
+              { name: 'Charlie', age: 35, city: 'Chicago' }
+          ];
+          const result = dictOfListsToListOfDicts(dictOfLists);
+          expect(result).toEqual(expectedResult);
+      });
   });
 
-  it('should handle empty input correctly', () => {
-    const dictOfLists = {};
-
-    const expectedResult = [];
-
-    expect(dictOfListsToListOfDicts(dictOfLists)).toEqual(expectedResult);
+  describe('test_empty_lists', () => {
+      it('should handle empty lists correctly', () => {
+          const dictOfLists = {
+              name: [],
+              age: [],
+              city: []
+          };
+          const expectedResult = [];
+          const result = dictOfListsToListOfDicts(dictOfLists);
+          expect(result).toEqual(expectedResult);
+      });
   });
 
-  it('should handle single key-value pair correctly', () => {
-    const dictOfLists = {
-      a: [1]
-    };
-
-    const expectedResult = [{ a: 1 }];
-
-    expect(dictOfListsToListOfDicts(dictOfLists)).toEqual(expectedResult);
+  describe('test_single_element_lists', () => {
+      it('should correctly convert a dictionary of single-element lists into a list of dictionaries', () => {
+          const dictOfLists = {
+              name: ['Alice'],
+              age: [25],
+              city: ['New York']
+          };
+          const expectedResult = [
+              { name: 'Alice', age: 25, city: 'New York' }
+          ];
+          const result = dictOfListsToListOfDicts(dictOfLists);
+          expect(result).toEqual(expectedResult);
+      });
   });
 });

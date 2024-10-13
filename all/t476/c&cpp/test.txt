@@ -1,103 +1,29 @@
-Certainly! Below is the equivalent C++ test class using the Catch2 testing framework. The test class will preserve the functionality and logic of the provided Python unittest class, ensuring that all necessary adjustments are made for language differences between Python and C++.
+Certainly! Below is the equivalent C++ test class using the Catch2 testing framework. The provided Python unittest class will be converted into a Catch2 test suite, ensuring that the functionality and logic of the tests are preserved.
 
-### Python Code:
-```python
-from typing import List, Tuple
-import unittest
+### C++ Code with Catch2 Testing Framework
 
-def topological_sort_dfs(vertices: List[int], edges: List[Tuple[int, int]]) -> List[int]:
-    """
-    Achieve topological sorting based on depth-first search.
-
-    Args:
-        vertices (List[int]): A list of vertices in the graph. Each vertex should be a unique integer.
-        edges (List[Tuple[int, int]]): A list of tuples where each tuple represents a directed edge
-                                       in the graph and is formed as (start_vertex, end_vertex).
-
-    Returns:
-        List[int]: A list of vertices in topological order. If the graph contains a cycle,
-                   and thus cannot have a valid topological ordering, an empty list is returned.
-    """
-    from collections import defaultdict, deque
-
-    graph = defaultdict(list)
-    visited = set()
-    result = deque()
-
-    # Build the graph
-    for u, v in edges:
-        graph[u].append(v)
-
-    # Recursive depth-first search function
-    def dfs(node):
-        if node in visited:
-            return
-        visited.add(node)
-        for neighbor in graph[node]:
-            if neighbor not in visited:
-                dfs(neighbor)
-        result.appendleft(node)
-
-    # Traverse all nodes
-    for vertex in vertices:
-        if vertex not in visited:
-            dfs(vertex)
-
-    return list(result)
-
-
-class TestTopologicalSort(unittest.TestCase):
-
-    def test_topological_sort(self):
-        vertices = [0, 1, 2, 3, 4]
-        edges = [(0, 1), (1, 2), (2, 3), (3, 4)]
-        expected = [0, 1, 2, 3, 4]
-
-        result = topological_sort_dfs(vertices, edges)
-        self.assertEqual(result, expected)
-
-    def test_topological_sort_with_cycle(self):
-        vertices = [0, 1, 2]
-        edges = [(0, 1), (1, 2), (2, 0)]
-        expected = []
-
-        result = topological_sort_dfs(vertices, edges)
-        self.assertEqual(result, expected)
-
-
-if __name__ == '__main__':
-    unittest.main()
-```
-
-### Equivalent C++ Test Class Using Catch2
-
-#### C++ Code:
 ```cpp
-#include <iostream>
+#include <catch2/catch_test_macros.hpp>
 #include <vector>
 #include <unordered_map>
-#include <unordered_set>
 #include <deque>
-#include <catch2/catch_test_macros.hpp>
+#include <set>
 
-using namespace std;
-
+// Function to perform topological sorting based on depth-first search
 /**
  * Achieve topological sorting based on depth-first search.
  *
  * @param vertices A vector of vertices in the graph. Each vertex should be a unique integer.
  * @param edges A vector of pairs where each pair represents a directed edge in the graph
  *              and is formed as (start_vertex, end_vertex).
+ *
  * @return A vector of vertices in topological order. If the graph contains a cycle,
  *         and thus cannot have a valid topological ordering, an empty vector is returned.
  */
-vector<int> topological_sort_dfs(const vector<int>& vertices, const vector<pair<int, int>>& edges) {
-    // Using an unordered map to represent the graph
-    unordered_map<int, vector<int>> graph;
-    // Using an unordered set to track visited nodes
-    unordered_set<int> visited;
-    // Using a deque to store the result
-    deque<int> result;
+std::vector<int> topological_sort_dfs(const std::vector<int>& vertices, const std::vector<std::pair<int, int>>& edges) {
+    std::unordered_map<int, std::vector<int>> graph;
+    std::set<int> visited;
+    std::deque<int> result;
 
     // Build the graph
     for (const auto& edge : edges) {
@@ -105,84 +31,83 @@ vector<int> topological_sort_dfs(const vector<int>& vertices, const vector<pair<
     }
 
     // Recursive depth-first search function
-    void dfs(int node, const unordered_map<int, vector<int>>& graph, unordered_set<int>& visited, deque<int>& result) {
+    void dfs(int node) {
         if (visited.find(node) != visited.end()) {
             return;
         }
         visited.insert(node);
-        for (int neighbor : graph.at(node)) {
+        for (int neighbor : graph[node]) {
             if (visited.find(neighbor) == visited.end()) {
-                dfs(neighbor, graph, visited, result);
+                dfs(neighbor);
             }
         }
-        result.push_front(node);  // Add node to the front of the deque
+        result.push_front(node);  // Add the node to the front of the result deque
     }
 
     // Traverse all nodes
     for (int vertex : vertices) {
         if (visited.find(vertex) == visited.end()) {
-            dfs(vertex, graph, visited, result);
+            dfs(vertex);
         }
     }
 
-    // Convert the deque to a vector and return it
-    return vector<int>(result.begin(), result.end());
+    return std::vector<int>(result.begin(), result.end());
 }
 
-TEST_CASE("Test topological sort", "[topological_sort]") {
-    SECTION("Test topological sort without cycles") {
-        vector<int> vertices = {0, 1, 2, 3, 4};
-        vector<pair<int, int>> edges = {{0, 1}, {1, 2}, {2, 3}, {3, 4}};
-        vector<int> expected = {0, 1, 2, 3, 4};
-
-        vector<int> result = topological_sort_dfs(vertices, edges);
-        REQUIRE(result == expected);
+TEST_CASE("Test topological_sort_dfs", "[topological_sort_dfs]") {
+    SECTION("test_simple_chain") {
+        std::vector<int> vertices = {1, 2, 3};
+        std::vector<std::pair<int, int>> edges = {{1, 2}, {2, 3}};
+        REQUIRE(topological_sort_dfs(vertices, edges) == std::vector<int>({1, 2, 3}));
     }
 
-    SECTION("Test topological sort with cycles") {
-        vector<int> vertices = {0, 1, 2};
-        vector<pair<int, int>> edges = {{0, 1}, {1, 2}, {2, 0}};
-        vector<int> expected = {};
-
-        vector<int> result = topological_sort_dfs(vertices, edges);
-        REQUIRE(result.empty());
+    SECTION("test_disconnected_graph") {
+        std::vector<int> vertices = {1, 2, 3, 4};
+        std::vector<std::pair<int, int>> edges = {{1, 2}};
+        auto result = topological_sort_dfs(vertices, edges);
+        REQUIRE(std::find(result.begin(), result.end(), 1) < std::find(result.begin(), result.end(), 2));
+        REQUIRE(std::find(result.begin(), result.end(), 3) != result.end());
+        REQUIRE(std::find(result.begin(), result.end(), 4) != result.end());
     }
-}
 
-int main(int argc, char* argv[]) {
-    return Catch::Session().run(argc, argv);
+    SECTION("test_complex_graph") {
+        std::vector<int> vertices = {1, 2, 3, 4, 5, 6};
+        std::vector<std::pair<int, int>> edges = {{1, 2}, {1, 3}, {2, 4}, {3, 4}, {4, 5}, {6, 1}};
+        auto result = topological_sort_dfs(vertices, edges);
+        REQUIRE(std::find(result.begin(), result.end(), 1) < std::find(result.begin(), result.end(), 2));
+        REQUIRE(std::find(result.begin(), result.end(), 1) < std::find(result.begin(), result.end(), 3));
+        REQUIRE(std::find(result.begin(), result.end(), 2) < std::find(result.begin(), result.end(), 4));
+        REQUIRE(std::find(result.begin(), result.end(), 3) < std::find(result.begin(), result.end(), 4));
+        REQUIRE(std::find(result.begin(), result.end(), 4) < std::find(result.begin(), result.end(), 5));
+        REQUIRE(std::find(result.begin(), result.end(), 6) < std::find(result.begin(), result.end(), 1));
+    }
+
+    SECTION("test_single_vertex") {
+        std::vector<int> vertices = {1};
+        std::vector<std::pair<int, int>> edges = {};
+        REQUIRE(topological_sort_dfs(vertices, edges) == std::vector<int>({1}));
+    }
 }
 ```
 
 ### Explanation:
-1. **Function Signature**:
-   - The function signature is translated to `vector<int> topological_sort_dfs(const vector<int>& vertices, const vector<pair<int, int>>& edges)`.
+1. **Catch2 Test Suite**:
+   - The `TEST_CASE` macro defines a test case named "Test topological_sort_dfs".
+   - Each `SECTION` within the test case corresponds to a specific test scenario.
 
-2. **Comments and Documentation**:
-   - The Python docstring is translated into a multi-line comment block using `/* */`.
-   - Single-line comments use `//`.
+2. **Function Definition**:
+   - The `topological_sort_dfs` function is defined as in the previous example.
 
-3. **Data Structures**:
-   - `unordered_map` is used to represent the graph.
-   - `unordered_set` is used to track visited nodes.
-   - `deque` is used to store the result.
+3. **Test Cases**:
+   - `test_simple_chain`: Checks that a simple chain of vertices is sorted correctly.
+   - `test_disconnected_graph`: Ensures that disconnected vertices are included in the result.
+   - `test_complex_graph`: Verifies the correct ordering of vertices in a complex graph.
+   - `test_single_vertex`: Tests the case with a single vertex.
 
-4. **Recursive DFS Function**:
-   - The `dfs` function is defined within the `topological_sort_dfs` function as a nested function. It uses the same logic as the Python version.
+4. **Assertions**:
+   - `REQUIRE` is used for assertions in Catch2. It checks conditions and stops execution if the condition fails.
 
-5. **Building the Graph**:
-   - The graph is built by iterating over the edges and populating the `unordered_map`.
+5. **Index Comparisons**:
+   - For index comparisons, `std::find` is used to find the positions of elements in the result vector and compare them.
 
-6. **Traversing All Nodes**:
-   - All nodes are traversed using the `dfs` function, ensuring that unvisited nodes are processed.
-
-7. **Result Conversion**:
-   - The result deque is converted to a vector before returning it.
-
-8. **Catch2 Test Class**:
-   - The `TEST_CASE` macro is used to define the test case.
-   - `SECTION` macros are used to define individual test sections.
-   - Assertions are performed using `REQUIRE` to check the correctness of the results.
-
-9. **Main Function**:
-   - The `main` function initializes and runs the Catch2 test session.
+This C++ code preserves the functionality and logic of the original Python unittest class while adhering to the Catch2 testing framework.

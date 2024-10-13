@@ -1,52 +1,110 @@
-Sure! Here's how you can convert your Python unittest test class to a TypeScript test case using Jest:
+Certainly! Here is the equivalent TypeScript test class using Jest, ensuring that the functionality and logic of the tests are preserved. The Python unittest assertions are mapped to the appropriate Jest assertions.
+
+### TypeScript Code
+
+First, let's include the TypeScript code for the `areSetsEqual` function:
 
 ```typescript
-import { expect } from '@jest/globals';
-import { areSetsEqual } from './yourModule'; // Adjust the import path accordingly
+/**
+ * Compares two sets of floats for equality within a relative and absolute tolerance.
+ *
+ * @param set1 - The first set of floats.
+ * @param set2 - The second set of floats.
+ * @param rtol - The relative tolerance (default: 1e-5).
+ * @param atol - The absolute tolerance (default: 1e-6).
+ * @returns True if the sets are equal within the specified tolerances, False otherwise.
+ */
+function areSetsEqual(set1: Set<number>, set2: Set<number>, rtol: number = 1e-5, atol: number = 1e-6): boolean {
+    // Convert sets to sorted arrays for comparison
+    const list1 = Array.from(set1).sort((a, b) => a - b);
+    const list2 = Array.from(set2).sort((a, b) => a - b);
+
+    // Check if the lengths of both sets are the same
+    if (list1.length !== list2.length) {
+        return false;
+    }
+
+    // Compare each element in the two sorted arrays
+    for (let i = 0; i < list1.length; i++) {
+        if (!isClose(list1[i], list2[i], rtol, atol)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+/**
+ * Checks if two numbers are close within a relative and absolute tolerance.
+ *
+ * @param a - The first number.
+ * @param b - The second number.
+ * @param rtol - The relative tolerance.
+ * @param atol - The absolute tolerance.
+ * @returns True if the numbers are close, False otherwise.
+ */
+function isClose(a: number, b: number, rtol: number, atol: number): boolean {
+    return Math.abs(a - b) <= (atol + rtol * Math.abs(b));
+}
+
+export { areSetsEqual };
+```
+
+### Jest Test Class
+
+Now, let's write the Jest test class:
+
+```typescript
+import { areSetsEqual } from './path/to/areSetsEqual'; // Adjust the path as needed
 
 describe('areSetsEqual', () => {
-  it('should return true when both sets are empty', () => {
-    const set1 = new Set<number>();
-    const set2 = new Set<number>();
+    describe('with identical sets', () => {
+        it('should return true for two identical sets of floats', () => {
+            const set1 = new Set([1.0, 2.0, 3.0]);
+            const set2 = new Set([1.0, 2.0, 3.0]);
+            expect(areSetsEqual(set1, set2)).toBe(true);
+        });
+    });
 
-    expect(areSetsEqual(set1, set2)).toBe(true);
-  });
+    describe('with sets that are close within the tolerance', () => {
+        it('should return true for two sets that are close within the tolerance', () => {
+            const set1 = new Set([1.0, 2.00001, 3.0]);
+            const set2 = new Set([1.0, 2.00002, 3.0]);
+            expect(areSetsEqual(set1, set2, 1e-5, 1e-6)).toBe(true);
+        });
+    });
 
-  it('should return false when one set is empty and the other is not', () => {
-    const set1 = new Set<number>();
-    const set2 = new Set<number>().add(1);
+    describe('with sets that have large differences beyond tolerance', () => {
+        it('should return false for two sets that have large differences beyond tolerance', () => {
+            const set1 = new Set([1.0, 2.0, 3.0]);
+            const set2 = new Set([1.0, 2.5, 3.0]);
+            expect(areSetsEqual(set1, set2)).toBe(false);
+        });
+    });
 
-    expect(areSetsEqual(set1, set2)).toBe(false);
-  });
+    describe('with sets containing one different float', () => {
+        it('should return true for two sets containing one different float within tolerance', () => {
+            const set1 = new Set([1.0, 2.0, 3.0]);
+            const set2 = new Set([1.0, 2.000001, 3.0]);
+            expect(areSetsEqual(set1, set2, 1e-5, 1e-6)).toBe(true);
+        });
+    });
 
-  it('should return true when both sets contain the same elements within the default tolerances', () => {
-    const set1 = new Set<number>([0.1, 0.2, 0.3]);
-    const set2 = new Set<number>([0.1 + Number.EPSILON, 0.2, 0.3]);
-
-    expect(areSetsEqual(set1, set2)).toBe(true);
-  });
-
-  it('should return false when sets contain different elements', () => {
-    const set1 = new Set<number>([0.1, 0.2, 0.3]);
-    const set2 = new Set<number>([0.1, 0.2, 0.4]);
-
-    expect(areSetsEqual(set1, set2)).toBe(false);
-  });
-
-  it('should respect custom relative tolerance', () => {
-    const set1 = new Set<number>([0.1, 0.2, 0.3]);
-    const set2 = new Set<number>([0.1 + 0.00001, 0.2, 0.3]);
-
-    expect(areSetsEqual(set1, set2, 1e-7)).toBe(true);
-  });
-
-  it('should respect custom absolute tolerance', () => {
-    const set1 = new Set<number>([0.1, 0.2, 0.3]);
-    const set2 = new Set<number>([0.1, 0.2, 0.3 + 1e-7]);
-
-    expect(areSetsEqual(set1, set2, undefined, 1e-7)).toBe(true);
-  });
+    describe('with empty sets', () => {
+        it('should return true for two empty sets', () => {
+            const set1 = new Set<number>();
+            const set2 = new Set<number>();
+            expect(areSetsEqual(set1, set2)).toBe(true);
+        });
+    });
 });
 ```
 
-Make sure to adjust the import path to where `areSetsEqual` is defined in your project. This TypeScript test case uses Jest's `expect` function to assert the expected outcomes of the `areSetsEqual` function.
+### Explanation:
+1. **Import Statements**: The `areSetsEqual` function is imported from the appropriate module.
+2. **Describe Blocks**: Each test case is wrapped in a `describe` block for better organization and readability.
+3. **It Blocks**: Each test case is defined using the `it` block with a descriptive message.
+4. **Expect Assertions**: The `expect` function is used to assert the expected behavior of the `areSetsEqual` function.
+5. **Type Annotations**: The sets are created using `new Set<number>()` to ensure proper typing.
+
+This TypeScript code preserves the functionality and logic of the original Python unittest test cases while adapting them to Jest's syntax and conventions.

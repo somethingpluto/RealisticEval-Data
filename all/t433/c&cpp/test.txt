@@ -1,98 +1,126 @@
-To convert the provided Python function into a C++ test class using Catch2, we need to first define the function `extract_paragraphs_and_lines` in C++. Then, we can write the test cases using Catch2 assertions. Here’s how you can do it:
+Certainly! Here is the equivalent C++ test class using the Catch2 testing framework. The provided Python unittest class will be converted into a set of Catch2 test cases, ensuring that the functionality and logic of the tests are preserved.
 
-1. Define the function `extract_paragraphs_and_lines` in C++.
-2. Write the test cases using Catch2.
-
-Here’s the complete C++ code using Catch2:
+### C++ Code with Catch2 Testing Framework
 
 ```cpp
-#include <catch2/catch_test_macros.hpp>
-#include <string>
+#include <iostream>
 #include <vector>
+#include <string>
+#include <sstream>
 #include <map>
+#include <catch2/catch_test_macros.hpp>
 
-// Function to extract paragraphs and lines from the given text.
+// Function to extract paragraphs and lines from the given text
 std::map<std::string, std::vector<std::string>> extract_paragraphs_and_lines(const std::string& text) {
-    std::map<std::string, std::vector<std::string>> result;
-    std::vector<std::string> paragraphs;
-    std::vector<std::string> lines;
-
+    // Split the text into paragraphs
     std::istringstream iss(text);
-    std::string line;
+    std::vector<std::string> paragraphs;
     std::string paragraph;
-    while (getline(iss, line)) {
-        if (line.empty()) {
-            // End of a paragraph
-            if (!paragraph.empty()) {
-                paragraphs.push_back(paragraph);
-                paragraph.clear();
-            }
-        } else {
-            if (paragraph.empty()) {
-                paragraph = line;
-            } else {
-                paragraph += "\n" + line;
-            }
-            lines.push_back(line);
+    while (std::getline(iss, paragraph, '\n')) {
+        if (!paragraph.empty()) {
+            paragraphs.push_back(paragraph);
         }
     }
-    if (!paragraph.empty()) {
-        paragraphs.push_back(paragraph);
+
+    // Split each paragraph into lines
+    std::vector<std::string> lines;
+    for (const auto& paragraph : paragraphs) {
+        std::istringstream lineStream(paragraph);
+        std::string line;
+        while (std::getline(lineStream, line, '\n')) {
+            if (!line.empty()) {
+                lines.push_back(line);
+            }
+        }
     }
 
-    result["paragraphs"] = paragraphs;
-    result["lines"] = lines;
-    return result;
+    // Return the extracted paragraphs and lines in a map
+    return {
+        {"paragraphs", paragraphs},
+        {"lines", lines}
+    };
 }
 
 TEST_CASE("Test extract_paragraphs_and_lines") {
-    SECTION("Empty text") {
-        auto result = extract_paragraphs_and_lines("");
-        REQUIRE(result["paragraphs"].empty());
-        REQUIRE(result["lines"].empty());
+    SECTION("Single paragraph") {
+        std::string input_text = "This is a single paragraph.";
+        std::map<std::string, std::vector<std::string>> expected_output = {
+            {"paragraphs", {"This is a single paragraph."}},
+            {"lines", {"This is a single paragraph."}}
+        };
+
+        auto result = extract_paragraphs_and_lines(input_text);
+        REQUIRE(result["paragraphs"] == expected_output["paragraphs"]);
+        REQUIRE(result["lines"] == expected_output["lines"]);
     }
 
-    SECTION("Single paragraph and single line") {
-        auto result = extract_paragraphs_and_lines("First paragraph.");
-        REQUIRE(result["paragraphs"].size() == 1);
-        REQUIRE(result["paragraphs"][0] == "First paragraph.");
-        REQUIRE(result["lines"].size() == 1);
-        REQUIRE(result["lines"][0] == "First paragraph.");
+    SECTION("Multiple paragraphs") {
+        std::string input_text = "First paragraph.\nThis is the second line.\n\nSecond paragraph.\nAnother line.";
+        std::map<std::string, std::vector<std::string>> expected_output = {
+            {"paragraphs", {"First paragraph.\nThis is the second line.", "Second paragraph.\nAnother line."}},
+            {"lines", {"First paragraph.", "This is the second line.", "Second paragraph.", "Another line."}}
+        };
+
+        auto result = extract_paragraphs_and_lines(input_text);
+        REQUIRE(result["paragraphs"] == expected_output["paragraphs"]);
+        REQUIRE(result["lines"] == expected_output["lines"]);
     }
 
-    SECTION("Multiple paragraphs and multiple lines") {
-        auto result = extract_paragraphs_and_lines("First paragraph.\nThis is the second line.\n\nSecond paragraph.\nAnother line.");
-        REQUIRE(result["paragraphs"].size() == 2);
-        REQUIRE(result["paragraphs"][0] == "First paragraph.\nThis is the second line.");
-        REQUIRE(result["paragraphs"][1] == "Second paragraph.\nAnother line.");
-        REQUIRE(result["lines"].size() == 4);
-        REQUIRE(result["lines"][0] == "First paragraph.");
-        REQUIRE(result["lines"][1] == "This is the second line.");
-        REQUIRE(result["lines"][2] == "Second paragraph.");
-        REQUIRE(result["lines"][3] == "Another line.");
+    SECTION("Leading and trailing whitespace") {
+        std::string input_text = "   This paragraph has leading whitespace.\nAnd a line after.\n\n   This one has trailing whitespace.   ";
+        std::map<std::string, std::vector<std::string>> expected_output = {
+            {"paragraphs", {"This paragraph has leading whitespace.\nAnd a line after.", "This one has trailing whitespace."}},
+            {"lines", {"This paragraph has leading whitespace.", "And a line after.", "This one has trailing whitespace."}}
+        };
+
+        auto result = extract_paragraphs_and_lines(input_text);
+        REQUIRE(result["paragraphs"] == expected_output["paragraphs"]);
+        REQUIRE(result["lines"] == expected_output["lines"]);
     }
 
-    SECTION("Single empty paragraph") {
-        auto result = extract_paragraphs_and_lines("\n");
-        REQUIRE(result["paragraphs"].empty());
-        REQUIRE(result["lines"].size() == 0);
+    SECTION("Empty string") {
+        std::string input_text = "";
+        std::map<std::string, std::vector<std::string>> expected_output = {
+            {"paragraphs", {}},
+            {"lines", {}}
+        };
+
+        auto result = extract_paragraphs_and_lines(input_text);
+        REQUIRE(result["paragraphs"] == expected_output["paragraphs"]);
+        REQUIRE(result["lines"] == expected_output["lines"]);
     }
 
     SECTION("Multiple empty paragraphs") {
-        auto result = extract_paragraphs_and_lines("\n\n\n");
-        REQUIRE(result["paragraphs"].empty());
-        REQUIRE(result["lines"].empty());
+        std::string input_text = "\n\n\n";
+        std::map<std::string, std::vector<std::string>> expected_output = {
+            {"paragraphs", {}},
+            {"lines", {}}
+        };
+
+        auto result = extract_paragraphs_and_lines(input_text);
+        REQUIRE(result["paragraphs"] == expected_output["paragraphs"]);
+        REQUIRE(result["lines"] == expected_output["lines"]);
     }
+}
+
+int main(int argc, char* argv[]) {
+    return Catch::Session().run(argc, argv);
 }
 ```
 
 ### Explanation:
-1. **Function Definition**: The `extract_paragraphs_and_lines` function takes a string as input and returns a map containing two vectors: one for paragraphs and one for lines.
-2. **Test Cases**:
-   - **Empty Text**: Tests the function with an empty string.
-   - **Single Paragraph and Single Line**: Tests the function with a single paragraph and a single line.
-   - **Multiple Paragraphs and Multiple Lines**: Tests the function with multiple paragraphs and multiple lines.
-   - **Single Empty Paragraph**: Tests the function with a single empty paragraph.
-   - **Multiple Empty Paragraphs**: Tests the function with multiple empty paragraphs.
+1. **Headers**: The required headers (`<iostream>`, `<vector>`, `<string>`, `<sstream>`, `<map>`, `<catch2/catch_test_macros.hpp>`) are included.
+2. **Function Definition**: The `extract_paragraphs_and_lines` function takes a `const std::string&` and returns a `std::map<std::string, std::vector<std::string>>`.
+3. **Catch2 Test Class**:
+   - The `TEST_CASE` macro defines a test case named "Test extract_paragraphs_and_lines".
+   - Each `SECTION` within the test case corresponds to a specific test scenario.
+   - Assertions are made using `REQUIRE` to ensure the expected output matches the actual output.
+4. **Test Scenarios**:
+   - `Single paragraph`: Tests a single paragraph.
+   - `Multiple paragraphs`: Tests multiple paragraphs.
+   - `Leading and trailing whitespace`: Tests paragraphs with leading and trailing whitespace.
+   - `Empty string`: Tests an empty string.
+   - `Multiple empty paragraphs`: Tests multiple empty paragraphs.
+5. **Main Function**: The `main` function runs the Catch2 test suite.
 
-This conversion preserves the functionality and logic of the original Python test cases using Catch2 assertions.
+This code ensures that the functionality and logic of the Python unittest class are preserved in the C++ Catch2 test class.

@@ -1,17 +1,40 @@
 const fs = require('fs');
 const path = require('path');
+const csvParser = require('csv-parser');
 
 function csvToSqlInsert(csvFilePath) {
-  const tableName = path.basename(csvFilePath, '.csv');
-  let sql = `INSERT INTO ${tableName} VALUES\n`;
+    // Extract the table name from the CSV file name, removing the suffix
+    const tableName = path.splitext(path.basename(csvFilePath))[0];
 
-  const data = fs.readFileSync(csvFilePath, 'utf8');
-  const rows = data.split('\n').map(row => row.trim()).filter(row => row);
+    // Open the CSV file and read its contents
+    const results = [];
+    let headers = [];
 
-  for (let i = 1; i < rows.length; i++) {
-    const values = rows[i].split(',').map(value => `'${value}'`);
-    sql += `(${values.join(',')})\n`;
-  }
+    fs.createReadStream(csvFilePath)
+        .on('data', (row) => {
+            if (!headers.length) {
+                headers = Object.keys(row);
+                return;
+            }
 
-  return sql;
+            const values = [];
+            for (const [key, value] of Object.entries(row)) {
+                // Handle different types of values (e.g., strings, numbers)
+                if (!isNaN(value)) {  // If value is a number, no quotes needed
+                    values.push(value);
+                } else {  // Assume it's a string otherwise
+                    const escapedValue = value.replace(/'/g, "''");  // Escape single quotes
+                    values.push(`'${escapedValue}'`);  // Use double quotes outside
+                }
+            }
+
+            // Join column names and values to form an INSERT statement
+            const insertStatement = `INSERT INTO ${tableName} (${headers.join(', ')}) VALUES (${values.join(', ')});`;
+            results.push(insertStatement);
+        })
+        .on('end', () => {
+            // Combine all insert statements into a single output
+            console.log(results.join('\n'));
+        })
+        .pipe(csvParser());
 }

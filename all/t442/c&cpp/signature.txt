@@ -1,109 +1,103 @@
-Sure! Here’s the equivalent C++ code for the given Python function, including the necessary imports, function signature, and comments:
+Certainly! Here is the equivalent C++ code for the given Python function, including the necessary type conversions and comments:
 
 ```cpp
 #include <iostream>
+#include <string>
 #include <vector>
 #include <map>
-#include <string>
-#include <variant>
-#include <sstream>
+#include <stdexcept>
 
 // Helper function to check if a string contains a dot
-bool containsDot(const std::string& str) {
-    return str.find('.') != std::string::npos;
-}
-
-// Function to attempt conversion of a string to a number
-template<typename T>
-T stringToNumber(const std::string& str) {
-    std::istringstream iss(str);
-    T number;
-    iss >> number;
-    if (iss.fail() || !iss.eof()) {
-        throw std::invalid_argument("Conversion failed");
-    }
-    return number;
+bool containsDot(const std::string& s) {
+    return s.find('.') != std::string::npos;
 }
 
 /**
  * Convert strings in nested structures (e.g., dictionaries, arrays) to numbers (integers or floating-point numbers) as much as possible.
  *
- * @param data A dictionary or list containing nested structures.
- * @return A dictionary or list with strings converted to numbers where possible.
+ * @param data The input data before conversion.
+ * @return The converted data.
  */
-std::variant<std::map<std::string, std::variant<std::string, int, double>>, std::vector<std::variant<std::string, int, double>>> convertStringsToNumbers(
-    const std::variant<std::map<std::string, std::variant<std::string, int, double>>, std::vector<std::variant<std::string, int, double>>>& data
-) {
-    if (std::holds_alternative<std::map<std::string, std::variant<std::string, int, double>>>(data)) {
-        auto map = std::get<std::map<std::string, std::variant<std::string, int, double>>>(data);
-        std::map<std::string, std::variant<std::string, int, double>> newMap;
-        for (const auto& [key, value] : map) {
-            newMap[key] = convertStringsToNumbers(value);
-        }
-        return newMap;
-    } else if (std::holds_alternative<std::vector<std::variant<std::string, int, double>>>(data)) {
-        auto vec = std::get<std::vector<std::variant<std::string, int, double>>>(data);
-        std::vector<std::variant<std::string, int, double>> newVec;
-        for (const auto& item : vec) {
-            newVec.push_back(convertStringsToNumbers(item));
-        }
-        return newVec;
-    } else if (std::holds_alternative<std::string>(data)) {
-        std::string str = std::get<std::string>(data);
-        try {
-            if (containsDot(str)) {
-                return stringToNumber<double>(str);
-            } else {
-                return stringToNumber<int>(str);
-            }
-        } catch (const std::invalid_argument&) {
-            return str; // Return original string if conversion fails
-        }
-    } else {
-        return data; // Return data unchanged if it's not a string
+template<typename T>
+T convertStringsToNumbers(const T& data);
+
+template<>
+std::map<std::string, std::string> convertStringsToNumbers(const std::map<std::string, std::string>& data) {
+    std::map<std::string, std::string> result;
+    for (const auto& pair : data) {
+        result[pair.first] = convertStringsToNumbers(pair.second);
     }
+    return result;
+}
+
+template<>
+std::vector<std::string> convertStringsToNumbers(const std::vector<std::string>& data) {
+    std::vector<std::string> result;
+    for (const auto& item : data) {
+        result.push_back(convertStringsToNumbers(item));
+    }
+    return result;
+}
+
+template<>
+std::string convertStringsToNumbers(const std::string& data) {
+    try {
+        if (containsDot(data)) {
+            return std::to_string(std::stof(data));
+        } else {
+            return std::to_string(std::stoi(data));
+        }
+    } catch (const std::invalid_argument& ia) {
+        // Conversion failed, return the original string
+        return data;
+    } catch (const std::out_of_range& oor) {
+        // Conversion failed due to out of range, return the original string
+        return data;
+    }
+}
+
+// Non-string types are returned unchanged
+template<typename T>
+T convertStringsToNumbers(const T& data) {
+    return data;
 }
 
 int main() {
     // Example usage
-    std::map<std::string, std::variant<std::string, int, double>> exampleData = {
-        {"a", "123"},
-        {"b", "456.789"},
-        {"c", "not_a_number"}
+    std::map<std::string, std::string> exampleMap = {
+        {"a", "10"},
+        {"b", "20.5"},
+        {"c", "hello"}
     };
 
-    auto convertedData = convertStringsToNumbers(exampleData);
+    std::vector<std::string> exampleVector = {"30", "40.7", "world"};
 
-    // Print the result
-    if (std::holds_alternative<std::map<std::string, std::variant<std::string, int, double>>>(convertedData)) {
-        auto map = std::get<std::map<std::string, std::variant<std::string, int, double>>>(convertedData);
-        for (const auto& [key, value] : map) {
-            std::cout << key << ": ";
-            if (std::holds_alternative<int>(value)) {
-                std::cout << std::get<int>(value);
-            } else if (std::holds_alternative<double>(value)) {
-                std::cout << std::get<double>(value);
-            } else if (std::holds_alternative<std::string>(value)) {
-                std::cout << std::get<std::string>(value);
-            }
-            std::cout << std::endl;
-        }
+    auto convertedMap = convertStringsToNumbers(exampleMap);
+    auto convertedVector = convertStringsToNumbers(exampleVector);
+
+    // Print the results
+    for (const auto& pair : convertedMap) {
+        std::cout << pair.first << ": " << pair.second << std::endl;
     }
+
+    for (const auto& item : convertedVector) {
+        std::cout << item << " ";
+    }
+    std::cout << std::endl;
 
     return 0;
 }
 ```
 
 ### Explanation:
-1. **Imports**: The necessary headers (`<iostream>`, `<vector>`, `<map>`, `<string>`, `<variant>`, `<sstream>`) are included to support the required functionalities.
-2. **Helper Functions**:
-   - `containsDot`: Checks if a string contains a dot.
-   - `stringToNumber`: Attempts to convert a string to a number, throwing an exception if the conversion fails.
-3. **Function Documentation**:
-   - The `convertStringsToNumbers` function is documented with a multi-line comment block (`/* ... */`) that explains its purpose, arguments, and return value.
-4. **Function Implementation**:
-   - The function handles nested structures (`std::map` and `std::vector`) and individual strings, converting strings to numbers where possible.
-5. **Example Usage**:
-   - The `main` function demonstrates how to use the `convertStringsToNumbers` function with an example map and prints the result.
+1. **Header Files**: The necessary header files are included at the beginning of the file.
+2. **Helper Function**: The `containsDot` function checks if a string contains a dot, which helps determine whether to convert to `float` or `int`.
+3. **Template Specialization**: The `convertStringsToNumbers` function uses template specialization to handle different types (`std::map`, `std::vector`, and `std::string`).
+4. **Conversion Logic**:
+   - For `std::map`, it recursively converts each value.
+   - For `std::vector`, it recursively converts each element.
+   - For `std::string`, it attempts to convert to `float` or `int` using `std::stof` and `std::stoi`. If the conversion fails, it returns the original string.
+5. **Non-String Types**: For non-string types, the function simply returns the input unchanged.
+6. **Comments and Documentation**: The Python docstring is translated into a C++ multi-line comment, and other comments are appropriately placed using `//`.
 
-This translation preserves the original functionality and structure of the Python code while adapting it to C++ conventions and syntax.
+This approach ensures that the functionality and structure of the Python code are preserved while adapting to C++ syntax and features.
