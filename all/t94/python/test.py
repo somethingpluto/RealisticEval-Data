@@ -1,3 +1,6 @@
+import unittest
+
+
 class TestCreateCircleOfFifths(unittest.TestCase):
     def test_should_return_12_notes_in_the_circle(self):
         result = create_circle_of_fifths('C')

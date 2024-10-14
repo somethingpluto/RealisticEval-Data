@@ -1,3 +1,6 @@
+import unittest
+
+
 class TestReplaceHtmlEntities(unittest.TestCase):
 
     def test_decodes_standard_html_entities(self):

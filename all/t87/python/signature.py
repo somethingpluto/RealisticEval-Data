@@ -1,4 +1,4 @@
-def timestamp_to_readable_date(unix_timestamp):
+def timestamp_to_readable_date(unix_timestamp: str) -> str:
     """
     Convert the UNIX timestamp to the string format 'Jan 1, 8:00'.
 

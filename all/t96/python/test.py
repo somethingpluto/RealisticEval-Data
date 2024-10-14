@@ -1,3 +1,6 @@
+import unittest
+
+
 class TestChangedClef(unittest.TestCase):
 
     def test_default_clef_insertion(self):

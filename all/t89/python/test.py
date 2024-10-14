@@ -1,3 +1,7 @@
+import unittest
+from unittest.mock import patch
+
+
 class TestTimePassed(unittest.TestCase):
 
     @patch('time.time', return_value=1609459200)  # Mocking time to freeze at Jan 1, 2021, 00:00:00
