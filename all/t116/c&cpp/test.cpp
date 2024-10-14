@@ -1,0 +1,53 @@
+#define CATCH_CONFIG_MAIN
+#include <catch2/catch.hpp>
+#include <vector>
+#include <utility>
+
+// Assume toroidalDiff function is defined here
+
+TEST_CASE("toroidalDiff", "[toroidalDiff]") {
+    SECTION("should return the direct difference when no wrapping is needed") {
+        std::pair<double, double> thisPoint = {2, 3};
+        std::pair<double, double> otherPoint = {5, 6};
+        double width = 10;
+        double height = 10;
+        auto result = toroidalDiff(thisPoint, otherPoint, width, height);
+        REQUIRE(result == std::vector<double>{-3, -3});
+    }
+
+    SECTION("should handle wrapping around the x dimension") {
+        std::pair<double, double> thisPoint = {9, 5};
+        std::pair<double, double> otherPoint = {1, 5};
+        double width = 10;
+        double height = 10;
+        auto result = toroidalDiff(thisPoint, otherPoint, width, height);
+        REQUIRE(result == std::vector<double>{-2, 0}); // dx wraps around the toroidal boundary
+    }
+
+    SECTION("should handle wrapping around the y dimension") {
+        std::pair<double, double> thisPoint = {4, 9};
+        std::pair<double, double> otherPoint = {4, 1};
+        double width = 10;
+        double height = 10;
+        auto result = toroidalDiff(thisPoint, otherPoint, width, height);
+        REQUIRE(result == std::vector<double>{0, -2}); // dy wraps around the toroidal boundary
+    }
+
+    SECTION("should handle wrapping around both x and y dimensions") {
+        std::pair<double, double> thisPoint = {9, 9};
+        std::pair<double, double> otherPoint = {1, 1};
+        double width = 10;
+        double height = 10;
+        auto result = toroidalDiff(thisPoint, otherPoint, width, height);
+        REQUIRE(result == std::vector<double>{-2, -2}); // Both dx and dy wrap around
+    }
+
+    SECTION("should return the direct difference for points at the same position") {
+        std::pair<double, double> thisPoint = {5, 5};
+        std::pair<double, double> otherPoint = {5, 5};
+        double width = 10;
+        double height = 10;
+        auto result = toroidalDiff(thisPoint, otherPoint, width, height);
+        REQUIRE(result == std::vector<double>{0, 0}); // No difference
+    }
+}
