@@ -1,0 +1,62 @@
+TEST_CASE("reorderData") {
+
+    SECTION("should reorder the question based on scores in ascending order") {
+        std::vector<int> imageScores = {90, 85, 95};
+        std::vector<std::string> imageNames = {"image1.png", "image2.png", "image3.png"};
+        std::vector<std::string> imageIDs = {"id1", "id2", "id3"};
+
+        auto [resultScores, resultNames, resultIDs] = reorderData(imageScores, imageNames, imageIDs);
+
+        REQUIRE(resultScores == std::vector<int>{85, 90, 95});
+        REQUIRE(resultNames == std::vector<std::string>{"image2.png", "image1.png", "image3.png"});
+        REQUIRE(resultIDs == std::vector<std::string>{"id2", "id1", "id3"});
+    }
+
+    SECTION("should return the same order if scores are already in ascending order") {
+        std::vector<int> imageScores = {70, 75, 80};
+        std::vector<std::string> imageNames = {"imageA.png", "imageB.png", "imageC.png"};
+        std::vector<std::string> imageIDs = {"idA", "idB", "idC"};
+
+        auto [resultScores, resultNames, resultIDs] = reorderData(imageScores, imageNames, imageIDs);
+
+        REQUIRE(resultScores == std::vector<int>{70, 75, 80});
+        REQUIRE(resultNames == std::vector<std::string>{"imageA.png", "imageB.png", "imageC.png"});
+        REQUIRE(resultIDs == std::vector<std::string>{"idA", "idB", "idC"});
+    }
+
+    SECTION("should handle an array with only one element") {
+        std::vector<int> imageScores = {50};
+        std::vector<std::string> imageNames = {"imageSingle.png"};
+        std::vector<std::string> imageIDs = {"idSingle"};
+
+        auto [resultScores, resultNames, resultIDs] = reorderData(imageScores, imageNames, imageIDs);
+
+        REQUIRE(resultScores == std::vector<int>{50});
+        REQUIRE(resultNames == std::vector<std::string>{"imageSingle.png"});
+        REQUIRE(resultIDs == std::vector<std::string>{"idSingle"});
+    }
+
+    SECTION("should handle an empty array") {
+        std::vector<int> imageScores = {};
+        std::vector<std::string> imageNames = {};
+        std::vector<std::string> imageIDs = {};
+
+        auto [resultScores, resultNames, resultIDs] = reorderData(imageScores, imageNames, imageIDs);
+
+        REQUIRE(resultScores == std::vector<int>{});
+        REQUIRE(resultNames == std::vector<std::string>{});
+        REQUIRE(resultIDs == std::vector<std::string>{});
+    }
+
+    SECTION("should reorder correctly when there are duplicate scores") {
+        std::vector<int> imageScores = {88, 88, 92};
+        std::vector<std::string> imageNames = {"image1.png", "image2.png", "image3.png"};
+        std::vector<std::string> imageIDs = {"id1", "id2", "id3"};
+
+        auto [resultScores, resultNames, resultIDs] = reorderData(imageScores, imageNames, imageIDs);
+
+        REQUIRE(resultScores == std::vector<int>{88, 88, 92});
+        REQUIRE(resultNames == std::vector<std::string>{"image1.png", "image2.png", "image3.png"});
+        REQUIRE(resultIDs == std::vector<std::string>{"id1", "id2", "id3"});
+    }
+}
