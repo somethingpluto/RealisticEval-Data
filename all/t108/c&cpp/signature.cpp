@@ -1,0 +1,13 @@
+/**
+ * Sort the images in ascending order based on their scores and return the reordered image score, name, and ID
+ *
+ * @param const std::vector<int>& imageScores - Array of image scores.
+ * @param const std::vector<std::string>& imageNames - Array of image names corresponding to the scores.
+ * @param const std::vector<std::string>& imageIDs - Array of image IDs corresponding to the scores.
+ * @returns std::tuple<std::vector<int>, std::vector<std::string>, std::vector<std::string>> - A tuple containing the sorted scores, names, and IDs.
+ */
+std::tuple<std::vector<int>, std::vector<std::string>, std::vector<std::string>> reorderData(
+
+) {
+
+}

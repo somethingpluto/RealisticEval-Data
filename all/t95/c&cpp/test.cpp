@@ -1,0 +1,53 @@
+TEST_CASE("findMatchingElements") {
+    
+    SECTION("should return an empty array for an empty input array") {
+        auto result = findMatchingElements({}, [](const std::string&) { return false; });
+        REQUIRE(result.empty());
+    }
+
+    SECTION("should return matching elements and their indices") {
+        std::vector<int> inputArray = {1, 2, 3, 4, 5};
+        auto comparisonFunction = [](int num) { return num > 3; };
+        auto result = findMatchingElements(inputArray, comparisonFunction);
+        REQUIRE(result == std::vector<Match>{{4, 3}, {5, 4}});
+    }
+
+    SECTION("should return elements that are strings matching a specific condition") {
+        std::vector<std::string> inputArray = {"apple", "banana", "cherry", "date"};
+        auto comparisonFunction = [](const std::string& fruit) { return fruit.starts_with('b'); };
+        auto result = findMatchingElements(inputArray, comparisonFunction);
+        REQUIRE(result == std::vector<Match>{{"banana", 1}});
+    }
+
+    SECTION("should return multiple elements with the same value") {
+        std::vector<int> inputArray = {1, 2, 2, 3, 2, 4};
+        auto comparisonFunction = [](int num) { return num == 2; };
+        auto result = findMatchingElements(inputArray, comparisonFunction);
+        REQUIRE(result == std::vector<Match>{{2, 1}, {2, 2}, {2, 4}});
+    }
+
+    SECTION("should return matching objects based on a property") {
+        std::vector<std::map<std::string, int>> inputArray = {
+            {"name", 25},
+            {"name", 30},
+            {"name", 30},
+        };
+        auto comparisonFunction = [](const auto& person) { return person.at("age") == 30; };
+        auto result = findMatchingElements(inputArray, comparisonFunction);
+        REQUIRE(result == std::vector<Match>{{{"Bob", 30}, 1}, {{"Charlie", 30}, 2}});
+    }
+
+    SECTION("should return no elements if no matches found") {
+        std::vector<int> inputArray = {1, 3, 5, 7};
+        auto comparisonFunction = [](int num) { return num % 2 == 0; }; // looking for even numbers
+        auto result = findMatchingElements(inputArray, comparisonFunction);
+        REQUIRE(result.empty());
+    }
+
+    SECTION("should work with a comparison function that checks for negative numbers") {
+        std::vector<int> inputArray = {-1, -2, 0, 1, 2};
+        auto comparisonFunction = [](int num) { return num < 0; };
+        auto result = findMatchingElements(inputArray, comparisonFunction);
+        REQUIRE(result == std::vector<Match>{{-1, 0}, {-2, 1}});
+    }
+}
