@@ -1,3 +1,6 @@
+import unittest
+
+
 class TestIsKebabCase(unittest.TestCase):
 
     def test_valid_kebab_case(self):

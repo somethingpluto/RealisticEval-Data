@@ -1,4 +1,7 @@
-def find_median(arr: list[int]) -> float:
+from typing import List
+
+
+def find_median(arr: List[int]) -> float:
     """
     Finds the median of a given array of numbers.
 

@@ -1,11 +1,19 @@
-def hsl_to_rgb(hue: float, saturation: float, lightness: float) -> dict[str, int]:
+from typing import Dict
+
+
+def hsl_to_rgb(hue: float, saturation: float, lightness: float) -> Dict[str, int]:
     """
     Converts an HSL color value to RGB.
-    Assumes h, s, and l are contained in the set [0, 1] and
-    returns r, g, and b in the set [0, 255].
 
-    :param hue: The hue of the color (0-360)
-    :param saturation: The saturation of the color (0-1)
-    :param lightness: The lightness of the color (0-1)
-    :return: A dictionary containing the red, green, and blue channels.
+    Assumes hue is in the range [0, 360], and saturation and lightness are in the range [0, 1].
+    Returns r, g, and b values in the range [0, 255].
+
+    Args:
+        hue (float): The hue of the color (0-360).
+        saturation (float): The saturation of the color (0-1).
+        lightness (float): The lightness of the color (0-1).
+
+    Returns:
+        dict: A dictionary containing the red, green, and blue channels.
+            Example: {'r': 255, 'g': 0, 'b': 0}
     """

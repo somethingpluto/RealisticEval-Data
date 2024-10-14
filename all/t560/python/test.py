@@ -1,3 +1,6 @@
+import unittest
+
+
 class TestGetLineNumber(unittest.TestCase):
 
     def test_returns_1_for_first_character(self):

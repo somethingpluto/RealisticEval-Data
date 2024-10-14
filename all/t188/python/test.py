@@ -1,5 +1,8 @@
 import unittest
 
+from more_itertools import is_sorted
+
+
 class Tester(unittest.TestCase):
     """Unit tests for the Shell sort functionality."""
 

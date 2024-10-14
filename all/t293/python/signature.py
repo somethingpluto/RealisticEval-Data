@@ -1,4 +1,7 @@
-def reorder_data(image_scores: list[float], image_names: list[str], image_ids: list[str | float]) -> dict[str, list[float] | list[str]]:
+from typing import List, Union
+
+
+def reorder_data(image_scores: List[float], image_names: List[str], image_ids: List[Union[str,float]]) -> dict:
     """
     Reorders image questions based on scores in ascending order.
 
@@ -13,4 +16,3 @@ def reorder_data(image_scores: list[float], image_names: list[str], image_ids: l
             - resultNames (list[str]): A list of sorted image names.
             - resultIDs (list[str | float]): A list of sorted image IDs.
     """
-    pass  # Function implementation goes here

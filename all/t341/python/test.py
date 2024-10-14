@@ -1,3 +1,6 @@
+import unittest
+
+
 class TestConvertTimeHmsStringToMs(unittest.TestCase):
 
     def test_converts_typical_time_string_correctly(self):

@@ -1,4 +1,4 @@
-def get_css_from_sheet(sheet: 'CSSStyleSheet') -> str:
+def get_css_from_sheet(sheet: str) -> str:
     """
     Extract all the CSS rules from a given CSSStyleSheet and concatenate them into a string.
 

@@ -1,10 +1,19 @@
 def format_thread_count(count: int) -> str:
     """
     Formats the thread count into a user-friendly string.
-    For example:
-        input: 3 output: 03 Threads
-        input: 1 output: 01 Thread
 
-    :param count: The number of threads.
-    :return: A formatted string indicating the number of threads.
+    The function formats the number of threads into a two-digit string
+    followed by "Thread" or "Threads" based on the count.
+
+    For example:
+        - Input: 3  Output: "03 Threads"
+        - Input: 1  Output: "01 Thread"
+
+    Args:
+        count (int): The number of threads.
+
+    Returns:
+        str: A formatted string indicating the number of threads.
+             The string will be in the format "XX Thread" or "XX Threads",
+             where XX is the count formatted as a two-digit number.
     """

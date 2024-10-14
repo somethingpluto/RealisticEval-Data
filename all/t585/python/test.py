@@ -1,3 +1,6 @@
+import unittest
+
+
 class TestIsCamelCase(unittest.TestCase):
 
     def test_valid_camel_case(self):

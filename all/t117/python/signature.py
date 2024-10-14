@@ -1,4 +1,7 @@
-def rgb_to_hsl(r: int, g: int, b: int) -> dict:
+from typing import Dict
+
+
+def rgb_to_hsl(r: int, g: int, b: int) -> Dict:
     """
     Converts an RGB color value to HSL.
 
@@ -8,5 +11,5 @@ def rgb_to_hsl(r: int, g: int, b: int) -> dict:
         b (int): The blue component (0-255).
 
     Returns:
-        dict: A dictionary containing the HSL values.
+        Dict: A dictionary containing the HSL values.
     """

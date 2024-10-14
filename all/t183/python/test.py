@@ -1,4 +1,24 @@
 import unittest
+
+
+class Point:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+
+class Ray:
+    def __init__(self, origin, direction):
+        self.origin = origin  # Starting point of the ray
+        self.direction = direction  # Direction of the ray (should be normalized)
+
+
+class Circle:
+    def __init__(self, center, radius):
+        self.center = center  # Center of the circle
+        self.radius = radius  # Radius of the circle
+
+
 class Tester(unittest.TestCase):
     def test_ray_circle_intersection(self):
         # Test Case 1: The ray intersects the circle at two points

@@ -13,4 +13,3 @@ def arabic_to_english_numbers(value: str) -> str:
     Returns:
         str: The converted string with Arabic numerals replaced by English numerals.
     """
-    pass

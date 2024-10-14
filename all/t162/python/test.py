@@ -1,3 +1,6 @@
+import unittest
+
+
 class TestBoolArrayToBinaryString(unittest.TestCase):
 
     def test_converts_all_true_values(self):

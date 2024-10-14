@@ -1,7 +1,8 @@
 import unittest
 
+
 class TestCalculateRemainingPayment(unittest.TestCase):
-    
+
     def test_typical_loan_conditions(self):
         self.assertAlmostEqual(calculate_remaining_payment(10000, 0.005, 24), 0, places=2)
 

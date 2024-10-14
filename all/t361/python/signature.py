@@ -6,10 +6,14 @@ def simpsons_rule(a: float, b: float, n: int) -> float:
     over an interval by fitting parabolas. This function divides the interval [a, b] into n subintervals
     and calculates the weighted sum of the function values at specific points.
 
-    :param a: The lower limit of integration.
-    :param b: The upper limit of integration.
-    :param n: The number of subintervals (must be even).
-    :return: The approximate value of the integral.
+    Args:
+        a (float): The lower limit of integration.
+        b (float): The upper limit of integration.
+        n (int): The number of subintervals (must be even).
 
-    :raises InvalidArgumentError: If n is not positive or if it is not even.
+    Returns:
+        float: The approximate value of the integral.
+
+    Raises:
+        ValueError: If n is not positive or if it is not even.
     """

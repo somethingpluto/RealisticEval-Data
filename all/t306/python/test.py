@@ -1,3 +1,6 @@
+import unittest
+
+
 class TestGetPrice(unittest.TestCase):
 
     def test_default_range(self):

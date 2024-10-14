@@ -1,3 +1,6 @@
+import unittest
+
+
 class TestComputePi(unittest.TestCase):
 
     def test_calculate_pi_5_decimal_places(self):

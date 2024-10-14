@@ -1,3 +1,6 @@
+import unittest
+
+
 class TestCompressHTML(unittest.TestCase):
 
     def test_remove_leading_and_trailing_spaces_around_tags(self):

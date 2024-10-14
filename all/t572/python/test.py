@@ -1,3 +1,13 @@
+import unittest
+
+
+class Item:
+    def __init__(self, id: str, name: str):
+        self.id = id
+        self.name = name
+
+    def __repr__(self):
+        return f"Item(id='{self.id}', name='{self.name}')"
 class TestMergeOrUpdate(unittest.TestCase):
 
     def test_merges_two_arrays_with_unique_items(self):

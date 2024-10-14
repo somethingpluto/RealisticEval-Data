@@ -1,3 +1,6 @@
+import unittest
+
+
 class TestAdjustArrayLength(unittest.TestCase):
 
     def test_array_length_equal_to_target_length(self):

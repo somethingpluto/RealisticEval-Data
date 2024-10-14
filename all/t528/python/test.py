@@ -1,3 +1,7 @@
+import unittest
+from unittest.mock import patch
+
+
 class TestFindMarkdownFiles(unittest.TestCase):
 
     @patch('os.listdir')

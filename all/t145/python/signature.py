@@ -10,4 +10,3 @@ def format_currency(value: float, currency_code: str, locale: str = "en_US") -> 
     Returns:
         str: The formatted currency string.
     """
-    pass  # Replace with implementation

@@ -1,3 +1,6 @@
+import unittest
+
+
 class TestCalculateDistance(unittest.TestCase):
 
     def test_calculate_distance_same_city(self):

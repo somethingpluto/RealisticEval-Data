@@ -10,4 +10,3 @@ def parse_categories_from_summary(summarized_output: str = '') -> dict:
     Returns:
         dict: A dictionary containing the cleaned summary text and a list of categories.
     """
-    pass  # Replace with implementation

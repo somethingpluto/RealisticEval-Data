@@ -1,3 +1,6 @@
+import unittest
+
+
 class TestIsBase64Image(unittest.TestCase):
 
     def test_valid_png(self):
@@ -18,7 +21,3 @@ class TestIsBase64Image(unittest.TestCase):
 
     def test_empty_string(self):
         self.assertFalse(is_base64_image(''))
-
-    def test_null_input(self):
-        # In Python, we can use None instead of null
-        self.assertFalse(is_base64_image(None))

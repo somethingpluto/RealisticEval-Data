@@ -1,3 +1,8 @@
+import json
+import unittest
+from io import BytesIO
+
+
 class TestConvertThreadToJSONFile(unittest.TestCase):
 
     def test_basic_thread_object(self):

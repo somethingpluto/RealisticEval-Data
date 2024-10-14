@@ -1,3 +1,6 @@
+import unittest
+
+
 class TestHTMLToCSVExtraction(unittest.TestCase):
 
     def test_table_with_multiple_rows_and_columns(self):

@@ -1,4 +1,7 @@
-def calculate_age(birth_date_string: str) -> str | int:
+from typing import Union
+
+
+def calculate_age(birth_date_string: str) -> Union[str,int]:
     """
     Calculate age based on the birth date string entered by the user.
 

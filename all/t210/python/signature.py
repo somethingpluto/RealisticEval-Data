@@ -1,7 +1,9 @@
-def fibonacci_recursive(n):
+def fibonacci_recursive(n: int) -> int:
     """
     Implement the Fibonacci sequence.
+    Args:
+        n (int): Which Fibonacci number to calculate.
 
-    :param n: Which Fibonacci number to calculate.
-    :return: int
+    Returns:
+        int: fibonacci result
     """

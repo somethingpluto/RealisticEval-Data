@@ -1,3 +1,6 @@
+import unittest
+
+
 class TestElementsBeforeNull(unittest.TestCase):
 
     def test_returns_elements_before_first_null(self):

@@ -1,3 +1,6 @@
+import unittest
+
+
 class TestUint8ArrayToBase64(unittest.TestCase):
 
     def test_empty_uint8array(self):

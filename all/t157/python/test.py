@@ -1,3 +1,6 @@
+import unittest
+
+
 class TestBytesToSize(unittest.TestCase):
     def test_convert_bytes_to_kb(self):
         self.assertEqual(bytes_to_size(1024), '1.00 KB')

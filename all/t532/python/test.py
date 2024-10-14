@@ -1,3 +1,6 @@
+import unittest
+
+
 class TestCountLetterChanges(unittest.TestCase):
 
     def test_count_consecutive_letters_correctly(self):

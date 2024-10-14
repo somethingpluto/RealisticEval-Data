@@ -9,7 +9,6 @@ class Queue:
         Args:
             element: The element to be added to the queue.
         """
-        self.items.append(element)
 
     def dequeue(self):
         """Removes and returns the element from the front of the queue.
@@ -17,9 +16,6 @@ class Queue:
         Returns:
             The removed element from the front of the queue, or "Underflow" if the queue is empty.
         """
-        if not self.is_empty():
-            return self.items.pop(0)
-        return "Underflow"
 
     def front(self):
         """Returns the front element of the queue without removing it.
@@ -27,9 +23,6 @@ class Queue:
         Returns:
             The front element of the queue, or "No elements in Queue" if the queue is empty.
         """
-        if not self.is_empty():
-            return self.items[0]
-        return "No elements in Queue"
 
     def is_empty(self):
         """Checks if the queue is empty.
@@ -45,4 +38,3 @@ class Queue:
         Returns:
             A string containing all elements in the queue, separated by spaces.
         """
-        return ' '.join(map(str, self.items))

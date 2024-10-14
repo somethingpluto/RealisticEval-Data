@@ -1,3 +1,6 @@
+import unittest
+
+
 class TestCompressFilename(unittest.TestCase):
     def test_return_filename_unchanged_if_under_max_length(self):
         self.assertEqual(compress_filename('file.txt', 10), 'file.txt')

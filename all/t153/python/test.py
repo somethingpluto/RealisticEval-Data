@@ -1,5 +1,9 @@
+import hashlib
+import unittest
+
+
 class TestCompressHash(unittest.TestCase):
-    
+
     def test_length_of_result(self):
         """should return a string of length 5"""
         hash_bytes = hashlib.sha256(b'test').digest()

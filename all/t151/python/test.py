@@ -1,5 +1,6 @@
 import unittest
 
+
 class TestRgbToHsl(unittest.TestCase):
 
     def test_basic_rgb_red(self):

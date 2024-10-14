@@ -1,3 +1,7 @@
+import math
+import unittest
+
+
 class Tester(unittest.TestCase):
 
     def test_zero_spatial_difference(self):

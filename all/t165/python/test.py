@@ -1,3 +1,6 @@
+import unittest
+
+
 class TestBase64ToUrlSafe(unittest.TestCase):
 
     def test_correct_conversion_to_url_safe_format(self):

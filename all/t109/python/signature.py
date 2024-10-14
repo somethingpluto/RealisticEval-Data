@@ -1,3 +1,6 @@
+from typing import Union, List, Dict, Optional
+
+
 def get_object_by_id(id: Union[str, int], obj_list: List[Dict]) -> Optional[Dict]:
     """
     Returns the object from the list with the given ID, or None if it is not present.

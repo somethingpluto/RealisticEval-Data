@@ -1,3 +1,6 @@
+import unittest
+
+
 class TestFormatPostCount(unittest.TestCase):
 
     def test_return_one_post(self):

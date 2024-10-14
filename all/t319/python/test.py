@@ -1,3 +1,6 @@
+import unittest
+
+
 class TestCountDashes(unittest.TestCase):
 
     def test_no_dashes(self):

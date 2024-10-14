@@ -1,3 +1,6 @@
+import unittest
+
+
 class Tester(unittest.TestCase):
     def test_constant_function(self):
         """ Test Case 1: Integration of a constant function (f(x) = 1) over [0, 1] """

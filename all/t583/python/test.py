@@ -1,3 +1,6 @@
+import unittest
+
+
 class TestRemoveQueryParam(unittest.TestCase):
 
     def test_remove_existing_parameter(self):

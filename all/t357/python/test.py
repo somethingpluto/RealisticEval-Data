@@ -1,3 +1,8 @@
+import unittest
+
+from more_itertools import is_sorted
+
+
 class Tester(unittest.TestCase):
     def test_hill_sort(self):
         # Test case: Sort an already sorted array

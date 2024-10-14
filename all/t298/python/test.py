@@ -1,3 +1,6 @@
+import unittest
+
+
 class TestSetEurValue(unittest.TestCase):
 
     def test_formats_standard_values_correctly(self):

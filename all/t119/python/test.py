@@ -1,3 +1,6 @@
+import unittest
+
+
 class TestGetCookie(unittest.TestCase):
 
     def setUp(self):

@@ -1,3 +1,6 @@
+import unittest
+
+
 class Tester(unittest.TestCase):
     """Tests for Simpson's Rule implementation."""
 

@@ -1,3 +1,7 @@
+import re
+import unittest
+
+
 class TestGenerateUUID(unittest.TestCase):
 
     def test_should_return_a_string(self):

@@ -1,3 +1,6 @@
+import unittest
+
+
 class TestGetObjectById(unittest.TestCase):
 
     def test_should_return_object_with_matching_id(self):

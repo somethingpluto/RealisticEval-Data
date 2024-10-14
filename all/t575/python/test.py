@@ -1,3 +1,6 @@
+import unittest
+
+
 class TestFormatThreadCount(unittest.TestCase):
 
     def test_count_of_one(self):

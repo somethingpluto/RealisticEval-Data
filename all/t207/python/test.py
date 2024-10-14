@@ -1,3 +1,6 @@
+import unittest
+
+
 class Tester(unittest.TestCase):
     def test_already_symmetric_matrix(self):
         matrix = [

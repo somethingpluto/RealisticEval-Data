@@ -1,4 +1,7 @@
-def bool_array_to_binary_string(bool_array: list[bool]) -> str:
+from typing import List
+
+
+def bool_array_to_binary_string(bool_array: List[bool]) -> str:
     """
     Converts the array of Boolean values to a binary string representation,
     which converts to the character '1' if the Boolean value is true.

@@ -1,3 +1,6 @@
+import unittest
+
+
 class TestShuffleFunction(unittest.TestCase):
 
     def test_shuffles_array_of_numbers(self):

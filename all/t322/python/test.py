@@ -1,3 +1,6 @@
+import unittest
+
+
 class TestIsValidEmail(unittest.TestCase):
 
     def test_valid_simple_email(self):

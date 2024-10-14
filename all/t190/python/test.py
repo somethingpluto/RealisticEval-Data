@@ -1,5 +1,4 @@
 import unittest
-import struct
 
 class Tester(unittest.TestCase):
     

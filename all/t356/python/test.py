@@ -1,3 +1,6 @@
+import unittest
+
+
 class Tester(unittest.TestCase):
 
     def test_sorted_array(self):

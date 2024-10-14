@@ -1,3 +1,6 @@
+import unittest
+
+
 class TestGetArrayAverage(unittest.TestCase):
 
     def test_average_of_positive_integers(self):

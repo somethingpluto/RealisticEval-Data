@@ -1,3 +1,6 @@
+import unittest
+
+
 class Tester(unittest.TestCase):
 
     # Test Case 1: Test insertion and extraction of the minimum element

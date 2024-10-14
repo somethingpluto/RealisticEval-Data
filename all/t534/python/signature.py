@@ -1,4 +1,4 @@
-def remove_element_in_array(array, element):
+def remove_element_in_array(array:list, element)->list:
     """
     Removes the first occurrence of a specified element from a list.
 

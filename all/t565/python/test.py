@@ -1,3 +1,6 @@
+import unittest
+
+
 class TestGetBezierPoint(unittest.TestCase):
 
     # Test case 1: Test with a simple linear curve

@@ -1,6 +1,10 @@
-def bubble_sort(arr):
+def bubble_sort(arr:list):
     """
     Implements the Bubble Sort algorithm.
 
-    :param arr: A list of integers to be sorted.
+    Args:
+        arr (list): A list of integers to be sorted.
+
+    Returns:
+
     """

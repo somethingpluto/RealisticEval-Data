@@ -1,8 +1,12 @@
 def get_last_part_of_filepath(file_path: str) -> str:
     """
-    * @brief Extracts the last part of a complete file path with the help of a separator and returns it,
-    or the original string if no separator is found.
+    Extract the last part of a complete file path using a separator.
 
-    * @param file_path: The complete file path as a string.
-    * @return: The last part of the file path after the last separator, or the original string if no separator is found.
+    If no separator is found, the original string is returned.
+
+    Args:
+        file_path (str): The complete file path as a string.
+
+    Returns:
+        str: The last part of the file path after the last separator, or the original string if no separator is found.
     """

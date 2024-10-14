@@ -9,4 +9,3 @@ def remove_punctuation(s: str) -> str:
     Returns:
         str: The cleaned and formatted string.
     """
-    pass  # Placeholder for implementation

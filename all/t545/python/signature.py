@@ -1,3 +1,6 @@
+from typing import List, Any
+
+
 def elements_before_null(array: List[Any]) -> List[Any]:
     """
     Iterates through the array of elements until the first None is encountered,

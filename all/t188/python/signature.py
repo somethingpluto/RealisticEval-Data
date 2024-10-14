@@ -1,7 +1,13 @@
-def shell_sort(arr):
-    """ 
-    Implement a function that performs Shell sort on an array.
-    
-    :param arr: List[int] - The array to be sorted.
+from typing import List
+
+
+def shell_sort(arr: List[int]):
     """
-    pass  # Placeholder for the function implementation
+    Implement a function that performs Shell sort on an array.
+
+    Args:
+        arr (List[int]): The array to be sorted.
+
+    Returns:
+
+    """

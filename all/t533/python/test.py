@@ -1,3 +1,6 @@
+import unittest
+
+
 class TestShuffleString(unittest.TestCase):
 
     def test_same_length(self):

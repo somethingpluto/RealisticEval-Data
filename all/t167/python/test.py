@@ -1,8 +1,7 @@
-class TestAssert999(unittest.TestCase):
-    """
-    Test case for the assert999 function.
-    """
+import unittest
 
+
+class TestAssert999(unittest.TestCase):
     def test_valid_three_digit_number_with_suffix(self):
         """Test case for a valid 3-digit number with the ".bit" suffix. Expected to return true."""
         input_value = "123.bit"

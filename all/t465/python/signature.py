@@ -1,7 +1,8 @@
+import numpy
 import numpy as np
 
 
-def matrix_vector_multiplication(matrix: np.array, vector: np.array):
+def matrix_vector_multiplication(matrix: np.array, vector: np.array) -> numpy.ndarray:
     """
     Multiplies a given matrix by a vector using NumPy's dot product.
 
@@ -15,9 +16,3 @@ def matrix_vector_multiplication(matrix: np.array, vector: np.array):
     numpy.ndarray: A 1D array (resulting vector) of shape (m,) representing the product of
                    the matrix and the vector.
     """
-
-    # Perform matrix-vector multiplication using the dot product function.
-    result = np.dot(matrix, vector)
-
-    # Return the resulting vector from the multiplication.
-    return result

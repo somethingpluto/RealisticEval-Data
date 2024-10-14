@@ -1,3 +1,6 @@
+from typing import List
+
+
 def convert_chat_to_markdown(chat: List[str], title: str = "ChatGPT Conversation") -> bytes:
     """
     Convert the chat logs to Markdown format and generate a bytes object containing them.

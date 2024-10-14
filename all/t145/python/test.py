@@ -1,5 +1,4 @@
 import unittest
-from your_module import format_currency  # Replace with the actual import of your format_currency function
 
 class TestFormatCurrency(unittest.TestCase):
     

@@ -1,3 +1,6 @@
+import unittest
+
+
 class TestRemoveElementInArray(unittest.TestCase):
 
     def test_returns_original_array_when_element_not_found(self):

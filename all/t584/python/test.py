@@ -1,3 +1,6 @@
+import unittest
+
+
 class TestIsPascalCase(unittest.TestCase):
 
     def test_valid_pascal_case(self):

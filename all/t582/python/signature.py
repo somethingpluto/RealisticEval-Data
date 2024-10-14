@@ -1,13 +1,15 @@
 def to_query_string(params: dict) -> str:
     """
-    Converts an object to a query string.
+    Converts a dictionary of parameters to a query string.
 
     For example:
-        input: { 'search': 'test', 'page': 1, 'size': 10 }
-        output: '?search=test&page=1&size=10'
+        - Input: {'search': 'test', 'page': 1, 'size': 10}
+        - Output: '?search=test&page=1&size=10'
 
-    :param params: The parameters to convert.
-    :type params: dict
-    :return: The query string.
-    :rtype: str
+    Args:
+        params (dict): The parameters to convert. The keys should be strings
+                       and values can be of any type that can be converted to a string.
+
+    Returns:
+        str: The query string representation of the parameters.
     """

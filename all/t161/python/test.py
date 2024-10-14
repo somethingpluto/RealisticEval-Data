@@ -1,3 +1,6 @@
+import unittest
+
+
 class TestGenerateCombinations(unittest.TestCase):
 
     def test_single_key_multiple_values(self):

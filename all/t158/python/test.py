@@ -1,3 +1,6 @@
+import unittest
+
+
 class TestGetFileExtension(unittest.TestCase):
 
     def test_standard_file_extension(self):

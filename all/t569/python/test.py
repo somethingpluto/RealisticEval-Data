@@ -1,3 +1,6 @@
+import unittest
+
+
 class TestCompressString(unittest.TestCase):
     def test_short_string(self):
         """ should return the original string if it is shorter than the max length """

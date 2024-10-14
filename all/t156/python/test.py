@@ -1,3 +1,6 @@
+import unittest
+
+
 class TestFormatNumber(unittest.TestCase):
     def test_format_greater_than_equal_to_million(self):
         """should format numbers greater than or equal to 1,000,000 with 'M' suffix"""

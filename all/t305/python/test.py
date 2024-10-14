@@ -1,3 +1,6 @@
+import unittest
+
+
 class TestSeededRandom(unittest.TestCase):
 
     def test_consistent_numbers_with_same_seed(self):

@@ -1,3 +1,6 @@
+import unittest
+
+
 class TestRgbToHsl(unittest.TestCase):
 
     def test_converts_pure_red_to_hsl(self):

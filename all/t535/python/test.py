@@ -1,3 +1,6 @@
+import unittest
+
+
 class TestCompressHtml(unittest.TestCase):
 
     def test_remove_newlines_and_tabs(self):

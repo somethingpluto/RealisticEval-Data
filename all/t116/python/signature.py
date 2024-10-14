@@ -1,13 +1,15 @@
-def toroidal_diff(this_point: dict, other_point: dict, width: float, height: float) -> list:
-    """
-    Calculates the toroidal difference between two points.
+from typing import Dict, List
 
-    Parameters:
-    this_point (dict): The first point with keys 'x' and 'y'.
-    other_point (dict): The second point with keys 'x' and 'y'.
-    width (float): The width of the toroidal space.
-    height (float): The height of the toroidal space.
+
+def toroidal_diff(this_point: Dict, other_point: Dict, width: float, height: float) -> List:
+    """
+     Calculates the toroidal difference between two points
+    Args:
+        this_point (Dict): The first point with keys 'x' and 'y'
+        other_point (Dict): The second point with keys 'x' and 'y'
+        width (float): The width of the toroidal space
+        height (float): The height of the toroidal space
 
     Returns:
-    list: A list containing the x and y differences, accounting for wrap-around.
+        List: A list containing the x and y differences, accounting for wrap-around.
     """

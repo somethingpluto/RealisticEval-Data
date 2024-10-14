@@ -1,3 +1,6 @@
+import unittest
+
+
 class TestUsernameValidation(unittest.TestCase):
 
     def test_valid_username_with_letters_numbers_and_underscores(self):

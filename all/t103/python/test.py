@@ -1,3 +1,6 @@
+import unittest
+
+
 class TestTruncateStringWithReplacement(unittest.TestCase):
 
     def test_should_return_original_string_if_shorter_than_max_length(self):

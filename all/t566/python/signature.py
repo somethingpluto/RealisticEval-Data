@@ -2,7 +2,11 @@ def is_same_day(timestamp1: int, timestamp2: int) -> bool:
     """
     Checks if two timestamps correspond to the same day.
 
-    :param timestamp1: The first timestamp to compare.
-    :param timestamp2: The second timestamp to compare.
-    :returns: True if both timestamps are on the same day, false otherwise.
+    Args:
+        timestamp1 (int): The first timestamp to compare.
+        timestamp2 (int): The second timestamp to compare.
+
+    Returns:
+        bool: True if both timestamps are on the same day;
+              False otherwise.
     """

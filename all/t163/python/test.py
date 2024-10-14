@@ -1,3 +1,6 @@
+import unittest
+
+
 class TestBinaryStringToUint8Array(unittest.TestCase):
 
     def test_convert_full_byte_binary_string(self):

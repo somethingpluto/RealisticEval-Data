@@ -1,10 +1,13 @@
-def sort_by_timestamp(array):
+from typing import List, Dict
+
+
+def sort_by_timestamp(array: List[Dict]) -> List[Dict]:
     """
     Sorts a list of dictionaries by the 'timestamp' property.
 
     Args:
-        array (list[dict]): The list of dictionaries to be sorted.
+        array (List[Dict]): The list of dictionaries to be sorted.
 
     Returns:
-        list[dict]: The sorted list, based on the 'timestamp' property.
+        List[Dict]: The sorted list, based on the 'timestamp' property.
     """

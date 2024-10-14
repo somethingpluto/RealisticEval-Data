@@ -1,4 +1,7 @@
-def hsl_to_rgb(h: int, s: int, l: int) -> dict:
+from typing import Dict
+
+
+def hsl_to_rgb(h: int, s: int, l: int) -> Dict:
     """
     Converts HSL color values to RGB.
 
@@ -8,5 +11,5 @@ def hsl_to_rgb(h: int, s: int, l: int) -> dict:
         l (int): Lightness (0-100%).
 
     Returns:
-        dict: A dictionary containing the RGB values.
+        Dict: A dictionary containing the RGB values.
     """

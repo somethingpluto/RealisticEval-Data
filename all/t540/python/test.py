@@ -1,3 +1,6 @@
+import unittest
+
+
 class TestGenerateUniquePairs(unittest.TestCase):
 
     def test_generates_unique_pairs_from_three_elements(self):

@@ -1,7 +1,11 @@
 def compress_hash(hash_bytes: bytes) -> str:
     """
-    The input hash buffer is compressed into a number letter string of length no less than 5.
+    Compresses the input hash buffer into a string representation of at least length 5.
 
-    :param hash_bytes: The hash buffer to be compressed.
-    :return: A compressed string representation of the hash.
+    Args:
+        hash_bytes (bytes): The hash buffer to be compressed.
+
+    Returns:
+        str: A compressed string representation of the hash.
+              The output string will have a length no less than 5.
     """

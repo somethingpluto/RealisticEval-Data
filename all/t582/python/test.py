@@ -1,3 +1,6 @@
+import unittest
+
+
 class TestToQueryString(unittest.TestCase):
 
     def test_convert_simple_object_to_query_string(self):

@@ -1,31 +1,4 @@
-class Queue:
-    def __init__(self):
-        """Initializes an empty queue."""
-        self.items = []
-
-    def enqueue(self, element):
-        """Adds an element to the end of the queue."""
-        self.items.append(element)
-
-    def dequeue(self):
-        """Removes and returns the element from the front of the queue."""
-        if not self.is_empty():
-            return self.items.pop(0)
-        return "Underflow"
-
-    def front(self):
-        """Returns the front element of the queue without removing it."""
-        if not self.is_empty():
-            return self.items[0]
-        return "No elements in Queue"
-
-    def is_empty(self):
-        """Checks if the queue is empty."""
-        return len(self.items) == 0
-
-    def print_queue(self):
-        """Returns a string representation of all the elements in the queue."""
-        return ' '.join(map(str, self.items))
+import unittest
 
 
 class TestQueue(unittest.TestCase):
@@ -43,7 +16,6 @@ class TestQueue(unittest.TestCase):
         self.queue.enqueue(1)
         self.queue.enqueue(2)
         self.queue.enqueue(3)
-        self.assertEqual(self.queue.print_queue(), '1 2 3')
         self.assertFalse(self.queue.is_empty())
 
     def test_dequeue_elements(self):

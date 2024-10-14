@@ -1,3 +1,6 @@
+import unittest
+
+
 class TestToroidalDiff(unittest.TestCase):
 
     def test_no_wrapping(self):

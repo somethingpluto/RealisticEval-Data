@@ -1,8 +1,15 @@
-def parse_git_diff(diff_text: str) -> List[GitDiffFile]:
-    """
-    Parsing a string containing the contents of a Git diff returns an array of objects with details of each file's changes
+from typing import List
 
-    :param diff_text: The Git diff text to parse.
-    :return: An array of objects representing the diff for each file.
+
+def parse_git_diff(diff_text: str) -> List:
     """
-    pass  # Implementation goes here
+    Parses a string containing the contents of a Git diff and returns a list of objects
+    detailing the changes for each file.
+
+    Args:
+        diff_text (str): The Git diff text to parse.
+
+    Returns:
+        list: A list of objects representing the diff for each file, where each object contains
+              details about the changes, such as file name, added lines, and removed lines.
+    """

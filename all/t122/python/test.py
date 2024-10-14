@@ -1,3 +1,6 @@
+import unittest
+
+
 class TestSafeSplice(unittest.TestCase):
 
     def test_replaces_removed_elements_with_a_new_element(self):

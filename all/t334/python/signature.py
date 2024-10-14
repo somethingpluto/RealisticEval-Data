@@ -1,4 +1,7 @@
-def calculate_good_friday(year: int) -> date:
+from datetime import date
+
+
+def calculate_good_friday(year: int) -> str:
     """
     Calculate the date of Good Friday in a given year.
 
@@ -10,5 +13,5 @@ def calculate_good_friday(year: int) -> date:
         year (int): The year for which to calculate Good Friday.
 
     Returns:
-        date: The date of Good Friday.
+        str: The date of Good Friday.
     """

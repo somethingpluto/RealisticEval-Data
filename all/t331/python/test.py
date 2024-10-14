@@ -1,3 +1,6 @@
+import unittest
+
+
 class TestCalculateFinalPrice(unittest.TestCase):
 
     def test_calculate_final_price_with_valid_inputs(self):

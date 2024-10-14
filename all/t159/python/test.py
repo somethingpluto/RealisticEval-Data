@@ -1,3 +1,6 @@
+import unittest
+
+
 class TestRemoveFileExtension(unittest.TestCase):
     def test_remove_standard_file_extension(self):
         """Should remove the file extension from a standard file."""

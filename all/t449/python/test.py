@@ -1,3 +1,6 @@
+import unittest
+
+
 class TestBase64Encoding(unittest.TestCase):
 
     def test_convert_simple_string_to_base64(self):

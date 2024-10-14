@@ -1,9 +1,12 @@
-def get_array_average(array):
+from typing import List
+
+
+def get_array_average(array: List[float]) -> float:
     """
     Calculate the average of an array of numbers.
+    Args:
+        array (List[float]): A list of numbers for which the average is to be calculated.
 
-    :param array: A list of numbers for which the average is to be calculated.
-    :type array: list[float]
-    :returns: The average (mean) of the array's elements, or float('nan') if the array is empty.
-    :rtype: float
+    Returns:
+        float: The average (mean) of the array's elements, or float('nan') if the array is empty.
     """

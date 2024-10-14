@@ -1,3 +1,6 @@
+import unittest
+
+
 class TestIsSnakeCase(unittest.TestCase):
 
     def test_valid_snake_case(self):

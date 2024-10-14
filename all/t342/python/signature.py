@@ -1,4 +1,7 @@
-def parse_markdown_titles(markdown: str) -> dict[str, list[str]]:
+from typing import Dict, List
+
+
+def parse_markdown_titles(markdown: str) -> Dict[str, List[str]]:
     """
     Parses markdown text to extract titles of different levels.
 
@@ -10,6 +13,6 @@ def parse_markdown_titles(markdown: str) -> dict[str, list[str]]:
         markdown (str): A string containing markdown formatted text.
 
     Returns:
-        dict[str, list[str]]: A dictionary with three properties: level1, level2, and level3,
+        Dict[str, List[str]]: A dictionary with three properties: level1, level2, and level3,
                                each holding a list of corresponding titles found in the markdown.
     """

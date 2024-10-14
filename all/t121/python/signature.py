@@ -1,4 +1,7 @@
-def adjust_array_length(target_length: int, array: list) -> list:
+from typing import List
+
+
+def adjust_array_length(target_length: int, array: List) -> List:
     """
     Adjust the length of the input array according to the given target length.
     If the current length of the array is longer than the target length,
@@ -8,8 +11,8 @@ def adjust_array_length(target_length: int, array: list) -> list:
 
     Args:
         target_length (int): The desired length for the array.
-        array (list): The input array to be adjusted.
+        array (List): The input array to be adjusted.
 
     Returns:
-        list: A new array that has been adjusted to the target length.
+        List: A new array that has been adjusted to the target length.
     """

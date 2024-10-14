@@ -10,4 +10,3 @@ def merge_objects(obj1: dict, obj2: dict) -> dict:
     Returns:
         dict: The resulting dictionary after merging.
     """
-    pass  # Replace with the function implementation

@@ -1,4 +1,4 @@
-def safe_splice(input_array, amount_to_remove, index_to_remove, replace_with=None):
+def safe_splice(input_array:list, amount_to_remove, index_to_remove, replace_with=None):
     """
     Safely splices an array by removing a specified number of elements from a given index,
     and optionally replaces them with a new element.

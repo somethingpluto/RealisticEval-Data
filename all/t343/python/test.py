@@ -1,3 +1,6 @@
+import unittest
+
+
 class TestCompareObjectsDepth(unittest.TestCase):
 
     def test_equal_depth_and_structure(self):

@@ -1,3 +1,6 @@
+import unittest
+
+
 class Tester(unittest.TestCase):
     def test_get_last_part_of_filepath(self):
         # Test Case 1: Unix-style path with '/'

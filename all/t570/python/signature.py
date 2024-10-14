@@ -1,4 +1,7 @@
-def deep_merge_objects(obj1: PlainObject, obj2: Optional[PlainObject]) -> PlainObject:
+from typing import Optional, Dict, Any
+
+
+def deep_merge_objects(obj1: Dict[str, Any], obj2: Optional[Dict[str, Any]]) -> Dict[str, Any]:
     """
     Deeply merges two objects.
 
@@ -6,9 +9,9 @@ def deep_merge_objects(obj1: PlainObject, obj2: Optional[PlainObject]) -> PlainO
     If a property exists in both objects but is not an object, the value from obj1 is used.
 
     Args:
-        obj1: The first object to merge.
-        obj2: The second object to merge, which can be None.
+        obj1(Dict[str, Any]): The first object to merge.
+        obj2(Optional[Dict[str, Any]]): The second object to merge, which can be None.
 
     Returns:
-        A new object that is the result of the merge.
+        Dict[str, Any]: A new object that is the result of the merge.
     """
