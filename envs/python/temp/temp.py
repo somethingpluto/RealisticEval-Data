@@ -1,48 +1,51 @@
-import math
-
-def degrees_to_radians(degrees: int) -> float:
+def josephus(n, k):
     """
-    Convert an angle from degrees to radians.
+    Simulates the Josephus problem using a list to represent the circle of people.
 
-    Args:
-        degrees (int): The angle in degrees to convert.
-
-    Returns:
-        float: The angle in radians.
+    :param n: The number of people in the circle (1 to n).
+    :param k: The step count (every k-th person will be eliminated).
+    :return: The position of the last person remaining (1-indexed).
     """
-    return degrees * (math.pi / 180)
-import math
+
+    # Step 1: Create a list to represent the people in the circle
+    people = list(range(1, n + 1))  # Create a list of people from 1 to n
+    index = 0  # Start from the first person
+
+    # Step 2: Eliminate people until only one remains
+    while len(people) > 1:
+        # Step 3: Find the index of the person to eliminate
+        index = (index + k - 1) % len(people)  # -1 to adjust for zero-based index
+        eliminated_person = people.pop(index)  # Eliminate that person
+        print(f"Eliminated: {eliminated_person}, Remaining: {people}")
+
+    # Step 4: Return the position of the last remaining person
+    return people[0]  # The last remaining person
+
+# Unit Test Class
 import unittest
 
 
-class TestDegreesToRadians(unittest.TestCase):
-    def test_zero_degrees(self):
-        """Test conversion of 0 degrees"""
-        self.assertAlmostEqual(degrees_to_radians(0), 0, places=5)
+class TestJosephusProblem(unittest.TestCase):
 
-    def test_ninety_degrees(self):
-        """Test conversion of 90 degrees"""
-        self.assertAlmostEqual(degrees_to_radians(90), math.pi / 2, places=5)
+    def test_case_1(self):
+        self.assertEqual(josephus(7, 3), 4)  # Standard case
 
-    def test_one_eighty_degrees(self):
-        """Test conversion of 180 degrees"""
-        self.assertAlmostEqual(degrees_to_radians(180), math.pi, places=5)
+    def test_case_2(self):
+        self.assertEqual(josephus(1, 1), 1)  # Only one person
 
-    def test_two_seventy_degrees(self):
-        """Test conversion of 270 degrees"""
-        self.assertAlmostEqual(degrees_to_radians(270), 3 * math.pi / 2, places=5)
+    def test_case_3(self):
+        self.assertEqual(josephus(5, 2), 3)  # Smaller group, step 2
 
-    def test_three_sixty_degrees(self):
-        """Test conversion of 360 degrees"""
-        self.assertAlmostEqual(degrees_to_radians(360), 2 * math.pi, places=5)
+    def test_case_4(self):
+        self.assertEqual(josephus(10, 5), 3)  # Larger group, step 5
 
-    def test_negative_degrees(self):
-        """Test conversion of negative degrees"""
-        self.assertAlmostEqual(degrees_to_radians(-90), -math.pi / 2, places=5)
+    def test_case_5(self):
+        self.assertEqual(josephus(6, 1), 6)  # Eliminate every 1st person
 
-    def test_large_degrees(self):
-        """Test conversion of a large angle (720 degrees)"""
-        self.assertAlmostEqual(degrees_to_radians(720), 4 * math.pi, places=5)
+    def test_case_6(self):
+        self.assertEqual(josephus(8, 4), 6)  # Step 4 in a group of 8
 
+    def test_case_7(self):
+        self.assertEqual(josephus(12, 7), 12)  # Larger group, arbitrary step
 if __name__ == '__main__':
     unittest.main()
