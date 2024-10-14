@@ -1,0 +1,38 @@
+/**
+ * realize the basic functions of the question structure queue: enqueue, dequeue, get the front element of the queue, judge whether it is empty, output all elements
+ */
+class Queue {
+private:
+    std::vector<int> items; // Change type as needed
+
+public:
+    /**
+     * Adds an element to the end of the queue.
+     * @param element - The element to be added to the queue.
+     */
+    void enqueue(int element);
+
+    /**
+     * Removes and returns the element from the front of the queue.
+     * @returns The removed element from the front of the queue, or "Underflow" if the queue is empty.
+     */
+    std::string dequeue();
+
+    /**
+     * Returns the front element of the queue without removing it.
+     * @returns The front element of the queue, or "No elements in Queue" if the queue is empty.
+     */
+    std::string front();
+
+    /**
+     * Checks if the queue is empty.
+     * @returns True if the queue is empty, otherwise false.
+     */
+    bool isEmpty();
+
+    /**
+     * Returns a string representation of all the elements in the queue.
+     * @returns A string containing all elements in the queue, separated by spaces.
+     */
+    std::string printQueue();
+};

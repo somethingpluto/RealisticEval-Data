@@ -1,0 +1,23 @@
+#define CATCH_CONFIG_MAIN
+#include <catch2/catch.hpp>
+#include <string>
+
+std::string convertTime(const std::string& duration); // Forward declaration
+
+TEST_CASE("ConvertTime Function Tests") {
+    SECTION("should correctly convert full ISO 8601 duration with hours, minutes, seconds, and milliseconds") {
+        REQUIRE(convertTime("PT1H23M45.678S") == "1h23m45s678ms");
+    }
+
+    SECTION("should correctly convert duration with only seconds and milliseconds") {
+        REQUIRE(convertTime("PT45.5S") == "45s500ms");
+    }
+
+    SECTION("should correctly convert duration with hours and minutes, but no seconds") {
+        REQUIRE(convertTime("PT2H5M") == "2h5m");
+    }
+
+    SECTION("should correctly convert duration with only seconds, no milliseconds") {
+        REQUIRE(convertTime("PT20S") == "20s");
+    }
+}
