@@ -1,0 +1,44 @@
+package org.real.temp;
+import java.util.regex.Pattern;
+
+public class Answer {
+
+    /**
+     * Checks whether the provided username is valid.
+     * A valid username is defined as a string that:
+     * - Has a length between 5 and 16 characters (inclusive).
+     * - Contains only alphanumeric characters (letters and digits) and spaces.
+     *
+     * @param username - The username to validate.
+     * @return Returns true if the username is valid; otherwise, false.
+     */
+    public static boolean isValidUsername(String username) {
+        // Check if the input is a string (null check)
+        if (username == null) {
+            return false; // Return false if the input is not a string
+        }
+
+        // Trim any leading or trailing whitespace from the username
+        username = username.trim();
+
+        // Check the length of the username
+        int length = username.length();
+        if (length < 5 || length > 16) {
+            return false; // Return false if length is not within the valid range
+        }
+
+        // Check if the username contains only alphanumeric characters and spaces
+        Pattern pattern = Pattern.compile("^[a-zA-Z0-9 ]+$");
+        boolean isValid = pattern.matcher(username).matches();
+        
+        return isValid; // Return true if valid, false otherwise
+    }
+
+    public static void main(String[] args) {
+        // Test the function
+        System.out.println(isValidUsername("Valid User")); // true
+        System.out.println(isValidUsername("Too!Short"));   // false
+        System.out.println(isValidUsername("ThisUsernameIsWayTooLong")); // false
+        System.out.println(isValidUsername("Valid123"));    // true
+    }
+}
