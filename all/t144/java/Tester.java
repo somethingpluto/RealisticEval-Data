@@ -1,0 +1,46 @@
+package org.real.temp;
+
+import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+
+public class Tester {
+
+    @Test
+    public void testConvertsSingleArabicNumeralsToEnglish() {
+        assertEquals("1", NumberConverter.arabicToEnglishNumbers("١"));
+        assertEquals("5", NumberConverter.arabicToEnglishNumbers("٥"));
+        assertEquals("9", NumberConverter.arabicToEnglishNumbers("٩"));
+    }
+
+    @Test
+    public void testConvertsStringOfArabicNumeralsToEnglish() {
+        assertEquals("0123456789", NumberConverter.arabicToEnglishNumbers("٠١٢٣٤٥٦٧٨٩"));
+    }
+
+    @Test
+    public void testHandlesStringsWithArabicAndEnglishNumeralsMixed() {
+        assertEquals("012345", NumberConverter.arabicToEnglishNumbers("٠١23٤5"));
+    }
+
+    @Test
+    public void testLeavesNonNumeralCharactersUnchanged() {
+        assertEquals("Hello World!", NumberConverter.arabicToEnglishNumbers("Hello World!"));
+        assertEquals("2022-2023", NumberConverter.arabicToEnglishNumbers("2022-٢٠٢٣"));
+    }
+
+    @Test
+    public void testWorksWithFullSentencesIncludingArabicNumerals() {
+        assertEquals("The year is 2024!", NumberConverter.arabicToEnglishNumbers("The year is ٢٠٢٤!"));
+    }
+
+    @Test
+    public void testHandlesEmptyStringsCorrectly() {
+        assertEquals("", NumberConverter.arabicToEnglishNumbers(""));
+    }
+
+    @Test
+    public void testProcessesArabicNumeralsInComplexMixedContext() {
+        assertEquals("Price: 500$ and Date: 2023-12-01", 
+                     NumberConverter.arabicToEnglishNumbers("Price: ٥٠٠$ and Date: ٢٠٢٣-١٢-٠١"));
+    }
+}

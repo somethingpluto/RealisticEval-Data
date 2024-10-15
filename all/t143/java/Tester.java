@@ -1,0 +1,42 @@
+package org.real.temp;
+
+import static org.junit.Assert.assertEquals;
+import org.junit.Test;
+
+public class Tester {
+
+    @Test
+    public void testArabicToEnglishNumbers_ConvertArabicNumerals() {
+        String input = "١٢٣٤٥٦٧٨٩٠";
+        String expectedOutput = "1234567890";
+        assertEquals(expectedOutput, NumberConverter.arabicToEnglishNumbers(input));
+    }
+
+    @Test
+    public void testArabicToEnglishNumbers_NoArabicNumerals() {
+        String input = "Hello, World!";
+        String expectedOutput = "Hello, World!";
+        assertEquals(expectedOutput, NumberConverter.arabicToEnglishNumbers(input));
+    }
+
+    @Test
+    public void testArabicToEnglishNumbers_MixArabicAndEnglish() {
+        String input = "رقم ١٢٣ هو المثال";
+        String expectedOutput = "رقم 123 هو المثال";
+        assertEquals(expectedOutput, NumberConverter.arabicToEnglishNumbers(input));
+    }
+
+    @Test
+    public void testArabicToEnglishNumbers_EmptyString() {
+        String input = "";
+        String expectedOutput = "";
+        assertEquals(expectedOutput, NumberConverter.arabicToEnglishNumbers(input));
+    }
+
+    @Test
+    public void testArabicToEnglishNumbers_MixedArabicAndEnglishNumerals() {
+        String input = "The number is ٣٥٦ and 789.";
+        String expectedOutput = "The number is 356 and 789.";
+        assertEquals(expectedOutput, NumberConverter.arabicToEnglishNumbers(input));
+    }
+}

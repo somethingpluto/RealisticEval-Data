@@ -1,0 +1,21 @@
+#include <vector>
+#include <set>
+#include <type_traits>
+
+template <typename T>
+bool compareArrays(const std::vector<T>& arr1, const std::vector<T>& arr2) {
+    std::set<T> set1(arr1.begin(), arr1.end());
+    std::set<T> set2(arr2.begin(), arr2.end());
+
+    if (set1.size() != set2.size()) {
+        return false;
+    }
+
+    for (const auto& item : set1) {
+        if (set2.find(item) == set2.end()) {
+            return false;
+        }
+    }
+
+    return true;
+}
