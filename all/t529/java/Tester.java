@@ -1,0 +1,126 @@
+package org.real.temp;
+
+import org.junit.After;
+import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
+public class Tester {
+
+    private final String mockFilePath = "test.json";
+
+    @After
+    public void tearDown() throws Exception {
+        // Clean up after each test
+        File file = new File(mockFilePath);
+        if (file.exists()) {
+            file.delete(); // Remove test file if it exists
+        }
+    }
+
+    @Test
+    public void shouldSaveValidObjectToJSONFile() throws Exception {
+        Object data = new Object() {
+            String name = "Alice";
+            int age = 25;
+        };
+        saveAsJSON(data, mockFilePath);
+        String savedData = new String(Files.readAllBytes(Paths.get(mockFilePath)));
+        assertEquals(new Gson().toJson(data, null, 2), savedData);
+    }
+
+    @Test
+    public void shouldHandleEmptyObject() throws Exception {
+        Object data = new Object() {};
+        saveAsJSON(data, mockFilePath);
+        String savedData = new String(Files.readAllBytes(Paths.get(mockFilePath)));
+        assertEquals(new Gson().toJson(data, null, 2), savedData);
+    }
+
+    @Test
+    public void shouldSaveNestedObjectToJSONFile() throws Exception {
+        Object data = new Object() {
+            Object user = new Object() {
+                String name = "Bob";
+                int age = 30;
+            };
+            boolean active = true;
+        };
+        saveAsJSON(data, mockFilePath);
+        String savedData = new String(Files.readAllBytes(Paths.get(mockFilePath)));
+        assertEquals(new Gson().toJson(data, null, 2), savedData);
+    }
+
+    @Test
+    public void shouldSaveArrayOfObjectsToJSONFile() throws Exception {
+        Object data = new Object[] {
+            new Object() {
+                Object product = new Object() {
+                    int id = 1;
+                    String name = "Laptop";
+                    double price = 999.99;
+                };
+                boolean inStock = true;
+            },
+            new Object() {
+                Object product = new Object() {
+                    int id = 2;
+                    String name = "Phone";
+                    double price = 499.99;
+                };
+                boolean inStock = false;
+            }
+        };
+        saveAsJSON(data, mockFilePath);
+        String savedData = new String(Files.readAllBytes(Paths.get(mockFilePath)));
+        assertEquals(new Gson().toJson(data, null, 2), savedData);
+    }
+
+    @Test
+    public void shouldSaveObjectWithMixedDataTypesToJSONFile() throws Exception {
+        Object data = new Object() {
+            String title = "Shopping List";
+            String[] items = {"Milk", "Eggs", "Bread"};
+            double total = 3.50;
+            boolean completed = false;
+        };
+        saveAsJSON(data, mockFilePath);
+        String savedData = new String(Files.readAllBytes(Paths.get(mockFilePath)));
+        assertEquals(new Gson().toJson(data, null, 2), savedData);
+    }
+
+    @Test
+    public void shouldSaveDeeplyNestedObjectToJSONFile() throws Exception {
+        Object data = new Object() {
+            Object company = new Object() {
+                String name = "TechCorp";
+                Object[] employees = new Object[] {
+                    new Object() {
+                        int id = 1;
+                        String name = "Alice";
+                        String role = "Developer";
+                        Object contact = new Object() {
+                            String email = "alice@techcorp.com";
+                            String phone = "123-456-7890";
+                        };
+                    },
+                    new Object() {
+                        int id = 2;
+                        String name = "Bob";
+                        String role = "Designer";
+                        Object contact = new Object() {
+                            String email = "bob@techcorp.com";
+                            String phone = "098-765-4321";
+                        };
+                    }
+                };
+            };
+            int established = 2010;
+        };
+        saveAsJSON(data, mockFilePath);
+        String savedData = new String(Files.readAllBytes(Paths.get(mockFilePath)));
+        assertEquals(new Gson().toJson(data, null, 2), savedData);
+    }
+}

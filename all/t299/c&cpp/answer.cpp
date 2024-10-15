@@ -1,0 +1,29 @@
+#include <iostream>
+#include <string>
+#include <ctime>
+
+std::string calculateAge(const std::string& birthDateString) {
+    struct tm birthDate = {};
+    if (strptime(birthDateString.c_str(), "%Y-%m-%d", &birthDate) == nullptr) {
+        return "";
+    }
+
+    time_t now = time(0);
+    struct tm* today = localtime(&now);
+    
+    int age = today->tm_year + 1900 - (birthDate.tm_year + 1900);
+    bool isBirthdayPassed = (today->tm_mon > birthDate.tm_mon) ||
+                            (today->tm_mon == birthDate.tm_mon && today->tm_mday >= birthDate.tm_mday);
+
+    if (!isBirthdayPassed) {
+        age--;
+    }
+
+    return birthDateString + " (" + std::to_string(age) + ")";
+}
+
+int main() {
+    std::string birthDateString = "2000-01-01"; // Example date
+    std::cout << calculateAge(birthDateString) << std::endl;
+    return 0;
+}

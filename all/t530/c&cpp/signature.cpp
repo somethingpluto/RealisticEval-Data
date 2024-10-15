@@ -1,0 +1,11 @@
+/**
+ * Creates a matrix with the specified number of rows and columns,
+ * filled with the given initial value.
+ *
+ * @param int rows - The number of rows in the matrix.
+ * @param int columns - The number of columns in the matrix.
+ * @param int initialValue - The value to fill the matrix with.
+ *                          It can be of any type (int, std::string, etc.).
+ * @returns std::vector<std::vector<int>> A two-dimensional vector (matrix) filled with the initial value.
+ */
+std::vector<std::vector<int>> createMatrix(int rows, int columns, int initialValue) {}

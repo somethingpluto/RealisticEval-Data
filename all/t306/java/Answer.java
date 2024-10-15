@@ -1,0 +1,35 @@
+package org.real.temp;
+
+public class Answer {
+    /**
+     * The recipe ID is hashed to produce a price in the specified range.
+     *
+     * @param recipeId - The ID of the recipe to hash.
+     * @param minVal - The minimum value of the price range.
+     * @param maxVal - The maximum value of the price range.
+     * @return - The hashed price, mapped to the specified range with two decimal places.
+     */
+    public static double getPrice(String recipeId, double minVal, double maxVal) {
+        int hash = 0;
+
+        // Generate a hash from the recipe ID
+        for (int i = 0; i < recipeId.length(); i++) {
+            int charCode = recipeId.charAt(i);
+            hash = (hash << 5) - hash + charCode; // Equivalent to hash * 31 + char
+        }
+
+        // Convert the hash to a positive value
+        double decimalValue = Math.abs(hash);
+
+        // Map the decimal value to the specified price range
+        double mappedValue = (decimalValue % ((maxVal - minVal) * 100)) / 100 + minVal;
+
+        // Ensure the final value has exactly two decimal places
+        return Math.round(mappedValue * 100.0) / 100.0;
+    }
+
+    // Overloaded method with default values
+    public static double getPrice(String recipeId) {
+        return getPrice(recipeId, 10.0, 30.0);
+    }
+}

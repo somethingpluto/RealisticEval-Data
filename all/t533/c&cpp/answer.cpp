@@ -1,0 +1,26 @@
+#include <iostream>
+#include <string>
+#include <vector>
+#include <algorithm>
+#include <random>
+
+std::string shuffleString(const std::string& inputString) {
+    std::vector<char> charArray(inputString.begin(), inputString.end());
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    
+    for (size_t i = charArray.size() - 1; i > 0; --i) {
+        std::uniform_int_distribution<> dis(0, i);
+        int randomIndex = dis(gen);
+        std::swap(charArray[i], charArray[randomIndex]);
+    }
+    
+    return std::string(charArray.begin(), charArray.end());
+}
+
+int main() {
+    std::string input = "example";
+    std::string shuffled = shuffleString(input);
+    std::cout << shuffled << std::endl;
+    return 0;
+}

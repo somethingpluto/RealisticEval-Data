@@ -1,0 +1,30 @@
+#include <iostream>
+
+class SeededRandom {
+private:
+    unsigned long seed;
+
+public:
+    // Constructor to initialize the seed
+    SeededRandom(unsigned long seed) : seed(seed) {}
+
+    // Method to generate a random number between 0 and 1
+    double rand() {
+        // LCG parameters
+        const unsigned long multiplier = 1664525;     // Multiplier value for the LCG
+        const unsigned long increment = 1013904223;   // Increment value for the LCG
+        const unsigned long modulus = 1UL << 32;      // Modulus value (2^32) for the LCG
+
+        // Update the seed using the LCG formula
+        seed = (multiplier * seed + increment) % modulus;
+
+        // Normalize the seed to a value between 0 and 1
+        return static_cast<double>(seed) / modulus;
+    }
+};
+
+int main() {
+    SeededRandom random(12345); // Example usage
+    std::cout << random.rand() << std::endl;
+    return 0;
+}

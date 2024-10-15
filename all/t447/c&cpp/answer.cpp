@@ -1,0 +1,36 @@
+#include <iostream>
+#include <sstream>
+#include <ctime>
+
+int calculateAge(const std::string& birthDateString) {
+    std::tm birthDate = {};
+    std::istringstream ss(birthDateString);
+    ss >> std::get_time(&birthDate, "%Y-%m-%d");
+    if (ss.fail()) {
+        std::cerr << "Invalid date format. Please enter a valid date." << std::endl;
+        return -1; // Indicate an error
+    }
+
+    std::time_t now = std::time(0);
+    std::tm* today = std::localtime(&now);
+
+    int age = today->tm_year + 1900 - (birthDate.tm_year + 1900);
+    int monthDifference = today->tm_mon - birthDate.tm_mon;
+
+    if (monthDifference < 0 || (monthDifference == 0 && today->tm_mday < birthDate.tm_mday)) {
+        age--;
+    }
+
+    return age;
+}
+
+int main() {
+    std::string birthDateString;
+    std::cout << "Enter your birth date (YYYY-MM-DD): ";
+    std::cin >> birthDateString;
+    int age = calculateAge(birthDateString);
+    if (age >= 0) {
+        std::cout << "Your age is: " << age << std::endl;
+    }
+    return 0;
+}
