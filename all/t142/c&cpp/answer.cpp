@@ -1,0 +1,25 @@
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <cctype>
+
+std::string camelCaseToCapitalizedWithSpaces(const std::string& input) {
+    std::ostringstream spacedStream;
+    for (char ch : input) {
+        if (std::isupper(ch) || std::isdigit(ch)) {
+            spacedStream << ' ';
+        }
+        spacedStream << ch;
+    }
+    
+    std::string spacedString = spacedStream.str();
+    std::istringstream wordsStream(spacedString);
+    std::string capitalizedString, word;
+    
+    while (wordsStream >> word) {
+        word[0] = std::toupper(word[0]);
+        capitalizedString += word + ' ';
+    }
+    
+    return capitalizedString.empty() ? "" : capitalizedString.substr(0, capitalizedString.size() - 1);
+}

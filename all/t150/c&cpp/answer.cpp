@@ -1,0 +1,49 @@
+#include <iostream>
+#include <sstream>
+#include <iomanip>
+#include <string>
+#include <optional>
+
+struct RGB {
+    int r;
+    int g;
+    int b;
+};
+
+std::string componentToHex(int c) {
+    if (c < 0 || c > 255) {
+        std::cerr << "Invalid RGB component: " << c << std::endl;
+        return "00";
+    }
+    std::ostringstream oss;
+    oss << std::hex << std::setw(2) << std::setfill('0') << c;
+    return oss.str();
+}
+
+std::string rgbToHex(const RGB& rgb) {
+    return "#" + componentToHex(rgb.r) + componentToHex(rgb.g) + componentToHex(rgb.b);
+}
+
+bool isValidHex(const std::string& hex) {
+    std::string modifiedHex = hex;
+    if (modifiedHex[0] == '#') modifiedHex = modifiedHex.substr(1);
+    if (modifiedHex.length() == 3) {
+        modifiedHex = std::string(1, modifiedHex[0]) + modifiedHex[0] +
+                      std::string(1, modifiedHex[1]) + modifiedHex[1] +
+                      std::string(1, modifiedHex[2]) + modifiedHex[2];
+    }
+    return modifiedHex.length() == 6 && std::all_of(modifiedHex.begin(), modifiedHex.end(), ::isxdigit);
+}
+
+std::optional<RGB> hexToRgb(const std::string& hex) {
+    if (!isValidHex(hex)) {
+        std::cerr << "Invalid HEX color: " << hex << std::endl;
+        return std::nullopt;
+    }
+    std::string fullHex = hex[0] == '#' ? hex.substr(1) : hex;
+    int r = std::stoi(fullHex.substr(0, 2), nullptr, 16);
+    int g = std::stoi(fullHex.substr(2, 2), nullptr, 16);
+    int b = std::stoi(fullHex.substr(4, 2), nullptr, 16);
+    
+    return RGB{r, g, b};
+}
