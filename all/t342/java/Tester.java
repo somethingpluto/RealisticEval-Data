@@ -1,0 +1,81 @@
+package org.real.temp;
+
+import org.junit.Test;
+import java.util.List;
+import java.util.Map;
+
+import static org.junit.Assert.assertEquals;
+
+public class Tester {
+
+    @Test
+    public void testExtractFirstSecondAndThirdLevelTitles() {
+        String markdown = "# Title 1\n" +
+                          "Content here.\n\n" +
+                          "## Subtitle 1.1\n" +
+                          "More content.\n\n" +
+                          "### Subsubtitle 1.1.1\n" +
+                          "Even more content.\n\n" +
+                          "# Title 2\n" +
+                          "Another content.";
+
+        Map<String, List<String>> result = MarkdownParser.parseMarkdownTitles(markdown);
+
+        assertEquals(List.of("Title 1", "Title 2"), result.get("level1"));
+        assertEquals(List.of("Subtitle 1.1"), result.get("level2"));
+        assertEquals(List.of("Subsubtitle 1.1.1"), result.get("level3"));
+    }
+
+    @Test
+    public void testHandleMissingHeaders() {
+        String markdown = "This is just some text without headers.";
+
+        Map<String, List<String>> result = MarkdownParser.parseMarkdownTitles(markdown);
+
+        assertEquals(List.of(), result.get("level1"));
+        assertEquals(List.of(), result.get("level2"));
+        assertEquals(List.of(), result.get("level3"));
+    }
+
+    @Test
+    public void testHandleOnlyFirstLevelHeaders() {
+        String markdown = "# Only Title 1\n" +
+                          "Content without subtitles.\n\n" +
+                          "# Only Title 2\n" +
+                          "More content.";
+
+        Map<String, List<String>> result = MarkdownParser.parseMarkdownTitles(markdown);
+
+        assertEquals(List.of("Only Title 1", "Only Title 2"), result.get("level1"));
+        assertEquals(List.of(), result.get("level2"));
+        assertEquals(List.of(), result.get("level3"));
+    }
+
+    @Test
+    public void testHandleMixedHeadersWithEmptyLines() {
+        String markdown = "# Title 1\n\n" +
+                          "## Subtitle 1.1\n\n" +
+                          "Some content here.\n\n" +
+                          "### Subsubtitle 1.1.1\n\n" +
+                          "# Title 2\n";
+
+        Map<String, List<String>> result = MarkdownParser.parseMarkdownTitles(markdown);
+
+        assertEquals(List.of("Title 1", "Title 2"), result.get("level1"));
+        assertEquals(List.of("Subtitle 1.1"), result.get("level2"));
+        assertEquals(List.of("Subsubtitle 1.1.1"), result.get("level3"));
+    }
+
+    @Test
+    public void testHandleHeadersWithSpecialCharacters() {
+        String markdown = "# Title 1 - Special Characters!\n" +
+                          "## Subtitle 1.1: The Beginning\n" +
+                          "### Subsubtitle 1.1.1 (Note)\n";
+
+        Map<String, List<String>> result = MarkdownParser.parseMarkdownTitles(markdown);
+
+        assertEquals(List.of("Title 1 - Special Characters!"), result.get("level1"));
+        assertEquals(List.of("Subtitle 1.1: The Beginning"), result.get("level2"));
+        assertEquals(List.of("Subsubtitle 1.1.1 (Note)"), result.get("level3"));
+    }
+}
