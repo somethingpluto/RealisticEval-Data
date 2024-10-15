@@ -1,0 +1,52 @@
+package org.real.temp;
+
+import org.junit.BeforeClass;
+import org.junit.AfterClass;
+import org.junit.Test;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+
+public class Tester {
+
+    @BeforeClass
+    public static void setUp() {
+        // Set the system time to a fixed date for consistent testing
+        // Note: Java does not allow changing system time directly;
+        // consider using a library for time manipulation in tests.
+        // This is a placeholder to indicate intent.
+    }
+
+    @AfterClass
+    public static void tearDown() {
+        // Restore the real system time after tests
+        // Placeholder for restoring time
+    }
+
+    @Test
+    public void testOneDayAgo() {
+        String dateString = "2024-08-24T12:00:00";
+        String result = DateFormatter.formatDate(dateString);
+        assertTrue(result.equals("1 day ago") || result.equals("24 hours ago"));
+    }
+
+    @Test
+    public void testFiveHoursAgo() {
+        String dateString = "2024-08-25T07:00:00";
+        String result = DateFormatter.formatDate(dateString);
+        assertEquals("5 hours ago", result);
+    }
+
+    @Test
+    public void testTwoMinutesAgo() {
+        String dateString = "2024-08-25T11:58:00";
+        String result = DateFormatter.formatDate(dateString);
+        assertEquals("2 minutes ago", result);
+    }
+
+    @Test
+    public void testJustNow() {
+        String dateString = "2024-08-25T11:59:59";
+        String result = DateFormatter.formatDate(dateString);
+        assertTrue(result.equals("1 second ago") || result.equals("1 seconds ago"));
+    }
+}
