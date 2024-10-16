@@ -1,0 +1,25 @@
+describe("hexStringToUnsignedInt", () => {
+    test("converts valid hex strings to unsigned int", () => {
+        expect(hexStringToUnsignedInt("1A3F")).toBe(6719); // 1A3F in hex is 6719 in decimal
+        expect(hexStringToUnsignedInt("FFFF")).toBe(65535); // FFFF in hex is 65535 in decimal
+        expect(hexStringToUnsignedInt("0")).toBe(0); // 0 in hex is 0 in decimal
+        expect(hexStringToUnsignedInt("7F")).toBe(127); // 7F in hex is 127 in decimal
+        expect(hexStringToUnsignedInt("ABC123")).toBe(11256099); // ABC123 in hex is 11256099 in decimal
+    });
+
+    test("converts lowercase hex string", () => {
+        expect(hexStringToUnsignedInt("abcd")).toBe(43981); // abcd in hex is 43981 in decimal
+    });
+
+    test("converts hex string with leading zeroes", () => {
+        expect(hexStringToUnsignedInt("0001")).toBe(1); // 0001 in hex is 1 in decimal
+    });
+
+    test("handles empty hex string", () => {
+        expect(hexStringToUnsignedInt("")).toBe(0); // Empty string should be treated as 0
+    });
+
+    test("converts mixed case hex string", () => {
+        expect(hexStringToUnsignedInt("AbCdEf")).toBe(11259375); // AbCdEf in hex is 11259375 in decimal
+    });
+});

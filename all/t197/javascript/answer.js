@@ -1,0 +1,112 @@
+class PrimeGame {
+    /**
+     * @brief Constructs a PrimeGame object with a specified number of players.
+     * 
+     * @param {number} numPlayers - The number of players in the game.
+     */
+    constructor(numPlayers) {
+        if (numPlayers < 2) {
+            throw new Error("Number of players must be at least 2.");
+        }
+        this.numPlayers = numPlayers;
+        this.head = this.createCircularLinkedList(numPlayers);
+    }
+
+    /**
+     * @brief Finds the order of players going out of the ring based on prime number steps.
+     *
+     * @return {Array<number>} - An array of integers representing the order of players going out of the ring.
+     */
+    findOrder() {
+        const primes = this.generatePrimes(this.numPlayers);
+        const order = [];
+
+        let current = this.head;
+        let remainingPlayers = this.numPlayers;
+
+        while (remainingPlayers > 1 && primes.length > 0) {
+            const step = primes.shift() - 1;
+
+            for (let i = 0; i < step; i++) {
+                current = current.next;
+            }
+
+            const toRemove = current.next;
+            order.push(toRemove.data);
+            current.next = toRemove.next; // Remove the player
+
+            remainingPlayers--;
+        }
+
+        order.push(current.data); // The last remaining player
+        return order;
+    }
+
+    /**
+     * @brief Creates a circular linked list with n nodes.
+     *
+     * @param {number} n - The number of nodes to create in the circular linked list.
+     * @return {Node} - A pointer to the head of the circular linked list.
+     */
+    createCircularLinkedList(n) {
+        const head = new Node(1);
+        let current = head;
+
+        for (let i = 2; i <= n; i++) {
+            current.next = new Node(i);
+            current = current.next;
+        }
+
+        current.next = head; // Make the linked list circular
+        return head;
+    }
+
+    /**
+     * @brief Generates all prime numbers up to a given limit using the Sieve of Eratosthenes.
+     *
+     * @param {number} limit - The upper bound (inclusive) for generating prime numbers.
+     * @return {Array<number>} - An array of integers containing all prime numbers up to the limit.
+     */
+    generatePrimes(limit) {
+        if (limit < 2) {
+            return []; // No primes less than 2
+        }
+
+        const isPrime = new Array(limit + 1).fill(true);
+        const primes = [];
+
+        for (let i = 2; i * i <= limit; i++) {
+            if (isPrime[i]) {
+                for (let j = i * i; j <= limit; j += i) {
+                    isPrime[j] = false;
+                }
+            }
+        }
+
+        for (let i = 2; i <= limit; i++) {
+            if (isPrime[i]) {
+                primes.push(i);
+            }
+        }
+
+        return primes;
+    }
+}
+
+class Node {
+    constructor(data) {
+        this.data = data;
+        this.next = null;
+    }
+}
+
+/**
+ * @brief Simulate a game based on the order of prime numbers, using a circular linked list to represent the cyclic structure of players, and remove players one by one.
+ *
+ * @param {number} n - The number of players in the game.
+ * @return {Array<number>} - An array of integers representing the order of players being removed from the ring.
+ */
+function findOrder(n) {
+    const game = new PrimeGame(n);
+    return game.findOrder();
+}
