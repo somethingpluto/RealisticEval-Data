@@ -1,0 +1,21 @@
+package org.real.temp;
+
+public class Answer {
+
+    /**
+     * Invert the flag bits of an unsigned integer to a hexadecimal string.
+     *
+     * @param value The unsigned integer whose bits are to be inverted.
+     * @return A String containing the hexadecimal representation of the inverted bits.
+     */
+    public String convFlags(int value) {
+        // Create a mask for the first five bits (0x1F = 00011111)
+        int mask = 0x1F;
+
+        // Invert the first five bits using XOR
+        int invertedValue = value ^ mask;
+
+        // Convert the result to a hexadecimal string
+        return Integer.toHexString(invertedValue);
+    }
+}
