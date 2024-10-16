@@ -1,0 +1,98 @@
+Here's the equivalent test class using the Catch2 framework in C++. This code preserves the functionality and logic of the original Python unittest tests while adapting to C++ syntax and conventions.
+
+```cpp
+#define CATCH_CONFIG_MAIN
+#include <catch2/catch.hpp>
+#include <fstream>
+#include <string>
+#include <vector>
+#include <cstdio> // For std::remove
+#include "your_code_file.h" // Include the file where write_csv_to_file is defined
+
+class TestAnswer {
+public:
+    std::string test_file_path = "test_output.csv"; // Path for test output file
+
+    ~TestAnswer() {
+        // Delete the test file after each test
+        std::remove(test_file_path.c_str());
+    }
+
+    std::string read_file(const std::string& file_path) {
+        /* Helper method to read file content as a string. */
+        std::ifstream file(file_path);
+        if (!file) {
+            throw std::runtime_error("Failed to read file: " + file_path);
+        }
+        std::string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+        return content;
+    }
+};
+
+TEST_CASE_METHOD(TestAnswer, "Test write_csv_to_file with multiple strings") {
+    std::vector<std::string> data = {"Apple", "Banana", "Cherry"};
+    write_csv_to_file(data, test_file_path);
+    // Assert the content of the file
+    std::string content = read_file(test_file_path);
+    REQUIRE(content == "Apple,Banana,Cherry");
+}
+
+TEST_CASE_METHOD(TestAnswer, "Test write_csv_to_file with single string") {
+    std::vector<std::string> data = {"Apple"};
+    write_csv_to_file(data, test_file_path);
+    // Assert the content of the file
+    std::string content = read_file(test_file_path);
+    REQUIRE(content == "Apple");
+}
+
+TEST_CASE_METHOD(TestAnswer, "Test write_csv_to_file with empty list") {
+    std::vector<std::string> data = {};
+    write_csv_to_file(data, test_file_path);
+    // Assert the content of the file is empty
+    std::string content = read_file(test_file_path);
+    REQUIRE(content == "");
+}
+
+TEST_CASE_METHOD(TestAnswer, "Test write_csv_to_file with special characters") {
+    std::vector<std::string> data = {"Apple", "Banana, Cherry", "Date"};
+    write_csv_to_file(data, test_file_path);
+    // Assert the content of the file
+    std::string content = read_file(test_file_path);
+    REQUIRE(content == "Apple,Banana, Cherry,Date");
+}
+
+TEST_CASE_METHOD(TestAnswer, "Test write_csv_to_file with spaces") {
+    std::vector<std::string> data = {"Apple ", " Banana", " Cherry "};
+    write_csv_to_file(data, test_file_path);
+    // Assert the content of the file with spaces
+    std::string content = read_file(test_file_path);
+    REQUIRE(content == "Apple , Banana, Cherry ");
+}
+
+TEST_CASE_METHOD(TestAnswer, "Test write_csv_to_file with file overwrite") {
+    // First write to the file
+    std::vector<std::string> first_data = {"Apple", "Banana"};
+    write_csv_to_file(first_data, test_file_path);
+
+    // Now overwrite with new data
+    std::vector<std::string> second_data = {"Cherry", "Date"};
+    write_csv_to_file(second_data, test_file_path);
+
+    // Assert that the file now contains the new data
+    std::string content = read_file(test_file_path);
+    REQUIRE(content == "Cherry,Date");
+}
+```
+
+### Explanation:
+1. **Include Directives**: The necessary headers for Catch2, file handling, and string manipulation are included.
+
+2. **Test Class**: A class `TestAnswer` is created to encapsulate the setup and teardown logic. The destructor handles file cleanup after each test.
+
+3. **File Reading Method**: The `read_file` method is adapted to read file content and handle errors using exceptions.
+
+4. **Test Cases**: Each test case is defined using `TEST_CASE_METHOD`, allowing access to the `TestAnswer` class's methods and members.
+
+5. **Assertions**: The `REQUIRE` macro from Catch2 is used for assertions, similar to the `self.assertEqual` method in unittest.
+
+This C++ code maintains the same testing logic as the original Python code while following C++ conventions. Make sure to include the appropriate header where `write_csv_to_file` is defined.

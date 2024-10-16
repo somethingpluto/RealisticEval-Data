@@ -1,0 +1,26 @@
+package org.real.temp;
+
+/**
+ * Convert a given square character matrix into a symmetric matrix and calculate the minimum number of character replacements required to achieve symmetry.
+ *
+ * @param matrix A 2D array of characters representing the matrix to be analyzed.
+ * @return The minimum number of element changes required to make the matrix symmetric.
+ */
+public class Answer {
+    public static int minChangesToSymmetric(char[][] matrix) {
+        int n = matrix.length;
+        int minChanges = 0;
+
+        // Traverse only the upper triangle of the matrix, excluding the diagonal
+        for (int i = 0; i < n; ++i) {
+            for (int j = i + 1; j < n; ++j) {
+                // If the corresponding elements are not equal, they need to be changed
+                if (matrix[i][j] != matrix[j][i]) {
+                    ++minChanges;
+                }
+            }
+        }
+
+        return minChanges;
+    }
+}

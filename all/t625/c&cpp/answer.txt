@@ -1,0 +1,80 @@
+Here’s the equivalent C++ code for the provided Python function. The C++ version will utilize standard libraries for file handling, string manipulation, and exceptions.
+
+```cpp
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <vector>
+#include <string>
+#include <stdexcept>
+#include <variant>
+
+using DataType = std::variant<int, float, std::string>;
+
+std::vector<DataType> read_data_from_file(const std::string& path) {
+    std::vector<DataType> data_list;
+    std::ifstream reader(path);
+
+    if (!reader) {
+        throw std::runtime_error("Error reading file: " + path);
+    }
+
+    std::string line;
+    while (std::getline(reader, line)) {
+        // Trim leading and trailing whitespace
+        line.erase(0, line.find_first_not_of(" \t\n\r\f\v"));
+        line.erase(line.find_last_not_of(" \t\n\r\f\v") + 1);
+
+        // Try to parse as an integer
+        try {
+            int int_value = std::stoi(line);
+            data_list.push_back(int_value);
+            continue; // Go to the next line
+        } catch (const std::invalid_argument&) {
+            // Not an integer, continue to check for float
+        } catch (const std::out_of_range&) {
+            // Out of range for int, continue to check for float
+        }
+
+        // Try to parse as a floating-point number
+        try {
+            float float_value = std::stof(line);
+            data_list.push_back(float_value);
+            continue; // Go to the next line
+        } catch (const std::invalid_argument&) {
+            // Not a float, continue to check for string
+        } catch (const std::out_of_range&) {
+            // Out of range for float, continue to check for string
+        }
+
+        // If it's not an integer or float, it's treated as a string
+        data_list.push_back(line);
+    }
+
+    return data_list;
+}
+
+int main() {
+    try {
+        auto data = read_data_from_file("data.txt");
+        // Print or process the data as needed
+    } catch (const std::exception& e) {
+        std::cerr << e.what() << std::endl;
+    }
+    return 0;
+}
+```
+
+### Explanation:
+
+1. **DataType**: This uses `std::variant` to hold either an `int`, `float`, or `std::string`, mimicking Python's dynamic typing.
+
+2. **File Handling**: C++ uses `std::ifstream` for file input. It checks if the file opens successfully, throwing an exception if it fails.
+
+3. **String Trimming**: Manual trimming of whitespace is performed using `erase` and `find_first_not_of`/`find_last_not_of`.
+
+4. **Parsing**: It uses `std::stoi` and `std::stof` for parsing integers and floats, respectively, handling exceptions for invalid or out-of-range values.
+
+5. **Error Handling**: Any IO errors are caught and thrown as exceptions, similar to the Python implementation.
+
+6. **Main Function**: A simple `main` function is provided to demonstrate how to call the `read_data_from_file` function and handle any exceptions that might arise.

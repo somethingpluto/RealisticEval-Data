@@ -1,15 +1,16 @@
 import numpy as np
 
 
-def get_3d_coordinates(K: np.array, d: float, x: float, y: float) -> np.array:
+def convert_pixel_to_3d_coordinates(K: np.array, d: float, x: float, y: float) -> np.array:
     """
-    converts 2D pixel coordinates into 3D world coordinates using camera intrinsic parameters and depth.
+    Convert 2D pixel coordinates into 3D world coordinates using camera intrinsic parameters and depth.
+
     Args:
-        K ((3,3) np.array): camera intrinsic matrix
-        d (float): depth (distance along z-axis)
-        x (float): pixel x coordinate
-        y (float): pixel y coordinate
+        K (np.array): A (3, 3) camera intrinsic matrix, which includes focal lengths and optical center.
+        d (float): Depth (distance along the z-axis) from the camera to the point in 3D space.
+        x (float): The x coordinate of the pixel in 2D image space.
+        y (float): The y coordinate of the pixel in 2D image space.
 
     Returns:
-        np.array: x, y, z 3D point coordinates in camera RDF coordinates
+        np.array: A numpy array containing the 3D coordinates (x, y, z) in the camera's right-handed coordinate frame.
     """

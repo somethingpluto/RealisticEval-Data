@@ -1,0 +1,98 @@
+Here’s how you can convert the provided Python `unittest` test class into an equivalent class using the Jest testing framework in JavaScript. The conversion includes necessary adjustments due to language differences.
+
+```javascript
+const fs = require('fs');
+const { readFileAndProcessLines } = require('./yourModule'); // Adjust the path to your module
+
+describe('TestAnswer', () => {
+    const testFilePath = 'testFile.txt';
+
+    beforeEach(() => {
+        /** 
+         * Create a temporary file for testing.
+         * This will create an empty file at the start of each test.
+         */
+        fs.writeFileSync(testFilePath, '');
+    });
+
+    function writeToFile(content) {
+        /**
+         * Helper method to write to the test file.
+         */
+        fs.writeFileSync(testFilePath, content);
+    }
+
+    test('processing of normal input', () => {
+        /** 
+         * Test processing of normal input.
+         */
+        writeToFile("Line 1\nLine 2 # Comment\nLine 3\n");
+        const result = readFileAndProcessLines(testFilePath);
+        expect(result).toEqual(["Line 1", "Line 2", "Line 3"]);
+    });
+
+    test('processing when only comments are present', () => {
+        /** 
+         * Test processing when only comments are present.
+         */
+        writeToFile("# This is a comment\n# Another comment\n");
+        const result = readFileAndProcessLines(testFilePath);
+        expect(result).toEqual([]);
+    });
+
+    test('processing with empty lines', () => {
+        /** 
+         * Test processing with empty lines.
+         */
+        writeToFile("Line 1\n\nLine 2\n\n\nLine 3 # Comment\n");
+        const result = readFileAndProcessLines(testFilePath);
+        expect(result).toEqual(["Line 1", "Line 2", "Line 3"]);
+    });
+
+    test('processing when there are no inline comments', () => {
+        /** 
+         * Test processing when there are no inline comments.
+         */
+        writeToFile("Line 1\nLine 2\nLine 3\n");
+        const result = readFileAndProcessLines(testFilePath);
+        expect(result).toEqual(["Line 1", "Line 2", "Line 3"]);
+    });
+
+    test('processing with only new lines', () => {
+        /** 
+         * Test processing with only new lines.
+         */
+        writeToFile("\n\n\n\n");
+        const result = readFileAndProcessLines(testFilePath);
+        expect(result).toEqual([]);
+    });
+
+    test('processing with mixed content', () => {
+        /** 
+         * Test processing with mixed content.
+         */
+        writeToFile("Valid line\n# This is a comment\nLine 2\n# Another comment\n\nLine 3 # End of line comment\n");
+        const result = readFileAndProcessLines(testFilePath);
+        expect(result).toEqual(["Valid line", "Line 2", "Line 3"]);
+    });
+
+    afterEach(() => {
+        /** 
+         * Cleanup after tests.
+         * This removes the test file created during tests.
+         */
+        try {
+            fs.unlinkSync(testFilePath);
+        } catch (err) {
+            // Ignore if the file doesn't exist
+        }
+    });
+});
+```
+
+### Key Differences and Adjustments:
+1. **Test Framework**: Jest uses `describe` and `test` (or `it`) instead of classes and methods.
+2. **File System Operations**: In Jest, you can use `fs.writeFileSync` and `fs.unlinkSync` to create and remove files synchronously.
+3. **Assertions**: Instead of `self.assertEqual`, you use `expect(...).toEqual(...)` in Jest.
+4. **Setup and Teardown**: Jest has `beforeEach` and `afterEach` hooks for setup and teardown, respectively, replacing `setUp` and `tearDown`.
+5. **Commenting Style**: Comments are retained but formatted to JavaScript conventions.

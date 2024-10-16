@@ -1,7 +1,7 @@
 from typing import List
 
 
-def find_duplicate_ips(ip_list: List[str], ignore_list: List[str]) -> List[str]:
+def find_duplicates_excluding_ips(ip_list: List[str], ignore_list: List[str]) -> List[str]:
     """
     Find duplicate IPs in the given IP list excluding specified IPs to ignore.
 

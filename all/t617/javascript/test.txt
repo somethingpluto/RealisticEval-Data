@@ -1,0 +1,76 @@
+Here’s the equivalent test class using Jest, maintaining the functionality and logic of the original Python `unittest` tests:
+
+```javascript
+const fs = require('fs');
+const path = require('path');
+
+describe('Tester', () => {
+    
+    afterEach(() => {
+        // Clean up any created files after each test
+        const tempFiles = ['temp_valid.json', 'temp_empty.json', 'temp_not_json.txt', 'temp_array.json'];
+        tempFiles.forEach(file => {
+            if (fs.existsSync(file)) {
+                fs.unlinkSync(file);
+            }
+        });
+    });
+
+    test('valid json', () => {
+        const jsonContent = '{"name": "John", "age": 30}';
+        const tempPath = 'temp_valid.json';
+        
+        fs.writeFileSync(tempPath, jsonContent);
+        
+        const result = parseJsonFile(tempPath);
+        expect(result.name).toBe("John");
+        expect(result.age).toBe(30);
+    });
+
+    test('empty json', () => {
+        const jsonContent = '{}';
+        const tempPath = 'temp_empty.json';
+        
+        fs.writeFileSync(tempPath, jsonContent);
+        
+        const result = parseJsonFile(tempPath);
+        expect(Object.keys(result).length).toBe(0);
+    });
+
+    test('null input', () => {
+        expect(() => {
+            parseJsonFile(null);
+        }).toThrow();
+    });
+
+    test('non-json file', () => {
+        const notJsonContent = "Hello, World!";
+        const tempPath = 'temp_not_json.txt';
+        
+        fs.writeFileSync(tempPath, notJsonContent);
+        
+        expect(() => {
+            parseJsonFile(tempPath);
+        }).toThrow(SyntaxError);
+    });
+
+    test('json with array', () => {
+        const jsonContent = '{"names": ["John", "Doe"]}';
+        const tempPath = 'temp_array.json';
+        
+        fs.writeFileSync(tempPath, jsonContent);
+        
+        const result = parseJsonFile(tempPath);
+        expect(result.names).toBeDefined();
+    });
+});
+```
+
+### Key Changes and Documentation:
+1. **Test Structure**: Jest uses `describe` and `test` (or `it`) for structuring tests, unlike `unittest` which uses classes.
+2. **File Handling**: In Jest, cleanup of temporary files is done using `afterEach()` to ensure it runs after every test.
+3. **Assertions**: Python's `assertEqual`, `assertTrue`, and `assertRaises` are replaced with Jest's `expect` along with `.toBe`, `.toBeDefined()`, and `.toThrow()`.
+4. **Error Types**: In the `test_non_json_file`, the specific error type expected (like `json.JSONDecodeError`) is replaced with JavaScript's `SyntaxError`, which is what `JSON.parse` will throw for invalid JSON.
+5. **File System**: Node's `fs` module is used to read/write files, similar to Python's `open()`. 
+
+This conversion keeps the essence of the original tests intact while adapting them to JavaScript's Jest framework.

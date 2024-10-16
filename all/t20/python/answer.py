@@ -1,7 +1,7 @@
 import re
 
 
-def transform_parentheses(text: str) -> str:
+def remove_inner_asterisks(text: str) -> str:
     """
     Transforms the input text by finding and modifying patterns that match the format '(*...*)'.
     Specifically, it removes any asterisks inside the parentheses while preserving the outer format.

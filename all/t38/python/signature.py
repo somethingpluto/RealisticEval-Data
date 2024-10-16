@@ -1,4 +1,4 @@
-def rainbowHexGenerator(num_intermediates: int, include_endpoints=False):
+def rainbow_hex_generator(num_intermediates: int, include_endpoints=False):
     """
     generates a color spectrum list containing the main rainbow colors and the gradient colors between them. The function takes two parameters: num_intermediates specifies the number of intermediate colors to be generated between each two major colors;include_endpoints determines whether to add a gradient from the last color back to the first color at the end of the color spectrum
     Args:

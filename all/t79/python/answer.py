@@ -1,7 +1,7 @@
 from datetime import datetime
 
 
-def date_range_string(start_date: str, end_date: str) -> str:
+def generate_date_range_string(start_date: str, end_date: str) -> str:
     """
     Generate a formatted date range string.
 

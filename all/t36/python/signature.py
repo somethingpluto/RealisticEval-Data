@@ -1,6 +1,6 @@
 from typing import List, Union
 
-def floyd_warshall_shortest_paths(adjacency_matrix: List[List[Union[int, float]]]) -> List[List[Union[int, float]]]:
+def find_shortest_paths_by_floyd_warshall(adjacency_matrix: List[List[Union[int, float]]]) -> List[List[Union[int, float]]]:
     """
     Implements Floyd-Warshall algorithm to find the shortest paths between all pairs of vertices
     in a graph represented by an adjacency matrix.

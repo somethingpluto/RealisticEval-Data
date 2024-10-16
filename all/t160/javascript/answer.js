@@ -1,0 +1,24 @@
+/**
+ * Compresses the filename before the extension, truncating it to a maximum length,
+ * and replacing the excess with '***' if it exceeds the specified maximum length.
+ *
+ * @param {string} filename - The full filename with or without an extension.
+ * @param {number} maxLength - The maximum allowed length of the filename before the extension.
+ * @returns {string} The compressed filename with its extension preserved.
+ *
+ */
+function compressFilename(filename, maxLength) {
+    // Extract the file extension
+    const extensionMatch = filename.match(/\.[^\.]+$/);
+    const extension = extensionMatch ? extensionMatch[0] : '';
+
+    // Remove the extension from the filename for manipulation
+    const basename = extension ? filename.slice(0, -extension.length) : filename;
+
+    // Compress the basename if it's longer than maxLength
+    const compressedBasename = basename.length > maxLength ?
+        basename.slice(0, maxLength - 3) + '***' : basename;
+
+    // Reattach the extension and return
+    return compressedBasename + extension;
+}

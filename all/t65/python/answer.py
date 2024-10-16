@@ -1,4 +1,4 @@
-def find_duplicate_ips(ip_list, ignore_list):
+def find_duplicates_excluding_ips(ip_list, ignore_list):
     """
     Find duplicate IPs in the given IP list excluding specified IPs to ignore.
 

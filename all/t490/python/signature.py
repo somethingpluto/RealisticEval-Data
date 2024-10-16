@@ -1,4 +1,4 @@
-def format_str(x: str) -> str:
+def format_str_2_markdown(x: str) -> str:
     """
     Formats a string by prepending '> ' to each line and ensuring proper
     formatting of code blocks.

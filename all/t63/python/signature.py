@@ -1,7 +1,7 @@
 import pandas as pd
 
 
-def dataframe_to_markdown(df: pd.DataFrame, md_path: str) -> str:
+def convert_dataframe_to_markdown(df: pd.DataFrame, md_path: str) -> str:
     """
     convert a DataFrame object to a table in markdown format
     For example:

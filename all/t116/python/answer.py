@@ -1,4 +1,4 @@
-def toroidal_diff(this_point, other_point, width, height):
+def calculate_toroidal_difference(this_point, other_point, width, height):
     dx = this_point['x'] - other_point['x']
     dy = this_point['y'] - other_point['y']
 

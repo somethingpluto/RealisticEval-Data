@@ -1,4 +1,4 @@
-def changed_clef(abc: str, clef: str = "bass") -> str:
+def insert_clef(abc: str, clef: str = "bass") -> str:
     # Find the index of the key signature line
     clef_index = abc.find("\nK:")
 

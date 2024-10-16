@@ -4,15 +4,6 @@ import java.util.List;
 import java.util.ArrayList;
 
 public class Answer {
-
-    /**
-     * Implements matrix multiplication.
-     * 
-     * @param matrixA The first matrix.
-     * @param matrixB The second matrix.
-     * @return The result of multiplying matrixA by matrixB.
-     * @throws IllegalArgumentException If the matrices cannot be multiplied due to incompatible dimensions.
-     */
     public static List<List<Integer>> matrixMultiply(List<List<Integer>> matrixA, List<List<Integer>> matrixB) {
         // Check for null or empty matrices
         if (matrixA == null || matrixB == null || matrixA.isEmpty() || matrixB.isEmpty() || matrixA.get(0).isEmpty() || matrixB.get(0).isEmpty()) {

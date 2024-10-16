@@ -1,4 +1,4 @@
-def rainbowHexGenerator(num_intermediates, include_endpoints=False):
+def rainbow_hex_generator(num_intermediates, include_endpoints=False):
     # List of main rainbow colors
     rainbow_colors = [
         "#FF0000",  # Red

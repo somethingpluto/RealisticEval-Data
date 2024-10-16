@@ -11,21 +11,21 @@ class TestDataframeToMarkdown(unittest.TestCase):
     def test_df_to_str(self):
         # Test that the function writes the correct markdown to a file
         expected_markdown = "| Name   |   Age |\n|:-------|------:|\n| Alice  |    25 |\n| Bob    |    30 |"
-        result = dataframe_to_markdown(self.df, 'dummy_path.md')
+        result = convert_dataframe_to_markdown(self.df, 'dummy_path.md')
         self.assertEqual(result, expected_markdown)
 
     def test_empty_dataframe(self):
         # Test how the function handles an empty DataFrame
         df_empty = pd.DataFrame()
         expected_markdown = ""
-        result = dataframe_to_markdown(df_empty, 'dummy_path.md')
+        result = convert_dataframe_to_markdown(df_empty, 'dummy_path.md')
         self.assertEqual(result, expected_markdown)
 
     def test_single_row_dataframe(self):
         # Test with a DataFrame that contains only one row
         df_single_row = pd.DataFrame({'Name': ['Alice'], 'Age': [30]})
         expected_markdown = "| Name   |   Age |\n|:-------|------:|\n| Alice  |    30 |"
-        result = dataframe_to_markdown(df_single_row, 'dummy_path.md')
+        result = convert_dataframe_to_markdown(df_single_row, 'dummy_path.md')
         self.assertEqual(result, expected_markdown)
 
     def test_non_string_columns(self):
@@ -35,7 +35,7 @@ class TestDataframeToMarkdown(unittest.TestCase):
                              '|:-------|------:|---------:|\n'
                              '| Alice  |    25 |      5.5 |\n'
                              '| Bob    |    30 |      6   |')
-        result = dataframe_to_markdown(df_non_string, 'dummy_path.md')
+        result = convert_dataframe_to_markdown(df_non_string, 'dummy_path.md')
         self.assertEqual(result, expected_markdown)
 
     def test_special_characters(self):
@@ -46,6 +46,6 @@ class TestDataframeToMarkdown(unittest.TestCase):
                              '|:-------|:------------------------|\n'
                              '| Alice  | Good@Work!              |\n'
                              '| Bob    | Excellent & Commendable |')
-        result = dataframe_to_markdown(df_special_chars, 'dummy_path.md')
+        result = convert_dataframe_to_markdown(df_special_chars, 'dummy_path.md')
         self.assertEqual(result, expected_markdown)
 

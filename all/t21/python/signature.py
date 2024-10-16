@@ -1,7 +1,7 @@
 from typing import List
 
 
-def compare_files(file1_path: str, file2_path: str) -> List[str]:
+def diff_files(file1_path: str, file2_path: str) -> List[str]:
     """
     Compare the contents of two files and print the differences in unified diff format.
 

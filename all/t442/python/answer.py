@@ -1,16 +1,24 @@
-def convert_strings_to_numbers(data):
+def convert_strings_to_numbers(data:Union[Dict,List])->Union[Dict,List]:
+    """
+    Convert strings in nested structures (e.g. dictionaries, arrays) to numbers (integers or floating point numbers) as much as possible
+
+    Args:
+        data (Union[Dict,List]): before convert data
+
+    Returns:
+        Union[Dict,List]: after convert data
+    """
     if isinstance(data, dict):
         return {key: convert_strings_to_numbers(value) for key, value in data.items()}
     elif isinstance(data, list):
         return [convert_strings_to_numbers(item) for item in data]
     elif isinstance(data, str):
         try:
-            # Try converting to float first, then to int if possible
             if '.' in data:
                 return float(data)
             else:
                 return int(data)
         except ValueError:
-            return data  # Return original string if conversion fails
+            return data 
     else:
-        return data  # Return data unchanged if it's not a string
+        return data  

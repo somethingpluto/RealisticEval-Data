@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def read_columns(file_name):
+def read_numerical_columns_from_file(file_name: str) -> np.array:
     """
     Reads numerical columns from a file starting from the line after the last line containing '/'.
 

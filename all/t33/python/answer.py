@@ -2,7 +2,7 @@ import pandas as pd
 import xml.etree.ElementTree as ET
 
 
-def xml_to_dataframe(xml_file):
+def parse_xml_to_dataframe(xml_file):
     """
     Convert an XML file into a pandas DataFrame. Each <sequence> tag is treated as a row,
     and each sub-element within <sequence> is treated as a column.

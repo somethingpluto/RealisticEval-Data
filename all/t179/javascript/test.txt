@@ -1,0 +1,105 @@
+Here's the equivalent Jest test class for the provided Python `unittest` code. I've documented the changes necessary due to language differences and ensured that the functionality and logic of the tests are preserved.
+
+```javascript
+const fs = require('fs');
+const path = require('path');
+const { copyDirectory } = require('./yourModule'); // Adjust the import based on your file structure
+
+describe('Directory Operations', () => {
+    const sourceDir = 'testSourceDir';
+    const targetDir = 'testTargetDir';
+
+    beforeEach(() => {
+        // Setup: Create source and target directories
+        fs.mkdirSync(sourceDir, { recursive: true });
+        fs.mkdirSync(targetDir, { recursive: true });
+    });
+
+    afterEach(() => {
+        // Teardown: Delete source and target directories
+        deleteDirectory(sourceDir);
+        deleteDirectory(targetDir);
+    });
+
+    function deleteDirectory(dirPath) {
+        if (fs.existsSync(dirPath)) {
+            fs.rmdirSync(dirPath, { recursive: true });
+        }
+    }
+
+    test('copy empty directory', () => {
+        // Simulating copyDirectory functionality
+        copyDirectory(sourceDir, targetDir);
+
+        expect(fs.existsSync(targetDir)).toBe(true);
+        expect(fs.statSync(targetDir).isDirectory()).toBe(true);
+        expect(fs.readdirSync(targetDir).length).toBe(0);
+    });
+
+    test('copy directory with files', () => {
+        const testFile = path.join(sourceDir, 'testFile.txt');
+        fs.writeFileSync(testFile, 'Sample content');
+
+        copyDirectory(sourceDir, targetDir);
+
+        const copiedFile = path.join(targetDir, 'testFile.txt');
+        expect(fs.existsSync(copiedFile)).toBe(true);
+        expect(fs.statSync(testFile).size).toBe(fs.statSync(copiedFile).size);
+    });
+
+    test('non-existent source directory', () => {
+        const nonExistentDir = 'nonExistentDir';
+
+        expect(() => {
+            copyDirectory(nonExistentDir, targetDir);
+        }).toThrow('Source directory does not exist.');
+    });
+
+    test('copy directory with subdirectories', () => {
+        const subDir = path.join(sourceDir, 'subDir');
+        fs.mkdirSync(subDir, { recursive: true });
+        const testFile = path.join(subDir, 'testFile.txt');
+        fs.writeFileSync(testFile, 'Sample content in subdirectory');
+
+        copyDirectory(sourceDir, targetDir);
+
+        const copiedSubDir = path.join(targetDir, 'subDir');
+        const copiedFile = path.join(copiedSubDir, 'testFile.txt');
+
+        expect(fs.existsSync(copiedSubDir)).toBe(true);
+        expect(fs.existsSync(copiedFile)).toBe(true);
+    });
+
+    test('overwrite file in target directory', () => {
+        // Create a source file with some content
+        const testFile = path.join(sourceDir, 'testFile.txt');
+        fs.writeFileSync(testFile, 'Source content');
+
+        // Create a target file with different content
+        const targetFile = path.join(targetDir, 'testFile.txt');
+        fs.writeFileSync(targetFile, 'Target content');
+
+        // Copy the directory, which should overwrite the target file
+        copyDirectory(sourceDir, targetDir);
+
+        const copiedFile = path.join(targetDir, 'testFile.txt');
+        expect(fs.existsSync(copiedFile)).toBe(true);
+
+        // Check that the content of the file is now the same as the source file
+        const copiedContent = fs.readFileSync(copiedFile, 'utf-8');
+        expect(copiedContent).toBe('Source content');
+    });
+});
+```
+
+### Key Changes and Documentation:
+1. **Test Framework**: Converted from `unittest` to Jest. Used `describe`, `test`, and `beforeEach`/`afterEach` for setup and teardown.
+2. **Assertions**: 
+   - Used `expect(...).toBe(...)` for assertions in place of `self.assertTrue(...)` and `self.assertEqual(...)`.
+   - Used `toThrow(...)` for checking exceptions instead of `self.assertRaises(...)`.
+3. **File Operations**: 
+   - Used synchronous file operations (like `fs.writeFileSync`, `fs.mkdirSync`) to match the synchronous nature of the original tests.
+   - The deletion of directories uses `{ recursive: true }` to ensure all contents are removed.
+4. **Paths**: Used the `path` module to handle file paths properly, similar to Python's `os.path.join`.
+
+This structure should effectively maintain the functionality and logic of your original Python tests while adhering to JavaScript conventions.

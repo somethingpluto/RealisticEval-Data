@@ -12,7 +12,7 @@ class TestXmlToDataFrame(unittest.TestCase):
                         </sequence>
                       </root>"""
         xml_input = StringIO(xml_data)
-        df = xml_to_dataframe(xml_input)
+        df = parse_xml_to_dataframe(xml_input)
         expected = pd.DataFrame([{'name': 'John', 'age': '30'}])
         pd.testing.assert_frame_equal(df, expected)
 
@@ -28,7 +28,7 @@ class TestXmlToDataFrame(unittest.TestCase):
                         </sequence>
                       </root>"""
         xml_input = StringIO(xml_data)
-        df = xml_to_dataframe(xml_input)
+        df = parse_xml_to_dataframe(xml_input)
         expected = pd.DataFrame([{'name': 'Alice', 'age': '25'}, {'name': 'Bob', 'age': '22'}])
         pd.testing.assert_frame_equal(df, expected)
 
@@ -37,7 +37,7 @@ class TestXmlToDataFrame(unittest.TestCase):
                         <sequence></sequence>
                       </root>"""
         xml_input = StringIO(xml_data)
-        df = xml_to_dataframe(xml_input)
+        df = parse_xml_to_dataframe(xml_input)
         expected = pd.DataFrame([{}])
         pd.testing.assert_frame_equal(df, expected)
 
@@ -51,13 +51,13 @@ class TestXmlToDataFrame(unittest.TestCase):
                         </sequence>
                       </root>"""
         xml_input = StringIO(xml_data)
-        df = xml_to_dataframe(xml_input)
+        df = parse_xml_to_dataframe(xml_input)
         expected = pd.DataFrame([{'name': 'Chris', 'age': None}, {'name': None, 'age': '28'}])
         pd.testing.assert_frame_equal(df, expected)
 
     def test_no_sequences(self):
         xml_data = """<root></root>"""
         xml_input = StringIO(xml_data)
-        df = xml_to_dataframe(xml_input)
+        df = parse_xml_to_dataframe(xml_input)
         expected = pd.DataFrame()
         pd.testing.assert_frame_equal(df, expected)

@@ -1,0 +1,99 @@
+Here’s the equivalent C++ test class using the Catch2 testing framework, ensuring that the functionality and logic of the original Python tests are preserved:
+
+```cpp
+#define CATCH_CONFIG_MAIN
+#include <catch2/catch.hpp>
+#include <fstream>
+#include <variant>
+#include <vector>
+#include <string>
+
+// Assuming read_data_from_file is declared somewhere
+std::vector<std::variant<int, float, std::string>> read_data_from_file(const std::string& path);
+
+// Helper function to create a test file
+void create_test_file(const std::string& file_name, const std::string& content) {
+    std::ofstream writer(file_name);
+    writer << content;
+    writer.close();
+}
+
+TEST_CASE("Read valid integers") {
+    std::string file_path = "valid_integers.txt";
+    create_test_file(file_path, "42\n-7\n0\n100\n");
+    auto result = read_data_from_file(file_path);
+    
+    REQUIRE(result.size() == 4);
+    REQUIRE(std::get<int>(result[0]) == 42);
+    REQUIRE(std::get<int>(result[1]) == -7);
+    REQUIRE(std::get<int>(result[2]) == 0);
+    REQUIRE(std::get<int>(result[3]) == 100);
+
+    std::remove(file_path.c_str()); // Clean up the test file
+}
+
+TEST_CASE("Read valid floats") {
+    std::string file_path = "valid_floats.txt";
+    create_test_file(file_path, "3.14\n-0.001\n2.71828\n0.0\n");
+    auto result = read_data_from_file(file_path);
+    
+    REQUIRE(result.size() == 4);
+    REQUIRE(std::get<float>(result[0]) == Approx(3.14f));
+    REQUIRE(std::get<float>(result[1]) == Approx(-0.001f));
+    REQUIRE(std::get<float>(result[2]) == Approx(2.71828f));
+    REQUIRE(std::get<float>(result[3]) == Approx(0.0f));
+
+    std::remove(file_path.c_str()); // Clean up the test file
+}
+
+TEST_CASE("Read mixed data") {
+    std::string file_path = "mixed_data.txt";
+    create_test_file(file_path, "Hello\n42\n3.14\nWorld\n-19.99\n");
+    auto result = read_data_from_file(file_path);
+    
+    REQUIRE(result.size() == 5);
+    REQUIRE(std::get<std::string>(result[0]) == "Hello");
+    REQUIRE(std::get<int>(result[1]) == 42);
+    REQUIRE(std::get<float>(result[2]) == Approx(3.14f));
+    REQUIRE(std::get<std::string>(result[3]) == "World");
+    REQUIRE(std::get<float>(result[4]) == Approx(-19.99f));
+
+    std::remove(file_path.c_str()); // Clean up the test file
+}
+
+TEST_CASE("Read empty file") {
+    std::string file_path = "empty_file.txt";
+    create_test_file(file_path, "");
+    auto result = read_data_from_file(file_path);
+    
+    REQUIRE(result.size() == 0);
+
+    std::remove(file_path.c_str()); // Clean up the test file
+}
+
+TEST_CASE("Read invalid data") {
+    std::string file_path = "invalid_data.txt";
+    create_test_file(file_path, "Hello\n42a\n3.14.15\nWorld!\n");
+    auto result = read_data_from_file(file_path);
+    
+    REQUIRE(result.size() == 4);
+    REQUIRE(std::get<std::string>(result[0]) == "Hello");
+    REQUIRE(std::get<std::string>(result[1]) == "42a");
+    REQUIRE(std::get<std::string>(result[2]) == "3.14.15");
+    REQUIRE(std::get<std::string>(result[3]) == "World!");
+
+    std::remove(file_path.c_str()); // Clean up the test file
+}
+```
+
+### Explanation:
+
+1. **Includes and Definitions**: The necessary Catch2 header is included, and `#define CATCH_CONFIG_MAIN` is used to define the main entry point for the test executable.
+
+2. **Helper Function**: The `create_test_file` function is defined to create a file with specified content, mimicking the behavior in the Python test class.
+
+3. **Test Cases**: Each Python test case is translated into a Catch2 `TEST_CASE`. The logic is preserved using Catch2's `REQUIRE` assertion, which is similar to Python's `assertEqual`.
+
+4. **Handling Variants**: C++'s `std::variant` is used to handle multiple types. The `std::get<T>` function extracts the value of the appropriate type from the variant, which corresponds to the original type assertions in Python.
+
+5. **Cleaning Up**: The C++ `std::remove` function is used to delete the test files after each test, ensuring cleanup similar to the Python implementation.

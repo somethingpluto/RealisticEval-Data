@@ -1,4 +1,4 @@
-def changed_clef(abc: str, clef: str = "bass") -> str:
+def insert_clef(abc: str, clef: str = "bass") -> str:
     """
     Modify the ABC string by inserting the specified clef (e.g., "clef=bass")
     after the tone line (K:), or "bass" if no clef is specified.

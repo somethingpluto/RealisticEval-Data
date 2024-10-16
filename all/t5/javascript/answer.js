@@ -1,12 +1,4 @@
 function matrixMultiply(matrixA, matrixB) {
-    /**
-     * Implementing matrix multiplication
-     * @param {Array<Array<number>>} matrixA - matrix A
-     * @param {Array<Array<number>>} matrixB - matrix B
-     * @returns {Array<Array<number>>} matrixA * matrixB multiplication result
-     */
-
-    // Check if either matrix is empty or has no elements
     if (!matrixA || !matrixB || !matrixA[0] || !matrixB[0]) {
         return [];
     }

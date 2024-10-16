@@ -1,0 +1,84 @@
+Here's the equivalent C++ code for the provided Python code. This C++ version maintains the same functionality, structure, and logic while adapting to C++ syntax and features.
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <random>
+#include <string>
+#include <openssl/sha.h>
+
+std::vector<uint8_t> generate_random_salt(size_t length) {
+    std::vector<uint8_t> salt(length);
+    std::random_device rd;  // Obtain a random number from hardware
+    std::mt19937 generator(rd());  // Seed the generator
+    std::uniform_int_distribution<int> distribution(0, 255);  // Distribution in range [0, 255]
+
+    for (size_t i = 0; i < length; ++i) {
+        salt[i] = static_cast<uint8_t>(distribution(generator));
+    }
+    return salt;
+}
+
+std::vector<uint8_t> hash_with_sha256(const std::string& password, const std::vector<uint8_t>& salt) {
+    // Create a SHA256 hash object
+    SHA256_CTX sha256;
+    SHA256_Init(&sha256);
+    
+    // Update the hash object with the salt
+    SHA256_Update(&sha256, salt.data(), salt.size());
+    
+    // Hash the password
+    SHA256_Update(&sha256, password.data(), password.size());
+    
+    std::vector<uint8_t> hashed_password(SHA256_DIGEST_LENGTH);
+    SHA256_Final(hashed_password.data(), &sha256);
+    
+    return hashed_password;
+}
+
+std::vector<uint8_t> hash_password_with_salt(const std::string& password) {
+    // Generate a 16-byte random salt
+    std::vector<uint8_t> salt = generate_random_salt(16);
+    // Hash the password with the salt using SHA-256
+    std::vector<uint8_t> hashed_password = hash_with_sha256(password, salt);
+    // Combine the salt and the hashed password
+    std::vector<uint8_t> salt_and_hashed_password;
+    
+    // Reserve space for the combined vector
+    salt_and_hashed_password.reserve(salt.size() + hashed_password.size());
+    
+    // Insert salt and hashed password
+    salt_and_hashed_password.insert(salt_and_hashed_password.end(), salt.begin(), salt.end());
+    salt_and_hashed_password.insert(salt_and_hashed_password.end(), hashed_password.begin(), hashed_password.end());
+    
+    return salt_and_hashed_password;
+}
+
+int main() {
+    std::string password = "my_secure_password";
+    std::vector<uint8_t> result = hash_password_with_salt(password);
+    
+    // Output the result (for demonstration purposes)
+    std::cout << "Salt and hashed password: ";
+    for (const auto& byte : result) {
+        std::cout << std::hex << static_cast<int>(byte);
+    }
+    std::cout << std::endl;
+
+    return 0;
+}
+```
+
+### Key Differences and Notes:
+
+1. **Header Files**: In C++, we need to include relevant headers for the functionalities we use (e.g., `<random>` for generating random numbers and `<openssl/sha.h>` for SHA-256 hashing).
+
+2. **Data Types**: We use `std::vector<uint8_t>` for byte arrays in C++ as opposed to `bytes` in Python.
+
+3. **Random Number Generation**: The random salt is generated using the C++ `<random>` library, which is a bit more manual than the Python `os.urandom()` method.
+
+4. **SHA-256 Hashing**: We use OpenSSL's SHA-256 functions, which require initializing, updating, and finalizing the hash.
+
+5. **Combining Data**: We reserve space and combine the salt and hashed password in a manner that matches the original Python logic.
+
+6. **Output**: The main function demonstrates how to call the hashing function and prints the output in hexadecimal format for verification.

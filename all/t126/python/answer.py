@@ -1,6 +1,6 @@
 import math
 
-def calculate_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+def calculate_haversine_distance(latitude1: float, longitude1: float, latitude2: float, longitude2: float) -> float:
     """
     Calculates the great-circle distance between two points on the Earth
     using their latitude and longitude based on the Haversine formula.

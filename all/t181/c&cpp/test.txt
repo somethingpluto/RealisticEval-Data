@@ -1,0 +1,94 @@
+Here’s the equivalent test class using the Catch2 testing framework in C++:
+
+```cpp
+#define CATCH_CONFIG_MAIN
+#include <catch2/catch.hpp>
+#include <fstream>
+#include <filesystem>
+#include <vector>
+#include <string>
+
+// Function to be tested
+std::vector<char> read_file_to_byte_array(const std::string& file_path);
+
+// Test Fixture
+class TestFileOperations {
+public:
+    std::string test_file = "testFile.txt";
+
+    // Setup
+    TestFileOperations() {
+        std::ofstream f(test_file, std::ios::binary);
+        f.write("Test content", 12);
+    }
+
+    // Teardown
+    ~TestFileOperations() {
+        if (std::filesystem::exists(test_file)) {
+            std::filesystem::remove(test_file);
+        }
+    }
+};
+
+TEST_CASE_METHOD(TestFileOperations, "Test reading a file that exists and has content") {
+    auto content = read_file_to_byte_array(test_file);
+    REQUIRE(content == std::vector<char>{'T', 'e', 's', 't', ' ', 'c', 'o', 'n', 't', 'e', 'n', 't'});
+}
+
+TEST_CASE("Test reading an empty file") {
+    std::string empty_file = "emptyFile.txt";
+    std::ofstream(empty_file); // Create an empty file
+
+    auto content = read_file_to_byte_array(empty_file);
+    REQUIRE(content.size() == 0);
+
+    std::filesystem::remove(empty_file); // Cleanup
+}
+
+TEST_CASE("Test reading a file that does not exist") {
+    std::string non_existent_file_path = "nonExistentFile.txt";
+    REQUIRE_THROWS_AS(read_file_to_byte_array(non_existent_file_path), std::runtime_error);
+}
+
+TEST_CASE("Test reading a file with special characters in its content") {
+    std::string special_content = "Special content: !@#$%^&*()_+";
+    std::string test_file = "testFile.txt";
+
+    std::ofstream f(test_file, std::ios::binary);
+    f.write(special_content.c_str(), special_content.size());
+
+    auto content = read_file_to_byte_array(test_file);
+    REQUIRE(content == std::vector<char>(special_content.begin(), special_content.end()));
+}
+
+TEST_CASE("Test reading a large file") {
+    std::string test_file = "testFile.txt";
+    std::vector<char> large_content(256);
+    for (int i = 0; i < 256; ++i) {
+        large_content[i] = static_cast<char>(i);
+    }
+    large_content.resize(10 * 1024 * 256); // 10 MB
+
+    std::ofstream f(test_file, std::ios::binary);
+    f.write(large_content.data(), large_content.size());
+
+    auto content = read_file_to_byte_array(test_file);
+    REQUIRE(content == large_content);
+}
+```
+
+### Changes Made:
+
+1. **Catch2 Header**: Included the `catch2/catch.hpp` header for the Catch2 framework.
+
+2. **Test Fixture**: Created a `TestFileOperations` class to handle setup and teardown for the test file.
+
+3. **Test Cases**: Used `TEST_CASE` and `REQUIRE` for assertions instead of the `unittest` framework's methods.
+
+4. **File Operations**: Used `std::ofstream` for file writing and `std::filesystem` for file existence checks and removal.
+
+5. **Exception Handling**: Used `REQUIRE_THROWS_AS` to check for exceptions, similar to the Python `assertRaises`.
+
+6. **Vector Initialization**: Initialized vectors in C++ to compare against expected byte arrays. 
+
+Make sure to link the Catch2 library when compiling your tests, and adjust the file paths as necessary for your environment.

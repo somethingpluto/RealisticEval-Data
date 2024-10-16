@@ -32,4 +32,4 @@ union ConvertResult {
  * @param value The input string value.
  * @return A union containing the converted value (int, float, or original string).
  */
-ConvertResult numericalStrConvert(const std::string& value) {}
+ConvertResult numerical_str_convert(const std::string& value) {}

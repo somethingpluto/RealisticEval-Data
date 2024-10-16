@@ -1,6 +1,6 @@
 from typing import Union
 
-def get_line_segment_intersection(seg1: tuple, seg2: tuple) -> Union[tuple, None]:
+def check_segments_intersection(seg1: tuple, seg2: tuple) -> Union[tuple, None]:
     """
     Calculate the intersection point of two line segments, if it exists.
 

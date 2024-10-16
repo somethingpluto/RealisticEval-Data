@@ -1,0 +1,77 @@
+Here's the equivalent Jest test class in TypeScript for the provided Python unittest class. The functionality and logic are preserved while adapting to TypeScript conventions and Jest syntax:
+
+```typescript
+import * as fs from 'fs';
+import { copyFileWithBufferedStream } from './yourModule'; // Adjust the import according to your file structure
+
+describe('File Copy Tests', () => {
+    const sourceFile = 'testSourceFile.txt';
+    const destinationFile = 'testDestinationFile.txt';
+
+    beforeEach(() => {
+        fs.writeFileSync(sourceFile, 'This is a test file content.'); // Create test source file
+    });
+
+    afterEach(() => {
+        // Remove files after each test
+        [sourceFile, destinationFile].forEach((file) => {
+            if (fs.existsSync(file)) {
+                fs.unlinkSync(file);
+            }
+        });
+    });
+
+    test('copy file with content', () => {
+        const timeTaken = copyFileWithBufferedStream(sourceFile, destinationFile);
+        expect(fs.existsSync(destinationFile)).toBe(true);
+        expect(fs.statSync(sourceFile).size).toBe(fs.statSync(destinationFile).size);
+        expect(timeTaken).toBeGreaterThanOrEqual(0);
+    });
+
+    test('copy empty file', () => {
+        const emptyFile = 'emptyFile.txt';
+        fs.writeFileSync(emptyFile, ''); // Create an empty file
+        const destinationEmptyFile = 'destinationEmptyFile.txt';
+        const timeTaken = copyFileWithBufferedStream(emptyFile, destinationEmptyFile);
+        expect(fs.existsSync(destinationEmptyFile)).toBe(true);
+        expect(fs.statSync(destinationEmptyFile).size).toBe(0);
+        expect(timeTaken).toBeGreaterThanOrEqual(0);
+        fs.unlinkSync(emptyFile);
+        fs.unlinkSync(destinationEmptyFile);
+    });
+
+    test('copy non-existent file', () => {
+        const nonExistentFilePath = 'nonExistentFile.txt';
+        expect(() => {
+            copyFileWithBufferedStream(nonExistentFilePath, destinationFile);
+        }).toThrow();
+    });
+
+    test('copy file overwrite', () => {
+        fs.writeFileSync(destinationFile, 'Old content'); // Create a file to overwrite
+        const timeTaken = copyFileWithBufferedStream(sourceFile, destinationFile);
+        expect(fs.existsSync(destinationFile)).toBe(true);
+        expect(fs.statSync(sourceFile).size).toBe(fs.statSync(destinationFile).size);
+        expect(timeTaken).toBeGreaterThan(0);
+    });
+
+    test('copy large file', () => {
+        const largeContent = new Uint8Array(10 * 1024 * 1024); // 10 MB
+        for (let i = 0; i < largeContent.length; i++) {
+            largeContent[i] = i % 256;
+        }
+        fs.writeFileSync(sourceFile, largeContent); // Write large content to source file
+        const timeTaken = copyFileWithBufferedStream(sourceFile, destinationFile);
+        expect(fs.existsSync(destinationFile)).toBe(true);
+        expect(fs.statSync(sourceFile).size).toBe(fs.statSync(destinationFile).size);
+        expect(timeTaken).toBeGreaterThan(0);
+    });
+});
+```
+
+### Key Adjustments:
+- Replaced `unittest.TestCase` with Jest's `describe` and `test` functions.
+- Used `beforeEach` and `afterEach` for setup and teardown functionality.
+- Converted `assert` methods to Jest's `expect` assertions.
+- Used `fs.writeFileSync` and `fs.unlinkSync` for file operations.
+- Utilized TypeScript syntax and types.

@@ -1,0 +1,117 @@
+Here’s the equivalent C++ test class using the Catch2 framework, converting the provided Python unittest code:
+
+```cpp
+#define CATCH_CONFIG_MAIN
+#include <catch2/catch.hpp>
+#include <vector>
+#include <cmath>
+
+// Point class definition (assuming it's already defined in your code)
+class Point {
+public:
+    double x;
+    double y;
+
+    Point(double x, double y) : x(x), y(y) {}
+
+    double distance_to(const Point& other) const {
+        return std::sqrt((x - other.x) * (x - other.x) + (y - other.y) * (y - other.y));
+    }
+};
+
+// Function declaration (assuming it's already defined in your code)
+std::vector<Point> find_k_nearest_neighbors(const std::vector<Point>& points, const Point& query_point, int k);
+
+// Helper function to check if a point is contained in the result
+bool contains_point(const std::vector<Point>& points, const Point& point) {
+    for (const auto& p : points) {
+        if (std::fabs(p.x - point.x) < 0.001 && std::fabs(p.y - point.y) < 0.001) {
+            return true;
+        }
+    }
+    return false;
+}
+
+TEST_CASE("Find k nearest neighbors simple case") {
+    std::vector<Point> points = {
+        Point(1, 2),
+        Point(3, 4),
+        Point(1, -1),
+        Point(5, 2)
+    };
+    Point query_point(2, 2);
+    int k = 2;
+    auto result = find_k_nearest_neighbors(points, query_point, k);
+
+    REQUIRE(result.size() == 2);
+    REQUIRE(contains_point(result, Point(1, 2)));
+    REQUIRE(contains_point(result, Point(3, 4)));
+}
+
+TEST_CASE("Find k nearest neighbors exact match") {
+    std::vector<Point> points = {
+        Point(1, 2),
+        Point(2, 2),
+        Point(3, 3)
+    };
+    Point query_point(2, 2);
+    int k = 1;
+    auto result = find_k_nearest_neighbors(points, query_point, k);
+
+    REQUIRE(result.size() == 1);
+    REQUIRE(std::fabs(result[0].x - 2.0) < 0.001);
+    REQUIRE(std::fabs(result[0].y - 2.0) < 0.001);
+}
+
+TEST_CASE("Find k nearest neighbors larger k") {
+    std::vector<Point> points = {
+        Point(1, 2),
+        Point(3, 4),
+        Point(1, -1),
+        Point(5, 2)
+    };
+    Point query_point(2, 2);
+    int k = 5; // k is larger than the number of points
+    auto result = find_k_nearest_neighbors(points, query_point, k);
+
+    REQUIRE(result.size() == 4);
+}
+
+TEST_CASE("Find k nearest neighbors empty points") {
+    std::vector<Point> points = {};
+    Point query_point(2, 2);
+    int k = 3;
+    auto result = find_k_nearest_neighbors(points, query_point, k);
+
+    REQUIRE(result.size() == 0);
+}
+
+TEST_CASE("Find k nearest neighbors all points equidistant") {
+    std::vector<Point> points = {
+        Point(2, 3),
+        Point(3, 2),
+        Point(1, 2),
+        Point(2, 1)
+    };
+    Point query_point(2, 2);
+    int k = 2;
+    auto result = find_k_nearest_neighbors(points, query_point, k);
+
+    REQUIRE(result.size() == 2);
+    REQUIRE(contains_point(result, Point(2, 3)));
+    REQUIRE(contains_point(result, Point(3, 2)));
+}
+```
+
+### Key Changes and Explanations:
+1. **Catch2 Setup**: The `#define CATCH_CONFIG_MAIN` directive allows Catch2 to generate the main function automatically.
+
+2. **Test Cases**: Each test from the Python code is converted to a `TEST_CASE` macro. The structure remains consistent with the original tests.
+
+3. **Assertions**: The Python assertions (`assertEqual`, `assertTrue`, `assertAlmostEqual`) are replaced with Catch2's `REQUIRE` macro, which checks conditions and reports failures.
+
+4. **Contains Point Function**: The helper function `contains_point` checks if a point is present in the results, mimicking the original Python method.
+
+5. **Floating Point Comparison**: The `std::fabs` function is used to check for near equality within a tolerance, similar to Python's `math.isclose`.
+
+This C++ version retains the same functionality and logic as the original Python tests while adapting to the Catch2 framework.

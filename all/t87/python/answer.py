@@ -1,7 +1,7 @@
 from datetime import datetime
 
 
-def timestamp_to_readable_date(unix_timestamp):
+def convert_unix_timestamp_to_readable_date(unix_timestamp: int) -> str:
     # Convert Unix timestamp to a datetime object
     date = datetime.fromtimestamp(unix_timestamp)
 

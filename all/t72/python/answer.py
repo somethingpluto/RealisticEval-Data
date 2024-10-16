@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def get_3d_coordinates(K, d, x, y):
+def convert_pixel_to_3d_coordinates(K, d, x, y):
     """Written by ChatGPT and fixed by me
 
     Args:

@@ -2,7 +2,7 @@ from typing import List
 import numpy as np
 
 
-def change_reference_frame(point_cloud: np.array, ref_frame_points: List[np.array]) -> np.array:
+def transform_point_cloud_to_reference_frame(point_cloud: np.array, ref_frame_points: List[np.array]) -> np.array:
     """
     Transforms a point cloud to a new reference frame defined by three points.
 

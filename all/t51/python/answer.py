@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def change_reference_frame(point_cloud, ref_frame_points):
+def transform_point_cloud_to_reference_frame(point_cloud, ref_frame_points):
     """
     Transforms a point cloud to a new reference frame defined by three points.
 

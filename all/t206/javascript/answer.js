@@ -1,0 +1,24 @@
+function circleIntersectionArea(x1, y1, r1, x2, y2, r2) {
+    const PI = 3.141592653589793;
+    const d = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+
+    if (d >= r1 + r2) {
+        return 0.0;
+    }
+
+    if (d <= Math.abs(r1 - r2)) {
+        const r = Math.min(r1, r2);
+        return PI * r * r;
+    }
+
+    const r1Sq = r1 * r1;
+    const r2Sq = r2 * r2;
+
+    const alpha = Math.acos((r1Sq + d * d - r2Sq) / (2 * r1 * d)) * 2;
+    const beta = Math.acos((r2Sq + d * d - r1Sq) / (2 * r2 * d)) * 2;
+
+    const area1 = 0.5 * r1Sq * (alpha - Math.sin(alpha));
+    const area2 = 0.5 * r2Sq * (beta - Math.sin(beta));
+
+    return area1 + area2;
+}

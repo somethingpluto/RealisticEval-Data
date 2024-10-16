@@ -1,0 +1,60 @@
+Here’s the equivalent test class using Catch2 in C++ for the provided Python `unittest` test class:
+
+```cpp
+#define CATCH_CONFIG_MAIN
+#include <catch2/catch.hpp>
+#include <vector>
+#include <string>
+
+// Assuming hash_password_with_salt is declared somewhere
+std::vector<uint8_t> hash_password_with_salt(const std::string& password);
+
+TEST_CASE("Hash Password with Salt Length", "[hashing]") {
+    /* Test that the hashPasswordWithSalt method returns a byte array with the correct length. */
+    std::string password = "testPassword";
+    auto result = hash_password_with_salt(password);
+    // SHA-256 hash length is 32 bytes, and the salt length is 16 bytes
+    REQUIRE(result.size() == 48);
+}
+
+TEST_CASE("Salt Is Included In Result", "[hashing]") {
+    /* Test that the salt is correctly generated and included in the hash result. */
+    std::string password = "testPassword";
+    auto result = hash_password_with_salt(password);
+    std::vector<uint8_t> salt(result.begin(), result.begin() + 16);  // First 16 bytes represent the salt
+    REQUIRE(salt.size() == 16);
+    REQUIRE(salt.data() != nullptr);
+}
+
+TEST_CASE("Different Passwords Produce Different Hashes", "[hashing]") {
+    /* Test that two different passwords produce different hashes, even with the same salt. */
+    std::string password1 = "password123";
+    std::string password2 = "password456";
+    auto hash1 = hash_password_with_salt(password1);
+    auto hash2 = hash_password_with_salt(password2);
+    REQUIRE(hash1 != hash2);
+}
+
+TEST_CASE("Same Password Different Salts", "[hashing]") {
+    /* Test that the same password produces different hashes when hashed with different salts. */
+    std::string password = "password123";
+    auto hash1 = hash_password_with_salt(password);
+    auto hash2 = hash_password_with_salt(password);
+    // The salt is generated randomly, so the hashes should be different.
+    REQUIRE(hash1 != hash2);
+}
+```
+
+### Key Changes and Notes:
+
+1. **Catch2 Configuration**: The `#define CATCH_CONFIG_MAIN` line allows Catch2 to create a main function automatically.
+
+2. **Macros for Assertions**: The Python `assertEqual`, `assertIsNotNone`, and `assertNotEqual` are replaced with Catch2’s `REQUIRE` macro for assertions.
+
+3. **Comments and Docstrings**: Python docstrings have been converted into C++ comments using `/* */` for multi-line documentation.
+
+4. **Type Adjustments**: C++ types are used, and string handling uses `std::string` and `std::vector<uint8_t>`.
+
+5. **Testing Framework Syntax**: Catch2 uses the `TEST_CASE` macro for defining test cases, which is different from Python's `unittest.TestCase`.
+
+This ensures the logic and functionality of the tests are preserved while adapting to the C++ Catch2 framework.

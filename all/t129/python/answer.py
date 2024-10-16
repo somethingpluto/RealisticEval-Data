@@ -1,6 +1,6 @@
 import re
 
-def valid_url(url: str) -> bool:
+def is_valid_url(url: str) -> bool:
     """
     Validates a URL string using a simplified and more comprehensive regular expression.
 

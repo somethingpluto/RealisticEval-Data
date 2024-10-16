@@ -26,7 +26,7 @@ class TestCompareFiles(unittest.TestCase):
             f1.write(file1_content)
             f2.write(file2_content)
 
-        result = compare_files(self.file1_path, self.file2_path)
+        result = diff_files(self.file1_path, self.file2_path)
         self.assertEqual(len(result), 0, "There should be no differences detected")
 
     def test_files_with_differences(self):
@@ -38,17 +38,17 @@ class TestCompareFiles(unittest.TestCase):
             f1.write(file1_content)
             f2.write(file2_content)
 
-        result = compare_files(self.file1_path, self.file2_path)
+        result = diff_files(self.file1_path, self.file2_path)
         self.assertNotEqual(len(result), 0, "There should be differences detected")
 
     def test_nonexistent_file(self):
         # Test when one of the files does not exist
         with patch('builtins.open', side_effect=FileNotFoundError("File not found")):
             with self.assertRaises(FileNotFoundError):
-                compare_files('nonexistent.txt', 'file2.txt')
+                diff_files('nonexistent.txt', 'file2.txt')
 
     def test_file_reading_error(self):
         # Test when there's an error reading the file
         with patch('builtins.open', side_effect=IOError("Error reading file")):
             with self.assertRaises(IOError):
-                compare_files('file1.txt', 'file2.txt')
+                diff_files('file1.txt', 'file2.txt')

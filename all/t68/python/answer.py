@@ -1,4 +1,4 @@
-def divide_list(lst, n):
+def split_list_into_parts(lst, n):
     """
     Divide a list into n parts as evenly as possible. Excess elements are distributed to earlier sublists.
 

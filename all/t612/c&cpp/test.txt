@@ -1,0 +1,91 @@
+Here’s the equivalent test class using the Catch2 framework in C++:
+
+```cpp
+#include <catch2/catch.hpp>
+#include <fstream>
+#include <filesystem>
+#include <string>
+#include <vector>
+
+void find_and_replace_in_file(const std::string& file_path, const std::string& search_string, const std::string& replace_string);
+
+class TestFindAndReplace {
+public:
+    TestFindAndReplace() {
+        // Create a temporary directory for the tests
+        temp_dir = std::filesystem::temp_directory_path() / "temp";
+        std::filesystem::create_directories(temp_dir);
+    }
+
+    ~TestFindAndReplace() {
+        // Remove the temporary directory after tests
+        for (const auto& entry : std::filesystem::directory_iterator(temp_dir)) {
+            std::filesystem::remove(entry.path());
+        }
+        std::filesystem::remove(temp_dir);
+    }
+
+    std::filesystem::path temp_dir;
+};
+
+TEST_CASE_METHOD(TestFindAndReplace, "Basic find and replace") {
+    auto file_path = temp_dir / "testfile.txt";
+    std::ofstream(file_path) << "Hello World\nGoodbye World\n";
+
+    find_and_replace_in_file(file_path.string(), "World", "Java");
+
+    std::ifstream ifs(file_path);
+    std::string result((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+    REQUIRE(result == "Hello Java\nGoodbye Java\n");
+}
+
+TEST_CASE_METHOD(TestFindAndReplace, "No occurrences of the search string") {
+    auto file_path = temp_dir / "testfile.txt";
+    std::ofstream(file_path) << "Hello World\nGoodbye World\n";
+
+    find_and_replace_in_file(file_path.string(), "Python", "Java");
+
+    std::ifstream ifs(file_path);
+    std::string result((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+    REQUIRE(result == "Hello World\nGoodbye World\n");
+}
+
+TEST_CASE_METHOD(TestFindAndReplace, "Multiple occurrences in a single line") {
+    auto file_path = temp_dir / "testfile.txt";
+    std::ofstream(file_path) << "Hello World World\nGoodbye World\n";
+
+    find_and_replace_in_file(file_path.string(), "World", "Java");
+
+    std::ifstream ifs(file_path);
+    std::string result((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+    REQUIRE(result == "Hello Java Java\nGoodbye Java\n");
+}
+
+TEST_CASE_METHOD(TestFindAndReplace, "Replace with an empty string") {
+    auto file_path = temp_dir / "testfile.txt";
+    std::ofstream(file_path) << "Hello World\nGoodbye World\n";
+
+    find_and_replace_in_file(file_path.string(), "World", "");
+
+    std::ifstream ifs(file_path);
+    std::string result((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+    REQUIRE(result == "Hello \nGoodbye \n");
+}
+
+TEST_CASE_METHOD(TestFindAndReplace, "Empty file") {
+    auto file_path = temp_dir / "testfile.txt";
+    std::ofstream(file_path) << "\n";
+
+    find_and_replace_in_file(file_path.string(), "World", "Java");
+
+    std::ifstream ifs(file_path);
+    std::string result((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+    REQUIRE(result == "\n");
+}
+```
+
+### Notes:
+1. **Test Fixture**: The `TestFindAndReplace` class serves as a test fixture, similar to `setUp` and `tearDown` in unittest.
+2. **File Handling**: The C++ code uses `std::ofstream` and `std::ifstream` for file operations.
+3. **Assertions**: The `REQUIRE` macro is used for assertions, which is equivalent to `assertEqual` in unittest.
+4. **File Paths**: The temporary directory is created using `std::filesystem`, which is a modern C++ library for filesystem manipulation.

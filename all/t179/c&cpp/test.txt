@@ -1,0 +1,128 @@
+Here’s the equivalent test class using Catch2 in C++ for the provided Python `unittest` code. The functionality and logic of the tests are preserved, while adhering to C++ syntax and Catch2 conventions.
+
+```cpp
+#define CATCH_CONFIG_MAIN
+#include <catch2/catch.hpp>
+#include <filesystem>
+#include <fstream>
+#include <stdexcept>
+
+namespace fs = std::filesystem;
+
+void copy_directory(const std::string& source_dir, const std::string& target_dir);
+
+class TestDirectoryOperations {
+public:
+    TestDirectoryOperations() {
+        source_dir = "testSourceDir";
+        target_dir = "testTargetDir";
+
+        fs::create_directories(source_dir);
+        fs::create_directories(target_dir);
+    }
+
+    ~TestDirectoryOperations() {
+        delete_directory(source_dir);
+        delete_directory(target_dir);
+    }
+
+private:
+    std::string source_dir;
+    std::string target_dir;
+
+    void delete_directory(const std::string& dir_path) {
+        if (fs::exists(dir_path)) {
+            fs::remove_all(dir_path);
+        }
+    }
+};
+
+TEST_CASE_METHOD(TestDirectoryOperations, "Copy empty directory") {
+    copy_directory(source_dir, target_dir);
+
+    REQUIRE(fs::exists(target_dir));
+    REQUIRE(fs::is_directory(target_dir));
+    REQUIRE(fs::is_empty(target_dir));
+}
+
+TEST_CASE_METHOD(TestDirectoryOperations, "Copy directory with files") {
+    std::string test_file = (fs::path(source_dir) / "testFile.txt").string();
+    {
+        std::ofstream f(test_file);
+        f << "Sample content";
+    }
+
+    copy_directory(source_dir, target_dir);
+
+    std::string copied_file = (fs::path(target_dir) / "testFile.txt").string();
+    REQUIRE(fs::exists(copied_file));
+    REQUIRE(fs::file_size(test_file) == fs::file_size(copied_file));
+}
+
+TEST_CASE_METHOD(TestDirectoryOperations, "Non-existent source directory") {
+    std::string non_existent_dir = "nonExistentDir";
+
+    REQUIRE_THROWS_AS(copy_directory(non_existent_dir, target_dir), std::invalid_argument);
+}
+
+TEST_CASE_METHOD(TestDirectoryOperations, "Copy directory with subdirectories") {
+    std::string sub_dir = (fs::path(source_dir) / "subDir").string();
+    fs::create_directories(sub_dir);
+    std::string test_file = (fs::path(sub_dir) / "testFile.txt").string();
+    {
+        std::ofstream f(test_file);
+        f << "Sample content in subdirectory";
+    }
+
+    copy_directory(source_dir, target_dir);
+
+    std::string copied_sub_dir = (fs::path(target_dir) / "subDir").string();
+    std::string copied_file = (fs::path(copied_sub_dir) / "testFile.txt").string();
+
+    REQUIRE(fs::exists(copied_sub_dir));
+    REQUIRE(fs::exists(copied_file));
+}
+
+TEST_CASE_METHOD(TestDirectoryOperations, "Overwrite file in target directory") {
+    std::string test_file = (fs::path(source_dir) / "testFile.txt").string();
+    {
+        std::ofstream f(test_file);
+        f << "Source content";
+    }
+
+    std::string target_file = (fs::path(target_dir) / "testFile.txt").string();
+    {
+        std::ofstream f(target_file);
+        f << "Target content";
+    }
+
+    copy_directory(source_dir, target_dir);
+
+    std::string copied_file = (fs::path(target_dir) / "testFile.txt").string();
+    REQUIRE(fs::exists(copied_file));
+
+    std::ifstream f(copied_file);
+    std::string copied_content((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
+
+    REQUIRE(copied_content == "Source content");
+}
+```
+
+### Key Adjustments Made:
+1. **Catch2 Setup**: The `#define CATCH_CONFIG_MAIN` line includes the main entry point for the Catch2 framework, which is necessary to run the tests.
+
+2. **Test Class Structure**: 
+   - The `TestDirectoryOperations` class is used to encapsulate setup and teardown functionality, similar to the `setUp` and `tearDown` methods in Python.
+   - The constructor initializes the source and target directories, while the destructor cleans them up.
+
+3. **Test Cases**: 
+   - Each test case is defined using the `TEST_CASE_METHOD` macro, which allows the tests to utilize the context of `TestDirectoryOperations`.
+   - Assertions in Catch2 are made using `REQUIRE`, which checks conditions and reports failures similarly to `assertTrue` and `assertEqual` in `unittest`.
+
+4. **Exception Handling**: 
+   - Instead of checking for a general exception, specific exceptions are caught (like `std::invalid_argument`) for clearer intent and robustness.
+
+5. **File I/O**: 
+   - The file operations utilize C++ streams to create and read files.
+
+This C++ code will work similarly to the provided Python tests, validating the functionality of the `copy_directory` function.

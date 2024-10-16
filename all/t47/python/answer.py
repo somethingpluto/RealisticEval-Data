@@ -2,7 +2,7 @@
 from datetime import datetime, timedelta
 
 
-def find_nth_weekday_of_specific_year(y, m, n, k):
+def calculate_nth_weekday_in_month(y, m, n, k):
     """
     Calculates the date of the nth occurrence of a specific weekday (k) in a given month (m) and year (y).
     If the nth occurrence does not exist within the month, it returns the last occurrence of that weekday in the month.

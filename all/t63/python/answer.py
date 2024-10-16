@@ -1,4 +1,4 @@
-def dataframe_to_markdown(df, md_path):
+def convert_dataframe_to_markdown(df, md_path):
     # Construct the header row
     headers = "| " + " | ".join(df.columns) + " |\n"
     # Construct the separator row

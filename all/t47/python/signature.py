@@ -1,7 +1,7 @@
 import datetime
 
 
-def find_nth_weekday_of_specific_year(y: int, m: int, n: int, k: int) -> datetime.date:
+def calculate_nth_weekday_in_month(year: int, month: int, occurrence: int, weekday: int) -> datetime.date:
     """
     Calculates the date of the nth occurrence of a specific weekday (k) in a given month (m) and year (y).
     If the nth occurrence does not exist within the month, it returns the last occurrence of that weekday in the month.

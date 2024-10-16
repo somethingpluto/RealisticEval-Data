@@ -1,0 +1,76 @@
+Here's the equivalent test class using the Catch2 framework in C++:
+
+```cpp
+#include <catch2/catch.hpp>
+#include <fstream>
+#include <string>
+#include <vector>
+
+// Function declaration (assumed to be defined elsewhere)
+std::vector<std::string> read_file_and_process_lines(const std::string& path);
+
+class TestAnswer {
+public:
+    TestAnswer() {
+        // Create a temporary file for testing
+        test_file_path = "testFile.txt";
+        std::ofstream(test_file_path); // Create an empty file
+    }
+
+    ~TestAnswer() {
+        // Cleanup after tests
+        std::remove(test_file_path.c_str());
+    }
+
+    void write_to_file(const std::string& content) {
+        // Helper method to write to the test file
+        std::ofstream writer(test_file_path);
+        writer << content;
+    }
+
+private:
+    std::string test_file_path;
+};
+
+TEST_CASE_METHOD(TestAnswer, "Test processing of normal input") {
+    write_to_file("Line 1\nLine 2 # Comment\nLine 3\n");
+    auto result = read_file_and_process_lines(test_file_path);
+    REQUIRE(result == std::vector<std::string>{"Line 1", "Line 2", "Line 3"});
+}
+
+TEST_CASE_METHOD(TestAnswer, "Test processing when only comments are present") {
+    write_to_file("# This is a comment\n# Another comment\n");
+    auto result = read_file_and_process_lines(test_file_path);
+    REQUIRE(result.empty());
+}
+
+TEST_CASE_METHOD(TestAnswer, "Test processing with empty lines") {
+    write_to_file("Line 1\n\nLine 2\n\n\nLine 3 # Comment\n");
+    auto result = read_file_and_process_lines(test_file_path);
+    REQUIRE(result == std::vector<std::string>{"Line 1", "Line 2", "Line 3"});
+}
+
+TEST_CASE_METHOD(TestAnswer, "Test processing when there are no inline comments") {
+    write_to_file("Line 1\nLine 2\nLine 3\n");
+    auto result = read_file_and_process_lines(test_file_path);
+    REQUIRE(result == std::vector<std::string>{"Line 1", "Line 2", "Line 3"});
+}
+
+TEST_CASE_METHOD(TestAnswer, "Test processing with only new lines") {
+    write_to_file("\n\n\n\n");
+    auto result = read_file_and_process_lines(test_file_path);
+    REQUIRE(result.empty());
+}
+
+TEST_CASE_METHOD(TestAnswer, "Test processing with mixed content") {
+    write_to_file("Valid line\n# This is a comment\nLine 2\n# Another comment\n\nLine 3 # End of line comment\n");
+    auto result = read_file_and_process_lines(test_file_path);
+    REQUIRE(result == std::vector<std::string>{"Valid line", "Line 2", "Line 3"});
+}
+```
+
+### Key Changes and Notes:
+- **Test Setup and Teardown**: The constructor (`TestAnswer()`) is used to create the test file, and the destructor (`~TestAnswer()`) is responsible for cleanup, similar to `setUp()` and `tearDown()` in Python.
+- **Using `REQUIRE`**: Catch2 uses `REQUIRE` for assertions, which is similar to `assertEqual` in unittest.
+- **Method for Writing to File**: The `write_to_file` method is kept as a member function for consistency.
+- **TEST_CASE_METHOD**: This is used to define tests that can access the class members, similar to methods within a unittest class.

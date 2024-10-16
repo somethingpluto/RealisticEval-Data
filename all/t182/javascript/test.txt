@@ -1,0 +1,95 @@
+Here’s the equivalent Jest test class for the provided Python `unittest` code. I'll explain the necessary changes due to language differences and ensure that all assertions in `unittest` are mapped to appropriate Jest equivalents.
+
+### Jest Test Class
+
+```javascript
+const fs = require('fs');
+const path = require('path');
+const { copyFileWithBufferedStream } = require('./yourModule'); // Adjust the path accordingly
+
+describe('File Copy Tests', () => {
+    const sourceFile = 'testSourceFile.txt';
+    const destinationFile = 'testDestinationFile.txt';
+
+    beforeEach(() => {
+        fs.writeFileSync(sourceFile, 'This is a test file content.'); // Set up test file
+    });
+
+    afterEach(() => {
+        // Clean up files
+        [sourceFile, destinationFile].forEach(file => {
+            if (fs.existsSync(file)) {
+                fs.unlinkSync(file);
+            }
+        });
+    });
+
+    test('copy file with content', async () => {
+        const timeTaken = await copyFileWithBufferedStream(sourceFile, destinationFile);
+        expect(fs.existsSync(destinationFile)).toBe(true);
+        expect(fs.statSync(sourceFile).size).toBe(fs.statSync(destinationFile).size);
+        expect(timeTaken).toBeGreaterThanOrEqual(0);
+    });
+
+    test('copy empty file', async () => {
+        const emptyFile = 'emptyFile.txt';
+        fs.writeFileSync(emptyFile, ''); // Create an empty file
+        const destinationEmptyFile = 'destinationEmptyFile.txt';
+        const timeTaken = await copyFileWithBufferedStream(emptyFile, destinationEmptyFile);
+        expect(fs.existsSync(destinationEmptyFile)).toBe(true);
+        expect(fs.statSync(destinationEmptyFile).size).toBe(0);
+        expect(timeTaken).toBeGreaterThanOrEqual(0);
+        fs.unlinkSync(emptyFile);
+        fs.unlinkSync(destinationEmptyFile);
+    });
+
+    test('copy non-existent file', async () => {
+        const nonExistentFilePath = 'nonExistentFile.txt';
+        await expect(copyFileWithBufferedStream(nonExistentFilePath, destinationFile)).rejects.toThrow();
+    });
+
+    test('copy file overwrite', async () => {
+        fs.writeFileSync(destinationFile, 'Old content');
+        const timeTaken = await copyFileWithBufferedStream(sourceFile, destinationFile);
+        expect(fs.existsSync(destinationFile)).toBe(true);
+        expect(fs.statSync(sourceFile).size).toBe(fs.statSync(destinationFile).size);
+        expect(timeTaken).toBeGreaterThan(0);
+    });
+
+    test('copy large file', async () => {
+        const largeContent = Buffer.alloc(10 * 1024 * 1024); // 10 MB
+        for (let i = 0; i < largeContent.length; i++) {
+            largeContent[i] = i % 256;
+        }
+        fs.writeFileSync(sourceFile, largeContent);
+        const timeTaken = await copyFileWithBufferedStream(sourceFile, destinationFile);
+        expect(fs.existsSync(destinationFile)).toBe(true);
+        expect(fs.statSync(sourceFile).size).toBe(fs.statSync(destinationFile).size);
+        expect(timeTaken).toBeGreaterThan(0);
+    });
+});
+```
+
+### Key Changes Explained:
+
+1. **Test Framework**: 
+   - The Python `unittest` framework is replaced by Jest. We use `describe` to group tests and `test` for individual test cases.
+
+2. **Setup and Teardown**:
+   - `setUp` and `tearDown` methods in Python are replaced with `beforeEach` and `afterEach` in Jest, respectively.
+
+3. **File Operations**:
+   - Python’s `open` and `write` methods are replaced with Node.js’s `fs.writeFileSync` for creating files.
+   - File existence checks and deletions are done using `fs.existsSync` and `fs.unlinkSync`.
+
+4. **Asynchronous Handling**:
+   - The `copy_file_with_buffered_stream` function is assumed to return a Promise, so `await` is used when calling it.
+   - Assertions for exceptions are handled using Jest's `expect(...).rejects.toThrow()` syntax.
+
+5. **Assertions**:
+   - Python's `assertTrue`, `assertEqual`, `assertGreaterEqual`, and `assertGreater` are replaced with Jest's `toBe(true)`, `toBe()`, and `toBeGreaterThan()`/`toBeGreaterThanOrEqual()`.
+
+6. **File Size**:
+   - File size comparisons are done using `fs.statSync` in Jest to get the file size.
+
+This conversion maintains the functionality and logic of the tests while adapting to the JavaScript environment and Jest's syntax. Adjust the module import path to match your project structure.

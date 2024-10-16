@@ -1,4 +1,4 @@
-def rename_files(directory: str):
+def rename_png_files_in_directory(directory: str):
     """
     Renames PNG files in a specified directory by appending a sequence number to each file.
     The files are sorted alphabetically, and each base name is assigned sequential numbers.

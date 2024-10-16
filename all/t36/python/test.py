@@ -15,7 +15,7 @@ class TestFloydWarshallShortestPaths(unittest.TestCase):
             [3, 6, 0, 1],
             [2, 5, 7, 0]
         ]
-        result = floyd_warshall_shortest_paths(matrix)
+        result = find_shortest_paths_by_floyd_warshall(matrix)
         self.assertEqual(result, expected, "Basic functionality test.js failed")
 
     def test_single_vertex_graph(self):
@@ -26,7 +26,7 @@ class TestFloydWarshallShortestPaths(unittest.TestCase):
         expected = [
             [0]
         ]
-        result = floyd_warshall_shortest_paths(matrix)
+        result = find_shortest_paths_by_floyd_warshall(matrix)
         self.assertEqual(result, expected, "Single vertex graph test.js failed")
 
     def test_two_vertices_graph(self):
@@ -39,7 +39,7 @@ class TestFloydWarshallShortestPaths(unittest.TestCase):
             [0, 1],
             [1, 0]
         ]
-        result = floyd_warshall_shortest_paths(matrix)
+        result = find_shortest_paths_by_floyd_warshall(matrix)
         self.assertEqual(result, expected, "Two vertices graph test.js failed")
 
     def test_large_infinite_weights(self):
@@ -52,7 +52,7 @@ class TestFloydWarshallShortestPaths(unittest.TestCase):
             [0, float('inf')],
             [float('inf'), 0]
         ]
-        result = floyd_warshall_shortest_paths(matrix)
+        result = find_shortest_paths_by_floyd_warshall(matrix)
         self.assertEqual(result, expected, "Large infinite weights test.js failed")
 
     def test_negative_cycle(self):
@@ -67,7 +67,7 @@ class TestFloydWarshallShortestPaths(unittest.TestCase):
             [-2, -1, -2],
             [-2, -1, -2]
         ]
-        result = floyd_warshall_shortest_paths(matrix)
+        result = find_shortest_paths_by_floyd_warshall(matrix)
         self.assertEqual(result, expected, "Negative cycle test.js failed")
 
 

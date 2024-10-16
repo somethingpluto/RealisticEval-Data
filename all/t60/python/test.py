@@ -25,7 +25,7 @@ class TestCommonColumns(unittest.TestCase):
         for filename, data in zip(filenames, datas):
             with open(os.path.join(self.test_dir, filename), 'w') as f:
                 f.write(data)
-        self.assertEqual(set(find_common_columns(self.test_dir)), set(['C', 'B', 'A']))
+        self.assertEqual(set(get_common_columns_from_csvs(self.test_dir)), set(['C', 'B', 'A']))
 
     def test_no_common_columns(self):
         # No common columns
@@ -37,7 +37,7 @@ class TestCommonColumns(unittest.TestCase):
         for filename, data in zip(filenames, datas):
             with open(os.path.join(self.test_dir, filename), 'w') as f:
                 f.write(data)
-        self.assertEqual(find_common_columns(self.test_dir), [])
+        self.assertEqual(get_common_columns_from_csvs(self.test_dir), [])
 
     def test_some_common_columns(self):
         # Some common columns
@@ -49,7 +49,7 @@ class TestCommonColumns(unittest.TestCase):
         for filename, data in zip(filenames, datas):
             with open(os.path.join(self.test_dir, filename), 'w') as f:
                 f.write(data)
-        self.assertEqual(find_common_columns(self.test_dir), ['C'])
+        self.assertEqual(get_common_columns_from_csvs(self.test_dir), ['C'])
 
     def test_mixed_common_and_unique_columns(self):
         # Mixed common and unique columns
@@ -61,4 +61,4 @@ class TestCommonColumns(unittest.TestCase):
         for filename, data in zip(filenames, datas):
             with open(os.path.join(self.test_dir, filename), 'w') as f:
                 f.write(data)
-        self.assertEqual(set(find_common_columns(self.test_dir)), set(['B', 'C']))
+        self.assertEqual(set(get_common_columns_from_csvs(self.test_dir)), set(['B', 'C']))

@@ -3,7 +3,7 @@ import pandas as pd
 from functools import reduce
 
 
-def find_common_columns(directory):
+def get_common_columns_from_csvs(directory):
     # List to store the DataFrame objects
     dataframes = []
 

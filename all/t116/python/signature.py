@@ -1,15 +1,16 @@
 from typing import Dict, List
 
 
-def toroidal_diff(this_point: Dict, other_point: Dict, width: float, height: float) -> List:
+def calculate_toroidal_difference(point_a: Dict[str, float], point_b: Dict[str, float], width: float, height: float) -> List[float]:
     """
-     Calculates the toroidal difference between two points
+    Calculates the toroidal difference between two points in a wrap-around space.
+
     Args:
-        this_point (Dict): The first point with keys 'x' and 'y'
-        other_point (Dict): The second point with keys 'x' and 'y'
-        width (float): The width of the toroidal space
-        height (float): The height of the toroidal space
+        point_a (Dict[str, float]): The first point with keys 'x' and 'y'.
+        point_b (Dict[str, float]): The second point with keys 'x' and 'y'.
+        width (float): The width of the toroidal space.
+        height (float): The height of the toroidal space.
 
     Returns:
-        List: A list containing the x and y differences, accounting for wrap-around.
+        List[float]: A list containing the x and y differences, accounting for wrap-around.
     """

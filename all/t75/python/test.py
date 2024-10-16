@@ -27,7 +27,7 @@ class TestRenameFiles(unittest.TestCase):
         filenames = ["image1.png", "image2.png", "image3.png"]
         self.create_png_files(filenames)
 
-        rename_files(self.test_dir)
+        rename_png_files_in_directory(self.test_dir)
 
         expected_files = ['image1001.png', 'image2001.png', 'image3001.png']
         result_files = sorted(os.listdir(self.test_dir))
@@ -38,7 +38,7 @@ class TestRenameFiles(unittest.TestCase):
         filenames = ["image1.png", "picture1.png", "image2.png", "picture2.png"]
         self.create_png_files(filenames)
 
-        rename_files(self.test_dir)
+        rename_png_files_in_directory(self.test_dir)
 
         expected_files = ['image1001.png', 'image2001.png', 'picture1001.png', 'picture2001.png']
         result_files = sorted(os.listdir(self.test_dir))
@@ -49,7 +49,7 @@ class TestRenameFiles(unittest.TestCase):
         filenames = ["file1.txt", "file2.jpg"]
         self.create_png_files(filenames)
 
-        rename_files(self.test_dir)
+        rename_png_files_in_directory(self.test_dir)
 
         expected_files = filenames  # No changes expected
         result_files = sorted(os.listdir(self.test_dir))
@@ -57,7 +57,7 @@ class TestRenameFiles(unittest.TestCase):
 
     def test_empty_directory(self):
         # Test handling of an empty directory
-        rename_files(self.test_dir)
+        rename_png_files_in_directory(self.test_dir)
         expected_files = []  # No files to rename
         result_files = os.listdir(self.test_dir)
         self.assertEqual(result_files, expected_files)
@@ -67,7 +67,7 @@ class TestRenameFiles(unittest.TestCase):
         filenames = ["file001.png", "file002.png", "file003.png"]
         self.create_png_files(filenames)
 
-        rename_files(self.test_dir)
+        rename_png_files_in_directory(self.test_dir)
 
         expected_files = ['file001001.png', 'file002001.png', 'file003001.png']
         result_files = sorted(os.listdir(self.test_dir))

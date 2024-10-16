@@ -1,0 +1,66 @@
+Here's the equivalent C++ code for the provided Python script. This version retains the functionality, logic, and structure while adapting to C++ syntax and features:
+
+```cpp
+#include <iostream>
+#include <filesystem>
+#include <stdexcept>
+
+namespace fs = std::filesystem;
+
+void copy_file(const fs::path& source, const fs::path& target) {
+    try {
+        fs::copy_file(source, target, fs::copy_options::overwrite_existing | fs::copy_options::skip_existing);
+    } catch (const fs::filesystem_error& e) {
+        throw std::ios_base::failure("Error copying file: " + std::string(e.what()));
+    }
+}
+
+void copy_directory(const fs::path& source_dir, const fs::path& target_dir) {
+    if (!fs::exists(source_dir)) {
+        throw std::invalid_argument("Source directory does not exist: " + source_dir.string());
+    }
+    if (!fs::is_directory(source_dir)) {
+        throw std::invalid_argument("Source is not a directory: " + source_dir.string());
+    }
+
+    fs::create_directories(target_dir); // Create target directory if it doesn't exist
+
+    // Copy each file and directory in the source directory
+    for (const auto& item : fs::directory_iterator(source_dir)) {
+        fs::path source_path = item.path();
+        fs::path target_path = target_dir / source_path.filename();
+
+        if (fs::is_directory(source_path)) {
+            // Recursively copy the subdirectory
+            copy_directory(source_path, target_path);
+        } else {
+            // Copy the file
+            copy_file(source_path, target_path);
+        }
+    }
+}
+
+int main() {
+    // Example usage
+    try {
+        copy_directory("source_directory_path", "target_directory_path");
+    } catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+    }
+
+    return 0;
+}
+```
+
+### Explanation of Key Changes:
+1. **Namespaces and Libraries**: The C++ code uses the `<filesystem>` library, which provides functionality for file and directory operations similar to the `os` and `shutil` modules in Python.
+
+2. **Error Handling**: In C++, exceptions are thrown for error conditions, such as when a directory doesn't exist or is not a directory. The `std::invalid_argument` and `std::ios_base::failure` exceptions are used to convey these errors.
+
+3. **Path Management**: The `fs::path` type is used to manage file paths, making it easier to concatenate paths and check their properties.
+
+4. **Copy Operations**: The `fs::copy_file` function is used to copy files, with options to overwrite or skip existing files, similar to `shutil.copy2()` in Python.
+
+5. **Main Function**: An example usage of the `copy_directory` function is provided in the `main` function, which also includes error handling for demonstration.
+
+Make sure to compile the C++ code with a compiler that supports C++17 or later, as the `<filesystem>` library was introduced in C++17.
