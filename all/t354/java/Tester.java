@@ -1,0 +1,51 @@
+package org.real.temp;
+
+import static org.junit.Assert.*;
+import org.junit.Test;
+
+public class Tester {
+
+    @Test
+    public void testZeroIntensityDifference() {
+        // When intensity difference is zero, weight should be 1
+        float intensity_diff = 0.0f;
+        float sigma_color = 1.0f; // arbitrary sigma value
+        assertEquals(1.0f, Answer.gaussianWeight(intensity_diff, sigma_color), 0.001);
+    }
+
+    @Test
+    public void testPositiveIntensityDifference() {
+        // A positive intensity difference with a reasonable sigma
+        float intensity_diff = 2.0f;
+        float sigma_color = 2.0f;
+        float expected_weight = (float) Math.exp(-(intensity_diff * intensity_diff) / (2 * sigma_color * sigma_color));
+        assertEquals(expected_weight, Answer.gaussianWeight(intensity_diff, sigma_color), 0.001);
+    }
+
+    @Test
+    public void testNegativeIntensityDifference() {
+        // A negative intensity difference should yield the same weight as positive
+        float intensity_diff = -2.0f;
+        float sigma_color = 2.0f;
+        float expected_weight = (float) Math.exp(-(intensity_diff * intensity_diff) / (2 * sigma_color * sigma_color));
+        assertEquals(expected_weight, Answer.gaussianWeight(intensity_diff, sigma_color), 0.001);
+    }
+
+    @Test
+    public void testSmallSigmaColor() {
+        // Test with a small sigma value
+        float intensity_diff = 1.0f;
+        float sigma_color = 0.1f;
+        float expected_weight = (float) Math.exp(-(intensity_diff * intensity_diff) / (2 * sigma_color * sigma_color));
+        assertEquals(expected_weight, Answer.gaussianWeight(intensity_diff, sigma_color), 0.001);
+    }
+
+    @Test
+    public void testLargeSigmaColor() {
+        // Test with a large sigma value
+        float intensity_diff = 1.0f;
+        float sigma_color = 100.0f;
+        float expected_weight = (float) Math.exp(-(intensity_diff * intensity_diff) / (2 * sigma_color * sigma_color));
+        assertEquals(expected_weight, Answer.gaussianWeight(intensity_diff, sigma_color), 0.001);
+    }
+}

@@ -1,0 +1,36 @@
+package org.real.temp;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Splits a comma-separated string into individual tokens.
+ *
+ * This method takes a string containing comma-separated values, trims
+ * leading and trailing whitespace from each token, and stores the non-empty
+ * tokens in the provided list.
+ *
+ * @param str The input string to be split, which may contain leading and
+ *            trailing whitespace around the tokens.
+ * @param vect A list of strings where the resulting tokens
+ *             will be stored. The list will be cleared before storing
+ *             the new tokens.
+ */
+public class Answer {
+
+    public static void splitComma(String str, List<String> vect) {
+        // Clear the output list to avoid residual data
+        vect.clear();
+        
+        // Process each comma-separated token
+        String[] tokens = str.split(",");
+        for (String token : tokens) {
+            // Trim leading and trailing whitespace
+            token = token.trim();
+            // Only add non-empty tokens to the list
+            if (!token.isEmpty()) {
+                vect.add(token);
+            }
+        }
+    }
+}

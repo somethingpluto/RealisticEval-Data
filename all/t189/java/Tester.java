@@ -40,10 +40,4 @@ public class Tester {
         byte[] input = {'A'};
         assertEquals("QQ==", base64Encode(input));
     }
-
-    // Placeholder for the base64Encode method
-    private String base64Encode(byte[] data) {
-        // Implementation will go here
-        return ""; // Replace with actual implementation
-    }
 }

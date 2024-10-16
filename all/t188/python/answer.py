@@ -15,9 +15,3 @@ def shell_sort(arr):
             # Put temp (the original arr[i]) in its correct location
             arr[j] = temp
         gap //= 2  # Reduce the gap
-
-def print_array(arr):
-    """Function to print an array."""
-    for num in arr:
-        print(num, end=" ")
-    print()  # Print newline at the end

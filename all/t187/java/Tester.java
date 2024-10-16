@@ -40,9 +40,4 @@ public class Tester {
         mergeSort(randomArray, 0, randomArray.length - 1);
         assertArrayEquals(expectedSortedArray, randomArray);
     }
-
-    // Assuming mergeSort method is implemented somewhere in this class or another
-    private void mergeSort(int[] arr, int left, int right) {
-        // Method implementation here
-    }
 }

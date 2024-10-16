@@ -3,6 +3,4 @@
  * @param hexString - The hexadecimal string to convert.
  * @returns The unsigned integer value.
  */
-function hexStringToUnsignedInt(hexString: string): number {
-    // Function implementation goes here
-}
+function hexStringToUnsignedInt(hexString: string): number {}

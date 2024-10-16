@@ -1,0 +1,43 @@
+class Node {
+    data: number;       // Data value of the node
+    next: Node | null;  // Pointer to the next node in the linked list
+
+    constructor(val: number) { // Constructor to initialize the node
+        this.data = val;
+        this.next = null; // Initialize next as null
+    }
+}
+
+// Queue class
+class Queue {
+    private head: Node | null; // Pointer to the front of the queue
+    private tail: Node | null; // Pointer to the end of the queue
+
+    // Constructor to initialize the queue
+    constructor() {
+        this.head = null;
+        this.tail = null;
+    }
+
+    // Destructor equivalent (not required in TypeScript)
+
+    // Function to check if the queue is empty
+    isEmpty(): boolean { 
+        // Implementation goes here
+    }
+
+    // Function to add an element to the end of the queue
+    enqueue(value: number): void { 
+        // Implementation goes here
+    }
+
+    // Function to remove and return the front element of the queue
+    dequeue(): number { 
+        // Implementation goes here
+    }
+
+    // Function to get the front element without removing it
+    front(): number { 
+        // Implementation goes here
+    }
+}

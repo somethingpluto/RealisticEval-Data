@@ -1,0 +1,68 @@
+class Node {
+    data: number;       // Data value of the node
+    next: Node | null;  // Pointer to the next node in the linked list
+
+    constructor(val: number) {
+        this.data = val;
+        this.next = null; // Initialize next as null
+    }
+}
+
+// Queue class
+class Queue {
+    private head: Node | null; // Pointer to the front of the queue
+    private tail: Node | null; // Pointer to the end of the queue
+
+    // Constructor to initialize the queue
+    constructor() {
+        this.head = null;
+        this.tail = null;
+    }
+
+    // Destructor equivalent (in TypeScript, we usually don't need this)
+    // Cleanup can be handled by the garbage collector.
+
+    // Function to check if the queue is empty
+    isEmpty(): boolean {
+        return this.head === null; // Queue is empty if head is null
+    }
+
+    // Function to add an element to the end of the queue
+    enqueue(value: number): void {
+        const newNode = new Node(value); // Create a new node
+
+        if (this.tail) {
+            this.tail.next = newNode; // Link the new node at the end
+        } else {
+            this.head = newNode; // If the queue is empty, the new node is also the head
+        }
+        this.tail = newNode; // Update the tail to the new node
+    }
+
+    // Function to remove and return the front element of the queue
+    dequeue(): number {
+        if (this.isEmpty()) {
+            console.error("Queue is empty. Cannot dequeue.");
+            return -1; // Return an invalid value
+        }
+
+        const temp = this.head; // Temporarily store the head node
+        const value = this.head.data; // Get the data from the head node
+        this.head = this.head.next; // Move head to the next node
+
+        if (this.head === null) {
+            this.tail = null; // If the queue becomes empty, update the tail as well
+        }
+
+        return value; // Return the dequeued value
+    }
+
+    // Function to get the front element without removing it
+    front(): number {
+        if (this.isEmpty()) {
+            console.error("Queue is empty. Cannot access front.");
+            return -1; // Return an invalid value
+        }
+        return this.head.data; // Return the front value
+    }
+}

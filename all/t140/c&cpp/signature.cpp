@@ -3,6 +3,4 @@
  * @param birthDate The birth date.
  * @return An array containing years, months, days, hours, and minutes.
  */
-std::array<int, 5> getTimeSinceBornUntilNow(const std::tm& birthDate) {
-    // Function implementation will go here
-}
+std::array<int, 5> getTimeSinceBornUntilNow(const std::tm& birthDate) {}

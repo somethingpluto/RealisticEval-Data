@@ -4,4 +4,4 @@
  * @param n Which Fibonacci number to calculate.
  * @return int
  */
-public int fibonacciRecursive(int n) {}
+public static int fibonacciRecursive(int n) {}

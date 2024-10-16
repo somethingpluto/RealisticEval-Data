@@ -1,5 +1,5 @@
 /**
- * @brief Encodes a byte array into a Base64 encoded string.
+ * Encodes a byte array into a Base64 encoded string.
  *
  * This function takes a Uint8Array data as input and converts it
  * into a Base64 encoded string.
