@@ -1,3 +1,12 @@
+#define CATCH_CONFIG_MAIN
+#include <catch2/catch.hpp>
+#include <map>
+#include <vector>
+#include <string>
+
+// Function prototype
+std::vector<std::vector<int>> generateCombinations(const std::map<std::string, std::vector<int>>& inputMap);
+
 TEST_CASE("generateCombinations") {
     SECTION("generates combinations for a single key with multiple values") {
         std::map<std::string, std::vector<int>> map = {{"a", {1, 2, 3}}};

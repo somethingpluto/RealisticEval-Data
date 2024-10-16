@@ -1,0 +1,151 @@
+package org.real.temp;
+
+import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+
+public class Tester {
+
+    // Test case 1: Test with a simple linear curve
+    @Test
+    public void testMidpointOfTwoPoints() {
+        Coordinates[] points = { new Coordinates(0, 0), new Coordinates(2, 2) };
+        Coordinates result = BezierCurve.getBezierPoint(0.5, points);
+        assertEquals(1.0, result.x, 0.001);
+        assertEquals(1.0, result.y, 0.001);
+    }
+
+    // Test case 2: Test with three points (quadratic curve)
+    @Test
+    public void testQuadraticBezierCurve() {
+        Coordinates[] points = {
+            new Coordinates(0, 0),
+            new Coordinates(1, 2),
+            new Coordinates(2, 0)
+        };
+        Coordinates result = BezierCurve.getBezierPoint(0.5, points);
+        assertEquals(1.0, result.x, 0.001);
+        assertEquals(1.0, result.y, 0.001);
+    }
+
+    // Test case 3: Test with four points (cubic curve)
+    @Test
+    public void testCubicBezierCurve() {
+        Coordinates[] points = {
+            new Coordinates(0, 0),
+            new Coordinates(1, 3),
+            new Coordinates(3, 1),
+            new Coordinates(4, 0)
+        };
+        Coordinates result = BezierCurve.getBezierPoint(0.5, points);
+        assertEquals(2.0, result.x, 0.001);
+        assertEquals(1.5, result.y, 0.001);
+    }
+
+    // Test case 4: Test with single point (edge case)
+    @Test
+    public void testSingleControlPoint() {
+        Coordinates[] points = { new Coordinates(5, 5) };
+        Coordinates result = BezierCurve.getBezierPoint(0.5, points);
+        assertEquals(5.0, result.x, 0.001);
+        assertEquals(5.0, result.y, 0.001);
+    }
+
+    // Test case 5: Test with extreme t value (0)
+    @Test
+    public void testExtremeTValueZero() {
+        Coordinates[] points = {
+            new Coordinates(0, 0),
+            new Coordinates(5, 5)
+        };
+        Coordinates result = BezierCurve.getBezierPoint(0, points);
+        assertEquals(0.0, result.x, 0.001);
+        assertEquals(0.0, result.y, 0.001);
+    }
+
+    // Test case 6: Test with extreme t value (1)
+    @Test
+    public void testExtremeTValueOne() {
+        Coordinates[] points = {
+            new Coordinates(0, 0),
+            new Coordinates(5, 5)
+        };
+        Coordinates result = BezierCurve.getBezierPoint(1, points);
+        assertEquals(5.0, result.x, 0.001);
+        assertEquals(5.0, result.y, 0.001);
+    }
+}package org.real.temp;
+
+import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+
+public class Tester {
+
+    // Test case 1: Test with a simple linear curve
+    @Test
+    public void testMidpointOfTwoPoints() {
+        Coordinates[] points = { new Coordinates(0, 0), new Coordinates(2, 2) };
+        Coordinates result = BezierCurve.getBezierPoint(0.5, points);
+        assertEquals(1.0, result.x, 0.001);
+        assertEquals(1.0, result.y, 0.001);
+    }
+
+    // Test case 2: Test with three points (quadratic curve)
+    @Test
+    public void testQuadraticBezierCurve() {
+        Coordinates[] points = {
+            new Coordinates(0, 0),
+            new Coordinates(1, 2),
+            new Coordinates(2, 0)
+        };
+        Coordinates result = BezierCurve.getBezierPoint(0.5, points);
+        assertEquals(1.0, result.x, 0.001);
+        assertEquals(1.0, result.y, 0.001);
+    }
+
+    // Test case 3: Test with four points (cubic curve)
+    @Test
+    public void testCubicBezierCurve() {
+        Coordinates[] points = {
+            new Coordinates(0, 0),
+            new Coordinates(1, 3),
+            new Coordinates(3, 1),
+            new Coordinates(4, 0)
+        };
+        Coordinates result = BezierCurve.getBezierPoint(0.5, points);
+        assertEquals(2.0, result.x, 0.001);
+        assertEquals(1.5, result.y, 0.001);
+    }
+
+    // Test case 4: Test with single point (edge case)
+    @Test
+    public void testSingleControlPoint() {
+        Coordinates[] points = { new Coordinates(5, 5) };
+        Coordinates result = BezierCurve.getBezierPoint(0.5, points);
+        assertEquals(5.0, result.x, 0.001);
+        assertEquals(5.0, result.y, 0.001);
+    }
+
+    // Test case 5: Test with extreme t value (0)
+    @Test
+    public void testExtremeTValueZero() {
+        Coordinates[] points = {
+            new Coordinates(0, 0),
+            new Coordinates(5, 5)
+        };
+        Coordinates result = BezierCurve.getBezierPoint(0, points);
+        assertEquals(0.0, result.x, 0.001);
+        assertEquals(0.0, result.y, 0.001);
+    }
+
+    // Test case 6: Test with extreme t value (1)
+    @Test
+    public void testExtremeTValueOne() {
+        Coordinates[] points = {
+            new Coordinates(0, 0),
+            new Coordinates(5, 5)
+        };
+        Coordinates result = BezierCurve.getBezierPoint(1, points);
+        assertEquals(5.0, result.x, 0.001);
+        assertEquals(5.0, result.y, 0.001);
+    }
+}

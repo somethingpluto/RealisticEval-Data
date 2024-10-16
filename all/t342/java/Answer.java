@@ -1,0 +1,37 @@
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class MarkdownParser {
+
+    /**
+     * Parses markdown text to extract titles of different levels.
+     *
+     * @param markdown - A string containing markdown formatted text.
+     * @return A map with three keys: level1, level2, and level3,
+     *         each holding a list of corresponding titles found in the markdown.
+     */
+    public static Map<String, List<String>> parseMarkdownTitles(String markdown) {
+        Map<String, List<String>> result = new HashMap<>();
+        result.put("level1", new ArrayList<>()); // Array to store level 1 titles (H1)
+        result.put("level2", new ArrayList<>()); // Array to store level 2 titles (H2)
+        result.put("level3", new ArrayList<>()); // Array to store level 3 titles (H3)
+
+        String[] lines = markdown.split("\n");
+
+        for (String line : lines) {
+            line = line.trim(); // Remove leading and trailing whitespace from the line.
+
+            if (line.startsWith("# ")) {
+                result.get("level1").add(line.substring(2)); // Remove the '# ' prefix.
+            } else if (line.startsWith("## ")) {
+                result.get("level2").add(line.substring(3)); // Remove the '## ' prefix.
+            } else if (line.startsWith("### ")) {
+                result.get("level3").add(line.substring(4)); // Remove the '### ' prefix.
+            }
+        }
+
+        return result;
+    }
+}

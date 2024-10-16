@@ -1,4 +1,3 @@
-package org.real.temp
 import org.junit.Test;
 import org.junit.Assert;
 
@@ -49,5 +48,11 @@ public class Tester {
         map.put("b", Arrays.asList(1, 2));
         List<List<Integer>> expected = Collections.emptyList();
         Assert.assertEquals(expected, generateCombinations(map));
+    }
+
+    // Assuming generateCombinations method is implemented in this class or imported
+    public List<List<Integer>> generateCombinations(Map<String, List<Integer>> map) {
+        // Implementation goes here
+        return new ArrayList<>(); // Placeholder
     }
 }

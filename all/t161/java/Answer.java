@@ -1,10 +1,8 @@
-package org.real.temp;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class Answer {
+public class CombinationGenerator {
 
     /**
      * Produces all combinations of numeric arrays for each key in the given map object

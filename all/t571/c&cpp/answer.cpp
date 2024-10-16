@@ -1,0 +1,11 @@
+#include <string>
+#include <regex>
+
+bool isValidCoordinate(const std::string& coord) {
+    // Regular expressions for latitude and longitude
+    std::regex latitudeRegex(R"(^[-+]?([1-8]?[0-9](\.\d+)?|90(\.0+)?)([NnSs]?)$)"); // -90 to 90 degrees
+    std::regex longitudeRegex(R"(^[-+]?((1[0-7][0-9]|[0-9]?[0-9])(\.\d+)?|180(\.0+)?)([EeWw]?)$)"); // -180 to 180 degrees
+
+    // Check if the coordinate matches latitude or longitude format
+    return std::regex_match(coord, latitudeRegex) || std::regex_match(coord, longitudeRegex);
+}
