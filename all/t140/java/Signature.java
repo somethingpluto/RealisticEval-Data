@@ -4,5 +4,4 @@
  * @return an array containing years, months, days, hours, and minutes
  */
 public static int[] getTimeSinceBornUntilNow(Date birthDate) {
-    // Implementation goes here
 }

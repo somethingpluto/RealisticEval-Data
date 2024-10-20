@@ -1,4 +1,5 @@
-public class TimeUtil {
+package org.real.temp;
+public class Answer {
     public static String timePassed(long startTimeInMillis) {
         // Get the current time in milliseconds
         long currentTimeInMillis = System.currentTimeMillis();

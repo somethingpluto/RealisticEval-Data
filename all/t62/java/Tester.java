@@ -1,8 +1,9 @@
 package org.real.temp;
 
 import org.junit.Test;
-import static org.junit.Assert.assertArrayEquals;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.real.temp.Answer.*;
 /**
  * Test class for BinaryTree operations.
  */

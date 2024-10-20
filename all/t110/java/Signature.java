@@ -5,5 +5,4 @@
  * @return A 36-character UUID string.
  */
 public static String generateUUID() {
-    // Method implementation will go here
 }

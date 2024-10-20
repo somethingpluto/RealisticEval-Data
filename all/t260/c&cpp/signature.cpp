@@ -4,6 +4,4 @@
  * @param file_path The path to the input CSV file.
  * @param output_path The path where the processed CSV file will be saved.
  */
-void process_csv(const std::string& file_path, const std::string& output_path){
-
-}
+void process_csv(const std::string& file_path, const std::string& output_path){}

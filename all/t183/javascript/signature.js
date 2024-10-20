@@ -20,7 +20,7 @@ class Circle {
 }
 
 /**
- * @brief Determines whether a ray intersects with a circle.
+ * Determines whether a ray intersects with a circle.
  *
  * This function checks if a given ray intersects with a specified circle
  * in a 2D space. It performs mathematical calculations to determine if
@@ -34,6 +34,4 @@ class Circle {
  *
  * @return true if the ray intersects the circle; false otherwise.
  */
-function intersects(ray, circle) {
-    // Implementation will go here
-}
+function intersects(ray, circle) {}

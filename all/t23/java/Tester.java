@@ -3,9 +3,6 @@ package org.real.temp;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-/**
- * Test cases for the line segment intersection calculation.
- */
 public class Tester {
 
     @Test

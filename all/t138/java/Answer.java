@@ -1,7 +1,7 @@
 package org.real.temp;
 import java.util.regex.Pattern;
 
-public class StringCleaner {
+public class Answer {
     /**
      * Removes all punctuation from a given string, converts the string to lowercase,
      * and trims whitespace from both ends.

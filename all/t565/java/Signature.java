@@ -5,5 +5,13 @@
  * @param points - An array of control points defining the Bézier curve.
  * @return The calculated Coordinates at the given parameter t.
  */
-public static Coordinates getBezierPoint(double t, Coordinates[] points) {
+static class Coordinates {
+    double x;
+    double y;
+
+    Coordinates(double x, double y) {
+        this.x = x;
+        this.y = y;
+    }
 }
+public static Coordinates getBezierPoint(double t, Coordinates[] points) {}

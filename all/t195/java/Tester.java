@@ -3,14 +3,14 @@ package org.real.temp;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
-
+import static org.real.temp.Answer.*;
 public class Tester {
 
-    private Answer stack;
+    private Stack stack;
 
     @Before
     public void setUp() {
-        stack = new Answer(); // Initialize the stack before each test
+        stack = new Stack(); // Initialize the stack before each test
     }
 
     // Test Case 1: Pushing and popping a single element

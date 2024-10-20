@@ -3,6 +3,7 @@ package org.real.temp;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import java.util.*;
+import static org.real.temp.Answer.*;
 
 public class Tester {
 
@@ -38,7 +39,7 @@ public class Tester {
             }}
         );
 
-        List<Map<String, Object>> result = dictOfListsToListOfDicts(dictOfLists);
+        List<Map<String, Integer>> result = dictOfListsToListOfDicts(dictOfLists);
         assertEquals(expectedResult, result);
     }
 
@@ -54,7 +55,7 @@ public class Tester {
 
         List<Map<String, Object>> expectedResult = Collections.emptyList();
 
-        List<Map<String, Object>> result = dictOfListsToListOfDicts(dictOfLists);
+        List<Map<String, Integer>> result = dictOfListsToListOfDicts(dictOfLists);
         assertEquals(expectedResult, result);
     }
 
@@ -76,7 +77,7 @@ public class Tester {
             }}
         );
 
-        List<Map<String, Object>> result = dictOfListsToListOfDicts(dictOfLists);
+        List<Map<String, Integer>> result = dictOfListsToListOfDicts(dictOfLists);
         assertEquals(expectedResult, result);
     }
 }

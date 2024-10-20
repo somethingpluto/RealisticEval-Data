@@ -5,6 +5,6 @@
  * @param key_to_remove The list of keys to remove.
  * @return std::unordered_map<std::string, std::string> The removed dictionary.
  */
-std::unordered_map<std::string, std::string> sanitizeData(const std::unordered_map<std::string, std::string>& data, const std::vector<std::string>& keyToRemove) {
+std::unordered_map<std::string, std::string> sanitize_data(const std::unordered_map<std::string, std::string>& data, const std::vector<std::string>& keyToRemove) {
 
 }

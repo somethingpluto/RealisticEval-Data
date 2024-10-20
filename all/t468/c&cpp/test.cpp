@@ -1,24 +1,33 @@
-#include <catch2/catch.hpp>
-#include <Eigen/Dense>
+TEST_CASE("Test GetTranslationFunction", "[get_translation]") {
+    SECTION("Identity Matrix") {
+        Eigen::Matrix3d matrix;
+        matrix << 1, 0, 0,
+                  0, 1, 0,
+                  0, 0, 1;
 
-// Assuming Eigen is used for matrix operations
+        Eigen::Matrix<double, 2, 1> expected_translation = Eigen::Matrix<double, 2, 1>::Zero();
+        REQUIRE(get_translation(matrix) == expected_translation);
+    }
 
-Eigen::Vector2d get_translation(const Eigen::Matrix3d& matrix) {
-    // Extract the translation part from the 3x3 matrix
-    Eigen::Vector2d translation = matrix.block<2, 1>(0, 2);
-    return translation;
-}
+    SECTION("Translation Matrix") {
+        Eigen::Matrix3d matrix;
+        matrix << 1, 0, 5,
+                  0, 1, 10,
+                  0, 0, 1;
 
-TEST_CASE("Test get_translation function", "[get_translation]") {
-    // Test case 1: Identity matrix should have no translation
-    Eigen::Matrix3d identity_matrix = Eigen::Matrix3d::Identity();
-    REQUIRE(get_translation(identity_matrix).isApprox(Eigen::Vector2d(0, 0)));
+        Eigen::Matrix<double, 2, 1> expected_translation;
+        expected_translation << 5.0, 10.0;
+        REQUIRE(get_translation(matrix) == expected_translation);
+    }
 
-    // Test case 2: Translation matrix should return the correct translation vector
-    Eigen::Matrix3d translation_matrix = Eigen::Matrix3d::Identity();
-    translation_matrix(0, 2) = 5.0;
-    translation_matrix(1, 2) = 10.0;
-    REQUIRE(get_translation(translation_matrix).isApprox(Eigen::Vector2d(5.0, 10.0)));
+    SECTION("Negative Translation") {
+        Eigen::Matrix3d matrix;
+        matrix << 1, 0, -3,
+                  0, 1, -6,
+                  0, 0, 1;
 
-    // Add more test cases as needed
+        Eigen::Matrix<double, 2, 1> expected_translation;
+        expected_translation << -3.0, -6.0;
+        REQUIRE(get_translation(matrix) == expected_translation);
+    }
 }

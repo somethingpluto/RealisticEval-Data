@@ -5,5 +5,4 @@
  * @return True if the URL is valid, false otherwise.
  */
 public static boolean validURL(String str) {
-    // Method implementation goes here
 }

@@ -1,9 +1,10 @@
 package org.real.temp;
 
-/**
+public class Answer{
+    /**
  * Node structure for the linked list.
  */
-class Node {
+static class Node {
     int data;       // Data held by the node
     Node next;     // Pointer to the next node in the list
 
@@ -17,11 +18,10 @@ class Node {
         this.next = null;
     }
 }
-
 /**
  * LinkedList class definition.
  */
-class LinkedList {
+static class LinkedList {
     /**
      * Method to add a node at the beginning of the list.
      *
@@ -67,3 +67,7 @@ class LinkedList {
         // Implementation goes here
     }
 }
+}
+
+
+

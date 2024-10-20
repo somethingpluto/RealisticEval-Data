@@ -1,11 +1,3 @@
-#include <iostream>
-#include <string>
-#include <vector>
-#include <regex>
-#include <set>
-#include <sstream>
-#include <catch2/catch_test_macros.hpp>
-
 TEST_CASE("TestFilterContentWithContext", "[filter_content_with_context]") {
     SECTION("test_single_keyword_match") {
         std::string content = R"(Line one.

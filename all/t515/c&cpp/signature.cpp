@@ -1,13 +1,10 @@
 /**
- * Converts a date string from the format '%a, %d %b %Y %H:%M:%S %z (%Z)'
- * to the format '%Y-%m-%d_%H:%M:%S'.
+ * @brief Converts a date string from one format to another.
  *
- * Args:
- *     date_str (const std::string&): The input date string.
+ * @param date_str The input date string to convert.
  *
- * Returns:
- *     std::string: The formatted date string in the format '%Y-%m-%d_%H:%M:%S'.
- *     Empty string: If the input date string is invalid.
+ * @return The formatted date string in the format '%Y-%m-%d_%H:%M:%S'.
+ *         Returns an empty string if the input date string is invalid.
  */
 std::string format_date_string(const std::string& date_str) {
 

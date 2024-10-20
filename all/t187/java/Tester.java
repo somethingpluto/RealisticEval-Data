@@ -2,7 +2,7 @@ package org.real.temp;
 
 import org.junit.Test;
 import static org.junit.Assert.assertArrayEquals;
-
+import static org.real.temp.Answer.*;
 public class Tester {
 
     @Test

@@ -1,10 +1,8 @@
 /**
- * Removes the corresponding sensitive questions in the given map based on the provided keyToRemove list.
+ * Removes the corresponding sensitive questions in the given dictionary based on the given list of keys to remove.
  *
- * @param data The original question map.
- * @param keyToRemove The list of keys to be removed.
- * @return A new map with the specified keys removed.
+ * @param data          the original question dictionary
+ * @param keyToBeRemoved the list of keys to remove; if null, uses default keys
+ * @return the sanitized dictionary
  */
-public Map<String, Object> sanitizeData(Map<String, Object> data, List<String> keyToRemove) {
-    // Method implementation goes here
-}
+public static Map<String, Object> sanitizeData(Map<String, Object> data, List<String> keyToBeRemoved) {}

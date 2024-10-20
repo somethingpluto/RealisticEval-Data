@@ -5,6 +5,4 @@
  * @param a The starting index of the range to be reversed.
  * @param b The ending index of the range to be reversed.
  */
-public static void reverseRange(List<Integer> v, int a, int b) {
-    // Implementation here
-}
+public static void reverseRange(List<Integer> v, int a, int b) {}

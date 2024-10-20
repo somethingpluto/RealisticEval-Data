@@ -1,7 +1,9 @@
+package org.real.temp;
+
 import java.util.ArrayList;
 import java.util.List;
 
-public class MidiNoteSeparator {
+public class Answer {
 
     public static NoteSeparation separateOctaveAndRoot(int[] midiNotes) {
         if (midiNotes == null) {

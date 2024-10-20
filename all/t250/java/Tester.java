@@ -1,54 +1,107 @@
-package org.real.temp;
-
-import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
+import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class Tester {
 
-    @Test
-    public void testInvertDictionary() {
-        // Test case 1
-        Map<String, Integer> input1 = new HashMap<>();
-        input1.put("a", 1);
-        input1.put("b", 2);
-        input1.put("c", 3);
+    private Map<String, Object> invertMap(Map<Object, Object> originalMap) {
+        Map<String, Object> newMap = new HashMap<>();
+        for (Map.Entry<Object, Object> entry : originalMap.entrySet()) {
+            Object key = entry.getKey();
+            Object value = entry.getValue();
 
-        Map<Integer, List<String>> expectedOutput1 = new HashMap<>();
-        expectedOutput1.put(1, Arrays.asList("a"));
-        expectedOutput1.put(2, Arrays.asList("b"));
-        expectedOutput1.put(3, Arrays.asList("c"));
-
-        assertEquals(expectedOutput1, DictionaryUtils.invertDictionary(input1));
-
-        // Test case 2
-        Map<String, String> input2 = new HashMap<>();
-        input2.put("apple", "fruit");
-        input2.put("banana", "fruit");
-        input2.put("carrot", "vegetable");
-
-        Map<String, List<String>> expectedOutput2 = new HashMap<>();
-        expectedOutput2.put("fruit", Arrays.asList("apple", "banana"));
-        expectedOutput2.put("vegetable", Arrays.asList("carrot"));
-
-        assertEquals(expectedOutput2, DictionaryUtils.invertDictionary(input2));
+            if (!newMap.containsKey(value)) {
+                newMap.put((String) value, key);
+            } else {
+                // If the value already exists as a key, we need to append to or create a list
+                Object existingValue = newMap.get(value);
+                if (!(existingValue instanceof ArrayList)) {
+                    ArrayList<String> list = new ArrayList<>();
+                    list.add((String) existingValue); // Convert the existing value to a list
+                    newMap.put((String) value, list);
+                }
+                ((ArrayList<String>) newMap.get(value)).add((String) key);
+            }
+        }
+        return newMap;
     }
 
     @Test
-    public void testInvertDictionaryWithDuplicateValues() {
-        // Test case with duplicate values
-        Map<String, String> input3 = new HashMap<>();
-        input3.put("one", "1");
-        input3.put("two", "2");
-        input3.put("three", "1");
+    public void testNormalDictionary() {
+        """Test inversion of a dictionary without duplicate values."""
+        Map<Object, Object> originalDict = new HashMap<>();
+        originalDict.put("a", 1);
+        originalDict.put("b", 2);
+        originalDict.put("c", 3);
 
-        Map<String, List<String>> expectedOutput3 = new HashMap<>();
-        expectedOutput3.put("1", Arrays.asList("one", "three"));
-        expectedOutput3.put("2", Arrays.asList("two"));
+        Map<String, Object> expected = new HashMap<>();
+        expected.put("1", "a");
+        expected.put("2", "b");
+        expected.put("3", "c");
 
-        assertEquals(expectedOutput3, DictionaryUtils.invertDictionary(input3));
+        Map<String, Object> result = invertMap(originalDict);
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void testDictionaryWithDuplicates() {
+        """Test inversion of a dictionary with duplicate values."""
+        Map<Object, Object> originalDict = new HashMap<>();
+        originalDict.put("a", 1);
+        originalDict.put("b", 1);
+        originalDict.put("c", 2);
+
+        Map<String, Object> expected = new HashMap<>();
+        expected.put("1", new ArrayList<>(List.of("a", "b")));
+        expected.put("2", "c");
+
+        Map<String, Object> result = invertMap(originalDict);
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void testEmptyDictionary() {
+        """Test inversion of an empty dictionary."""
+        Map<Object, Object> originalDict = new HashMap<>();
+
+        Map<String, Object> expected = new HashMap<>();
+
+        Map<String, Object> result = invertMap(originalDict);
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void testNonStringKeys() {
+        """Test inversion of a dictionary with non-string keys."""
+        Map<Object, Object> originalDict = new HashMap<>();
+        originalDict.put(1, "apple");
+        originalDict.put(2, "banana");
+        originalDict.put(3, "apple");
+
+        Map<String, Object> expected = new HashMap<>();
+        expected.put("apple", new ArrayList<>(List.of("1", "3")));
+        expected.put("banana", "2");
+
+        Map<String, Object> result = invertMap(originalDict);
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void testMixedTypes() {
+        """Test inversion of a dictionary with mixed key and value types."""
+        Map<Object, Object> originalDict = new HashMap<>();
+        originalDict.put("a", 1);
+        originalDict.put(2, "two");
+        originalDict.put("three", 3);
+
+        Map<String, Object> expected = new HashMap<>();
+        expected.put("1", "a");
+        expected.put("two", "2");
+        expected.put("3", "three");
+
+        Map<String, Object> result = invertMap(originalDict);
+        assertEquals(expected, result);
     }
 }

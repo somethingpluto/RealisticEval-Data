@@ -1,4 +1,6 @@
-public class ColorConverter {
+package org.real.temp;
+
+public class Answer {
 
     /**
      * Converts an RGB color value to HSL.

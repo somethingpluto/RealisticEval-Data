@@ -1,9 +1,3 @@
-#include <iostream>
-#include <sstream>
-#include <chrono>
-#include <iomanip>
-#include <catch2/catch_test_macros.hpp>
-
 TEST_CASE("TestFormatDateString", "[format_date_string]") {
     SECTION("test_valid_date_conversion") {
         const std::string date_str = "Fri, 28 Sep 2023 14:45:00 +0000 (UTC)";

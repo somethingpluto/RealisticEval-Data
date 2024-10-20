@@ -1,9 +1,3 @@
-#include <catch2/catch_test_macros.hpp>
-#include <iostream>
-#include <sstream>
-#include <string>
-#include <vector>
-
 TEST_CASE("TestWrapContentGenerator", "[wrap_content_generator]") {
     SECTION("test_empty_content") {
         std::vector<std::string> result;

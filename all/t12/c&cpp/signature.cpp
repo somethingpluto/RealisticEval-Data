@@ -1,5 +1,5 @@
 /**
- * Calculates the Euclidean distance between two agents based on their coordinates in the observations.
+ * @brief Calculates the Euclidean distance between two agents based on their coordinates in the observations.
  *
  * @param agent1 A string representation of agent1's identifier.
  * @param agent2 A string representation of agent2's identifier.

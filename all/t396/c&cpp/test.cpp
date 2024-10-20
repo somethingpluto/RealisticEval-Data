@@ -1,6 +1,29 @@
-TEST_CASE("Test Length of Longest Increasing Subsequence", "[LIS]") {
-    REQUIRE(length_of_LIS({10, 9, 2, 5, 3, 7, 101, 18}) == 4); // The longest increasing subsequence is [2, 3, 7, 101]
-    REQUIRE(length_of_LIS({0, 1, 0, 3, 2, 3}) == 4);          // The longest increasing subsequence is [0, 1, 2, 3]
-    REQUIRE(length_of_LIS({7, 7, 7, 7, 7, 7, 7}) == 1);       // All elements are equal, so the longest increasing subsequence has length 1
-    REQUIRE(length_of_LIS({}) == 0);                           // Empty input should return 0
+TEST_CASE("Test Length of LIS", "[LIS]") {
+    SECTION("Empty list") {
+        REQUIRE(length_of_LIS({}) == 0);
+    }
+
+    SECTION("Single element") {
+        REQUIRE(length_of_lis({7}) == 1);
+    }
+
+    SECTION("Strictly increasing sequence") {
+        REQUIRE(length_of_lis({1, 2, 3, 4, 5}) == 5);
+    }
+
+    SECTION("Strictly decreasing sequence") {
+        REQUIRE(length_of_lis({5, 4, 3, 2, 1}) == 1);
+    }
+
+    SECTION("Complex sequence") {
+        REQUIRE(length_of_lis({10, 9, 2, 5, 3, 7, 101, 18}) == 4);
+    }
+
+    SECTION("All equal elements") {
+        REQUIRE(length_of_lis({2, 2, 2, 2}) == 1);
+    }
+
+    SECTION("With negative numbers") {
+        REQUIRE(length_of_lis({-1, -2, -3, 0, 1, 2}) == 4);
+    }
 }

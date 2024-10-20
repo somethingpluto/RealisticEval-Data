@@ -3,7 +3,7 @@
 #include <string>
 #include <cctype>
 
-TEST_CASE("TestConvertCsvValues", "[convertCsvValues]") {
+TEST_CASE("TestConvertCsvValues", "[convert_csv_values]") {
     SECTION("test_valid_numeric_strings") {
         std::map<std::string, std::string> row = {
             {"value1", "1,234"},
@@ -15,7 +15,7 @@ TEST_CASE("TestConvertCsvValues", "[convertCsvValues]") {
             {"value2", "5.678"},
             {"value3", "9.876"}
         };
-        auto result = convertCsvValues(row);
+        auto result = convert_csv_values(row);
         REQUIRE(result == expected);
     }
 
@@ -30,7 +30,7 @@ TEST_CASE("TestConvertCsvValues", "[convertCsvValues]") {
             {"value2", ""},
             {"value3", ""}
         };
-        auto result = convertCsvValues(row);
+        auto result = convert_csv_values(row);
         REQUIRE(result == expected);
     }
 
@@ -45,7 +45,7 @@ TEST_CASE("TestConvertCsvValues", "[convertCsvValues]") {
             {"value2", ""},
             {"value3", "3.14159"}
         };
-        auto result = convertCsvValues(row);
+        auto result = convert_csv_values(row);
         REQUIRE(result == expected);
     }
 
@@ -60,7 +60,7 @@ TEST_CASE("TestConvertCsvValues", "[convertCsvValues]") {
             {"value2", ""},
             {"value3", "3.14"}
         };
-        auto result = convertCsvValues(row);
+        auto result = convert_csv_values(row);
         REQUIRE(result == expected);
     }
 
@@ -75,7 +75,7 @@ TEST_CASE("TestConvertCsvValues", "[convertCsvValues]") {
             {"value2", "0.0"},
             {"value3", "1.23"}
         };
-        auto result = convertCsvValues(row);
+        auto result = convert_csv_values(row);
         REQUIRE(result == expected);
     }
 }

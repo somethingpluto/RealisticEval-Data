@@ -1,21 +1,56 @@
-#include <catch2/catch.hpp>
-#include <string>
-
-std::string safe_format(const std::string& template_str, const std::map<std::string, std::string>& kwargs) {
-    std::string result = template_str;
-    for (const auto& kv : kwargs) {
-        size_t pos = 0;
-        while ((pos = result.find("{" + kv.first + "}", pos)) != std::string::npos) {
-            result.replace(pos, kv.first.size() + 2, kv.second);
-            pos += kv.second.size();
-        }
+TEST_CASE("TestSafeFormat", "[safe_format]") {
+    SECTION("test_full_replacement") {
+        // Test with all placeholders having corresponding values.
+        std::string template_str = "Hello, {name}! Welcome to {place}.";
+        std::unordered_map<std::string, std::string> kwargs = {
+            {"name", "Alice"},
+            {"place", "Wonderland"}
+        };
+        std::string result = safe_format(template_str, kwargs);
+        std::string expected = "Hello, Alice! Welcome to Wonderland.";
+        REQUIRE(result == expected);
     }
-    return result;
-}
 
-TEST_CASE("Test Safe Format", "[safe_format]") {
-    REQUIRE(safe_format("Hello, {name}!", {{"name", "Alice"}}) == "Hello, Alice!");
-    REQUIRE(safe_format("Hello, {name}!", {{"age", "30"}}) == "Hello, {name}!");
-    REQUIRE(safe_format("{greeting}, {name}! How old are you?", {{"greeting", "Hi"}, {"name", "Bob"}, {"age", "30"}}) == "Hi, Bob! How old are you?");
-    REQUIRE(safe_format("{greeting}, {name}! How old are you?", {{"greeting", "Hi"}}) == "{greeting}, {name}! How old are you?");
+    SECTION("test_partial_replacement") {
+        // Test with some placeholders missing corresponding values.
+        std::string template_str = "Hello, {name}! Welcome to {place}.";
+        std::unordered_map<std::string, std::string> kwargs = {
+            {"name", "Alice"}
+        };
+        std::string result = safe_format(template_str, kwargs);
+        std::string expected = "Hello, Alice! Welcome to {place}.";
+        REQUIRE(result == expected);
+    }
+
+    SECTION("test_no_replacement") {
+        // Test when no placeholders are provided.
+        std::string template_str = "Hello, world!";
+        std::unordered_map<std::string, std::string> kwargs;
+        std::string result = safe_format(template_str, kwargs);
+        std::string expected = "Hello, world!";
+        REQUIRE(result == expected);
+    }
+
+    SECTION("test_missing_placeholder") {
+        // Test with a placeholder that has no corresponding value.
+        std::string template_str = "My name is {name}, and I live in {city}.";
+        std::unordered_map<std::string, std::string> kwargs = {
+            {"name", "Alice"}
+        };
+        std::string result = safe_format(template_str, kwargs);
+        std::string expected = "My name is Alice, and I live in {city}.";
+        REQUIRE(result == expected);
+    }
+
+    SECTION("test_numeric_values") {
+        // Test with numeric values as replacements.
+        std::string template_str = "Your score is {score} out of {total}.";
+        std::unordered_map<std::string, std::string> kwargs = {
+            {"score", "85"},
+            {"total", "100"}
+        };
+        std::string result = safe_format(template_str, kwargs);
+        std::string expected = "Your score is 85 out of 100.";
+        REQUIRE(result == expected);
+    }
 }

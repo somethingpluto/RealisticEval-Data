@@ -1,99 +1,41 @@
-package org.real.temp;
 
+package org.real.temp;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Answer {
 
-    public static List<Integer> findOrder(int n) {
-        PrimeGame game = new PrimeGame(n);
-        return game.findOrder();
+    /**
+     * Simulates the Josephus problem using a list to represent the circle of people.
+     *
+     * @param n The number of people in the circle (1 to n).
+     * @param k The step count (every k-th person will be eliminated).
+     * @return The position of the last person remaining (1-indexed).
+     */
+    public static int josephus(int n, int k) {
+        // Step 1: Create a list to represent the people in the circle
+        List<Integer> people = new ArrayList<>();
+        for (int i = 1; i <= n; i++) {
+            people.add(i);  // Create a list of people from 1 to n
+        }
+
+        int index = 0;  // Start from the first person
+
+        // Step 2: Eliminate people until only one remains
+        while (people.size() > 1) {
+            // Step 3: Find the index of the person to eliminate
+            index = (index + k - 1) % people.size();  // -1 to adjust for zero-based index
+            int eliminatedPerson = people.remove(index);  // Eliminate that person
+            System.out.println("Eliminated: " + eliminatedPerson + ", Remaining: " + people);
+        }
+
+        // Step 4: Return the position of the last remaining person
+        return people.get(0);  // The last remaining person
     }
 
-    private static class PrimeGame {
-        private int numPlayers;
-        private Node head;
-
-        public PrimeGame(int numPlayers) {
-            if (numPlayers < 2) {
-                throw new IllegalArgumentException("Number of players must be at least 2.");
-            }
-            this.numPlayers = numPlayers;
-            this.head = createCircularLinkedList(numPlayers);
-        }
-
-        public List<Integer> findOrder() {
-            List<Integer> primes = generatePrimes(numPlayers);
-            List<Integer> order = new ArrayList<>();
-            Node current = head;
-            int remainingPlayers = numPlayers;
-
-            while (remainingPlayers > 1 && !primes.isEmpty()) {
-                int step = primes.remove(0) - 1;
-
-                for (int i = 0; i < step; ++i) {
-                    current = current.next;
-                }
-
-                Node toRemove = current.next;
-                order.add(toRemove.data);
-                current.next = toRemove.next;
-                remainingPlayers--;
-            }
-
-            order.add(current.data); // The last remaining player
-            return order;
-        }
-
-        private Node createCircularLinkedList(int n) {
-            Node head = new Node(1);
-            Node current = head;
-
-            for (int i = 2; i <= n; ++i) {
-                current.next = new Node(i);
-                current = current.next;
-            }
-
-            current.next = head; // Make the linked list circular
-            return head;
-        }
-
-        private List<Integer> generatePrimes(int limit) {
-            if (limit < 2) {
-                return new ArrayList<>(); // No primes less than 2
-            }
-
-            boolean[] isPrime = new boolean[limit + 1];
-            for (int i = 2; i <= limit; i++) {
-                isPrime[i] = true;
-            }
-            List<Integer> primes = new ArrayList<>();
-
-            for (int i = 2; i * i <= limit; ++i) {
-                if (isPrime[i]) {
-                    for (int j = i * i; j <= limit; j += i) {
-                        isPrime[j] = false;
-                    }
-                }
-            }
-
-            for (int i = 2; i <= limit; ++i) {
-                if (isPrime[i]) {
-                    primes.add(i);
-                }
-            }
-
-            return primes;
-        }
-
-        private static class Node {
-            int data;
-            Node next;
-
-            Node(int data) {
-                this.data = data;
-                this.next = null;
-            }
-        }
+    public static void main(String[] args) {
+        // Test the josephus function
+        int lastPerson = josephus(7, 3);
+        System.out.println("The last remaining person is at position: " + lastPerson);
     }
 }

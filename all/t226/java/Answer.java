@@ -1,35 +1,40 @@
 package org.real.temp;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class Answer {
 
-    public static void tsvToJsonl(String tsvFile, String jsonlFile) {
-        try (Reader reader = new FileReader(tsvFile);
-             BufferedWriter writer = new BufferedWriter(new FileWriter(jsonlFile));
-             CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withHeader().withIgnoreHeaderCase().trim())) {
+    public static void tsvToJSONL(String tsvFilePath, String jsonlFilePath) {
+        try (Reader reader = Files.newBufferedReader(Paths.get(tsvFilePath));
+             CSVParser csvParser = new CSVParser(reader, CSVFormat.TSV);
+             Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(jsonlFilePath), "UTF-8"))) {
 
-            List<String> headers = csvParser.getHeaderMap().keySet();
-            Gson gson = new GsonBuilder().setPrettyPrinting().create();
+            // Parse the TSV file
+            Iterable<CSVRecord> records = csvParser.getRecords();
+            ObjectMapper objectMapper = new ObjectMapper();
 
-            for (CSVRecord record : csvParser) {
-                StringBuilder jsonLine = new StringBuilder();
-                jsonLine.append("{");
-                for (String header : headers) {
-                    jsonLine.append("\"").append(header).append("\": \"").append(record.get(header)).append("\", ");
+            for (CSVRecord record : records) {
+                // Convert each record to a Map
+                Map<String, String> rowMap = new LinkedHashMap<>();
+                for (String header : csvParser.getHeaderNames()) {
+                    rowMap.put(header, record.get(header));
                 }
-                // Remove the trailing comma and space
-                jsonLine.deleteCharAt(jsonLine.length() - 2);
-                jsonLine.append("}\n");
-                writer.write(jsonLine.toString());
+
+                // Convert the Map to JSON string
+                String jsonLine = objectMapper.writeValueAsString(rowMap);
+
+                // Write the JSON line to the JSONL file
+                writer.write(jsonLine + "\n");
             }
 
         } catch (IOException e) {
@@ -38,6 +43,7 @@ public class Answer {
     }
 
     public static void main(String[] args) {
-        tsvToJsonl("path/to/your/input.tsv", "path/to/your/output.jsonl");
+        // Example usage
+        tsvToJSONL("path/to/input.tsv", "path/to/output.jsonl");
     }
 }

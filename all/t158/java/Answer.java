@@ -1,4 +1,5 @@
-public class FileUtils {
+package org.real.temp;
+public class Answer {
     public static String getFileExtension(String fileName) {
         // Regex to match the portion after the last dot in the filename
         String regex = "(?:\\.([^.]+))?$";

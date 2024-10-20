@@ -3,9 +3,7 @@
  *
  * @param n     Flat index (non-negative integer).
  * @param shape Array representing the dimensions of the multi-dimensional array.
- * @return      Array representing the multidimensional index corresponding to `n`.
- * @throws      IllegalArgumentException if `n` is out of bounds for the array defined by `shape`.
+ * @return List<Integer>: List representing the multidimensional index corresponding to `n`.
+ * @throws IllegalArgumentException If `n` is out of bounds for the array defined by `shape`.
  */
-public static int[] decompose(int n, int[] shape) throws IllegalArgumentException {
-    // Method implementation goes here
-}
+public static List<Integer> decompose(int n, int[] shape) {}

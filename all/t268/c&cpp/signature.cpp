@@ -1,5 +1,5 @@
 /**
- * Determines if there exists a starting gas station's index where you can travel
+ * @brief Determines if there exists a starting gas station's index where you can travel
  * around the circuit once in a clockwise direction.
  *
  * @param gas A vector of integers representing the amount of gas at each station.

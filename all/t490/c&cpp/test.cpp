@@ -1,11 +1,3 @@
-#include <catch2/catch_test_macros.hpp>
-#include <string>
-#include <sstream>
-#include <vector>
-
-// The function to be tested
-std::string format_str(const std::string& x);
-
 TEST_CASE("Test a simple string input", "[format_str]") {
     std::string input_str = "Hello, World!";
     std::string expected_output = "> Hello, World!";

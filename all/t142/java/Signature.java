@@ -7,6 +7,4 @@
  * @param input The camelCase string to be converted.
  * @return The converted string with spaces and initial capitalization.
  */
-public static String camelCaseToCapitalizedWithSpaces(String input) {
-    // Implementation goes here
-}
+public static String camelCaseToCapitalizedWithSpaces(String input) {}

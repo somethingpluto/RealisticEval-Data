@@ -14,6 +14,4 @@
  *         - 6 for Saturday
  *         - 7 for Sunday
  */
-function dayOfWeek(year, month, day) {
-    // Function implementation will go here
-}
+function dayOfWeek(year, month, day) {}

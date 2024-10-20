@@ -1,9 +1,7 @@
 /**
- * Check whether the IP address is a legal IP address.
+ * Checks whether the given IP address is a legal IP address.
  *
  * @param ip The IP address in string format.
- * @return True if the IP is compliant, False otherwise.
+ * @return true if the IP is compliant, false otherwise.
  */
-public static boolean isCompliantIp(String ip) {
-    // Method implementation goes here
-}
+public static boolean isCompliantIP(String ip) {}

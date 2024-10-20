@@ -3,9 +3,7 @@ package org.real.temp;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
-/**
- * Test cases for the numericalStrConvert method.
- */
+
 public class Tester {
 
     /**

@@ -1,8 +1,3 @@
-#include <catch2/catch_test_macros.hpp>
-#include <string>
-#include <cctype>
-#include <regex>
-
 TEST_CASE("Test is_phrase_in_string_ignore_case", "[is_phrase_in_string_ignore_case]") {
     SECTION("Exact match case insensitive") {
         REQUIRE(is_phrase_in_string_ignore_case("hello world", "Hello World"));

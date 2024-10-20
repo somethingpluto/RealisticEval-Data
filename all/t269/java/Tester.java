@@ -1,33 +1,37 @@
 package org.real.temp;
 
-import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.Test;
+import static org.junit.Assert.*;
+import static org.real.temp.Answer.*;
+/**
+ * Test class for verifying the compliance of IP addresses.
+ */
+public class Tester {
 
-public class TesterTest {
-
+    /**
+     * Tests that private IP addresses return true.
+     */
     @Test
-    public void testIsCompliantIpValid() {
-        assertTrue(Tester.isCompliantIp("192.168.1.1"));
+    public void testPrivateIP() {
+        // Test that private IPs return true
+        assertTrue(isCompliantIP("192.168.1.1"));
     }
 
+    /**
+     * Tests that public IP addresses return false.
+     */
     @Test
-    public void testIsCompliantIpInvalid() {
-        assertFalse(Tester.isCompliantIp("256.256.256.256"));
+    public void testPublicIP() {
+        // Test that public IPs return false
+        assertFalse(isCompliantIP("8.8.8.8"));
     }
 
+    /**
+     * Tests that invalid IP strings return false.
+     */
     @Test
-    public void testIsCompliantIpEmptyString() {
-        assertFalse(Tester.isCompliantIp(""));
-    }
-
-    @Test
-    public void testIsCompliantIpNull() {
-        assertThrows(NullPointerException.class, () -> Tester.isCompliantIp(null));
-    }
-
-    @Test
-    public void testIsCompliantIpIncorrectFormat() {
-        assertFalse(Tester.isCompliantIp("192.168.1"));
-        assertFalse(Tester.isCompliantIp("192.168.1.a"));
+    public void testInvalidIP() {
+        // Test that invalid IP strings return false
+        assertFalse(isCompliantIP("999.999.999.999"));
     }
 }

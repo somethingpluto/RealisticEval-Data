@@ -5,6 +5,4 @@
  * @param endTime - The end time of the break in HH:MM format.
  * @param currentTime - The current time in HH:MM format.
  */
-public static void isBreakTime(String startTime, String endTime, String currentTime) {
-    // Implementation goes here
-}
+public static void isBreakTime(String startTime, String endTime, String currentTime) {}

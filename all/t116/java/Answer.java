@@ -1,4 +1,6 @@
-public class ToroidalDiff {
+package org.real.temp;
+
+public class Answer {
     public static double[] toroidalDiff(Point thisPoint, Point otherPoint, double width, double height) {
         double dx = thisPoint.x - otherPoint.x;
         double dy = thisPoint.y - otherPoint.y;

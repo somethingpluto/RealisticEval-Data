@@ -12,6 +12,4 @@
  * . . . . . . Q .
  * Q . . . . . . .
  */
-public static void eightQueens() {
-    // Method implementation goes here
-}
+public static void eightQueens() {}

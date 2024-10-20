@@ -1,5 +1,5 @@
 /**
- * Extracts text from a given PDF file.
+ * @brief Extracts text from a given PDF file.
  *
  * @param file_path The path to the PDF file from which to extract text.
  *

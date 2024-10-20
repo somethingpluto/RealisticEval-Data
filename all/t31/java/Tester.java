@@ -1,12 +1,12 @@
 package org.real.temp;
 
-import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
+import org.real.temp.Answer;
 /**
  * Test class for the calculateRedProportion method.
  */
@@ -22,7 +22,7 @@ public class Tester {
                 new int[]{255, 0, 0},
                 new int[]{255, 0, 0}
         );
-        double result = calculateRedProportion(pixels);
+        double result = Answer.calculateRedProportion(pixels);
         assertEquals(1.0, result, 0.001);
     }
 
@@ -36,7 +36,7 @@ public class Tester {
                 new int[]{0, 0, 255},
                 new int[]{0, 255, 255}
         );
-        double result = calculateRedProportion(pixels);
+        double result = Answer.calculateRedProportion(pixels);
         assertEquals(0.0, result, 0.001);
     }
 
@@ -46,7 +46,7 @@ public class Tester {
     @Test
     public void testEmptyPixelList() {
         List<int[]> pixels = new ArrayList<>();
-        double result = calculateRedProportion(pixels);
+        double result = Answer.calculateRedProportion(pixels);
         assertEquals(0.0, result, 0.001);
     }
 
@@ -60,7 +60,7 @@ public class Tester {
                 new int[]{0, 0, 0},
                 new int[]{0, 0, 0}
         );
-        double result = calculateRedProportion(pixels);
+        double result = Answer.calculateRedProportion(pixels);
         assertEquals(0.0, result, 0.001);
     }
 }

@@ -1,14 +1,13 @@
+package org.real.temp;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
-import java.util.LinkedList;
-import java.util.Set;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
-/**
- * Test class for the UniqueDeque implementation.
- */
+import static org.junit.Assert.*;
+import static org.real.temp.Answer.*;
+
 public class Tester {
 
     @Test

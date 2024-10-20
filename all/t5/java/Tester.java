@@ -6,37 +6,6 @@ import java.util.ArrayList;
 
 public class Tester {
 
-    private static final List<List<Integer>> matrixMultiply(List<List<Integer>> matrixA, List<List<Integer>> matrixB) {
-        // Implementation of matrixMultiply method (same as before)
-        if (matrixA == null || matrixB == null || matrixA.isEmpty() || matrixB.isEmpty() || matrixA.get(0).isEmpty() || matrixB.get(0).isEmpty()) {
-            return new ArrayList<>();
-        }
-
-        if (matrixA.get(0).size() != matrixB.size()) {
-            throw new IllegalArgumentException(
-                "The number of columns in the first matrix must be equal to the number of rows in the second matrix.");
-        }
-
-        List<List<Integer>> result = new ArrayList<>();
-        for (int i = 0; i < matrixA.size(); i++) {
-            List<Integer> row = new ArrayList<>();
-            for (int j = 0; j < matrixB.get(0).size(); j++) {
-                row.add(0);
-            }
-            result.add(row);
-        }
-
-        for (int i = 0; i < matrixA.size(); i++) {
-            for (int j = 0; j < matrixB.get(0).size(); j++) {
-                for (int k = 0; k < matrixB.size(); k++) {
-                    result.get(i).set(j, result.get(i).get(j) + matrixA.get(i).get(k) * matrixB.get(k).get(j));
-                }
-            }
-        }
-
-        return result;
-    }
-
     @Test
     public void testStandardMatrices() {
         List<List<Integer>> mat1 = new ArrayList<>();

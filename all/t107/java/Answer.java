@@ -1,7 +1,9 @@
+package org.real.temp;
+
 import java.util.Arrays;
 import java.util.Random;
 
-public class MedianFinder {
+public class Answer {
     public static double findMedian(int[] arr) {
         // Sort the array in ascending order
         Arrays.sort(arr);

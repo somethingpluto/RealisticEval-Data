@@ -3,9 +3,7 @@ package org.real.temp;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-/**
- * Test cases for the floatToRGB method.
- */
+
 public class Tester {
 
     /**

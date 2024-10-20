@@ -1,5 +1,5 @@
 /**
- * Divide a vector evenly into n parts and return a vector of these parts.
+ * @brief Divide a vector evenly into n parts and return a vector of these parts.
  * If the vector length is not divisible by n, additional elements are added to the previous sections one by one.
  *
  * @param lst The vector to be divided.

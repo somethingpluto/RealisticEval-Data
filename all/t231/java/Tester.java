@@ -1,57 +1,131 @@
-package org.real.temp;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.stubbing.Answer;
 
-import static org.junit.Assert.assertEquals;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import java.io.File;
+import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.mock;
+
+@ExtendWith(MockitoExtension.class)
 public class Tester {
 
-    private static List<Double> trainLossList = new ArrayList<>();
-    private static List<Double> testAcc1List = new ArrayList<>();
+    @Mock
+    private BufferedReader mockReader;
 
-    @BeforeClass
-    public static void setUp() throws IOException {
-        String logFilePath = "path/to/your/logfile.log"; // Replace with actual path
-        readLog(logFilePath);
+    @InjectMocks
+    private Answer answer;
+
+    @BeforeEach
+    public void setUp() {
+        // Setup any common mocks or initializations here
     }
 
     @Test
-    public void testReadLog() {
-        assertEquals(10, trainLossList.size()); // Assuming there should be 10 entries
-        assertEquals(10, testAcc1List.size()); // Assuming there should be 10 entries
+    public void testReadCorrectData() throws IOException {
+        // Mock the BufferedReader to simulate reading correct data
+        String mockFileContent = "{\"test_acc1\": 88.5, \"train_loss\": 0.75}\n" +
+                                 "{\"test_acc1\": 89.0, \"train_loss\": 0.70}";
+        when(mockReader.readLine()).thenAnswer((Answer<String>) invocation -> {
+            for (String line : mockFileContent.split("\n")) {
+                if (!line.isEmpty()) {
+                    yield line;
+                }
+            }
+            yield null;
+        });
 
-        // Add more specific assertions based on expected values
-        assertEquals(0.75, trainLossList.get(0), 0.01);
-        assertEquals(88.5, testAcc1List.get(0), 0.01);
+        List<Double> trainLossList;
+        List<Double> testAcc1List;
+
+        try {
+            trainLossList = new ArrayList<>();
+            testAcc1List = new ArrayList<>();
+            answer.readLog("dummy_path.json", trainLossList, testAcc1List);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        assertEquals(List.of(0.75, 0.70), trainLossList);
+        assertEquals(List.of(88.5, 89.0), testAcc1List);
     }
 
-    public static void readLog(String logFilePath) throws IOException {
-        File file = new File(logFilePath);
-        FileReader reader = new FileReader(file);
+    @Test
+    public void testReadCorrectDataSingle() throws IOException {
+        // Mock the BufferedReader to simulate reading a single correct data line
+        String mockFileContent = "{\"test_acc1\": 88.5, \"train_loss\": 0.75}";
+        when(mockReader.readLine()).thenReturn(mockFileContent, (String) null);
 
-        StringBuilder sb = new StringBuilder();
-        int i;
-        while ((i = reader.read()) != -1) {
-            sb.append((char) i);
+        List<Double> trainLossList;
+        List<Double> testAcc1List;
+
+        try {
+            trainLossList = new ArrayList<>();
+            testAcc1List = new ArrayList<>();
+            answer.readLog("dummy_path.json", trainLossList, testAcc1List);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
-        reader.close();
 
-        JSONArray jsonArray = new JSONArray(sb.toString());
-        for (int j = 0; j < jsonArray.length(); j++) {
-            JSONObject jsonObject = jsonArray.getJSONObject(j);
-            double trainLoss = jsonObject.getDouble("train_loss");
-            double testAcc1 = jsonObject.getDouble("test_acc1");
+        assertEquals(List.of(0.75), trainLossList);
+        assertEquals(List.of(88.5), testAcc1List);
+    }
 
-            trainLossList.add(trainLoss);
-            testAcc1List.add(testAcc1);
+    @Test
+    public void testEmptyFile() throws IOException {
+        // Mock the BufferedReader to simulate reading an empty file
+        when(mockReader.readLine()).thenReturn((String) null);
+
+        List<Double> trainLossList;
+        List<Double> testAcc1List;
+
+        try {
+            trainLossList = new ArrayList<>();
+            testAcc1List = new ArrayList<>();
+            answer.readLog("empty_file.json", trainLossList, testAcc1List);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
+
+        assertEquals(List.of(), trainLossList);
+        assertEquals(List.of(), testAcc1List);
+    }
+
+    @Test
+    public void testPartialDataEntries() throws IOException {
+        // Mock the BufferedReader to simulate reading partial data entries
+        String mockFileContent = "{\"test_acc1\": 88.5, \"train_loss\": 0.75}\n" +
+                                 "{\"test_acc1\": 90.0,\"train_loss\": 0.75,\"f1\":0.91}";
+        when(mockReader.readLine()).thenAnswer((Answer<String>) invocation -> {
+            for (String line : mockFileContent.split("\n")) {
+                if (!line.isEmpty()) {
+                    yield line;
+                }
+            }
+            yield null;
+        });
+
+        List<Double> trainLossList;
+        List<Double> testAcc1List;
+
+        try {
+            trainLossList = new ArrayList<>();
+            testAcc1List = new ArrayList<>();
+            answer.readLog("partial_data_file.json", trainLossList, testAcc1List);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        assertEquals(List.of(0.75, 0.75), trainLossList);
+        assertEquals(List.of(88.5, 90.0), testAcc1List);
     }
 }

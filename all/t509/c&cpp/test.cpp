@@ -1,6 +1,3 @@
-#include <catch2/catch_test_macros.hpp>
-#include <catch2/generators/catch_generators_all.hpp>
-
 TEST_CASE("Test modular exponentiation", "[mod_exp]") {
     SECTION("Test with base = 2, exponent = 10, modulus = 1000") {
         REQUIRE(mod_exp(2, 10, 1000) == 24);

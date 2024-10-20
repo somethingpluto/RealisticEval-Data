@@ -1,11 +1,9 @@
 /**
- * Read a text file, replace words according to a dictionary map, and return the modified text.
+ * @brief Reads a text file, replaces words according to a dictionary map, and returns the modified text.
  *
- * Parameters:
- * - file_path (std::string): The path to the text file.
- * - replacement_dict (std::unordered_map<std::string, std::string>): A dictionary where the keys are words to be replaced, and the values are the replacement words.
- *
- * Returns:
- * - std::string: The text with the words replaced.
+ * @param file_path The path to the text file to be processed.
+ * @param replacement_dict A dictionary where the keys are words to be replaced, 
+ *        and the values are the corresponding replacement words.
+ * @return A string containing the text with the words replaced according to the dictionary.
  */
-std::string replaceWordsInFile(const std::string& file_path, const std::unordered_map<std::string, std::string>& replacement_dict) {}
+std::string replace_words_in_file(const std::string& file_path, const std::unordered_map<std::string, std::string>& replacement_dict) {}

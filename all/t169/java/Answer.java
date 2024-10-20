@@ -1,3 +1,4 @@
+package org.real.temp;
 /**
  * Converts an Arabic numeral to its Roman numeral equivalent.
  *
@@ -5,7 +6,7 @@
  * @return The Roman numeral representation of the input number.
  * @throws IllegalArgumentException Will throw an error if the input is not a positive integer.
  */
-public class RomanConverter {
+public class Answer {
     public static String convertToRoman(int num) {
         if (num <= 0) {
             throw new IllegalArgumentException("Input must be a positive integer");

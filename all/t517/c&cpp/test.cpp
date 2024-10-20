@@ -1,14 +1,3 @@
-#include <catch2/catch_test_macros.hpp>
-#include <fstream>
-#include <vector>
-#include <nlohmann/json.hpp>
-#include <filesystem>
-
-namespace fs = std::filesystem;
-
-using json = nlohmann::json;
-using json_list = std::vector<json>;
-
 TEST_CASE("Test reading JSON Lines files", "[jsonl]") {
     // Create temporary JSON Lines files for testing
     const std::string valid_jsonl_file = "test_valid.jsonl";

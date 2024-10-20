@@ -1,7 +1,9 @@
+package org.real.temp;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class HtmlToMarkdownConverter {
+public class Answer {
 
     public static String convertHtmlHeadingsToMarkdown(String html) {
         html = html.replaceAll("<h1>(.*?)</h1>", "# $1");

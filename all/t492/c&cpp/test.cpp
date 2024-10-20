@@ -1,13 +1,3 @@
-#include <catch2/catch_test_macros.hpp>
-#include <fstream>
-#include <sstream>
-#include <vector>
-#include <string>
-#include <filesystem>
-
-// Ensure filesystem namespace is used
-namespace fs = std::filesystem;
-
 TEST_CASE("TestSaveContentToFile", "[save_content_to_file]") {
     const std::string test_file_path = "test_output.txt";
 
@@ -26,10 +16,10 @@ TEST_CASE("TestSaveContentToFile", "[save_content_to_file]") {
 
     SECTION("Multiple spaces and empty lines") {
         std::string content = R"(
-
+        
         This is a    test.
 
-        Another line.
+        Another line.      
         )";
         std::string expected = "This is a test. Another line.";
         save_content_to_file(content, test_file_path);

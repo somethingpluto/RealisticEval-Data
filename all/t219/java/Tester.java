@@ -136,4 +136,30 @@ public class Tester {
             return second;
         }
     }
+
+    // Method to check for dividend variances
+    public static List<Tuple<String, String>> checkDividendVariances(List<Tuple<String, String, Double>> records) {
+        // Map to store dividend amounts by (ticker, exDividendDate)
+        Map<Tuple<String, String>, Set<Double>> dividendMap = new HashMap<>();
+
+        // Iterate through the records
+        for (Tuple<String, String, Double> record : records) {
+            String ticker = record.getFirst();
+            String exDividendDate = record.getSecond();
+            double dividendAmount = record.getThird();
+
+            Tuple<String, String> key = new Tuple<>(ticker, exDividendDate);
+            dividendMap.computeIfAbsent(key, k -> new HashSet<>()).add(dividendAmount);
+        }
+
+        // Find entries with more than one unique dividend amount
+        List<Tuple<String, String>> result = new ArrayList<>();
+        for (Map.Entry<Tuple<String, String>, Set<Double>> entry : dividendMap.entrySet()) {
+            if (entry.getValue().size() > 1) {
+                result.add(entry.getKey());
+            }
+        }
+
+        return result;
+    }
 }

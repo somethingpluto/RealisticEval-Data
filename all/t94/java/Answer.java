@@ -1,8 +1,10 @@
+package org.real.temp;
+
 import java.util.ArrayList;
 import java.util.List;
 
 // Assuming you have Note and Interval classes defined similar to @tonaljs/tonal
-public class CircleOfFifths {
+public class Answer {
     public static void main(String[] args) {
         String startingNote = "C"; // Example starting note
         List<String> circle = createCircleOfFifths(startingNote);

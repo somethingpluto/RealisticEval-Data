@@ -1,5 +1,5 @@
 /**
- * Converts 2D pixel coordinates into 3D world coordinates using camera intrinsic parameters and depth.
+ * @brief Converts 2D pixel coordinates into 3D world coordinates using camera intrinsic parameters and depth.
  *
  * @param K A 3x3 matrix representing the camera intrinsic matrix.
  * @param d Depth (distance along the z-axis).

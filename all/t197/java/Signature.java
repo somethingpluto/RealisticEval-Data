@@ -1,16 +1,8 @@
 /**
- * Simulates a game based on the order of prime numbers, using a circular linked list to represent 
- * the cyclic structure of players, and removes players one by one.
+ * Simulates the Josephus problem using a list to represent the circle of people.
  *
- * This method creates an instance of the PrimeGame class, which encapsulates the logic
- * for simulating the game. It then calls the findOrder method on the PrimeGame object
- * to determine and return the order in which players are removed based on the sequence of prime numbers.
- *
- * @param n The number of players in the game.
- * @return A List of integers representing the order of players being removed from the ring.
+ * @param n The number of people in the circle (1 to n).
+ * @param k The step count (every k-th person will be eliminated).
+ * @return The position of the last person remaining (1-indexed).
  */
-import java.util.List;
-
-public List<Integer> findOrder(int n) {
-    // Implementation goes here
-}
+public static int josephus(int n, int k) {}

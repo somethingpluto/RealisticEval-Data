@@ -16,7 +16,7 @@ TEST_CASE("Test common columns functionality", "[common-columns]") {
             file << datas[i];
         }
 
-        REQUIRE(findCommonColumns(test_dir) == std::vector<std::string>({"A", "B", "C"}));
+        REQUIRE(find_common_columns(test_dir) == std::vector<std::string>({"A", "B", "C"}));
     }
 
     SECTION("No common columns") {
@@ -32,7 +32,7 @@ TEST_CASE("Test common columns functionality", "[common-columns]") {
             file << datas[i];
         }
 
-        REQUIRE(findCommonColumns(test_dir).empty());
+        REQUIRE(find_common_columns(test_dir).empty());
     }
 
     SECTION("Some common columns") {
@@ -48,7 +48,7 @@ TEST_CASE("Test common columns functionality", "[common-columns]") {
             file << datas[i];
         }
 
-        REQUIRE(findCommonColumns(test_dir) == std::vector<std::string>({"C"}));
+        REQUIRE(find_common_columns(test_dir) == std::vector<std::string>({"C"}));
     }
 
     SECTION("Mixed common and unique columns") {
@@ -64,7 +64,7 @@ TEST_CASE("Test common columns functionality", "[common-columns]") {
             file << datas[i];
         }
 
-        REQUIRE(findCommonColumns(test_dir) == std::vector<std::string>({"B", "C"}));
+        REQUIRE(find_common_columns(test_dir) == std::vector<std::string>({"B", "C"}));
     }
 
     // Clean up the temporary directory

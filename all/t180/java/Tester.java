@@ -1,63 +1,96 @@
 package org.real.temp;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test; // Change this import to JUnit 4
+import org.junit.After;
+import org.junit.Before;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import static org.junit.Assert.*; // Change this import to JUnit 4 assertions
 
-import org.real.temp.*;
-public class Tester{
-    /**
-     * Test when the target is present in the array.
-     */
-    @Test
-    public void testTargetPresent() {
-        int[] array = {1, 3, 5, 7, 9, 11};
-        int target = 7;
-        int result = Answer.binarySearchClosest(array, target);
-        assertEquals(3, result, "Target should be found at index 3.");
+public class Tester {
+
+    private File testFile;
+
+    @Before
+    public void setUp() throws IOException {
+        testFile = new File("testFile.txt");
+        try (FileOutputStream fos = new FileOutputStream(testFile)) {
+            fos.write("Test content".getBytes());
+        }
+    }
+
+    @After
+    public void tearDown() {
+        if (testFile.exists()) {
+            testFile.delete();
+        }
     }
 
     /**
-     * Test when the target is not present and the closest element is smaller.
+     * Test reading a file that exists and has content.
      */
     @Test
-    public void testClosestElementSmaller() {
-        int[] array = {1, 3, 5, 7, 9, 11};
-        int target = 6;
-        int result = Answer.binarySearchClosest(array, target);
-        assertEquals(2, result, "Closest element should be 5 at index 2.");
+    public void testReadFileWithContent() throws IOException {
+        byte[] content = Answer.readFileToByteArray(testFile.getAbsolutePath());
+        assertEquals("The file content should match the expected string.", "Test content", new String(content));
     }
 
     /**
-     * Test when the target is not present and the closest element is larger.
+     * Test reading an empty file.
      */
     @Test
-    public void testClosestElementLarger() {
-        int[] array = {1, 3, 5, 7, 9, 11};
-        int target = 8;
-        int result = Answer.binarySearchClosest(array, target);
-        assertEquals(3, result, "Closest element should be 7 at index 3.");
+    public void testReadEmptyFile() throws IOException {
+        File emptyFile = new File("emptyFile.txt");
+        emptyFile.createNewFile();
+
+        byte[] content = Answer.readFileToByteArray(emptyFile.getAbsolutePath());
+        assertEquals("The content of an empty file should be a byte array of length 0.", 0, content.length);
+
+        emptyFile.delete();
     }
 
     /**
-     * Test when the target is smaller than all elements in the array.
+     * Test reading a file that does not exist.
      */
-    @Test
-    public void testTargetSmallerThanAll() {
-        int[] array = {1, 3, 5, 7, 9, 11};
-        int target = 0;
-        int result = Answer.binarySearchClosest(array, target);
-        assertEquals(0, result, "Closest element should be 1 at index 0.");
+    @Test(expected = Exception.class)
+    public void testReadNonExistentFile() throws IOException {
+        String nonExistentFilePath = "nonExistentFile.txt";
+        // Change to JUnit 4's way of asserting exceptions
+        Answer.readFileToByteArray(nonExistentFilePath);
+
     }
 
     /**
-     * Test when the target is larger than all elements in the array.
+     * Test reading a file with special characters in its content.
      */
     @Test
-    public void testTargetLargerThanAll() {
-        int[] array = {1, 3, 5, 7, 9, 11};
-        int target = 12;
-        int result = Answer.binarySearchClosest(array, target);
-        assertEquals(5, result, "Closest element should be 11 at index 5.");
+    public void testReadFileWithSpecialCharacters() throws IOException {
+        String specialContent = "Special content: !@#$%^&*()_+";
+        try (FileOutputStream fos = new FileOutputStream(testFile)) {
+            fos.write(specialContent.getBytes());
+        }
+
+        byte[] content = Answer.readFileToByteArray(testFile.getAbsolutePath());
+        assertEquals("The file content should match the special characters string.", specialContent, new String(content));
+    }
+
+    /**
+     * Test reading a large file.
+     */
+    @Test
+    public void testReadLargeFile() throws IOException {
+        byte[] largeContent = new byte[10 * 1024 * 1024]; // 10 MB
+        for (int i = 0; i < largeContent.length; i++) {
+            largeContent[i] = (byte) (i % 256);
+        }
+
+        try (FileOutputStream fos = new FileOutputStream(testFile)) {
+            fos.write(largeContent);
+        }
+
+        byte[] content = Answer.readFileToByteArray(testFile.getAbsolutePath());
+        assertArrayEquals("The content of the large file should match the expected byte array.", largeContent, content);
     }
 }

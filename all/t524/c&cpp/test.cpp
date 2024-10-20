@@ -10,7 +10,7 @@ TEST_CASE("Test scaling of point clouds", "[scalePointCloud]") {
         Eigen::MatrixXd expected_output(1, 3);
         expected_output << 2.0, 4.0, 6.0;
 
-        REQUIRE((scalePointCloud(pointCloud, scale_factor)).isApprox(expected_output));
+        REQUIRE((scale_point_cloud(pointCloud, scale_factor)).isApprox(expected_output));
     }
 
     SECTION("Test multiple points scaling") {
@@ -22,7 +22,7 @@ TEST_CASE("Test scaling of point clouds", "[scalePointCloud]") {
         expected_output << 0.5, 1.0, 1.5,
                            2.0, 2.5, 3.0;
 
-        REQUIRE((scalePointCloud(pointCloud, scale_factor)).isApprox(expected_output));
+        REQUIRE((scale_point_cloud(pointCloud, scale_factor)).isApprox(expected_output));
     }
 
     SECTION("Test zero scaling") {
@@ -34,7 +34,7 @@ TEST_CASE("Test scaling of point clouds", "[scalePointCloud]") {
         expected_output << 0.0, 0.0, 0.0,
                            0.0, 0.0, 0.0;
 
-        REQUIRE((scalePointCloud(pointCloud, scale_factor)).isApprox(expected_output));
+        REQUIRE((scale_point_cloud(pointCloud, scale_factor)).isApprox(expected_output));
     }
 
     SECTION("Test negative scaling") {
@@ -44,6 +44,6 @@ TEST_CASE("Test scaling of point clouds", "[scalePointCloud]") {
         Eigen::MatrixXd expected_output(1, 3);
         expected_output << -2.0, -4.0, -6.0;
 
-        REQUIRE((scalePointCloud(pointCloud, scale_factor)).isApprox(expected_output));
+        REQUIRE((scale_point_cloud(pointCloud, scale_factor)).isApprox(expected_output));
     }
 }

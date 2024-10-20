@@ -1,37 +1,32 @@
-TEST_CASE("MatrixTraversal::spiral_traversal", "[MatrixTraversal]") {
+TEST_CASE("TestMatrixTraversal", "[MatrixTraversal]") {
     MatrixTraversal mt;
 
     SECTION("Empty matrix") {
-        std::vector<std::vector<int>> matrix = {};
-        REQUIRE(mt.spiral_traversal(matrix).empty());
+        // 异常值测试：空矩阵
+        REQUIRE(spiral_traversal({}) == std::vector<int>{});
     }
 
-    SECTION("1x1 matrix") {
-        std::vector<std::vector<int>> matrix = {{1}};
-        std::vector<int> expected = {1};
-        REQUIRE(mt.spiral_traversal(matrix) == expected);
+    SECTION("Single element matrix") {
+        // 基本逻辑功能测试：单元素矩阵
+        std::vector<std::vector<int>> matrix = {{42}};
+        REQUIRE(spiral_traversal(matrix) == std::vector<int>{42});
     }
 
-    SECTION("2x3 matrix") {
-        std::vector<std::vector<int>> matrix = {{1, 2, 3}, {4, 5, 6}};
-        std::vector<int> expected = {1, 2, 3, 6, 5, 4};
-        REQUIRE(mt.spiral_traversal(matrix) == expected);
+    SECTION("Single row matrix") {
+        // 边界值测试：单行矩阵
+        std::vector<std::vector<int>> matrix = {{1, 2, 3, 4, 5}};
+        REQUIRE(spiral_traversal(matrix) == std::vector<int>{1, 2, 3, 4, 5});
     }
 
-    SECTION("3x2 matrix") {
-        std::vector<std::vector<int>> matrix = {{1, 2}, {3, 4}, {5, 6}};
-        std::vector<int> expected = {1, 2, 4, 6, 5, 3};
-        REQUIRE(mt.spiral_traversal(matrix) == expected);
+    SECTION("Single column matrix") {
+        // 边界值测试：单列矩阵
+        std::vector<std::vector<int>> matrix = {{1}, {2}, {3}, {4}, {5}};
+        REQUIRE(spiral_traversal(matrix) == std::vector<int>{1, 2, 3, 4, 5});
     }
 
-    SECTION("4x4 matrix") {
-        std::vector<std::vector<int>> matrix = {
-            {1, 2, 3, 4},
-            {5, 6, 7, 8},
-            {9, 10, 11, 12},
-            {13, 14, 15, 16}
-        };
-        std::vector<int> expected = {1, 2, 3, 4, 8, 12, 16, 15, 14, 13, 9, 5, 6, 7, 11, 10};
-        REQUIRE(mt.spiral_traversal(matrix) == expected);
+    SECTION("General case") {
+        // 基本逻辑功能测试：多行多列矩阵
+        std::vector<std::vector<int>> matrix = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
+        REQUIRE(spiral_traversal(matrix) == std::vector<int>{1, 2, 3, 6, 9, 8, 7, 4, 5});
     }
 }

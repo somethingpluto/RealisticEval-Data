@@ -1,6 +1,7 @@
+package org.real.temp;
 import java.util.regex.Pattern;
 
-public class ImageValidator {
+public class Answer {
 
     /**
      * Checks if the provided image data is a valid Base64 encoded image string.

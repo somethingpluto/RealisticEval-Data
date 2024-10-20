@@ -1,24 +1,20 @@
-TEST_CASE("Extract Bib Info", "[bib]") {
-    // Create a temporary BibTeX file content
-    std::map<std::string, std::map<std::string, std::string>> entries = {
-        {"sample2024", {{"author", "John Doe and Jane Smith"}, {"title", "A Comprehensive Study on AI"}, {"year", "2024"}}}
+TEST_CASE("Test extraction from a badly formatted BibTeX entry", "[extract_bib_info]") {
+    std::string mock_bib = R"(@article{sample2024,
+  author = John Doe,
+  title = {Title Without Braces},
+  year = 2024
+)}";
+
+    std::istringstream mock_stream(mock_bib);
+    std::vector<std::map<std::string, std::string>> result;
+    {
+        std::fstream file("dummy.bib");
+        file.rdbuf(mock_stream.rdbuf());
+        result = extract_bib_info("dummy.bib");
+    }
+
+    std::vector<std::map<std::string, std::string>> expected = {
+        {{"title", "Title Without Braces"}, {"author", ""}, {"year", ""}}
     };
-    std::string bibFileContent = createBibFileContent(entries);
 
-    // Write the content to a temporary file
-    std::ofstream tempFile("temp.bib");
-    tempFile << bibFileContent;
-    tempFile.close();
-
-    // Call the function to be tested
-    std::vector<std::map<std::string, std::string>> result = extract_bib_info("temp.bib");
-
-    // Clean up the temporary file
-    remove("temp.bib");
-
-    // Verify the results
-    REQUIRE(result.size() == 1);
-    REQUIRE(result[0]["title"] == "A Comprehensive Study on AI");
-    REQUIRE(result[0]["author"] == "John Doe and Jane Smith");
-    REQUIRE(result[0]["year"] == "2024");
-}
+    REQUIRE(result == expected)}

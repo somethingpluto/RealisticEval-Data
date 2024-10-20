@@ -1,7 +1,3 @@
-#include <catch2/catch_test_macros.hpp>
-#include <Eigen/Dense>
-#include <stdexcept>
-
 TEST_CASE("TestTranslatePointCloud", "[translatePointCloud]") {
     SECTION("test_simple_translation") {
         // Test a simple translation of a single point
@@ -11,7 +7,7 @@ TEST_CASE("TestTranslatePointCloud", "[translatePointCloud]") {
         Eigen::MatrixXd expectedOutput(1, 3);
         expectedOutput << 2.0, 3.0, 4.0;
 
-        REQUIRE(translatePointCloud(pointCloud, translationVector).isApprox(expectedOutput));
+        REQUIRE(translate_point_cloud(pointCloud, translationVector).isApprox(expectedOutput));
     }
 
     SECTION("test_multiple_points_translation") {
@@ -24,7 +20,7 @@ TEST_CASE("TestTranslatePointCloud", "[translatePointCloud]") {
         expectedOutput << 2.0, 4.0, 6.0,
                           5.0, 7.0, 9.0;
 
-        REQUIRE(translatePointCloud(pointCloud, translationVector).isApprox(expectedOutput));
+        REQUIRE(translate_point_cloud(pointCloud, translationVector).isApprox(expectedOutput));
     }
 
     SECTION("test_zero_translation") {
@@ -35,7 +31,7 @@ TEST_CASE("TestTranslatePointCloud", "[translatePointCloud]") {
         Eigen::RowVector3d translationVector(0.0, 0.0, 0.0);
         Eigen::MatrixXd expectedOutput = pointCloud;  // No change expected
 
-        REQUIRE(translatePointCloud(pointCloud, translationVector).isApprox(expectedOutput));
+        REQUIRE(translate_point_cloud(pointCloud, translationVector).isApprox(expectedOutput));
     }
 
     SECTION("test_negative_translation") {
@@ -46,6 +42,6 @@ TEST_CASE("TestTranslatePointCloud", "[translatePointCloud]") {
         Eigen::MatrixXd expectedOutput(1, 3);
         expectedOutput << 0.0, 0.0, 0.0;
 
-        REQUIRE(translatePointCloud(pointCloud, translationVector).isApprox(expectedOutput));
+        REQUIRE(translate_point_cloud(pointCloud, translationVector).isApprox(expectedOutput));
     }
 }

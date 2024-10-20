@@ -1,31 +1,25 @@
-TEST_CASE("Find Placeholders", "[find_placeholders]") {
-    SECTION("Empty String") {
-        std::string text = "";
-        std::vector<std::string> expected = {};
-        REQUIRE(find_placeholders(text) == expected);
+TEST_CASE("Test find_placeholders function", "[find_placeholders]") {
+    SECTION("Test string with multiple placeholders") {
+        std::string input_text = "Here are some placeholders: {{ placeholder1 }}, {{ placeholder2 }}, and {{ placeholder3 }}.";
+        std::vector<std::string> expected_output = {"placeholder1", "placeholder2", "placeholder3"};
+        REQUIRE(find_placeholders(input_text) == expected_output);
     }
 
-    SECTION("No Placeholders") {
-        std::string text = "This is a normal sentence.";
-        std::vector<std::string> expected = {};
-        REQUIRE(find_placeholders(text) == expected);
+    SECTION("Test string with no placeholders") {
+        std::string input_text = "This string has no placeholders.";
+        std::vector<std::string> expected_output = {};
+        REQUIRE(find_placeholders(input_text) == expected_output);
     }
 
-    SECTION("Single Placeholder") {
-        std::string text = "{{ user_name }}";
-        std::vector<std::string> expected = {"user_name"};
-        REQUIRE(find_placeholders(text) == expected);
+    SECTION("Test string with a single placeholder") {
+        std::string input_text = "The only placeholder is {{ singlePlaceholder }}.";
+        std::vector<std::string> expected_output = {"singlePlaceholder"};
+        REQUIRE(find_placeholders(input_text) == expected_output);
     }
 
-    SECTION("Multiple Placeholders") {
-        std::string text = "{{ user_name }} and {{ age }} years old.";
-        std::vector<std::string> expected = {"user_name", "age"};
-        REQUIRE(find_placeholders(text) == expected);
-    }
-
-    SECTION("Placeholders with Spaces") {
-        std::string text = "{{ full name }}";
-        std::vector<std::string> expected = {"full name"};
-        REQUIRE(find_placeholders(text) == expected);
+    SECTION("Test string with placeholders that have extra spaces") {
+        std::string input_text = "Placeholders with spaces: {{  placeholder_with_spaces  }} and {{ placeholder2 }}.";
+        std::vector<std::string> expected_output = {"placeholder_with_spaces", "placeholder2"};
+        REQUIRE(find_placeholders(input_text) == expected_output);
     }
 }

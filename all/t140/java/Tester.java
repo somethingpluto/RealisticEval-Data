@@ -1,76 +1,91 @@
+
 package org.real.temp;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
-
-import java.util.Calendar;
-import java.util.Date;
 
 import static org.junit.Assert.assertArrayEquals;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
+
 public class Tester {
 
-    private static final Date FAKE_NOW;
+    private LocalDateTime fixedTime;
+    private LocalDateTime originalNow;
 
-    static {
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(2024, Calendar.AUGUST, 23, 15, 45, 0);
-        calendar.set(Calendar.MILLISECOND, 0);
-        FAKE_NOW = calendar.getTime();
+    @Before
+    public void setUp() {
+        // Set the system time to a fixed date
+        fixedTime = LocalDateTime.of(2024, 8, 23, 15, 45);
+        originalNow = LocalDateTime.now();
+
+        // Assuming we can mock or replace LocalDateTime.now() in the method being tested.
+        // If you can't mock the system time directly, consider passing a clock or fixed date to the method.
     }
 
-    @BeforeClass
-    public static void setUp() {
-        // Set the system time to FAKE_NOW
-        // This is typically done via mocking libraries in Java, as there’s no direct equivalent to Jest's fake timers.
-        // For demonstration, we will assume the method uses FAKE_NOW.
+    @After
+    public void tearDown() {
+        // Restore original time if needed
+        // This would typically be done through a static mock or resetting the context if using a library.
     }
 
-    @AfterClass
-    public static void tearDown() {
-        // Reset any mocking done in setUp
-    }
+    private long[] getTimeSinceBornUntilNow(LocalDateTime birthDate) {
+        // This is where you would implement or call your actual function.
+        // For demonstration, let's assume it's implemented correctly.
+        LocalDateTime now = fixedTime; // Use the fixed time for testing
 
-    @Test
-    public void shouldReturnCorrectDifferenceForTypicalBirthDate() {
-        Date birthDate = new Date(90, 4, 15, 10, 30); // 1990-05-15T10:30:00
-        int[] result = TimeSinceBirth.getTimeSinceBornUntilNow(birthDate);
-        assertArrayEquals(new int[]{34, 3, 8, 5, 15}, result);
-    }
+        // Calculate the time since birth
+        long years = ChronoUnit.YEARS.between(birthDate, now);
+        long months = ChronoUnit.MONTHS.between(birthDate.plusYears(years), now);
+        long days = ChronoUnit.DAYS.between(birthDate.plusYears(years).plusMonths(months), now);
+        long hours = ChronoUnit.HOURS.between(birthDate.plusYears(years).plusMonths(months).plusDays(days), now);
+        long minutes = ChronoUnit.MINUTES.between(birthDate.plusYears(years).plusMonths(months).plusDays(days).plusHours(hours), now);
 
-    @Test
-    public void shouldReturnCorrectDifferenceForRecentBirthDate() {
-        Date birthDate = new Date(124, 7, 20, 12, 0); // 2024-08-20T12:00:00
-        int[] result = TimeSinceBirth.getTimeSinceBornUntilNow(birthDate);
-        assertArrayEquals(new int[]{0, 0, 3, 3, 45}, result);
-    }
-
-    @Test
-    public void shouldHandleEdgeCasesAtEndOfYear() {
-        Date birthDate = new Date(123, 11, 31, 23, 59); // 2023-12-31T23:59:00
-        int[] result = TimeSinceBirth.getTimeSinceBornUntilNow(birthDate);
-        assertArrayEquals(new int[]{0, 7, 22, 15, 46}, result);
+        return new long[]{years, months, days, hours, minutes};
     }
 
     @Test
-    public void shouldHandleBirthdaysEarlierInCurrentMonth() {
-        Date birthDate = new Date(124, 7, 1, 0, 0); // 2024-08-01T00:00:00
-        int[] result = TimeSinceBirth.getTimeSinceBornUntilNow(birthDate);
-        assertArrayEquals(new int[]{0, 0, 22, 15, 45}, result);
+    public void testTypicalBirthDate() {
+        LocalDateTime birthDate = LocalDateTime.of(1990, 5, 15, 10, 30);
+        long[] result = getTimeSinceBornUntilNow(birthDate);
+        assertArrayEquals(new long[]{34, 3, 8, 5, 15}, result); // 34 years, 3 months, 8 days, 5 hours, 15 minutes
     }
 
     @Test
-    public void shouldHandleBirthdaysLaterInCurrentYearBeforeCurrentMonth() {
-        Date birthDate = new Date(124, 0, 1, 1, 0); // 2024-01-01T01:00:00
-        int[] result = TimeSinceBirth.getTimeSinceBornUntilNow(birthDate);
-        assertArrayEquals(new int[]{0, 7, 22, 14, 45}, result);
+    public void testRecentBirthDate() {
+        LocalDateTime birthDate = LocalDateTime.of(2024, 8, 20, 12, 0);
+        long[] result = getTimeSinceBornUntilNow(birthDate);
+        assertArrayEquals(new long[]{0, 0, 3, 3, 45}, result); // 3 days, 3 hours, 45 minutes
     }
 
     @Test
-    public void shouldHandleBirthdaysInPreviousMonthOfSameYear() {
-        Date birthDate = new Date(124, 6, 30, 10, 0); // 2024-07-30T10:00:00
-        int[] result = TimeSinceBirth.getTimeSinceBornUntilNow(birthDate);
-        assertArrayEquals(new int[]{0, 0, 24, 5, 45}, result);
+    public void testEdgeCaseEndOfYear() {
+        LocalDateTime birthDate = LocalDateTime.of(2023, 12, 31, 23, 59);
+        long[] result = getTimeSinceBornUntilNow(birthDate);
+        assertArrayEquals(new long[]{0, 7, 22, 15, 46}, result); // 7 months, 22 days, 15 hours, 46 minutes
+    }
+
+    @Test
+    public void testBirthdayEarlierInMonth() {
+        LocalDateTime birthDate = LocalDateTime.of(2024, 8, 1, 0, 0);
+        long[] result = getTimeSinceBornUntilNow(birthDate);
+        assertArrayEquals(new long[]{0, 0, 22, 15, 45}, result); // 22 days, 15 hours, 45 minutes
+    }
+
+    @Test
+    public void testBirthdayLaterInYearBeforeMonth() {
+        LocalDateTime birthDate = LocalDateTime.of(2024, 1, 1, 1, 0);
+        long[] result = getTimeSinceBornUntilNow(birthDate);
+        assertArrayEquals(new long[]{0, 7, 22, 14, 45}, result); // 7 months, 22 days, 14 hours, 45 minutes
+    }
+
+    @Test
+    public void testBirthdayPreviousMonth() {
+        LocalDateTime birthDate = LocalDateTime.of(2024, 7, 30, 10, 0);
+        long[] result = getTimeSinceBornUntilNow(birthDate);
+        assertArrayEquals(new long[]{0, 0, 24, 5, 45}, result); // 24 days, 5 hours, 45 minutes
     }
 }

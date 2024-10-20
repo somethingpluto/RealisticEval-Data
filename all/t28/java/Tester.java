@@ -1,31 +1,30 @@
 package org.real.temp;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.Assert.assertEquals;
 
-/**
- * Test class for verifying the correctness of the printMemoryBits method.
- */
 public class Tester {
 
     private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+    private final PrintStream originalOut = System.out;
 
-    @BeforeEach
+    @Before
     public void setUp() {
         // Redirect System.out to capture the output
         System.setOut(new PrintStream(outContent));
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         // Restore the normal System.out
-        System.setOut(System.out);
+        System.setOut(originalOut);
     }
 
     @Test

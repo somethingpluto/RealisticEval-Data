@@ -1,4 +1,4 @@
-union ConvertResult {
+union convertresult {
     int intValue;
     float floatValue;
     std::string stringValue;
@@ -25,7 +25,7 @@ union ConvertResult {
     }
 };
 /**
- * Convert the input string, first see if it is an integer, if it is converted to an integer,
+ * @brief Convert the input string, first see if it is an integer, if it is converted to an integer,
  * if it is not, see if it is a floating point number, if yes, convert to a floating point number,
  * if neither, return the original string.
  *

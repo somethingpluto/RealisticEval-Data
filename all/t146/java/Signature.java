@@ -10,6 +10,4 @@
  *        "normal" uses units like KB, MB (base 1000).
  * @returns A string representation of the byte size in a human-readable format.
  */
-public static String formatBytes(long bytes, FormatOptions options) {
-    // method implementation...
-}
+public static String formatBytes(long bytes, FormatOptions options) {}

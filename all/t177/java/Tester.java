@@ -1,13 +1,10 @@
 package org.real.temp;
 
-import org.junit.jupiter.api.Test;
-
-import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
-
+import org.junit.Test;
+import static org.junit.Assert.*; 
+import java.security.NoSuchAlgorithmException; 
 import org.real.temp.*;
-
-import static org.junit.jupiter.api.Assertions.*;
+import java.util.Arrays;
 
 
 public class Tester {
@@ -22,7 +19,7 @@ public class Tester {
         byte[] result = Answer.hashPasswordWithSalt(password);
 
         // SHA-256 hash length is 32 bytes, and the salt length is 16 bytes
-        assertEquals(48, result.length, "The combined salt and hashed password length should be 48 bytes.");
+        assertEquals(48, result.length);
     }
 
     /**
@@ -36,8 +33,7 @@ public class Tester {
 
         byte[] salt = Arrays.copyOfRange(result, 0, 16);
 
-        assertNotNull(salt, "Salt should not be null.");
-        assertEquals(16, salt.length, "Salt length should be 16 bytes.");
+        assertEquals(16, salt.length);
     }
 
     /**

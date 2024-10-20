@@ -5,9 +5,6 @@ import static org.junit.Assert.assertEquals;
 import java.util.Arrays;
 import java.util.List;
 
-/**
- * Test class for the polynomial decryption function.
- */
 public class Tester {
 
     @Test

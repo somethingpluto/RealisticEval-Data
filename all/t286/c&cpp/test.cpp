@@ -1,37 +1,27 @@
-TEST_CASE("Find Largest Divisible", "[find_largest_divisible]") {
-    SECTION("n is less than 5") {
-        REQUIRE(find_largest_divisible(4) == nullptr);
+TEST_CASE("TestFindLargestDivisible", "[find_largest_divisible]") {
+    SECTION("test_typical_case") {
+        // Test with a typical input where the largest divisible number should be found.
+        REQUIRE(find_largest_divisible(50) == 50);
+        REQUIRE(find_largest_divisible(47) == 45);
     }
 
-    SECTION("n is exactly 5") {
-        REQUIRE(find_largest_divisible(5) == 5);
+    SECTION("test_no_divisible_found") {
+        // Test a case where no divisible number is found within the range.
+        REQUIRE(!find_largest_divisible(4).has_value());
     }
 
-    SECTION("n is between 5 and 10") {
-        REQUIRE(find_largest_divisible(7) == 5);
-    }
-
-    SECTION("n is between 10 and 15") {
-        REQUIRE(find_largest_divisible(13) == 10);
-    }
-
-    SECTION("n is exactly 10") {
+    SECTION("test_exact_half_divisible") {
+        // Test when the half of n is exactly divisible by 5.
         REQUIRE(find_largest_divisible(10) == 10);
     }
 
-    SECTION("n is between 15 and 20") {
-        REQUIRE(find_largest_divisible(18) == 15);
+    SECTION("test_large_number") {
+        // Test with a large number to ensure performance and correctness.
+        REQUIRE(find_largest_divisible(1000) == 1000);
     }
 
-    SECTION("n is between 20 and 25") {
-        REQUIRE(find_largest_divisible(23) == 20);
-    }
-
-    SECTION("n is exactly 25") {
-        REQUIRE(find_largest_divisible(25) == 25);
-    }
-
-    SECTION("n is greater than 25") {
-        REQUIRE(find_largest_divisible(30) == 25);
+    SECTION("test_lower_bound") {
+        // Test the function with the lowest bound that should find a divisible number.
+        REQUIRE(find_largest_divisible(5) == 5);
     }
 }

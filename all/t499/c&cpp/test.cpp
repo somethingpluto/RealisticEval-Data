@@ -1,8 +1,3 @@
-#include <catch2/catch_test_macros.hpp>
-#include <string>
-#include <regex>
-
-// Test class using Catch2
 TEST_CASE("TestCleanPattern", "[clean_pattern]") {
     const std::string pattern = R"((\d+\.?\d*) kg)";  // Regex pattern to match weight in kg
 

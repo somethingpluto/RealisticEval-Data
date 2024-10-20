@@ -1,38 +1,48 @@
 package org.real.temp;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import org.junit.jupiter.api.Test;
-
+import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import java.util.Arrays;
+import java.util.List;
+import static org.real.temp.Answer.*;
 public class Tester {
 
     @Test
-    public void testCanCompleteCircuit() {
-        // Test case 1
-        int[] gas1 = {1, 2, 3, 4, 5};
-        int[] cost1 = {3, 4, 5, 1, 2};
-        assertEquals(3, canCompleteCircuit(gas1, cost1));
-
-        // Test case 2
-        int[] gas2 = {2, 3, 4};
-        int[] cost2 = {3, 4, 3};
-        assertEquals(-1, canCompleteCircuit(gas2, cost2));
+    public void testPossibleSingleStation() {
+        List<Integer> gas = Arrays.asList(5);
+        List<Integer> cost = Arrays.asList(4);
+        int expected = 0;
+        assertEquals(expected, canCompleteCircuit(gas, cost));
     }
 
-    public int canCompleteCircuit(int[] gas, int[] cost) {
-        int totalGas = 0;
-        int currentGas = 0;
-        int startStation = 0;
+    @Test
+    public void testImpossibleSingleStation() {
+        List<Integer> gas = Arrays.asList(4);
+        List<Integer> cost = Arrays.asList(5);
+        int expected = -1;
+        assertEquals(expected, canCompleteCircuit(gas, cost));
+    }
 
-        for (int i = 0; i < gas.length; i++) {
-            totalGas += gas[i] - cost[i];
-            currentGas += gas[i] - cost[i];
+    @Test
+    public void testTwoStationsPossible() {
+        List<Integer> gas = Arrays.asList(1, 2);
+        List<Integer> cost = Arrays.asList(2, 1);
+        int expected = 1;
+        assertEquals(expected, canCompleteCircuit(gas, cost));
+    }
 
-            if (currentGas < 0) {
-                startStation = i + 1;
-                currentGas = 0;
-            }
-        }
+    @Test
+    public void testCircularRoutePossible() {
+        List<Integer> gas = Arrays.asList(1, 2, 3, 4, 5);
+        List<Integer> cost = Arrays.asList(3, 4, 5, 1, 2);
+        int expected = 3;
+        assertEquals(expected, canCompleteCircuit(gas, cost));
+    }
 
-        return totalGas >= 0 ? startStation : -1;
+    @Test
+    public void testCircularRouteImpossible() {
+        List<Integer> gas = Arrays.asList(2, 3, 4);
+        List<Integer> cost = Arrays.asList(3, 4, 3);
+        int expected = -1;
+        assertEquals(expected, canCompleteCircuit(gas, cost));
     }
 }

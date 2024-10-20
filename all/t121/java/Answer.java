@@ -1,6 +1,8 @@
+package org.real.temp;
+
 import java.util.Arrays;
 
-public class ArrayAdjuster {
+public class Answer {
     public static int[] adjustArrayLength(int targetLength, int[] array) {
         int arrayLength = array.length;
 

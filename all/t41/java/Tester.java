@@ -1,20 +1,20 @@
 package org.real.temp;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.Before;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
  * Test class for the BloomFilter implementation.
  */
 public class Tester {
 
-    private BloomFilter bf;
+    private Answer.BloomFilter bf;
 
-    @BeforeEach
+    @Before
     public void setUp() {
         // Initialize BloomFilter with reasonable size and hash count for testing
-        bf = new BloomFilter(1000, 5);
+        bf = new Answer.BloomFilter(1000, 5);
     }
 
     @Test

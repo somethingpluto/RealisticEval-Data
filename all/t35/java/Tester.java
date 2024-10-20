@@ -1,11 +1,14 @@
 package org.real.temp;
 
-import org.junit.jupiter.api.BeforeEach; // Updated import for JUnit 5
-import org.junit.jupiter.api.Test; // Updated import for JUnit 5
-import static org.junit.jupiter.api.Assertions.*; // Updated import for JUnit 5
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import org.real.temp.Answer;
 
 public class Tester {
 
@@ -13,7 +16,7 @@ public class Tester {
     private List<Point> triangle;
     private List<Point> concave;
 
-    @BeforeEach // Updated annotation for JUnit 5
+    @Before // Updated annotation for JUnit 5
     public void setUp() {
         // Define some polygons to use in tests
         square = new ArrayList<>();
@@ -38,40 +41,32 @@ public class Tester {
     @Test
     public void testPointInsideSquare() {
         // Point inside the square
-        assertTrue(isPointInPolygon(new Point(5, 5), square));
+        assertTrue(Answer.isPointInPolygon(new Point(5, 5), square));
     }
 
     @Test
     public void testPointOutsideSquare() {
         // Point outside the square
-        assertFalse(isPointInPolygon(new Point(15, 5), square));
+        assertFalse(Answer.isPointInPolygon(new Point(15, 5), square));
     }
 
     @Test
     public void testPointOnEdgeOfTriangle() {
         // Point on the edge of the triangle
-        assertFalse(isPointInPolygon(new Point(5, 0), triangle));
+        assertFalse(Answer.isPointInPolygon(new Point(5, 0), triangle));
     }
 
     @Test
     public void testPointInsideConcavePolygon() {
         // Point inside concave polygon
-        assertTrue(isPointInPolygon(new Point(5, 9), concave));
+        assertTrue(Answer.isPointInPolygon(new Point(5, 9), concave));
     }
 
     @Test
     public void testPointOutsideConcavePolygon() {
         // Point outside concave polygon
-        assertFalse(isPointInPolygon(new Point(5, 1), concave));
+        assertFalse(Answer.isPointInPolygon(new Point(5, 1), concave));
     }
 
-    private static class Point {
-        double x;
-        double y;
 
-        public Point(double x, double y) {
-            this.x = x;
-            this.y = y;
-        }
-    }
 }

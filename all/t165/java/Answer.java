@@ -1,6 +1,7 @@
+package org.real.temp;
 import java.util.Base64;
 
-public class Base64Converter {
+public class Answer {
 
     /**
      * Converts a standard Base64 encoded string into a URL-safe Base64 encoded string.

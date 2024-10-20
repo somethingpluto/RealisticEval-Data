@@ -1,5 +1,5 @@
 /**
- * @brief Determines whether a ray intersects with a circle.
+ * Determines whether a ray intersects with a circle.
  *
  * This function checks if a given ray intersects with a specified circle
  * in a 2D space. It performs mathematical calculations to determine if
@@ -13,7 +13,18 @@
  *
  * @return true if the ray intersects the circle; false otherwise.
  */
-function intersects(ray: Ray, circle: Circle): boolean {
-    // Function implementation would go here
-    return false; // Placeholder return
+interface Point {
+    x: number; // X-coordinate of the point
+    y: number; // Y-coordinate of the point
 }
+
+interface Ray {
+    origin: Point;     // Starting point of the ray
+    direction: Point;  // Direction of the ray (should be normalized)
+}
+
+interface Circle {
+    center: Point;     // Center of the circle
+    radius: number;    // Radius of the circle
+}
+function intersects(ray: Ray, circle: Circle): boolean {}

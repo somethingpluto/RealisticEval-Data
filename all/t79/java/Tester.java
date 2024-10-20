@@ -1,6 +1,12 @@
+package org.real.temp;
+
 import static org.junit.Assert.assertEquals;
+
 import org.junit.Test;
+
 import java.text.ParseException;
+
+import static org.real.temp.Answer.*;
 
 public class Tester {
 

@@ -1,18 +1,71 @@
-TEST_CASE("Test RDF to NGSI-LD Conversion") {
-    std::string input_data = R"({
-        "@context": {"rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#", "@vocab": "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core#"},
-        "@id": "urn:ngsi-ld:Example:001",
-        "type": "ExampleType",
-        "exampleProperty": "exampleValue"
-    })";
+TEST_CASE("Test RDF JSON-LD to NGSI-LD Conversion") {
+    SECTION("Basic conversion") {
+        // Test a basic and correct conversion from JSON-LD to NGSI-LD
+        std::string rdf_jsonld = R"({"@context": "http://schema.org/", "@id": "urn:ngsi-ld:Vehicle:A123", "@type": "Vehicle", "speed": {"value": 60, "unitCode": "KMH"}})";
+        json expected_ngsild = {
+            {"id", "urn:ngsi-ld:Vehicle:A123"},
+            {"type", "Vehicle"},
+            {"@context", "http://schema.org/"},
+            {"attributes", json::array({
+                {"type", "Property"},
+                {"name", "speed"},
+                {"value", json::object({{"value", 60}, {"unitCode", "KMH"}})}
+            })}
+        };
+        json result = rdf_json_ld_to_ngsi_ld(rdf_jsonld);
+        REQUIRE(result == expected_ngsild);
+    }
 
-    nlohmann::json expected_output = {
-        { "id", "urn:ngsi-ld:Example:001" },
-        { "type", "ExampleType" },
-        { "exampleProperty", "exampleValue" }
-    };
+    SECTION("Missing @id and @type") {
+        // Test conversion when @id and @type are missing
+        std::string rdf_jsonld = R"({"@context": "http://schema.org/", "speed": {"value": 60, "unitCode": "KMH"}})";
+        json expected_ngsild = {
+            {"id", "urn:ngsi-ld:unknown:id"},
+            {"type", "UnknownType"},
+            {"@context", "http://schema.org/"},
+            {"attributes", json::array({
+                {"type", "Property"},
+                {"name", "speed"},
+                {"value", json::object({{"value", 60}, {"unitCode", "KMH"}})}
+            })}
+        };
+        json result = rdf_json_ld_to_ngsi_ld(rdf_jsonld);
+        REQUIRE(result == expected_ngsild);
+    }
 
-    auto output = rdf_jsonld_to_ngsild(input_data);
+    SECTION("With nested objects") {
+        // Test conversion with nested objects
+        std::string rdf_jsonld = R"({"@context": "http://schema.org/", "@id": "urn:ngsi-ld:Vehicle:A123", "@type": "Vehicle", "location": {"latitude": 48.8566, "longitude": 2.3522}})";
+        json expected_ngsild = {
+            {"id", "urn:ngsi-ld:Vehicle:A123"},
+            {"type", "Vehicle"},
+            {"@context", "http://schema.org/"},
+            {"attributes", json::array({
+                {"type", "Property"},
+                {"name", "location"},
+                {"value", json::object({{"latitude", 48.8566}, {"longitude", 2.3522}})}
+            })}
+        };
+        json result = rdf_json_ld_to_ngsi_ld(rdf_jsonld);
+        REQUIRE(result == expected_ngsild);
+    }
 
-    REQUIRE(output == expected_output);
+    SECTION("Invalid JSON input") {
+        // Test the function's response to invalid JSON input
+        std::string rdf_jsonld = "This is not a valid JSON";
+        REQUIRE_THROWS_AS(rdf_json_ld_to_ngsi_ld(rdf_jsonld), std::exception);
+    }
+
+    SECTION("Empty JSON-LD document") {
+        // Test the conversion of an empty JSON-LD document
+        std::string rdf_jsonld = R"({})";
+        json expected_ngsild = {
+            {"id", "urn:ngsi-ld:unknown:id"},
+            {"type", "UnknownType"},
+            {"@context", "https://schema.lab.fiware.org/ld/context"},
+            {"attributes", json::array()}
+        };
+        json result = rdf_json_ld_to_ngsi_ld(rdf_jsonld);
+        REQUIRE(result == expected_ngsild);
+    }
 }

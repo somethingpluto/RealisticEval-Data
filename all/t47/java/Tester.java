@@ -1,7 +1,7 @@
 package org.real.temp;
 
-import org.junit.jupiter.api.Test; // JUnit 5 Test annotation
-import static org.junit.jupiter.api.Assertions.assertEquals; // JUnit 5 assertion method
+import org.junit.Test; // JUnit 4 Test annotation
+import static org.junit.Assert.assertEquals; // JUnit 4 assertion method
 import java.time.LocalDate;
 
 public class Tester {

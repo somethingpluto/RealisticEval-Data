@@ -1,46 +1,53 @@
-#define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
-
-#include "catch.hpp"
-#include <vector>
-#include <cmath>
-
-// Function to compare two matrices for equality within a tolerance
-bool matrices_equal(const std::vector<std::vector<double>>& m1, const std::vector<std::vector<double>>& m2, double tolerance = 1e-6) {
-    if (m1.size() != m2.size() || m1[0].size() != m2[0].size()) {
-        return false;
+TEST_CASE("TestShearTransformation", "[shear]") {
+    SECTION("test_identity_shear") {
+        // Test with zero shear factor which should return the original matrix unchanged.
+        Eigen::MatrixXd matrix = Eigen::MatrixXd::Zero(2, 2);
+        matrix << 1, 2,
+                  3, 4;
+        double shear_factor = 0;
+        Eigen::MatrixXd expected_output = Eigen::MatrixXd::Zero(2, 2);
+        expected_output << 1, 2,
+                           3, 4;
+        Eigen::MatrixXd result = apply_shear_x(matrix, shear_factor);
+        REQUIRE(result.isApprox(expected_output));
     }
-    for (size_t i = 0; i < m1.size(); ++i) {
-        for (size_t j = 0; j < m1[i].size(); ++j) {
-            if (std::abs(m1[i][j] - m2[i][j]) > tolerance) {
-                return false;
-            }
-        }
+
+    SECTION("test_positive_shear") {
+        // Test with a positive shear factor.
+        Eigen::MatrixXd matrix = Eigen::MatrixXd::Zero(2, 2);
+        matrix << 1, 2,
+                  3, 4;
+        double shear_factor = 1;
+        Eigen::MatrixXd expected_output = Eigen::MatrixXd::Zero(2, 2);
+        expected_output << 1, 3,
+                           3, 7;
+        Eigen::MatrixXd result = apply_shear_x(matrix, shear_factor);
+        REQUIRE(result.isApprox(expected_output));
     }
-    return true;
-}
 
-// Test case using Catch2
-TEST_CASE("Apply Shear X Transformation", "[shear]") {
-    // Define a sample matrix
-    std::vector<std::vector<double>> matrix = {
-        {1.0, 2.0, 3.0},
-        {4.0, 5.0, 6.0},
-        {7.0, 8.0, 9.0}
-    };
+    SECTION("test_negative_shear") {
+        // Test with a negative shear factor.
+        Eigen::MatrixXd matrix = Eigen::MatrixXd::Zero(2, 2);
+        matrix << 1, 2,
+                  3, 4;
+        double shear_factor = -1;
+        Eigen::MatrixXd expected_output = Eigen::MatrixXd::Zero(2, 2);
+        expected_output << 1, 1,
+                           3, 1;
+        Eigen::MatrixXd result = apply_shear_x(matrix, shear_factor);
+        REQUIRE(result.isApprox(expected_output));
+    }
 
-    // Define a shear factor
-    double shear_factor = 0.5;
-
-    // Expected result after applying shear transformation
-    std::vector<std::vector<double>> expected_result = {
-        {1.0, 1.5, 2.5},
-        {4.0, 4.5, 5.5},
-        {7.0, 7.5, 8.5}
-    };
-
-    // Apply the shear transformation
-    std::vector<std::vector<double>> result = apply_shear_x(matrix, shear_factor);
-
-    // Check if the result matches the expected result
-    REQUIRE(matrices_equal(result, expected_result));
+    SECTION("test_high_shear_factor") {
+        // Test with a high shear factor to see how the matrix adapts to extreme transformations.
+        Eigen::MatrixXd matrix = Eigen::MatrixXd::Zero(2, 2);
+        matrix << 1, 1,
+                  1, 1;
+        double shear_factor = 10;
+        Eigen::MatrixXd expected_output = Eigen::MatrixXd::Zero(2, 2);
+        expected_output << 1, 11,
+                           1, 11;
+        Eigen::MatrixXd result = apply_shear_x(matrix, shear_factor);
+        REQUIRE(result.isApprox(expected_output));
+    }
 }

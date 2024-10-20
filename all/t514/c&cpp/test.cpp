@@ -1,7 +1,3 @@
-#include <catch2/catch_test_macros.hpp>
-#include <regex>
-#include <string>
-
 TEST_CASE("TestExtractDateFromFilename", "[extract_date_from_filename]") {
     SECTION("test_date_extraction_success") {
         // Test case where the date is successfully extracted.

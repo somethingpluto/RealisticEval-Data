@@ -33,7 +33,7 @@ TEST_CASE("Test conversion of YAML files to JSON") {
     }
 
     SECTION("Test simple YAML conversion") {
-        convertYamlToJson(simple_yaml, "output.json");
+        convert_yaml_to_json(simple_yaml, "output.json");
         std::ifstream jsonFile("output.json");
         REQUIRE(jsonFile.is_open());
         json jsonData;
@@ -42,7 +42,7 @@ TEST_CASE("Test conversion of YAML files to JSON") {
     }
 
     SECTION("Test nested YAML conversion") {
-        convertYamlToJson(nested_yaml, "output.json");
+        convert_yaml_to_json(nested_yaml, "output.json");
         std::ifstream jsonFile("output.json");
         REQUIRE(jsonFile.is_open());
         json jsonData;
@@ -60,7 +60,7 @@ TEST_CASE("Test conversion of YAML files to JSON") {
     }
 
     SECTION("Test empty YAML conversion") {
-        convertYamlToJson(empty_yaml, "output.json");
+        convert_yaml_to_json(empty_yaml, "output.json");
         std::ifstream jsonFile("output.json");
         REQUIRE(jsonFile.is_open());
         json jsonData;
@@ -69,7 +69,7 @@ TEST_CASE("Test conversion of YAML files to JSON") {
     }
 
     SECTION("Test list YAML conversion") {
-        convertYamlToJson(list_yaml, "output.json");
+        convert_yaml_to_json(list_yaml, "output.json");
         std::ifstream jsonFile("output.json");
         REQUIRE(jsonFile.is_open());
         json jsonData;
@@ -78,7 +78,7 @@ TEST_CASE("Test conversion of YAML files to JSON") {
     }
 
     SECTION("Test invalid YAML conversion") {
-        REQUIRE_THROWS_AS(convertYamlToJson(invalid_yaml, "output.json"), YAML::Exception);
+        REQUIRE_THROWS_AS(convert_yaml_to_json(invalid_yaml, "output.json"), YAML::Exception);
     }
 
     SECTION("Teardown temporary files") {

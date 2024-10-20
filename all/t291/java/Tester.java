@@ -1,61 +1,101 @@
 package org.real.temp;
-
-import static org.junit.Assert.*;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
-public class Tester extends junit.framework.TestCase {
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+import static org.real.temp.Answer.*;
+public class Tester {
+    private File testFile;
+
+    @Before
+    public void setUp() throws IOException {
+        // Create a temporary file for testing
+        testFile = new File("test_file.txt");
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(testFile))) {
+            writer.write("Line 1\n");
+            writer.write("Line 2\n");
+            writer.write("Line 3\n");
+        }
+    }
+
+    @After
+    public void tearDown() {
+        // Remove the temporary file after testing
+        if (testFile.exists()) {
+            testFile.delete();
+        }
+    }
 
     @Test
-    public void testPrependToFile() throws IOException {
-        // Temporary file path
-        File tempFile = File.createTempFile("test", ".txt");
-
-        // Content to write to the file
-        String content = "Hello\nWorld";
-
-        // Write initial content to the file
-        try (FileWriter writer = new FileWriter(tempFile)) {
-            writer.write(content);
-        }
-
-        // Prefix to prepend
-        String prefix = "Prefix_";
-
-        // Call the method under test
-        prependToEachLine(tempFile.getAbsolutePath(), prefix);
-
-        // Read the updated content from the file
-        String updatedContent = new String(Files.readAllBytes(Paths.get(tempFile.getAbsolutePath())));
-
-        // Expected result
-        String expectedResult = "Prefix_Hello\nPrefix_World";
-
-        // Assert that the updated content matches the expected result
-        assertEquals(expectedResult, updatedContent);
-
-        // Clean up the temporary file
-        tempFile.delete();
+    public void testPrependString() throws IOException {
+        // Test appending a simple string to the beginning of each line
+        prependToEachLine(testFile.getAbsolutePath(), "Test: ");
+        assertLinesEqual(new String[]{
+                "Test: Line 1",
+                "Test: Line 2",
+                "Test: Line 3"
+        });
     }
 
-    private void prependToEachLine(String filePath, String prefix) {
+    @Test
+    public void testPrependEmptyString() throws IOException {
+        // Test appending an empty string
+        prependToEachLine(testFile.getAbsolutePath(), "");
+        assertLinesEqual(new String[]{
+                "Line 1",
+                "Line 2",
+                "Line 3"
+        });
+    }
+
+    @Test
+    public void testPrependSpecialCharacters() throws IOException {
+        // Test appending special characters to the beginning of each line
+        prependToEachLine(testFile.getAbsolutePath(), "#$%^&* ");
+        assertLinesEqual(new String[]{
+                "#$%^&* Line 1",
+                "#$%^&* Line 2",
+                "#$%^&* Line 3"
+        });
+    }
+
+    @Test
+    public void testPrependNumericString() throws IOException {
+        // Test appending numeric string to the beginning of each line
+        prependToEachLine(testFile.getAbsolutePath(), "123 ");
+        assertLinesEqual(new String[]{
+                "123 Line 1",
+                "123 Line 2",
+                "123 Line 3"
+        });
+    }
+
+    @Test
+    public void testFileNotFound() {
+        // Test the response when the file does not exist
         try {
-            // Read all lines from the file
-            List<String> lines = Files.readAllLines(Paths.get(filePath));
-
-            // Prepend the prefix to each line
-            for (int i = 0; i < lines.size(); i++) {
-                lines.set(i, prefix + lines.get(i));
-            }
-
-            // Write the updated lines back to the file
-            Files.write(Paths.get(filePath), lines);
-        } catch (IOException e) {
-            throw new RuntimeException("Error while prepending to file: " + filePath, e);
+            prependToEachLine("non_existent_file.txt", "Test: ");
+            fail("Expected IOException to be thrown");
+        } catch (Exception e) {
+            // Expected exception
         }
     }
+
+    private void assertLinesEqual(String[] expected) throws IOException {
+        try (BufferedReader reader = new BufferedReader(new FileReader(testFile))) {
+            String[] actual = reader.lines().toArray(String[]::new);
+            assertArrayEquals(expected, actual);
+        }
+    }
+
 }

@@ -7,5 +7,14 @@
  * @param height - The height of the toroidal space.
  * @returns - An array containing the x and y differences, accounting for wrap-around.
  */
+public static class Point {
+    public double x;
+    public double y;
+
+    public Point(double x, double y) {
+        this.x = x;
+        this.y = y;
+    }
+}
 public static double[] toroidalDiff(Point thisPoint, Point otherPoint, double width, double height) {
 }

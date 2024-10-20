@@ -5,6 +5,4 @@
  * @return The time in milliseconds.
  * @throws IllegalArgumentException if the input string does not match the expected format.
  */
-public static long convertTimeHmsStringToMs(String str) {
-    // Method implementation goes here
-}
+public static long convertTimeHmsStringToMs(String str) {}

@@ -1,6 +1,7 @@
+package org.real.temp;
 import java.util.Date;
 
-public class TimestampUtil {
+public class Answer {
 
     /**
      * Computes the difference between the specified date and the current time, returning it in a human-readable way.

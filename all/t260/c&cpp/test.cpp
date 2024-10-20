@@ -1,77 +1,123 @@
-TEST_CASE("Process CSV with no empty columns", "[processCSV]") {
-    std::string input_csv = "col1,col2,col3\n"
-                             "data1,data2,data3\n"
-                             "data4,data5,data6";
+TEST_CASE("TestProcessCSV", "[process_csv]") {
+    SECTION("Test Case 1") {
+        const std::string input_data_1 = R"(
+A,B,C
+1,2,3
+4,,6
+7,8,
+9,10,11
+)";
 
-    std::string temp_input_file = createTempCsvFile(input_csv);
-    std::string temp_output_file = "output.csv";
+        const std::string input_file_path = "input.csv";
+        const std::string output_file_path = "output.csv";
 
-    processCSV(temp_input_file, temp_output_file);
+        // Write input data to a temp CSV file
+        std::ofstream input_file(input_file_path);
+        input_file << input_data_1;
+        input_file.close();
 
-    std::string expected_output = "col1,col2,col3\n"
-                                  "data1,data2,data3\n"
-                                  "data4,data5,data6";
+        // Process the CSV
+        process_csv(input_file_path, output_file_path);
 
-    REQUIRE(readCsvFile(temp_output_file) == expected_output);
-}
+        // Read the output
+        std::ifstream output_file(output_file_path);
+        std::stringstream output_stream;
+        output_stream << output_file.rdbuf();
+        std::string output_data = output_stream.str();
+        output_file.close();
 
-TEST_CASE("Process CSV with one empty column", "[processCSV]") {
-    std::string input_csv = "col1,col2,col3\n"
-                             "data1,,data3\n"
-                             "data4,data5,data6";
+        // Clean up temp files
+        fs::remove(input_file_path);
+        fs::remove(output_file_path);
 
-    std::string temp_input_file = createTempCsvFile(input_csv);
-    std::string temp_output_file = "output.csv";
+        const std::string expected_output = R"(
+A,B,C
+1,2.0,3.0
+4,,6.0
+7,8.0,
+9,10.0,11.0
+)";
 
-    processCSV(temp_input_file, temp_output_file);
+        REQUIRE(output_data == expected_output);
+    }
 
-    std::string expected_output = "col1,col2,col3\n"
-                                  "data1,,data3\n"
-                                  "data4,data5,data6";
+    SECTION("Test Case 2") {
+        const std::string input_data_2 = R"(
+A,B,C,D
+,,
+1,,3,4
+2,3,,5
+,,,
+)";
 
-    REQUIRE(readCsvFile(temp_output_file) == expected_output);
-}
+        const std::string input_file_path = "input.csv";
+        const std::string output_file_path = "output.csv";
 
-TEST_CASE("Process CSV with two consecutive empty columns", "[processCSV]") {
-    std::string input_csv = "col1,col2,col3\n"
-                             "data1,,\n"
-                             "data4,data5,data6";
+        // Write input data to a temp CSV file
+        std::ofstream input_file(input_file_path);
+        input_file << input_data_2;
+        input_file.close();
 
-    std::string temp_input_file = createTempCsvFile(input_csv);
-    std::string temp_output_file = "output.csv";
+        // Process the CSV
+        process_csv(input_file_path, output_file_path);
 
-    processCSV(temp_input_file, temp_output_file);
+        // Read the output
+        std::ifstream output_file(output_file_path);
+        std::stringstream output_stream;
+        output_stream << output_file.rdbuf();
+        std::string output_data = output_stream.str();
+        output_file.close();
 
-    std::string expected_output = "col1,col2,col3\n"
-                                  "data4,data5,data6";
+        // Clean up temp files
+        fs::remove(input_file_path);
+        fs::remove(output_file_path);
 
-    REQUIRE(readCsvFile(temp_output_file) == expected_output);
-}
+        const std::string expected_output = R"(
+A,B,C,D
+1.0,,3.0,4.0
+2.0,3.0,,5.0
+)";
 
-TEST_CASE("Process CSV with all empty columns", "[processCSV]") {
-    std::string input_csv = "col1,col2,col3\n"
-                             ",,\n"
-                             ",,\n";
+        REQUIRE(output_data == expected_output);
+    }
 
-    std::string temp_input_file = createTempCsvFile(input_csv);
-    std::string temp_output_file = "output.csv";
+    SECTION("Test Case 3") {
+        const std::string input_data_3 = R"(
+A
+1
+2
+3
+)";
 
-    processCSV(temp_input_file, temp_output_file);
+        const std::string input_file_path = "input.csv";
+        const std::string output_file_path = "output.csv";
 
-    std::string expected_output = "";
+        // Write input data to a temp CSV file
+        std::ofstream input_file(input_file_path);
+        input_file << input_data_3;
+        input_file.close();
 
-    REQUIRE(readCsvFile(temp_output_file) == expected_output);
-}
+        // Process the CSV
+        process_csv(input_file_path, output_file_path);
 
-TEST_CASE("Process empty CSV file", "[processCSV]") {
-    std::string input_csv = "";
+        // Read the output
+        std::ifstream output_file(output_file_path);
+        std::stringstream output_stream;
+        output_stream << output_file.rdbuf();
+        std::string output_data = output_stream.str();
+        output_file.close();
 
-    std::string temp_input_file = createTempCsvFile(input_csv);
-    std::string temp_output_file = "output.csv";
+        // Clean up temp files
+        fs::remove(input_file_path);
+        fs::remove(output_file_path);
 
-    processCSV(temp_input_file, temp_output_file);
+        const std::string expected_output = R"(
+A
+1
+2
+3
+)";
 
-    std::string expected_output = "";
-
-    REQUIRE(readCsvFile(temp_output_file) == expected_output);
+        REQUIRE(output_data == expected_output);
+    }
 }

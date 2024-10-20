@@ -1,5 +1,5 @@
 /**
- * Decompose a flat index `n` into a multidimensional index based on the given shape.
+ * @brief Decompose a flat index `n` into a multidimensional index based on the given shape.
  *
  * @param n Flat index (non-negative integer).
  * @param shape Tuple representing the dimensions of the multi-dimensional array.

@@ -11,7 +11,7 @@ TEST_CASE("Test replace_words_in_file") {
         std::istringstream original_cin(std::cin.rdbuf());
         std::cin.rdbuf(mock_file_content.rdbuf());
 
-        std::string result = replaceWordsInFile(file_path, replacement_dict);
+        std::string result = replace_words_in_file(file_path, replacement_dict);
 
         // Restore original file stream
         std::cin.rdbuf(original_cin.rdbuf());
@@ -31,7 +31,7 @@ TEST_CASE("Test replace_words_in_file") {
         std::istringstream original_cin(std::cin.rdbuf());
         std::cin.rdbuf(mock_file_content.rdbuf());
 
-        std::string result = replaceWordsInFile(file_path, replacement_dict);
+        std::string result = replace_words_in_file(file_path, replacement_dict);
 
         // Restore original file stream
         std::cin.rdbuf(original_cin.rdbuf());
@@ -51,7 +51,7 @@ TEST_CASE("Test replace_words_in_file") {
         std::istringstream original_cin(std::cin.rdbuf());
         std::cin.rdbuf(mock_file_content.rdbuf());
 
-        std::string result = replaceWordsInFile(file_path, replacement_dict);
+        std::string result = replace_words_in_file(file_path, replacement_dict);
 
         // Restore original file stream
         std::cin.rdbuf(original_cin.rdbuf());
@@ -71,7 +71,7 @@ TEST_CASE("Test replace_words_in_file") {
         std::istringstream original_cin(std::cin.rdbuf());
         std::cin.rdbuf(mock_file_content.rdbuf());
 
-        std::string result = replaceWordsInFile(file_path, replacement_dict);
+        std::string result = replace_words_in_file(file_path, replacement_dict);
 
         // Restore original file stream
         std::cin.rdbuf(original_cin.rdbuf());

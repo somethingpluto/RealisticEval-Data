@@ -1,7 +1,10 @@
 package org.real.temp;
 
 import static org.junit.Assert.assertEquals;
+
 import org.junit.Test;
+
+import static org.real.temp.Answer.*;
 
 public class Tester {
 
@@ -33,11 +36,5 @@ public class Tester {
     public void testConvertToRomanNoFivesAndOnes() {
         String result = convertToRoman(2000);
         assertEquals("MM", result); // 2000 = MM
-    }
-
-    // Include the method to convert to Roman numerals
-    public String convertToRoman(int num) {
-        // Implementation of the conversion logic goes here
-        return ""; // Placeholder return statement
     }
 }

@@ -4,6 +4,4 @@
  * @param html - The HTML string containing headings.
  * @return - The converted Markdown string.
  */
-public static String convertHtmlHeadingsToMarkdown(String html) {
-    // Implementation goes here
-}
+public static String convertHtmlHeadingsToMarkdown(String html) {}

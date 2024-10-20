@@ -4,4 +4,4 @@
  * @param text The input string containing potential placeholders.
  * @return std::vector<std::string> A vector of matching placeholders.
  */
-std::vector<std::string> findPlaceholders(const std::string& text) {}
+std::vector<std::string> find_placeholders(const std::string& text) {}

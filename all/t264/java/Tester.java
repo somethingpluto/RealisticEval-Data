@@ -1,68 +1,95 @@
 package org.real.temp;
 
-import static org.junit.jupiter.api.Assertions.*;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Before;
+import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertThrows;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import static org.real.temp.Answer.*;
 public class Tester {
 
-    private LogFileProcessor logFileProcessor;
+    private static final String LOG_FILE_PATH = "test_log.log";
+    private static final String[] LOG_CONTENTS = {
+        "INFO: This is an informational message.\n",
+        "WARNING: This is a warning message.\n",
+        "ERROR: This is an error message.\n",
+        "CRITICAL: This is a critical message.\n",
+        "ALERT: This is an alert message.\n"
+    };
 
-    @BeforeEach
-    public void setUp() {
-        // Initialize any necessary objects or resources here
-        logFileProcessor = new LogFileProcessor();
+    @Before
+    public void setUp() throws IOException {
+        File logFile = new File(LOG_FILE_PATH);
+        try (FileWriter writer = new FileWriter(logFile)) {
+            for (String line : LOG_CONTENTS) {
+                writer.write(line);
+            }
+        }
     }
 
     @Test
-    public void testExtractLogEntries_Warning() {
-        // Arrange
-        String logFilePath = "path/to/your/logfile.log";
-        String expectedWarningOutputPath = "path/to/expected/warnings.txt";
+    public void testNoLogsOfCertainLevels() throws IOException {
+        // Setup a log file with only INFO messages
+        File logFile = new File(LOG_FILE_PATH);
+        try (FileWriter writer = new FileWriter(logFile)) {
+            writer.write("INFO: This is another informational message.\n");
+        }
 
-        // Act
-        logFileProcessor.extractLogEntries(logFilePath);
+        extractLogEntries(LOG_FILE_PATH);
 
-        // Assert
-        assertTrue(new File(expectedWarningOutputPath).exists());
+        for (String level : new String[]{"WARNING", "ERROR", "CRITICAL", "ALERT"}) {
+            File outputFile = new File(level.toLowerCase() + "_logs.txt");
+            assertEquals("", Files.readString(outputFile.toPath()));
+        }
     }
 
     @Test
-    public void testExtractLogEntries_Error() {
-        // Arrange
-        String logFilePath = "path/to/your/logfile.log";
-        String expectedErrorOutputPath = "path/to/expected/errors.txt";
-
-        // Act
-        logFileProcessor.extractLogEntries(logFilePath);
-
-        // Assert
-        assertTrue(new File(expectedErrorOutputPath).exists());
+    public void testFileNotFound() {
+        assertThrows(IOException.class, () -> extractLogEntries("nonexistent.log"));
     }
 
     @Test
-    public void testExtractLogEntries_Critical() {
-        // Arrange
-        String logFilePath = "path/to/your/logfile.log";
-        String expectedCriticalOutputPath = "path/to/expected/criticals.txt";
+    public void testEmptyLogFile() throws IOException {
+        // Setup an empty log file
+        File logFile = new File(LOG_FILE_PATH);
+        try (FileWriter writer = new FileWriter(logFile)) {
+            writer.write("");
+        }
 
-        // Act
-        logFileProcessor.extractLogEntries(logFilePath);
+        extractLogEntries(LOG_FILE_PATH);
 
-        // Assert
-        assertTrue(new File(expectedCriticalOutputPath).exists());
+        for (String level : new String[]{"WARNING", "ERROR", "CRITICAL", "ALERT"}) {
+            File outputFile = new File(level.toLowerCase() + "_logs.txt");
+            assertEquals("", Files.readString(outputFile.toPath()));
+        }
     }
 
     @Test
-    public void testExtractLogEntries_Alert() {
-        // Arrange
-        String logFilePath = "path/to/your/logfile.log";
-        String expectedAlertOutputPath = "path/to/expected/alerts.txt";
+    public void testMixedContentLogFile() throws IOException {
+        // Setup a log file with mixed content
+        File logFile = new File(LOG_FILE_PATH);
+        try (FileWriter writer = new FileWriter(logFile)) {
+            writer.write("INFO: Some info.\n");
+            writer.write("WARNING: Watch out!\n");
+            writer.write("DEBUG: Debugging.\n");
+            writer.write("ERROR: Oops!\n");
+            writer.write("CRITICAL: Failed badly.\n");
+            writer.write("ALERT: High alert!\n");
+            writer.write("INFO: More info.\n");
+        }
 
-        // Act
-        logFileProcessor.extractLogEntries(logFilePath);
+        extractLogEntries(LOG_FILE_PATH);
 
-        // Assert
-        assertTrue(new File(expectedAlertOutputPath).exists());
+        for (String level : new String[]{"WARNING", "ERROR", "CRITICAL", "ALERT"}) {
+            File outputFile = new File(level.toLowerCase() + "_logs.txt");
+            String content = Files.readString(outputFile.toPath()).trim();
+            assertTrue(content.contains(level));
+        }
     }
+
 }

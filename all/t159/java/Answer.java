@@ -1,4 +1,6 @@
-public class FileUtils {
+package org.real.temp;
+
+public class Answer {
     public static String removeFileExtension(String fileName) {
         // Find the index of the last dot in the file name
         int lastDotIndex = fileName.lastIndexOf('.');

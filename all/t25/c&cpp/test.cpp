@@ -1,31 +1,3 @@
-#define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
-#include <catch2/catch.hpp>
-#include <nlohmann/json.hpp>
-#include <fstream>
-#include <cstdio>
-#include <vector>
-#include <string>
-#include <iostream>
-
-// Function signature for the function you want to test
-void classify_json_objects_by_pid(const std::string &source_file, const std::vector<std::string> &pid_list, const std::string &match_file, const std::string &mismatch_file);
-
-// Helper function for creating temporary files
-std::string create_temp_file(const std::string &content) {
-    char filename[] = "/tmp/tempfileXXXXXX";
-    int fd = mkstemp(filename);
-    if (fd == -1) {
-        throw std::runtime_error("Could not create temporary file.");
-    }
-    close(fd);
-
-    std::ofstream file(filename);
-    file << content;
-    file.close();
-
-    return std::string(filename);
-}
-
 TEST_CASE("classify_json_objects_by_pid all match", "[classify]") {
     // Sample data
     nlohmann::json data = R"([

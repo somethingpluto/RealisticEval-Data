@@ -1,7 +1,3 @@
-#include <catch2/catch_test_macros.hpp>
-#include <string>
-#include <openssl/md5.h> // Make sure to link against OpenSSL
-
 TEST_CASE("Test Compute MD5") {
     SECTION("Test the MD5 hash of an empty string") {
         REQUIRE(compute_md5("") == "d41d8cd98f00b204e9800998ecf8427e");

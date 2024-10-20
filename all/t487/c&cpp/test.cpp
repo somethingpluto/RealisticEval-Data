@@ -1,9 +1,3 @@
-#include <iostream>
-#include <regex>
-#include <string>
-#include <catch2/catch_test_macros.hpp>
-
-// Test class using Catch2
 TEST_CASE("TestContainsEmail", "[email]") {
     SECTION("test_contains_valid_email") {
         // Test if a valid email is detected in the string

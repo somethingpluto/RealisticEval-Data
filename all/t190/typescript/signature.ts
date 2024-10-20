@@ -3,6 +3,4 @@
  * @param hexStr - The hexadecimal string to parse.
  * @return The corresponding floating-point number.
  */
-function hexStringToFloat(hexStr: string): number {
-    // Function implementation goes here
-}
+function hexStringToFloat(hexStr: string): number {}

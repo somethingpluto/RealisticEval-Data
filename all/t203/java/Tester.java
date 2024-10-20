@@ -1,51 +1,44 @@
 package org.real.temp;
 
 import org.junit.Test;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
 import static org.junit.Assert.assertEquals;
-
+import static org.real.temp.Answer.*;
 public class Tester {
 
     @Test
-    public void testReverseRangeEntireVector() {
-        List<Integer> v = new ArrayList<>(Arrays.asList(1, 2, 3, 4, 5));
-        Answer.reverseRange(v, 0, 4);
-        List<Integer> expected = Arrays.asList(5, 4, 3, 2, 1);
-        assertEquals(expected, v);
+    public void testSplitStringRegularSentence() {
+        String input = "Hello world from Catch2";
+        List<String> expected = Arrays.asList("Hello", "world", "from", "Catch2");
+        assertEquals(expected, splitString(input));
     }
 
     @Test
-    public void testReverseSubrangeInTheMiddle() {
-        List<Integer> v = new ArrayList<>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8));
-        Answer.reverseRange(v, 2, 5);
-        List<Integer> expected = Arrays.asList(1, 2, 6, 5, 4, 3, 7, 8);
-        assertEquals(expected, v);
+    public void testSplitStringMultipleSpaces() {
+        String input = "Multiple   spaces between words";
+        List<String> expected = Arrays.asList("Multiple", "spaces", "between", "words");
+        assertEquals(expected, splitString(input));
     }
 
     @Test
-    public void testReverseSingleElementRange() {
-        List<Integer> v = new ArrayList<>(Arrays.asList(1, 2, 3, 4, 5));
-        Answer.reverseRange(v, 2, 2);
-        List<Integer> expected = Arrays.asList(1, 2, 3, 4, 5);
-        assertEquals(expected, v);
+    public void testSplitStringSingleWord() {
+        String input = "Single";
+        List<String> expected = Arrays.asList("Single");
+        assertEquals(expected, splitString(input));
     }
 
     @Test
-    public void testReverseRangeWithInvalidIndices() {
-        List<Integer> v = new ArrayList<>(Arrays.asList(1, 2, 3, 4, 5));
-        Answer.reverseRange(v, -1, 3);  // Invalid start index
-        List<Integer> expected = Arrays.asList(1, 2, 3, 4, 5); // No change
-        assertEquals(expected, v);
+    public void testSplitStringEmpty() {
+        String input = "";
+        List<String> expected = Arrays.asList();
+        assertEquals(expected, splitString(input));
     }
 
     @Test
-    public void testReverseRangeAtTheEndOfVector() {
-        List<Integer> v = new ArrayList<>(Arrays.asList(1, 2, 3, 4, 5, 6));
-        Answer.reverseRange(v, 3, 5);
-        List<Integer> expected = Arrays.asList(1, 2, 3, 6, 5, 4);
-        assertEquals(expected, v);
+    public void testSplitStringLeadingTrailingSpaces() {
+        String input = "   Leading and trailing spaces   ";
+        List<String> expected = Arrays.asList("Leading", "and", "trailing", "spaces");
+        assertEquals(expected, splitString(input));
     }
 }

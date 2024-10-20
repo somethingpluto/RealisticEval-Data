@@ -1,7 +1,8 @@
+package org.real.temp;
 import java.util.Calendar;
 import java.util.Date;
 
-public class TimeSinceBirth {
+public class Answer {
 
     public static int[] getTimeSinceBornUntilNow(Date birthDate) {
         Calendar now = Calendar.getInstance();

@@ -1,3 +1,8 @@
+package org.real.temp;
+
+import static junit.framework.TestCase.assertEquals;
+import static org.real.temp.Answer.*;
+import org.junit.Test;
 public class Tester {
 
     @Test

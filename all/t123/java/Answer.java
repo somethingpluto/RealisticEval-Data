@@ -1,6 +1,8 @@
+package org.real.temp;
+
 import java.util.Arrays;
 
-public class ScaleToRange {
+public class Answer {
     public static double[] scaleToRange(double[] inputArray, double inputMin, double inputMax, double outputMin, double outputMax) {
         // Ensure all values in inputArray are within the input range
         for (double value : inputArray) {

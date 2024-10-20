@@ -1,5 +1,5 @@
 /**
- * Calculates the azimuth between two points on the Earth.
+ * @brief Calculates the azimuth between two points on the Earth.
  *
  * @param lat1 The latitude of the starting point in decimal degrees.
  * @param lon1 The longitude of the starting point in decimal degrees.

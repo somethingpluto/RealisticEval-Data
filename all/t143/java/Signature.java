@@ -3,6 +3,4 @@
  * @param str the input string containing Arabic digits
  * @return a string with Arabic digits replaced by English digits
  */
-public static String arabicToEnglishNumbers(String str) {
-    // Implementation goes here
-}
+public static String arabicToEnglishNumbers(String str) {}

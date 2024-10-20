@@ -1,15 +1,13 @@
 package org.real.temp;
 
-import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.real.temp.Answer;
 
-/**
- * Test cases for the Floyd-Warshall shortest paths algorithm.
- */
 public class Tester {
 
     @Test
@@ -27,7 +25,7 @@ public class Tester {
             new ArrayList<>(Arrays.asList(3.0, 6.0, 0.0, 1.0)),
             new ArrayList<>(Arrays.asList(2.0, 5.0, 7.0, 0.0))
         ));
-        List<List<Double>> result = floydWarshallShortestPaths(matrix);
+        List<List<Double>> result = Answer.floydWarshallShortestPaths(matrix);
         assertEquals(expected, result, "Basic functionality test failed");
     }
 
@@ -40,7 +38,7 @@ public class Tester {
         List<List<Double>> expected = new ArrayList<>(Arrays.asList(
             new ArrayList<>(Arrays.asList(0.0))
         ));
-        List<List<Double>> result = floydWarshallShortestPaths(matrix);
+        List<List<Double>> result = Answer.floydWarshallShortestPaths(matrix);
         assertEquals(expected, result, "Single vertex graph test failed");
     }
 
@@ -55,7 +53,7 @@ public class Tester {
             new ArrayList<>(Arrays.asList(0.0, 1.0)),
             new ArrayList<>(Arrays.asList(1.0, 0.0))
         ));
-        List<List<Double>> result = floydWarshallShortestPaths(matrix);
+        List<List<Double>> result = Answer.floydWarshallShortestPaths(matrix);
         assertEquals(expected, result, "Two vertices graph test failed");
     }
 
@@ -70,7 +68,7 @@ public class Tester {
             new ArrayList<>(Arrays.asList(0.0, Double.POSITIVE_INFINITY)),
             new ArrayList<>(Arrays.asList(Double.POSITIVE_INFINITY, 0.0))
         ));
-        List<List<Double>> result = floydWarshallShortestPaths(matrix);
+        List<List<Double>> result = Answer.floydWarshallShortestPaths(matrix);
         assertEquals(expected, result, "Large infinite weights test failed");
     }
 
@@ -87,7 +85,7 @@ public class Tester {
             new ArrayList<>(Arrays.asList(-2.0, -1.0, -2.0)),
             new ArrayList<>(Arrays.asList(-2.0, -1.0, -2.0))
         ));
-        List<List<Double>> result = floydWarshallShortestPaths(matrix);
+        List<List<Double>> result = Answer.floydWarshallShortestPaths(matrix);
         assertEquals(expected, result, "Negative cycle test failed");
     }
 }

@@ -1,48 +1,49 @@
 package org.real.temp;
-
-import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-
+import org.junit.Test;
+import static org.junit.Assert.assertArrayEquals;
+import java.util.Arrays;
+import java.util.List;
+import static org.real.temp.Answer.*;
 public class Tester {
 
+
     @Test
-    public void testBitsToBytes() {
-        // Test data
-        int[] bits = {1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0};
-        byte[] expectedOutput = {(byte) 0xAA};
-
-        // Call the method under test
-        byte[] actualOutput = bitsToBytes(bits);
-
-        // Verify the output
-        assertArrayEquals(expectedOutput, actualOutput);
+    public void testExactMultipleOfEight() {
+        List<Integer> bits = Arrays.asList(1, 0, 1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1);
+        byte[] expected = new byte[]{(byte) 0b10110010, 0b01001111};
+        byte[] result = bitsToBytes(bits);
+        assertArrayEquals(expected, result);
     }
 
-    /**
-     * Convert an array of binary bits to an array of bytes. Traversing through each bit,
-     * composing these bits into bytes, forming a byte every 8 bits, and then storing
-     * these bytes in an array and returning it. If the length of the bit array is not a
-     * multiple of 8, the last incomplete byte will be discarded.
-     *
-     * @param bits The input array of bits (each element should be 0 or 1).
-     * @return An array of bytes constructed from the bits.
-     */
-    public byte[] bitsToBytes(int[] bits) {
-        if (bits == null || bits.length % 8 != 0) {
-            return new byte[0];
-        }
+    @Test
+    public void testIncompleteByteDiscarded() {
+        List<Integer> bits = Arrays.asList(1, 0, 1, 1, 0, 0, 1, 0, 0, 1);
+        byte[] expected = new byte[]{(byte) 0b10110010};
+        byte[] result = bitsToBytes(bits);
+        assertArrayEquals(expected, result);
+    }
 
-        int numBytes = bits.length / 8;
-        byte[] bytes = new byte[numBytes];
+    @Test
+    public void testEmptyBitArray() {
+        List<Integer> bits = Arrays.asList();
+        byte[] expected = new byte[]{};
+        byte[] result = bitsToBytes(bits);
+        assertArrayEquals(expected, result);
+    }
 
-        for (int i = 0; i < numBytes; i++) {
-            int byteValue = 0;
-            for (int j = 0; j < 8; j++) {
-                byteValue = (byteValue << 1) | bits[i * 8 + j];
-            }
-            bytes[i] = (byte) byteValue;
-        }
+    @Test
+    public void testSingleFullByte() {
+        List<Integer> bits = Arrays.asList(1, 1, 1, 1, 1, 1, 1, 1);
+        byte[] expected = new byte[]{(byte) 0xFF};
+        byte[] result = bitsToBytes(bits);
+        assertArrayEquals(expected, result);
+    }
 
-        return bytes;
+    @Test
+    public void testNoBitsDiscarded() {
+        List<Integer> bits = Arrays.asList(1, 1, 0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1);
+        byte[] expected = new byte[]{(byte) 0xCC, 0x77};
+        byte[] result = bitsToBytes(bits);
+        assertArrayEquals(expected, result);
     }
 }

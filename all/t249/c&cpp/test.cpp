@@ -1,8 +1,22 @@
-TEST_CASE("Extract Text From PDF", "[pdf]") {
-    std::string file_path = "test.pdf";
-    std::string expected_text = "This is a test PDF.";
+TEST_CASE("TestExtractTextFromPDF", "[PDF]") {
+    SECTION("test_empty_file") {
+        std::string pdf_path = R"(E:\code\code_back\python_project\RealisticEval-Data\envs\python\test_case\t249\testcase01.pdf)";
+        std::string expected = " \n";
+        std::string output = extract_text_from_pdf(pdf_path);
+        REQUIRE(output == expected);
+    }
 
-    std::string result = extract_text_from_pdf(file_path);
+    SECTION("test_normal_file") {
+        std::string pdf_path = R"(E:\code\code_back\python_project\RealisticEval-Data\envs\python\test_case\t249\testcase02.pdf)";
+        std::string expected = "11111  \n";
+        std::string output = extract_text_from_pdf(pdf_path);
+        REQUIRE(output == expected);
+    }
 
-    REQUIRE(result == expected_text);
+    SECTION("test_more_text_file") {
+        std::string pdf_path = R"(E:\code\code_back\python_project\RealisticEval-Data\envs\python\test_case\t249\testcase03.pdf)";
+        std::string expected = "11111  \n22222  \n33333  \n44444  \n";
+        std::string output = extract_text_from_pdf(pdf_path);
+        REQUIRE(output == expected);
+    }
 }
