@@ -1,3 +1,4 @@
+
 /**
  * @brief Verifies if the provided string is a valid email address.
  *

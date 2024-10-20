@@ -5,3 +5,4 @@
  * @param lineContent The content of the line to write.
  */
 void write_unique_line_to_file(const std::string& filename, const std::string& lineContent) {}
+

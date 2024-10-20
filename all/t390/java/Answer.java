@@ -39,13 +39,4 @@ public class Answer {
         // Return the cleaned list of sentences
         return sentences;
     }
-
-    public static void main(String[] args) {
-        // Example usage
-        String text = "Hello world! This is a test. Isn't it great? Yes, it is.";
-        List<String> sentences = splitIntoSentences(text);
-        for (String sentence : sentences) {
-            System.out.println(sentence);
-        }
-    }
 }

@@ -1,3 +1,4 @@
+
 /**
  * @brief Reads sequences from a file and determines if each sequence is a "Munodi sequence".
  * 
@@ -12,4 +13,4 @@
  * 
  * @return A map where the keys are the sequences (as vectors of integers) and the values are booleans indicating whether the sequence is a valid Munodi sequence.
  */
-std::map<std::vector<int>, bool> check_sequences(const std::string& filename) {
+std::map<std::vector<int>, bool> check_sequences(const std::string& filename) {}

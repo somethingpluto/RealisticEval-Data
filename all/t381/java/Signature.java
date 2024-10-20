@@ -6,3 +6,4 @@
  * @throws IllegalArgumentException if the email does not contain an '@' character
  */
 public static String[] extractEmailDetails(String email) {}
+

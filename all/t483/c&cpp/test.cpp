@@ -26,4 +26,6 @@ TEST_CASE("Test Email Validation", "[email]") {
     SECTION("Invalid email with special characters") {
         REQUIRE_FALSE(is_valid_email("user@domain.com!"));
     }
+
 }
+

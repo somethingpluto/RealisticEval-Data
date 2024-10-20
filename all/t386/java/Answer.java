@@ -46,10 +46,4 @@ public class Answer {
         }
     }
 
-    public static void main(String[] args) {
-        String inputFilePath = "path/to/input.txt";
-        String outputFilePath = "path/to/output.txt";
-        boolean success = convertEncoding(inputFilePath, outputFilePath, "cp932", "UTF-16");
-        System.out.println("Conversion successful: " + success);
-    }
 }

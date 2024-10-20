@@ -1,3 +1,4 @@
+
 /**
  * @brief Checks whether two rectangles intersect in the vertical direction.
  * 
@@ -10,4 +11,4 @@
  * 
  * @return True if the rectangles intersect vertically, False otherwise.
  */
-bool intersect_vertically(const std::tuple<int, int, int, int>& rect1, const std::tuple<int, int, int, int>& rect2) {
+bool intersect_vertically(const std::tuple<int, int, int, int>& rect1, const std::tuple<int, int, int, int>& rect2) {}

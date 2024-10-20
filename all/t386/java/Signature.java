@@ -1,3 +1,4 @@
+
 /**
  * Converts the encoding of a file from one encoding to another.
  *

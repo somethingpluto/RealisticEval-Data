@@ -1,3 +1,4 @@
+
 /**
  * @brief Extracts the contents of the outermost brackets from the input string.
  *
@@ -14,3 +15,4 @@
  * @rtype std::string
  */
 std::string extract_outermost_brackets(const std::string& s) {}
+
