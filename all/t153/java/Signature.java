@@ -4,6 +4,4 @@
  * @param hash - The hash buffer to be compressed.
  * @return A compressed string representation of the hash.
  */
-public static String compressHash(ByteBuffer hash) {
-    // Implementation goes here
-}
+public static String compressHash(ByteBuffer hash) {}

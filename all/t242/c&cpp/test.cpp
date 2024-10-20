@@ -1,24 +1,57 @@
-TEST_CASE("Classify files by extension", "[classify_files]") {
-    SECTION("Empty list") {
-        std::vector<std::string> empty_list = {};
-        auto result = classify_files_by_extension(empty_list);
-        REQUIRE(result.empty());
+TEST_CASE("Test classifyFilesByExtension") {
+    SECTION("Test with multiple file types") {
+        std::vector<std::string> files = {
+            "document.docx",
+            "photo.jpeg",
+            "report.pdf",
+            "image.png",
+            "archive.zip"
+        };
+        std::unordered_map<std::string, std::vector<std::string>> expected_result = {
+            {"docx", {"document.docx"}},
+            {"jpeg", {"photo.jpeg"}},
+            {"pdf", {"report.pdf"}},
+            {"png", {"image.png"}},
+            {"zip", {"archive.zip"}}
+        };
+
+        REQUIRE(classify_files_by_extension(files) == expected_result);
     }
 
-    SECTION("List with one file") {
-        std::vector<std::string> single_file = {"example.txt"};
-        auto result = classify_files_by_extension(single_file);
-        REQUIRE(result.size() == 1);
-        REQUIRE(result["txt"] == std::vector<std::string>{"example.txt"});
+    SECTION("Test with an empty list of file names") {
+        std::vector<std::string> files = {};
+        std::unordered_map<std::string, std::vector<std::string>> expected_result = {};
+
+        REQUIRE(classify_files_by_extension(files) == expected_result);
     }
 
-    SECTION("List with multiple files") {
-        std::vector<std::string> multiple_files = {"image.png", "document.pdf", "script.py", "data.csv"};
-        auto result = classify_files_by_extension(multiple_files);
-        REQUIRE(result.size() == 4);
-        REQUIRE(result["png"] == std::vector<std::string>{"image.png"});
-        REQUIRE(result["pdf"] == std::vector<std::string>{"document.pdf"});
-        REQUIRE(result["py"] == std::vector<std::string>{"script.py"});
-        REQUIRE(result["csv"] == std::vector<std::string>{"data.csv"});
+    SECTION("Test with multiple files having the same extension") {
+        std::vector<std::string> files = {
+            "file1.txt",
+            "file2.txt",
+            "file3.txt"
+        };
+        std::unordered_map<std::string, std::vector<std::string>> expected_result = {
+            {"txt", {"file1.txt", "file2.txt", "file3.txt"}}
+        };
+
+        REQUIRE(classify_files_by_extension(files) == expected_result);
+    }
+
+    SECTION("Test files that have multiple dots in their names") {
+        std::vector<std::string> files = {
+            "my.document.docx",
+            "report.final.pdf",
+            "photo.album.jpeg",
+            "archive.backup.zip"
+        };
+        std::unordered_map<std::string, std::vector<std::string>> expected_result = {
+            {"docx", {"my.document.docx"}},
+            {"pdf", {"report.final.pdf"}},
+            {"jpeg", {"photo.album.jpeg"}},
+            {"zip", {"archive.backup.zip"}}
+        };
+
+        REQUIRE(classify_files_by_extension(files) == expected_result);
     }
 }

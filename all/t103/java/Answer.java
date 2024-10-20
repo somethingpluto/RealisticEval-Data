@@ -1,4 +1,6 @@
-public class StringTruncator {
+package org.real.temp;
+
+public class Answer {
     public static String truncateStringWithReplacement(String str, int maxLength) {
         // Check if the string length is less than or equal to the specified length
         if (str.length() <= maxLength) {

@@ -6,7 +6,7 @@ TEST_CASE("TestGetCurrentDateInfo") {
         date.tm_mday = 1; // Day of the month
         date.tm_isdst = -1; // Daylight saving time flag
 
-        auto result = getCurrentDateInfo(&date);
+        auto result = get_current_date_info(&date);
         std::map<std::string, std::string> expected = {
             {"year", "2023"},
             {"month", "January"},
@@ -24,7 +24,7 @@ TEST_CASE("TestGetCurrentDateInfo") {
         date.tm_mday = 15; // Day of the month
         date.tm_isdst = -1; // Daylight saving time flag
 
-        auto result = getCurrentDateInfo(&date);
+        auto result = get_current_date_info(&date);
         std::map<std::string, std::string> expected = {
             {"year", "2023"},
             {"month", "January"},
@@ -42,7 +42,7 @@ TEST_CASE("TestGetCurrentDateInfo") {
         date.tm_mday = 29; // Day of the month
         date.tm_isdst = -1; // Daylight saving time flag
 
-        auto result = getCurrentDateInfo(&date);
+        auto result = get_current_date_info(&date);
         std::map<std::string, std::string> expected = {
             {"year", "2024"},
             {"month", "February"},
@@ -60,7 +60,7 @@ TEST_CASE("TestGetCurrentDateInfo") {
         date.tm_mday = 31; // Day of the month
         date.tm_isdst = -1; // Daylight saving time flag
 
-        auto result = getCurrentDateInfo(&date);
+        auto result = get_current_date_info(&date);
         std::map<std::string, std::string> expected = {
             {"year", "2022"},
             {"month", "December"},

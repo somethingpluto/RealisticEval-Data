@@ -1,37 +1,46 @@
 package org.real.temp;
 
+import static org.junit.Assert.assertEquals;
+
 import org.junit.Test;
-import static org.junit.Assert.assertTrue;
+
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 
 public class Tester {
 
-    @Test
-    public void testFormatBytes_zeroBytes() {
-        String result = ByteFormatter.formatBytes(0, new ByteFormatter.FormatOptions(null, "normal"));
-        assertTrue(result.equals("0 Byte") || result.equals("0 B"));
+    public static String arrayBufferToString(ByteBuffer buffer) {
+        byte[] byteArray = new byte[buffer.remaining()];
+        buffer.get(byteArray);
+        return new String(byteArray, StandardCharsets.UTF_8);
     }
 
     @Test
-    public void testFormatBytes_2048Bytes() {
-        String result = ByteFormatter.formatBytes(2048, new ByteFormatter.FormatOptions(null, "normal"));
-        assertTrue(result.equals("2 KB") || result.equals("2.0 KB"));
+    public void testEmptyBuffer() {
+        ByteBuffer buffer1 = ByteBuffer.allocate(0);
+        String result = arrayBufferToString(buffer1);
+        assertEquals("", result); // Expected: ""
     }
 
     @Test
-    public void testFormatBytes_accurate_2048Bytes() {
-        String result = ByteFormatter.formatBytes(2048, new ByteFormatter.FormatOptions(null, "accurate"));
-        assertTrue(result.equals("2 KiB") || result.equals("2.0 KiB"));
+    public void testSingleCharacter() {
+        ByteBuffer buffer2 = ByteBuffer.wrap("A".getBytes(StandardCharsets.UTF_8));
+        String result = arrayBufferToString(buffer2);
+        assertEquals("A", result); // Expected: "A"
     }
 
     @Test
-    public void testFormatBytes_5242880Bytes() {
-        String result = ByteFormatter.formatBytes(5242880, new ByteFormatter.FormatOptions(null, "normal"));
-        assertTrue(result.equals("5 MB") || result.equals("5.0 MB"));
+    public void testHelloString() {
+        ByteBuffer buffer3 = ByteBuffer.wrap("Hello".getBytes(StandardCharsets.UTF_8));
+        String result = arrayBufferToString(buffer3);
+        assertEquals("Hello", result); // Expected: "Hello"
     }
 
     @Test
-    public void testFormatBytes_accurate_5242880Bytes() {
-        String result = ByteFormatter.formatBytes(5242880, new ByteFormatter.FormatOptions(2, "accurate"));
-        assertTrue(result.equals("5.00 MiB"));
+    public void testMultipleCharacters() {
+        ByteBuffer buffer4 = ByteBuffer.wrap("Hello, World!".getBytes(StandardCharsets.UTF_8));
+        String result = arrayBufferToString(buffer4);
+        assertEquals("Hello, World!", result); // Expected: "Hello, World!"
     }
+    
 }

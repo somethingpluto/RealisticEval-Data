@@ -1,8 +1,3 @@
-#include <catch2/catch_test_macros.hpp>
-#include <string>
-#include <stdexcept>
-
-
 TEST_CASE("Test valid hex color inputs", "[hex_to_ansi]") {
     SECTION("Valid colors") {
         CHECK(hex_to_ansi("#FF5733") == "\x1b[38;2;255;87;51m");

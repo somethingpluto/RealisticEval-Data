@@ -6,66 +6,56 @@
  * can be pushed onto it until space is freed by popping elements.
  */
 public class Answer {
-    
-    private static final int MAX_SIZE = 100;  // Maximum size of the stack
-    private float[] stack;                      // Array to hold the stack elements
-    private int top;                            // Index of the top element in the stack
 
-    /**
-     * Constructor that initializes the stack.
-     *
-     * The constructor initializes the stack's top index to -1, indicating that the stack is empty.
-     */
-    public Answer() {
-        this.stack = new float[MAX_SIZE];
-        this.top = -1;
-    }
-
-    /**
-     * Pushes a floating-point number onto the stack.
-     *
-     * @param value The floating-point number to be pushed onto the stack.
-     * @throws IllegalStateException if the stack is full.
-     */
-    public void push(float value) {
-        if (top >= MAX_SIZE - 1) {
-            throw new IllegalStateException("Stack overflow: Cannot push onto a full stack.");
+    static class Stack{
+        /**
+         * Constructor that initializes the stack.
+         *
+         * The constructor initializes the stack's top index to -1, indicating that the stack is empty.
+         */
+        public Stack() {
+           
         }
-        stack[++top] = value;
-    }
 
-    /**
-     * Pops the top element off the stack and returns it.
-     *
-     * @return The floating-point number that was popped from the stack.
-     * @throws IllegalStateException if the stack is empty.
-     */
-    public float pop() {
-        if (top < 0) {
-            throw new IllegalStateException("Stack underflow: Cannot pop from an empty stack.");
+        /**
+         * Pushes a floating-point number onto the stack.
+         *
+         * @param value The floating-point number to be pushed onto the stack.
+         * @throws IllegalStateException if the stack is full.
+         */
+        public void push(float value) {
+         
         }
-        return stack[top--];
-    }
 
-    /**
-     * Returns the top element of the stack without removing it.
-     *
-     * @return The floating-point number at the top of the stack.
-     * @throws IllegalStateException if the stack is empty.
-     */
-    public float peek() {
-        if (top < 0) {
-            throw new IllegalStateException("Stack underflow: Cannot peek on an empty stack.");
+        /**
+         * Pops the top element off the stack and returns it.
+         *
+         * @return The floating-point number that was popped from the stack.
+         * @throws IllegalStateException if the stack is empty.
+         */
+        public float pop() {
+         
         }
-        return stack[top];
+
+        /**
+         * Returns the top element of the stack without removing it.
+         *
+         * @return The floating-point number at the top of the stack.
+         * @throws IllegalStateException if the stack is empty.
+         */
+        public float peek() {
+        
+        }
+
+        /**
+         * Checks whether the stack is empty.
+         *
+         * @return true if the stack is empty; false otherwise.
+         */
+        public boolean isEmpty() {
+          
+        }
     }
 
-    /**
-     * Checks whether the stack is empty.
-     *
-     * @return true if the stack is empty; false otherwise.
-     */
-    public boolean isEmpty() {
-        return top < 0;
-    }
+
 }

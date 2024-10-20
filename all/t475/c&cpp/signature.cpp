@@ -1,5 +1,5 @@
 /**
- * Safely formats a template string by replacing placeholders with corresponding values
+ * @brief Safely formats a template string by replacing placeholders with corresponding values
  * from the provided keyword arguments. If a placeholder does not have a corresponding
  * value in kwargs, it remains unchanged.
  *

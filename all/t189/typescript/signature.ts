@@ -7,6 +7,4 @@
  * @param data A Uint8Array representing the input data to be encoded.
  * @return A string containing the Base64 encoded representation of the input data.
  */
-function base64Encode(data: Uint8Array): string {
-    // Function implementation goes here
-}
+function base64Encode(data: Uint8Array): string {}

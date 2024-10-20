@@ -1,45 +1,44 @@
 package org.real.temp;
-
-import static org.junit.jupiter.api.Assertions.*;
-import org.junit.jupiter.api.Test;
-import java.util.Arrays;
-
+import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
+import static org.real.temp.Answer.*;
 public class Tester {
 
+    /**
+     * Test edge case with a larger shape.
+     */
     @Test
-    public void testDecompose() {
-        // Test case 1
-        int[] result = decompose(3, new int[]{2, 2});
-        assertArrayEquals(new int[]{0, 1}, result);
-
-        // Test case 2
-        result = decompose(5, new int[]{2, 3});
-        assertArrayEquals(new int[]{1, 2}, result);
-
-        // Test case 3
-        result = decompose(8, new int[]{2, 2, 2});
-        assertArrayEquals(new int[]{1, 0, 0}, result);
-
-        // Test case 4: Out of bounds
-        try {
-            decompose(9, new int[]{2, 2, 2});
-            fail("Expected IllegalArgumentException");
-        } catch (IllegalArgumentException e) {
-            assertEquals("Index out of bounds", e.getMessage());
-        }
+    public void testEdgeCaseWithLargerShape() {
+        assertEquals("[3, 3, 0]", decompose(60, new int[]{4, 4, 4}).toString());
     }
 
-    private int[] decompose(int n, int[] shape) {
-        if (n < 0 || n >= Arrays.stream(shape).reduce(1, (a, b) -> a * b)) {
-            throw new IllegalArgumentException("Index out of bounds");
-        }
-
-        int[] result = new int[shape.length];
-        int size = 1;
-        for (int i = shape.length - 1; i >= 0; i--) {
-            result[i] = n / size % shape[i];
-            size *= shape[i];
-        }
-        return result;
+    /**
+     * Test the last valid index.
+     */
+    @Test
+    public void testLastValidIndex() {
+        assertEquals("[3, 3, 3]", decompose(63, new int[]{4, 4, 4}).toString());
     }
+
+    /**
+     * Test single dimension case.
+     */
+    @Test
+    public void testSingleDimensionCase() {
+        assertEquals("[2]", decompose(2, new int[]{5}).toString());
+    }
+
+    /**
+     * Test invalid cases.
+     */
+    @Test
+    public void testInvalidCases() {
+        // Test case 5: Out of bounds case (negative index)
+        assertThrows(IllegalArgumentException.class, () -> decompose(-1, new int[]{3, 4, 5}));
+
+        // Test case 6: Out of bounds case (index too large)
+        assertThrows(IllegalArgumentException.class, () -> decompose(100, new int[]{3, 4, 5}));
+    }
+
 }

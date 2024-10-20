@@ -1,14 +1,16 @@
 /**
- * Translate the point cloud by a given vector.
+ * @brief Translates the point cloud by a given vector.
  *
- * Args:
- *     pointCloud (Eigen::MatrixXd): An M x 3 Eigen matrix representing the 3D point cloud.
- *     translationVector (Eigen::RowVector3d): A 1 x 3 Eigen row vector representing the translation vector.
+ * @param pointCloud An M x 3 Eigen matrix representing the 3D point cloud.
+ * @type pointCloud Eigen::MatrixXd
  *
- * Returns:
- *     Eigen::MatrixXd: An M x 3 Eigen matrix of the translated point cloud.
+ * @param translationVector A 1 x 3 Eigen row vector representing the translation vector.
+ * @type translationVector Eigen::RowVector3d
+ *
+ * @return An M x 3 Eigen matrix of the translated point cloud.
+ * @rtype Eigen::MatrixXd
  */
-Eigen::MatrixXd translatePointCloud(const Eigen::MatrixXd& pointCloud, const Eigen::RowVector3d& translationVector){
+Eigen::MatrixXd translate_point_cloud(const Eigen::MatrixXd& pointCloud, const Eigen::RowVector3d& translationVector){
 
 }
 

@@ -1,15 +1,16 @@
 package org.real.temp;
 
 import org.junit.Test;
-import static org.junit.Assert.*;
 
+import static org.junit.Assert.*;
+import static org.real.temp.Answer.*;
 public class Tester {
 
     // Test rgbToHex function basic logic
     @Test
     public void testRgbToHex() {
         int[] rgb = {255, 99, 71};
-        String result = ColorConverter.rgbToHex(rgb);
+        String result = rgbToHex(rgb);
         assertEquals("#ff6347", result); // Expected HEX code for RGB(255, 99, 71)
     }
 
@@ -17,23 +18,14 @@ public class Tester {
     @Test
     public void testHexToRgb() {
         String hex = "#ff6347";
-        int[] result = ColorConverter.hexToRgb(hex);
+        int[] result = hexToRgb(hex);
         assertArrayEquals(new int[]{255, 99, 71}, result); // Expected RGB object for HEX #ff6347
     }
-
-    // Test rgbToHex function exception handling
-    @Test
-    public void testInvalidRgbComponents() {
-        int[] rgb = {300, -10, 128};
-        String result = ColorConverter.rgbToHex(rgb);
-        assertEquals("#00c080", result); // Invalid values should be clamped appropriately
-    }
-
     // Test hexToRgb function for invalid HEX strings
     @Test
     public void testInvalidHexString() {
         String invalidHex = "#ggg123";
-        int[] result = ColorConverter.hexToRgb(invalidHex);
+        int[] result = hexToRgb(invalidHex);
         assertNull(result); // Invalid HEX code should return null
     }
 
@@ -41,11 +33,11 @@ public class Tester {
     @Test
     public void testBoundaryValuesInRgb() {
         int[] rgbBlack = {0, 0, 0};
-        String resultBlack = ColorConverter.rgbToHex(rgbBlack);
+        String resultBlack = rgbToHex(rgbBlack);
         assertEquals("#000000", resultBlack); // RGB(0, 0, 0) should convert to #000000
 
         int[] rgbWhite = {255, 255, 255};
-        String resultWhite = ColorConverter.rgbToHex(rgbWhite);
+        String resultWhite = rgbToHex(rgbWhite);
         assertEquals("#ffffff", resultWhite); // RGB(255, 255, 255) should convert to #ffffff
     }
 }

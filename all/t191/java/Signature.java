@@ -7,6 +7,4 @@
  *
  * @note The output string will be in lowercase hexadecimal format.
  */
-public static String floatToHex(float value) {
-    // Implementation goes here
-}
+public static String floatToHex(float value) {}

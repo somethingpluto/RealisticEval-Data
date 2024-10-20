@@ -1,97 +1,53 @@
 package org.real.temp;
-
-import static org.junit.Assert.assertEquals;
-import org.junit.Before;
 import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import java.util.*;
+import static org.real.temp.Answer.*;
 
 public class Tester {
 
-    private SanitizeData sanitizer;
 
-    @Before
-    public void setUp() {
-        sanitizer = new SanitizeData();
+
+    @Test
+    public void testEmptyDict() {
+        Map<String, Object> data = new HashMap<>();
+        Set<String> keyToBeRemoved = new HashSet<>(Arrays.asList("email", "metadata"));
+
+        Map<String, Object> expected = new HashMap<>();
+        assertEquals(expected, sanitizeData(data, keyToBeRemoved));
     }
 
     @Test
-    public void testSanitizeDataWithKeys() {
-        // Arrange
-        Data data = new Data("John", 30, "secret");
-        String[] keysToRemove = {"password"};
-        Data expectedResult = new Data("John", 30);
+    public void testRemoveDefaultKeys() {
+        Map<String, Object> data = new HashMap<>();
+        data.put("name", "John Doe");
+        data.put("email", "johndoe@example.com");
+        data.put("metadata", new HashMap<>(Map.of(
+                "submitted_at", "2021-07-10",
+                "status", "pending"
+        )));
+        data.put("comments", Arrays.asList("Good", "Needs review"));
 
-        // Act
-        Data result = sanitizer.sanitizeData(data, keysToRemove);
+        Set<String> keyToBeRemoved = new HashSet<>(Arrays.asList("email", "metadata"));
+        Map<String, Object> expected = new HashMap<>();
+        expected.put("name", "John Doe");
+        expected.put("comments", Arrays.asList("Good", "Needs review"));
 
-        // Assert
-        assertEquals(expectedResult, result);
+        assertEquals(expected, sanitizeData(data, keyToBeRemoved));
     }
 
     @Test
-    public void testSanitizeDataNoKeys() {
-        // Arrange
-        Data data = new Data("John", 30, "secret");
-        String[] keysToRemove = {};
-        Data expectedResult = new Data("John", 30, "secret");
+    public void testSpecifiedKeyToRemove() {
+        Map<String, Object> data = new HashMap<>();
+        data.put("name", "John Doe");
+        data.put("location", "Earth");
+        data.put("email", "johndoe@example.com");
 
-        // Act
-        Data result = sanitizer.sanitizeData(data, keysToRemove);
+        Set<String> keyToBeRemoved = new HashSet<>(Arrays.asList("email"));
+        Map<String, Object> expected = new HashMap<>();
+        expected.put("name", "John Doe");
+        expected.put("location", "Earth");
 
-        // Assert
-        assertEquals(expectedResult, result);
-    }
-
-    // Helper classes for testing
-    public static class Data {
-        private String name;
-        private int age;
-        private String password;
-
-        public Data(String name, int age, String password) {
-            this.name = name;
-            this.age = age;
-            this.password = password;
-        }
-
-        public Data(String name, int age) {
-            this.name = name;
-            this.age = age;
-        }
-
-        // Getters and setters (omitted for brevity)
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            Data data = (Data) o;
-            return age == data.age && Objects.equals(name, data.name) && Objects.equals(password, data.password);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(name, age, password);
-        }
-
-        @Override
-        public String toString() {
-            return "Data{" +
-                    "name='" + name + '\'' +
-                    ", age=" + age +
-                    ", password='" + password + '\'' +
-                    '}';
-        }
-    }
-
-    public static class SanitizeData {
-        public Data sanitizeData(Data data, String[] keysToRemove) {
-            Data sanitizedData = new Data(data.getName(), data.getAge());
-            for (String key : keysToRemove) {
-                if ("password".equals(key)) {
-                    sanitizedData.setPassword(null);
-                }
-            }
-            return sanitizedData;
-        }
+        assertEquals(expected, sanitizeData(data, keyToBeRemoved));
     }
 }

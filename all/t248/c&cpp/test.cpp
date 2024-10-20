@@ -1,25 +1,40 @@
-TEST_CASE("sanitizeData removes specified keys", "[sanitizeData]") {
-    // Test case 1: No keys to remove
-    std::map<std::string, std::string> input1 = {{"name", "John"}, {"age", "30"}, {"city", "New York"}};
-    std::vector<std::string> keysToRemove1 = {};
-    std::map<std::string, std::string> expectedOutput1 = input1;
-    REQUIRE(sanitizeData(input1, keysToRemove1) == expectedOutput1);
+TEST_CASE("TestSanitizeData", "[SanitizeData]") {
+    SECTION("test_empty_dict") {
+        // Test with an empty dictionary.
+        std::unordered_map<std::string, std::string> data = {};
+        std::vector<std::string> key_to_remove = {"email", "metadata"};
 
-    // Test case 2: Single key to remove
-    std::map<std::string, std::string> input2 = {{"name", "John"}, {"age", "30"}, {"city", "New York"}};
-    std::vector<std::string> keysToRemove2 = {"age"};
-    std::map<std::string, std::string> expectedOutput2 = {{"name", "John"}, {"city", "New York"}};
-    REQUIRE(sanitizeData(input2, keysToRemove2) == expectedOutput2);
+        std::unordered_map<std::string, std::string> expected = {};
+        REQUIRE(sanitize_data(data, &key_to_remove) == expected);
+    }
 
-    // Test case 3: Multiple keys to remove
-    std::map<std::string, std::string> input3 = {{"name", "John"}, {"age", "30"}, {"city", "New York"}, {"email", "john@example.com"}};
-    std::vector<std::string> keysToRemove3 = {"age", "email"};
-    std::map<std::string, std::string> expectedOutput3 = {{"name", "John"}, {"city", "New York"}};
-    REQUIRE(sanitizeData(input3, keysToRemove3) == expectedOutput3);
+    SECTION("test_remove_default_keys") {
+        // Test removing default keys from a nested structure.
+        std::unordered_map<std::string, std::string> data = {
+            {"name", "John Doe"},
+            {"email", "johndoe@example.com"},
+            {"metadata", "version: 1, timestamp: 2021-07-10, status: pending"},
+            {"comments", "Good, Needs review"}
+        };
+        std::vector<std::string> key_to_remove = {"email", "metadata"};
+        std::unordered_map<std::string, std::string> expected = {
+            {"name", "John Doe"},
+            {"comments", "Good, Needs review"}
+        };
+        REQUIRE(sanitize_data(data, &key_to_remove) == expected);
+    }
 
-    // Test case 4: Key not present in input
-    std::map<std::string, std::string> input4 = {{"name", "John"}, {"age", "30"}, {"city", "New York"}};
-    std::vector<std::string> keysToRemove4 = {"address"};
-    std::map<std::string, std::string> expectedOutput4 = input4;
-    REQUIRE(sanitizeData(input4, keysToRemove4) == expectedOutput4);
+    SECTION("test_specified_key_to_remove") {
+        // Test removing a specified key from the dictionary.
+        std::unordered_map<std::string, std::string> data = {
+            {"name", "John Doe"},
+            {"location", "Earth"},
+            {"email", "johndoe@example.com"}
+        };
+        std::unordered_map<std::string, std::string> expected = {
+            {"name", "John Doe"},
+            {"location", "Earth"}
+        };
+        REQUIRE(sanitize_data(data, &std::vector<std::string>{"email"}) == expected);
+    }
 }

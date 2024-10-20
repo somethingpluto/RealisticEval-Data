@@ -1,3 +1,5 @@
+package org.real.temp;
+
 import org.junit.Test;
 import org.junit.Assert;
 
@@ -28,8 +30,8 @@ public class Tester {
         map.put("a", Arrays.asList(1, 2));
         map.put("b", Arrays.asList(3, 4));
         List<List<Integer>> expected = Arrays.asList(
-            Arrays.asList(1, 3), Arrays.asList(1, 4),
-            Arrays.asList(2, 3), Arrays.asList(2, 4)
+                Arrays.asList(1, 3), Arrays.asList(1, 4),
+                Arrays.asList(2, 3), Arrays.asList(2, 4)
         );
         Assert.assertEquals(expected, generateCombinations(map));
     }

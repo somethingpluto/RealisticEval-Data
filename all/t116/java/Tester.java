@@ -1,7 +1,9 @@
 package org.real.temp;
 
 import org.junit.Test;
+
 import static org.junit.Assert.assertArrayEquals;
+import static org.real.temp.Answer.*;
 
 public class Tester {
 
@@ -11,7 +13,7 @@ public class Tester {
         Point otherPoint = new Point(5, 6);
         double width = 10;
         double height = 10;
-        double[] result = ToroidalDiff.toroidalDiff(thisPoint, otherPoint, width, height);
+        double[] result = toroidalDiff(thisPoint, otherPoint, width, height);
         assertArrayEquals(new double[]{-3, -3}, result, 0.0001);
     }
 
@@ -21,7 +23,7 @@ public class Tester {
         Point otherPoint = new Point(1, 5);
         double width = 10;
         double height = 10;
-        double[] result = ToroidalDiff.toroidalDiff(thisPoint, otherPoint, width, height);
+        double[] result = toroidalDiff(thisPoint, otherPoint, width, height);
         assertArrayEquals(new double[]{-2, 0}, result, 0.0001); // dx wraps around the toroidal boundary
     }
 
@@ -31,7 +33,7 @@ public class Tester {
         Point otherPoint = new Point(4, 1);
         double width = 10;
         double height = 10;
-        double[] result = ToroidalDiff.toroidalDiff(thisPoint, otherPoint, width, height);
+        double[] result = toroidalDiff(thisPoint, otherPoint, width, height);
         assertArrayEquals(new double[]{0, -2}, result, 0.0001); // dy wraps around the toroidal boundary
     }
 
@@ -41,7 +43,7 @@ public class Tester {
         Point otherPoint = new Point(1, 1);
         double width = 10;
         double height = 10;
-        double[] result = ToroidalDiff.toroidalDiff(thisPoint, otherPoint, width, height);
+        double[] result = toroidalDiff(thisPoint, otherPoint, width, height);
         assertArrayEquals(new double[]{-2, -2}, result, 0.0001); // Both dx and dy wrap around
     }
 
@@ -51,7 +53,7 @@ public class Tester {
         Point otherPoint = new Point(5, 5);
         double width = 10;
         double height = 10;
-        double[] result = ToroidalDiff.toroidalDiff(thisPoint, otherPoint, width, height);
+        double[] result = toroidalDiff(thisPoint, otherPoint, width, height);
         assertArrayEquals(new double[]{0, 0}, result, 0.0001); // No difference
     }
 }

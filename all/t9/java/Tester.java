@@ -1,6 +1,7 @@
-/**
- * Test class for checking whether a point is on a line formed by two other points.
- */
+package org.real.temp;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import org.junit.Test;
 public class Tester {
     @Test
     public void testPointOnLine() {

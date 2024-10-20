@@ -6,6 +6,4 @@
  * @param target - The target letter to find the next greatest letter for.
  * @returns The smallest letter in the array that is larger than the target letter.
  */
-public static char nextGreatestLetter(char[] letters, char target) {
-    // Implementation goes here
-}
+public static char nextGreatestLetter(char[] letters, char target) {}

@@ -1,10 +1,8 @@
 /**
- * Invert the keys and values in a dictionary. If multiple keys have the same value,
- * the new dictionary's values will be a list of these keys.
+ * Inverts the keys and values in a map. If multiple keys have the same value,
+ * the new map's values will be a list of these keys.
  *
- * @param originalDict The dictionary to invert.
- * @return A new dictionary with values and keys inverted.
+ * @param originalMap The map to invert.
+ * @return A new map with values and keys inverted.
  */
-public static Map<Object, Object> invertDictionary(Map<Object, Object> originalDict) {
-    // Your implementation goes here
-}
+public static Map<String, Object> invertMap(Map<String, String> originalMap) {}

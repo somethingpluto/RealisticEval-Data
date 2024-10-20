@@ -1,8 +1,3 @@
-package org.real.temp;
-
-/**
- * Implements a dictionary tree (Trie) for fast string retrieval and storage.
- */
 public class Trie {
 
     /**

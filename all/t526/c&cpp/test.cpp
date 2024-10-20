@@ -1,8 +1,3 @@
-#include <catch2/catch_test_macros.hpp>
-#include <string>
-#include <unordered_map>
-#include <climits>
-
 // Test class using Catch2
 TEST_CASE("Test cases for min_window", "[min_window]") {
     SECTION("Test with a normal case where the minimum window exists") {

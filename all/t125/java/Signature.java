@@ -8,6 +8,4 @@
  * @param htmlString The HTML content to compress.
  * @return The compressed HTML content.
  */
-public static String compressHTML(String htmlString) {
-    // Method implementation goes here
-}
+public static String compressHTML(String htmlString) {}

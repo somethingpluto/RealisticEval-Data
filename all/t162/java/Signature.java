@@ -6,6 +6,4 @@
  * @param boolArray An array of boolean values.
  * @return A binary string where '1' represents true and '0' represents false.
  */
-public static String boolArrayToBinaryString(boolean[] boolArray) {
-    // Method implementation will go here
-}
+public static String boolArrayToBinaryString(boolean[] boolArray) {}

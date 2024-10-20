@@ -3,6 +3,4 @@
  *
  * @return An array of alphabet characters from 'a' to 'z' and 'A' to 'Z'.
  */
-public static char[] getAllAlphabets() {
-    // Method implementation goes here
-}
+public static char[] getAllAlphabets() {}

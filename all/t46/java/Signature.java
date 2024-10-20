@@ -83,7 +83,7 @@ public class BinaryTree {
      * @param result the list to store the traversal results
      * @return the list containing the preorder traversal results
      */
-    public List<Integer> preorderTraversal(TreeNode node, List<Integer> result) {}
+    public List<Integer> preorderTraversal(TreeNode node) {}
 
     /**
      * Performs an inorder traversal of the binary tree.
@@ -92,7 +92,7 @@ public class BinaryTree {
      * @param result the list to store the traversal results
      * @return the list containing the inorder traversal results
      */
-    public List<Integer> inorderTraversal(TreeNode node, List<Integer> result) {}
+    public List<Integer> inorderTraversal(TreeNode node) {}
 
     /**
      * Performs a postorder traversal of the binary tree.
@@ -101,5 +101,5 @@ public class BinaryTree {
      * @param result the list to store the traversal results
      * @return the list containing the postorder traversal results
      */
-    public List<Integer> postorderTraversal(TreeNode node, List<Integer> result) {}
+    public List<Integer> postorderTraversal(TreeNode node) {}
 }

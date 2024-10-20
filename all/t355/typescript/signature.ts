@@ -1,5 +1,5 @@
 /**
- * @brief Calculates the spatial weight based on the difference in spatial coordinates and a space standard deviation.
+ * Calculates the spatial weight based on the difference in spatial coordinates and a space standard deviation.
  *
  * The spatial weight is calculated using the formula:
  * weight = exp(- (spatial_diff^2) / (2 * sigma_space^2))

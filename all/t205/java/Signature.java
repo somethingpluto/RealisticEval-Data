@@ -3,9 +3,4 @@
  *
  * @return A string representing the current date in the format "YYYY-MM-DD".
  */
-public class Answer {
-    public static String getCurrentDate() {
-        // Method implementation will be added here
-        return "";
-    }
-}
+public static String getCurrentDate() {}

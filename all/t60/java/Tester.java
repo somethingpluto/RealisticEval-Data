@@ -1,16 +1,21 @@
 package org.real.temp;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import static org.real.temp.Answer.*;
+
+import static org.junit.Assert.assertEquals;
 
 public class Tester {
 
@@ -46,7 +51,7 @@ public class Tester {
 
         writeFiles(filenames, datas);
 
-        assertEquals(Set.of("A", "B", "C"), findCommonColumns(TEST_DIR));
+        assertEquals(Arrays.asList("A", "B", "C"), findCommonColumns(TEST_DIR));
     }
 
     @Test
@@ -60,7 +65,7 @@ public class Tester {
 
         writeFiles(filenames, datas);
 
-        assertEquals(Set.of(), findCommonColumns(TEST_DIR));
+        assertEquals(List.of(), findCommonColumns(TEST_DIR));
     }
 
     @Test
@@ -74,7 +79,7 @@ public class Tester {
 
         writeFiles(filenames, datas);
 
-        assertEquals(Set.of("C"), findCommonColumns(TEST_DIR));
+        assertEquals(List.of("C"), findCommonColumns(TEST_DIR));
     }
 
     @Test
@@ -88,7 +93,7 @@ public class Tester {
 
         writeFiles(filenames, datas);
 
-        assertEquals(Set.of("B", "C"), findCommonColumns(TEST_DIR));
+        assertEquals(Arrays.asList("B", "C"), findCommonColumns(TEST_DIR));
     }
 
     private void writeFiles(List<String> filenames, List<String> datas) throws IOException {

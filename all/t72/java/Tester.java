@@ -2,9 +2,13 @@ package org.real.temp;
 
 import org.junit.Before;
 import org.junit.Test;
+
 import static org.junit.Assert.assertArrayEquals;
+
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
+
+import static org.real.temp.Answer.*;
 
 public class Tester {
 
@@ -14,9 +18,9 @@ public class Tester {
     public void setUp() {
         // Define a common intrinsic matrix for testing
         K = Nd4j.create(new double[][]{
-            {1000, 0, 320},
-            {0, 1000, 240},
-            {0, 0, 1}
+                {1000, 0, 320},
+                {0, 1000, 240},
+                {0, 0, 1}
         });
     }
 

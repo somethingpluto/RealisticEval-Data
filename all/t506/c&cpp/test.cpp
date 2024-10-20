@@ -1,8 +1,3 @@
-#include <catch2/catch_test_macros.hpp>
-#include <string>
-#include <sstream>
-#include <vector>
-
 TEST_CASE("Test basic snake_case to CamelCase conversion", "[snake_to_camel]") {
     CHECK(snake_to_camel("hello_world") == "HelloWorld");
 }

@@ -3,30 +3,30 @@ package org.real.temp;
 import java.util.List;
 
 public class Answer {
+
+
+    /**
+     * Determines if there is a starting gas station index at which a car can complete the circuit.
+     * 
+     * @param gas An array representing the amount of gas at each station.
+     * @param cost An array representing the cost of gas to travel from each station to the next one.
+     * @return The starting gas station index if the car can complete the circuit, or -1 otherwise.
+     */
     public static int canCompleteCircuit(List<Integer> gas, List<Integer> cost) {
-        /**
-         * Determines if there exists a starting gas station's index where you can travel
-         * around the circuit once in a clockwise direction.
-         *
-         * @param gas  List of integers representing the amount of gas at each station.
-         * @param cost List of integers representing the cost of gas to travel from each station to the next.
-         * @return The starting gas station's index if the circuit can be completed, otherwise -1.
-         */
+        int n = gas.size();
+        int totalGas = 0, totalCost = 0, tank = 0, startIndex = 0;
 
-        int totalGas = 0;
-        int currentGas = 0;
-        int startStation = 0;
+        for (int i = 0; i < n; i++) {
+            totalGas += gas.get(i);
+            totalCost += cost.get(i);
+            tank += gas.get(i) - cost.get(i);
 
-        for(int i = 0; i < gas.size(); i++) {
-            totalGas += gas.get(i) - cost.get(i);
-            currentGas += gas.get(i) - cost.get(i);
-
-            if(currentGas < 0) {
-                startStation = i + 1;
-                currentGas = 0;
+            if (tank < 0) {  // If tank becomes negative, update startIndex and reset tank
+                startIndex = i + 1;
+                tank = 0;
             }
         }
 
-        return totalGas >= 0 ? startStation : -1;
+        return totalGas >= totalCost ? startIndex : -1;
     }
 }

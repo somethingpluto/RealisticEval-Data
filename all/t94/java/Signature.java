@@ -4,6 +4,4 @@
  * @param startingNote The musical note to start the Circle of Fifths from (e.g., "C").
  * @return A List representing the Circle of Fifths.
  */
-public static List<String> createCircleOfFifths(String startingNote) {
-    // Implementation goes here
-}
+public static List<String> createCircleOfFifths(String startingNote) {}

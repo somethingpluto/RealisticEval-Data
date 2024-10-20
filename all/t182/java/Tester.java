@@ -1,14 +1,13 @@
 package org.real.temp;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 import org.real.temp.*;
 
@@ -16,7 +15,7 @@ public class Tester {
     private File sourceFile;
     private File destinationFile;
 
-    @BeforeEach
+    @Before
     public void setUp() throws IOException {
         sourceFile = new File("testSourceFile.txt");
         destinationFile = new File("testDestinationFile.txt");
@@ -26,7 +25,7 @@ public class Tester {
         }
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         if (sourceFile.exists()) {
             sourceFile.delete();
@@ -42,9 +41,9 @@ public class Tester {
     @Test
     public void testCopyFileWithContent() throws IOException {
         long timeTaken = Answer.copyFileWithBufferedStream(sourceFile.getAbsolutePath(), destinationFile.getAbsolutePath());
-        assertTrue(destinationFile.exists(), "Destination file should exist after copying.");
-        assertEquals(sourceFile.length(), destinationFile.length(), "File sizes should match.");
-        assertTrue(timeTaken >= 0, "Time taken should be non-negative.");
+        assertTrue("Destination file should exist after copying.", destinationFile.exists());
+        assertEquals("File sizes should match.", sourceFile.length(), destinationFile.length());
+        assertTrue("Time taken should be non-negative.", timeTaken >= 0);
     }
 
     /**
@@ -57,9 +56,9 @@ public class Tester {
         File destinationEmptyFile = new File("destinationEmptyFile.txt");
 
         long timeTaken = Answer.copyFileWithBufferedStream(emptyFile.getAbsolutePath(), destinationEmptyFile.getAbsolutePath());
-        assertTrue(destinationEmptyFile.exists(), "Destination file should exist after copying.");
-        assertEquals(0, destinationEmptyFile.length(), "Empty file should have length 0.");
-        assertTrue(timeTaken >= 0, "Time taken should be non-negative.");
+        assertTrue("Destination file should exist after copying.", destinationEmptyFile.exists());
+        assertEquals("Empty file should have length 0.", 0, destinationEmptyFile.length());
+        assertTrue("Time taken should be non-negative.", timeTaken >= 0);
 
         emptyFile.delete();
         destinationEmptyFile.delete();
@@ -68,12 +67,10 @@ public class Tester {
     /**
      * Test copying a non-existent source file.
      */
-    @Test
-    public void testCopyNonExistentFile() {
+    @Test(expected = IOException.class)
+    public void testCopyNonExistentFile() throws IOException {
         String nonExistentFilePath = "nonExistentFile.txt";
-        assertThrows(IOException.class, () -> {
-            Answer.copyFileWithBufferedStream(nonExistentFilePath, destinationFile.getAbsolutePath());
-        }, "Copying a non-existent file should throw an IOException.");
+        Answer.copyFileWithBufferedStream(nonExistentFilePath, destinationFile.getAbsolutePath());
     }
 
     /**
@@ -86,9 +83,9 @@ public class Tester {
         }
 
         long timeTaken = Answer.copyFileWithBufferedStream(sourceFile.getAbsolutePath(), destinationFile.getAbsolutePath());
-        assertTrue(destinationFile.exists(), "Destination file should exist after copying.");
-        assertEquals(sourceFile.length(), destinationFile.length(), "File sizes should match after overwriting.");
-        assertTrue(timeTaken > 0, "Time taken should be greater than 0.");
+        assertTrue("Destination file should exist after copying.", destinationFile.exists());
+        assertEquals("File sizes should match after overwriting.", sourceFile.length(), destinationFile.length());
+        assertTrue("Time taken should be greater than 0.", timeTaken > 0);
     }
 
     /**
@@ -106,8 +103,8 @@ public class Tester {
         }
 
         long timeTaken = Answer.copyFileWithBufferedStream(sourceFile.getAbsolutePath(), destinationFile.getAbsolutePath());
-        assertTrue(destinationFile.exists(), "Destination file should exist after copying.");
-        assertEquals(sourceFile.length(), destinationFile.length(), "File sizes should match.");
-        assertTrue(timeTaken > 0, "Time taken should be greater than 0.");
+        assertTrue("Destination file should exist after copying.", destinationFile.exists());
+        assertEquals("File sizes should match.", sourceFile.length(), destinationFile.length());
+        assertTrue("Time taken should be greater than 0.", timeTaken > 0);
     }
 }

@@ -2,7 +2,7 @@
 #include <list>
 
 /**
- * Achieve topological sorting, based on depth priority search
+ * @brief Achieve topological sorting, based on depth priority search
  *
  * @param vertices A vector of integers representing the vertices in the graph.
  *                 Each vertex should be a unique integer.

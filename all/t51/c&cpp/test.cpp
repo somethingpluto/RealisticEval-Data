@@ -1,11 +1,3 @@
-#define CATCH_CONFIG_MAIN
-#include <catch2/catch.hpp>
-#include <Eigen/Dense>
-#include <vector>
-
-// Assuming your changeReferenceFrame function is implemented here or included
-Eigen::MatrixXd changeReferenceFrame(const Eigen::MatrixXd &pointCloud, const std::vector<Eigen::Vector3d> &refFramePoints);
-
 TEST_CASE("Change Reference Frame") {
     // Initializing the point cloud and reference frame points
     Eigen::MatrixXd pointCloud(3, 3);

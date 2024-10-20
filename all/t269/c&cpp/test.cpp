@@ -1,14 +1,16 @@
-TEST_CASE("Check valid IP addresses", "[ip]") {
-    REQUIRE(isCompliantIP("192.168.1.1") == true);
-    REQUIRE(isCompliantIP("0.0.0.0") == true);
-    REQUIRE(isCompliantIP("255.255.255.255") == true);
-}
+TEST_CASE("Test IsCompliantIP", "[is_compliant_ip]") {
+    SECTION("Private IP") {
+        // Test that private IPs return True
+        REQUIRE(is_compliant_ip("192.168.1.1"));
+    }
 
-TEST_CASE("Check invalid IP addresses", "[ip]") {
-    REQUIRE(isCompliantIP("256.256.256.256") == false);
-    REQUIRE(isCompliantIP("192.168.1") == false);
-    REQUIRE(isCompliantIP("192.168.1.256") == false);
-    REQUIRE(isCompliantIP("abc.def.ghi.jkl") == false);
-    REQUIRE(isCompliantIP("192.168.1.-1") == false);
-    REQUIRE(isCompliantIP("192.168.1.0.0") == false);
+    SECTION("Public IP") {
+        // Test that public IPs return False
+        REQUIRE_FALSE(is_compliant_ip("8.8.8.8"));
+    }
+
+    SECTION("Invalid IP") {
+        // Test that invalid IP strings return False
+        REQUIRE_FALSE(is_compliant_ip("999.999.999.999"));
+    }
 }

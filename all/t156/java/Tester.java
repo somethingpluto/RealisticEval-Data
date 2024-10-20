@@ -1,8 +1,9 @@
 package org.real.temp;
 
 import org.junit.Test;
-import static org.junit.Assert.assertEquals;
 
+import static org.junit.Assert.assertEquals;
+import static org.real.temp.Answer.*;
 public class Tester {
 
     @Test
@@ -27,16 +28,5 @@ public class Tester {
     public void testFormatNumber_EdgeCases() {
         assertEquals("1.0K", formatNumber(1000));
         assertEquals("1.0M", formatNumber(1000000));
-    }
-
-    // Assuming the formatNumber method is in this class or imported from elsewhere
-    public static String formatNumber(double num) {
-        if (num >= 1_000_000) {
-            return String.format("%.1fM", num / 1_000_000);
-        } else if (num >= 1_000) {
-            return String.format("%.1fK", num / 1_000);
-        } else {
-            return String.valueOf(num);
-        }
     }
 }

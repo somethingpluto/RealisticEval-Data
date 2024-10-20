@@ -1,7 +1,9 @@
+package org.real.temp;
+
 import java.text.NumberFormat;
 import java.util.Locale;
 
-public class CurrencyFormatter {
+public class Answer {
     /**
      * Formats a number as currency according to the specified locale and currency code.
      *

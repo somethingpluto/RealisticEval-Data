@@ -1,6 +1,7 @@
+package org.real.temp;
 import java.util.regex.Pattern;
 
-public class URLValidator {
+public class Answer {
 
     /**
      * Validates a URL string using a simplified and more comprehensive regular expression.

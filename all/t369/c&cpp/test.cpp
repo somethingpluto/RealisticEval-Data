@@ -1,25 +1,39 @@
-TEST_CASE("Eight Queens Problem", "[eightQueens]") {
-    // Call the function to solve the Eight Queens problem
-    eightQueens();
+TEST_CASE("Test Eight Queens Problem") {
+    SECTION("Test Solution Exists") {
+        std::ostringstream out;
+        {
+            std::streambuf* prevcoutbuf = std::cout.rdbuf(out.rdbuf());
+            eightQueens();
+            std::cout.rdbuf(prevcoutbuf);
+        }
 
-    // Add assertions to check the expected behavior
-    // For example, if the function prints the board, you can capture the output
-    std::ostringstream oss;
-    std::streambuf* oldCout = std::cout.rdbuf(oss.rdbuf());
+        REQUIRE(out.str().find("Q") != std::string::npos);
+    }
 
-    // Call the function again to capture the output
-    eightQueens();
+    SECTION("Test Correct Number of Queens") {
+        std::ostringstream out;
+        {
+            std::streambuf* prevcoutbuf = std::cout.rdbuf(out.rdbuf());
+            eightQueens();
+            std::cout.rdbuf(prevcoutbuf);
+        }
 
-    std::string output = oss.str();
-    std::cout.rdbuf(oldCout);
+        std::istringstream iss(out.str());
+        std::string line;
+        while (std::getline(iss, line)) {
+            int numQueens = std::count(line.begin(), line.end(), 'Q');
+            REQUIRE(numQueens == 8);
+        }
+    }
 
-    // Check if the output contains the expected board configuration
-    REQUIRE(output.find(". . Q . . . . .") != std::string::npos);
-    REQUIRE(output.find(". . . . Q . . .") != std::string::npos);
-    REQUIRE(output.find(". Q . . . . . .") != std::string::npos);
-    REQUIRE(output.find(". . . . . . . Q") != std::string::npos);
-    REQUIRE(output.find(". . . . . Q . .") != std::string::npos);
-    REQUIRE(output.find(". . . Q . . . .") != std::string::npos);
-    REQUIRE(output.find(". . . . . . Q .") != std::string::npos);
-    REQUIRE(output.find("Q . . . . . . .") != std::string::npos);
+    SECTION("Test No Solution Scenario") {
+        std::ostringstream out;
+        {
+            std::streambuf* prevcoutbuf = std::cout.rdbuf(out.rdbuf());
+            noSolutionQueens();
+            std::cout.rdbuf(prevcoutbuf);
+        }
+
+        REQUIRE(out.str().find("No solution") != std::string::npos);
+    }
 }

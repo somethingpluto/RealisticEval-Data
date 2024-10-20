@@ -1,5 +1,5 @@
 /**
- * Convert a DataFrame object to a table in Markdown format.
+ * @brief Convert a DataFrame object to a table in Markdown format.
  *
  * Example:
  *     Input: DataFrame {'Name': ['Alice', 'Bob'], 'Age': [25, 30]}

@@ -1,5 +1,5 @@
 /**
- * Convert an array of binary bits to an array of bytes. Traverse through each bit,
+ * @brief Convert an array of binary bits to an array of bytes. Traverse through each bit,
  * composing these bits into bytes, forming a byte every 8 bits, and then store
  * these bytes in a vector and return it. If the length of the bit array is not a
  * multiple of 8, the last incomplete byte will be discarded.

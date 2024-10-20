@@ -1,41 +1,41 @@
-package org.real.temp;
-
+/**
+ * Determines whether a ray intersects with a circle.
+ *
+ * This method checks if a given ray intersects with a specified circle
+ * in a 2D space. It performs mathematical calculations to determine if
+ * the ray, defined by its origin and direction, crosses the area of the
+ * circle defined by its center and radius.
+ *
+ * @param ray The ray to be tested for intersection. It is assumed to
+ * contain properties such as an origin point and a direction vector.
+ * @param circle The circle to check for intersection. It is assumed to
+ * contain properties such as a center point and a radius.
+ *
+ * @return true if the ray intersects the circle; false otherwise.
+ */
 /**
  * Represents a point in 2D space.
  */
-class Point {
+static class Point {
     float x, y;
-
-    Point(float x, float y) {
-        this.x = x;
-        this.y = y;
-    }
 }
 
 /**
  * Represents a ray in 2D space.
  * The ray is defined by its origin and direction (which should be normalized).
  */
-class Ray {
-    Point origin;   // Starting point of the ray
-    Point direction; // Direction of the ray (should be normalized)
+static class Ray {
 
-    Ray(Point origin, Point direction) {
-        this.origin = origin;
-        this.direction = direction;
-    }
 }
 
 /**
  * Represents a circle in 2D space.
  * The circle is defined by its center and radius.
  */
-class Circle {
+static class Circle {
     Point center; // Center of the circle
     float radius; // Radius of the circle
 
-    Circle(Point center, float radius) {
-        this.center = center;
-        this.radius = radius;
-    }
+}
+public static boolean intersects(Ray ray, Circle circle) {
 }

@@ -7,6 +7,4 @@
  *
  * @param <T> - The type of the elements in the arrays.
  */
-public static <T> boolean compareArrays(T[] arr1, T[] arr2) {
-    // Implementation goes here
-}
+public static <T> boolean compareArrays(T[] arr1, T[] arr2) {}

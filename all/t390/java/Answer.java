@@ -39,5 +39,4 @@ public class Answer {
         // Return the cleaned list of sentences
         return sentences;
     }
-
 }

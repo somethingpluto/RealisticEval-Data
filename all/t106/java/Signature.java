@@ -4,5 +4,4 @@
  * @param imageData - The image data string to be validated.
  */
 public static boolean isBase64Image(String imageData) {
-    // Method implementation goes here
 }

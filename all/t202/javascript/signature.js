@@ -1,5 +1,5 @@
 /**
- * @brief Returns the number of days in a given month of a specific year.
+ * Returns the number of days in a given month of a specific year.
  *
  * This function accounts for leap years when calculating the number of days in February.
  *
@@ -8,5 +8,4 @@
  * @return {number} The number of days in the specified month of the specified year.
  */
 function getDaysInMonth(year, month) {
-    // Function implementation goes here
 }

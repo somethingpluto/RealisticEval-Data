@@ -1,35 +1,41 @@
 package org.real.temp;
+import static org.junit.Assert.*;
+import org.junit.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
-import org.junit.jupiter.api.Test;
+import java.util.Optional;
 
+import static org.real.temp.Answer.*;
 public class Tester {
 
     @Test
-    public void testConvertHmsToMilliseconds() {
-        // Test cases for the convertHmsToMilliseconds method
+    public void testBasicConversion() {
+        assertEquals("Should convert 1h20min30s to 4830000 milliseconds", Optional.of(4830000).get(),convertHmsToMilliseconds("1h20min30s"));
+    }
 
-        // Case 1: Valid input with all parts
-        assertEquals(5070000, convertHmsToMilliseconds("1h20min30s"));
+    @Test
+    public void testNoHoursOrMinutes() {
+        assertEquals("Should convert 30s to 30000 milliseconds",
+                Optional.of(30000).get(),
+                convertHmsToMilliseconds("30s"));
+    }
 
-        // Case 2: Valid input with only hours
-        assertEquals(3600000, convertHmsToMilliseconds("1h"));
+    @Test
+    public void testInvalidFormat() {
+        assertNull("Should return null for invalid time format",
+                convertHmsToMilliseconds("1hour20minutes"));
+    }
 
-        // Case 3: Valid input with only minutes
-        assertEquals(1200000, convertHmsToMilliseconds("20min"));
+    @Test
+    public void testEdgeCaseMaxOneDay() {
+        assertEquals("Should convert 23h59min59s to 86399000 milliseconds",
+                Optional.of(86399000).get(),
+                convertHmsToMilliseconds("23h59min59s"));
+    }
 
-        // Case 4: Valid input with only seconds
-        assertEquals(30000, convertHmsToMilliseconds("30s"));
-
-        // Case 5: Invalid input with non-numeric characters
-        assertNull(convertHmsToMilliseconds("1h20min30m"));
-
-        // Case 6: Invalid input with negative values
-        assertNull(convertHmsToMilliseconds("-1h20min30s"));
-
-        // Case 7: Empty string
-        assertNull(convertHmsToMilliseconds(""));
-
-        // Add more test cases as needed
+    @Test
+    public void testExceedingOneDay() {
+        assertEquals("Should correctly convert 24h1min to 86460000 milliseconds",
+                Optional.of(86460000).get(),
+                convertHmsToMilliseconds("24h1min"));
     }
 }

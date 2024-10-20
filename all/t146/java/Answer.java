@@ -1,4 +1,6 @@
-public class ByteFormatter {
+package org.real.temp;
+
+public class Answer {
 
     public static String formatBytes(long bytes, FormatOptions options) {
         int decimals = options.decimals != null ? options.decimals : 0;

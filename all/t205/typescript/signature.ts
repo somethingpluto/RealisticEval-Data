@@ -3,6 +3,4 @@
  *
  * @return A string representing the current date in the format "YYYY-MM-DD".
  */
-function getCurrentDate(): string {
-    // Implementation goes here
-}
+function getCurrentDate(): string {}

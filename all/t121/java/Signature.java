@@ -9,6 +9,4 @@
  * @param array - The input array to be adjusted.
  * @returns A new array that has been adjusted to the target length.
  */
-public static int[] adjustArrayLength(int targetLength, int[] array) {
-    // function implementation
-}
+public static int[] adjustArrayLength(int targetLength, int[] array) {}

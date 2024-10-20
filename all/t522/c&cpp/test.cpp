@@ -1,7 +1,3 @@
-#include <catch2/catch_test_macros.hpp>
-#include <Eigen/Dense>
-#include <cmath>
-
 TEST_CASE("Test Rotate Point Cloud", "[rotate_point_cloud]") {
     SECTION("Test no rotation") {
         Eigen::MatrixXd pointCloud(1, 3);
@@ -10,7 +6,7 @@ TEST_CASE("Test Rotate Point Cloud", "[rotate_point_cloud]") {
         Eigen::MatrixXd expectedOutput(1, 3);
         expectedOutput << 1.0, 2.0, 3.0;
 
-        Eigen::MatrixXd rotatedPointCloud = rotatePointCloud(pointCloud, rotationAngle);
+        Eigen::MatrixXd rotatedPointCloud = rotate_point_cloud(pointCloud, rotationAngle);
 
         REQUIRE(rotatedPointCloud.isApprox(expectedOutput));
     }
@@ -24,7 +20,7 @@ TEST_CASE("Test Rotate Point Cloud", "[rotate_point_cloud]") {
         expectedOutput << -1.0, 0.0, 0.0,
                            0.0, 1.0, 0.0;
 
-        Eigen::MatrixXd rotatedPointCloud = rotatePointCloud(pointCloud, rotationAngle);
+        Eigen::MatrixXd rotatedPointCloud = rotate_point_cloud(pointCloud, rotationAngle);
 
         REQUIRE(rotatedPointCloud.isApprox(expectedOutput));
     }
@@ -36,7 +32,7 @@ TEST_CASE("Test Rotate Point Cloud", "[rotate_point_cloud]") {
         Eigen::MatrixXd expectedOutput(1, 3);
         expectedOutput << 1.0, 2.0, 3.0;
 
-        Eigen::MatrixXd rotatedPointCloud = rotatePointCloud(pointCloud, rotationAngle);
+        Eigen::MatrixXd rotatedPointCloud = rotate_point_cloud(pointCloud, rotationAngle);
 
         REQUIRE(rotatedPointCloud.isApprox(expectedOutput));
     }

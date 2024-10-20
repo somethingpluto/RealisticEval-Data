@@ -1,7 +1,8 @@
+package org.real.temp;
 import java.util.HashMap;
 import java.util.Map;
 
-public class NumberConverter {
+public class Answer {
     public static String arabicToEnglishNumbers(String str) {
         Map<String, String> arabicNums = new HashMap<>();
         arabicNums.put("٠", "0");

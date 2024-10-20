@@ -1,8 +1,8 @@
 package org.real.temp;
 
-import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -15,6 +15,8 @@ import org.w3c.dom.NodeList;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
+import org.real.temp.Answer;
+
 
 class Tester {
 
@@ -31,7 +33,7 @@ class Tester {
                          "</root>";
 
         InputStream xmlInput = new ByteArrayInputStream(xmlData.getBytes());
-        List<String[]> rows = xmlToCSV(xmlInput);
+        List<String[]> rows = Answer.xmlToCSV(xmlInput);
 
         List<String[]> expected = List.of(new String[]{"name", "age"}, new String[]{"John", "30"});
         assertEquals(expected.size(), rows.size());
@@ -61,7 +63,7 @@ class Tester {
                          "</root>";
 
         InputStream xmlInput = new ByteArrayInputStream(xmlData.getBytes());
-        List<String[]> rows = xmlToCSV(xmlInput);
+        List<String[]> rows = Answer.xmlToCSV(xmlInput);
 
         List<String[]> expected = List.of(
             new String[]{"name", "age"},
@@ -88,7 +90,7 @@ class Tester {
                          "</root>";
 
         InputStream xmlInput = new ByteArrayInputStream(xmlData.getBytes());
-        List<String[]> rows = xmlToCSV(xmlInput);
+        List<String[]> rows = Answer.xmlToCSV(xmlInput);
 
         List<String[]> expected = List.of(new String[]{"name", "age"}, new String[]{null, null});
         assertEquals(expected.size(), rows.size());
@@ -116,7 +118,7 @@ class Tester {
                          "</root>";
 
         InputStream xmlInput = new ByteArrayInputStream(xmlData.getBytes());
-        List<String[]> rows = xmlToCSV(xmlInput);
+        List<String[]> rows = Answer.xmlToCSV(xmlInput);
 
         List<String[]> expected = List.of(
             new String[]{"name", "age"},
@@ -141,7 +143,7 @@ class Tester {
         String xmlData = "<root/>";
 
         InputStream xmlInput = new ByteArrayInputStream(xmlData.getBytes());
-        List<String[]> rows = xmlToCSV(xmlInput);
+        List<String[]> rows = Answer.xmlToCSV(xmlInput);
 
         List<String[]> expected = List.of(new String[]{});
         assertEquals(expected.size(), rows.size());

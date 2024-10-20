@@ -1,47 +1,42 @@
-public class Tester {
+package org.real.temp;
 
-    /**
-     * Rotates the elements of the list to the left by one position. The first element
-     * is moved to the end of the list, and all other elements are shifted one position to the left.
-     *
-     * @param elements A list of integers to be rotated.
-     * @return The rotated list with elements shifted to the left by one position.
-     */
-    private static List<Integer> rotateListElements(List<Integer> elements) {
-        if (elements.size() > 1) {
-            List<Integer> rotated = new ArrayList<>(elements.subList(1, elements.size()));
-            rotated.add(elements.get(0));
-            return rotated;
-        }
-        return elements;
-    }
+import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import static junit.framework.TestCase.assertEquals;
+import static org.real.temp.Answer.*;
+
+public class Tester {
 
     @Test
     public void testBasicRotation() {
         List<Integer> originalList = new ArrayList<>(Arrays.asList(1, 2, 3, 4));
         List<Integer> expectedList = new ArrayList<>(Arrays.asList(2, 3, 4, 1));
-        assertEquals(expectedList, rotateListElements(originalList), "Should rotate the list elements correctly");
+        assertEquals("Should rotate the list elements correctly", expectedList, rotateListElements(originalList));
     }
 
     @Test
     public void testSingleElementList() {
         List<Integer> originalList = new ArrayList<>(Arrays.asList(10));
         List<Integer> expectedList = new ArrayList<>(Arrays.asList(10));
-        assertEquals(expectedList, rotateListElements(originalList), "Single element list should remain unchanged");
+        assertEquals("Single element list should remain unchanged", expectedList, rotateListElements(originalList));
     }
 
     @Test
     public void testEmptyList() {
         List<Integer> originalList = new ArrayList<>();
         List<Integer> expectedList = new ArrayList<>();
-        assertEquals(expectedList, rotateListElements(originalList), "Empty list should remain unchanged");
+        assertEquals("Empty list should remain unchanged", expectedList, rotateListElements(originalList));
     }
 
     @Test
     public void testTwoElementList() {
         List<Integer> originalList = new ArrayList<>(Arrays.asList(5, 9));
         List<Integer> expectedList = new ArrayList<>(Arrays.asList(9, 5));
-        assertEquals(expectedList, rotateListElements(originalList), "Should correctly rotate a two-element list");
+        assertEquals("Should correctly rotate a two-element list", expectedList, rotateListElements(originalList));
     }
 
     @Test
@@ -52,6 +47,6 @@ public class Tester {
         }
         List<Integer> expectedList = new ArrayList<>(largeList.subList(1, largeList.size()));
         expectedList.add(largeList.get(0));
-        assertEquals(expectedList, rotateListElements(largeList), "Should correctly rotate a large list");
+        assertEquals("Should correctly rotate a large list", expectedList, rotateListElements(largeList));
     }
 }

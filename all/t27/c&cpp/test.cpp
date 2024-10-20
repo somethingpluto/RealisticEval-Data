@@ -1,23 +1,5 @@
-#define CATCH_CONFIG_MAIN
-#include <catch2/catch.hpp>
-#include <json/json.h>
-#include <filesystem>
-#include <fstream>
-#include <vector>
-
-namespace fs = std::filesystem;
-
-// Function prototype for concatenateJsonArrays
-std::vector<Json::Value> concatenateJsonArrays(const std::string &directory);
-
-// Helper function to create test JSON files
-void createTestFile(const std::string &filename, const Json::Value &content) {
-    std::ofstream file(filename);
-    file << content;
-}
-
-// Test suite for concatenateJsonArrays
-TEST_CASE("TestConcatenateJsonArrays", "[json]") {
+// Test suite for concatenate_json_arrays
+TEST_CASE("Testconcatenate_json_arrays", "[json]") {
     std::string testDir = "test_json";
     fs::create_directory(testDir);
 
@@ -43,7 +25,7 @@ TEST_CASE("TestConcatenateJsonArrays", "[json]") {
 
     // Test with valid JSON arrays
     SECTION("Concatenate valid JSON arrays") {
-        auto result = concatenateJsonArrays(testDir);
+        auto result = concatenate_json_arrays(testDir);
         REQUIRE(result.size() == 5);
         REQUIRE(result[0].asInt() == 1);
         REQUIRE(result[1].asInt() == 2);
@@ -55,7 +37,7 @@ TEST_CASE("TestConcatenateJsonArrays", "[json]") {
 
     // Test that non-array JSON files are ignored
     SECTION("Ignore non-array JSON") {
-        auto result = concatenateJsonArrays(testDir);
+        auto result = concatenate_json_arrays(testDir);
         REQUIRE(result.size() == 5);
         REQUIRE_FALSE(std::any_of(result.begin(), result.end(), [](const Json::Value &val) {
             return val.isObject() && val.isMember("key");
@@ -64,7 +46,7 @@ TEST_CASE("TestConcatenateJsonArrays", "[json]") {
 
     // Test that non-JSON files are ignored
     SECTION("Ignore non-JSON files") {
-        auto result = concatenateJsonArrays(testDir);
+        auto result = concatenate_json_arrays(testDir);
         REQUIRE_FALSE(std::any_of(result.begin(), result.end(), [](const Json::Value &val) {
             return val.asString() == "This is not a JSON file.";
         }));
@@ -72,7 +54,7 @@ TEST_CASE("TestConcatenateJsonArrays", "[json]") {
 
     // Test concatenation includes empty arrays
     SECTION("Handle empty arrays") {
-        auto result = concatenateJsonArrays(testDir);
+        auto result = concatenate_json_arrays(testDir);
         REQUIRE(result.size() == 5);
         REQUIRE_FALSE(std::any_of(result.begin(), result.end(), [](const Json::Value &val) {
             return val.isArray() && val.empty();
@@ -89,7 +71,7 @@ TEST_CASE("TestConcatenateJsonArrays", "[json]") {
 TEST_CASE("TestEmptyDirectory", "[json]") {
     std::string emptyDir = "empty_test_json";
     fs::create_directory(emptyDir);
-    auto result = concatenateJsonArrays(emptyDir);
+    auto result = concatenate_json_arrays(emptyDir);
     REQUIRE(result.empty());
     fs::remove(emptyDir);
 }

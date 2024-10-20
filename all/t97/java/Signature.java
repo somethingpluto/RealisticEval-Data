@@ -1,6 +1,7 @@
-import java.util.LinkedList;
 
-public class Queue {
+
+public class Answer{
+static class Queue {
     private LinkedList<Object> items;
 
     public Queue() {
@@ -42,3 +43,6 @@ public class Queue {
     public String printQueue() {
     }
 }
+}
+
+

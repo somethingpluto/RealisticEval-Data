@@ -1,80 +1,67 @@
+package org.real.temp;
+
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import static org.real.temp.Answer.*;
 
 public class Tester {
 
-    private File testDirectory;
+    private File testDir;
 
     @Before
-    public void setUp() {
-        // Create a temporary directory for testing
-        testDirectory = new File("tempTestDir");
-        if (!testDirectory.exists()) {
-            testDirectory.mkdirs();
-        }
+    public void setUp() throws IOException {
+        testDir = Files.createTempDirectory("testDir").toFile();
+        new File(testDir, "subdir").mkdir();
+        writeToFile(new File(testDir, "file1.txt"), "Hello");
+        writeToFile(new File(testDir, "subdir/file2.txt"), "World");
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testEmptyNonExistentDirectory() {
-        // Test with a non-existent directory
-        empty_directory("non_existent_dir");
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testEmptyFileInsteadOfDirectory() {
-        // Test with a file instead of a directory
-        File tempFile = new File(testDirectory, "testFile.txt");
-        try {
-            tempFile.createNewFile();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        empty_directory(tempFile.getAbsolutePath());
+    @After
+    public void tearDown() throws Exception {
+        deleteDirectoryRecursively(testDir);
     }
 
     @Test
-    public void testEmptyExistingDirectory() {
-        // Test with an existing directory
-        File subDirectory = new File(testDirectory, "subDir");
-        subDirectory.mkdir();
-
-        File testFile = new File(subDirectory, "testFile.txt");
-        try {
-            testFile.createNewFile();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        empty_directory(testDirectory.getAbsolutePath());
-
-        // Verify that the directory is empty
-        assert !subDirectory.exists() : "Subdirectory should have been deleted";
-        assert !testFile.exists() : "Test file should have been deleted";
+    public void testEmptyDirectorySuccess() throws Exception {
+        emptyDirectory(testDir.getAbsolutePath());
+        assertEquals(0, testDir.list().length);  // Directory should be empty
     }
 
-    /**
-     * Method to empty all files and subdirectories in the specified directory.
-     *
-     * @param directoryPath Path to the directory whose contents are to be emptied.
-     * @throws IllegalArgumentException If the specified path does not exist or is not a directory.
-     */
-    public static void empty_directory(String directoryPath) throws IllegalArgumentException {
-        File directory = new File(directoryPath);
-        if (!directory.exists() || !directory.isDirectory()) {
-            throw new IllegalArgumentException("The specified path does not exist or is not a directory.");
-        }
+    @Test
+    public void testEmptyDirectoryWithSubdirectories() throws Exception {
+        emptyDirectory(testDir.getAbsolutePath());
+        assertFalse(testDir.list().length > 0);  // Directory and subdirectory should be empty
+    }
 
+    @Test
+    public void testEmptyAlreadyEmptyDirectory() throws Exception {
+        emptyDirectory(testDir.getAbsolutePath());  // First emptying
+        emptyDirectory(testDir.getAbsolutePath());  // Empty again
+        assertEquals(0, testDir.list().length);  // Still should be empty
+    }
+
+    private void writeToFile(File file, String content) throws IOException {
+        Files.write(file.toPath(), content.getBytes());
+    }
+
+    private void deleteDirectoryRecursively(File directory) throws Exception {
         File[] files = directory.listFiles();
         if (files != null) {
             for (File file : files) {
                 if (file.isDirectory()) {
-                    empty_directory(file.getAbsolutePath()); // Recursively delete subdirectories
+                    deleteDirectoryRecursively(file);
+                } else {
+                    Files.delete(file.toPath());
                 }
-                file.delete(); // Delete files
             }
         }
-        directory.delete(); // Delete the main directory
+        Files.delete(directory.toPath());
     }
 }

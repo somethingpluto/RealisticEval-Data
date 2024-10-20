@@ -1,4 +1,6 @@
-public class GreetingAndSum {
+package org.real.temp;
+
+public class Answer {
 
     /**
      * Greets someone with a personalized message.

@@ -8,4 +8,4 @@
  * @return A 2D vector representing the shortest paths between all pairs of vertices. shortest_paths[i][j]
  *         will hold the shortest distance from vertex i to vertex j.
  */
-std::vector<std::vector<int>> floydWarshallShortestPaths(const std::vector<std::vector<int>>& adjacency_matrix) {}
+std::vector<std::vector<int>> floyd_warshall_shortest_paths(const std::vector<std::vector<int>>& adjacency_matrix) {}

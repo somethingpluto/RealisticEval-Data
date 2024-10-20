@@ -6,9 +6,6 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
-/**
- * Tester class for testing the findMaxDifference method.
- */
 public class Tester {
 
     @Test

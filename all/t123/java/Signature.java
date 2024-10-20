@@ -9,6 +9,4 @@
  * @return A new array with values scaled to the output range.
  * @throws IllegalArgumentException - Throws an error if any value in inputArray is outside the range [inputMin, inputMax].
  */
-public static double[] scaleToRange(double[] inputArray, double inputMin, double inputMax, double outputMin, double outputMax) {
-    // function implementation
-}
+public static double[] scaleToRange(double[] inputArray, double inputMin, double inputMax, double outputMin, double outputMax) {}

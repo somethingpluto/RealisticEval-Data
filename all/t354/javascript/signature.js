@@ -1,5 +1,5 @@
 /**
- * @brief Calculates the Gaussian weight based on the difference in intensity and a color standard deviation.
+ * Calculates the Gaussian weight based on the difference in intensity and a color standard deviation.
  *
  * The Gaussian weight is calculated using the formula:
  * weight = exp(- (intensityDiff^2) / (2 * sigmaColor^2))

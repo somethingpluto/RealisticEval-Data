@@ -1,7 +1,8 @@
+package org.real.temp;
 import java.math.BigDecimal;
 import java.math.MathContext;
 
-public class PiCalculator {
+public class Answer {
     public static String computePi(int digits) {
         MathContext mc = new MathContext(digits + 10); // Extra precision
         BigDecimal one = BigDecimal.ONE;

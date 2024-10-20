@@ -1,8 +1,3 @@
-include <catch2/catch_test_macros.hpp>
-#include <catch2/generators/catch_generators_all.hpp>
-#include <stdexcept>
-
-// Test fixture for Calculator
 TEST_CASE("Calculator operations", "[Calculator]") {
     Calculator calculator;
 

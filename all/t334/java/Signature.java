@@ -6,6 +6,4 @@
  * @param year the year for which to calculate Good Friday
  * @return the date of Good Friday
  */
-public static Date calculateGoodFriday(int year) {
-    // Implementation here
-}
+public static Date calculateGoodFriday(int year) {}

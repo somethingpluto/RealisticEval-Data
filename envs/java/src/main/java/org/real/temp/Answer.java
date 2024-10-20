@@ -1,32 +1,51 @@
 package org.real.temp;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 public class Answer {
+
     /**
-     * Reads a CSV file and parses each line into a list of strings.
+     * Split the input text string into sentences.
      *
-     * @param filePath The path to the CSV file.
-     * @return A list of string arrays, where each array represents a line from the CSV.
-     * @throws IOException If there is an error reading the file.
+     * @param text The input text to be split into sentences.
+     * @return A list of sentences extracted from the input text, cleaned and stripped of leading/trailing whitespace.
      */
-    public List<List<String>> readCsv(String filePath) throws IOException {
-        List<List<String>> result = new ArrayList<>();
-        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                String[] values = line.split(",");
-                List<String> lineList = new ArrayList<>();
-                for (String value : values) {
-                    lineList.add(value.trim());
-                }
-                result.add(lineList);
+    public static List<String> splitIntoSentences(String text) {
+        // Check if the input is a string
+        if (text == null) {
+            throw new IllegalArgumentException("Input must be a string.");
+        }
+
+        // Regular expression to split the text where there is a punctuation followed by space or end of string
+        // This handles situations where punctuation might be followed by a quotation mark or other punctuation
+        Pattern sentenceDelimiters = Pattern.compile("(?<=[.!?])\\s+(?=[A-Z])|(?<=[.!?][\"”’])\\s+(?=[A-Z])");
+
+        // Split the text using the defined regular expression
+        String[] sentencesArray = sentenceDelimiters.split(text);
+
+        // Create a list to store the cleaned sentences
+        List<String> sentences = new ArrayList<>();
+
+        // Remove any leading or trailing whitespace from each sentence and add it to the list
+        for (String sentence : sentencesArray) {
+            String trimmedSentence = sentence.trim();
+            if (!trimmedSentence.isEmpty()) {
+                sentences.add(trimmedSentence);
             }
         }
-        return result;
+
+        // Return the cleaned list of sentences
+        return sentences;
+    }
+
+    public static void main(String[] args) {
+        // Example usage
+        String text = "Hello world! This is a test. Isn't it great? Yes, it is.";
+        List<String> sentences = splitIntoSentences(text);
+        for (String sentence : sentences) {
+            System.out.println(sentence);
+        }
     }
 }

@@ -5,4 +5,13 @@
  * @param summarizedOutput The summary text potentially containing categorized question.
  * @return A Result object containing the cleaned summary text and a list of categories.
  */
+public static class Result {
+    public final String summary;
+    public final List<String> categories;
+
+    public Result(String summary, List<String> categories) {
+        this.summary = summary;
+        this.categories = categories;
+    }
+}
 public static Result parseCategoriesFromSummary(String summarizedOutput) {}

@@ -1,4 +1,5 @@
-public class ByteConverter {
+package org.real.temp;
+public class Answer {
     public static String bytesToSize(long bytes) {
         String[] sizes = {"Bytes", "KB", "MB", "GB", "TB"};
 

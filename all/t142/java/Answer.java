@@ -1,4 +1,6 @@
-public class StringFormatter {
+package org.real.temp;
+
+public class Answer {
     public static String camelCaseToCapitalizedWithSpaces(String input) {
         // Use a regular expression to insert spaces before capital letters and numbers
         String spacedString = input.replaceAll("([A-Z0-9])", " $1");

@@ -7,4 +7,4 @@
  *               This is a constant reference to a vector of tuples.
  * @return The proportion of red in the list of pixels, as a value between 0 and 1.
  */
-float calculateRedProportion(const std::vector<std::tuple<int, int, int>>& pixels) {}
+float calculate_red_proportion(const std::vector<std::tuple<int, int, int>>& pixels) {}

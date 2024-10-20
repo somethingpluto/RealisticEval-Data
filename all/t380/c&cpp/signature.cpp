@@ -1,5 +1,5 @@
 /**
- * Calculate the total number of seconds given a vector of time periods in the order of
+ * @brief Calculate the total number of seconds given a vector of time periods in the order of
  * days, hours, minutes, and seconds.
  *
  * @param time A vector where
@@ -13,6 +13,6 @@
  *     calculateTotalSeconds({1, 2, 3, 4}) returns 93784
  *     calculateTotalSeconds({0, 2, 3}) returns 7380
  */
-int calculateTotalSeconds(const std::vector<int>& time) {
+int calculate_total_seconds(const std::vector<int>& time) {
 
 }

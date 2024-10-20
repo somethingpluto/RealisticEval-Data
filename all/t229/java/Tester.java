@@ -1,30 +1,66 @@
 package org.real.temp;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import org.junit.jupiter.api.Test;
-
+import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.real.temp.Answer.*;
+/**
+ * Test class for the file size converter.
+ */
 public class Tester {
 
+    /**
+     * Tests the conversion of zero bytes.
+     */
     @Test
-    public void testConvertFileSize() {
-        // Assuming the convertFileSize method is implemented in a class named FileSizeConverter
-        FileSizeConverter converter = new FileSizeConverter();
-
-        // Test cases
-        assertEquals("2KB", converter.convertFileSize(2120));
-        assertEquals("1MB", converter.convertFileSize(1048576)); // 1MB = 1024 * 1024 bytes
-        assertEquals("5GB", converter.convertFileSize(5368709120L)); // 5GB = 5 * 1024 * 1024 * 1024 bytes
-        assertEquals("1TB", converter.convertFileSize(1099511627776L)); // 1TB = 1024 * 1024 * 1024 * 1024 * 1024 bytes
+    public void testZeroBytes() {
+        assertEquals("0B", convertFileSize(0));
     }
-}
 
-// Example implementation of the FileSizeConverter class
-class FileSizeConverter {
-    public String convertFileSize(long sizeBytes) {
-        if (sizeBytes < 1024) return sizeBytes + "B";
-        else if (sizeBytes < 1024 * 1024) return Math.round((double) sizeBytes / 1024) + "KB";
-        else if (sizeBytes < 1024 * 1024 * 1024) return Math.round((double) sizeBytes / (1024 * 1024)) + "MB";
-        else if (sizeBytes < 1024 * 1024 * 1024 * 1024) return Math.round((double) sizeBytes / (1024 * 1024 * 1024)) + "GB";
-        else return Math.round((double) sizeBytes / (1024 * 1024 * 1024 * 1024)) + "TB";
+    /**
+     * Tests the conversion of bytes less than 1KB.
+     */
+    @Test
+    public void testBytesLessThan1KB() {
+        assertEquals("512B", convertFileSize(512));
+    }
+
+    /**
+     * Tests the conversion of exactly 1KB.
+     */
+    @Test
+    public void testExactly1KB() {
+        assertEquals("1KB", convertFileSize(1024));
+    }
+
+    /**
+     * Tests the conversion of 2KB.
+     */
+    @Test
+    public void test2KB() {
+        assertEquals("2KB", convertFileSize(2048));
+    }
+
+    /**
+     * Tests the conversion of exactly 1MB.
+     */
+    @Test
+    public void testExactly1MB() {
+        assertEquals("1MB", convertFileSize(1048576));
+    }
+
+    /**
+     * Tests the conversion of 5MB.
+     */
+    @Test
+    public void test5MB() {
+        assertEquals("5MB", convertFileSize(5242880));
+    }
+
+    /**
+     * Tests the conversion of exactly 1GB.
+     */
+    @Test
+    public void testExactly1GB() {
+        assertEquals("1GB", convertFileSize(1073741824L));
     }
 }

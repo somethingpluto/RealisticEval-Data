@@ -1,7 +1,3 @@
-#include <catch2/catch_test_macros.hpp>
-#include <utility>  // For std::pair
-#include <stdexcept>  // For std::invalid_argument
-
 TEST_CASE("Test valid cases", "[find_powers]") {
     SECTION("Valid numbers with only 2's and 3's as prime factors") {
         CHECK(find_powers(18) == std::make_pair(1, 2));  // 18 = 2^1 * 3^2

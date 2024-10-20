@@ -2,10 +2,7 @@ package org.real.temp;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
-
-/**
- * Test class for LinkedList operations.
- */
+import static org.real.temp.Answer.*;
 public class Tester {
 
     @Test

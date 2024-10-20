@@ -1,6 +1,8 @@
+package org.real.temp;
+
 import java.security.SecureRandom;
 
-public class UUIDGenerator {
+public class Answer {
     public static void main(String[] args) {
         System.out.println(generateUUID());
     }

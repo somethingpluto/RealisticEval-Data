@@ -37,6 +37,7 @@ class JavaExecutor:
                 answer_list = item["answer_list"]
                 for index, answer in enumerate(answer_list):
                     code = answer['code']
+
                     if code == None or code == "":
                         continue
                     with open(f"{JAVA_RUN_ENV}/main/java/org/real/temp/Answer.java", "w", encoding="utf8") as code_file:

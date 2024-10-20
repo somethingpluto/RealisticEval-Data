@@ -1,3 +1,5 @@
+package org.real.temp;
+
 /**
  * Finds and returns the smallest letter in a sorted array that is larger than the given target letter.
  * If the target letter is greater than or equal to all letters in the array, the function returns the first letter in the array.
@@ -6,7 +8,7 @@
  * @param target - The target letter to find the next greatest letter for.
  * @returns The smallest letter in the array that is larger than the target letter.
  */
-public class LetterFinder {
+public class Answer {
     public static char nextGreatestLetter(char[] letters, char target) {
         int low = 0;
         int high = letters.length;

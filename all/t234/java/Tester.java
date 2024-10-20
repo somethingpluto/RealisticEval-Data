@@ -1,139 +1,120 @@
 package org.real.temp;
-
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVRecord;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
+import static org.junit.Assert.*;
+import org.junit.Before;
+import org.junit.Test;
 import java.io.*;
-import java.util.ArrayList;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
+import java.util.ArrayList;
+import com.opencsv.CSVReader;
+import static org.real.temp.Answer.*;
 public class Tester {
 
     private StringWriter mockFile;
-    private List<String[]> records;
+    private CSVReader reader;
 
-    @BeforeEach
+    @Before
     public void setUp() throws IOException {
-        // Set up a mock CSV file using StringWriter
+        // Set up a mock CSV file using StringWriter (similar to StringIO in Python)
         mockFile = new StringWriter();
         mockFile.write("Alice,30,USA\nBob,25,UK\nCharlie,35,Canada\n");
-        records = new ArrayList<>();
-        loadRecords();
-    }
-
-    private void loadRecords() throws IOException {
-        // Load records from the mock file
-        CSVParser parser = new CSVParser(new StringReader(mockFile.toString()), CSVFormat.DEFAULT);
-        for (CSVRecord record : parser) {
-            String[] row = new String[record.size()];
-            for (int i = 0; i < record.size(); i++) {
-                row[i] = record.get(i);
-            }
-            records.add(row);
-        }
-    }
-
-    private void appendOrSkipRow(String[] newRow) throws IOException {
-        boolean exists = false;
-        for (String[] row : records) {
-            // Check if the name matches (assuming first column is the name)
-            if (row[0].equals(newRow[0])) {
-                exists = true;
-                break;
-            }
-        }
-        // Append row only if it doesn't exist
-        if (!exists) {
-            records.add(newRow);
-        }
-        saveRecords();
-    }
-
-    private void saveRecords() {
-        mockFile.getBuffer().setLength(0); // Clear the StringWriter
-        for (String[] row : records) {
-            mockFile.write(String.join(",", row) + "\n");
-        }
+        mockFile.flush(); // Ensure all data is written
+        reader = new CSVReader(new StringReader(mockFile.toString()));
     }
 
     @Test
     public void testAppendNewRow() throws IOException {
-        // Test appending a new row when there are no matching values
+        // Test appending a new row when there are no matching values.
         String[] newRow = {"David", "28", "Australia"};
-        appendOrSkipRow(newRow);
-        loadRecords(); // Reload records after appending
+        appendOrSkipRow(mockFile, reader, newRow);
 
-        boolean found = false;
-        for (String[] row : records) {
-            if (row[0].equals(newRow[0])) {
-                found = true;
+        // Reset the reader and check the contents of the file
+        mockFile.flush();
+        CSVReader resultReader = new CSVReader(new StringReader(mockFile.toString()));
+        List<String[]> result = resultReader.readAll();
+
+        // Check if the new row has been appended
+        boolean rowFound = false;
+        for (String[] row : result) {
+            if (row[0].equals("David") && row[1].equals("28") && row[2].equals("Australia")) {
+                rowFound = true;
                 break;
             }
         }
-        assertTrue(found);
+        assertTrue("New row should be appended", rowFound);
     }
 
     @Test
     public void testSkipDifferentValues() throws IOException {
-        // Test appending a new row with different values
-        String[] newRow = {"Alice", "31", "USA"}; // Same name, different age
-        appendOrSkipRow(newRow);
-        loadRecords(); // Reload records after appending
+        // Test appending a new row with different values (same name, different age)
+        String[] newRow = {"Alice", "31", "USA"};
+        appendOrSkipRow(mockFile, reader, newRow);
 
-        boolean found = false;
-        for (String[] row : records) {
-            if (row[0].equals(newRow[0]) && !row[1].equals(newRow[1])) {
-                found = true;
+        // Reset the reader and check the contents of the file
+        mockFile.flush();
+        CSVReader resultReader = new CSVReader(new StringReader(mockFile.toString()));
+        List<String[]> result = resultReader.readAll();
+
+        // Check if the new row has been appended
+        boolean rowFound = false;
+        for (String[] row : result) {
+            if (row[0].equals("Alice") && row[1].equals("31") && row[2].equals("USA")) {
+                rowFound = true;
                 break;
             }
         }
-        assertTrue(found);
+        assertTrue("Row with different values should be appended", rowFound);
     }
 
     @Test
     public void testAppendRowWithDifferentColumns() throws IOException {
         // Test appending a row with different values in the first three columns
         String[] newRow = {"Eve", "40", "Australia", "Engineer"};
-        appendOrSkipRow(newRow);
-        loadRecords(); // Reload records after appending
+        appendOrSkipRow(mockFile, reader, newRow);
 
-        boolean found = false;
-        for (String[] row : records) {
-            if (row[0].equals(newRow[0])) {
-                found = true;
+        // Reset the reader and check the contents of the file
+        mockFile.flush();
+        CSVReader resultReader = new CSVReader(new StringReader(mockFile.toString()));
+        List<String[]> result = resultReader.readAll();
+
+        // Check if the new row with different columns has been appended
+        boolean rowFound = false;
+        for (String[] row : result) {
+            if (row[0].equals("Eve") && row[1].equals("40") && row[2].equals("Australia")) {
+                rowFound = true;
                 break;
             }
         }
-        assertTrue(found);
+        assertTrue("Row with different columns should be appended", rowFound);
     }
 
     @Test
     public void testMultipleAppends() throws IOException {
         // Test appending multiple new rows correctly
         String[][] newRows = {
-            {"Frank", "29", "Germany"},
-            {"Grace", "22", "France"}
+                {"Frank", "29", "Germany"},
+                {"Grace", "22", "France"}
         };
 
         for (String[] row : newRows) {
-            appendOrSkipRow(row);
-            loadRecords(); // Reload records after each append
+            appendOrSkipRow(mockFile, reader, row);
+            mockFile.flush(); // Reset the file and reader for the next append
+            reader = new CSVReader(new StringReader(mockFile.toString()));
         }
 
+        // Reset the reader and check if all rows are appended correctly
+        mockFile.flush();
+        CSVReader resultReader = new CSVReader(new StringReader(mockFile.toString()));
+        List<String[]> result = resultReader.readAll();
+
         for (String[] row : newRows) {
-            boolean found = false;
-            for (String[] existingRow : records) {
-                if (existingRow[0].equals(row[0])) {
-                    found = true;
+            boolean rowFound = false;
+            for (String[] resultRow : result) {
+                if (resultRow[0].equals(row[0]) && resultRow[1].equals(row[1]) && resultRow[2].equals(row[2])) {
+                    rowFound = true;
                     break;
                 }
             }
-            assertTrue(found);
+            assertTrue("New row should be appended", rowFound);
         }
     }
 }

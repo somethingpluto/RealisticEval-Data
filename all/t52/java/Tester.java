@@ -1,10 +1,9 @@
 package org.real.temp;
 
-import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.Test; // Change to JUnit 4 Test import
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import static org.junit.Assert.assertEquals; // Change to JUnit 4 assertion
+import static org.real.temp.Answer.*;
 
 /**
  * Test cases for the renameFilePath method.

@@ -1,7 +1,9 @@
+package org.real.temp;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
-public class HtmlEntityDecoder {
+public class Answer {
     /**
      * Decodes HTML entities in a given HTML string.
      * @param htmlString The HTML string containing entities to decode.

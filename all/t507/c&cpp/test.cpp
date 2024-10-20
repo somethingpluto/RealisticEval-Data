@@ -1,8 +1,3 @@
-#include <iostream>
-#include <regex>
-#include <string>
-#include "catch2/catch_test_macros.hpp"
-
 TEST_CASE("Test a strong password that meets all criteria", "[valid_password]") {
     REQUIRE(is_strong_password("StrongPass1"));
 }

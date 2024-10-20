@@ -1,5 +1,5 @@
 /**
- * Computes the n-th power of a matrix using the fast exponentiation method.
+ * @brief Computes the n-th power of a matrix using the fast exponentiation method.
  *
  * @param matrix A square matrix to be exponentiated.
  * @param n The exponent to raise the matrix to. Must be a non-negative integer.

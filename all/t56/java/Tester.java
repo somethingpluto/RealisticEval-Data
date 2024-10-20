@@ -1,9 +1,8 @@
 package org.real.temp;
 
-import org.junit.jupiter.api.BeforeEach; // JUnit 5 BeforeEach annotation
-import org.junit.jupiter.api.Test; // JUnit 5 Test annotation
-import static org.junit.jupiter.api.Assertions.*; // JUnit 5 assertion methods
-
+import org.junit.Before; // JUnit 4 Before annotation
+import org.junit.Test; // JUnit 4 Test annotation
+import static org.junit.Assert.*; // JUnit 4 assertion methods
 
 import java.nio.charset.Charset;
 import java.nio.charset.CharacterCodingException;
@@ -52,5 +51,15 @@ public class Tester {
         } else {
             assertFalse("The character should not be in the list", contains(shiftjisNotGbk, edgeOfBmp));
         }
+    }
+
+    // Dummy implementation for contains method
+    private boolean contains(char[] array, char value) {
+        for (char c : array) {
+            if (c == value) {
+                return true;
+            }
+        }
+        return false;
     }
 }

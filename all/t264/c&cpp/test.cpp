@@ -1,47 +1,96 @@
-TEST_CASE("Extract Log Entries", "[log]") {
-    // Create a temporary log file with some log entries
-    const std::string temp_log_file = "temp_log.txt";
-    std::ofstream log_file(temp_log_file);
+TEST_CASE("TestExtractLogEntries", "[log]") {
+    const std::string log_file_path = "test_log.log";
 
-    if (!log_file.is_open()) {
-        FAIL("Failed to create temporary log file");
+    SECTION("setUp") {
+        std::vector<std::string> log_contents = {
+            "INFO: This is an informational message.\n",
+            "WARNING: This is a warning message.\n",
+            "ERROR: This is an error message.\n",
+            "CRITICAL: This is a critical message.\n",
+            "ALERT: This is an alert message.\n"
+        };
+        std::ofstream log_file(log_file_path);
+        if (!log_file.is_open()) {
+            FAIL("Failed to create the log file.");
+        }
+        log_file << std::string(log_contents.begin(), log_contents.end());
+        log_file.close();
     }
 
-    log_file << "WARNING: This is a warning message\n";
-    log_file << "ERROR: This is an error message\n";
-    log_file << "CRITICAL: This is a critical message\n";
-    log_file << "ALERT: This is an alert message\n";
+    SECTION("test_no_logs_of_certain_levels") {
+        std::ofstream log_file(log_file_path);
+        if (!log_file.is_open()) {
+            FAIL("Failed to create the log file.");
+        }
+        log_file << "INFO: This is another informational message.\n";
+        log_file.close();
 
-    log_file.close();
+        extract_log_entries(log_file_path);
 
-    // Call the function under test
-    extract_log_entries(temp_log_file);
+        for (const auto& level : {"WARNING", "ERROR", "CRITICAL", "ALERT"}) {
+            std::ifstream outfile(level + "_logs.txt");
+            if (!outfile.is_open()) {
+                FAIL("Failed to open the output file: " + level + "_logs.txt");
+            }
+            std::string content((std::istreambuf_iterator<char>(outfile)), std::istreambuf_iterator<char>());
+            REQUIRE(content.empty());
+        }
+    }
 
-    // Check if the output files exist and contain the correct content
-    std::ifstream warning_file("WARNING.log");
-    REQUIRE(warning_file.is_open());
-    std::string warning_content((std::istreambuf_iterator<char>(warning_file)), std::istreambuf_iterator<char>());
-    warning_file.close();
-    REQUIRE(warning_content.find("WARNING: This is a warning message") != std::string::npos);
+    SECTION("test_file_not_found") {
+        extract_log_entries("nonexistent.log");
+        for (const auto& level : {"WARNING", "ERROR", "CRITICAL", "ALERT"}) {
+            std::ifstream outfile(level + "_logs.txt");
+            if (!outfile.is_open()) {
+                FAIL("Failed to open the output file: " + level + "_logs.txt");
+            }
+            std::string content((std::istreambuf_iterator<char>(outfile)), std::istreambuf_iterator<char>());
+            REQUIRE(content.empty());
+        }
+    }
 
-    std::ifstream error_file("ERROR.log");
-    REQUIRE(error_file.is_open());
-    std::string error_content((std::istreambuf_iterator<char>(error_file)), std::istreambuf_iterator<char>());
-    error_file.close();
-    REQUIRE(error_content.find("ERROR: This is an error message") != std::string::npos);
+    SECTION("test_empty_log_file") {
+        std::ofstream log_file(log_file_path);
+        if (!log_file.is_open()) {
+            FAIL("Failed to create the log file.");
+        }
+        log_file.close();
 
-    std::ifstream critical_file("CRITICAL.log");
-    REQUIRE(critical_file.is_open());
-    std::string critical_content((std::istreambuf_iterator<char>(critical_file)), std::istreambuf_iterator<char>());
-    critical_file.close();
-    REQUIRE(critical_content.find("CRITICAL: This is a critical message") != std::string::npos);
+        extract_log_entries(log_file_path);
 
-    std::ifstream alert_file("ALERT.log");
-    REQUIRE(alert_file.is_open());
-    std::string alert_content((std::istreambuf_iterator<char>(alert_file)), std::istreambuf_iterator<char>());
-    alert_file.close();
-    REQUIRE(alert_content.find("ALERT: This is an alert message") != std::string::npos);
+        for (const auto& level : {"WARNING", "ERROR", "CRITICAL", "ALERT"}) {
+            std::ifstream outfile(level + "_logs.txt");
+            if (!outfile.is_open()) {
+                FAIL("Failed to open the output file: " + level + "_logs.txt");
+            }
+            std::string content((std::istreambuf_iterator<char>(outfile)), std::istreambuf_iterator<char>());
+            REQUIRE(content.empty());
+        }
+    }
 
-    // Clean up the temporary log file
-    std::remove(temp_log_file.c_str());
+    SECTION("test_mixed_content_log_file") {
+        std::ofstream log_file(log_file_path);
+        if (!log_file.is_open()) {
+            FAIL("Failed to create the log file.");
+        }
+        log_file << "INFO: Some info.\n"
+                 << "WARNING: Watch out!\n"
+                 << "DEBUG: Debugging.\n"
+                 << "ERROR: Oops!\n"
+                 << "CRITICAL: Failed badly.\n"
+                 << "ALERT: High alert!\n"
+                 << "INFO: More info.\n";
+        log_file.close();
+
+        extract_log_entries(log_file_path);
+
+        for (const auto& level : {"WARNING", "ERROR", "CRITICAL", "ALERT"}) {
+            std::ifstream outfile(level + "_logs.txt");
+            if (!outfile.is_open()) {
+                FAIL("Failed to open the output file: " + level + "_logs.txt");
+            }
+            std::string content((std::istreambuf_iterator<char>(outfile)), std::istreambuf_iterator<char>());
+            REQUIRE(content.find(level) != std::string::npos);
+        }
+    }
 }

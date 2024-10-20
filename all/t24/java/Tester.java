@@ -3,18 +3,20 @@ package org.real.temp;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.Rule;
+import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 
 /**
  * Tests for converting YAML files to JSON files.
@@ -27,11 +29,14 @@ public class Tester {
     private static final String LIST_YAML = "list.yaml";
     private static final String INVALID_YAML = "invalid.yaml";
 
+    @Rule
+    public TemporaryFolder tempFolder = new TemporaryFolder();
+
     private Path tempDir;
 
-    @BeforeEach
-    public void setUp(@TempDir Path tempDir) throws IOException {
-        this.tempDir = tempDir;
+    @Before
+    public void setUp() throws IOException {
+        this.tempDir = tempFolder.newFolder().toPath();
 
         // Create temporary YAML files for testing
         writeYamlFile(tempDir.resolve(SIMPLE_YAML), "name: John Doe\nage: 30\n");
@@ -41,19 +46,9 @@ public class Tester {
         writeYamlFile(tempDir.resolve(INVALID_YAML), "{ invalid: YAML: structure }\n");
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        // Remove temporary files after testing
-        new File(tempDir.resolve(SIMPLE_YAML).toString()).delete();
-        new File(tempDir.resolve(NESTED_YAML).toString()).delete();
-        new File(tempDir.resolve(EMPTY_YAML).toString()).delete();
-        new File(tempDir.resolve(LIST_YAML).toString()).delete();
-        new File(tempDir.resolve(INVALID_YAML).toString()).delete();
-
-        File outputFile = new File(tempDir.resolve("output.json").toString());
-        if (outputFile.exists()) {
-            outputFile.delete();
-        }
+        // No explicit cleanup required with TemporaryFolder
     }
 
     @Test

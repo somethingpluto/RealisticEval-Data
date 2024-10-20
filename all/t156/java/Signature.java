@@ -6,6 +6,4 @@
  * @param num The number to be formatted.
  * @return The formatted number as a string.
  */
-public static String formatNumber(double num) {
-    // Implementation goes here
-}
+public static String formatNumber(double num) {}

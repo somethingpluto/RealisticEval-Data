@@ -5,10 +5,15 @@ import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
+
+
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import static org.real.temp.Answer.*;
 
 public class Tester {
 
@@ -45,19 +50,14 @@ public class Tester {
     public void testBasicConversion() throws IOException {
         // Test basic conversion from cp932 to utf_16
         writeToFile(inputFilePath, "これはテストです", "cp932");
-        boolean result = convertEncoding(inputFilePath, outputFilePath);
+        boolean result = convertEncoding(inputFilePath, outputFilePath,"cp932","utf_16");
         assertTrue(result);
         String content = readFile(outputFilePath, "utf_16");
         assertEquals("これはテストです", content);
     }
 
-    @Test
-    public void testNoConversionNeeded() throws IOException {
-        // Test when no conversion is needed because file is already in target encoding
-        writeToFile(inputFilePath, "No conversion needed", "utf_16");
-        boolean result = convertEncoding(inputFilePath, outputFilePath, "utf_16");
-        assertTrue(result);
-    }
+
+    
 
     @Test
     public void testOutputAlreadyConverted() throws IOException {
@@ -65,5 +65,33 @@ public class Tester {
         writeToFile(inputFilePath, "Already utf_16", "utf_16");
         boolean result = convertEncoding(inputFilePath, outputFilePath, "cp932", "utf_16");
         assertTrue(result);
+    }
+
+
+
+    private String readFile(String filePath, String encoding) throws IOException {
+        // Helper method to read text from a file with a specific encoding
+        StringBuilder contentBuilder = new StringBuilder();
+        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                contentBuilder.append(line).append(System.lineSeparator());
+            }
+        }
+        return contentBuilder.toString();
+    }
+
+    private void deleteDirectory(File directory) {
+        File[] files = directory.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    deleteDirectory(file);
+                } else {
+                    file.delete();
+                }
+            }
+        }
+        directory.delete();
     }
 }

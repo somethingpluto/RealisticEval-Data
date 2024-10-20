@@ -5,6 +5,4 @@
  * @param {number[]} l An array of integers containing the elements.
  * @return {number} The maximum difference.
  */
-function findMaxDifference(l) {
-    // Function body goes here
-}
+function findMaxDifference(l) {}

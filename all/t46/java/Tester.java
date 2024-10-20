@@ -2,9 +2,11 @@ package org.real.temp;
 
 import org.junit.Before;
 import java.util.List;
-import org.junit.jupiter.api.Test; // Test annotation
-import static org.junit.jupiter.api.Assertions.assertEquals; // Assertion method
+import org.real.temp.Answer.TreeNode;
+import org.real.temp.Answer.BinaryTree;
+import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
 
 /**
  * Test class for BinaryTree operations.
@@ -23,8 +25,8 @@ public class Tester {
         //    2   3
         //   / \
         //  4   5
-        tree = new BinaryTree(new TreeNode(1));
-        tree.root.left = new TreeNode(2, new TreeNode(4), new TreeNode(5));
+        tree = new Answer.BinaryTree(new TreeNode(1));
+        tree.root.left = new Answer.TreeNode(2, new TreeNode(4), new TreeNode(5));
         tree.root.right = new TreeNode(3);
 
         emptyTree = new BinaryTree();

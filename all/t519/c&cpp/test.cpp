@@ -1,6 +1,3 @@
-#include <catch2/catch_test_macros.hpp>
-#include <vector>
-
 TEST_CASE("Test transposing a square matrix", "[transpose_matrix]") {
     std::vector<std::vector<int>> matrix = {{1, 2}, {3, 4}};
     std::vector<std::vector<int>> expected = {{1, 3}, {2, 4}};

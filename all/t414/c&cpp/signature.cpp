@@ -1,5 +1,5 @@
 /**
- * Extracts the title, author, and year from a BibTeX file.
+ * @brief Extracts the title, author, and year from a BibTeX file.
  *
  * Example content of the BibTeX file:
  * @article{sample2024,

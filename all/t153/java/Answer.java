@@ -1,6 +1,7 @@
+package org.real.temp;
 import java.nio.ByteBuffer;
 
-public class HashCompressor {
+public class Answer {
 
     /**
      * The input hash buffer is compressed into a number letter string of length no less than 5

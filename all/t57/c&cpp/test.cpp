@@ -12,7 +12,7 @@ TEST_CASE("TestConvertPngToIco", "[convert_png_to_ico]") {
         CImg<unsigned char> img("source.png");
         img = mock_image; // Assign the mock image
 
-        convertPngToIco("source.png", "output.ico", {{64, 64}});
+        convert_png_to_ico("source.png", "output.ico", {{64, 64}});
     }
 
     SECTION("Multiple icon sizes") {
@@ -23,7 +23,7 @@ TEST_CASE("TestConvertPngToIco", "[convert_png_to_ico]") {
         CImg<unsigned char> img("source.png");
         img = mock_image; // Assign the mock image
 
-        convertPngToIco("source.png", "output.ico", {{16, 16}, {32, 32}, {64, 64}});
+        convert_png_to_ico("source.png", "output.ico", {{16, 16}, {32, 32}, {64, 64}});
     }
 
     SECTION("Default icon size") {
@@ -34,7 +34,7 @@ TEST_CASE("TestConvertPngToIco", "[convert_png_to_ico]") {
         CImg<unsigned char> img("source.png");
         img = mock_image; // Assign the mock image
 
-        convertPngToIco("source.png", "output.ico");
+        convert_png_to_ico("source.png", "output.ico");
     }
 
     SECTION("File handling") {
@@ -45,7 +45,7 @@ TEST_CASE("TestConvertPngToIco", "[convert_png_to_ico]") {
         CImg<unsigned char> img("source.png");
         img = mock_image; // Assign the mock image
 
-        convertPngToIco("source.png", "output.ico");
+        convert_png_to_ico("source.png", "output.ico");
     }
 
     SECTION("Invalid image path") {
@@ -53,6 +53,6 @@ TEST_CASE("TestConvertPngToIco", "[convert_png_to_ico]") {
         CImg<unsigned char> img("invalid.png");
         img.load("invalid.png").fail(); // Simulate a failure
 
-        REQUIRE_THROWS_AS(convertPngToIco("invalid.png", "output.ico"), std::runtime_error);
+        REQUIRE_THROWS_AS(convert_png_to_ico("invalid.png", "output.ico"), std::runtime_error);
     }
 }

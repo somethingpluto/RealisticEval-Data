@@ -1,10 +1,8 @@
 /**
- * Handles nested data structures (e.g., dictionaries, lists, and enumerations),
- * decodes bytes to UTF-8 strings, and converts numbers to integers or floating-point numbers.
+ * Handles nested data structures (e.g., maps, lists, and enumerations), decodes bytes to UTF-8 strings,
+ * and converts numbers to integers or floating-point numbers.
  *
- * @param data the question object
- * @return the converted question
+ * @param data The input data object, which can be a map, list, byte array, number, or string.
+ * @return The processed data after conversion.
  */
-public Map<String, Object> handleNestedData(Map<String, Object> data) {
-    // Method implementation goes here
-}
+public static Object handleNestedData(Object data) {}

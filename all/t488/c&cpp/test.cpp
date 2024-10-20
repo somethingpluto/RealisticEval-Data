@@ -1,15 +1,3 @@
-#include <catch2/catch_test_macros.hpp>
-#include <string>
-#include <optional>
-#include <regex>
-#include <windows.h>
-#include <Shlwapi.h>
-
-#pragma comment(lib, "Shlwapi.lib")
-
-// Define a type alias for optional strings
-using OptionalString = std::optional<std::string>;
-
 TEST_CASE("Test Get Local IP", "[get_local_ip]") {
     SECTION("Local IP Found") {
         // Mock the output of ipconfig for a case where a local IP is found

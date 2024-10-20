@@ -13,7 +13,7 @@ TEST_CASE("Test Floyd-Warshall Shortest Paths", "[floyd-warshall]") {
             {3, 6, 0, 1},
             {2, 5, 7, 0}
         };
-        auto result = floydWarshallShortestPaths(matrix);
+        auto result = floyd_warshall_shortest_paths(matrix);
         REQUIRE(result == expected);
     }
 
@@ -25,7 +25,7 @@ TEST_CASE("Test Floyd-Warshall Shortest Paths", "[floyd-warshall]") {
         std::vector<std::vector<int>> expected = {
             {0}
         };
-        auto result = floydWarshallShortestPaths(matrix);
+        auto result = floyd_warshall_shortest_paths(matrix);
         REQUIRE(result == expected);
     }
 
@@ -39,7 +39,7 @@ TEST_CASE("Test Floyd-Warshall Shortest Paths", "[floyd-warshall]") {
             {0, 1},
             {1, 0}
         };
-        auto result = floydWarshallShortestPaths(matrix);
+        auto result = floyd_warshall_shortest_paths(matrix);
         REQUIRE(result == expected);
     }
 
@@ -53,7 +53,7 @@ TEST_CASE("Test Floyd-Warshall Shortest Paths", "[floyd-warshall]") {
             {0, INT_MAX},
             {INT_MAX, 0}
         };
-        auto result = floydWarshallShortestPaths(matrix);
+        auto result = floyd_warshall_shortest_paths(matrix);
         REQUIRE(result == expected);
     }
 
@@ -69,7 +69,7 @@ TEST_CASE("Test Floyd-Warshall Shortest Paths", "[floyd-warshall]") {
             {-2, -1, -2},
             {-2, -1, -2}
         };
-        auto result = floydWarshallShortestPaths(matrix);
+        auto result = floyd_warshall_shortest_paths(matrix);
         REQUIRE(result == expected);
     }
 }

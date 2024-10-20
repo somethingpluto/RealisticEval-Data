@@ -8,6 +8,4 @@
  * @returns The final price after applying the discount, rounded to two decimal places.
  * @throws IllegalArgumentException if price or discount aren't valid numbers or if the discount is out of the expected range.
  */
-public static double calculateFinalPrice(String price, String discount) {
-    // Implementation goes here
-}
+public static double calculateFinalPrice(String price, String discount) {}

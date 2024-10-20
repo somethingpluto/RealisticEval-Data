@@ -2,6 +2,7 @@ package org.real.temp;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
+import static org.real.temp.Answer.*;
 
 public class Tester {
 

@@ -1,5 +1,5 @@
 /**
- * @brief Sorts a portion of an array using the merge sort algorithm.
+ * Sorts a portion of an array using the merge sort algorithm.
  *
  * @param {number[]} arr - An array of integers that contains the
  *                         elements to be sorted.

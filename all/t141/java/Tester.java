@@ -1,8 +1,9 @@
 package org.real.temp;
 
 import org.junit.Test;
-import static org.junit.Assert.*;
 
+import static org.junit.Assert.*;
+import static org.real.temp.Answer.*;
 public class Tester {
 
     @Test
@@ -40,8 +41,4 @@ public class Tester {
         assertTrue(compareArrays(arr1, arr2));
     }
 
-    // Assuming compareArrays method is defined elsewhere in the class or imported
-    public static <T> boolean compareArrays(T[] arr1, T[] arr2) {
-        // Implementation of compareArrays method
-    }
 }

@@ -1,5 +1,5 @@
 /**
- * Gets the IPv4 address of the local computer on a specific network interface,
+ * @brief Gets the IPv4 address of the local computer on a specific network interface,
  * such as wlan0, which is usually a wireless network interface.
  *
  * @param interface The network interface to query. Default is 'wlan0'.

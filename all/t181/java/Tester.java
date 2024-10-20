@@ -23,7 +23,7 @@ public class Tester {
         }
     }
 
-    @AfterEach
+    @Before
     public void tearDown() {
         if (testFile.exists()) {
             testFile.delete();

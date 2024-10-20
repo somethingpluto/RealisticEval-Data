@@ -1,3 +1,12 @@
+package org.real.temp;
+
+import org.junit.Test;
+
+import java.util.List;
+
+import static junit.framework.TestCase.assertEquals;
+import static org.real.temp.Answer.*;
+
 public class Tester {
 
     /**
@@ -6,7 +15,7 @@ public class Tester {
     @Test
     public void testBasicFunctionality() {
         assertEquals("Should return 3 as it is the first closest element to 5",
-                     3, findClosestElement(5, List.of(1, 3, 7, 8, 9)).intValue());
+                3, findClosestElement(5, List.of(1, 3, 7, 8, 9)).intValue());
     }
 
     /**
@@ -15,7 +24,7 @@ public class Tester {
     @Test
     public void testExactMatch() {
         assertEquals("Should return 7 as it exactly matches the target",
-                     7, findClosestElement(7, List.of(1, 3, 7, 8, 9)).intValue());
+                7, findClosestElement(7, List.of(1, 3, 7, 8, 9)).intValue());
     }
 
     /**
@@ -24,7 +33,7 @@ public class Tester {
     @Test
     public void testMultipleClosestValues() {
         assertEquals("Should return 4 as it is the first closest element to 5",
-                     4, findClosestElement(5, List.of(4, 6, 8, 9)).intValue());
+                4, findClosestElement(5, List.of(4, 6, 8, 9)).intValue());
     }
 
     /**
@@ -33,6 +42,6 @@ public class Tester {
     @Test
     public void testFloatValues() {
         assertEquals("Should return 3.3 as it is the first closest element to 5.5",
-                     3.3, findClosestElement(5.5, List.of(1.1, 3.3, 7.7, 8.8)).doubleValue(), 0.001);
+                3.3, findClosestElement(5.5, List.of(1.1, 3.3, 7.7, 8.8)).doubleValue(), 0.001);
     }
 }

@@ -1,5 +1,5 @@
 /**
- * Reads numerical columns from a file starting from the line after the last line containing '/'.
+ * @brief Reads numerical columns from a file starting from the line after the last line containing '/'.
  *
  * @param file_name The name of the file to read.
  * @return A 2D vector containing the numerical data.

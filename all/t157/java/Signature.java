@@ -4,6 +4,4 @@
  * @param bytes - The number of bytes to be converted.
  * @return - A string representation of the size in Bytes, KB, MB, GB, or TB.
  */
-public static String bytesToSize(long bytes) {
-    // Method implementation goes here
-}
+public static String bytesToSize(long bytes) {}

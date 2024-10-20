@@ -1,32 +1,35 @@
 package org.real.temp;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.Assert.assertEquals;
+import static org.real.temp.Answer.*;
 
 public class Tester {
 
+    @Rule
+    public TemporaryFolder tempFolder = new TemporaryFolder();
     private Path testDir;
 
-    @BeforeEach
-    public void setUp(@TempDir Path tempDir) {
-        this.testDir = tempDir;
+    @Before
+    public void setUp() throws IOException {
+        this.testDir = tempFolder.newFolder().toPath(); // Create a new temporary directory
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
-        // The @TempDir annotation automatically cleans up the directory after each test
+        // TemporaryFolder will automatically delete the folder after the test
     }
 
     private void createPngFiles(List<String> filenames) throws IOException {
@@ -46,10 +49,10 @@ public class Tester {
 
         List<String> expectedFiles = Arrays.asList("image1001.png", "image2001.png", "image3001.png");
         List<String> resultFiles = Files.list(testDir)
-                                        .map(Path::getFileName)
-                                        .map(Path::toString)
-                                        .sorted()
-                                        .collect(Collectors.toList());
+                .map(Path::getFileName)
+                .map(Path::toString)
+                .sorted()
+                .collect(Collectors.toList());
         assertEquals(expectedFiles, resultFiles);
     }
 
@@ -63,10 +66,10 @@ public class Tester {
 
         List<String> expectedFiles = Arrays.asList("image1001.png", "image2001.png", "picture1001.png", "picture2001.png");
         List<String> resultFiles = Files.list(testDir)
-                                        .map(Path::getFileName)
-                                        .map(Path::toString)
-                                        .sorted()
-                                        .collect(Collectors.toList());
+                .map(Path::getFileName)
+                .map(Path::toString)
+                .sorted()
+                .collect(Collectors.toList());
         assertEquals(expectedFiles, resultFiles);
     }
 
@@ -80,10 +83,10 @@ public class Tester {
 
         List<String> expectedFiles = filenames;  // No changes expected
         List<String> resultFiles = Files.list(testDir)
-                                        .map(Path::getFileName)
-                                        .map(Path::toString)
-                                        .sorted()
-                                        .collect(Collectors.toList());
+                .map(Path::getFileName)
+                .map(Path::toString)
+                .sorted()
+                .collect(Collectors.toList());
         assertEquals(expectedFiles, resultFiles);
     }
 
@@ -94,9 +97,9 @@ public class Tester {
 
         List<String> expectedFiles = Arrays.asList();  // No files to rename
         List<String> resultFiles = Files.list(testDir)
-                                        .map(Path::getFileName)
-                                        .map(Path::toString)
-                                        .collect(Collectors.toList());
+                .map(Path::getFileName)
+                .map(Path::toString)
+                .collect(Collectors.toList());
         assertEquals(expectedFiles, resultFiles);
     }
 
@@ -110,10 +113,10 @@ public class Tester {
 
         List<String> expectedFiles = Arrays.asList("file001001.png", "file002001.png", "file003001.png");
         List<String> resultFiles = Files.list(testDir)
-                                        .map(Path::getFileName)
-                                        .map(Path::toString)
-                                        .sorted()
-                                        .collect(Collectors.toList());
+                .map(Path::getFileName)
+                .map(Path::toString)
+                .sorted()
+                .collect(Collectors.toList());
         assertEquals(expectedFiles, resultFiles);
     }
 }

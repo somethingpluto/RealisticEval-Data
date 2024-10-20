@@ -1,5 +1,5 @@
 /**
- * Filters website content to include lines containing any of the specified keywords as whole words,
+ * @brief Filters website content to include lines containing any of the specified keywords as whole words,
  * along with a specified number of lines before and after for context. This version uses regular expressions
  * to ensure exact, whole word matching and respects case sensitivity.
  *

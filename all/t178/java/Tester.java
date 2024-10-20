@@ -1,13 +1,13 @@
 package org.real.temp;
 
-import org.junit.jupiter.api.Test;
-
+import org.junit.Test; // JUnit 4 Test annotation
+import static org.junit.Assert.assertEquals; // JUnit 4 assertEquals
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.real.temp.*;public class Tester {
+import org.real.temp.*;
+public class Tester {
     @Test
     public void testNonDecreasingSequence() {
         int[] nums = {5, 7, 4, 8, 6, 10, 2, 11};

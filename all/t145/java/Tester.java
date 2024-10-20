@@ -1,8 +1,9 @@
 package org.real.temp;
 
 import static org.junit.Assert.assertEquals;
-import org.junit.Test;
 
+import org.junit.Test;
+import static org.real.temp.Answer.*;
 public class Tester {
 
     @Test
@@ -11,7 +12,7 @@ public class Tester {
         String currencyCode = "USD";
         String locale = "en-US";
         String expectedOutput = "$1,234.56"; // Expected format for USD
-        assertEquals(expectedOutput, CurrencyFormatter.formatCurrency(value, currencyCode, locale));
+        assertEquals(expectedOutput, formatCurrency(value, currencyCode, locale));
     }
 
     @Test
@@ -20,7 +21,7 @@ public class Tester {
         String currencyCode = "EUR";
         String locale = "en-US";
         String expectedOutput = "€1,234.56"; // Expected format for EUR
-        assertEquals(expectedOutput, CurrencyFormatter.formatCurrency(value, currencyCode, locale));
+        assertEquals(expectedOutput, formatCurrency(value, currencyCode, locale));
     }
 
     @Test
@@ -29,7 +30,7 @@ public class Tester {
         String currencyCode = "GBP";
         String locale = "en-GB";
         String expectedOutput = "£1,234.56"; // Expected format for GBP
-        assertEquals(expectedOutput, CurrencyFormatter.formatCurrency(value, currencyCode, locale));
+        assertEquals(expectedOutput, formatCurrency(value, currencyCode, locale));
     }
 
     @Test
@@ -38,7 +39,7 @@ public class Tester {
         String currencyCode = "USD";
         String locale = "en-US";
         String expectedOutput = "-$1,234.56"; // Expected format for negative USD
-        assertEquals(expectedOutput, CurrencyFormatter.formatCurrency(value, currencyCode, locale));
+        assertEquals(expectedOutput, formatCurrency(value, currencyCode, locale));
     }
 
     @Test
@@ -47,6 +48,6 @@ public class Tester {
         String currencyCode = "JPY";
         String locale = "en-JP";
         String expectedOutput = "¥0"; // Expected format for JPY (no decimals)
-        assertEquals(expectedOutput, CurrencyFormatter.formatCurrency(value, currencyCode, locale));
+        assertEquals(expectedOutput, formatCurrency(value, currencyCode, locale));
     }
 }

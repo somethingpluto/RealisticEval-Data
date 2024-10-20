@@ -1,8 +1,10 @@
+package org.real.temp;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class DateFormatter {
+public class Answer {
     public static String formatDate(String dateString) throws IllegalArgumentException {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
         Date date;

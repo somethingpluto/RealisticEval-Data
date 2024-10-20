@@ -4,10 +4,7 @@ import java.util.Scanner;
 import java.util.List;
 import java.util.ArrayList;
 
-/**
- * @brief Finds the maximum difference between elements in the array
- * such that the smaller element appears before the larger one.
- */
+
 public class Answer {
 
     /**

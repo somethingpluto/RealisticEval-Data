@@ -9,6 +9,4 @@
  * @param n The number of players in the game.
  * @return An array of numbers representing the order of players being removed from the ring.
  */
-function findOrder(n: number): number[] {
-    // Implementation goes here
-}
+function findOrder(n: number): number[] {}

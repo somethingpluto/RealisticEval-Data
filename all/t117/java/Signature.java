@@ -6,6 +6,4 @@
  * @param b The blue component (0-255).
  * @return An array containing the HSL values.
  */
-public static int[] rgbToHsl(int r, int g, int b) {
-    // Implementation goes here
-}
+public static int[] rgbToHsl(int r, int g, int b) {}

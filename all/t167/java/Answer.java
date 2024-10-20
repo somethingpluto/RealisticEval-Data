@@ -1,4 +1,6 @@
-public class BitValidator {
+package org.real.temp;
+
+public class Answer {
     /**
      * Determines whether a given string (assumed to end with ".bit") is a valid 3-digit integer.
      *

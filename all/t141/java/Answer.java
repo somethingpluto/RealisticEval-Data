@@ -1,7 +1,8 @@
+package org.real.temp;
 import java.util.HashSet;
 import java.util.Set;
 
-public class ArrayComparer {
+public class Answer {
 
     public static <T> boolean compareArrays(T[] arr1, T[] arr2) {
         Set<T> set1 = new HashSet<>(Set.of(arr1));

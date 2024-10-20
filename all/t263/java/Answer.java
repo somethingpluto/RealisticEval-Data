@@ -4,48 +4,60 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Answer {
+    public List<Integer> spiralTraversal(int[][] matrix) {
+        if (matrix == null || matrix.length == 0 || matrix[0].length == 0) {
+            return new ArrayList<>();
+        }
 
-    public List<Integer> spiralTraverse(int[][] matrix) {
+        int m = matrix.length;
+        int n = matrix[0].length;
+        int rowStart = 0, rowEnd = m - 1;
+        int colStart = 0, colEnd = n - 1;
         List<Integer> result = new ArrayList<>();
 
-        if(matrix == null || matrix.length == 0)
-            return result;
-
-        int top = 0, bottom = matrix.length - 1;
-        int left = 0, right = matrix[0].length - 1;
-
-        while(true){
-            // Traverse from left to right along the top row
-            for(int i=left; i<=right; ++i){
-                result.add(matrix[top][i]);
+        while (rowStart <= rowEnd && colStart <= colEnd) {
+            // Traverse Right along the top row
+            for (int j = colStart; j <= colEnd; j++) {
+                result.add(matrix[rowStart][j]);
             }
-            top++;
+            rowStart++;
 
-            // Check if there are still rows remaining
-            if(top > bottom) break;
-
-            // Traverse downwards along the rightmost column
-            for(int i=top; i<=bottom; ++i){
-                result.add(matrix[i][right]);
+            // Traverse Down along the right column
+            for (int i = rowStart; i <= rowEnd; i++) {
+                result.add(matrix[i][colEnd]);
             }
-            right--;
+            colEnd--;
 
-            // Check if there are still columns remaining
-            if(left > right) break;
-
-            // Traverse from right to left along the bottom row
-            for(int i=right; i>=left; --i){
-                result.add(matrix[bottom][i]);
+            // Traverse Left along the bottom row, if still within bounds
+            if (rowStart <= rowEnd) {
+                for (int j = colEnd; j >= colStart; j--) {
+                    result.add(matrix[rowEnd][j]);
+                }
+                rowEnd--;
             }
-            bottom--;
 
-            // Traverse upwards along the leftmost column
-            for(int i=bottom; i>=top; --i){
-                result.add(matrix[i][left]);
+            // Traverse Up along the left column, if still within bounds
+            if (colStart <= colEnd) {
+                for (int i = rowEnd; i >= rowStart; i--) {
+                    result.add(matrix[i][colStart]);
+                }
+                colStart++;
             }
-            left++;
         }
 
         return result;
+    }
+
+    public static void main(String[] args) {
+        Answer answer = new Answer();
+        
+        int[][] matrix = {
+            {1, 2, 3},
+            {4, 5, 6},
+            {7, 8, 9}
+        };
+
+        List<Integer> result = answer.spiralTraversal(matrix);
+        System.out.println(result);
     }
 }

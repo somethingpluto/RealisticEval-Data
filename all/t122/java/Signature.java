@@ -8,6 +8,4 @@
  * @param replaceWith - Optional. The element to replace the removed elements with.
  * @return A new list with the specified elements removed and optionally replaced.
  */
-public static List<Object> safeSplice(List<Object> inputArray, int amountToRemove, int indexToRemove, Object replaceWith) {
-    // method implementation
-}
+public static List<Object> safeSplice(List<Object> inputArray, int amountToRemove, int indexToRemove, Object replaceWith) {}

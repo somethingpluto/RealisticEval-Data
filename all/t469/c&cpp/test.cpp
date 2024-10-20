@@ -1,43 +1,51 @@
-#define CATCH_CONFIG_MAIN
-#include "catch.hpp"
-#include "get_scale.h"  // Include the header where get_scale is defined
-
-TEST_CASE("Test get_scale function", "[get_scale]") {
-    Eigen::Matrix3d matrix;
-
-    SECTION("Identity matrix") {
+TEST_CASE("Test Get Scale Function", "[get_scale]") {
+    SECTION("Identity Matrix") {
+        // Test for the identity matrix (no scaling)
+        Eigen::MatrixXd matrix(3, 3);
         matrix << 1, 0, 0,
                   0, 1, 0,
                   0, 0, 1;
-        auto [scale_x, scale_y] = get_scale(matrix);
-        REQUIRE(scale_x == Approx(1.0));
-        REQUIRE(scale_y == Approx(1.0));
+        auto expected_scale = std::make_pair(1.0, 1.0);
+        REQUIRE(get_scale(matrix) == expected_scale);
     }
 
-    SECTION("Scaling matrix along x-axis") {
+    SECTION("Scaling Matrix") {
+        // Test for a scaling matrix (2x in x and 3x in y)
+        Eigen::MatrixXd matrix(3, 3);
         matrix << 2, 0, 0,
+                  0, 3, 0,
+                  0, 0, 1;
+        auto expected_scale = std::make_pair(2.0, 3.0);
+        REQUIRE(get_scale(matrix) == expected_scale);
+    }
+
+    SECTION("Uniform Scaling") {
+        // Test case with uniform scaling
+        Eigen::MatrixXd matrix(3, 3);
+        matrix << 2, 0, 0,
+                  0, 2, 0,
+                  0, 0, 1;
+        auto expected_scale = std::make_pair(2.0, 2.0);
+        REQUIRE(get_scale(matrix) == expected_scale);
+    }
+
+    SECTION("Non-Uniform Scaling") {
+        // Test case with non-uniform scaling
+        Eigen::MatrixXd matrix(3, 3);
+        matrix << 3, 0, 0,
+                  0, 5, 0,
+                  0, 0, 1;
+        auto expected_scale = std::make_pair(3.0, 5.0);
+        REQUIRE(get_scale(matrix) == expected_scale);
+    }
+
+    SECTION("Reflection Matrix") {
+        // Test case with reflection matrix
+        Eigen::MatrixXd matrix(3, 3);
+        matrix << -1, 0, 0,
                   0, 1, 0,
                   0, 0, 1;
-        auto [scale_x, scale_y] = get_scale(matrix);
-        REQUIRE(scale_x == Approx(2.0));
-        REQUIRE(scale_y == Approx(1.0));
-    }
-
-    SECTION("Scaling matrix along y-axis") {
-        matrix << 1, 0, 0,
-                  0, 3, 0,
-                  0, 0, 1;
-        auto [scale_x, scale_y] = get_scale(matrix);
-        REQUIRE(scale_x == Approx(1.0));
-        REQUIRE(scale_y == Approx(3.0));
-    }
-
-    SECTION("Scaling matrix along both axes") {
-        matrix << 2, 0, 0,
-                  0, 3, 0,
-                  0, 0, 1;
-        auto [scale_x, scale_y] = get_scale(matrix);
-        REQUIRE(scale_x == Approx(2.0));
-        REQUIRE(scale_y == Approx(3.0));
+        auto expected_scale = std::make_pair(1.0, 1.0);
+        REQUIRE(get_scale(matrix) == expected_scale);
     }
 }

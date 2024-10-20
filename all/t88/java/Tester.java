@@ -1,6 +1,10 @@
+package org.real.temp;
+
 import org.junit.Test;
+
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
+import static org.real.temp.Answer.*;
 
 public class Tester {
 
@@ -22,11 +26,5 @@ public class Tester {
     @Test
     public void testWildcardInHourField() {
         assertFalse(isCronBetween2And4AM("0 * * * *"));
-    }
-
-    // Assuming the method is present in this class or imported
-    public boolean isCronBetween2And4AM(String cronExpression) {
-        // Implementation here
-        return false; // Placeholder
     }
 }

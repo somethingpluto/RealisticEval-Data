@@ -1,6 +1,7 @@
+package org.real.temp;
 import java.util.Random;
 
-public class ShuffleArray {
+public class Answer {
     public static int[] shuffle(int[] array) {
         Random random = new Random();
         int currentIndex = array.length;

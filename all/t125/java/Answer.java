@@ -1,4 +1,6 @@
-public class HTMLCompressor {
+package org.real.temp;
+
+public class Answer {
 
     public static String compressHTML(String html) {
         // Remove leading/trailing whitespace around tags

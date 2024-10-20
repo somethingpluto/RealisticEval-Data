@@ -1,18 +1,41 @@
-TEST_CASE("Check XOR Sum Function", "[check_xor_sum]") {
-    // Initialize numpy array object
-    Py_Initialize();
-    import_array();
+TEST_CASE("TestCheckXorSum", "[check_xor_sum]") {
+    SECTION("test_correct_xor_sums") {
+        // Test with combination values that produce the expected XOR sums.
+        Eigen::ArrayXi combination(2, 8);
+        combination << 0x6b, 0x00, 0x12, 0x00, 0x76, 0x00, 0x00, 0x00,
+                       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00;
+        REQUIRE_FALSE(check_xor_sum(combination));
+    }
 
-    // Test case 1: Normal scenario with expected result
-    np::ndarray arr1 = np::frompyarray(np::array<int>({1, 0, 1}));
-    REQUIRE(check_xor_sum(arr1) == true); // Replace with actual expected result
+    SECTION("test_incorrect_xor_sums") {
+        // Test with combination values that do not meet the expected XOR sums.
+        Eigen::ArrayXi combination(2, 8);
+        combination << 0x6b, 0x00, 0x12, 0x00, 0x76, 0x00, 0x00, 0x00,
+                       0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00;
+        REQUIRE_FALSE(check_xor_sum(combination));
+    }
 
-    // Test case 2: Scenario with unexpected result
-    np::ndarray arr2 = np::frompyarray(np::array<int>({0, 0, 0}));
-    REQUIRE(check_xor_sum(arr2) == false); // Replace with actual expected result
+    SECTION("test_edge_case_with_zero") {
+        // Test with a combination where all values are zero.
+        Eigen::ArrayXi combination(1, 8);
+        combination.setZero();
+        REQUIRE_FALSE(check_xor_sum(combination));
+    }
 
-    // Add more test cases as needed
+    SECTION("test_large_numbers") {
+        // Test with large numbers in the combination.
+        Eigen::ArrayXi combination(2, 8);
+        combination << 0x6b000000, 0x00000000, 0x00000012, 0x00000000, 0x76000000, 0x00000000, 0x00000000, 0x00000000,
+                       0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000;
+        REQUIRE_FALSE(check_xor_sum(combination));
+    }
 
-    // Finalize numpy
-    Py_Finalize();
+    SECTION("test_multiple_rows") {
+        // Test with a combination that contains multiple rows.
+        Eigen::ArrayXi combination(3, 8);
+        combination << 0x6b, 0x00, 0x12, 0x00, 0x76, 0x00, 0x00, 0x00,
+                       0x6b, 0x00, 0x12, 0x00, 0x76, 0x00, 0x00, 0x00,
+                       0x6b, 0x00, 0x12, 0x00, 0x76, 0x00, 0x00, 0x00;
+        REQUIRE(check_xor_sum(combination));
+    }
 }

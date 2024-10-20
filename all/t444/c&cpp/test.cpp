@@ -1,29 +1,35 @@
-#define CATCH_CONFIG_MAIN
-#include <catch2/catch.hpp>
-#include "your_source_file.h" // Include the header where format_comment is defined
-
-TEST_CASE("Format Comment", "[format_comment]") {
-    SECTION("Empty String") {
-        REQUIRE(format_comment("") == "");
+TEST_CASE("Test format_comment function", "[format_comment]") {
+    SECTION("Test with a short string that fits within max_length") {
+        std::string input_string = "This is a test.";
+        std::string expected_output = "# This is a test.";
+        REQUIRE(format_comment(input_string) == expected_output);
     }
 
-    SECTION("Single Word") {
-        REQUIRE(format_comment("Hello") == "# Hello");
+    SECTION("Test with a longer string that exceeds max_length") {
+        std::string input_string = "This is a test of the format_comment function which should wrap long lines correctly.";
+        std::string expected_output =
+            "# This is a test of the format_comment function which should\n"
+            "# wrap long lines correctly.";
+        REQUIRE(format_comment(input_string, 60) == expected_output);
     }
 
-    SECTION("Long Single Line") {
-        std::string long_string = "ThisIsAVeryLongStringThatShouldBeSplitIntoMultipleLines";
-        std::string expected = "# ThisIsAVeryLongStringThat\n# ShouldBeSplitIntoMultipleLines";
-        REQUIRE(format_comment(long_string) == expected);
+    SECTION("Test with multiple lines of input") {
+        std::string input_string = "First line.\nSecond line that is quite long and needs to be wrapped.";
+        std::string expected_output =
+            "# First line.\n"
+            "# Second line that is quite long and needs to be wrapped.";
+        REQUIRE(format_comment(input_string, 60) == expected_output);
     }
 
-    SECTION("Words That Fit In One Line") {
-        REQUIRE(format_comment("One Two Three Four Five") == "# One Two Three Four Five");
+    SECTION("Test with a line that is exactly max_length characters long") {
+        std::string input_string(60, 'A');  // 60 characters long
+        std::string expected_output = "# " + std::string(60, 'A');
+        REQUIRE(format_comment(input_string, 60) == expected_output);
     }
 
-    SECTION("Words Exceeding Max Length") {
-        std::string long_words = "Lorem ipsum dolor sit amet, consectetur adipiscing elit.";
-        std::string expected = "# Lorem ipsum dolor sit amet,\n# consectetur adipiscing elit.";
-        REQUIRE(format_comment(long_words) == expected);
+    SECTION("Test with an empty string") {
+        std::string input_string = "";
+        std::string expected_output = "# ";
+        REQUIRE(format_comment(input_string) == expected_output);
     }
 }

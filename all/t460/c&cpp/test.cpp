@@ -1,25 +1,41 @@
-#include <catch2/catch.hpp>
-#include <vector>
+TEST_CASE("TestMatrixVectorMultiplication", "[matrix_vector_multiplication]") {
+    SECTION("test_non_square_matrix") {
+        std::vector<std::vector<float>> matrix = {{1, 2}, {3, 4}, {5, 6}};
+        std::vector<float> vector = {2, 3};
+        std::vector<float> expected_result = {8.0f, 18.0f, 28.0f};
 
-// Assuming the function is defined somewhere in your codebase
-std::vector<double> matrix_vector_multiplication(const std::vector<std::vector<double>>& matrix, const std::vector<double>& vector);
-
-TEST_CASE("Matrix Vector Multiplication", "[math][linear-algebra]") {
-    // Test case 1: Valid multiplication
-    SECTION("Valid multiplication") {
-        std::vector<std::vector<double>> matrix = {{1, 2}, {3, 4}};
-        std::vector<double> vector = {5, 6};
-        std::vector<double> expected_result = {17, 39};
-
-        auto result = matrix_vector_multiplication(matrix, vector);
-        REQUIRE(result == Approx(expected_result).margin(0.001));
+        REQUIRE(matrix_vector_multiplication(matrix, vector) == expected_result);
     }
 
-    // Test case 2: Incompatible dimensions
-    SECTION("Incompatible dimensions") {
-        std::vector<std::vector<double>> matrix = {{1, 2}, {3, 4}};
-        std::vector<double> vector = {5}; // Incorrect size
+    SECTION("test_zero_vector") {
+        std::vector<std::vector<float>> matrix = {{1, 2, 3}, {4, 5, 6}};
+        std::vector<float> vector = {0, 0, 0};
+        std::vector<float> expected_result = {0.0f, 0.0f};
 
-        CHECK_THROWS_AS(matrix_vector_multiplication(matrix, vector), std::invalid_argument);
+        REQUIRE(matrix_vector_multiplication(matrix, vector) == expected_result);
+    }
+
+    SECTION("test_single_element") {
+        std::vector<std::vector<float>> matrix = {{5}};
+        std::vector<float> vector = {3};
+        std::vector<float> expected_result = {15.0f};
+
+        REQUIRE(matrix_vector_multiplication(matrix, vector) == expected_result);
+    }
+
+    SECTION("test_single_element_matrix_and_vector") {
+        std::vector<std::vector<float>> matrix = {{3}};
+        std::vector<float> vector = {4};
+        std::vector<float> expected = {12.0f};
+
+        REQUIRE(matrix_vector_multiplication(matrix, vector) == expected);
+    }
+
+    SECTION("test_compatible_sizes") {
+        std::vector<std::vector<float>> matrix = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
+        std::vector<float> vector = {1, 1, 1};
+        std::vector<float> expected = {6.0f, 15.0f, 24.0f};
+
+        REQUIRE(matrix_vector_multiplication(matrix, vector) == expected);
     }
 }

@@ -14,7 +14,7 @@ TEST_CASE("TestFlipPointCloud", "[FlipPointCloud]") {
         expectedOutput << 1.0, -2.0, 3.0,
                          4.0, -5.0, 6.0;
 
-        MatrixXd flippedPointCloud = flipPointCloud(pointCloud, 1);
+        MatrixXd flippedPointCloud = flip_point_cloud(pointCloud, 1);
         REQUIRE(flippedPointCloud.isApprox(expectedOutput));
     }
 
@@ -28,7 +28,7 @@ TEST_CASE("TestFlipPointCloud", "[FlipPointCloud]") {
         expectedOutput << -1.0, 2.0, 3.0,
                           -4.0, 5.0, 6.0;
 
-        MatrixXd flippedPointCloud = flipPointCloud(pointCloud, 0);
+        MatrixXd flippedPointCloud = flip_point_cloud(pointCloud, 0);
         REQUIRE(flippedPointCloud.isApprox(expectedOutput));
     }
 
@@ -42,7 +42,7 @@ TEST_CASE("TestFlipPointCloud", "[FlipPointCloud]") {
         expectedOutput << 1.0, 2.0, -3.0,
                          4.0, 5.0, -6.0;
 
-        MatrixXd flippedPointCloud = flipPointCloud(pointCloud, 2);
+        MatrixXd flippedPointCloud = flip_point_cloud(pointCloud, 2);
         REQUIRE(flippedPointCloud.isApprox(expectedOutput));
     }
 
@@ -51,7 +51,7 @@ TEST_CASE("TestFlipPointCloud", "[FlipPointCloud]") {
         MatrixXd pointCloud(1, 3);
         pointCloud << 1.0, 2.0, 3.0;
 
-        REQUIRE_THROWS_AS(flipPointCloud(pointCloud, 3), std::invalid_argument);
+        REQUIRE_THROWS_AS(flip_point_cloud(pointCloud, 3), std::invalid_argument);
     }
 
     SECTION("test_empty_point_cloud") {
@@ -59,7 +59,7 @@ TEST_CASE("TestFlipPointCloud", "[FlipPointCloud]") {
         MatrixXd pointCloud(0, 3);
         MatrixXd expectedOutput(0, 3);
 
-        MatrixXd flippedPointCloud = flipPointCloud(pointCloud, 0);
+        MatrixXd flippedPointCloud = flip_point_cloud(pointCloud, 0);
         REQUIRE(flippedPointCloud.rows() == expectedOutput.rows());
         REQUIRE(flippedPointCloud.cols() == expectedOutput.cols());
     }

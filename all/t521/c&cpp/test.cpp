@@ -1,11 +1,3 @@
-#include <catch2/catch_test_macros.hpp>
-#include <string>
-#include <vector>
-#include <unordered_map>
-#include <unordered_set>
-#include <regex>
-#include <algorithm>
-
 TEST_CASE("Test Word Filter Counter") {
     SECTION("Test Case 1") {
         std::string text = "go to the school.go to the park.";

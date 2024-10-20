@@ -1,42 +1,46 @@
 package org.real.temp;
 
-import static org.junit.Assert.assertEquals;
 import org.junit.Test;
-
+import static org.junit.Assert.assertEquals;
+import static org.real.temp.Answer.*;
 public class Tester {
 
     @Test
-    public void testArabicToEnglishNumbers_ConvertArabicNumerals() {
-        String input = "١٢٣٤٥٦٧٨٩٠";
-        String expectedOutput = "1234567890";
-        assertEquals(expectedOutput, NumberConverter.arabicToEnglishNumbers(input));
+    public void testConvertsSingleArabicNumeralsToEnglish() {
+        assertEquals("1", arabicToEnglishNumbers("١"));
+        assertEquals("5", arabicToEnglishNumbers("٥"));
+        assertEquals("9", arabicToEnglishNumbers("٩"));
     }
 
     @Test
-    public void testArabicToEnglishNumbers_NoArabicNumerals() {
-        String input = "Hello, World!";
-        String expectedOutput = "Hello, World!";
-        assertEquals(expectedOutput, NumberConverter.arabicToEnglishNumbers(input));
+    public void testConvertsStringOfArabicNumeralsToEnglish() {
+        assertEquals("0123456789", arabicToEnglishNumbers("٠١٢٣٤٥٦٧٨٩"));
     }
 
     @Test
-    public void testArabicToEnglishNumbers_MixArabicAndEnglish() {
-        String input = "رقم ١٢٣ هو المثال";
-        String expectedOutput = "رقم 123 هو المثال";
-        assertEquals(expectedOutput, NumberConverter.arabicToEnglishNumbers(input));
+    public void testHandlesStringsWithArabicAndEnglishNumeralsMixed() {
+        assertEquals("012345", arabicToEnglishNumbers("٠١23٤5"));
     }
 
     @Test
-    public void testArabicToEnglishNumbers_EmptyString() {
-        String input = "";
-        String expectedOutput = "";
-        assertEquals(expectedOutput, NumberConverter.arabicToEnglishNumbers(input));
+    public void testLeavesNonNumeralCharactersUnchanged() {
+        assertEquals("Hello World!", arabicToEnglishNumbers("Hello World!"));
+        assertEquals("2022-2023", arabicToEnglishNumbers("2022-٢٠٢٣"));
     }
 
     @Test
-    public void testArabicToEnglishNumbers_MixedArabicAndEnglishNumerals() {
-        String input = "The number is ٣٥٦ and 789.";
-        String expectedOutput = "The number is 356 and 789.";
-        assertEquals(expectedOutput, NumberConverter.arabicToEnglishNumbers(input));
+    public void testWorksWithFullSentencesIncludingArabicNumerals() {
+        assertEquals("The year is 2024!", arabicToEnglishNumbers("The year is ٢٠٢٤!"));
+    }
+
+    @Test
+    public void testHandlesEmptyStringsCorrectly() {
+        assertEquals("", arabicToEnglishNumbers(""));
+    }
+
+    @Test
+    public void testProcessesArabicNumeralsInComplexMixedContext() {
+        assertEquals("Price: 500$ and Date: 2023-12-01", 
+                     arabicToEnglishNumbers("Price: ٥٠٠$ and Date: ٢٠٢٣-١٢-٠١"));
     }
 }

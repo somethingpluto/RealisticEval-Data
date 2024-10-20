@@ -1,6 +1,6 @@
 import java.util.Arrays;
 
-public class AlphabetUtil {
+public class Answer {
 
     /**
      * Produces a character array of length 52 containing all lowercase and uppercase letters in alphabetical order.

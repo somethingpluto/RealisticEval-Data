@@ -3,7 +3,7 @@ package org.real.temp;
 import org.junit.Test;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
-
+import static org.real.temp.Answer.*;
 public class Tester {
 
     @Test
@@ -24,5 +24,4 @@ public class Tester {
         assertFalse(validURL(url));
     }
 
-    // Assume validURL method is defined here or imported
 }

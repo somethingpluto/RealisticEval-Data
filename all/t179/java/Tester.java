@@ -1,21 +1,22 @@
 package org.real.temp;
 
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.Test;
+import org.junit.After;
+import org.junit.Before;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.Assert.*; // Changed from org.junit.jupiter.api.Assertions to org.junit.Assert
 
-import org.real.temp.*;
+import org.real.temp.Answer.*;
+
 public class Tester {
     private File sourceDir;
     private File targetDir;
 
-    @BeforeEach
+    @Before
     public void setUp() throws IOException {
         sourceDir = new File("testSourceDir");
         targetDir = new File("testTargetDir");
@@ -29,7 +30,7 @@ public class Tester {
         }
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         deleteDirectory(sourceDir);
         deleteDirectory(targetDir);
@@ -41,9 +42,9 @@ public class Tester {
     @Test
     public void testCopyEmptyDirectory() throws IOException {
         Answer.copyDirectory(sourceDir, targetDir);
-        assertTrue(targetDir.exists(), "Target directory should exist after copying.");
-        assertTrue(targetDir.isDirectory(), "Target directory should be a directory.");
-        assertEquals(0, targetDir.listFiles().length, "Target directory should be empty.");
+        assertTrue("Target directory should exist after copying.", targetDir.exists());
+        assertTrue("Target directory should be a directory.", targetDir.isDirectory());
+        assertEquals("Target directory should be empty.", 0, targetDir.listFiles().length);
     }
 
     /**
@@ -57,18 +58,17 @@ public class Tester {
         Answer.copyDirectory(sourceDir, targetDir);
         File copiedFile = new File(targetDir, "testFile.txt");
 
-        assertTrue(copiedFile.exists(), "File should be copied to target directory.");
-        assertEquals(testFile.length(), copiedFile.length(), "File size should be the same after copying.");
+        assertTrue("File should be copied to target directory.", copiedFile.exists());
+        assertEquals("File size should be the same after copying.", testFile.length(), copiedFile.length());
     }
 
     /**
      * Test handling of non-existent source directory.
      */
-    @Test
-    public void testNonExistentSourceDirectory() {
+    @Test(expected = Exception.class) // Changed to expected for JUnit 4
+    public void testNonExistentSourceDirectory() throws IOException {
         File nonExistentDir = new File("nonExistentDir");
-        assertThrows(Exception.class, () ->
-                Answer.copyDirectory(nonExistentDir, targetDir), "Expected exception for non-existent source directory.");
+        Answer.copyDirectory(nonExistentDir, targetDir); // No need for assertThrows
     }
 
     /**
@@ -85,8 +85,8 @@ public class Tester {
         File copiedSubDir = new File(targetDir, "subDir");
         File copiedFile = new File(copiedSubDir, "testFile.txt");
 
-        assertTrue(copiedSubDir.exists(), "Subdirectory should be copied to target directory.");
-        assertTrue(copiedFile.exists(), "File within subdirectory should be copied to target directory.");
+        assertTrue("Subdirectory should be copied to target directory.", copiedSubDir.exists());
+        assertTrue("File within subdirectory should be copied to target directory.", copiedFile.exists());
     }
 
     /**
@@ -106,13 +106,12 @@ public class Tester {
         Answer.copyDirectory(sourceDir, targetDir);
         File copiedFile = new File(targetDir, "testFile.txt");
 
-        assertTrue(copiedFile.exists(), "File should be copied to target directory.");
+        assertTrue("File should be copied to target directory.", copiedFile.exists());
 
         // Check that the content of the file is now the same as the source file
         String copiedContent = Files.readString(copiedFile.toPath());
-        assertEquals("Source content", copiedContent, "File in target directory should be overwritten with source content.");
+        assertEquals("File in target directory should be overwritten with source content.", "Source content", copiedContent);
     }
-
 
     /**
      * Helper method to delete a directory and its contents.

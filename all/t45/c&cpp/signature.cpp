@@ -12,4 +12,4 @@
  * @param test_date The date to compute information for, defaults to today's date if not provided.
  * @return A map containing the year, month, week of the month, and day of the week.
  */
-std::map<std::string, std::string> getCurrentDateInfo(const std::tm* test_date = nullptr) {
+std::map<std::string, std::string> get_current_date_info(const std::tm* test_date = nullptr) {

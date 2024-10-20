@@ -1,9 +1,8 @@
 /**
- * Extracts the second-level and top-level domain names from the fully qualified domain name (FQDN).
- *
+ * Extracts the second-level domain (SLD) and top-level domain (TLD) from a fully qualified domain name (FQDN).
+ * 
  * @param fqdn The fully qualified domain name.
- * @return A list containing the second-level domain and top-level domain.
+ * @return A pair containing the second-level domain and top-level domain.
+ * @throws IllegalArgumentException if the provided FQDN does not contain enough parts to extract SLD and TLD.
  */
-public List<String> extractSldTld(String fqdn) {
-
-}
+public static SimpleEntry<String, String> extractSldTld(String fqdn) {}

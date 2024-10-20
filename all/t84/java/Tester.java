@@ -1,7 +1,9 @@
 package org.real.temp;
 
 import org.junit.Test;
+
 import static org.junit.Assert.assertEquals;
+import static org.real.temp.Answer.*;
 
 public class Tester {
 
@@ -12,8 +14,8 @@ public class Tester {
     public void testEmptySourceString() {
         // Test with an empty source string
         assertEquals("Should return an empty string when source is empty",
-                     "",
-                     findMinWindowSubstring("", "abc"));
+                "",
+                findMinWindowSubstring("", "abc"));
     }
 
     /**
@@ -23,8 +25,8 @@ public class Tester {
     public void testEmptyTargetString() {
         // Test with an empty target string
         assertEquals("Should return an empty string when target is empty",
-                     "",
-                     findMinWindowSubstring("abc", ""));
+                "",
+                findMinWindowSubstring("abc", ""));
     }
 
     /**
@@ -34,8 +36,8 @@ public class Tester {
     public void testNoValidWindow() {
         // Test when there is no valid window
         assertEquals("Should return an empty string when no valid window exists",
-                     "",
-                     findMinWindowSubstring("abcdef", "xyz"));
+                "",
+                findMinWindowSubstring("abcdef", "xyz"));
     }
 
     /**
@@ -45,8 +47,8 @@ public class Tester {
     public void testExactMatchWindow() {
         // Test when the entire source string is the exact match
         assertEquals("Should return the entire string when it is an exact match",
-                     "abcd",
-                     findMinWindowSubstring("abcd", "abcd"));
+                "abcd",
+                findMinWindowSubstring("abcd", "abcd"));
     }
 
     /**
@@ -56,7 +58,7 @@ public class Tester {
     public void testMinimalValidWindow() {
         // Test with a minimal valid window case
         assertEquals("Should return 'BANC' as the smallest window containing all characters of 'ABC'",
-                     "BANC",
-                     findMinWindowSubstring("ADOBECODEBANC", "ABC"));
+                "BANC",
+                findMinWindowSubstring("ADOBECODEBANC", "ABC"));
     }
 }

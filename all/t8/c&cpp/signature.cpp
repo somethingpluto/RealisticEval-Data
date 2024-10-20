@@ -1,5 +1,5 @@
 /**
- * Implement decryption based on polynomials and keys
+ * @brief Implement decryption based on polynomials and keys
  *
  * @param degree The highest degree of a polynomial is added by one
  * @param modulus Modulus to use when encrypting question

@@ -1,6 +1,3 @@
-#include <catch2/catch_test_macros.hpp>
-#include <vector>
-
 TEST_CASE("Test convert_to_ring_format", "[convert_to_ring_format]") {
     SECTION("Test with no holes provided") {
         std::vector<int> holes = {};

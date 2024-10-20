@@ -6,6 +6,4 @@
  * @param imageIDs Array of image IDs corresponding to the scores.
  * @return A map containing the sorted scores, names, and IDs, for example { "resultScores", "resultNames", "resultIDs" }
  */
-public Map<String, Object> reorderData(int[] imageScores, String[] imageNames, String[] imageIDs) {
-    // Implementation will go here
-}
+public Map<String, Object> reorderData(int[] imageScores, String[] imageNames, String[] imageIDs) {}

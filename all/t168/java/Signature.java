@@ -8,6 +8,4 @@
  * @return A user-friendly string representing the relative time difference from the current date.
  * @throws IllegalArgumentException If the date string is invalid.
  */
-public static String formatDate(String dateString) throws IllegalArgumentException {
-    // Method implementation will go here
-}
+public static String formatDate(String dateString) throws IllegalArgumentException {}

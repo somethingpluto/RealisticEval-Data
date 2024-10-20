@@ -1,8 +1,9 @@
 /**
  * A class representing a max-heap priority queue.
  */
-public class PriorityQueue {
-    private List<Integer> heap; // This will store the elements of the heap
+public class Answer {
+    static class PriorityQueue{
+private List<Integer> heap; // This will store the elements of the heap
 
     /** 
      * Constructor to initialize the priority queue.
@@ -114,4 +115,6 @@ public class PriorityQueue {
     public int size() {
         return heap.size();
     }
+    }
+    
 }
