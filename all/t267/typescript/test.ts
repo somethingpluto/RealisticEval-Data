@@ -1,33 +1,21 @@
-describe('extract_sld_tld', () => {
-  it('should correctly extract SLD and TLD from a valid FQDN', () => {
-    const fqdn = 'example.com';
-    const [sld, tld] = extract_sld_tld(fqdn);
-    expect(sld).toBe('example');
-    expect(tld).toBe('com');
+describe('TestExtractSldTld', () => {
+  it('test standard FQDN', () => {
+      // Test a typical FQDN
+      expect(extractSldTld("www.example.com")).toEqual(["example", "com"]);
   });
 
-  it('should handle multiple levels of subdomains', () => {
-    const fqdn = 'sub.example.co.uk';
-    const [sld, tld] = extract_sld_tld(fqdn);
-    expect(sld).toBe('example');
-    expect(tld).toBe('co.uk');
+  it('test standard FQDN2', () => {
+      // Test a typical FQDN
+      expect(extractSldTld("www.example.xyz")).toEqual(["example", "xyz"]);
   });
 
-  it('should handle hyphenated domains', () => {
-    const fqdn = 'my-domain.com';
-    const [sld, tld] = extract_sld_tld(fqdn);
-    expect(sld).toBe('my-domain');
-    expect(tld).toBe('com');
+  it('test FQDN with subdomains', () => {
+      // Test an FQDN with multiple subdomains
+      expect(extractSldTld("blog.subdomain.example.com")).toEqual(["example", "com"]);
   });
 
-  it('should handle internationalized domains', () => {
-    const fqdn = 'xn--exmpl-1ga.com';
-    const [sld, tld] = extract_sld_tld(fqdn);
-    expect(sld).toBe('exmpl');
-    expect(tld).toBe('com');
-  });
-
-  it('should throw an error for invalid FQDNs', () => {
-    expect(() => extract_sld_tld('invalid')).toThrowError();
+  it('test numeric TLD', () => {
+      // Test a numeric TLD, which can occur in private networks
+      expect(extractSldTld("server.example.123")).toEqual(["example", "123"]);
   });
 });

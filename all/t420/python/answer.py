@@ -27,7 +27,7 @@ def find_closest_word_indices(sequence, word1, word2):
     return min_distance
 
 
-def get_min_distance(file_path, word1, word2):
+def get_min_distance_between_2_word(file_path, word1, word2):
     """Determine the minimum distance between two words in any line of a file."""
     sequences = read_file_as_sequences(file_path)
     min_distance = float('inf')

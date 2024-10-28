@@ -2,14 +2,7 @@ import csv
 import sys
 
 
-def read_tsv_from_stdin():
-    """
-
-    Returns:
-
-    """
-
-    # Create a CSV reader that reads from standard input with tab as the delimiter
+def read_tsv_data_from_std_input():
     reader = csv.reader(sys.stdin, delimiter='\t')
 
     # Read all rows into a list

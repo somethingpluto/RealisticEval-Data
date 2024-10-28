@@ -1,21 +1,67 @@
-describe('getMinSeqNumAndDistance', () => {
-  it('should return the correct min seq num and distance', async () => {
-    const filePath = 'path_to_your_file.txt'; // replace with your file path
-    const word1 = 'word1';
-    const word2 = 'word2';
+import * as fs from 'fs';
 
-    const result = await getMinSeqNumAndDistance(filePath, word1, word2);
+describe('TestGetMinDistance', () => {
+  it('test basic functionality with expected input', () => {
+      const mockContent = "hello world\napple banana apple\norange apple banana";
+      const mockOpen = jest.fn().mockImplementation(() => ({
+          readFileSync: jest.fn().mockReturnValue(mockContent),
+      }));
 
-    expect(result).toEqual([expectedLineNumber, expectedMinDistance]); // replace with the expected values
+      // Mock the fs.readFileSync method
+      jest.spyOn(fs, 'readFileSync').mockImplementation(mockOpen);
+
+      const [lineNumber, distance] = getMinSeqNumAndDistance('dummy_file.txt', 'apple', 'banana');
+      expect([lineNumber, distance]).toEqual([2, 1]);
+
+      // Restore the original implementation after the test
+      jest.restoreAllMocks();
   });
 
-  it('should return (null, Infinity) when one of the words is not found', async () => {
-    const filePath = 'path_to_your_file.txt'; // replace with your file path
-    const word1 = 'word1';
-    const word2 = 'non_existent_word';
+  it('test case where one or both words are not present', () => {
+      const mockContent = "apple orange pear\norange pear apple";
+      const mockOpen = jest.fn().mockImplementation(() => ({
+          readFileSync: jest.fn().mockReturnValue(mockContent),
+      }));
 
-    const result = await getMinSeqNumAndDistance(filePath, word1, word2);
+      // Mock the fs.readFileSync method
+      jest.spyOn(fs, 'readFileSync').mockImplementation(mockOpen);
 
-    expect(result).toEqual([null, Infinity]);
+      const [lineNumber, distance] = getMinSeqNumAndDistance('dummy_file.txt', 'apple', 'banana');
+      expect([lineNumber, distance]).toEqual([null, Infinity]);
+
+      // Restore the original implementation after the test
+      jest.restoreAllMocks();
+  });
+
+  it('test an empty file', () => {
+      const mockContent = '';
+      const mockOpen = jest.fn().mockImplementation(() => ({
+          readFileSync: jest.fn().mockReturnValue(mockContent),
+      }));
+
+      // Mock the fs.readFileSync method
+      jest.spyOn(fs, 'readFileSync').mockImplementation(mockOpen);
+
+      const [lineNumber, distance] = getMinSeqNumAndDistance('dummy_file.txt', 'apple', 'banana');
+      expect([lineNumber, distance]).toEqual([null, Infinity]);
+
+      // Restore the original implementation after the test
+      jest.restoreAllMocks();
+  });
+
+  it('test multiple lines with varying distances between words', () => {
+      const mockContent = "apple banana\napple orange orange banana\napple orange orange orange banana";
+      const mockOpen = jest.fn().mockImplementation(() => ({
+          readFileSync: jest.fn().mockReturnValue(mockContent),
+      }));
+
+      // Mock the fs.readFileSync method
+      jest.spyOn(fs, 'readFileSync').mockImplementation(mockOpen);
+
+      const [lineNumber, distance] = getMinSeqNumAndDistance('dummy_file.txt', 'apple', 'banana');
+      expect([lineNumber, distance]).toEqual([1, 1]);
+
+      // Restore the original implementation after the test
+      jest.restoreAllMocks();
   });
 });

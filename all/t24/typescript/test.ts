@@ -1,3 +1,4 @@
+const fs = require('fs')
 describe('TestConvertYamlToJson', () => {
     let simpleYaml: string;
     let nestedYaml: string;

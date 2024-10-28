@@ -1,34 +1,39 @@
-describe('sum_calibration_values', () => {
-    test('should sum up calibration values correctly', () => {
-        const calibrationDocument = [
-            "1abc2",
-            "pqr3stu4",
-            "abcd56efgh78"
+describe('TestSumCalibrationValues', () => {
+    it('test_basic_calculations', () => {
+        // Test with a simple input where lines contain at least two digits
+        const document = [
+            "Reading 1234 calibration",
+            "Measure 5678 complete",
+            "End of data 91011"
         ];
-        expect(sum_calibration_values(calibrationDocument)).toBe(12 + 34 + 57);
+        expect(sumCalibrationValues(document)).toBe(163);
     });
 
-    test('should handle lines with no numbers', () => {
-        const calibrationDocument = [
-            "no numbers here",
-            "another line without numbers"
+    it('test_no_digits', () => {
+        // Test lines with no digits
+        const document = [
+            "No numbers here",
+            "Still no numbers"
         ];
-        expect(sum_calibration_values(calibrationDocument)).toBe(0);
+        expect(sumCalibrationValues(document)).toBe(0);
     });
 
-    test('should handle lines with multiple numbers', () => {
-        const calibrationDocument = [
-            "123abc456",
-            "789def012"
-        ];
-        expect(sum_calibration_values(calibrationDocument)).toBe(16 + 72);
-    });
-
-    test('should handle empty lines', () => {
-        const calibrationDocument = [
+    it('test_empty_lines', () => {
+        // Test with empty lines or lines with spaces
+        const document = [
             "",
-            ""
+            "   "
         ];
-        expect(sum_calibration_values(calibrationDocument)).toBe(0);
+        expect(sumCalibrationValues(document)).toBe(0);
+    });
+
+    it('test_mixed_content', () => {
+        // Test with a mixture of valid and invalid lines
+        const document = [
+            "Good line 1524 end",
+            "Bad line",
+            "Another good line 7681"
+        ];
+        expect(sumCalibrationValues(document)).toBe(85);
     });
 });

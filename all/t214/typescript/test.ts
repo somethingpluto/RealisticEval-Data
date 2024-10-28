@@ -1,3 +1,7 @@
+interface Mapping {
+    regex: RegExp;
+    replacement: string;
+}
 describe('TestReadMappingFile', () => {
     it('test_valid_mapping_file', () => {
         // Test with a valid mapping file content

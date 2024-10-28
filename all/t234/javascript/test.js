@@ -1,61 +1,63 @@
-describe('appendOrSkipRow', () => {
-  let fileHandler;
-  let reader;
-
+const { createWriteStream } = require('fs');
+const { createStringReader } = require('csv-parser');
+const { createObjectCsvWriter } = require('csv-writer');
+describe('TestAppendOrSkipRow', () => {
   beforeEach(() => {
-    // Mocking the file handler and reader objects
-    fileHandler = {
-      writeFileSync: jest.fn(),
-      createReadStream: jest.fn().mockReturnValue({
-        pipe: jest.fn()
-      })
-    };
-
-    reader = {
-      on: jest.fn()
-    };
+      // Set up a mock CSV file using a string buffer
+      this.mockFile = new createStringReader('Alice,30,USA\nBob,25,UK\nCharlie,35,Canada\n');
+      this.reader = this.mockFile;
   });
 
-  it('appends a new row if there isn\'t a row with matching values in the first three columns', () => {
-    const rowCandidate = ['value1', 'value2', 'value3', 'otherValue'];
-    const existingRows = [
-      ['value1', 'value2', 'value4'],
-      ['value5', 'value6', 'value7']
-    ];
-
-    reader.on.mockImplementation((event, callback) => {
-      if (event === 'data') {
-        existingRows.forEach(row => {
-          callback({ data: row });
-        });
-      }
-    });
-
-    appendOrSkipRow(fileHandler, reader, rowCandidate);
-
-    expect(fileHandler.writeFileSync).toHaveBeenCalledWith(
-      expect.any(String),
-      expect.stringContaining('value1,value2,value3,otherValue')
-    );
+  afterEach(() => {
+      // Reset the mock file for each test
+      this.mockFile.reset();
   });
 
-  it('skips appending a new row if there is already a row with matching values in the first three columns', () => {
-    const rowCandidate = ['value1', 'value2', 'value3', 'otherValue'];
-    const existingRows = [
-      ['value1', 'value2', 'value3'],
-      ['value5', 'value6', 'value7']
-    ];
+  it('test_append_new_row', () => {
+      // Test appending a new row when there are no matching values
+      const newRow = ['David', '28', 'Australia'];
+      appendOrSkipRow(this.mockFile, this.reader, newRow);
 
-    reader.on.mockImplementation((event, callback) => {
-      if (event === 'data') {
-        existingRows.forEach(row => {
-          callback({ data: row });
-        });
+      this.mockFile.reset();  // Reset pointer to read from the start
+      const result = this.mockFile.readAll();
+      expect(result).toContainEqual(newRow);
+  });
+
+  it('test_skip_different_values', () => {
+      // Test appending a new row with different values
+      const newRow = ['Alice', '31', 'USA'];  // Same name, different age
+      appendOrSkipRow(this.mockFile, this.reader, newRow);
+
+      this.mockFile.reset();  // Reset pointer to read from the start
+      const result = this.mockFile.readAll();
+      expect(result).toContainEqual(newRow);
+  });
+
+  it('test_append_row_with_different_columns', () => {
+      // Test appending a row with different values in the first three columns
+      const newRow = ['Eve', '40', 'Australia', 'Engineer'];
+      appendOrSkipRow(this.mockFile, this.reader, newRow);
+
+      this.mockFile.reset();  // Reset pointer to read from the start
+      const result = this.mockFile.readAll();
+      expect(result).toContainEqual(newRow);
+  });
+
+  it('test_multiple_appends', () => {
+      // Test appending multiple new rows correctly
+      const newRows = [
+          ['Frank', '29', 'Germany'],
+          ['Grace', '22', 'France']
+      ];
+
+      for (const row of newRows) {
+          appendOrSkipRow(this.mockFile, this.reader, row);
+          this.mockFile.reset();  // Reset pointer for the next read
+          this.reader = this.mockFile;
       }
-    });
 
-    appendOrSkipRow(fileHandler, reader, rowCandidate);
-
-    expect(fileHandler.writeFileSync).not.toHaveBeenCalled();
+      this.mockFile.reset();  // Reset pointer to read from the start
+      const result = this.mockFile.readAll();
+      newRows.forEach(row => expect(result).toContainEqual(row));
   });
 });

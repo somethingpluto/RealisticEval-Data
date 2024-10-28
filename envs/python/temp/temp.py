@@ -1,51 +1,78 @@
-def josephus(n, k):
+import math
+
+def calculate_steering_angle(angular_velocity: float, speed: float, wheelbase: float) -> float:
     """
-    Simulates the Josephus problem using a list to represent the circle of people.
+    Calculates the steering angle based on the given angular velocity, speed, and wheelbase.
 
-    :param n: The number of people in the circle (1 to n).
-    :param k: The step count (every k-th person will be eliminated).
-    :return: The position of the last person remaining (1-indexed).
+    The function uses the relationship between angular velocity, speed, and the steering angle
+    to determine the appropriate steering angle required for the vehicle to achieve the desired
+    angular velocity. The formula used is:
+
+         ω = (v / L) * tan(δ)
+
+    Rearranging gives us:
+
+         δ = atan((ω * L) / v)
+
+    Parameters:
+    angular_velocity (float): The angular velocity of the vehicle in radians per second.
+    speed (float): The forward speed of the vehicle in meters per second.
+    wheelbase (float): The distance between the front and rear axles of the vehicle in meters.
+
+    Returns:
+    float: The steering angle in radians.
+
+    Raises:
+    ValueError: If speed is less than or equal to zero,
+                since the vehicle cannot move at zero or negative speed.
     """
-
-    # Step 1: Create a list to represent the people in the circle
-    people = list(range(1, n + 1))  # Create a list of people from 1 to n
-    index = 0  # Start from the first person
-
-    # Step 2: Eliminate people until only one remains
-    while len(people) > 1:
-        # Step 3: Find the index of the person to eliminate
-        index = (index + k - 1) % len(people)  # -1 to adjust for zero-based index
-        eliminated_person = people.pop(index)  # Eliminate that person
-        print(f"Eliminated: {eliminated_person}, Remaining: {people}")
-
-    # Step 4: Return the position of the last remaining person
-    return people[0]  # The last remaining person
-
-# Unit Test Class
+    if speed <= 0:
+        raise ValueError("Speed must be greater than zero.")
+    
+    steering_angle = math.atan((angular_velocity * wheelbase) / speed)
+    return steering_angle
+import math
 import unittest
 
 
-class TestJosephusProblem(unittest.TestCase):
+class Tester(unittest.TestCase):
+    wheelbase = 2.5  # Setting wheelbase constant for all tests
 
-    def test_case_1(self):
-        self.assertEqual(josephus(7, 3), 4)  # Standard case
+    def test_normal_case(self):
+        angular_velocity = 1.0  # radians/second
+        speed = 10.0  # meters/second
+        expected_angle = math.atan((angular_velocity * self.wheelbase) / speed)
+        self.assertAlmostEqual(calculate_steering_angle(angular_velocity, speed, self.wheelbase), expected_angle)
 
-    def test_case_2(self):
-        self.assertEqual(josephus(1, 1), 1)  # Only one person
+    def test_zero_speed(self):
+        angular_velocity = 1.0  # radians/second
+        speed = 0.0  # meters/second
+        with self.assertRaises(ValueError):
+            calculate_steering_angle(angular_velocity, speed, self.wheelbase)
 
-    def test_case_3(self):
-        self.assertEqual(josephus(5, 2), 3)  # Smaller group, step 2
+    def test_negative_speed(self):
+        angular_velocity = 1.0  # radians/second
+        speed = -5.0  # meters/second
+        with self.assertRaises(Exception):
+            calculate_steering_angle(angular_velocity, speed, self.wheelbase)
 
-    def test_case_4(self):
-        self.assertEqual(josephus(10, 5), 3)  # Larger group, step 5
+    def test_zero_angular_velocity(self):
+        angular_velocity = 0.0  # radians/second
+        speed = 10.0  # meters/second
+        expected_angle = 0.0  # Steering angle should be zero
+        self.assertAlmostEqual(calculate_steering_angle(angular_velocity, speed, self.wheelbase), expected_angle)
 
-    def test_case_5(self):
-        self.assertEqual(josephus(6, 1), 6)  # Eliminate every 1st person
+    def test_large_values(self):
+        angular_velocity = 100.0  # radians/second
+        speed = 1000.0  # meters/second
+        expected_angle = math.atan((angular_velocity * self.wheelbase) / speed)
+        self.assertAlmostEqual(calculate_steering_angle(angular_velocity, speed, self.wheelbase), expected_angle)
 
-    def test_case_6(self):
-        self.assertEqual(josephus(8, 4), 6)  # Step 4 in a group of 8
+    def test_high_angular_velocity(self):
+        angular_velocity = 10.0  # radians/second
+        speed = 1.0  # meters/second
+        expected_angle = math.atan((angular_velocity * self.wheelbase) / speed)
+        self.assertAlmostEqual(calculate_steering_angle(angular_velocity, speed, self.wheelbase), expected_angle)
 
-    def test_case_7(self):
-        self.assertEqual(josephus(12, 7), 12)  # Larger group, arbitrary step
 if __name__ == '__main__':
     unittest.main()

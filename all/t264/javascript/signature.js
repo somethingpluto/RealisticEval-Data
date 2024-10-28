@@ -4,6 +4,4 @@
  *
  * @param {string} logFilePath - Path to the log file.
  */
-function extractLogEntries(logFilePath) {
-
-}
+function extractLogEntries(logFilePath) {}

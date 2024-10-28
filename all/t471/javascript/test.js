@@ -1,15 +1,47 @@
-const { describe, it, expect } = require('@jest/globals');
-const { getRotation } = require('./path_to_your_module'); // replace with your module path
-const np = require('numpy');
+const assert = require('assert');
 
-describe('getRotation', () => {
-    it('should return correct rotation angle for identity matrix', () => {
-        const matrix = np.eye(2);
-        expect(getRotation(matrix)).toBeCloseTo(0);
+describe('TestGetRotationFunction', () => {
+    it('test_rotation_0_degrees', () => {
+        // Test for a rotation of 0 degrees (identity matrix)
+        const matrix = [
+            [1, 0, 0],
+            [0, 1, 0],
+            [0, 0, 1]
+        ];
+        const expectedRotation = 0.0;
+        expect(getRotation(matrix)).toBeCloseTo(expectedRotation, 6);
     });
 
-    it('should return correct rotation angle for rotation matrix', () => {
-        const matrix = np.array([[Math.cos(Math.PI / 4), -Math.sin(Math.PI / 4)], [Math.sin(Math.PI / 4), Math.cos(Math.PI / 4)]]);
-        expect(getRotation(matrix)).toBeCloseTo(Math.PI / 4);
+    it('test_rotation_90_degrees', () => {
+        // Test for a rotation of 90 degrees
+        const matrix = [
+            [0, -1, 0],
+            [1, 0, 0],
+            [0, 0, 1]
+        ];
+        const expectedRotation = Math.PI / 2;  // 90 degrees in radians
+        expect(getRotation(matrix)).toBeCloseTo(expectedRotation, 6);
+    });
+
+    it('test_rotation_180_degrees', () => {
+        // Test for a rotation of 180 degrees
+        const matrix = [
+            [-1, 0, 0],
+            [0, -1, 0],
+            [0, 0, 1]
+        ];
+        const expectedRotation = Math.PI;  // 180 degrees in radians
+        expect(getRotation(matrix)).toBeCloseTo(expectedRotation, 6);
+    });
+
+    it('test_rotation_negative_90_degrees', () => {
+        // Test for a rotation of -90 degrees
+        const matrix = [
+            [0, 1, 0],
+            [-1, 0, 0],
+            [0, 0, 1]
+        ];
+        const expectedRotation = -Math.PI / 2;  // -90 degrees in radians
+        expect(getRotation(matrix)).toBeCloseTo(expectedRotation, 6);
     });
 });

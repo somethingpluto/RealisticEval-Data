@@ -6,5 +6,4 @@
  */
 // @ts-ignore
 function parseGitDiff(diffText) {
-    // Function implementation goes here
 }

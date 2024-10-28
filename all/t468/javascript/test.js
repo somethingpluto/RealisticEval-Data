@@ -1,34 +1,39 @@
-const { getTranslation } = require('./your-python-module'); // Adjust the path accordingly
+const math = require('mathjs');
 
-describe('getTranslation', () => {
-    it('should return the correct translation vector for a given 3x3 matrix', () => {
-        const matrix = [
-            [1, 0, 5],
-            [0, 1, 10],
-            [0, 0, 1]
-        ];
-        const expectedTranslation = [5, 10];
-        const result = getTranslation(matrix);
-        expect(result).toEqual(expectedTranslation);
+describe('TestGetTranslationFunction', () => {
+    describe('test_identity_matrix', () => {
+        it('should return the correct translation for the identity matrix', () => {
+            const matrix = [
+                [1, 0, 0],
+                [0, 1, 0],
+                [0, 0, 1]
+            ];
+            const expectedTranslation = [0.0, 0.0];
+            expect(getTranslation(matrix)).toEqual(expectedTranslation);
+        });
     });
 
-    it('should handle matrices with different values', () => {
-        const matrix = [
-            [2, 0, 7],
-            [0, 3, 9],
-            [0, 0, 1]
-        ];
-        const expectedTranslation = [7, 9];
-        const result = getTranslation(matrix);
-        expect(result).toEqual(expectedTranslation);
+    describe('test_translation_matrix', () => {
+        it('should return the correct translation for a translation matrix (5 in x, 10 in y)', () => {
+            const matrix = [
+                [1, 0, 5],
+                [0, 1, 10],
+                [0, 0, 1]
+            ];
+            const expectedTranslation = [5.0, 10.0];
+            expect(getTranslation(matrix)).toEqual(expectedTranslation);
+        });
     });
 
-    it('should throw an error if the input is not a 3x3 matrix', () => {
-        const matrix = [
-            [1, 0, 5],
-            [0, 1, 10] // Missing third row
-        ];
-
-        expect(() => getTranslation(matrix)).toThrowError('Input matrix must be a 3x3 matrix');
+    describe('test_negative_translation', () => {
+        it('should return the correct translation for a translation matrix with negative values', () => {
+            const matrix = [
+                [1, 0, -3],
+                [0, 1, -6],
+                [0, 0, 1]
+            ];
+            const expectedTranslation = [-3.0, -6.0];
+            expect(getTranslation(matrix)).toEqual(expectedTranslation);
+        });
     });
 });

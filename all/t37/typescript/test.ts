@@ -1,5 +1,12 @@
-import { lanczos, QuadratureRule } from './yourModule'; // Adjust the import path as needed
+class QuadratureRule {
+    x: number[];
+    w: number[];
 
+    constructor(x: number[], w: number[]) {
+        this.x = x;
+        this.w = w;
+    }
+}
 describe('OrthogonalPolynomial', () => {
 
     test('test_lanczos_basic', () => {

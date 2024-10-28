@@ -1,24 +1,33 @@
-// Import the function you want to test
-const { areSiblings } = require('./path/to/your/function');
+describe('TestAreSiblings', () => {
+  let tree;
 
-describe('areSiblings', () => {
-  it('should return true if two values are siblings', () => {
-    const tree = [3, 5, 1, 6, 2, 0, 8];
-    expect(areSiblings(tree, 6, 2)).toBe(true);
+  beforeEach(() => {
+      // Setting up a binary tree used for all the test cases
+      tree = [1, 2, 3, 4, 5, 6, 7];
   });
 
-  it('should return false if two values are not siblings', () => {
-    const tree = [3, 5, 1, 6, 2, 0, 8];
-    expect(areSiblings(tree, 6, 8)).toBe(false);
+  it('test with nodes 4 and 5, which are siblings', () => {
+      const result = areSiblings(tree, 4, 5);
+      expect(result).toBe(true);
   });
 
-  it('should handle empty tree', () => {
-    const tree = [];
-    expect(areSiblings(tree, 1, 2)).toBe(false);
+  it('test with nodes 4 and 6, which are not siblings', () => {
+      const result = areSiblings(tree, 4, 6);
+      expect(result).toBe(false);
   });
 
-  it('should handle single node tree', () => {
-    const tree = [1];
-    expect(areSiblings(tree, 1, 1)).toBe(false);
+  it('test with node 1 (root) and any other node, should return false', () => {
+      const result = areSiblings(tree, 1, 2);
+      expect(result).toBe(false);
+  });
+
+  it('test with non-existent values', () => {
+      const result = areSiblings(tree, 8, 9);
+      expect(result).toBe(false);
+  });
+
+  it('test with the same node for both values', () => {
+      const result = areSiblings(tree, 4, 4);
+      expect(result).toBe(false);
   });
 });

@@ -1,7 +1,7 @@
 import re
 
 
-def prepare_query(sql: str, params: dict) -> tuple:
+def convert_named_to_positional_query(sql: str, params: dict) -> tuple:
     """
     This function modifies a SQL query string containing named parameters
     (like $name, $age) into a format compatible with libraries that require

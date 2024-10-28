@@ -1,22 +1,79 @@
-import { describe, expect, it } from '@jest/globals';
-import { convertImageToBits } from './path-to-your-module'; // Adjust the import according to your module structure
+import Jimp from 'jimp';
 
-describe('convertImageToBits', () => {
-  it('should convert a simple 2x2 black and white image to bits', () => {
-    const imagePath = 'path/to/test/black-and-white-image.png'; // Replace with a valid path to a black and white image
-    const expectedBits = [0, 0, 0, 0]; // Expected bits for a 2x2 black image
+describe('TestConvertImageToBits', () => {
+    let whiteImagePath: string;
+    let blackImagePath: string;
+    let mixedImagePath: string;
+    let largeImagePath: string;
 
-    const result = convertImageToBits(imagePath);
+    beforeEach(() => {
+        // Create test images before each test
+        whiteImagePath = 'white_image.bmp';
+        blackImagePath = 'black_image.bmp';
+        mixedImagePath = 'mixed_image.bmp';
+        largeImagePath = 'large_image.bmp';
 
-    expect(result).toEqual(expectedBits);
-  });
+        // Create a white image (all pixels white)
+        const whiteImage = new Jimp(2, 2, 0xffffffff); // 0xffffffff is white
+        whiteImage.write(whiteImagePath);
 
-  it('should convert a simple 2x2 image with one white and three black pixels to bits', () => {
-    const imagePath = 'path/to/test/one-white-three-black-image.png'; // Replace with a valid path to such an image
-    const expectedBits = [1, 0, 0, 0]; // Expected bits for a 2x2 image with one white pixel
+        // Create a black image (all pixels black)
+        const blackImage = new Jimp(2, 2, 0x00000000); // 0x00000000 is black
+        blackImage.write(blackImagePath);
 
-    const result = convertImageToBits(imagePath);
+        // Create a mixed image (half white, half black)
+        const mixedImage = new Jimp(2, 2);
+        mixedImage.setPixelColor(0xffffffff, 0, 0); // White
+        mixedImage.setPixelColor(0x00000000, 0, 1); // Black
+        mixedImage.setPixelColor(0x00000000, 1, 0); // Black
+        mixedImage.setPixelColor(0xffffffff, 1, 1); // White
+        mixedImage.write(mixedImagePath);
 
-    expect(result).toEqual(expectedBits);
-  });
+        // Create a larger image (3x3)
+        const largeImage = new Jimp(3, 3);
+        largeImage.setPixelColor(0xffffffff, 0, 0); // White
+        largeImage.setPixelColor(0xffffffff, 1, 1); // White
+        largeImage.setPixelColor(0xffffffff, 2, 2); // White
+        largeImage.write(largeImagePath);
+    });
+
+    afterEach(() => {
+        // Remove the test images after each test
+        require('fs').unlinkSync(whiteImagePath);
+        require('fs').unlinkSync(blackImagePath);
+        require('fs').unlinkSync(mixedImagePath);
+        require('fs').unlinkSync(largeImagePath);
+    });
+
+    it('test converting a white image', async () => {
+        const expectedOutput = [1, 1, 1, 1]; // All pixels should be 1 (white)
+        const result = await convertImageToBits(whiteImagePath);
+        expect(result).toEqual(expectedOutput);
+    });
+
+    it('test converting a black image', async () => {
+        const expectedOutput = [0, 0, 0, 0]; // All pixels should be 0 (black)
+        const result = await convertImageToBits(blackImagePath);
+        expect(result).toEqual(expectedOutput);
+    });
+
+    it('test converting a mixed image', async () => {
+        const expectedOutput = [1, 0, 0, 1]; // 1 white, 3 black
+        const result = await convertImageToBits(mixedImagePath);
+        expect(result).toEqual(expectedOutput);
+    });
+
+    it('test converting an invalid image path', async () => {
+        await expect(convertImageToBits('invalid_image_path.bmp')).rejects.toThrow(/ENOENT/);
+    });
+
+    it('test converting a larger image', async () => {
+        const expectedOutput = [
+            1, 0, 0,
+            0, 1, 0,
+            0, 0, 1
+        ];
+        const result = await convertImageToBits(largeImagePath);
+        expect(result).toEqual(expectedOutput);
+    });
 });

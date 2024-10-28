@@ -6,6 +6,4 @@
  * @returns {number[]} The resulting vector after multiplication.
  * @throws {Error} If the dimensions of the matrix and vector are not compatible for multiplication.
  */
-function matrixVectorMultiplication(matrix, vector) {
-    // Your implementation here...
-}
+function matrixVectorMultiplication(matrix, vector) {}

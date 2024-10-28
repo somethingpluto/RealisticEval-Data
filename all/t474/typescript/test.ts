@@ -1,34 +1,38 @@
-import { describe, it, expect } from '@jest/globals';
+describe('TestAreSiblings', () => {
+    let tree: number[];
 
-// Assuming the function areSiblings is defined somewhere in your project
-function areSiblings(tree: number[], val1: number, val2: number): boolean {
-    // Implementation of the function goes here
-    const index1 = tree.indexOf(val1);
-    const index2 = tree.indexOf(val2);
-
-    if (index1 === -1 || index2 === -1) return false;
-
-    const parentIndex1 = Math.floor((index1 - 1) / 2);
-    const parentIndex2 = Math.floor((index2 - 1) / 2);
-
-    return parentIndex1 === parentIndex2;
-}
-
-describe('areSiblings', () => {
-    it('should return true if val1 and val2 are siblings', () => {
-        const tree = [3, 5, 1, 6, 2, 0, 8];
-        expect(areSiblings(tree, 5, 1)).toBe(true);
+    beforeEach(() => {
+        // Setting up a binary tree used for all the test cases
+        tree = [1, 2, 3, 4, 5, 6, 7];
     });
 
-    it('should return false if val1 and val2 are not siblings', () => {
-        const tree = [3, 5, 1, 6, 2, 0, 8];
-        expect(areSiblings(tree, 5, 8)).toBe(false);
+    it('should return true for siblings', () => {
+        // Test with nodes 4 and 5, which are siblings
+        const result = areSiblings(tree, 4, 5);
+        expect(result).toBe(true);
     });
 
-    it('should return false if one or both values are not in the tree', () => {
-        const tree = [3, 5, 1, 6, 2, 0, 8];
-        expect(areSiblings(tree, 9, 1)).toBe(false);
-        expect(areSiblings(tree, 5, 10)).toBe(false);
-        expect(areSiblings(tree, 9, 10)).toBe(false);
+    it('should return false for non-siblings', () => {
+        // Test with nodes 4 and 6, which are not siblings
+        const result = areSiblings(tree, 4, 6);
+        expect(result).toBe(false);
+    });
+
+    it('should return false for root node and another node', () => {
+        // Test with node 1 (root) and any other node, should return False
+        const result = areSiblings(tree, 1, 2);
+        expect(result).toBe(false);
+    });
+
+    it('should return false for non-existent values', () => {
+        // Test with non-existent values
+        const result = areSiblings(tree, 8, 9);
+        expect(result).toBe(false);
+    });
+
+    it('should return false for the same node', () => {
+        // Test with the same node for both values
+        const result = areSiblings(tree, 4, 4);
+        expect(result).toBe(false);
     });
 });

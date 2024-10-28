@@ -1,6 +1,3 @@
-const fs = require('fs');
-const path = require('path');
-
 describe('TestReadColumns', () => {
     const testFile = 'test_file.txt';
 

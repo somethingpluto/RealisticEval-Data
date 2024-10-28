@@ -1,7 +1,7 @@
 /**
- * Convert tsv file to jsonl file
+ * Convert a TSV file to a JSON Lines (JSONL) file.
  *
- * @param {string} tsvFile - Path to the TSV file
- * @param {string} jsonlFile - Path to the JSONL file
+ * @param {string} tsvFile - The path to the TSV file.
+ * @param {string} jsonlFile - The path to the JSONL file.
  */
-function tsvToJsonl(tsvFile, jsonlFile) {}
+function tsvToJSONL(tsvFile, jsonlFile) {}

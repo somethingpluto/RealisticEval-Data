@@ -1,10 +1,10 @@
 /**
- * Remove the part before the first upper case letter and the first lower case letter from the string.
+ * Remove the part before the first uppercase letter and the first lowercase letter from the string.
  *
- * For example:
- *     input: 1234AbCde5678
- *     output: AbCde5678
+ * @example
+ * removePartsOfString("1234AbCde5678") // returns ["AbCde5678"]
  *
- * @param {...string} strings - Accepts one or more strings as variable arguments.
+ * @param {...string} strings - Accepts one or more strings as variable arguments
+ * @returns {Array<string>} - An array of processed strings
  */
 function removePartsOfString(...strings) {}

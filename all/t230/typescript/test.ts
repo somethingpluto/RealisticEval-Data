@@ -1,17 +1,37 @@
-describe('moveEmojisToEnd', () => {
-    it('should move emojis to the end of the string', () => {
-        expect(moveEmojisToEnd('Hello, World! 😊')).toBe('Hello, World! 😊');
-        expect(moveEmojisToEnd('Hello, 🌍! 😊')).toBe('Hello, ! 🌍😊');
-        expect(moveEmojisToEnd('Hello, 🌍! 🌐')).toBe('Hello, ! 🌍🌐');
-        expect(moveEmojisToEnd('Hello, 🌍! 😀')).toBe('Hello, ! 😀🌍');
-        expect(moveEmojisToEnd('Hello, 🌍! 😊😀')).toBe('Hello, ! 😊😀🌍');
-        expect(moveEmojisToEnd('Hello, 🌍! 😊😀🙂')).toBe('Hello, ! 😊😀🙂🌍');
+describe('TestMoveEmojisToEnd', () => {
+    it('should handle strings with no emojis', () => {
+        const inputText = "This is a test.";
+        const expectedOutput = "This is a test.";
+        expect(moveEmojisToEnd(inputText)).toEqual(expectedOutput);
     });
 
-    it('should handle strings without emojis', () => {
-        expect(moveEmojisToEnd('Hello, World! ')).toBe('Hello, World! ');
-        expect(moveEmojisToEnd('Hello, World!')).toBe('Hello, World!');
-        expect(moveEmojisToEnd('Hello, World! ')).toBe('Hello, World! ');
-        expect(moveEmojisToEnd('Hello, World!')).toBe('Hello, World!');
+    it('should handle strings with only emojis', () => {
+        const inputText = "😀😃😄😁";
+        const expectedOutput = "😀😃😄😁";
+        expect(moveEmojisToEnd(inputText)).toEqual(expectedOutput);
+    });
+
+    it('should handle emojis at the start of the text', () => {
+        const inputText = "😀😃Hello world!";
+        const expectedOutput = "Hello world!😀😃";
+        expect(moveEmojisToEnd(inputText)).toEqual(expectedOutput);
+    });
+
+    it('should handle emojis already at the end of the text', () => {
+        const inputText = "Hello world!😀😃";
+        const expectedOutput = "Hello world!😀😃";
+        expect(moveEmojisToEnd(inputText)).toEqual(expectedOutput);
+    });
+
+    it('should handle emojis in the middle of the text', () => {
+        const inputText = "Hello 😀world😃!";
+        const expectedOutput = "Hello world!😀😃";
+        expect(moveEmojisToEnd(inputText)).toEqual(expectedOutput);
+    });
+
+    it('should handle text with mixed characters and emojis', () => {
+        const inputText = "Hi! 😀 How are you? 😃";
+        const expectedOutput = "Hi!  How are you? 😀😃";
+        expect(moveEmojisToEnd(inputText)).toEqual(expectedOutput);
     });
 });

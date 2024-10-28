@@ -1,26 +1,21 @@
-const compressWhitespace = require('./compressWhitespace');
-
 describe('compressWhitespace', () => {
-    it('should handle empty strings correctly', () => {
-        expect(compressWhitespace('')).toBe('');
+    it('should handle strings with single spaces', () => {
+        expect(compressWhitespace("This is a test string.")).toBe("This is a test string.");
     });
 
-    it('should handle strings without extra whitespace', () => {
-        expect(compressWhitespace('hello world')).toBe('hello world');
+    it('should handle strings with multiple spaces', () => {
+        expect(compressWhitespace("This    is  a   test   string.")).toBe("This is a test string.");
     });
 
-    it('should handle strings with leading and trailing whitespace', () => {
-        expect(compressWhitespace('  hello world  ')).toBe('hello world');
+    it('should handle strings with leading and trailing spaces', () => {
+        expect(compressWhitespace("   Leading and trailing spaces   ")).toBe("Leading and trailing spaces");
     });
 
-    it('should handle strings with multiple consecutive spaces', () => {
-        expect(compressWhitespace('hello   world')).toBe('hello world');
+    it('should handle strings with only spaces', () => {
+        expect(compressWhitespace("       ")).toBe("");
     });
 
-    it('should handle strings with tabs and newlines', () => {
-        expect(compressWhitespace('hello\t\tworld\n')).toBe('hello world');
+    it('should handle empty strings', () => {
+        expect(compressWhitespace("")).toBe("");
     });
 });
-
-// Ensure to run the tests with Jest
-// npx jest

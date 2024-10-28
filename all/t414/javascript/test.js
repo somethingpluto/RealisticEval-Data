@@ -1,62 +1,114 @@
-describe('extract_bib_info', () => {
-    test('should extract title, author, and year from a BibTeX file', () => {
-      const bibFileContent = `
-  @article{sample2024,
-    author = {John Doe and Jane Smith},
-    title = {A Comprehensive Study on AI},
-    year = {2024}
-  }
-  `;
-  
-      const expectedOutput = [
-        {
-          title: 'A Comprehensive Study on AI',
-          author: 'John Doe and Jane Smith',
-          year: '2024'
-        }
-      ];
-  
-      expect(extract_bib_info(bibFileContent)).toEqual(expectedOutput);
+const fs = require('fs');
+const { mock } = require('jest-mock-extended');
+
+
+describe('extractBibInfo', () => {
+    beforeEach(() => {
+        jest.spyOn(fs, 'readFileSync').mockImplementation((path, encoding) => {
+            if (path === 'dummy.bib') {
+                return 'dummy content';
+            }
+            return '';
+        });
     });
-  
-    test('should handle multiple entries in a BibTeX file', () => {
-      const bibFileContent = `
-  @article{sample2024,
-    author = {John Doe and Jane Smith},
-    title = {A Comprehensive Study on AI},
-    year = {2024}
-  }
-  @book{anotherBook2023,
-    author = {Alice Johnson},
-    title = {Learning JavaScript},
-    year = {2023}
-  }
-  `;
-  
-      const expectedOutput = [
-        {
-          title: 'A Comprehensive Study on AI',
-          author: 'John Doe and Jane Smith',
-          year: '2024'
-        },
-        {
-          title: 'Learning JavaScript',
-          author: 'Alice Johnson',
-          year: '2023'
-        }
-      ];
-  
-      expect(extract_bib_info(bibFileContent)).toEqual(expectedOutput);
+
+    afterEach(() => {
+        jest.restoreAllMocks();
     });
-  
-    test('should return an empty array if no valid entries are found', () => {
-      const bibFileContent = `
-  @comment{This is a comment}
-  @invalid{not_a_valid_entry}
-  `;
-  
-      const expectedOutput = [];
-  
-      expect(extract_bib_info(bibFileContent)).toEqual(expectedOutput);
+
+    it('test extraction from a valid BibTeX entry', () => {
+        const mockBib = `
+            @article{sample2024,
+              author = {John Doe and Jane Smith},
+              title = {A Comprehensive Study on AI},
+              year = {2024}
+            }
+        `;
+        fs.readFileSync.mockReturnValue(mockBib);
+
+        const result = extractBibInfo('dummy.bib');
+        const expected = [{
+            title: 'A Comprehensive Study on AI',
+            author: 'John Doe and Jane Smith',
+            year: '2024'
+        }];
+        expect(result).toEqual(expected);
     });
-  });
+
+    it('test extraction from multiple BibTeX entries', () => {
+        const mockBib = `
+            @article{sample2024,
+              author = {John Doe},
+              title = {A Comprehensive Study on AI},
+              year = {2024}
+            }
+            @article{sample2023,
+              author = {Jane Smith},
+              title = {Deep Learning Techniques},
+              year = {2023}
+            }
+        `;
+        fs.readFileSync.mockReturnValue(mockBib);
+
+        const result = extractBibInfo('dummy.bib');
+        const expected = [
+            {
+                title: 'A Comprehensive Study on AI',
+                author: 'John Doe',
+                year: '2024'
+            },
+            {
+                title: 'Deep Learning Techniques',
+                author: 'Jane Smith',
+                year: '2023'
+            }
+        ];
+        expect(result).toEqual(expected);
+    });
+
+    it('test extraction when some fields are missing', () => {
+        const mockBib = `
+            @article{sample2024,
+              author = {John Doe},
+              title = {Title Missing Year}
+            }
+        `;
+        fs.readFileSync.mockReturnValue(mockBib);
+
+        const result = extractBibInfo('dummy.bib');
+        const expected = [{
+            title: 'Title Missing Year',
+            author: 'John Doe',
+            year: null
+        }];
+        expect(result).toEqual(expected);
+    });
+
+    it('test extraction from an empty BibTeX file', () => {
+        const mockBib = '';
+        fs.readFileSync.mockReturnValue(mockBib);
+
+        const result = extractBibInfo('dummy.bib');
+        const expected = [];
+        expect(result).toEqual(expected);
+    });
+
+    it('test extraction from a badly formatted BibTeX entry', () => {
+        const mockBib = `
+            @article{sample2024,
+              author = John Doe,
+              title = {Title Without Braces},
+              year = 2024
+            }
+        `;
+        fs.readFileSync.mockReturnValue(mockBib);
+
+        const result = extractBibInfo('dummy.bib');
+        const expected = [{
+            title: 'Title Without Braces',
+            author: null,
+            year: null
+        }];
+        expect(result).toEqual(expected);
+    });
+});

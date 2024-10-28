@@ -1,76 +1,31 @@
-import { convertStringsToNumbers } from './path/to/convertStringsToNumbers'; // Adjust the path as needed
-
-describe('convertStringsToNumbers', () => {
-    it('should handle empty objects', () => {
-        expect(convertStringsToNumbers({})).toEqual({});
+describe('TestConvertStringsToNumbers', () => {
+    it('test_flat_dict', () => {
+        const data = { a: '1', b: '2.5', c: 'not a number' };
+        const expected = { a: 1, b: 2.5, c: 'not a number' };
+        expect(convertStringsToNumbers(data)).toEqual(expected);
     });
 
-    it('should handle empty arrays', () => {
-        expect(convertStringsToNumbers([])).toEqual([]);
+    it('test_nested_dict', () => {
+        const data = { x: { y: '10', z: '3.14' }, w: '20.0' };
+        const expected = { x: { y: 10, z: 3.14 }, w: 20.0 };
+        expect(convertStringsToNumbers(data)).toEqual(expected);
     });
 
-    it('should handle simple objects', () => {
-        const input = { name: 'John', age: '30', height: '5.9' };
-        const expected = { name: 'John', age: 30, height: 5.9 };
-        expect(convertStringsToNumbers(input)).toEqual(expected);
+    it('test_list_of_strings', () => {
+        const data = ['1', '2.5', '3', 'invalid'];
+        const expected = [1, 2.5, 3, 'invalid'];
+        expect(convertStringsToNumbers(data)).toEqual(expected);
     });
 
-    it('should handle nested objects', () => {
-        const input = {
-            name: 'John',
-            age: '30',
-            height: '5.9',
-            children: ['Alice', 'Bob'],
-            nested: { inner: '42' }
-        };
-        const expected = {
-            name: 'John',
-            age: 30,
-            height: 5.9,
-            children: ['Alice', 'Bob'],
-            nested: { inner: 42 }
-        };
-        expect(convertStringsToNumbers(input)).toEqual(expected);
+    it('test_mixed_structure', () => {
+        const data = { numbers: ['1', '2.0', 3], more_numbers: [{ num: '4' }, '5'] };
+        const expected = { numbers: [1, 2.0, 3], more_numbers: [{ num: 4 }, 5] };
+        expect(convertStringsToNumbers(data)).toEqual(expected);
     });
 
-    it('should handle simple arrays', () => {
-        const input = ['John', '30', '5.9'];
-        const expected = ['John', 30, 5.9];
-        expect(convertStringsToNumbers(input)).toEqual(expected);
-    });
-
-    it('should handle nested arrays', () => {
-        const input = ['John', '30', '5.9', ['Alice', 'Bob'], [{ inner: '42' }]];
-        const expected = ['John', 30, 5.9, ['Alice', 'Bob'], [{ inner: 42 }]];
-        expect(convertStringsToNumbers(input)).toEqual(expected);
-    });
-
-    it('should handle mixed structures', () => {
-        const input = {
-            name: 'John',
-            age: '30',
-            height: '5.9',
-            children: ['Alice', 'Bob'],
-            nested: { inner: '42', subNested: ['sub1', 'sub2'] }
-        };
-        const expected = {
-            name: 'John',
-            age: 30,
-            height: 5.9,
-            children: ['Alice', 'Bob'],
-            nested: { inner: 42, subNested: ['sub1', 'sub2'] }
-        };
-        expect(convertStringsToNumbers(input)).toEqual(expected);
-    });
-
-    it('should handle non-string data', () => {
-        const input = {
-            name: 'John',
-            age: 30,
-            height: 5.9,
-            children: ['Alice', 'Bob'],
-            nested: { inner: 42, subNested: ['sub1', 'sub2'] }
-        };
-        expect(convertStringsToNumbers(input)).toEqual(input);
+    it('test_empty_structure', () => {
+        const data = {};
+        const expected = {};
+        expect(convertStringsToNumbers(data)).toEqual(expected);
     });
 });

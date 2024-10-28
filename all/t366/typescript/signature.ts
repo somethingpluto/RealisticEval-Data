@@ -1,9 +1,9 @@
+import { Document } from 'docx';
+
 /**
  * Extracts text content from a given Word file (.docx).
- *
- * @param {string} docxFilePath - The path to the Word file.
- * @returns {Promise<string>} - A promise that resolves with the extracted text content.
+ * 
+ * @param docxFilePath - The path to the Word file.
+ * @returns The extracted text content or null if an error occurs.
  */
-async function extractTextFromWord(docxFilePath: string): Promise<string> {
-    // Function implementation goes here
-}
+function extractTextFromWord(docxFilePath: string): string | null {}

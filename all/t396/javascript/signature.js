@@ -1,7 +1,7 @@
 /**
- * Finds the length of the longest strictly increasing subsequence in a given array of integers.
+ * Given an array of integers `nums`, find the length of the longest strictly increasing subsequence in it.
  *
- * @param {number[]} nums - The input array of integers.
- * @returns {number} - The length of the longest strictly increasing subsequence.
+ * @param {number[]} nums - An array of integers
+ * @return {number} The length of the longest strictly increasing subsequence
  */
 function lengthOfLIS(nums) {}

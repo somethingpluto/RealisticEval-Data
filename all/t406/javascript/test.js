@@ -1,31 +1,39 @@
 describe('Colors', () => {
-    it('should return red colored text', () => {
-      const result = Colors.red('Hello');
-      expect(result).toBe('\x1b[31mHello\x1b[0m');
+  describe('Color Methods', () => {
+    it('test_red', () => {
+      const inputText = 'Hello';
+      const expectedOutput = '\x1b[91mHello\x1b[0m';
+      expect(Colors.red(inputText)).toEqual(expectedOutput);
     });
-  
-    it('should return green colored text', () => {
-      const result = Colors.green('Hello');
-      expect(result).toBe('\x1b[32mHello\x1b[0m');
+
+    it('test_green', () => {
+      const inputText = 'Hello';
+      const expectedOutput = '\x1b[92mHello\x1b[0m';
+      expect(Colors.green(inputText)).toEqual(expectedOutput);
     });
-  
-    it('should return blue colored text', () => {
-      const result = Colors.blue('Hello');
-      expect(result).toBe('\x1b[34mHello\x1b[0m');
+
+    it('test_blue', () => {
+      const inputText = 'Hello';
+      const expectedOutput = '\x1b[94mHello\x1b[0m';
+      expect(Colors.blue(inputText)).toEqual(expectedOutput);
     });
-  
-    it('should return yellow colored text', () => {
-      const result = Colors.yellow('Hello');
-      expect(result).toBe('\x1b[33mHello\x1b[0m');
+
+    it('test_yellow', () => {
+      const inputText = 'Hello';
+      const expectedOutput = '\x1b[93mHello\x1b[0m';
+      expect(Colors.yellow(inputText)).toEqual(expectedOutput);
     });
-  
-    it('should return magenta colored text', () => {
-      const result = Colors.magenta('Hello');
-      expect(result).toBe('\x1b[35mHello\x1b[0m');
+
+    it('test_magenta', () => {
+      const inputText = 'Hello';
+      const expectedOutput = '\x1b[95mHello\x1b[0m';
+      expect(Colors.magenta(inputText)).toEqual(expectedOutput);
     });
-  
-    it('should return cyan colored text', () => {
-      const result = Colors.cyan('Hello');
-      expect(result).toBe('\x1b[36mHello\x1b[0m');
+
+    it('test_cyan', () => {
+      const inputText = 'Hello';
+      const expectedOutput = '\x1b[96mHello\x1b[0m';
+      expect(Colors.cyan(inputText)).toEqual(expectedOutput);
     });
   });
+});

@@ -1,45 +1,53 @@
-// Import necessary packages
-const { describe, it, expect } = require('@jest/globals');
+const math = require('mathjs');
 
-// Mock NumPy library if needed
-// For simplicity, let's assume we're not using any external libraries here
+describe('TestGetScaleFunction', () => {
+    it('test for the identity matrix (no scaling)', () => {
+        const matrix = [
+            [1, 0, 0],
+            [0, 1, 0],
+            [0, 0, 1]
+        ];
+        const expectedScale = [1.0, 1.0];
+        expect(getScale(matrix)).toEqual(expectedScale);
+    });
 
-function getScale(matrix) {
-    // Implement the logic similar to the Python function
-    // This is just a placeholder implementation
-    const scaleX = Math.sqrt(matrix[0][0] ** 2 + matrix[0][1] ** 2);
-    const scaleY = Math.sqrt(matrix[1][0] ** 2 + matrix[1][1] ** 2);
-    return [scaleX, scaleY];
-}
-
-describe('getScale', () => {
-    it('should return correct scale factors for a valid 3x3 matrix', () => {
+    it('test for a scaling matrix (2x in x and 3x in y)', () => {
         const matrix = [
             [2, 0, 0],
             [0, 3, 0],
             [0, 0, 1]
         ];
-        const expected = [2, 3];
-        const result = getScale(matrix);
-        expect(result).toEqual(expected);
+        const expectedScale = [2.0, 3.0];
+        expect(getScale(matrix)).toEqual(expectedScale);
     });
 
-    it('should handle zero scaling correctly', () => {
+    it('test case with uniform scaling', () => {
         const matrix = [
-            [0, 0, 0],
-            [0, 0, 0],
+            [2, 0, 0],
+            [0, 2, 0],
             [0, 0, 1]
         ];
-        const expected = [0, 0];
-        const result = getScale(matrix);
-        expect(result).toEqual(expected);
+        const expectedScale = [2.0, 2.0];
+        expect(getScale(matrix)).toEqual(expectedScale);
     });
 
-    it('should throw error for non-3x3 matrix', () => {
+    it('test case with non-uniform scaling', () => {
         const matrix = [
-            [2, 0],
-            [0, 3]
+            [3, 0, 0],
+            [0, 5, 0],
+            [0, 0, 1]
         ];
-        expect(() => getScale(matrix)).toThrow('Matrix must be 3x3');
+        const expectedScale = [3.0, 5.0];
+        expect(getScale(matrix)).toEqual(expectedScale);
+    });
+
+    it('test case with reflection matrix', () => {
+        const matrix = [
+            [-1, 0, 0],
+            [0, 1, 0],
+            [0, 0, 1]
+        ];
+        const expectedScale = [1.0, 1.0];
+        expect(getScale(matrix)).toEqual(expectedScale);
     });
 });

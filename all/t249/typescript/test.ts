@@ -1,27 +1,22 @@
-describe('extract_text_from_pdf', () => {
-  it('should extract text from a PDF file', async () => {
-    const filePath = 'path/to/your/pdf/file.pdf'; // Replace with the actual path to your PDF file
-
-    // Read the PDF file
-    const dataBuffer = fs.readFileSync(filePath);
-
-    // Parse the PDF file
-    const data = await parse(dataBuffer);
-
-    // Check if the extracted text is not empty
-    expect(data.text).not.toBe('');
+describe('TestExtractTextFromPDF', () => {
+  it('should handle an empty file correctly', async () => {
+    const pdfPath = 'E:/code/code_back/python_project/RealisticEval-Data/envs/python/test_case/t249/testcase01.pdf';
+    const expected = ' \n';
+    const output = await extractTextFromPdf(pdfPath);
+    expect(output).toEqual(expected);
   });
 
-  it('should handle an empty PDF file', async () => {
-    const filePath = 'path/to/your/empty/pdf/file.pdf'; // Replace with the actual path to your empty PDF file
+  it('should handle a normal file correctly', async () => {
+    const pdfPath = 'E:/code/code_back/python_project/RealisticEval-Data/envs/python/test_case/t249/testcase02.pdf';
+    const expected = '11111  \n';
+    const output = await extractTextFromPdf(pdfPath);
+    expect(output).toEqual(expected);
+  });
 
-    // Read the PDF file
-    const dataBuffer = fs.readFileSync(filePath);
-
-    // Parse the PDF file
-    const data = await parse(dataBuffer);
-
-    // Check if the extracted text is empty
-    expect(data.text).toBe('');
+  it('should handle a file with more text correctly', async () => {
+    const pdfPath = 'E:/code/code_back/python_project/RealisticEval-Data/envs/python/test_case/t249/testcase03.pdf';
+    const expected = '11111  \n22222  \n33333  \n44444  \n';
+    const output = await extractTextFromPdf(pdfPath);
+    expect(output).toEqual(expected);
   });
 });

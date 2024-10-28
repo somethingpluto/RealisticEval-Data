@@ -1,24 +1,38 @@
-import { emptyDirectory } from './path-to-your-empty-directory-function'; // Adjust the import path accordingly
+import * as os from 'os';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as fsExtra from 'fs-extra';
+import * as tmp from 'tmp';
 
-describe('emptyDirectory', () => {
-  it('should throw an error if the specified path does not exist', async () => {
-    const nonExistentPath = '/non-existent-path';
-    await expect(emptyDirectory(nonExistentPath)).rejects.toThrowError(/specified path does not exist/);
+describe('TestEmptyDirectory', () => {
+  let testDir: string;
+
+  beforeAll(() => {
+      // Set up a temporary directory with some files and directories
+      testDir = tmp.dirSync().name;
+      fs.mkdirSync(path.join(testDir, 'subdir'));
+      fs.writeFileSync(path.join(testDir, 'file1.txt'), "Hello");
+      fs.writeFileSync(path.join(testDir, 'subdir', 'file2.txt'), "World");
   });
 
-  it('should throw an error if the specified path is not a directory', async () => {
-    const nonDirectoryPath = '/path/to/a/file.txt'; // Assuming there's a file at this path
-    await expect(emptyDirectory(nonDirectoryPath)).rejects.toThrowError(/is not a directory/);
+  afterAll(() => {
+      // Remove the temporary directory after all tests
+      fsExtra.removeSync(testDir);
   });
 
-  it('should empty all files and subdirectories in the specified directory', async () => {
-    const tempDir = '/path/to/temp/directory'; // Create a temporary directory for testing
-    // Populate the temporary directory with files and subdirectories
-    // For example, you can use fs-extra to create directories and files
+  it('should empty the directory successfully', () => {
+      emptyDirectory(testDir);
+      expect(fs.readdirSync(testDir)).toEqual([]);
+  });
 
-    await emptyDirectory(tempDir);
+  it('should empty a directory that includes subdirectories', () => {
+      emptyDirectory(testDir);
+      expect(fs.readdirSync(testDir)).toEqual([]);
+  });
 
-    // Verify that the directory is now empty
-    // For example, you can check if the directory exists and if it contains any files/subdirectories
+  it('should handle an already empty directory', () => {
+      emptyDirectory(testDir);  // First emptying
+      emptyDirectory(testDir);  // Empty again
+      expect(fs.readdirSync(testDir)).toEqual([]);
   });
 });

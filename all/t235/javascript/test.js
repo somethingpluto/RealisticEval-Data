@@ -1,28 +1,26 @@
-const approximatelyEqual = (a, b, epsilon = 1e-9) => Math.abs(a - b) < epsilon;
-
-describe('Calculate Bearing Tests', () => {
-    test('North Bearing', () => {
+describe('TestCalculateBearing', () => {
+    it('should calculate north bearing correctly', () => {
         // From equator directly north
-        expect(calculate_bearing(0, 0, 10, 0)).toBeCloseTo(0, 9);
+        expect(calculateBearing(0, 0, 10, 0)).toBeCloseTo(0);
     });
 
-    test('East Bearing', () => {
+    it('should calculate east bearing correctly', () => {
         // From prime meridian directly east
-        expect(calculate_bearing(0, 0, 0, 10)).toBeCloseTo(90, 9);
+        expect(calculateBearing(0, 0, 0, 10)).toBeCloseTo(90);
     });
 
-    test('South Bearing', () => {
+    it('should calculate south bearing correctly', () => {
         // From a point directly south
-        expect(calculate_bearing(10, 0, 0, 0)).toBeCloseTo(180, 9);
+        expect(calculateBearing(10, 0, 0, 0)).toBeCloseTo(180);
     });
 
-    test('West Bearing', () => {
+    it('should calculate west bearing correctly', () => {
         // From a point directly west
-        expect(calculate_bearing(0, 10, 0, 0)).toBeCloseTo(270, 9);
+        expect(calculateBearing(0, 10, 0, 0)).toBeCloseTo(270);
     });
 
-    test('Across Prime Meridian', () => {
+    it('should calculate bearing across prime meridian correctly', () => {
         // From a point west of the prime meridian to a point east
-        expect(calculate_bearing(0, -1, 0, 1)).toBeCloseTo(90, 9);
+        expect(calculateBearing(0, -1, 0, 1)).toBeCloseTo(90);
     });
 });

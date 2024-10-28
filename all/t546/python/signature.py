@@ -2,7 +2,7 @@ import csv
 import sys
 
 
-def read_tsv_from_stdin():
+def read_tsv_data_from_std_input():
     """
     Reads tab-separated values (TSV) from standard input and returns a list of rows.
 

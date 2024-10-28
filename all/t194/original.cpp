@@ -24,3 +24,22 @@ char* return_string(const char* input) {
 
     return result;
 }
+// this returns a populated instance of the struct
+struct sampleStruct get_struct(){
+    // Example usage
+    const char *sampleName = "Sample";
+    int sampleNumber = 42;
+    void *sampleDataPtr = malloc(10);
+    return create_sampleStruct(sampleName, sampleNumber, sampleDataPtr);
+}
+// this factory creates a struct
+struct sampleStruct create_sampleStruct(const char *name, int number, void *data) {
+    sampleStruct instance;
+
+    strncpy(instance.name, name, sizeof(instance.name) - 1);
+    instance.name[sizeof(instance.name) - 1] = '\0'; // Ensure null-termination
+
+    instance.number = number;
+    instance.data = data;
+    return instance;
+}

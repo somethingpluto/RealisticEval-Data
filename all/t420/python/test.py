@@ -11,7 +11,7 @@ class TestGetMinDistance(unittest.TestCase):
             "hello hello world",
             "world hello"
         ])
-        self.assertEqual(get_min_distance("dummy_file.txt", "hello", "world"), (0, 1))
+        self.assertEqual(get_min_distance_between_2_word("dummy_file.txt", "hello", "world"), (0, 1))
 
 
     @patch('builtins.open')
@@ -21,14 +21,14 @@ class TestGetMinDistance(unittest.TestCase):
             "world hello planet",
             "hello world planet"
         ])
-        self.assertEqual(get_min_distance("dummy_file.txt", "hello", "world"), (1, 1))
+        self.assertEqual(get_min_distance_between_2_word("dummy_file.txt", "hello", "world"), (1, 1))
 
     @patch('builtins.open')
     def test_large_distance(self, mock_open):
         mock_open.return_value.__enter__.return_value = iter([
             "hello a b c d e f g h i j k l m n o p q r s t u v w x y z world"
         ])
-        self.assertEqual(get_min_distance("dummy_file.txt", "hello", "world"), (0, 27))
+        self.assertEqual(get_min_distance_between_2_word("dummy_file.txt", "hello", "world"), (0, 27))
 
     @patch('builtins.open')
     def test_adjacent_words(self, mock_open):
@@ -37,4 +37,4 @@ class TestGetMinDistance(unittest.TestCase):
             "hello hello world world",
             "world hello"
         ])
-        self.assertEqual(get_min_distance("dummy_file.txt", "hello", "world"), (0, 1))
+        self.assertEqual(get_min_distance_between_2_word("dummy_file.txt", "hello", "world"), (0, 1))

@@ -1,3 +1,4 @@
+import argparse
 import json
 import os
 import re
@@ -7,14 +8,18 @@ import time
 import pandas as pd
 from tqdm import tqdm
 
+from executor.utils import append_row_to_xlsx
+
 JAVASCRIPT_RUN_ENV = "../envs/javascript"
 
 
 class JavaScriptExecutor:
-    def __init__(self, model_name=""):
+    def __init__(self,type, model_name=""):
         self._env_path = JAVASCRIPT_RUN_ENV
         self.model_name = model_name
+        self.type = type
         self.file_path = f"{self._env_path}/test.test.js"
+        self.language = "javascript"
 
     def single_run(self, code, test_code):
         with open(self.file_path, "w", encoding="utf8") as file:
@@ -26,18 +31,22 @@ class JavaScriptExecutor:
             self._execute()
 
     def batch_run(self, file_path):
+        result_list = []
         data_list = []
         with open(file_path, "r", encoding="utf8") as file:
-            result_list = json.load(file)
+            json_lines = [line.strip() for line in file.readlines()]
+            for item in json_lines:
+                result_list.append(json.loads(item))
 
-        for item in tqdm(result_list):
+        for item in tqdm(result_list[171:]):
             try:
                 print(item["task_id"])
-                test_code = item['test_code']
-                addition_info = item["addition_info"]
-                answer_list = item["answer_list"]
+                language_item = item['language_version_list']["javascript"]
+                answer_list = language_item["answer_list"]
+                test_code = language_item["test_code"]
+                addition_info = language_item["addition_info"]
                 for index, answer in enumerate(answer_list):
-                    code = answer['code']
+                    code = answer['response_code']
                     if code == None or code == "":
                         continue
                     with open(self.file_path, "w", encoding="utf8") as file:
@@ -47,21 +56,21 @@ class JavaScriptExecutor:
                         file.write(test_code)
                         file.write("\n")
                         file.flush()
-                    stdout, stderr, returncode = self._execute()
-
+                    process, stdout, stderr, returncode = self._execute()
+                    process.kill()
                     item["result_return_code"] = returncode
                     item["stderr"] = self._remove_color_codes(stderr)
                     item["stdout"] = self._remove_color_codes(stdout)
+                    item["answer_index"] = index
+                    item["model"] = answer["model_name"]
                     with open(f"{self._env_path}/test.test.js", "r", encoding="utf8") as f:
                         item["full_content"] = f.read()
+                    with open(f"../analysis/model_answer_result/{self.model_name}/{self.type}/{self.model_name}_{self.language}_{self.type}.csv","a+",encoding="utf8") as file:
+                        file.write(f"{item['task_id']},{returncode},{answer['model_name']}\n")
                     data_list.append(item)
             except Exception as e:
                 print(e)
                 continue
-        data = pd.DataFrame(data_list)
-        data.to_excel(f"../analysis/model_answer_result/{self.model_name}/{self.model_name}_javascript.xlsx",
-                      engine='xlsxwriter')
-
     def _execute(self):
         command = self._generate_command()
         process = subprocess.Popen(
@@ -80,13 +89,10 @@ class JavaScriptExecutor:
             print(stdout)
             print(stderr)
             print("Process completed with return code:", process.returncode)
-            return stdout, stderr, process.returncode
+            return process, stdout, stderr, process.returncode
         except subprocess.TimeoutExpired:
             print("Process is being killed after timeout")
             process.kill()
-            # 读取任何进程可能产生的输出
-            stdout, stderr = process.communicate()
-            return stdout, stderr, process.returncode
 
     def _remove_color_codes(self, text):
         """
@@ -116,10 +122,17 @@ class JavaScriptExecutor:
         return command
 
 
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--model_name", type=str, help="model_answer_file_path", required=True)
+    parser.add_argument("--type", type=str, help="type pass1 or pass10", required=True)
+    args = parser.parse_args()
+    return args
+
+
 if __name__ == '__main__':
-    code = "\nfunction getPrice(recipeId, minVal = 10, maxVal = 30) {\n  let price = 0;\n  let hash = recipeId.toString(36).padStart(32, '0');\n  for (let i = 0; i < minVal; i++) {\n    hash = hash.substring(0, 8) + Math.floor(hash / 10) * (maxVal - i) + hash.substring(8);\n  }\n  return Math.round(price * 100 / 10) / 10;\n}\n"
-    test_code = "describe('getPrice', () => {\n    test('should return a number within the default range for a given recipe ID', () => {\n        const price = getPrice('recipe123');\n        expect(price).toBeGreaterThanOrEqual(10);\n        expect(price).toBeLessThanOrEqual(30);\n    });\n\n    test('should return the same price for the same recipe ID', () => {\n        const price1 = getPrice('recipe123');\n        const price2 = getPrice('recipe123');\n        expect(price1).toBe(price2);\n    });\n\n    test('should return different prices for different recipe IDs', () => {\n        const price1 = getPrice('recipe123');\n        const price2 = getPrice('recipe456');\n        expect(price1).not.toBe(price2);\n    });\n\n    test('should return a price within a custom range', () => {\n        const minVal = 20;\n        const maxVal = 50;\n        const price = getPrice('recipe789', minVal, maxVal);\n        expect(price).toBeGreaterThanOrEqual(minVal);\n        expect(price).toBeLessThanOrEqual(maxVal);\n    });\n\n    test('should handle very long recipe IDs without error', () => {\n        const longRecipeId = 'recipe' + 'A'.repeat(1000);\n        const price = getPrice(longRecipeId);\n        expect(price).toBeGreaterThanOrEqual(10);\n        expect(price).toBeLessThanOrEqual(30);\n    });\n});"
-    javascript_executor = JavaScriptExecutor(model_name="chatglm-6b")
-    javascript_executor.single_run(code, test_code)
-    # javascript_executor.batch_run(
-    #     "E:\code\code_back\python_project\llm\qa\chatglm-6b_answer\javascript_answer.json")
+    args = parse_args()
+    executor = JavaScriptExecutor(args.type, args.model_name)
+    file_path = rf"E:\code\code_back\python_project\llm\qa\{args.model_name}_answer\javascript_answer_{args.type}.jsonl"
+    executor.batch_run(file_path)
+

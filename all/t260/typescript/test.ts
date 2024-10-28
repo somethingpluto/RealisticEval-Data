@@ -1,49 +1,65 @@
-describe('processCsv', () => {
-    it('should remove rows with two or more empty columns', () => {
-        const inputFilePath = 'path/to/input.csv';
-        const outputFilePath = 'path/to/output.csv';
+import { readFileSync, writeFileSync, unlinkSync } from 'fs';
+import { join } from 'path';
 
-        // Sample input data
-        const inputData = `
-id,name,email,age
-1,Alice,,25
-2,Bob,bob@example.com,
-3,,charlie@example.com,30
-4,David,david@example.com,35
-`;
+describe('TestProcessCSV', () => {
+  let input_data_1: string;
+  let input_data_2: string;
+  let input_data_3: string;
 
-        // Write sample input data to a temporary file
-        writeFileSync(inputFilePath, inputData);
+  beforeEach(() => {
+    input_data_1 = `A,B,C
+1,2,3
+4,,6
+7,8,
+9,10,11`;
 
-        // Call the function under test
-        processCsv(inputFilePath, outputFilePath);
+    input_data_2 = `A,B,C,D
+,,
+1,,3,4
+2,3,,5
+,,,`;
 
-        // Read the output file
-        const outputFileData = readFileSync(outputFilePath, 'utf8');
+    input_data_3 = `A
+1
+2
+3`;
+  });
 
-        // Expected output data after processing
-        const expectedOutputData = `
-id,name,email,age
-2,Bob,bob@example.com,
-4,David,david@example.com,35
-`;
+  const process_data = (input_data: string): string => {
+    const inputFilePath = 'input.csv';
+    const outputFilePath = 'output.csv';
 
-        // Check if the output matches the expected data
-        expect(outputFileData.trim()).toBe(expectedOutputData.trim());
-    });
+    // Write input data to a temp CSV file
+    writeFileSync(inputFilePath, input_data);
 
-    it('should handle an empty input file gracefully', () => {
-        const inputFilePath = 'path/to/empty_input.csv';
-        const outputFilePath = 'path/to/empty_output.csv';
+    // Process the CSV
+    processCsv(inputFilePath, outputFilePath);
 
-        // Create an empty input file
-        writeFileSync(inputFilePath, '');
+    // Read the output
+    const outputData = readFileSync(outputFilePath, 'utf8');
 
-        // Call the function under test
-        processCsv(inputFilePath, outputFilePath);
+    // Clean up temp files
+    unlinkSync(inputFilePath);
+    unlinkSync(outputFilePath);
 
-        // Check if the output file is empty
-        const outputFileData = readFileSync(outputFilePath, 'utf8');
-        expect(outputFileData).toBe('');
-    });
+    return outputData;
+  };
+
+  it('should correctly process input_data_1', () => {
+    const output = process_data(input_data_1);
+    const expectedOutput = `A,B,C\n1,2.0,3.0\n4,,6.0\n7,8.0,\n9,10.0,11.0\n`;
+    expect(output).toEqual(expectedOutput);
+  });
+
+  it('should correctly process input_data_2', () => {
+    const output = process_data(input_data_2);
+    const expectedOutput = `A,B,C,D\n1.0,,3.0,4.0\n2.0,3.0,,5.0\n`;
+    expect(output).toEqual(expectedOutput);
+  });
+
+  it('should correctly process input_data_3', () => {
+    const output = process_data(input_data_3);
+    const expectedOutput = `A\n1\n2\n3\n`; // Single-column CSV should remain unchanged
+    expect(output).toEqual(expectedOutput);
+  });
 });

@@ -7,9 +7,7 @@
  * until all elements are traversed.
  *
  * @param {number[][]} matrix - A 2D array representing the matrix with m rows and n columns.
- * @return {number[]} An array of numbers representing the elements of the matrix
- *                   in the order they were traversed.
+ * @returns {number[]} An array of numbers representing the elements of the matrix
+ *                     in the order they were traversed.
  */
-function spiralTraverse(matrix) {
-    // Your implementation here
-}
+function spiral_traversal(matrix) {}

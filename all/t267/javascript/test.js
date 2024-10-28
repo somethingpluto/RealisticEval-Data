@@ -1,18 +1,21 @@
-describe('extractSldTld', () => {
-    it('should correctly extract SLD and TLD from valid FQDN', () => {
-        expect(extractSldTld('example.com')).toEqual(['example', 'com']);
-        expect(extractSldTld('subdomain.example.co.uk')).toEqual(['subdomain.example', 'co.uk']);
+describe('TestExtractSldTld', () => {
+    it('test standard FQDN', () => {
+        // Test a typical FQDN
+        expect(extractSldTld("www.example.com")).toEqual(["example", "com"]);
     });
 
-    it('should handle multiple levels of subdomains', () => {
-        expect(extractSldTld('level1.level2.subdomain.example.net')).toEqual(['level1.level2.subdomain', 'example.net']);
+    it('test standard FQDN 2', () => {
+        // Test a typical FQDN
+        expect(extractSldTld("www.example.xyz")).toEqual(["example", "xyz"]);
     });
 
-    it('should handle special characters in TLD', () => {
-        expect(extractSldTld('special.tld-example.org')).toEqual(['special.tld-example', 'org']);
+    it('test FQDN with subdomains', () => {
+        // Test an FQDN with multiple subdomains
+        expect(extractSldTld("blog.subdomain.example.com")).toEqual(["example", "com"]);
     });
 
-    it('should throw an error for invalid FQDN', () => {
-        expect(() => extractSldTld('invalid')).toThrowError('Invalid FQDN');
+    it('test numeric TLD', () => {
+        // Test a numeric TLD, which can occur in private networks
+        expect(extractSldTld("server.example.123")).toEqual(["example", "123"]);
     });
 });

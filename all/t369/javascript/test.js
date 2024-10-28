@@ -1,45 +1,70 @@
-describe('Eight Queens Problem', () => {
-  test('should find and print a valid solution', () => {
-    // Mock console.log to capture output
-    const mockConsoleLog = jest.spyOn(console, 'log');
-
-    // Call the function
-    eightQueens();
-
-    // Check if the expected output was printed
-    expect(mockConsoleLog).toHaveBeenCalledWith(
-      '. . Q . . . . .\n' +
-      '. . . . Q . . .\n' +
-      '. Q . . . . . .\n' +
-      '. . . . . . . Q\n' +
-      '. . . . . Q . .\n' +
-      '. . . Q . . . .\n' +
-      '. . . . . . Q .\n' +
-      'Q . . . . . . .'
-    );
-
-    // Restore original console.log
-    mockConsoleLog.mockRestore();
+describe('TestEightQueens', () => {
+  beforeEach(() => {
+      // Setup any common state here if needed
   });
 
-  test('should handle no solution case', () => {
-    // Mock console.log to capture output
-    const mockConsoleLog = jest.spyOn(console, 'log');
+  describe('test_solution_exists', () => {
+      it('should contain at least one queen', () => {
+          const fakeOut = { data: '' };
+          const writeMock = (chunk) => {
+              fakeOut.data += chunk;
+          };
 
-    // Modify the implementation to force no solution (e.g., by changing the board size)
-    const originalEightQueens = eightQueens;
-    eightQueens = () => {
-      console.log('No solution');
-    };
+          const originalConsoleLog = console.log;
+          console.log = writeMock;
 
-    // Call the modified function
-    eightQueens();
+          eightQueens();
 
-    // Check if the expected output was printed
-    expect(mockConsoleLog).toHaveBeenCalledWith('No solution');
+          expect(fakeOut.data.includes('Q')).toBe(true);
 
-    // Restore original eightQueens function and console.log
-    eightQueens = originalEightQueens;
-    mockConsoleLog.mockRestore();
+          console.log = originalConsoleLog;
+      });
+  });
+
+  describe('test_correct_number_of_queens', () => {
+      it('each board should contain exactly 8 queens', () => {
+          const fakeOut = { data: '' };
+          const writeMock = (chunk) => {
+              fakeOut.data += chunk;
+          };
+
+          const originalConsoleLog = console.log;
+          console.log = writeMock;
+
+          eightQueens();
+
+          const output = fakeOut.data.trim().split('\n\n');
+          for (const board of output) {
+              const numQueens = (board.match(/Q/g) || []).length;
+              expect(numQueens).toEqual(8);
+          }
+
+          console.log = originalConsoleLog;
+      });
+  });
+
+  describe('test_no_solution_scenario', () => {
+      it('should print "No solution" when no solution exists', () => {
+          const fakeOut = { data: '' };
+          const writeMock = (chunk) => {
+              fakeOut.data += chunk;
+          };
+
+          const originalConsoleLog = console.log;
+          console.log = writeMock;
+
+          function noSolutionQueens() {
+              const board = Array.from({ length: 3 }, () => Array(3).fill('.'));
+              if (!solveQueens(board, 0)) {
+                  console.log("No solution");
+              }
+          }
+
+          noSolutionQueens();
+
+          expect(fakeOut.data.includes('No solution')).toBe(true);
+
+          console.log = originalConsoleLog;
+      });
   });
 });

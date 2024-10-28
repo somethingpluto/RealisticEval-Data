@@ -7,9 +7,4 @@
  * @param kwargs - Keyword arguments that map keys to their replacement values.
  * @returns The formatted string with placeholders replaced by values.
  */
-function safeFormat(template: string, ...kwargs: [string, any][]): string {
-    return template.replace(/{(\w+)}/g, (match, key) => {
-        const value = kwargs.find(([k]) => k === key)?.[1];
-        return value !== undefined ? value.toString() : match;
-    });
-}
+function safeFormat(template: string, ...kwargs: [string, any][]): string {}

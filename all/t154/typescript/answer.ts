@@ -67,7 +67,6 @@ export function parseGitDiff(diffText: string): GitDiffFile[] {
         }
     });
 
-    // Push the last file diff after the loop ends
     if (currentFile) {
         fileDiffs.push(currentFile);
     }

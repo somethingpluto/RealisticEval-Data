@@ -1,36 +1,47 @@
-import { describe, it, expect } from '@jest/globals';
-import { applyShearX } from './path-to-your-function'; // Adjust the path accordingly
+import * as math from 'mathjs';
 
-describe('applyShearX', () => {
-  it('should apply shear transformation along the x-axis correctly', () => {
-    const matrix = [
-      [1, 0],
-      [0, 1]
-    ];
-    const shearFactor = 0.5;
-    const expectedMatrix = [
-      [1 + 0.5 * 0, 0.5],
-      [0, 1]
-    ];
-
+describe('TestShearTransformation', () => {
+  /**
+   * Test with zero shear factor which should return the original matrix unchanged.
+   */
+  test('testIdentityShear', () => {
+    const matrix: number[][] = [[1, 2], [3, 4]];
+    const shearFactor: number = 0;
+    const expectedOutput: number[][] = [[1, 2], [3, 4]];
     const result = applyShearX(matrix, shearFactor);
-
-    expect(result).toEqual(expectedMatrix);
+    expect(result).toEqual(expectedOutput);
   });
 
-  it('should handle different input sizes correctly', () => {
-    const matrix = [
-      [1, 2, 3],
-      [4, 5, 6]
-    ];
-    const shearFactor = -0.25;
-    const expectedMatrix = [
-      [1 - 0.25 * 2, 2 - 0.25 * 3, 3],
-      [4 - 0.25 * 2, 5 - 0.25 * 3, 6]
-    ];
-
+  /**
+   * Test with a positive shear factor.
+   */
+  test('testPositiveShear', () => {
+    const matrix: number[][] = [[1, 2], [3, 4]];
+    const shearFactor: number = 1;
+    const expectedOutput: number[][] = [[1, 3], [3, 7]];
     const result = applyShearX(matrix, shearFactor);
+    expect(result).toEqual(expectedOutput);
+  });
 
-    expect(result).toEqual(expectedMatrix);
+  /**
+   * Test with a negative shear factor.
+   */
+  test('testNegativeShear', () => {
+    const matrix: number[][] = [[1, 2], [3, 4]];
+    const shearFactor: number = -1;
+    const expectedOutput: number[][] = [[1, 1], [3, 1]];
+    const result = applyShearX(matrix, shearFactor);
+    expect(result).toEqual(expectedOutput);
+  });
+
+  /**
+   * Test with a high shear factor to see how the matrix adapts to extreme transformations.
+   */
+  test('testHighShearFactor', () => {
+    const matrix: number[][] = [[1, 1], [1, 1]];
+    const shearFactor: number = 10;
+    const expectedOutput: number[][] = [[1, 11], [1, 11]];
+    const result = applyShearX(matrix, shearFactor);
+    expect(result).toEqual(expectedOutput);
   });
 });

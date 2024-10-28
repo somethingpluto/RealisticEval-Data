@@ -1,30 +1,43 @@
-describe('sumCalibrationValues', () => {
-    it('should sum up calibration values correctly', () => {
-        const calibrationDocument = [
-            '1abc2',
-            'pqr3stu4',
-            '5v6w7x8y9z'
-        ];
-        const result = sumCalibrationValues(calibrationDocument);
-        expect(result).toBe(12 + 34 + 59); // 12 (from "1abc2") + 34 (from "pqr3stu4") + 59 (from "5v6w7x8y9z")
+describe('TestSumCalibrationValues', () => {
+    describe('test_basic_calculations', () => {
+        it('should correctly calculate the sum with basic input', () => {
+            const document = [
+                "Reading 1234 calibration",
+                "Measure 5678 complete",
+                "End of data 91011"
+            ];
+            expect(sumCalibrationValues(document)).toBe(163);
+        });
     });
 
-    it('should handle empty lines gracefully', () => {
-        const calibrationDocument = [
-            '',
-            'no numbers here',
-            '123456'
-        ];
-        const result = sumCalibrationValues(calibrationDocument);
-        expect(result).toBe(16); // 16 (from "123456")
+    describe('test_no_digits', () => {
+        it('should return 0 when no digits are present', () => {
+            const document = [
+                "No numbers here",
+                "Still no numbers"
+            ];
+            expect(sumCalibrationValues(document)).toBe(0);
+        });
     });
 
-    it('should handle lines with no numbers', () => {
-        const calibrationDocument = [
-            'abcdef',
-            'ghijkl'
-        ];
-        const result = sumCalibrationValues(calibrationDocument);
-        expect(result).toBe(0); // No numbers, so sum should be 0
+    describe('test_empty_lines', () => {
+        it('should return 0 for empty or whitespace-only lines', () => {
+            const document = [
+                "",
+                "   "
+            ];
+            expect(sumCalibrationValues(document)).toBe(0);
+        });
+    });
+
+    describe('test_mixed_content', () => {
+        it('should correctly calculate the sum with mixed content', () => {
+            const document = [
+                "Good line 1524 end",
+                "Bad line",
+                "Another good line 7681"
+            ];
+            expect(sumCalibrationValues(document)).toBe(85);
+        });
     });
 });

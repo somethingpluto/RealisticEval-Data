@@ -1,68 +1,40 @@
-describe('sanitizeData', () => {
-  it('removes specified keys from the input dictionary', () => {
-    const data = {
-      name: 'John Doe',
-      email: 'john.doe@example.com',
-      password: '123456'
-    };
-    const keyToRemove = ['email', 'password'];
+describe('TestSanitizeData', () => {
+  it('test_empty_dict', () => {
+      // Test with an empty dictionary.
+      const data = {};
+      const keyToRemove = ["email", "metadata"];
 
-    const result = sanitizeData(data, keyToRemove);
-
-    expect(result).toEqual({
-      name: 'John Doe'
-    });
+      const expected = {};
+      expect(sanitizeData(data, keyToRemove)).toEqual(expected);
   });
 
-  it('does not modify the input dictionary if no keys are specified', () => {
-    const data = {
-      name: 'John Doe',
-      email: 'john.doe@example.com',
-      password: '123456'
-    };
-
-    const result = sanitizeData(data);
-
-    expect(result).toEqual({
-      name: 'John Doe',
-      email: 'john.doe@example.com',
-      password: '123456'
-    });
+  it('test_remove_default_keys', () => {
+      // Test removing default keys from a nested structure.
+      const data = {
+          name: "John Doe",
+          email: "johndoe@example.com",
+          metadata: { submitted_at: "2021-07-10", status: "pending" },
+          comments: ["Good", "Needs review"]
+      };
+      const keyToRemove = ["email", "metadata"];
+      const expected = {
+          name: "John Doe",
+          comments: ["Good", "Needs review"]
+      };
+      expect(sanitizeData(data, keyToRemove)).toEqual(expected);
   });
 
-  it('returns an empty object if both input and keyToRemove are empty', () => {
-    const data = {};
-    const keyToRemove = [];
-
-    const result = sanitizeData(data, keyToRemove);
-
-    expect(result).toEqual({});
-  });
-
-  it('handles nested dictionaries correctly', () => {
-    const data = {
-      user: {
-        name: 'John Doe',
-        email: 'john.doe@example.com',
-        address: {
-          city: 'New York',
-          zip: '10001'
-        }
-      },
-      password: '123456'
-    };
-    const keyToRemove = ['user.email', 'password'];
-
-    const result = sanitizeData(data, keyToRemove);
-
-    expect(result).toEqual({
-      user: {
-        name: 'John Doe',
-        address: {
-          city: 'New York',
-          zip: '10001'
-        }
-      }
-    });
+  it('test_specified_key_to_remove', () => {
+      // Test removing a specified key from the dictionary.
+      const data = {
+          name: "John Doe",
+          location: "Earth",
+          email: "johndoe@example.com"
+      };
+      const expected = {
+          name: "John Doe",
+          location: "Earth"
+      };
+      expect(sanitizeData(data, keyToRemove: ["email"])).toEqual(expected);
   });
 });

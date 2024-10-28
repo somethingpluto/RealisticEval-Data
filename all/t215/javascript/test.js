@@ -1,3 +1,5 @@
+const fs = require('fs');
+const { mock } = require('jest-mock-extended');
 jest.mock('fs', () => ({
   ...jest.requireActual('fs'),
   readFile: jest.fn(),

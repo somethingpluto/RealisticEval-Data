@@ -1,12 +1,21 @@
-describe('decompose function', () => {
-  it('should correctly decompose a flat index into a multidimensional index', () => {
-    expect(decompose(5, [3, 2])).toEqual([1, 1]);
-    expect(decompose(0, [2, 3])).toEqual([0, 0]);
-    expect(decompose(8, [2, 4])).toEqual([2, 0]);
+describe('TestDecomposeFunction', () => {
+  it('should handle edge case with larger shape', () => {
+    expect(decompose(60, [4, 4, 4])).toEqual([3, 3, 0]);
   });
 
-  it('should throw an error if the flat index is out of bounds', () => {
-    expect(() => decompose(9, [2, 4])).toThrowError('Flat index out of bounds');
-    expect(() => decompose(-1, [2, 4])).toThrowError('Flat index out of bounds');
+  it('should handle the last valid index', () => {
+    expect(decompose(63, [4, 4, 4])).toEqual([3, 3, 3]);
+  });
+
+  it('should handle single dimension case', () => {
+    expect(decompose(2, [5])).toEqual([2]);
+  });
+
+  it('should throw an error for invalid cases', () => {
+    // Test case 5: Out of bounds case (negative index)
+    expect(() => decompose(-1, [3, 4, 5])).toThrow('Index out of bounds');
+
+    // Test case 6: Out of bounds case (index too large)
+    expect(() => decompose(100, [3, 4, 5])).toThrow('Index out of bounds');
   });
 });

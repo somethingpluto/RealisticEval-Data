@@ -1,25 +1,21 @@
-describe('convertHmsToMilliseconds', () => {
-  it('should convert "1h20min30s" to milliseconds', () => {
-    expect(convertHmsToMilliseconds('1h20min30s')).toBe(5400000);
+describe('TestConvertHmsToMilliseconds', () => {
+  test('test_basic_conversion', () => {
+      expect(convertHmsToMilliseconds("1h20min30s")).toBe(4830000);
   });
 
-  it('should convert "2h" to milliseconds', () => {
-    expect(convertHmsToMilliseconds('2h')).toBe(7200000);
+  test('test_no_hours_or_minutes', () => {
+      expect(convertHmsToMilliseconds("30s")).toBe(30000);
   });
 
-  it('should convert "30min" to milliseconds', () => {
-    expect(convertHmsToMilliseconds('30min')).toBe(1800000);
+  test('test_invalid_format', () => {
+      expect(convertHmsToMilliseconds("1hour20minutes")).toBeNull();
   });
 
-  it('should convert "45s" to milliseconds', () => {
-    expect(convertHmsToMilliseconds('45s')).toBe(45000);
+  test('test_edge_case_max_one_day', () => {
+      expect(convertHmsToMilliseconds("23h59min59s")).toBe(86399000);
   });
 
-  it('should return null for invalid input', () => {
-    expect(convertHmsToMilliseconds('invalid_input')).toBeNull();
-    expect(convertHmsToMilliseconds('1h20min')).toBeNull();
-    expect(convertHmsToMilliseconds('h20min30s')).toBeNull();
-    expect(convertHmsToMilliseconds('1h20s')).toBeNull();
-    expect(convertHmsToMilliseconds('1h20min30')).toBeNull();
+  test('test_exceeding_one_day', () => {
+      expect(convertHmsToMilliseconds("24h1min")).toBe(86460000);
   });
 });

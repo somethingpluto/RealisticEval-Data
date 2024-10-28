@@ -1,32 +1,41 @@
-describe('emptyDirectory', () => {
-    let tempDir;
+const fs = require('fs');
+const path = require('path');
+const { rm, unlink } = require('fs').promises;
+const { mkdtemp, rmdir } = require('fs').promises;
 
-    beforeEach(() => {
-        // Create a temporary directory for testing
-        tempDir = fs.mkdtempSync(path.join(__dirname, 'test-dir-'));
-        fs.mkdirSync(path.join(tempDir, 'subdir'));
-        fs.writeFileSync(path.join(tempDir, 'file.txt'), 'Some content');
+describe('TestEmptyDirectory', () => {
+    let testDir;
+
+    beforeAll(async () => {
+        // Set up a temporary directory with some files and directories
+        testDir = await mkdtemp(path.join(os.tmpdir(), 'test-'));
+        // Create some files and directories
+        await fs.promises.mkdir(path.join(testDir, 'subdir'));
+        await fs.promises.writeFile(path.join(testDir, 'file1.txt'), 'Hello');
+        await fs.promises.writeFile(path.join(testDir, 'subdir', 'file2.txt'), 'World');
     });
 
-    afterEach(() => {
-        // Clean up the temporary directory after each test
-        emptyDirectory(tempDir);
-        fs.rmdirSync(tempDir);
+    afterAll(async () => {
+        // Remove the temporary directory after all tests
+        await rmdir(testDir, { recursive: true });
     });
 
-    it('should empty a directory with files and subdirectories', () => {
-        expect(fs.readdirSync(tempDir)).toEqual(['subdir', 'file.txt']);
-        emptyDirectory(tempDir);
-        expect(fs.readdirSync(tempDir)).toEqual([]);
+    it('should empty the directory successfully', async () => {
+        // Test that the directory is emptied successfully
+        await emptyDirectory(testDir);
+        expect(await fs.promises.readdir(testDir)).toEqual([]);
     });
 
-    it('should throw an error if the path does not exist', () => {
-        expect(() => emptyDirectory('/nonexistent/path')).toThrow(/does not exist/);
+    it('should empty a directory that includes subdirectories', async () => {
+        // Test emptying a directory that includes subdirectories
+        await emptyDirectory(testDir);
+        expect(await fs.promises.readdir(testDir)).toEqual([]);
     });
 
-    it('should throw an error if the path is not a directory', () => {
-        const filePath = path.join(tempDir, 'file.txt');
-        fs.writeFileSync(filePath, 'Some content');
-        expect(() => emptyDirectory(filePath)).toThrow(/is not a directory/);
+    it('should handle an already empty directory', async () => {
+        // Test emptying a directory that is already empty
+        await emptyDirectory(testDir);  // First emptying
+        await emptyDirectory(testDir);  // Empty again
+        expect(await fs.promises.readdir(testDir)).toEqual([]);
     });
 });

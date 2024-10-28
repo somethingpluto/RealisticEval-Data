@@ -1,27 +1,41 @@
-import { describe, it, expect } from '@jest/globals';
-
-function safeFormat(template: string, ...args: any[]): string {
-    return template.replace(/{(\w+)}/g, (match, key) => args[key] || match);
-}
-
-describe('safeFormat', () => {
-    it('replaces placeholders with corresponding values', () => {
-        const result = safeFormat('Hello, {name}!', { name: 'Alice' });
-        expect(result).toBe('Hello, Alice!');
+describe('TestSafeFormat', () => {
+    it('test_full_replacement', () => {
+        // Test with all placeholders having corresponding values.
+        const template = "Hello, {name}! Welcome to {place}.";
+        const result = safeFormat(template, ['name', 'Alice'], ['place', 'Wonderland']);
+        const expected = "Hello, Alice! Welcome to Wonderland.";
+        expect(result).toEqual(expected);
     });
 
-    it('leaves unpaired placeholders unchanged', () => {
-        const result = safeFormat('Hello, {name}!', { age: 25 });
-        expect(result).toBe('Hello, {name}!');
+    it('test_partial_replacement', () => {
+        // Test with some placeholders missing corresponding values.
+        const template = "Hello, {name}! Welcome to {place}.";
+        const result = safeFormat(template, ['name', 'Alice']);
+        const expected = "Hello, Alice! Welcome to {place}.";
+        expect(result).toEqual(expected);
     });
 
-    it('handles multiple placeholders', () => {
-        const result = safeFormat('Hello, {name}! You are {age} years old.', { name: 'Bob', age: 30 });
-        expect(result).toBe('Hello, Bob! You are 30 years old.');
+    it('test_no_replacement', () => {
+        // Test when no placeholders are provided.
+        const template = "Hello, world!";
+        const result = safeFormat(template);
+        const expected = "Hello, world!";
+        expect(result).toEqual(expected);
     });
 
-    it('returns the original string if no placeholders are found', () => {
-        const result = safeFormat('Hello, world!', {});
-        expect(result).toBe('Hello, world!');
+    it('test_missing_placeholder', () => {
+        // Test with a placeholder that has no corresponding value.
+        const template = "My name is {name}, and I live in {city}.";
+        const result = safeFormat(template, ['name', 'Alice']);
+        const expected = "My name is Alice, and I live in {city}.";
+        expect(result).toEqual(expected);
+    });
+
+    it('test_numeric_values', () => {
+        // Test with numeric values as replacements.
+        const template = "Your score is {score} out of {total}.";
+        const result = safeFormat(template, ['score', 85], ['total', 100]);
+        const expected = "Your score is 85 out of 100.";
+        expect(result).toEqual(expected);
     });
 });

@@ -1,10 +1,8 @@
 /**
- * Determine whether a number is a compliant four-digit number.
- *
+ * Determines whether a number is a compliant four-digit number.
+ * Compliance is defined as the number being between 1000 and 9999, inclusive.
+ * 
  * @param {number} number - The number to check.
- * @returns {boolean} True if the number is a compliant four-digit number, false otherwise.
+ * @returns {boolean} - True if the number is a compliant four-digit number, False otherwise.
  */
-function isCompliantFourDigit(number) {
-    // Check if the number is an integer and within the range of 1000 to 9999
-    return Number.isInteger(number) && number >= 1000 && number <= 9999;
-}
+function isCompliantFourDigit(number) {}

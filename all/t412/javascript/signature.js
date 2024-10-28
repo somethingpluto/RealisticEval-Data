@@ -1,10 +1,7 @@
 /**
- * Adds two numbers and returns the result.
+ * Formats the text by removing newline characters and adding spaces between lines.
  *
- * @param {number} a - The first number.
- * @param {number} b - The second number.
- * @returns {number} The sum of the two numbers.
+ * @param {string} [inputFile='input.txt'] - The path to the input file. Defaults to 'input.txt'.
+ * @param {string} [outputFile='output.txt'] - The path to the output file. Defaults to 'output.txt'.
  */
-function add(a, b) {
-    return a + b;
-}
+function formatText(inputFile = 'input.txt', outputFile = 'output.txt') {}

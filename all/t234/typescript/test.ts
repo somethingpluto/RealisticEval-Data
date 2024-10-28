@@ -1,37 +1,106 @@
-describe('appendOrSkipRow', () => {
-  it('should append a new row if there isn\'t a row with matching values in the first three columns', async () => {
-    // Mock the necessary dependencies
-    const mockFileHandler = {
-      writeFileSync: jest.fn(),
-      openSync: jest.fn(),
-      closeSync: jest.fn()
-    };
-    const mockReader = {
-      readFileSync: jest.fn().mockReturnValue('col1,col2,col3,value\n')
-    };
+import * as fs from 'fs';
+import * as csvParser from 'csv-parser';
+import * as createCsvWriter from 'csv-writer';
+describe('TestAppendOrSkipRow', () => {
+  let mockFile: fs.WriteStream;
+  let reader: csvParser.CSVParser;
 
-    // Call the function with the mocks
-    await appendOrSkipRow(mockFileHandler, mockReader, ['col1', 'col2', 'col4', 'value']);
+  beforeEach(() => {
+    // Set up a mock CSV file using a temporary file
+    const tempFilePath = 'temp.csv';
+    mockFile = fs.createWriteStream(tempFilePath);
+    mockFile.write('Alice,30,USA\nBob,25,UK\nCharlie,35,Canada\n');
+    mockFile.end();
 
-    // Expect that the function writes the new row to the file
-    expect(mockFileHandler.writeFileSync).toHaveBeenCalledWith(expect.stringContaining('col1,col2,col4,value'));
+    // Wait for the file to be written
+    return new Promise(resolve => mockFile.on('finish', resolve)).then(() => {
+      mockFile = fs.createReadStream(tempFilePath);
+      reader = csvParser();
+    });
   });
 
-  it('should skip appending a new row if there is a row with matching values in the first three columns', async () => {
-    // Mock the necessary dependencies
-    const mockFileHandler = {
-      writeFileSync: jest.fn(),
-      openSync: jest.fn(),
-      closeSync: jest.fn()
-    };
-    const mockReader = {
-      readFileSync: jest.fn().mockReturnValue('col1,col2,col3,value\n')
-    };
+  afterEach(() => {
+    // Clean up the temporary file
+    fs.unlinkSync('temp.csv');
+  });
 
-    // Call the function with the mocks
-    await appendOrSkipRow(mockFileHandler, mockReader, ['col1', 'col2', 'col3', 'value']);
+  it('should append a new row when there are no matching values', () => {
+    const new_row = ['David', '28', 'Australia'];
+    appendOrSkipRow(mockFile, reader, new_row);
 
-    // Expect that the function does not write the new row to the file
-    expect(mockFileHandler.writeFileSync).not.toHaveBeenCalled();
+    // Reset pointer to read from the start
+    mockFile = fs.createReadStream('temp.csv');
+    reader = csvParser();
+
+    const results: string[][] = [];
+    mockFile
+      .pipe(reader)
+      .on('data', (row) => {
+        results.push(Object.values(row));
+      })
+      .on('end', () => {
+        expect(results).toContainEqual(new_row);
+      });
+  });
+
+  it('should append a new row with different values', () => {
+    const new_row = ['Alice', '31', 'USA']; // Same name, different age
+    appendOrSkipRow(mockFile, reader, new_row);
+
+    // Reset pointer to read from the start
+    mockFile = fs.createReadStream('temp.csv');
+    reader = csvParser();
+
+    const results: string[][] = [];
+    mockFile
+      .pipe(reader)
+      .on('data', (row) => {
+        results.push(Object.values(row));
+      })
+      .on('end', () => {
+        expect(results).toContainEqual(new_row);
+      });
+  });
+
+  it('should append a row with different values in the first three columns', () => {
+    const new_row = ['Eve', '40', 'Australia', 'Engineer'];
+    appendOrSkipRow(mockFile, reader, new_row);
+
+    // Reset pointer to read from the start
+    mockFile = fs.createReadStream('temp.csv');
+    reader = csvParser();
+
+    const results: string[][] = [];
+    mockFile
+      .pipe(reader)
+      .on('data', (row) => {
+        results.push(Object.values(row));
+      })
+      .on('end', () => {
+        expect(results).toContainEqual(new_row);
+      });
+  });
+
+  it('should append multiple new rows correctly', () => {
+    const new_rows = [
+      ['Frank', '29', 'Germany'],
+      ['Grace', '22', 'France']
+    ];
+
+    for (const row of new_rows) {
+      appendOrSkipRow(mockFile, reader, row);
+      mockFile = fs.createReadStream('temp.csv');
+      reader = csvParser();
+    }
+
+    const results: string[][] = [];
+    mockFile
+      .pipe(reader)
+      .on('data', (row) => {
+        results.push(Object.values(row));
+      })
+      .on('end', () => {
+        new_rows.forEach(row => expect(results).toContainEqual(row));
+      });
   });
 });

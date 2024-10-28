@@ -1,68 +1,81 @@
-describe('extractBibInfo', () => {
-    it('should extract title, author, and year from a valid BibTeX entry', () => {
-        const bibFileContent = `
-@article{sample2024,
-  author = {John Doe and Jane Smith},
-  title = {A Comprehensive Study on AI},
-  year = {2024}
-}
-`;
+describe('TestExtractBibInfo', () => {
+    it('test valid entry', () => {
+        const mockBib = `@article{sample2024,
+            author = {John Doe and Jane Smith},
+            title = {A Comprehensive Study on AI},
+            year = {2024}
+        }`;
+        const mockOpen = jest.fn().mockImplementation(() => ({
+            readFileSync: jest.fn().mockReturnValue(mockBib),
+        }));
 
-        const result = extractBibInfo(bibFileContent);
-        expect(result).toEqual([
-            {
-                title: 'A Comprehensive Study on AI',
-                author: 'John Doe and Jane Smith',
-                year: '2024'
+        const result = extractBibInfo('dummy.bib');
+        const expected = [{ title: 'A Comprehensive Study on AI', author: 'John Doe and Jane Smith', year: '2024' }];
+        expect(result).toEqual(expected);
+    });
+
+    it('test multiple entries', () => {
+        const mockBib = `
+            @article{sample2024,
+                author = {John Doe},
+                title = {A Comprehensive Study on AI},
+                year = {2024}
             }
-        ]);
-    });
-
-    it('should handle multiple entries', () => {
-        const bibFileContent = `
-@article{sample2024,
-  author = {John Doe and Jane Smith},
-  title = {A Comprehensive Study on AI},
-  year = {2024}
-}
-@article{anotherSample2023,
-  author = {Alice Johnson},
-  title = {Introduction to Machine Learning},
-  year = {2023}
-}
-`;
-
-        const result = extractBibInfo(bibFileContent);
-        expect(result).toEqual([
-            {
-                title: 'A Comprehensive Study on AI',
-                author: 'John Doe and Jane Smith',
-                year: '2024'
-            },
-            {
-                title: 'Introduction to Machine Learning',
-                author: 'Alice Johnson',
-                year: '2023'
+            @article{sample2023,
+                author = {Jane Smith},
+                title = {Deep Learning Techniques},
+                year = {2023}
             }
-        ]);
+        `;
+        const mockOpen = jest.fn().mockImplementation(() => ({
+            readFileSync: jest.fn().mockReturnValue(mockBib),
+        }));
+
+        const result = extractBibInfo('dummy.bib');
+        const expected = [
+            { title: 'A Comprehensive Study on AI', author: 'John Doe', year: '2024' },
+            { title: 'Deep Learning Techniques', author: 'Jane Smith', year: '2023' }
+        ];
+        expect(result).toEqual(expected);
     });
 
-    it('should handle empty input', () => {
-        const bibFileContent = '';
+    it('test missing fields', () => {
+        const mockBib = `@article{sample2024,
+            author = {John Doe},
+            title = {Title Missing Year}
+        }`;
+        const mockOpen = jest.fn().mockImplementation(() => ({
+            readFileSync: jest.fn().mockReturnValue(mockBib),
+        }));
 
-        const result = extractBibInfo(bibFileContent);
-        expect(result).toEqual([]);
+        const result = extractBibInfo('dummy.bib');
+        const expected = [{ title: 'Title Missing Year', author: 'John Doe', year: undefined }];
+        expect(result).toEqual(expected);
     });
 
-    it('should handle invalid BibTeX format', () => {
-        const bibFileContent = `
-@article{sample2024,
-  author = {John Doe and Jane Smith},
-  title = {A Comprehensive Study on AI},
-  year = {2024
-}`;
+    it('test empty file', () => {
+        const mockBib = '';
+        const mockOpen = jest.fn().mockImplementation(() => ({
+            readFileSync: jest.fn().mockReturnValue(mockBib),
+        }));
 
-        const result = extractBibInfo(bibFileContent);
-        expect(result).toEqual([]);
+        const result = extractBibInfo('dummy.bib');
+        const expected = [];
+        expect(result).toEqual(expected);
+    });
+
+    it('test incorrect format', () => {
+        const mockBib = `@article{sample2024,
+            author = John Doe,
+            title = {Title Without Braces},
+            year = 2024
+        }`;
+        const mockOpen = jest.fn().mockImplementation(() => ({
+            readFileSync: jest.fn().mockReturnValue(mockBib),
+        }));
+
+        const result = extractBibInfo('dummy.bib');
+        const expected = [{ title: 'Title Without Braces', author: undefined, year: undefined }];
+        expect(result).toEqual(expected);
     });
 });

@@ -1,16 +1,27 @@
 describe('findLargestDivisible', () => {
-    it('should return null when there is no number between n and half of n that is divisible by 5 or 10', () => {
-        expect(findLargestDivisible(2)).toBeNull();
-        expect(findLargestDivisible(3)).toBeNull();
+    test('test typical case', () => {
+        /** Test with a typical input where the largest divisible number should be found. */
+        expect(findLargestDivisible(50)).toBe(50);
+        expect(findLargestDivisible(47)).toBe(45);
+    });
+
+    test('test no divisible number found', () => {
+        /** Test a case where no divisible number is found within the range. */
         expect(findLargestDivisible(4)).toBeNull();
     });
 
-    it('should return the largest number between n and half of n that is divisible by 5 or 10', () => {
+    test('test exact half divisible', () => {
+        /** Test when the half of n is exactly divisible by 5. */
         expect(findLargestDivisible(10)).toBe(10);
-        expect(findLargestDivisible(15)).toBe(15);
-        expect(findLargestDivisible(20)).toBe(20);
-        expect(findLargestDivisible(25)).toBe(25);
-        expect(findLargestDivisible(26)).toBe(25);
-        expect(findLargestDivisible(75)).toBe(75);
+    });
+
+    test('test large number', () => {
+        /** Test with a large number to ensure performance and correctness. */
+        expect(findLargestDivisible(1000)).toBe(1000);
+    });
+
+    test('test lower bound', () => {
+        /** Test the function with the lowest bound that should find a divisible number. */
+        expect(findLargestDivisible(5)).toBe(5);
     });
 });

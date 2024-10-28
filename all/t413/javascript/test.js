@@ -1,25 +1,28 @@
-describe('getPalindromeList', () => {
-    it('should return an empty array for n=0', () => {
-        expect(getPalindromeList(0)).toEqual([]);
+describe('TestNthPalindrome', () => {
+    it('test_single_digit', () => {
+        expect(getPalindromeList(1)).toEqual([0], 'The first palindrome should be 0');
     });
 
-    it('should return [1] for n=1', () => {
-        expect(getPalindromeList(1)).toEqual([1]);
+    it('test_edge_of_single_and_double_digits', () => {
+        expect(getPalindromeList(10)).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+            'The tenth palindrome should be [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]');
     });
 
-    it('should return [1, 2, 3, 4, 5] for n=5', () => {
-        expect(getPalindromeList(5)).toEqual([1, 2, 3, 4, 5]);
+    it('test_edge_of_double_and_triple_digits', () => {
+        expect(getPalindromeList(100)).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 22, 33, 44, 55, 66, 77, 88, 99],
+            'The 100th palindrome should be [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 22, 33, 44, 55, 66, 77, 88, 99]');
     });
 
-    it('should return [1, 2, 3, 4, 5, 6, 7, 8, 9] for n=9', () => {
-        expect(getPalindromeList(9)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
-    });
-
-    it('should return [1, 2, 3, 4, 5, 6, 7, 8, 9, 11] for n=11', () => {
-        expect(getPalindromeList(11)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 11]);
-    });
-
-    it('should return [1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 121] for n=121', () => {
-        expect(getPalindromeList(121)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 121]);
+    it('test_large_number', () => {
+        const expectedResult = [
+            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 22, 33, 44, 55, 66, 77, 88, 99, 101, 111, 121, 131, 141,
+            151, 161, 171, 181, 191, 202, 212, 222, 232, 242, 252, 262, 272, 282, 292, 303, 313, 323,
+            333, 343, 353, 363, 373, 383, 393, 404, 414, 424, 434, 444, 454, 464, 474, 484, 494, 505,
+            515, 525, 535, 545, 555, 565, 575, 585, 595, 606, 616, 626, 636, 646, 656, 666, 676, 686,
+            696, 707, 717, 727, 737, 747, 757, 767, 777, 787, 797, 808, 818, 828, 838, 848, 858, 868,
+            878, 888, 898, 909, 919, 929, 939, 949, 959, 969, 979, 989, 999
+        ];
+        expect(getPalindromeList(1000)).toEqual(expectedResult,
+            'The 1000th palindrome should be [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 22, 33, 44, 55, 66, 77, 88, 99, 101, 111, 121, 131, 141, 151, 161, 171, 181, 191, 202, 212, 222, 232, 242, 252, 262, 272, 282, 292, 303, 313, 323, 333, 343, 353, 363, 373, 383, 393, 404, 414, 424, 434, 444, 454, 464, 474, 484, 494, 505, 515, 525, 535, 545, 555, 565, 575, 585, 595, 606, 616, 626, 636, 646, 656, 666, 676, 686, 696, 707, 717, 727, 737, 747, 757, 767, 777, 787, 797, 808, 818, 828, 838, 848, 858, 868, 878, 888, 898, 909, 919, 929, 939, 949, 959, 969, 979, 989, 999]');
     });
 });

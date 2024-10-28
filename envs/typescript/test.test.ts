@@ -1,34 +1,73 @@
 /**
- * Detects whether the string is in SNAKE_CASE.
+ * Calculates the steering angle based on the given angular velocity, speed, and wheelbase.
  *
- * @param {string} input - The string to check.
- * @returns {boolean} - True if the string is in SNAKE_CASE, otherwise false.
+ * The function uses the relationship between angular velocity, speed, and the steering angle
+ * to determine the appropriate steering angle required for the vehicle to achieve the desired
+ * angular velocity. The formula used is:
+ *
+ *      ω = (v / L) * tan(δ)
+ *
+ * Rearranging gives us:
+ *
+ *      δ = atan((ω * L) / v)
+ *
+ * @param angularVelocity The angular velocity of the vehicle in radians per second.
+ * @param speed The forward speed of the vehicle in meters per second.
+ * @param wheelbase The distance between the front and rear axles of the vehicle in meters.
+ *
+ * @return The steering angle in radians.
+ *
+ * @throws Error if speed is less than or equal to zero,
+ *                since the vehicle cannot move at zero or negative speed.
  */
-function isSnakeCase(input: string): boolean {
-    return /^[A-Z]+(_[A-Z]+)*$/.test(input);
+function calculateSteeringAngle(angularVelocity: number, speed: number, wheelbase: number): number {
+    if (speed <= 0) {
+        throw new Error("Speed must be greater than zero.");
+    }
+
+    const steeringAngle = Math.atan((angularVelocity * wheelbase) / speed);
+    return steeringAngle;
 }
-describe('isSnakeCase', () => {
-    test('should return true for a valid snake_case string', () => {
-        expect(isSnakeCase('snake_case')).toBe(true);
+describe("Calculate Steering Angle Tests", () => {
+    const wheelbase = 2.5; // Setting wheelbase constant for all tests
+
+    test("Normal case", () => {
+        const angularVelocity = 1.0; // radians/second
+        const speed = 10.0;          // meters/second
+        const expectedAngle = Math.atan((angularVelocity * wheelbase) / speed);
+        expect(calculateSteeringAngle(angularVelocity, speed, wheelbase)).toBeCloseTo(expectedAngle);
     });
 
-    test('should return true for a valid snake_case string with multiple words', () => {
-        expect(isSnakeCase('snake_case_example')).toBe(true);
+    test("Zero speed", () => {
+        const angularVelocity = 1.0; // radians/second
+        const speed = 0.0;           // meters/second
+        expect(() => calculateSteeringAngle(angularVelocity, speed, wheelbase)).toThrow(Error);
     });
 
-    test('should return false for a string that starts with an uppercase letter', () => {
-        expect(isSnakeCase('Snake_Case')).toBe(false);
+    test("Negative speed", () => {
+        const angularVelocity = 1.0; // radians/second
+        const speed = -5.0;          // meters/second
+        expect(() => calculateSteeringAngle(angularVelocity, speed, wheelbase)).toThrow(Error);
     });
 
-    test('should return false for a string with mixed case letters', () => {
-        expect(isSnakeCase('snakeCASE')).toBe(false);
+    test("Zero angular velocity", () => {
+        const angularVelocity = 0.0; // radians/second
+        const speed = 10.0;          // meters/second
+        const expectedAngle = 0.0;   // Steering angle should be zero
+        expect(calculateSteeringAngle(angularVelocity, speed, wheelbase)).toBeCloseTo(expectedAngle);
     });
 
-    test('should return false for a string with numbers', () => {
-        expect(isSnakeCase('snake_case_123')).toBe(false);
+    test("Large values", () => {
+        const angularVelocity = 100.0; // radians/second
+        const speed = 1000.0;          // meters/second
+        const expectedAngle = Math.atan((angularVelocity * wheelbase) / speed);
+        expect(calculateSteeringAngle(angularVelocity, speed, wheelbase)).toBeCloseTo(expectedAngle);
     });
 
-    test('should return false for an empty string', () => {
-        expect(isSnakeCase('')).toBe(false);
+    test("High angular velocity", () => {
+        const angularVelocity = 10.0; // radians/second
+        const speed = 1.0;             // meters/second
+        const expectedAngle = Math.atan((angularVelocity * wheelbase) / speed);
+        expect(calculateSteeringAngle(angularVelocity, speed, wheelbase)).toBeCloseTo(expectedAngle);
     });
 });

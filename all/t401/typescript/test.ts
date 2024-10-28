@@ -1,25 +1,25 @@
-describe('findPlaceholders', () => {
-    it('should find placeholders correctly', () => {
-        const text = 'This is a test with {{ placeholder1 }} and {{ placeholder2 }}.';
-        const expected = ['{{ placeholder1 }}', '{{ placeholder2 }}'];
-        expect(findPlaceholders(text)).toEqual(expected);
+describe('TestFindPlaceholders', () => {
+    it('test string with multiple placeholders', () => {
+      const inputText = "Here are some placeholders: {{ placeholder1 }}, {{ placeholder2 }}, and {{ placeholder3 }}.";
+      const expectedOutput = ['placeholder1', 'placeholder2', 'placeholder3'];
+      expect(findPlaceholders(inputText)).toEqual(expectedOutput);
     });
-
-    it('should handle empty string', () => {
-        const text = '';
-        const expected: string[] = [];
-        expect(findPlaceholders(text)).toEqual(expected);
+  
+    it('test string with no placeholders', () => {
+      const inputText = "This string has no placeholders.";
+      const expectedOutput = [];
+      expect(findPlaceholders(inputText)).toEqual(expectedOutput);
     });
-
-    it('should handle string without placeholders', () => {
-        const text = 'This is a plain text without any placeholders.';
-        const expected: string[] = [];
-        expect(findPlaceholders(text)).toEqual(expected);
+  
+    it('test string with a single placeholder', () => {
+      const inputText = "The only placeholder is {{ singlePlaceholder }}.";
+      const expectedOutput = ['singlePlaceholder'];
+      expect(findPlaceholders(inputText)).toEqual(expectedOutput);
     });
-
-    it('should handle multiple consecutive placeholders', () => {
-        const text = 'This is {{ one }} and {{ two }} and {{ three }}.';
-        const expected = ['{{ one }}', '{{ two }}', '{{ three }}'];
-        expect(findPlaceholders(text)).toEqual(expected);
+  
+    it('test string with placeholders that have extra spaces', () => {
+      const inputText = "Placeholders with spaces: {{  placeholder_with_spaces  }} and {{ placeholder2 }}.";
+      const expectedOutput = ['placeholder_with_spaces', 'placeholder2'];
+      expect(findPlaceholders(inputText)).toEqual(expectedOutput);
     });
-});
+  });

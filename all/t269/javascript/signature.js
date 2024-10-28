@@ -4,6 +4,4 @@
  * @param {string} ip - The IP address in string format.
  * @returns {boolean} - True if the IP is compliant, False otherwise.
  */
-function isCompliantIP(ip) {
-    // Your implementation here...
-}
+function isCompliantIP(ip) {}

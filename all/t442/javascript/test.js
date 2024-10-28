@@ -1,80 +1,41 @@
-describe('convertStringsToNumbers', () => {
-    it('should handle empty objects and arrays', () => {
-        expect(convertStringsToNumbers({})).toEqual({});
-        expect(convertStringsToNumbers([])).toEqual([]);
+describe('TestConvertStringsToNumbers', () => {
+    describe('test_flat_dict', () => {
+        it('should correctly convert flat dictionary', () => {
+            const data = {'a': '1', 'b': '2.5', 'c': 'not a number'};
+            const expected = {'a': 1, 'b': 2.5, 'c': 'not a number'};
+            expect(convertStringsToNumbers(data)).toEqual(expected);
+        });
     });
 
-    it('should handle nested objects and arrays', () => {
-        const nestedData = {
-            a: '1',
-            b: ['2', '3'],
-            c: {
-                d: '4',
-                e: '5.5'
-            }
-        };
-        const expectedResult = {
-            a: 1,
-            b: [2, 3],
-            c: {
-                d: 4,
-                e: 5.5
-            }
-        };
-        expect(convertStringsToNumbers(nestedData)).toEqual(expectedResult);
+    describe('test_nested_dict', () => {
+        it('should correctly convert nested dictionary', () => {
+            const data = {'x': {'y': '10', 'z': '3.14'}, 'w': '20.0'};
+            const expected = {'x': {'y': 10, 'z': 3.14}, 'w': 20.0};
+            expect(convertStringsToNumbers(data)).toEqual(expected);
+        });
     });
 
-    it('should handle mixed types', () => {
-        const mixedData = {
-            a: 'hello',
-            b: ['1', '2.5', 'three'],
-            c: {
-                d: '4',
-                e: '5.5',
-                f: true
-            }
-        };
-        const expectedResult = {
-            a: 'hello',
-            b: [1, 2.5, 'three'],
-            c: {
-                d: 4,
-                e: 5.5,
-                f: true
-            }
-        };
-        expect(convertStringsToNumbers(mixedData)).toEqual(expectedResult);
+    describe('test_list_of_strings', () => {
+        it('should correctly convert list of strings', () => {
+            const data = ['1', '2.5', '3', 'invalid'];
+            const expected = [1, 2.5, 3, 'invalid'];
+            expect(convertStringsToNumbers(data)).toEqual(expected);
+        });
     });
 
-    it('should handle deeply nested structures', () => {
-        const deepData = {
-            a: '1',
-            b: [
-                '2',
-                { c: '3', d: ['4', '5.5'] },
-                [6, '7.7']
-            ]
-        };
-        const expectedResult = {
-            a: 1,
-            b: [
-                2,
-                { c: 3, d: [4, 5.5] },
-                [6, 7.7]
-            ]
-        };
-        expect(convertStringsToNumbers(deepData)).toEqual(expectedResult);
+    describe('test_mixed_structure', () => {
+        it('should correctly convert mixed structure', () => {
+            const data = {'numbers': ['1', '2.0', 3], 'more_numbers': [{'num': '4'}, '5']};
+            const expected = {'numbers': [1, 2.0, 3], 'more_numbers': [{'num': 4}, 5]};
+            expect(convertStringsToNumbers(data)).toEqual(expected);
+        });
     });
 
-    it('should handle non-string values', () => {
-        const nonStringData = {
-            a: 1,
-            b: [2, 3],
-            c: {
-                d: 4,
-                e: 5.5
-            }
-        };
-        expect(convertStringsToNumbers(nonStringData)).toEqual(nonStringData);
+    describe('test_empty_structure', () => {
+        it('should correctly handle empty structure', () => {
+            const data = {};
+            const expected = {};
+            expect(convertStringsToNumbers(data)).toEqual(expected);
+        });
     });
 });

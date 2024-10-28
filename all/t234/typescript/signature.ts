@@ -1,3 +1,6 @@
+import * as fs from 'fs';
+import * as csvParser from 'csv-parser';
+import * as createCsvWriter from 'csv-writer';
 /**
  * Appends a new row to a CSV file if there isn't a row with matching values in the first three columns.
  *
@@ -5,7 +8,4 @@
  * @param reader - CSV reader object for reading existing rows.
  * @param rowCandidate - Array containing the new row to be appended.
  */
-// @ts-ignore
-function appendOrSkipRow(fileHandler: fs.ReadStream, reader: csv.CSVParser, rowCandidate: string[]): void {
-    // Function implementation goes here
-}
+function appendOrSkipRow(fileHandler: fs.WriteStream, reader: csvParser.CSVParser, rowCandidate: string[]): void {}

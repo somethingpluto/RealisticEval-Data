@@ -1,29 +1,21 @@
-// compress-whitespace.ts
-function compressWhitespace(inputString: string): string {
-    return inputString.replace(/\s+/g, ' ').trim();
-}
-
-export default compressWhitespace;
-
-// compress-whitespace.test.ts
-import compressWhitespace from './compress-whitespace';
-
 describe('compressWhitespace', () => {
-    it('should compress multiple consecutive whitespace characters into a single space', () => {
-        expect(compressWhitespace('foo')).toBe('foo');
-        expect(compressWhitespace(' foo')).toBe('foo');
-        expect(compressWhitespace('foo ')).toBe('foo');
-        expect(compressWhitespace('  foo  ')).toBe('foo');
-        expect(compressWhitespace('foo  bar')).toBe('foo bar');
-        expect(compressWhitespace('  foo  bar  ')).toBe('foo bar');
-    });
+  it('should handle strings with single spaces', () => {
+      expect(compressWhitespace("This is a test string.")).toBe("This is a test string.");
+  });
+
+  it('should handle strings with multiple spaces', () => {
+      expect(compressWhitespace("This    is  a   test   string.")).toBe("This is a test string.");
+  });
+
+  it('should handle strings with leading and trailing spaces', () => {
+      expect(compressWhitespace("   Leading and trailing spaces   ")).toBe("Leading and trailing spaces");
+  });
+
+  it('should handle strings with only spaces', () => {
+      expect(compressWhitespace("       ")).toBe("");
+  });
+
+  it('should handle empty strings', () => {
+      expect(compressWhitespace("")).toBe("");
+  });
 });
-
-// package.json
-{
-  "scripts": {
-    "test": "jest"
-  }
-}
-
-// Assuming you have jest and ts-jest setup

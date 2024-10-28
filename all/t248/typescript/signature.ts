@@ -1,15 +1,9 @@
+import { Dictionary } from "lodash";
 /**
- * Removes the corresponding sensitive questions in the given dictionary based on the given keyToRemove array.
- *
- * @param {QuestionDict} data - The original question dictionary.
- * @param {string[]} keyToRemove - The array of keys to remove.
- * @returns {QuestionDict} - The dictionary with the specified keys removed.
+ * Recursively sanitizes a dictionary by removing specific keys.
+ * 
+ * @param data - The original dictionary to sanitize.
+ * @param keyToRemove - An optional list of keys to remove. If not provided, defaults to a predefined set of keys.
+ * @returns The sanitized dictionary.
  */
-function sanitizeData(data: QuestionDict, keyToRemove: string[] = []): QuestionDict {
-    return Object.keys(data).reduce((acc, key) => {
-        if (!keyToRemove.includes(key)) {
-            acc[key] = data[key];
-        }
-        return acc;
-    }, {} as QuestionDict);
-}
+function sanitizeData(data: Dictionary<any>, keyToRemove?: string[]): Dictionary<any> {}

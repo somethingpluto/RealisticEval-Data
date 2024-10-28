@@ -1,6 +1,3 @@
-const { assert, approxEqual, column, cross, divide, float, norm, subtract, transpose } = require('mathjs');
-const changeReferenceFrame = require('./path_to_your_changeReferenceFrame_function'); // import your function
-
 describe('TestChangeReferenceFrame', () => {
     let pointCloud;
     let refFramePoints;

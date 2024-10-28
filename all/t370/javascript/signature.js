@@ -6,6 +6,4 @@
  * @returns {Array<number>} - Array representing the multidimensional index corresponding to `n`.
  * @throws {Error} - If `n` is out of bounds for the array defined by `shape`.
  */
-function decompose(n, shape) {
-    // Your implementation goes here
-}
+function decompose(n, shape) {}

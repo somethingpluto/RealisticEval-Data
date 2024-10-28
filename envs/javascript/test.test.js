@@ -1,27 +1,75 @@
-function getLineNumber(content, index) {
-    if (index < 0 || index > content.length) {
-        throw new RangeError('Index is out of bounds');
+/**
+ * Calculates the steering angle based on the given angular velocity, speed, and wheelbase.
+ *
+ * The function uses the relationship between angular velocity, speed, and the steering angle
+ * to determine the appropriate steering angle required for the vehicle to achieve the desired
+ * angular velocity. The formula used is:
+ *
+ *      ω = (v / L) * tan(δ)
+ *
+ * Rearranging gives us:
+ *
+ *      δ = atan((ω * L) / v)
+ *
+ * @param {number} angularVelocity The angular velocity of the vehicle in radians per second.
+ * @param {number} speed The forward speed of the vehicle in meters per second.
+ * @param {number} wheelbase The distance between the front and rear axles of the vehicle in meters.
+ *
+ * @return {number} The steering angle in radians.
+ *
+ * @throws {Error} If speed is less than or equal to zero,
+ *                 since the vehicle cannot move at zero or negative speed.
+ */
+function calculateSteeringAngle(angularVelocity, speed, wheelbase) {
+    if (speed <= 0) {
+        throw new Error("Speed must be greater than zero.");
     }
-    return content.slice(0, index).split('\n').length;
+
+    const steeringAngle = Math.atan((angularVelocity * wheelbase) / speed);
+    return steeringAngle;
 }
-describe('getLineNumber', () => {
-    test('returns 1 for the first character', () => {
-        expect(getLineNumber("Line 1\nLine 2\nLine 3", 0)).toBe(1);
+const wheelbase = 2.5; // Setting wheelbase constant for all tests
+
+describe("Calculate Steering Angle Tests", () => {
+    test("Normal case", () => {
+        const angularVelocity = 1.0; // radians/second
+        const speed = 10.0;          // meters/second
+        const expectedAngle = Math.atan((angularVelocity * wheelbase) / speed);
+        expect(calculateSteeringAngle(angularVelocity, speed, wheelbase)).toBeCloseTo(expectedAngle);
     });
 
-    test('returns 1 for the last character of the first line', () => {
-        expect(getLineNumber("Line 1\nLine 2\nLine 3", 5)).toBe(1);
+    test("Zero speed", () => {
+        const angularVelocity = 1.0; // radians/second
+        const speed = 0.0;           // meters/second
+        expect(() => calculateSteeringAngle(angularVelocity, speed, wheelbase)).toThrow(Error);
+        expect(() => calculateSteeringAngle(angularVelocity, speed, wheelbase)).toThrow("Speed must be greater than zero.");
     });
 
-    test('returns 3 for the last character of the third line', () => {
-        expect(getLineNumber("Line 1\nLine 2\nLine 3", 18)).toBe(3);
+    test("Negative speed", () => {
+        const angularVelocity = 1.0; // radians/second
+        const speed = -5.0;          // meters/second
+        expect(() => calculateSteeringAngle(angularVelocity, speed, wheelbase)).toThrow(Error);
+        expect(() => calculateSteeringAngle(angularVelocity, speed, wheelbase)).toThrow("Speed must be greater than zero.");
     });
 
-    test('returns 1 for a single line string', () => {
-        expect(getLineNumber("Single line string", 0)).toBe(1);
+    test("Zero angular velocity", () => {
+        const angularVelocity = 0.0; // radians/second
+        const speed = 10.0;          // meters/second
+        const expectedAngle = 0.0;   // Steering angle should be zero
+        expect(calculateSteeringAngle(angularVelocity, speed, wheelbase)).toBeCloseTo(expectedAngle);
     });
 
-    test('returns 3 for an index within a multiline string with trailing newlines', () => {
-        expect(getLineNumber("Line 1\nLine 2\nLine 3\n\n", 15)).toBe(3);
+    test("Large values", () => {
+        const angularVelocity = 100.0; // radians/second
+        const speed = 1000.0;          // meters/second
+        const expectedAngle = Math.atan((angularVelocity * wheelbase) / speed);
+        expect(calculateSteeringAngle(angularVelocity, speed, wheelbase)).toBeCloseTo(expectedAngle);
+    });
+
+    test("High angular velocity", () => {
+        const angularVelocity = 10.0; // radians/second
+        const speed = 1.0;             // meters/second
+        const expectedAngle = Math.atan((angularVelocity * wheelbase) / speed);
+        expect(calculateSteeringAngle(angularVelocity, speed, wheelbase)).toBeCloseTo(expectedAngle);
     });
 });

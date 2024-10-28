@@ -1,29 +1,112 @@
-describe('String Methods', () => {
-    describe('#toUpperCase()', () => {
-        it('should return the string in uppercase', () => {
-            assert.strictEqual('foo'.toUpperCase(), 'FOO');
-        });
+const fs = require('fs');
+const path = require('path');
+const { tmpdir } = require('os');
+
+// Mock the formatText function (assuming it's defined elsewhere)
+jest.mock('./formatText', () => ({
+    formatText: jest.fn()
+}));
+
+
+describe('TestFormatText', () => {
+    afterEach(() => {
+        // Clean up after each test
+        jest.restoreAllMocks();
     });
 
-    describe('#isUpper()', () => {
-        it('should return true if the string is in uppercase', () => {
-            assert.strictEqual('FOO'.isUpper(), true);
-        });
-        
-        it('should return false if the string is not in uppercase', () => {
-            assert.strictEqual('Foo'.isUpper(), false);
-        });
+    test('test_basic_text', async () => {
+        // Test with basic text
+        const inputText = "This is line one.\nThis is line two.\nThis is line three.";
+        const expectedOutput = "This is line one. This is line two. This is line three.";
+
+        const inputFilePath = path.join(tmpdir(), 'input.txt');
+        const outputFilePath = path.join(tmpdir(), 'output.txt');
+
+        // Write input text to a temporary file
+        fs.writeFileSync(inputFilePath, inputText);
+
+        // Call the formatText function
+        formatText(inputFilePath, outputFilePath);
+
+        // Read the output file
+        const outputText = fs.readFileSync(outputFilePath, 'utf8').trim();
+
+        expect(outputText).toEqual(expectedOutput);
+
+        // Clean up
+        fs.unlinkSync(inputFilePath);
+        fs.unlinkSync(outputFilePath);
     });
 
-    describe('#split()', () => {
-        it('should split the string into an array of words', () => {
-            const s = 'hello world';
-            assert.deepStrictEqual(s.split(), ['hello', 'world']);
-        });
+    test('test_single_line', async () => {
+        // Test with a single line
+        const inputText = "This is a single line.";
+        const expectedOutput = "This is a single line.";
 
-        it('should throw TypeError when called with non-integer argument', () => {
-            const s = 'hello world';
-            assert.throws(() => s.split(2), TypeError);
-        });
+        const inputFilePath = path.join(tmpdir(), 'input.txt');
+        const outputFilePath = path.join(tmpdir(), 'output.txt');
+
+        // Write input text to a temporary file
+        fs.writeFileSync(inputFilePath, inputText);
+
+        // Call the formatText function
+        formatText(inputFilePath, outputFilePath);
+
+        // Read the output file
+        const outputText = fs.readFileSync(outputFilePath, 'utf8').trim();
+
+        expect(outputText).toEqual(expectedOutput);
+
+        // Clean up
+        fs.unlinkSync(inputFilePath);
+        fs.unlinkSync(outputFilePath);
+    });
+
+    test('test_empty_file', async () => {
+        // Test with an empty file
+        const inputText = "";
+        const expectedOutput = "";
+
+        const inputFilePath = path.join(tmpdir(), 'input.txt');
+        const outputFilePath = path.join(tmpdir(), 'output.txt');
+
+        // Write input text to a temporary file
+        fs.writeFileSync(inputFilePath, inputText);
+
+        // Call the formatText function
+        formatText(inputFilePath, outputFilePath);
+
+        // Read the output file
+        const outputText = fs.readFileSync(outputFilePath, 'utf8').trim();
+
+        expect(outputText).toEqual(expectedOutput);
+
+        // Clean up
+        fs.unlinkSync(inputFilePath);
+        fs.unlinkSync(outputFilePath);
+    });
+
+    test('test_file_with_no_newlines', async () => {
+        // Test with text that has no newlines
+        const inputText = "This is a continuous line without breaks.";
+        const expectedOutput = "This is a continuous line without breaks.";
+
+        const inputFilePath = path.join(tmpdir(), 'input.txt');
+        const outputFilePath = path.join(tmpdir(), 'output.txt');
+
+        // Write input text to a temporary file
+        fs.writeFileSync(inputFilePath, inputText);
+
+        // Call the formatText function
+        formatText(inputFilePath, outputFilePath);
+
+        // Read the output file
+        const outputText = fs.readFileSync(outputFilePath, 'utf8').trim();
+
+        expect(outputText).toEqual(expectedOutput);
+
+        // Clean up
+        fs.unlinkSync(inputFilePath);
+        fs.unlinkSync(outputFilePath);
     });
 });

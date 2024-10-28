@@ -1,10 +1,9 @@
 /**
- * Compute the squared Euclidean distance between two vectors.
+ * Computes the squared Euclidean distance between two vectors.
  *
- * @param {number[]} vec1 - The first vector.
- * @param {number[]} vec2 - The second vector.
- * @returns {number} - The Euclidean distance between vec1 and vec2.
+ * @param vec1 - The first vector.
+ * @param vec2 - The second vector.
+ * @returns The squared Euclidean distance between vec1 and vec2.
+ * @throws {Error} If the vectors are of different lengths.
  */
-function squaredEuclideanDistance(vec1: number[], vec2: number[]): number {
-
-}
+function squaredEuclideanDistance(vec1: number[], vec2: number[]): number {}

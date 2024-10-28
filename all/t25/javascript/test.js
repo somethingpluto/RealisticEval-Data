@@ -1,78 +1,73 @@
 const fs = require('fs');
 const path = require('path');
-const os = require('os');
-const { classifyJsonObjectsByPid } = require('./yourModule'); // Assuming your function is exported from this module
-
-describe('Test classifyJsonObjectsByPid', () => {
-    let tempDir;
-    let sourceFile;
-    let matchFile;
-    let mismatchFile;
+describe('Classify JSON Objects by PID', () => {
+  let tempDir;
+  let sourceFile;
+  let matchFile;
+  let mismatchFile;
+  
+  beforeAll(() => {
+    // Create a temporary directory
+    tempDir = fs.mkdtempSync(path.join(__dirname, 'temp-'));
+    
+    // Create temporary files for testing
+    sourceFile = path.join(tempDir, 'source.json');
+    matchFile = path.join(tempDir, 'match.json');
+    mismatchFile = path.join(tempDir, 'mismatch.json');
+    
+    // Example data
     const data = [
-        { name: 'Alice', pid: 1 },
-        { name: 'Bob', pid: 2 },
-        { name: 'Charlie', pid: 3 }
+      { name: "Alice", pid: 1 },
+      { name: "Bob", pid: 2 },
+      { name: "Charlie", pid: 3 }
     ];
-    const pidList = [1, 3];
 
-    beforeAll(() => {
-        // Create a temporary directory
-        tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'test-'));
+    // Write example data to source file
+    fs.writeFileSync(sourceFile, JSON.stringify(data));
+  });
 
-        // Define file paths
-        sourceFile = path.join(tempDir, 'source.json');
-        matchFile = path.join(tempDir, 'match.json');
-        mismatchFile = path.join(tempDir, 'mismatch.json');
+  afterAll(() => {
+    // Clean up temporary files and directory
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  });
 
-        // Write example data to source file
-        fs.writeFileSync(sourceFile, JSON.stringify(data), 'utf8');
-    });
+  test('all match', () => {
+    classifyJsonObjectsByPid(sourceFile, [1, 2, 3], matchFile, mismatchFile);
+    
+    const matches = JSON.parse(fs.readFileSync(matchFile, 'utf8'));
+    const mismatches = JSON.parse(fs.readFileSync(mismatchFile, 'utf8'));
 
-    afterAll(() => {
-        // Clean up temporary files
-        fs.unlinkSync(sourceFile);
-        fs.unlinkSync(matchFile);
-        fs.unlinkSync(mismatchFile);
-        fs.rmdirSync(tempDir);
-    });
+    expect(matches.length).toBe(3);
+    expect(mismatches.length).toBe(0);
+  });
 
-    test('all items match', () => {
-        classifyJsonObjectsByPid(sourceFile, [1, 2, 3], matchFile, mismatchFile);
-        
-        const matches = JSON.parse(fs.readFileSync(matchFile, 'utf8'));
-        const mismatches = JSON.parse(fs.readFileSync(mismatchFile, 'utf8'));
-        
-        expect(matches).toHaveLength(3);
-        expect(mismatches).toHaveLength(0);
-    });
+  test('no match', () => {
+    classifyJsonObjectsByPid(sourceFile, [4, 5], matchFile, mismatchFile);
+    
+    const matches = JSON.parse(fs.readFileSync(matchFile, 'utf8'));
+    const mismatches = JSON.parse(fs.readFileSync(mismatchFile, 'utf8'));
 
-    test('no items match', () => {
-        classifyJsonObjectsByPid(sourceFile, [4, 5], matchFile, mismatchFile);
-        
-        const matches = JSON.parse(fs.readFileSync(matchFile, 'utf8'));
-        const mismatches = JSON.parse(fs.readFileSync(mismatchFile, 'utf8'));
-        
-        expect(matches).toHaveLength(0);
-        expect(mismatches).toHaveLength(3);
-    });
+    expect(matches.length).toBe(0);
+    expect(mismatches.length).toBe(3);
+  });
 
-    test('partial items match', () => {
-        classifyJsonObjectsByPid(sourceFile, pidList, matchFile, mismatchFile);
-        
-        const matches = JSON.parse(fs.readFileSync(matchFile, 'utf8'));
-        const mismatches = JSON.parse(fs.readFileSync(mismatchFile, 'utf8'));
-        
-        expect(matches).toHaveLength(2);
-        expect(mismatches).toHaveLength(1);
-    });
+  test('partial match', () => {
+    classifyJsonObjectsByPid(sourceFile, [1, 3], matchFile, mismatchFile);
+    
+    const matches = JSON.parse(fs.readFileSync(matchFile, 'utf8'));
+    const mismatches = JSON.parse(fs.readFileSync(mismatchFile, 'utf8'));
 
-    test('empty PID list', () => {
-        classifyJsonObjectsByPid(sourceFile, [], matchFile, mismatchFile);
-        
-        const matches = JSON.parse(fs.readFileSync(matchFile, 'utf8'));
-        const mismatches = JSON.parse(fs.readFileSync(mismatchFile, 'utf8'));
-        
-        expect(matches).toHaveLength(0);
-        expect(mismatches).toHaveLength(3);
-    });
+    expect(matches.length).toBe(2);
+    expect(mismatches.length).toBe(1);
+  });
+
+  test('empty PID list', () => {
+    classifyJsonObjectsByPid(sourceFile, [], matchFile, mismatchFile);
+    
+    const matches = JSON.parse(fs.readFileSync(matchFile, 'utf8'));
+    const mismatches = JSON.parse(fs.readFileSync(mismatchFile, 'utf8'));
+
+    expect(matches.length).toBe(0);
+    expect(mismatches.length).toBe(3);
+  });
 });

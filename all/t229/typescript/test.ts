@@ -1,25 +1,29 @@
-describe('convertFileSize', () => {
-    it('should convert 2120 bytes to 2KB', () => {
-        expect(convertFileSize(2120)).toBe('2.05KB');
+describe('TestFileSizeConverter', () => {
+    it('should handle zero bytes', () => {
+      expect(convertFileSize(0)).toBe("0B");
     });
-
-    it('should convert 1024 bytes to 1KB', () => {
-        expect(convertFileSize(1024)).toBe('1.00KB');
+  
+    it('should handle bytes less than 1KB', () => {
+      expect(convertFileSize(512)).toBe("512B");
     });
-
-    it('should convert 1048576 bytes to 1MB', () => {
-        expect(convertFileSize(1048576)).toBe('1.00MB');
+  
+    it('should handle exactly 1KB', () => {
+      expect(convertFileSize(1024)).toBe("1KB");
     });
-
-    it('should convert 1073741824 bytes to 1GB', () => {
-        expect(convertFileSize(1073741824)).toBe('1.00GB');
+  
+    it('should handle 2KB', () => {
+      expect(convertFileSize(2048)).toBe("2KB");
     });
-
-    it('should convert 1099511627776 bytes to 1TB', () => {
-        expect(convertFileSize(1099511627776)).toBe('1.00TB');
+  
+    it('should handle exactly 1MB', () => {
+      expect(convertFileSize(1048576)).toBe("1MB");
     });
-
-    it('should handle 0 bytes correctly', () => {
-        expect(convertFileSize(0)).toBe('0B');
+  
+    it('should handle 5MB', () => {
+      expect(convertFileSize(5242880)).toBe("5MB");
     });
-});
+  
+    it('should handle exactly 1GB', () => {
+      expect(convertFileSize(1073741824)).toBe("1GB");
+    });
+  });

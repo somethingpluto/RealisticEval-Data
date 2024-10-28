@@ -1,45 +1,56 @@
-import { get_scale } from './getScale';
+describe('TestGetScaleFunction', () => {
+    it('test_identity_matrix', () => {
+        // Test for the identity matrix (no scaling)
+        const matrix: number[][] = [
+            [1, 0, 0],
+            [0, 1, 0],
+            [0, 0, 1]
+        ];
+        const expectedScale: [number, number] = [1.0, 1.0];
+        expect(getScale(matrix)).toEqual(expectedScale);
+    });
 
-describe('get_scale', () => {
-    it('should correctly calculate scale factors for a given 3x3 affine transformation matrix', () => {
+    it('test_scaling_matrix', () => {
+        // Test for a scaling matrix (2x in x and 3x in y)
         const matrix: number[][] = [
             [2, 0, 0],
             [0, 3, 0],
             [0, 0, 1]
         ];
-
-        const expected: [number, number] = [2, 3];
-
-        const result = get_scale(matrix);
-
-        expect(result).toEqual(expected);
+        const expectedScale: [number, number] = [2.0, 3.0];
+        expect(getScale(matrix)).toEqual(expectedScale);
     });
 
-    it('should handle matrices with non-zero translation components', () => {
+    it('test_uniform_scaling', () => {
+        // Test case with uniform scaling
         const matrix: number[][] = [
-            [2, 0, 5],
-            [0, 3, 7],
+            [2, 0, 0],
+            [0, 2, 0],
             [0, 0, 1]
         ];
-
-        const expected: [number, number] = [2, 3];
-
-        const result = get_scale(matrix);
-
-        expect(result).toEqual(expected);
+        const expectedScale: [number, number] = [2.0, 2.0];
+        expect(getScale(matrix)).toEqual(expectedScale);
     });
 
-    it('should handle singular matrices (zero scaling)', () => {
+    it('test_non_uniform_scaling', () => {
+        // Test case with non-uniform scaling
         const matrix: number[][] = [
-            [0, 0, 0],
-            [0, 0, 0],
+            [3, 0, 0],
+            [0, 5, 0],
             [0, 0, 1]
         ];
+        const expectedScale: [number, number] = [3.0, 5.0];
+        expect(getScale(matrix)).toEqual(expectedScale);
+    });
 
-        const expected: [number, number] = [0, 0];
-
-        const result = get_scale(matrix);
-
-        expect(result).toEqual(expected);
+    it('test_reflection_matrix', () => {
+        // Test case with reflection matrix
+        const matrix: number[][] = [
+            [-1, 0, 0],
+            [0, 1, 0],
+            [0, 0, 1]
+        ];
+        const expectedScale: [number, number] = [1.0, 1.0];
+        expect(getScale(matrix)).toEqual(expectedScale);
     });
 });

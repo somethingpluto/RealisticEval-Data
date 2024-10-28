@@ -1,65 +1,80 @@
-describe('extractLogEntries', () => {
-    it('should extract WARNING logs to a separate file', async () => {
-        const mockFilePath = 'mock.log';
-        const mockWarningLogs = [
-            'WARNING: This is a warning message',
-            'WARNING: Another warning message'
+describe('TestExtractLogEntries', () => {
+    beforeEach(() => {
+        // Setup a temporary log file with sample content for testing
+        const logFileContents = [
+            "INFO: This is an informational message.\n",
+            "WARNING: This is a warning message.\n",
+            "ERROR: This is an error message.\n",
+            "CRITICAL: This is a critical message.\n",
+            "ALERT: This is an alert message.\n"
         ];
-
-        // Mock the file reading and writing operations
-        jest.spyOn(fs, 'readFileSync').mockImplementation(() => mockWarningLogs.join('\n'));
-        jest.spyOn(fs, 'writeFileSync');
-
-        await extractLogEntries(mockFilePath);
-
-        expect(fs.writeFileSync).toHaveBeenCalledWith('WARNING_mock.log', mockWarningLogs[0] + '\n' + mockWarningLogs[1]);
+        const logFilePath = 'test_log.log';
+        fs.writeFileSync(logFilePath, logFileContents.join(''));
     });
 
-    it('should extract ERROR logs to a separate file', async () => {
-        const mockFilePath = 'mock.log';
-        const mockErrorLogs = [
-            'ERROR: This is an error message',
-            'ERROR: Another error message'
-        ];
-
-        // Mock the file reading and writing operations
-        jest.spyOn(fs, 'readFileSync').mockImplementation(() => mockErrorLogs.join('\n'));
-        jest.spyOn(fs, 'writeFileSync');
-
-        await extractLogEntries(mockFilePath);
-
-        expect(fs.writeFileSync).toHaveBeenCalledWith('ERROR_mock.log', mockErrorLogs[0] + '\n' + mockErrorLogs[1]);
+    afterEach(() => {
+        // Clean up after each test
+        ['warning_logs.txt', 'error_logs.txt', 'critical_logs.txt', 'alert_logs.txt'].forEach(file => {
+            if (fs.existsSync(file)) {
+                fs.unlinkSync(file);
+            }
+        });
+        if (fs.existsSync('test_log.log')) {
+            fs.unlinkSync('test_log.log');
+        }
     });
 
-    it('should extract CRITICAL logs to a separate file', async () => {
-        const mockFilePath = 'mock.log';
-        const mockCriticalLogs = [
-            'CRITICAL: This is a critical message',
-            'CRITICAL: Another critical message'
-        ];
+    it('should handle no logs of certain levels', () => {
+        const logFilePath = 'test_log.log';
+        fs.writeFileSync(logFilePath, "INFO: This is another informational message.\n");
+        extractLogEntries(logFilePath);
 
-        // Mock the file reading and writing operations
-        jest.spyOn(fs, 'readFileSync').mockImplementation(() => mockCriticalLogs.join('\n'));
-        jest.spyOn(fs, 'writeFileSync');
-
-        await extractLogEntries(mockFilePath);
-
-        expect(fs.writeFileSync).toHaveBeenCalledWith('CRITICAL_mock.log', mockCriticalLogs[0] + '\n' + mockCriticalLogs[1]);
+        ['WARNING', 'ERROR', 'CRITICAL', 'ALERT'].forEach(level => {
+            const filePath = `${level.toLowerCase()}_logs.txt`;
+            expect(fs.existsSync(filePath)).toBe(true);
+            const content = fs.readFileSync(filePath, 'utf-8').trim();
+            expect(content).toBe('');
+        });
     });
 
-    it('should extract ALERT logs to a separate file', async () => {
-        const mockFilePath = 'mock.log';
-        const mockAlertLogs = [
-            'ALERT: This is an alert message',
-            'ALERT: Another alert message'
-        ];
+    it('should throw an error when the log file does not exist', () => {
+        expect(() => {
+            extractLogEntries('nonexistent.log');
+        }).toThrow(/No log file found at the specified path: nonexistent\.log/);
+    });
 
-        // Mock the file reading and writing operations
-        jest.spyOn(fs, 'readFileSync').mockImplementation(() => mockAlertLogs.join('\n'));
-        jest.spyOn(fs, 'writeFileSync');
+    it('should handle an empty log file', () => {
+        const logFilePath = 'test_log.log';
+        fs.writeFileSync(logFilePath, "");
+        extractLogEntries(logFilePath);
 
-        await extractLogEntries(mockFilePath);
+        ['WARNING', 'ERROR', 'CRITICAL', 'ALERT'].forEach(level => {
+            const filePath = `${level.toLowerCase()}_logs.txt`;
+            expect(fs.existsSync(filePath)).toBe(true);
+            const content = fs.readFileSync(filePath, 'utf-8').trim();
+            expect(content).toBe('');
+        });
+    });
 
-        expect(fs.writeFileSync).toHaveBeenCalledWith('ALERT_mock.log', mockAlertLogs[0] + '\n' + mockAlertLogs[1]);
+    it('should extract logs from a file with mixed content', () => {
+        const logFilePath = 'test_log.log';
+        fs.writeFileSync(logFilePath, [
+            "INFO: Some info.\n",
+            "WARNING: Watch out!\n",
+            "DEBUG: Debugging.\n",
+            "ERROR: Oops!\n",
+            "CRITICAL: Failed badly.\n",
+            "ALERT: High alert!\n",
+            "INFO: More info.\n"
+        ].join(''));
+
+        extractLogEntries(logFilePath);
+
+        ['WARNING', 'ERROR', 'CRITICAL', 'ALERT'].forEach(level => {
+            const filePath = `${level.toLowerCase()}_logs.txt`;
+            expect(fs.existsSync(filePath)).toBe(true);
+            const content = fs.readFileSync(filePath, 'utf-8').trim();
+            expect(content).toContain(level);
+        });
     });
 });

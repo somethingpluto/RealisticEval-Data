@@ -1,55 +1,43 @@
 const fs = require('fs');
-describe('readLog', () => {
-    
-    test('reads correctly formatted JSON lines', () => {
-        // Mock file content
-        const mockFileContent = '{"test_acc1": 88.5, "train_loss": 0.75}\n' +
-                                '{"test_acc1": 89.0, "train_loss": 0.70}';
-        
-        // Mock the fs.readFileSync method
-        jest.spyOn(fs, 'readFileSync').mockReturnValue(mockFileContent);
+const { mock } = require('jest-mock-extended');
+describe('TestReadLog', () => {
+    it('test_read_correct_data', () => {
+        const mockFileContent = '{"test_acc1": 88.5, "train_loss": 0.75}\n{"test_acc1": 89.0, "train_loss": 0.70}';
+        const mockFs = mock(fs);
+        mockFs.readFileSync.mockReturnValue(mockFileContent);
 
-        // Call the function and assert results
-        const { trainLossList, testAcc1List } = readLog("dummy_path.json");
-        expect(trainLossList).toEqual([0.75, 0.70]);
-        expect(testAcc1List).toEqual([88.5, 89.0]);
-        
-        // Restore the original implementation
-        fs.readFileSync.mockRestore();
+        const [trainLoss, testAcc1] = readLog('dummy_path.json');
+        expect(trainLoss).toEqual([0.75, 0.70]);
+        expect(testAcc1).toEqual([88.5, 89.0]);
     });
 
-    test('reads correctly formatted JSON lines - single entry', () => {
+    it('test_read_correct_data_single', () => {
         const mockFileContent = '{"test_acc1": 88.5, "train_loss": 0.75}';
-        
-        jest.spyOn(fs, 'readFileSync').mockReturnValue(mockFileContent);
-        
-        const { trainLossList, testAcc1List } = readLog("dummy_path.json");
-        expect(trainLossList).toEqual([0.75]);
-        expect(testAcc1List).toEqual([88.5]);
-        
-        fs.readFileSync.mockRestore();
+        const mockFs = mock(fs);
+        mockFs.readFileSync.mockReturnValue(mockFileContent);
+
+        const [trainLoss, testAcc1] = readLog('dummy_path.json');
+        expect(trainLoss).toEqual([0.75]);
+        expect(testAcc1).toEqual([88.5]);
     });
 
-    test('reads an empty file', () => {
-        jest.spyOn(fs, 'readFileSync').mockReturnValue("");
+    it('test_empty_file', () => {
+        const mockFileContent = '';
+        const mockFs = mock(fs);
+        mockFs.readFileSync.mockReturnValue(mockFileContent);
 
-        const { trainLossList, testAcc1List } = readLog("empty_file.json");
-        expect(trainLossList).toEqual([]);
-        expect(testAcc1List).toEqual([]);
-
-        fs.readFileSync.mockRestore();
+        const [trainLoss, testAcc1] = readLog('empty_file.json');
+        expect(trainLoss).toEqual([]);
+        expect(testAcc1).toEqual([]);
     });
 
-    test('handles partial data entries', () => {
-        const mockFileContent = '{"test_acc1": 88.5, "train_loss": 0.75}\n' +
-                                '{"test_acc1": 90.0, "train_loss": 0.75, "f1": 0.91}'; // Missing train_loss
-        
-        jest.spyOn(fs, 'readFileSync').mockReturnValue(mockFileContent);
+    it('test_partial_data_entries', () => {
+        const mockFileContent = '{"test_acc1": 88.5, "train_loss": 0.75}\n{"test_acc1": 90.0,"train_loss": 0.75,"f1":0.91}';
+        const mockFs = mock(fs);
+        mockFs.readFileSync.mockReturnValue(mockFileContent);
 
-        const { trainLossList, testAcc1List } = readLog("partial_data_file.json");
-        expect(trainLossList).toEqual([0.75, 0.75]); // Only one complete entry
-        expect(testAcc1List).toEqual([88.5, 90.0]);
-        
-        fs.readFileSync.mockRestore();
+        const [trainLoss, testAcc1] = readLog('partial_data_file.json');
+        expect(trainLoss).toEqual([0.75, 0.75]);
+        expect(testAcc1).toEqual([88.5, 90.0]);
     });
 });

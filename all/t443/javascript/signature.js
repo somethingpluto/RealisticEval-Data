@@ -4,7 +4,4 @@
  * @param {string} inputString - The string to be processed.
  * @returns {string} - The processed string with compressed whitespace.
  */
-function compressWhitespace(inputString) {
-    // Split the input string by whitespace and join with a single space
-    return inputString.split(/\s+/).join(' ');
-}
+function compressWhitespace(inputString) {}

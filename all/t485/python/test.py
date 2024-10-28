@@ -1,66 +1,73 @@
 import unittest
 
+class TestConvertNamedToPositionalQuery(unittest.TestCase):
 
-# Assuming the prepare_query function is defined above or imported
+    def test_basic_named_parameters(self):
+        sql = "SELECT * FROM users WHERE username = $username AND age = $age"
+        params = {"username": "john_doe", "age": 30}
+        delimiter = "$"
 
-class TestPrepareQuery(unittest.TestCase):
-
-    def test_valid_named_parameters(self):
-        sql_query = "SELECT * FROM users WHERE id = $user_id AND status = $status"
-        parameters = {
-            'user_id': 42,
-            'status': 'active'
+        expected = {
+            "positional_sql": "SELECT * FROM users WHERE username = $1 AND age = $2",
+            "param_list": ["john_doe", 30],
+            "execute_sql": "SELECT * FROM users WHERE username = john_doe AND age = 30"
         }
-        expected_sql = "SELECT * FROM users WHERE id = $1 AND status = $2"
-        expected_values = [42, 'active']
 
-        new_sql, value_list = prepare_query(sql_query, parameters)
-        self.assertEqual(new_sql, expected_sql)
-        self.assertEqual(value_list, expected_values)
+        result = convert_named_to_positional_query(sql, params, delimiter)
+        self.assertEqual(result, expected)
 
-    def test_missing_parameters(self):
-        sql_query = "SELECT * FROM users WHERE id = $user_id AND status = $status"
-        parameters = {
-            'user_id': 42  # 'status' is missing
+    def test_missing_parameter(self):
+        sql = "SELECT * FROM products WHERE id = #product_id AND name = #product_name"
+        params = {"product_id": 101}  # 'product_name' is missing
+        delimiter = "#"
+
+        with self.assertRaises(ValueError) as context:
+            convert_named_to_positional_query(sql, params, delimiter)
+
+        self.assertEqual(str(context.exception), "Parameter 'product_name' not found in params dictionary.")
+
+    def test_different_delimiter(self):
+        sql = "INSERT INTO orders (product_id, quantity) VALUES (:product_id, :quantity)"
+        params = {"product_id": 202, "quantity": 5}
+        delimiter = ":"
+
+        expected = {
+            "positional_sql": "INSERT INTO orders (product_id, quantity) VALUES (:1, :2)",
+            "param_list": [202, 5],
+            "execute_sql": "INSERT INTO orders (product_id, quantity) VALUES (202, 5)"
         }
-        expected_sql = "SELECT * FROM users WHERE id = $1 AND status = $2"
-        expected_values = [42]  # 'status' is not included
 
-        new_sql, value_list = prepare_query(sql_query, parameters)
-        self.assertEqual(new_sql, expected_sql)
-        self.assertEqual(value_list, expected_values)
+        result = convert_named_to_positional_query(sql, params, delimiter)
+        self.assertEqual(result, expected)
 
-    def test_no_parameters(self):
-        sql_query = "SELECT * FROM users"
-        parameters = {}  # No parameters provided
-        expected_sql = "SELECT * FROM users"
-        expected_values = []
 
-        new_sql, value_list = prepare_query(sql_query, parameters)
-        self.assertEqual(new_sql, expected_sql)
-        self.assertEqual(value_list, expected_values)
+    def test_no_named_parameters(self):
+        sql = "SELECT * FROM users"
+        params = {}
+        delimiter = "$"
 
-    def test_multiple_same_parameters(self):
-        sql_query = "SELECT * FROM users WHERE id = $user_id AND status = $user_id"
-        parameters = {
-            'user_id': 42
+        expected = {
+            "positional_sql": "SELECT * FROM users",
+            "param_list": [],
+            "execute_sql": "SELECT * FROM users"
         }
-        expected_sql = "SELECT * FROM users WHERE id = $1 AND status = $1"
-        expected_values = [42]  # Only one value for 'user_id'
 
-        new_sql, value_list = prepare_query(sql_query, parameters)
-        self.assertEqual(new_sql, expected_sql)
-        self.assertEqual(value_list, expected_values)
+        result = convert_named_to_positional_query(sql, params, delimiter)
+        self.assertEqual(result, expected)
 
-    def test_special_characters_in_parameters(self):
-        sql_query = "INSERT INTO users (name, email) VALUES ($name, $email)"
-        parameters = {
-            'name': "John Doe",
-            'email': "john.doe@example.com"
+    def test_sql_with_empty_string_parameter(self):
+        sql = "SELECT * FROM users WHERE username = :username"
+        params = {"username": ""}
+        delimiter = ":"
+
+        expected = {
+            "positional_sql": "SELECT * FROM users WHERE username = :1",
+            "param_list": [""],
+            "execute_sql": "SELECT * FROM users WHERE username = "
         }
-        expected_sql = "INSERT INTO users (name, email) VALUES ($1, $2)"
-        expected_values = ["John Doe", "john.doe@example.com"]
 
-        new_sql, value_list = prepare_query(sql_query, parameters)
-        self.assertEqual(new_sql, expected_sql)
-        self.assertEqual(value_list, expected_values)
+        result = convert_named_to_positional_query(sql, params, delimiter)
+        self.assertEqual(result, expected)
+
+if __name__ == '__main__':
+    unittest.main()

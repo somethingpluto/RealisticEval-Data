@@ -1,3 +1,4 @@
+import argparse
 import json
 import os
 import re
@@ -6,14 +7,18 @@ import subprocess
 import pandas as pd
 from tqdm import tqdm
 
+from executor.utils import append_row_to_xlsx
+
 TYPESCRIPT_RUN_ENV = "../envs/typescript"
 
 
 class TypeScriptExecutor:
-    def __init__(self, model_name=""):
+    def __init__(self, type, model_name=""):
         self._env_path = TYPESCRIPT_RUN_ENV
         self.model_name = model_name
+        self.type = type
         self.file_path = f"{self._env_path}/test.test.ts"
+        self.language = "typescript"
 
     def single_run(self, code, test_code):
         with open(self.file_path, "w", encoding="utf8") as file:
@@ -25,17 +30,22 @@ class TypeScriptExecutor:
             self._execute()
 
     def batch_run(self, file_path):
+        result_list = []
         data_list = []
         with open(file_path, "r", encoding="utf8") as file:
-            result_list = json.load(file)
+            json_lines = [line.strip() for line in file.readlines()]
+            for item in json_lines:
+                result_list.append(json.loads(item))
 
-        for item in tqdm(result_list):
+        for item in tqdm(result_list[180:]):
             try:
                 print(item["task_id"])
-                test_code = item['test_code']
-                answer_list = item["answer_list"]
+                language_item = item['language_version_list']["typescript"]
+                answer_list = language_item["answer_list"]
+                test_code = language_item["test_code"]
+                addition_info = language_item["addition_info"]
                 for index, answer in enumerate(answer_list):
-                    code = answer['code']
+                    code = answer['response_code']
                     if code == None or code == "":
                         continue
                     with open(self.file_path, "w", encoding="utf8") as file:
@@ -44,20 +54,30 @@ class TypeScriptExecutor:
                         file.write(test_code)
                         file.write("\n")
                         file.flush()
-                    stdout, stderr, returncode = self._execute()
-
+                    process, stdout, stderr, returncode = self._execute()
+                    process.kill()
                     item["result_return_code"] = returncode
                     item["stderr"] = self._remove_color_codes(stderr)
                     item["stdout"] = self._remove_color_codes(stdout)
+                    item["answer_index"] = index
+                    item["model"] = answer["model_name"]
                     with open(f"{self._env_path}/test.test.ts", "r", encoding="utf8") as f:
                         item["full_content"] = f.read()
                     data_list.append(item)
+                    with open(
+                            f"../analysis/model_answer_result/{self.model_name}/{self.type}/{self.model_name}_{self.language}_{self.type}.csv",
+                            "a+", encoding="utf8") as file:
+                        file.write(f"{item['task_id']},{returncode},{answer['model_name']}\n")
             except Exception as e:
                 print(e)
                 continue
-        data = pd.DataFrame(data_list)
-        data.to_excel(f"../analysis/model_answer_result/{self.model_name}/{self.model_name}_typescript.xlsx",
-                      engine='xlsxwriter')
+        result_data = pd.DataFrame(data_list)
+        result_data.to_excel(
+            f"../analysis/model_answer_result/{self.model_name}/{self.type}/{self.model_name}_{self.language}_{self.type}.xlsx",
+            engine="xlsxwriter")
+        result_data.to_excel(
+            rf"C:\Users\pluto\Desktop\temp\{self.model_name}\{self.model_name}_{self.language}_{self.type}.xlsx",
+            engine="xlsxwriter")
 
     def _execute(self):
         command = self._generate_command()
@@ -76,13 +96,10 @@ class TypeScriptExecutor:
             print(stdout)
             print(stderr)
             print("Process completed with return code:", process.returncode)
-            return stdout, stderr, process.returncode
+            return process, stdout, stderr, process.returncode
         except subprocess.TimeoutExpired:
             print("Process is being killed after timeout")
             process.kill()
-            # 读取任何进程可能产生的输出
-            stdout, stderr = process.communicate()
-            return stdout, stderr, process.returncode
 
     def _remove_color_codes(self, text):
         """
@@ -112,6 +129,16 @@ class TypeScriptExecutor:
         return command
 
 
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--model_name", type=str, help="model_answer_file_path", required=True)
+    parser.add_argument("--type", type=str, help="type pass1 or pass10", required=True)
+    args = parser.parse_args()
+    return args
+
+
 if __name__ == '__main__':
-    typescript_executor = TypeScriptExecutor(model_name="chatglm-6b")
-    typescript_executor.batch_run(r"E:\code\code_back\python_project\llm\qa\chatglm-6b_answer\typescript_answer.json")
+    args = parse_args()
+    executor = TypeScriptExecutor(args.type, args.model_name)
+    file_path = rf"E:\code\code_back\python_project\llm\qa\{args.model_name}_answer\typescript_answer_{args.type}.jsonl"
+    executor.batch_run(file_path)

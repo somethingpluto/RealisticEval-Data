@@ -1,5 +1,3 @@
-const fs = require('fs');
-
 /**
  * Reads numerical columns from a file starting from the line after the last line containing '/'.
  *

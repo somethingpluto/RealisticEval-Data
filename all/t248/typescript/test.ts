@@ -1,36 +1,46 @@
-describe('sanitizeData', () => {
-  it('removes specified keys from the data object', () => {
-    const data = {
-      name: 'John Doe',
-      age: 30,
-      email: 'john.doe@example.com'
-    };
+import { Dictionary } from "lodash";
+describe('TestSanitizeData', () => {
+  describe('test_empty_dict', () => {
+    it('should return an empty dictionary when given an empty dictionary', () => {
+      const data = {};
+      const keyToRemove = ["email", "metadata"];
+      const expected = {};
 
-    const result = sanitizeData(data, ['age', 'email']);
-    expect(result).toEqual({ name: 'John Doe' });
+      expect(sanitizeData(data, keyToRemove)).toEqual(expected);
+    });
   });
 
-  it('returns the original object if no keys are provided', () => {
-    const data = {
-      name: 'Jane Doe',
-      age: 25,
-      email: 'jane.doe@example.com'
-    };
+  describe('test_remove_default_keys', () => {
+    it('should remove default keys from a nested structure', () => {
+      const data = {
+        name: "John Doe",
+        email: "johndoe@example.com",
+        metadata: { submitted_at: "2021-07-10", status: "pending" },
+        comments: ["Good", "Needs review"]
+      };
+      const keyToRemove = ["email", "metadata"];
+      const expected = {
+        name: "John Doe",
+        comments: ["Good", "Needs review"]
+      };
 
-    const result = sanitizeData(data);
-    expect(result).toEqual(data);
+      expect(sanitizeData(data, keyToRemove)).toEqual(expected);
+    });
   });
 
-  it('does not modify the original object', () => {
-    const data = {
-      name: 'Jim Beam',
-      age: 40,
-      email: 'jim.beam@example.com'
-    };
+  describe('test_specified_key_to_remove', () => {
+    it('should remove a specified key from the dictionary', () => {
+      const data = {
+        name: "John Doe",
+        location: "Earth",
+        email: "johndoe@example.com"
+      };
+      const expected = {
+        name: "John Doe",
+        location: "Earth"
+      };
 
-    const originalDataCopy = { ...data };
-    sanitizeData(data, ['name']);
-
-    expect(data).toEqual(originalDataCopy);
+      expect(sanitizeData(data, ["email"])).toEqual(expected);
+    });
   });
 });

@@ -1,3 +1,10 @@
+jest.mock('fs', () => ({
+  ...jest.requireActual('fs'),
+  promises: {
+    readFile: jest.fn(),
+  },
+}));
+
 describe('readMappingFile', () => {
   beforeEach(() => {
     jest.resetModules();

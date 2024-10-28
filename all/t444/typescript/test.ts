@@ -1,62 +1,35 @@
-import { describe, it, expect } from '@jest/globals';
-
-describe('formatComment', () => {
-    it('should format a simple string', () => {
-        const input = "This is a very long string that needs to be formatted into multiple lines with comments.";
-        const expectedOutput = `# This is a very long string that needs to
-# be formatted into multiple lines with
-# comments.`;
-
-        expect(formatComment(input)).toBe(expectedOutput);
+describe('TestFormatComment', () => {
+    it('test with a short string that fits within max_length', () => {
+        const inputString = "This is a test.";
+        const expectedOutput = "# This is a test.";
+        expect(formatComment(inputString)).toBe(expectedOutput);
     });
 
-    it('should handle empty strings', () => {
-        const input = "";
-        const expectedOutput = "";
-
-        expect(formatComment(input)).toBe(expectedOutput);
+    it('test with a longer string that exceeds max_length', () => {
+        const inputString = "This is a test of the format_comment function which should wrap long lines correctly.";
+        const expectedOutput = 
+            "# This is a test of the format_comment function which should\n" +
+            "# wrap long lines correctly.";
+        expect(formatComment(inputString, 60)).toBe(expectedOutput);
     });
 
-    it('should respect the maximum line length', () => {
-        const input = "This is a very long string that needs to be formatted into multiple lines with comments.";
-        const maxLength = 30;
-        const expectedOutput = `# This is a very long string
-# that needs to be formatted
-# into multiple lines with
-# comments.`;
-
-        expect(formatComment(input, maxLength)).toBe(expectedOutput);
+    it('test with multiple lines of input', () => {
+        const inputString = "First line.\nSecond line that is quite long and needs to be wrapped.";
+        const expectedOutput = 
+            "# First line.\n" +
+            "# Second line that is quite long and needs to be wrapped.";
+        expect(formatComment(inputString, 60)).toBe(expectedOutput);
     });
 
-    it('should handle strings shorter than max length', () => {
-        const input = "Short string";
-        const maxLength = 50;
-        const expectedOutput = `# Short string`;
-
-        expect(formatComment(input, maxLength)).toBe(expectedOutput);
+    it('test with a line that is exactly max_length characters long', () => {
+        const inputString = "A".repeat(60); // 60 characters long
+        const expectedOutput = "# " + "A".repeat(60);
+        expect(formatComment(inputString, 60)).toBe(expectedOutput);
     });
 
-    it('should handle strings exactly at max length', () => {
-        const input = "Exactly sixty characters";
-        const maxLength = 60;
-        const expectedOutput = `# Exactly sixty characters`;
-
-        expect(formatComment(input, maxLength)).toBe(expectedOutput);
-    });
-
-    it('should handle strings ending with spaces', () => {
-        const input = "String with trailing spaces     ";
-        const expectedOutput = `# String with trailing spaces`;
-
-        expect(formatComment(input)).toBe(expectedOutput);
-    });
-
-    it('should handle strings with spaces at max length', () => {
-        const input = "This is a string with a space at the end of the line   ";
-        const maxLength = 35;
-        const expectedOutput = `# This is a string with a space at
-# the end of the line`;
-
-        expect(formatComment(input, maxLength)).toBe(expectedOutput);
+    it('test with an empty string', () => {
+        const inputString = "";
+        const expectedOutput = "# ";
+        expect(formatComment(inputString)).toBe(expectedOutput);
     });
 });

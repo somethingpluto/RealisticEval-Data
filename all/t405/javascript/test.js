@@ -1,22 +1,31 @@
-describe('removePartsOfString', () => {
-    it('should return the string without parts before the first uppercase and lowercase letters', () => {
-      expect(removePartsOfString('1234AbCde5678')).toBe('AbCde5678');
-      expect(removePartsOfString('1234aBcDe5678')).toBe('bCDe5678');
-      expect(removePartsOfString('1234ABcDe5678')).toBe('BCDe5678');
-      expect(removePartsOfString('1234abcDE5678')).toBe('abcDE5678');
-      // Add more test cases as needed
-    });
-  
-    it('should handle empty string correctly', () => {
-      expect(removePartsOfString('')).toBe('');
-    });
-  
-    it('should handle single character strings correctly', () => {
-      expect(removePartsOfString('A')).toBe('A');
-      expect(removePartsOfString('a')).toBe('a');
-    });
-  
-    it('should handle strings with no uppercase or lowercase letters correctly', () => {
-      expect(removePartsOfString('1234567890')).toBe('1234567890');
-    });
+describe('TestRemovePartsOfString', () => {
+  it('should handle a string with no uppercase letters', () => {
+      const result = removePartsOfString("abcdefg");
+      expect(result).toEqual(["abcdefg"]);
   });
+
+  it('should handle a string with no lowercase letters', () => {
+      const result = removePartsOfString("ABCDEFG");
+      expect(result).toEqual(["ABCDEFG"]);
+  });
+
+  it('should handle a string with mixed cases', () => {
+      const result = removePartsOfString("1234AbCde5678");
+      expect(result).toEqual(["AbCde5678"]);
+  });
+
+  it('should handle an empty string', () => {
+      const result = removePartsOfString("");
+      expect(result).toEqual([""]);
+  });
+
+  it('should handle a string with only one uppercase letter', () => {
+      const result = removePartsOfString("X");
+      expect(result).toEqual(["X"]);
+  });
+
+  it('should handle a string with only one lowercase letter', () => {
+      const result = removePartsOfString("y");
+      expect(result).toEqual(["y"]);
+  });
+});

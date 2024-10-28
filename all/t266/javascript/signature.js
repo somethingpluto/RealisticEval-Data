@@ -1,10 +1,6 @@
 /**
- * Handle nested question structures (e.g., dictionaries, lists, and enumerations),
- * decode bytes to UTF8-strings, and convert numbers to integers or floating point numbers.
- *
- * @param {Object} data - The question object.
- * @returns {Object} - After converted question.
+ * Handles nested data structures (e.g., objects, arrays) by decoding bytes to UTF-8 strings and converting numbers to integers or floating-point numbers.
+ * @param {Object} data - The data object to be processed.
+ * @returns {Object} - The processed data.
  */
-function handleNestedData(data) {
-
-}
+function handleNestedData(data) {}

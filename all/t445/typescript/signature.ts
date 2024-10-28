@@ -1,10 +1,10 @@
+import * as math from 'mathjs';
+
 /**
  * Create a pose matrix representing a rotation about a given axis.
  *
- * @param {number} angleDeg - Rotation angle in degrees.
- * @param {string} axis - Axis to rotate about, must be one of 'X', 'Y', or 'Z'.
- * @returns {number[][]} - 4x4 pose matrix representing the rotation.
+ * @param angleDeg - Rotation angle in degrees.
+ * @param axis - Axis to rotate about, must be one of 'X', 'Y', or 'Z'.
+ * @returns A 4x4 pose matrix representing the rotation.
  */
-function createRotMatrix(angleDeg: number, axis: string): number[][] {
-    // Function implementation will go here
-}
+function createRotMatrix(angleDeg: number, axis: 'X' | 'Y' | 'Z'): number[][] {}

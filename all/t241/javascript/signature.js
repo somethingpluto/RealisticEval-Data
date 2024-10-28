@@ -6,6 +6,4 @@
  * @returns {Array} An array containing the line number with the minimum distance and the minimum distance itself.
  *                  Returns [null, Infinity] if one or both words are not found in any line.
  */
-function getMinSeqNumAndDistance(filePath, word1, word2) {
-    // Your implementation here
-}
+function getMinSeqNumAndDistance(filePath, word1, word2) {}

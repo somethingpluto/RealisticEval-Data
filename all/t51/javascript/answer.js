@@ -1,49 +1,71 @@
-// Import math and create an alias for easier access
-const math = require('mathjs');
-
 /**
  * Transforms a point cloud to a new reference frame defined by three points.
  *
- * @param {Array} pointCloud - The Nx3 array of points in the original reference frame.
- * @param {Array} refFramePoints - A list of three points (Array), defining the new reference frame.
- * @returns {Array} Transformed point cloud in the new reference frame.
+ * @param {Float64Array} pointCloud - The Nx3 array of points in the original reference frame.
+ * @param {Array<Float64Array>} refFramePoints - A list of three Float64Arrays, defining the new reference frame.
+ * @returns {Float64Array} Transformed point cloud in the new reference frame.
  */
-function changeReferenceFrame(pointCloud, refFramePoints) {
-    // Convert points to float to avoid type casting errors during operations
-    pointCloud = pointCloud.map(point => point.map(coord => parseFloat(coord)));
-    refFramePoints = refFramePoints.map(point => point.map(coord => parseFloat(coord)));
-
-    // Unpack the three points defining the new reference frame
-    const [A, B, C] = refFramePoints;
+function transformPointCloudToReferenceFrame(pointCloud, refFramePoints) {
+    // Convert points to Float64Arrays
+    const A = refFramePoints[0];
+    const B = refFramePoints[1];
+    const C = refFramePoints[2];
 
     // Compute the new basis vectors
-    const u = math.subtract(B, A); // Vector from A to B
-    const w = math.cross(u, math.subtract(C, A)); // Orthogonal vector to the plane defined by A, B, and C
-    const v = math.cross(w, u); // Vector orthogonal to both u and w
+    const u = new Float64Array(3);
+    const w = new Float64Array(3);
+    const v = new Float64Array(3);
 
-    // Normalize the basis vectors to form an orthonormal basis
-    const uNorm = math.divide(u, math.norm(u));
-    const vNorm = math.divide(v, math.norm(v));
-    const wNorm = math.divide(w, math.norm(w));
+    // Vector from A to B
+    u[0] = B[0] - A[0];
+    u[1] = B[1] - A[1];
+    u[2] = B[2] - A[2];
 
-    // Construct the rotation matrix from the old basis to the new basis
-    const rotationMatrix = math.transpose([uNorm, vNorm, wNorm]);
+    // Orthogonal vector to the plane defined by A, B, and C
+    w[0] = u[1] * (C[2] - A[2]) - u[2] * (C[1] - A[1]);
+    w[1] = u[2] * (C[0] - A[0]) - u[0] * (C[2] - A[2]);
+    w[2] = u[0] * (C[1] - A[1]) - u[1] * (C[0] - A[0]);
 
-    // Calculate the translation vector to shift origin to A
-    const translationVector = math.multiply(-1, math.multiply(rotationMatrix, A));
+    // Normalize the basis vectors
+    const normU = Math.sqrt(u[0] ** 2 + u[1] ** 2 + u[2] ** 2);
+    const normW = Math.sqrt(w[0] ** 2 + w[1] ** 2 + w[2] ** 2);
+    const normV = Math.sqrt(v[0] ** 2 + v[1] ** 2 + v[2] ** 2);
+
+    for (let i = 0; i < 3; i++) {
+        u[i] /= normU;
+        w[i] /= normW;
+    }
+
+    // Calculate v using the cross product
+    v[0] = w[1] * u[2] - w[2] * u[1];
+    v[1] = w[2] * u[0] - w[0] * u[2];
+    v[2] = w[0] * u[1] - w[1] * u[0];
+
+    // Calculate translation vector to shift origin to A
+    const rotationMatrix = [u, v, w];
+    const translationVector = new Float64Array(3);
+    for (let i = 0; i < 3; i++) {
+        translationVector[i] = -(rotationMatrix[0][i] * A[0] + rotationMatrix[1][i] * A[1] + rotationMatrix[2][i] * A[2]);
+    }
 
     // Apply the rotation and translation to the point cloud
-    let transformedPointCloud = pointCloud.map(point => 
-        math.add(
-            math.multiply(math.subtract(point, A), rotationMatrix),
-            translationVector
-        )
-    );
+    const transformedPointCloud = new Float64Array(pointCloud.length);
+    for (let i = 0; i < pointCloud.length / 3; i++) {
+        const index = i * 3;
+        const point = new Float64Array(3);
+
+        for (let j = 0; j < 3; j++) {
+            point[j] = pointCloud[index + j] - A[j]; // Translate to origin A
+        }
+
+        // Apply rotation
+        for (let j = 0; j < 3; j++) {
+            transformedPointCloud[index + j] = rotationMatrix[j][0] * point[0] +
+                                                rotationMatrix[j][1] * point[1] +
+                                                rotationMatrix[j][2] * point[2] + 
+                                                translationVector[j]; // Apply translation
+        }
+    }
 
     return transformedPointCloud;
 }
-
-// Example usage (using Node.js)
-const pointCloud = [[1,2,3],[4,5,6],[7,8,9]];
-const refFramePoints = [[1,0,0],[0,1,0],[0,0,1]];
-console.log(changeReferenceFrame(pointCloud, refFramePoints));

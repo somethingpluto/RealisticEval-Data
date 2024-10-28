@@ -1,7 +1,7 @@
-import { NDArray } from 'ndarray';
+import * as math from 'mathjs';
 
 /**
- * Multiplies a given matrix by a vector using NumPy's dot product.
+ * Multiplies a given matrix by a vector using the dot product.
  *
  * @param matrix - A 2D array (matrix) of shape (m, n) where m is the number of rows
  *                 and n is the number of columns.
@@ -10,10 +10,4 @@ import { NDArray } from 'ndarray';
  * @returns A 1D array (resulting vector) of shape (m,) representing the product of
  *          the matrix and the vector.
  */
-function matrixVectorMultiplication(matrix: NDArray, vector: NDArray): NDArray {
-    // Perform matrix-vector multiplication using the dot product function.
-    const result = matrix.mul(vector);
-
-    // Return the resulting vector from the multiplication.
-    return result;
-}
+function matrixVectorMultiplication(matrix: number[][], vector: number[]): number[] {}

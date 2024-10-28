@@ -1,59 +1,73 @@
-describe('extractLogEntries', () => {
-    const logFilePath = 'path/to/logfile.log';
-    const expectedWarningLogs = ['WARNING: This is a warning message'];
-    const expectedErrorLogs = ['ERROR: This is an error message'];
-    const expectedCriticalLogs = ['CRITICAL: This is a critical message'];
-    const expectedAlertLogs = ['ALERT: This is an alert message'];
+const fs = require('fs');
+
+describe('TestExtractLogEntries', () => {
+    let logFile;
+
+    beforeAll(() => {
+        logFile = 'test_log.log';
+    });
 
     beforeEach(() => {
-        // Reset mocks before each test
-        fs.readFileSync.mockReset();
-        fs.writeFileSync.mockReset();
-
-        // Simulate reading the log file
-        fs.readFileSync.mockReturnValue(`
-            WARNING: This is a warning message
-            INFO: This is an info message
-            ERROR: This is an error message
-            CRITICAL: This is a critical message
-            DEBUG: This is a debug message
-            ALERT: This is an alert message
-        `.trim());
+        // Setup a temporary log file with sample content for testing
+        const logContents = [
+            "INFO: This is an informational message.\n",
+            "WARNING: This is a warning message.\n",
+            "ERROR: This is an error message.\n",
+            "CRITICAL: This is a critical message.\n",
+            "ALERT: This is an alert message.\n"
+        ];
+        fs.writeFileSync(logFile, logContents.join(''));
     });
 
-    it('should extract WARNING logs and save them to a separate file', () => {
-        extractLogEntries(logFilePath);
-
-        expect(fs.writeFileSync).toHaveBeenCalledWith(
-            path.join(__dirname, 'warnings.log'),
-            expectedWarningLogs.join('\n')
-        );
+    afterEach(() => {
+        // Clean up after each test
+        fs.unlinkSync(logFile);
+        ['warning_logs.txt', 'error_logs.txt', 'critical_logs.txt', 'alert_logs.txt'].forEach(file => {
+            if (fs.existsSync(file)) {
+                fs.unlinkSync(file);
+            }
+        });
     });
 
-    it('should extract ERROR logs and save them to a separate file', () => {
-        extractLogEntries(logFilePath);
-
-        expect(fs.writeFileSync).toHaveBeenCalledWith(
-            path.join(__dirname, 'errors.log'),
-            expectedErrorLogs.join('\n')
-        );
+    it('should handle no logs of certain levels', () => {
+        fs.writeFileSync(logFile, "INFO: This is another informational message.\n");
+        extractLogEntries(logFile);
+        ['WARNING', 'ERROR', 'CRITICAL', 'ALERT'].forEach(level => {
+            const filePath = `${level.toLowerCase()}_logs.txt`;
+            expect(fs.readFileSync(filePath, 'utf8')).toBe('');
+        });
     });
 
-    it('should extract CRITICAL logs and save them to a separate file', () => {
-        extractLogEntries(logFilePath);
-
-        expect(fs.writeFileSync).toHaveBeenCalledWith(
-            path.join(__dirname, 'criticals.log'),
-            expectedCriticalLogs.join('\n')
-        );
+    it('should throw an error when the log file does not exist', () => {
+        expect(() => {
+            extractLogEntries('nonexistent.log');
+        }).toThrow(/No log file found at the specified path/);
     });
 
-    it('should extract ALERT logs and save them to a separate file', () => {
-        extractLogEntries(logFilePath);
+    it('should handle an empty log file', () => {
+        fs.writeFileSync(logFile, '');
+        extractLogEntries(logFile);
+        ['WARNING', 'ERROR', 'CRITICAL', 'ALERT'].forEach(level => {
+            const filePath = `${level.toLowerCase()}_logs.txt`;
+            expect(fs.readFileSync(filePath, 'utf8')).toBe('');
+        });
+    });
 
-        expect(fs.writeFileSync).toHaveBeenCalledWith(
-            path.join(__dirname, 'alerts.log'),
-            expectedAlertLogs.join('\n')
-        );
+    it('should extract logs from a file with mixed content', () => {
+        fs.writeFileSync(logFile, [
+            "INFO: Some info.\n",
+            "WARNING: Watch out!\n",
+            "DEBUG: Debugging.\n",
+            "ERROR: Oops!\n",
+            "CRITICAL: Failed badly.\n",
+            "ALERT: High alert!\n",
+            "INFO: More info.\n"
+        ].join(''));
+        extractLogEntries(logFile);
+        ['WARNING', 'ERROR', 'CRITICAL', 'ALERT'].forEach(level => {
+            const filePath = `${level.toLowerCase()}_logs.txt`;
+            const content = fs.readFileSync(filePath, 'utf8').trim();
+            expect(content).toContain(level);
+        });
     });
 });

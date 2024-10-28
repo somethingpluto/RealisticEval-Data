@@ -1,3 +1,5 @@
+import * as fs from 'fs';
+
 describe('TestSaveContentToFile', () => {
     let testFilePath: string;
 

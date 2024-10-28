@@ -1,51 +1,34 @@
 package org.real.temp;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Pattern;
-
 public class Answer {
 
     /**
-     * Split the input text string into sentences.
+     * Calculates the steering angle based on the given angular velocity, speed, and wheelbase.
      *
-     * @param text The input text to be split into sentences.
-     * @return A list of sentences extracted from the input text, cleaned and stripped of leading/trailing whitespace.
+     * The method uses the relationship between angular velocity, speed, and the steering angle
+     * to determine the appropriate steering angle required for the vehicle to achieve the desired
+     * angular velocity. The formula used is:
+     *
+     *      ω = (v / L) * tan(δ)
+     *
+     * Rearranging gives us:
+     *
+     *      δ = atan((ω * L) / v)
+     *
+     * @param angularVelocity The angular velocity of the vehicle in radians per second.
+     * @param speed The forward speed of the vehicle in meters per second.
+     * @param wheelbase The distance between the front and rear axles of the vehicle in meters.
+     *
+     * @return The steering angle in radians.
+     *
+     * @throws IllegalArgumentException if speed is less than or equal to zero,
+     *                                   since the vehicle cannot move at zero or negative speed.
      */
-    public static List<String> splitIntoSentences(String text) {
-        // Check if the input is a string
-        if (text == null) {
-            throw new IllegalArgumentException("Input must be a string.");
+    public static double calculateSteeringAngle(double angularVelocity, double speed, double wheelbase) {
+        if (speed <= 0) {
+            throw new IllegalArgumentException("Speed must be greater than zero.");
         }
 
-        // Regular expression to split the text where there is a punctuation followed by space or end of string
-        // This handles situations where punctuation might be followed by a quotation mark or other punctuation
-        Pattern sentenceDelimiters = Pattern.compile("(?<=[.!?])\\s+(?=[A-Z])|(?<=[.!?][\"”’])\\s+(?=[A-Z])");
-
-        // Split the text using the defined regular expression
-        String[] sentencesArray = sentenceDelimiters.split(text);
-
-        // Create a list to store the cleaned sentences
-        List<String> sentences = new ArrayList<>();
-
-        // Remove any leading or trailing whitespace from each sentence and add it to the list
-        for (String sentence : sentencesArray) {
-            String trimmedSentence = sentence.trim();
-            if (!trimmedSentence.isEmpty()) {
-                sentences.add(trimmedSentence);
-            }
-        }
-
-        // Return the cleaned list of sentences
-        return sentences;
-    }
-
-    public static void main(String[] args) {
-        // Example usage
-        String text = "Hello world! This is a test. Isn't it great? Yes, it is.";
-        List<String> sentences = splitIntoSentences(text);
-        for (String sentence : sentences) {
-            System.out.println(sentence);
-        }
+        return Math.atan((angularVelocity * wheelbase) / speed);
     }
 }

@@ -1,4 +1,4 @@
-def append_or_skip_row(file_handler, reader, row_candidate):
+def append_row_after_skip_row(file_handler, reader, row_candidate):
     """
     Appends a new row to a CSV file if there isn't a row with matching values in the first three columns.
 

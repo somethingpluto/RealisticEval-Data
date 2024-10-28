@@ -1,36 +1,47 @@
+import fs from 'fs';
+import path from 'path';
+
 describe('prependToEachLine', () => {
-    const tempFilePath = '/tmp/testfile.txt';
+    let testFilePath: string;
 
     beforeEach(() => {
-        // Create a temporary test file with some content
-        fs.writeFileSync(tempFilePath, 'line1\nline2\nline3', 'utf8');
+        // Create a temporary file for testing
+        testFilePath = 'test_file.txt';
+        fs.writeFileSync(testFilePath, 'Line 1\nLine 2\nLine 3');
     });
 
     afterEach(() => {
-        // Clean up the temporary test file after each test
-        fs.unlinkSync(tempFilePath);
+        // Remove the temporary file after testing
+        fs.unlinkSync(testFilePath);
     });
 
-    test('should prepend a prefix to each line', () => {
-        prependToEachLine(tempFilePath, 'prefix_');
-
-        const modifiedContent = fs.readFileSync(tempFilePath, 'utf8');
-        expect(modifiedContent).toBe('prefix_line1\nprefix_line2\nprefix_line3');
+    it('should prepend a simple string to the beginning of each line', () => {
+        prependToEachLine(testFilePath, 'Test: ');
+        const lines = fs.readFileSync(testFilePath, 'utf8').split('\n');
+        expect(lines).toEqual(['Test: Line 1', 'Test: Line 2', 'Test: Line 3']);
     });
 
-    test('should handle empty lines correctly', () => {
-        fs.writeFileSync(tempFilePath, '\nline2\n\nline4', 'utf8');
-        prependToEachLine(tempFilePath, 'prefix_');
-
-        const modifiedContent = fs.readFileSync(tempFilePath, 'utf8');
-        expect(modifiedContent).toBe('\nprefix_line2\n\nprefix_line4');
+    it('should prepend an empty string', () => {
+        prependToEachLine(testFilePath, '');
+        const lines = fs.readFileSync(testFilePath, 'utf8').split('\n');
+        expect(lines).toEqual(['Line 1', 'Line 2', 'Line 3']);
     });
 
-    test('should handle files with no newlines correctly', () => {
-        fs.writeFileSync(tempFilePath, 'line1', 'utf8');
-        prependToEachLine(tempFilePath, 'prefix_');
+    it('should prepend special characters to the beginning of each line', () => {
+        prependToEachLine(testFilePath, '#$%^&* ');
+        const lines = fs.readFileSync(testFilePath, 'utf8').split('\n');
+        expect(lines).toEqual(['#$%^&* Line 1', '#$%^&* Line 2', '#$%^&* Line 3']);
+    });
 
-        const modifiedContent = fs.readFileSync(tempFilePath, 'utf8');
-        expect(modifiedContent).toBe('prefix_line1');
+    it('should prepend a numeric string to the beginning of each line', () => {
+        prependToEachLine(testFilePath, '123 ');
+        const lines = fs.readFileSync(testFilePath, 'utf8').split('\n');
+        expect(lines).toEqual(['123 Line 1', '123 Line 2', '123 Line 3']);
+    });
+
+    it('should throw an error when the file does not exist', () => {
+        expect(() => {
+            prependToEachLine('non_existent_file.txt', 'Test: ');
+        }).toThrow(/ENOENT/); // ENOENT is the error code for file not found
     });
 });
