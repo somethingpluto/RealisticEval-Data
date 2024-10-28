@@ -1,21 +1,21 @@
-TEST_CASE("Test Smart Convert") {
-    SECTION("Convert Integer") {
-        REQUIRE(numerical_str_convert("123").intValue == 123);
+TEST_CASE("SmartConvert Tests", "[numericalStrConvert]") {
+    SECTION("Convert integer") {
+        REQUIRE(numerical_str_convert("123") == 123);
     }
 
-    SECTION("Convert Float") {
-        REQUIRE(numerical_str_convert("123.45").floatValue == Approx(123.45f));
+    SECTION("Convert float") {
+        REQUIRE(numerical_str_convert("123.45") == 123.45f);
     }
 
-    SECTION("Convert Non-Numeric String") {
-        REQUIRE(numerical_str_convert("abc").stringValue == "abc");
+    SECTION("Convert non-numeric string") {
+        REQUIRE(numerical_str_convert("abc") == "abc");
     }
 
-    SECTION("Convert Negative Integer") {
-        REQUIRE(numerical_str_convert("-456").intValue == -456);
+    SECTION("Convert negative integer") {
+        REQUIRE(numerical_str_convert("-456") == -456);
     }
 
-    SECTION("Convert Negative Float") {
-        REQUIRE(numerical_str_convert("-456.78").floatValue == Approx(-456.78f));
+    SECTION("Convert negative float") {
+        REQUIRE(numerical_str_convert("-456.78") == -456.78f);
     }
 }

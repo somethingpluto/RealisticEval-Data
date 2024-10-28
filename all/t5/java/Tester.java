@@ -3,7 +3,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import java.util.List;
 import java.util.ArrayList;
-
+import static org.real.temp.Answer.*;
 public class Tester {
 
     @Test
@@ -20,7 +20,7 @@ public class Tester {
         expected.add(new ArrayList<>(List.of(19, 22)));
         expected.add(new ArrayList<>(List.of(43, 50)));
 
-        assertEquals(expected, matrixMultiply(mat1, mat2), "Should correctly multiply standard matrices");
+        assertEquals("Should correctly multiply standard matrices",expected, matrixMultiply(mat1, mat2));
     }
 
     @Test
@@ -37,7 +37,7 @@ public class Tester {
         expected.add(new ArrayList<>(List.of(5, 6)));
         expected.add(new ArrayList<>(List.of(7, 8)));
 
-        assertEquals(expected, matrixMultiply(mat1, mat2), "Multiplying by the identity matrix should yield the answer matrix");
+        assertEquals("Multiplying by the identity matrix should yield the answer matrix",expected, matrixMultiply(mat1, mat2));
     }
 
     @Test
@@ -54,7 +54,7 @@ public class Tester {
         expected.add(new ArrayList<>(List.of(0, 0)));
         expected.add(new ArrayList<>(List.of(0, 0)));
 
-        assertEquals(expected, matrixMultiply(mat1, mat2), "Multiplying by the zero matrix should yield a zero matrix");
+        assertEquals("Multiplying by the zero matrix should yield a zero matrix",expected, matrixMultiply(mat1, mat2));
     }
 
     @Test
@@ -71,7 +71,7 @@ public class Tester {
         expected.add(new ArrayList<>(List.of(19, 22)));
         expected.add(new ArrayList<>(List.of(43, 50)));
 
-        assertEquals(expected, matrixMultiply(mat1, mat2), "The multiplication of two square matrices should yield the correct product");
+        assertEquals("The multiplication of two square matrices should yield the correct product",expected, matrixMultiply(mat1, mat2));
     }
 
     @Test
@@ -91,6 +91,6 @@ public class Tester {
         expected.add(new ArrayList<>(List.of(8, 9, 10)));
         expected.add(new ArrayList<>(List.of(11, 12, 13)));
 
-        assertEquals(expected, matrixMultiply(mat1, mat2), "Multiplying by the larger identity matrix should yield the answer matrix");
+        assertEquals("Multiplying by the larger identity matrix should yield the answer matrix",expected, matrixMultiply(mat1, mat2));
     }
 }

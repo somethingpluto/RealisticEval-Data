@@ -23,7 +23,7 @@ function calculateDistance(agent1: string, agent2: string, observations: Observa
     const { x: x2, y: y2 } = observations[agent2];
 
     // Calculate the Euclidean distance
-    const distance = math.sqrt(math.pow(x1 - x2, 2) + math.pow(y1 - y2, 2));
+    const distance = Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
 
     return distance;
 }

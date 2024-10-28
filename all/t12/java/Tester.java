@@ -5,7 +5,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.HashMap;
 import java.util.Map;
-
+import static org.real.temp.Answer.*;
 public class Tester {
 
     @Test

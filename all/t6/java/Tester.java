@@ -2,7 +2,7 @@ package org.real.temp;
 
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
-
+import static org.real.temp.Answer.*;
 public class Tester {
 
     @Test
@@ -23,5 +23,10 @@ public class Tester {
     @Test
     public void testNestedDirectories() {
         assertEquals("G_folder1_folder2_folder3_file.jpeg", simplifyWindowsPath("G:\\folder1\\folder2\\folder3\\file.jpeg"));
+    }
+
+    @Test
+    public void testPathWithSingleBackslash(){
+        assertEquals("F_",simplifyWindowsPath("F:\\"));
     }
 }

@@ -7,8 +7,6 @@ import subprocess
 import pandas as pd
 from tqdm import tqdm
 
-from executor.utils import append_row_to_xlsx
-
 TYPESCRIPT_RUN_ENV = "../envs/typescript"
 
 

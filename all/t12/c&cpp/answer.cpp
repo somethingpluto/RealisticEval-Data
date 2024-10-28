@@ -26,16 +26,3 @@ float calculate_distance(const std::string& agent1, const std::string& agent2, c
 
     return distance;
 }
-
-int main() {
-    // Example usage
-    std::map<std::string, std::map<std::string, float>> observations = {
-        {"agent1", {{"x", 1.0f}, {"y", 2.0f}}},
-        {"agent2", {{"x", 4.0f}, {"y", 6.0f}}}
-    };
-
-    float distance = calculate_distance("agent1", "agent2", observations);
-    std::cout << "Distance: " << distance << std::endl;
-
-    return 0;
-}

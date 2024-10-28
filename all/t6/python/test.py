@@ -14,3 +14,5 @@ class TestSimplifyWindowsPath(unittest.TestCase):
     def test_nested_directories(self):
         self.assertEqual(simplify_windows_path(r"G:\folder1\folder2\folder3\file.jpeg"),
                          "G_folder1_folder2_folder3_file.jpeg")
+    def test_path_with_single_backslash(self):
+        self.assertEqual(simplify_windows_path(r'F:\\'), 'F_')

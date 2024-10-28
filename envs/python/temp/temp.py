@@ -1,78 +1,142 @@
-import math
+from typing import List
 
-def calculate_steering_angle(angular_velocity: float, speed: float, wheelbase: float) -> float:
+
+def parse_markdown_table(md_table: str) -> List[tuple]:
     """
-    Calculates the steering angle based on the given angular velocity, speed, and wheelbase.
+    Parses a Markdown formatted table into a list of tuples, each tuple representing a row.
 
-    The function uses the relationship between angular velocity, speed, and the steering angle
-    to determine the appropriate steering angle required for the vehicle to achieve the desired
-    angular velocity. The formula used is:
-
-         ω = (v / L) * tan(δ)
-
-    Rearranging gives us:
-
-         δ = atan((ω * L) / v)
-
-    Parameters:
-    angular_velocity (float): The angular velocity of the vehicle in radians per second.
-    speed (float): The forward speed of the vehicle in meters per second.
-    wheelbase (float): The distance between the front and rear axles of the vehicle in meters.
+    Args:
+        md_table (str): A string representing a Markdown table.
 
     Returns:
-    float: The steering angle in radians.
-
-    Raises:
-    ValueError: If speed is less than or equal to zero,
-                since the vehicle cannot move at zero or negative speed.
+        list of tuples: A list where each tuple represents a row in the table.
     """
-    if speed <= 0:
-        raise ValueError("Speed must be greater than zero.")
-    
-    steering_angle = math.atan((angular_velocity * wheelbase) / speed)
-    return steering_angle
-import math
+    # Split the input string into lines and strip whitespace
+    lines = md_table.strip().split('\n')
+
+    # Filter out the separator line for the header (which usually contains "---")
+    lines = [line for line in lines if not '---' in line.strip()]
+
+    # Initialize the list to store each row as a tuple
+    table_data = []
+
+    # Process each line
+    for line in lines:
+        # Strip leading and trailing spaces and pipes, then split by "|"
+        row = line.strip().strip('|').split('|')
+        # Process each cell, strip spaces, handle empty cells, and create a tuple
+        tuple_row = tuple(cell.strip() if cell.strip() != '' else '' for cell in row)
+        # Add the tuple to the list
+        table_data.append(tuple_row)
+
+    return table_data
 import unittest
 
 
-class Tester(unittest.TestCase):
-    wheelbase = 2.5  # Setting wheelbase constant for all tests
+class TestParseMarkdownTable(unittest.TestCase):
+    def test_standard_table(self):
+        md_table = """
+        | Header 1 | Header 2 | Header 3 |
+        |----------|----------|----------|
+        | Row1Col1 | Row1Col2 | Row1Col3 |
+        | Row2Col1 | Row2Col2 | Row2Col3 |
+        """
+        expected = [
+            ('Header 1', 'Header 2', 'Header 3'),
+            ('Row1Col1', 'Row1Col2', 'Row1Col3'),
+            ('Row2Col1', 'Row2Col2', 'Row2Col3')
+        ]
+        result = parse_markdown_table(md_table)
+        self.assertEqual(result, expected)
 
-    def test_normal_case(self):
-        angular_velocity = 1.0  # radians/second
-        speed = 10.0  # meters/second
-        expected_angle = math.atan((angular_velocity * self.wheelbase) / speed)
-        self.assertAlmostEqual(calculate_steering_angle(angular_velocity, speed, self.wheelbase), expected_angle)
+    def test_inconsistent_columns(self):
+        md_table = """
+        | Header 1 | Header 2 |
+        |----------|----------|
+        | Row1     | Row1Col2 | ExtraCol |
+        | Row2     |
+        """
+        expected = [
+            ('Header 1', 'Header 2'),
+            ('Row1', 'Row1Col2', 'ExtraCol'),
+            ('Row2',)
+        ]
+        result = parse_markdown_table(md_table)
+        self.assertEqual(result, expected)
 
-    def test_zero_speed(self):
-        angular_velocity = 1.0  # radians/second
-        speed = 0.0  # meters/second
-        with self.assertRaises(ValueError):
-            calculate_steering_angle(angular_velocity, speed, self.wheelbase)
+    def test_empty_cells(self):
+        md_table = """
+        | Header 1 | Header 2 | Header 3 |
+        |----------|----------|----------|
+        |          | Row1Col2 |          |
+        | Row2Col1 |          | Row2Col3 |
+        """
+        expected = [
+            ('Header 1', 'Header 2', 'Header 3'),
+            ('', 'Row1Col2', ''),
+            ('Row2Col1', '', 'Row2Col3')
+        ]
+        result = parse_markdown_table(md_table)
+        self.assertEqual(result, expected)
 
-    def test_negative_speed(self):
-        angular_velocity = 1.0  # radians/second
-        speed = -5.0  # meters/second
-        with self.assertRaises(Exception):
-            calculate_steering_angle(angular_velocity, speed, self.wheelbase)
+    def test_all_empty_rows(self):
+        md_table = """
+        | Header 1 | Header 2 | Header 3 |
+        |----------|----------|----------|
+        |          |          |          |
+        |          |          |          |
+        """
+        expected = [
+            ('Header 1', 'Header 2', 'Header 3'),
+            ('', '', ''),
+            ('', '', '')
+        ]
+        result = parse_markdown_table(md_table)
+        self.assertEqual(result, expected)
 
-    def test_zero_angular_velocity(self):
-        angular_velocity = 0.0  # radians/second
-        speed = 10.0  # meters/second
-        expected_angle = 0.0  # Steering angle should be zero
-        self.assertAlmostEqual(calculate_steering_angle(angular_velocity, speed, self.wheelbase), expected_angle)
+    def test_excessive_whitespace(self):
+        md_table = """
+        |  Header 1  |  Header 2  |  Header 3  |
+        |------------|------------|------------|
+        |  Row1Col1  |  Row1Col2  |  Row1Col3  |
+        |  Row2Col1  |  Row2Col2  |  Row2Col3  |
+        """
+        expected = [
+            ('Header 1', 'Header 2', 'Header 3'),
+            ('Row1Col1', 'Row1Col2', 'Row1Col3'),
+            ('Row2Col1', 'Row2Col2', 'Row2Col3')
+        ]
+        result = parse_markdown_table(md_table)
+        self.assertEqual(result, expected)
 
-    def test_large_values(self):
-        angular_velocity = 100.0  # radians/second
-        speed = 1000.0  # meters/second
-        expected_angle = math.atan((angular_velocity * self.wheelbase) / speed)
-        self.assertAlmostEqual(calculate_steering_angle(angular_velocity, speed, self.wheelbase), expected_angle)
 
-    def test_high_angular_velocity(self):
-        angular_velocity = 10.0  # radians/second
-        speed = 1.0  # meters/second
-        expected_angle = math.atan((angular_velocity * self.wheelbase) / speed)
-        self.assertAlmostEqual(calculate_steering_angle(angular_velocity, speed, self.wheelbase), expected_angle)
+def parse_markdown_table(md_table):
+    """
+    Parses a Markdown formatted table into a list of tuples, each tuple representing a row.
+
+    Args:
+        md_table (str): A string representing a Markdown table.
+
+    Returns:
+        list of tuples: A list where each tuple represents a row in the table.
+    """
+    # Split the input string into lines and strip whitespace
+    lines = md_table.strip().split('\n')
+
+    # Filter out the separator line for the header (which usually contains "---")
+    lines = [line for line in lines if not line.strip().startswith('|---')]
+
+    # Initialize the list to store each row as a tuple
+    table_data = []
+
+    # Process each line
+    for line in lines:
+        # Strip leading and trailing spaces and pipes, then split by "|"
+        row = line.strip('| \n').split('|')
+        # Strip spaces from each cell, handle empty cells, and create a tuple
+        table_data.append(tuple(cell.strip() for cell in row if cell.strip() or cell == ''))
+
+    return table_data
 
 if __name__ == '__main__':
     unittest.main()

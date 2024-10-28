@@ -81,17 +81,3 @@ public:
         delete root;
     }
 };
-
-int main() {
-    // Example usage
-    Trie trie;
-    trie.insert("apple");
-    trie.insert("app");
-    trie.insert("banana");
-
-    std::cout << "Search 'apple': " << trie.search("apple") << std::endl;
-    std::cout << "Starts with 'app': " << trie.starts_with("app") << std::endl;
-    std::cout << "Search 'ban': " << trie.search("ban") << std::endl;
-
-    return 0;
-}

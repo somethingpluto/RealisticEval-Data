@@ -1,9 +1,3 @@
-type ObservationData = {
-    [agentId: string]: {
-        x: number;
-        y: number;
-    };
-};
 describe('TestCalculateDistance', () => {
     it('should return 0.0 when both agents are at the same point', () => {
         const observations: ObservationData = {

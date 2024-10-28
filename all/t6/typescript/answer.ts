@@ -1,4 +1,4 @@
-const path = require('path')
+import path from 'path';
 function simplifyWindowsPath(inputPath: string): string {
     // Replace the drive letter and colon, e.g., 'D:' with 'D_'
     const [drive, pathWithoutDrive] = path.parse(inputPath);

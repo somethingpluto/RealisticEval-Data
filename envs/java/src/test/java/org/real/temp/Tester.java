@@ -1,55 +1,102 @@
 package org.real.temp;
 
-import static org.junit.Assert.*;
 import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
+import java.util.HashMap;
+import java.util.Map;
+import static org.real.temp.Answer.*;
 public class Tester {
 
-    private static final double WHEELBASE = 2.5; // Setting wheelbase constant for all tests
-
     @Test
-    public void testNormalCase() {
-        double angularVelocity = 1.0; // radians/second
-        double speed = 10.0;          // meters/second
-        double expectedAngle = Math.atan((angularVelocity * WHEELBASE) / speed);
-        assertEquals(expectedAngle, Answer.calculateSteeringAngle(angularVelocity, speed, WHEELBASE), 1e-9);
-    }
+    public void testSamePoint() {
+        // Both agents are at the same point
+        Map<String, Map<String, Double>> observations = new HashMap<>();
+        Map<String, Double> agent1Coordinates = new HashMap<>();
+        agent1Coordinates.put("x", 0.0);
+        agent1Coordinates.put("y", 0.0);
+        Map<String, Double> agent2Coordinates = new HashMap<>();
+        agent2Coordinates.put("x", 0.0);
+        agent2Coordinates.put("y", 0.0);
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testZeroSpeed() {
-        double angularVelocity = 1.0; // radians/second
-        double speed = 0.0;           // meters/second
-        Answer.calculateSteeringAngle(angularVelocity, speed, WHEELBASE);
-    }
+        observations.put("agent1", agent1Coordinates);
+        observations.put("agent2", agent2Coordinates);
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testNegativeSpeed() {
-        double angularVelocity = 1.0; // radians/second
-        double speed = -5.0;          // meters/second
-        Answer.calculateSteeringAngle(angularVelocity, speed, WHEELBASE);
+        double distance = calculateDistance("agent1", "agent2", observations);
+        assertEquals(0.0, distance, 0.001);
     }
 
     @Test
-    public void testZeroAngularVelocity() {
-        double angularVelocity = 0.0; // radians/second
-        double speed = 10.0;          // meters/second
-        double expectedAngle = 0.0;   // Steering angle should be zero
-        assertEquals(expectedAngle, Answer.calculateSteeringAngle(angularVelocity, speed, WHEELBASE), 1e-9);
+    public void testHorizontalDistance() {
+        // Agents are horizontally apart
+        Map<String, Map<String, Double>> observations = new HashMap<>();
+        Map<String, Double> agent1Coordinates = new HashMap<>();
+        agent1Coordinates.put("x", 0.0);
+        agent1Coordinates.put("y", 0.0);
+        Map<String, Double> agent2Coordinates = new HashMap<>();
+        agent2Coordinates.put("x", 3.0);
+        agent2Coordinates.put("y", 0.0);
+
+        observations.put("agent1", agent1Coordinates);
+        observations.put("agent2", agent2Coordinates);
+
+        double distance = calculateDistance("agent1", "agent2", observations);
+        assertEquals(3.0, distance, 0.001);
     }
 
     @Test
-    public void testLargeValues() {
-        double angularVelocity = 100.0; // radians/second
-        double speed = 1000.0;          // meters/second
-        double expectedAngle = Math.atan((angularVelocity * WHEELBASE) / speed);
-        assertEquals(expectedAngle, Answer.calculateSteeringAngle(angularVelocity, speed, WHEELBASE), 1e-9);
+    public void testVerticalDistance() {
+        // Agents are vertically apart
+        Map<String, Map<String, Double>> observations = new HashMap<>();
+        Map<String, Double> agent1Coordinates = new HashMap<>();
+        agent1Coordinates.put("x", 0.0);
+        agent1Coordinates.put("y", 0.0);
+        Map<String, Double> agent2Coordinates = new HashMap<>();
+        agent2Coordinates.put("x", 0.0);
+        agent2Coordinates.put("y", 4.0);
+
+        observations.put("agent1", agent1Coordinates);
+        observations.put("agent2", agent2Coordinates);
+
+        double distance = calculateDistance("agent1", "agent2", observations);
+        assertEquals(4.0, distance, 0.001);
     }
 
     @Test
-    public void testHighAngularVelocity() {
-        double angularVelocity = 10.0; // radians/second
-        double speed = 1.0;             // meters/second
-        double expectedAngle = Math.atan((angularVelocity * WHEELBASE) / speed);
-        assertEquals(expectedAngle, Answer.calculateSteeringAngle(angularVelocity, speed, WHEELBASE), 1e-9);
+    public void testDiagonalDistance() {
+        // Agents are diagonally apart
+        Map<String, Map<String, Double>> observations = new HashMap<>();
+        Map<String, Double> agent1Coordinates = new HashMap<>();
+        agent1Coordinates.put("x", 1.0);
+        agent1Coordinates.put("y", 2.0);
+        Map<String, Double> agent2Coordinates = new HashMap<>();
+        agent2Coordinates.put("x", 4.0);
+        agent2Coordinates.put("y", 6.0);
+
+        observations.put("agent1", agent1Coordinates);
+        observations.put("agent2", agent2Coordinates);
+
+        double expectedDistance = Math.sqrt(Math.pow(4.0 - 1.0, 2) + Math.pow(6.0 - 2.0, 2));
+        double distance = calculateDistance("agent1", "agent2", observations);
+        assertEquals(expectedDistance, distance, 0.001);
+    }
+
+    @Test
+    public void testNegativeCoordinates() {
+        // Agents have negative coordinates
+        Map<String, Map<String, Double>> observations = new HashMap<>();
+        Map<String, Double> agent1Coordinates = new HashMap<>();
+        agent1Coordinates.put("x", -1.0);
+        agent1Coordinates.put("y", -1.0);
+        Map<String, Double> agent2Coordinates = new HashMap<>();
+        agent2Coordinates.put("x", -4.0);
+        agent2Coordinates.put("y", -5.0);
+
+        observations.put("agent1", agent1Coordinates);
+        observations.put("agent2", agent2Coordinates);
+
+        double expectedDistance = Math.sqrt(Math.pow(-4.0 + 1.0, 2) + Math.pow(-5.0 + 1.0, 2));
+        double distance = calculateDistance("agent1", "agent2", observations);
+        assertEquals(expectedDistance, distance, 0.001);
     }
 }

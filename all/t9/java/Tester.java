@@ -2,6 +2,7 @@ package org.real.temp;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
+import static org.real.temp.Answer.*;
 public class Tester {
     @Test
     public void testPointOnLine() {

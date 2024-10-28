@@ -14,4 +14,7 @@ describe('TestSimplifyWindowsPath', () => {
     test('should simplify a nested directory path', () => {
       expect(simplifyWindowsPath('G:\\folder1\\folder2\\folder3\\file.jpeg')).toBe('G_folder1_folder2_folder3_file.jpeg');
     });
+    test('should simplify a path with single backslash',()=>{
+        expect(simplifyWindowsPath("F:\\")).toBe("F_")
+    })
   });

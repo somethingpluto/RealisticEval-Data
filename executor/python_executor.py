@@ -7,8 +7,6 @@ import pandas as pd
 import subprocess
 from tqdm import tqdm
 
-from executor.utils import append_row_to_xlsx
-
 PYTHON_RUN_ENV = "../envs/python/temp"
 def delete_non_python_and_ipynb_files(directory):
     """

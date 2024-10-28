@@ -37,8 +37,3 @@ void check_decryption() {
     }
     std::cout << std::endl;
 }
-
-int main() {
-    check_decryption();
-    return 0;
-}

@@ -16,15 +16,3 @@ bool is_point_on_line(const std::vector<int>& A, const std::vector<int>& B, cons
     // Check if slopes of AC and BC are equal
     return (y_c - y_a) * (x_b - x_a) == (y_b - y_a) * (x_c - x_a);
 }
-
-int main() {
-    // Example usage
-    std::vector<int> A = {1, 2};
-    std::vector<int> B = {3, 4};
-    std::vector<int> C = {2, 3};
-
-    bool result = is_point_on_line(A, B, C);
-    std::cout << "Is point C on the line formed by points A and B? " << (result ? "Yes" : "No") << std::endl;
-
-    return 0;
-}

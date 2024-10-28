@@ -1,35 +1,15 @@
-union convertresult {
-    int intValue;
-    float floatValue;
-    std::string stringValue;
-
-    // Destructor to handle cleanup
-    ~ConvertResult() {
-        // Free memory if stringValue is used
-        if (stringValue.data() != nullptr) {
-            stringValue.~basic_string();
-        }
-    }
-
-    // Equality operator to compare union values
-    bool operator==(const int& other) const {
-        return intValue == other;
-    }
-
-    bool operator==(const float& other) const {
-        return floatValue == other;
-    }
-
-    bool operator==(const std::string& other) const {
-        return stringValue == other;
-    }
-};
 /**
- * @brief Convert the input string, first see if it is an integer, if it is converted to an integer,
- * if it is not, see if it is a floating point number, if yes, convert to a floating point number,
- * if neither, return the original string.
+ * @brief Converts a string to a numerical type (int or float) or returns the original string.
  *
- * @param value The input string value.
- * @return A union containing the converted value (int, float, or original string).
+ * @param value The string to be converted. It should represent a numerical value.
+ * 
+ * @return std::variant<int, float, std::string>
+ * - On success, returns an integer if the string represents an integer.
+ * - Returns a float if the string represents a floating-point number.
+ * - If the string cannot be converted to either type, returns the original string.
+ * 
+ * @exception std::invalid_argument If the input string is not a valid representation of a number.
+ * @exception std::out_of_range If the number represented by the string is out of the range of
+ *         the target type (int or float).
  */
-ConvertResult numerical_str_convert(const std::string& value) {}
+ std::variant<int, float, std::string> numerical_str_convert(const std::string& value) {}

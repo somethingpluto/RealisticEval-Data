@@ -1,78 +1,51 @@
 #define CATCH_CONFIG_MAIN
 #include "./lib/catch.hpp"
-#include <iostream>
-#include <cmath>
-#include <stdexcept>
-
-/**
- * @brief Calculates the steering angle based on the given angular velocity, speed, and wheelbase.
- *
- * The function uses the relationship between angular velocity, speed, and the steering angle
- * to determine the appropriate steering angle required for the vehicle to achieve the desired
- * angular velocity. The formula used is:
- *
- *      ω = (v / L) * tan(δ)
- *
- * Rearranging gives us:
- *
- *      δ = atan((ω * L) / v)
- *
- * @param angularVelocity The angular velocity of the vehicle in radians per second.
- * @param speed The forward speed of the vehicle in meters per second.
- * @param wheelbase The distance between the front and rear axles of the vehicle in meters.
- *
- * @return The steering angle in radians.
- *
- * @throws std::invalid_argument if speed is less than or equal to zero,
- *                                since the vehicle cannot move at zero or negative speed.
- */
-double calculateSteeringAngle(double angularVelocity, double speed, double wheelbase) {
-    if (speed <= 0) {
-        throw std::invalid_argument("Speed must be greater than zero.");
+#include "./solution.cpp"
+TEST_CASE("Test Calculate Distance") {
+    SECTION("Same Point") {
+        // Both agents are at the same point
+        std::map<std::string, std::map<std::string, float>> observations = {
+            {"agent1", {{"x", 0.0f}, {"y", 0.0f}}},
+            {"agent2", {{"x", 0.0f}, {"y", 0.0f}}}
+        };
+        REQUIRE(calculate_distance("agent1", "agent2", observations) == Approx(0.0f));
     }
 
-    double steeringAngle = std::atan((angularVelocity * wheelbase) / speed);
-    return steeringAngle;
-}TEST_CASE("Calculate Steering Angle Tests") {
-    const double wheelbase = 2.5; // Setting wheelbase constant for all tests
-
-    SECTION("Normal case") {
-        double angularVelocity = 1.0; // radians/second
-        double speed = 10.0;          // meters/second
-        double expectedAngle = atan((angularVelocity * wheelbase) / speed);
-        REQUIRE(calculateSteeringAngle(angularVelocity, speed, wheelbase) == Approx(expectedAngle));
+    SECTION("Horizontal Distance") {
+        // Agents are horizontally apart
+        std::map<std::string, std::map<std::string, float>> observations = {
+            {"agent1", {{"x", 0.0f}, {"y", 0.0f}}},
+            {"agent2", {{"x", 3.0f}, {"y", 0.0f}}}
+        };
+        REQUIRE(calculate_distance("agent1", "agent2", observations) == Approx(3.0f));
     }
 
-    SECTION("Zero speed") {
-        double angularVelocity = 1.0; // radians/second
-        double speed = 0.0;           // meters/second
-        REQUIRE_THROWS_AS(calculateSteeringAngle(angularVelocity, speed, wheelbase), std::invalid_argument);
+    SECTION("Vertical Distance") {
+        // Agents are vertically apart
+        std::map<std::string, std::map<std::string, float>> observations = {
+            {"agent1", {{"x", 0.0f}, {"y", 0.0f}}},
+            {"agent2", {{"x", 0.0f}, {"y", 4.0f}}}
+        };
+        REQUIRE(calculate_distance("agent1", "agent2", observations) == Approx(4.0f));
     }
 
-    SECTION("Negative speed") {
-        double angularVelocity = 1.0; // radians/second
-        double speed = -5.0;          // meters/second
-        REQUIRE_THROWS_AS(calculateSteeringAngle(angularVelocity, speed, wheelbase), std::invalid_argument);
+    SECTION("Diagonal Distance") {
+        // Agents are diagonally apart
+        std::map<std::string, std::map<std::string, float>> observations = {
+            {"agent1", {{"x", 1.0f}, {"y", 2.0f}}},
+            {"agent2", {{"x", 4.0f}, {"y", 6.0f}}}
+        };
+        float expected_distance = std::sqrt(std::pow(4.0f - 1.0f, 2) + std::pow(6.0f - 2.0f, 2));
+        REQUIRE(calculate_distance("agent1", "agent2", observations) == Approx(expected_distance));
     }
 
-    SECTION("Zero angular velocity") {
-        double angularVelocity = 0.0; // radians/second
-        double speed = 10.0;          // meters/second
-        double expectedAngle = 0.0;   // Steering angle should be zero
-        REQUIRE(calculateSteeringAngle(angularVelocity, speed, wheelbase) == Approx(expectedAngle));
-    }
-
-    SECTION("Large values") {
-        double angularVelocity = 100.0; // radians/second
-        double speed = 1000.0;          // meters/second
-        double expectedAngle = atan((angularVelocity * wheelbase) / speed);
-        REQUIRE(calculateSteeringAngle(angularVelocity, speed, wheelbase) == Approx(expectedAngle));
-    }
-
-    SECTION("High angular velocity") {
-        double angularVelocity = 10.0; // radians/second
-        double speed = 1.0;             // meters/second
-        double expectedAngle = atan((angularVelocity * wheelbase) / speed);
-        REQUIRE(calculateSteeringAngle(angularVelocity, speed, wheelbase) == Approx(expectedAngle));
+    SECTION("Negative Coordinates") {
+        // Agents have negative coordinates
+        std::map<std::string, std::map<std::string, float>> observations = {
+            {"agent1", {{"x", -1.0f}, {"y", -1.0f}}},
+            {"agent2", {{"x", -4.0f}, {"y", -5.0f}}}
+        };
+        float expected_distance = std::sqrt(std::pow(-4.0f + 1.0f, 2) + std::pow(-5.0f + 1.0f, 2));
+        REQUIRE(calculate_distance("agent1", "agent2", observations) == Approx(expected_distance));
     }
 }
