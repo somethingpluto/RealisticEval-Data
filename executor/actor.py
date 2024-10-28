@@ -20,11 +20,11 @@ class Actor:
         self._init_executor()
 
     def _init_executor(self):
-        self.language_executor_map["python"] = PythonExecutor()
-        self.language_executor_map["javascript"] = JavaScriptExecutor()
-        self.language_executor_map["typescript"] = TypeScriptExecutor()
-        self.language_executor_map["c&cpp"] = CCPPExecutor()
-        self.language_executor_map["java"] = JavaExecutor()
+        self.language_executor_map["python"] = PythonExecutor(type="pass1")
+        self.language_executor_map["javascript"] = JavaScriptExecutor(type="pass1")
+        self.language_executor_map["typescript"] = TypeScriptExecutor(type="pass1")
+        self.language_executor_map["c&cpp"] = CCPPExecutor(type="pass1")
+        self.language_executor_map["java"] = JavaExecutor(type="pass1")
 
     def execute(self):
         if LANGUAGE == "java":
