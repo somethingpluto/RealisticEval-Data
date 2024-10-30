@@ -1,5 +1,4 @@
-const fs = require('fs');
-
+import {fs} from 'fs'
 /**
  * Classifies JSON objects by pid and writes matches and mismatches to separate files.
  * 

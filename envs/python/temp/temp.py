@@ -1,57 +1,60 @@
-import datetime
+from typing import List, Tuple
 
 
-def calculate_time_difference(given_date: str) -> dict:
-    current_date = datetime.datetime.now()
-    given_date = datetime.datetime.strptime(given_date, '%Y-%m-%d')
+def calculate_red_proportion(pixels: List[Tuple[int, int, int]]) -> float:
+    """
+    Calculate the proportion of red in a list of pixels.
 
-    time_difference = current_date - given_date
-    total_seconds = time_difference.total_seconds()
+    Args:
+        pixels (List[Tuple[int, int, int]]): A list of pixels, where each pixel is represented as a tuple of (R, G, B).
 
-    days = total_seconds // (24 * 3600)
-    remaining_seconds = total_seconds % (24 * 3600)
-    hours = remaining_seconds // 3600
-    remaining_seconds %= 3600
-    minutes = remaining_seconds // 60
+    Returns:
+        float: The proportion of red in the list of pixels, as a value between 0 and 1.
+    """
+    if not pixels:
+        return 0.0
 
-    return {
-        'days': int(days),
-        'hours': int(hours),
-        'minutes': int(minutes)
-    }
+    total_red = 0
+    total_intensity = 0
 
+    for (r, g, b) in pixels:
+        total_red += r
+        total_intensity += (r + g + b)
 
+    # Avoid division by zero
+    if total_intensity == 0:
+        return 0.0
+
+    red_proportion = total_red / total_intensity
+    return red_proportion
 import unittest
-from datetime import timedelta, datetime
 
 
-class TestCalculateTimeDifference(unittest.TestCase):
+class TestCalculateRedProportion(unittest.TestCase):
 
-    def test_should_return_correct_time_difference_for_a_date_in_the_past(self):
-        past_date = datetime.now() - timedelta(days=3, minutes=5)  # 3 days and 5 minutes ago
-        result = calculate_time_difference(past_date)
-        self.assertEqual(result, {'days': 3, 'hours': 0, 'minutes': 5})
+    def test_all_red_pixels(self):
+        # All pixels are fully red
+        pixels = [(255, 0, 0), (255, 0, 0), (255, 0, 0)]
+        result = calculate_red_proportion(pixels)
+        self.assertAlmostEqual(result, 1.0)
 
-    def test_should_return_correct_time_difference_for_a_date_that_is_exactly_now(self):
-        now = datetime.now()
-        result = calculate_time_difference(now)
-        self.assertEqual(result, {'days': 0, 'hours': 0, 'minutes': 0})
+    def test_no_red_pixels(self):
+        # No red component in any pixel
+        pixels = [(0, 255, 0), (0, 0, 255), (0, 255, 255)]
+        result = calculate_red_proportion(pixels)
+        self.assertAlmostEqual(result, 0.0)
 
-    def test_should_return_correct_time_difference_for_a_date_just_seconds_ago(self):
-        just_now = datetime.now() - timedelta(seconds=45)  # 45 seconds ago
-        result = calculate_time_difference(just_now)
-        self.assertEqual(result, {'days': 0, 'hours': 0, 'minutes': 0})
+    def test_empty_pixel_list(self):
+        # Empty list of pixels
+        pixels = []
+        result = calculate_red_proportion(pixels)
+        self.assertAlmostEqual(result, 0.0)
 
-    def test_should_return_correct_time_difference_for_a_date_with_only_hours_difference(self):
-        hours_ago = datetime.now() - timedelta(hours=7)  # 7 hours ago
-        result = calculate_time_difference(hours_ago)
-        self.assertEqual(result, {'days': 0, 'hours': 7, 'minutes': 0})
-
-    def test_should_return_correct_time_difference_for_a_date_with_hours_and_minutes_difference(self):
-        hours_and_minutes_ago = datetime.now() - timedelta(days=1, minutes=3)  # 1 day and 3 minutes ago
-        result = calculate_time_difference(hours_and_minutes_ago)
-        self.assertEqual(result, {'days': 1, 'hours': 0, 'minutes': 3})
-
+    def test_all_black_pixels(self):
+        # All pixels are black
+        pixels = [(0, 0, 0), (0, 0, 0), (0, 0, 0)]
+        result = calculate_red_proportion(pixels)
+        self.assertAlmostEqual(result, 0.0)
 
 if __name__ == '__main__':
     unittest.main()

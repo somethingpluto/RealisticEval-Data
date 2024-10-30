@@ -1,6 +1,5 @@
-const fs = require('fs');
-const diff = require('diff');
-
+import {fs} from 'fs';
+import {diff} from 'diff'
 /**
  * Compare the contents of two files and print the differences in unified diff format.
  *

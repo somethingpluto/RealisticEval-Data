@@ -1,5 +1,6 @@
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
+
 describe('Classify JSON Objects by PID', () => {
   let tempDir;
   let sourceFile;
@@ -30,7 +31,6 @@ describe('Classify JSON Objects by PID', () => {
     // Clean up temporary files and directory
     fs.rmSync(tempDir, { recursive: true, force: true });
   });
-
   test('all match', () => {
     classifyJsonObjectsByPid(sourceFile, [1, 2, 3], matchFile, mismatchFile);
     

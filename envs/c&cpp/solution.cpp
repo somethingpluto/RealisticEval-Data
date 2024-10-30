@@ -1,51 +1,27 @@
-#include <stdexcept> // For std::invalid_argument
+#include <vector>
+#include <tuple>
+#include <iostream>
 
-double function_to_integrate(double x) {
-    return x * x;
-}
-
-/**
- * @brief Computes the approximate integral of a function using Simpson's Rule.
- *
- * Simpson's Rule is a method for numerical integration that approximates the integral of a function
- * over an interval by fitting parabolas. This function divides the interval [a, b] into n subintervals
- * and calculates the weighted sum of the function values at specific points.
- *
- * @param a The lower limit of integration.
- * @param b The upper limit of integration.
- * @param n The number of subintervals (must be even).
- * @return The approximate value of the integral.
- *
- * @throws std::invalid_argument If n is not positive or if it is not even.
- */
-double simpsons_rule(double a, double b, int n) {
-    // Check if n is a positive even integer
-    if (n <= 0 || n % 2 != 0) {
-        throw std::invalid_argument("n must be a positive even integer.");
+float calculate_red_proportion(const std::vector<std::tuple<int, int, int>>& pixels) {
+    if (pixels.empty()) {
+        return 0.0f;
     }
 
-    // Calculate the width of each subinterval
-    double h = (b - a) / n;
-    double sum = 0.0;
+    int totalRed = 0;
+    int totalIntensity = 0;
 
-    // Calculate the weighted sum of the function values
-    for (int idx = 0; idx <= n; ++idx) {
-        double x = a + idx * h; // Calculate the x value at the current index
-        double fx = function_to_integrate(x); // Evaluate the function at x
-
-        // Apply the Simpson's Rule weighting
-        if (idx == 0 || idx == n) {
-            // First and last terms (f(a) and f(b))
-            sum += fx;
-        } else if (idx % 2 == 1) {
-            // Odd index terms (4 * f(a + b))
-            sum += 4.0 * fx;
-        } else {
-            // Even index terms (2 * f(a + b))
-            sum += 2.0 * fx;
-        }
+    for (const auto& pixel : pixels) {
+        int r, g, b;
+        std::tie(r, g, b) = pixel;
+        totalRed += r;
+        totalIntensity += (r + g + b);
     }
 
-    // Final calculation to obtain the integral value
-    return (h / 3.0) * sum; // Simpson's Rule formula
+    // Avoid division by zero
+    if (totalIntensity == 0) {
+        return 0.0f;
+    }
+
+    float redProportion = static_cast<float>(totalRed) / totalIntensity;
+    return redProportion;
 }

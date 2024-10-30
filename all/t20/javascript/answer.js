@@ -9,15 +9,10 @@
  * @returns {string} - The transformed text with asterisks inside '(*...*)' patterns removed.
  */
 function removeInnerAsterisks(text) {
-    // Regular expression to find patterns like (*...*)
     const pattern = /\(\*(.*?)\*\)/g;
-
-    // Function to replace matched patterns
     const removeInnerAsterisks = (match, content) => {
         content = content.replace(/\*/g, ''); // Remove inner asterisks
         return `(*${content}*)`; // Return the modified format
     };
-
-    // Substitute the pattern in text with the processed content
     return text.replace(pattern, removeInnerAsterisks);
 }

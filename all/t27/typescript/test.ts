@@ -1,5 +1,3 @@
-const fs = require('fs');
-const path = require('path');
 describe('concatenateJsonArrays', () => {
     const testDir = 'test_json';
 

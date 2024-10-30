@@ -12,10 +12,3 @@ void print_memory_bits(const std::vector<uint8_t>& memory_section) {
         std::cout << std::endl;
     }
 }
-
-int main() {
-    // Example usage
-    std::vector<uint8_t> memory_section = {0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80};
-    print_memory_bits(memory_section);
-    return 0;
-}

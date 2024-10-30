@@ -1,17 +1,14 @@
 package org.real.temp;
 
 import static org.junit.Assert.assertEquals; 
-import static org.junit.Assert.assertFalse; 
-import static org.junit.Assert.assertTrue;  
-import org.junit.Test; 
-
+import org.junit.Test;
+import static org.real.temp.Answer.*;
 public class Tester {
 
     private static final double DELTA = 1e-6; // Tolerance for floating-point comparisons
 
     @Test
     public void testSamePoint() {
-        // Same point should return a distance of 0
         double lat = 52.2296756;
         double lon = 21.0122287;
         double result = haversineDistance(lat, lon, lat, lon);
@@ -20,7 +17,6 @@ public class Tester {
 
     @Test
     public void testSmallDistance() {
-        // Points that are very close together (few meters apart)
         double lat1 = 52.2296756;
         double lon1 = 21.0122287;  // Warsaw, Poland
         double lat2 = 52.2296756;
@@ -31,7 +27,6 @@ public class Tester {
 
     @Test
     public void testLargeDistance() {
-        // Points that are far apart
         double lat1 = 52.2296756;
         double lon1 = 21.0122287;  // Warsaw, Poland
         double lat2 = 41.8919300;
@@ -42,7 +37,6 @@ public class Tester {
 
     @Test
     public void testEquatorDistance() {
-        // Points on the equator
         double lat1 = 0.0;
         double lon1 = 0.0;  // Gulf of Guinea (Equator and Prime Meridian intersection)
         double lat2 = 0.0;
@@ -53,7 +47,6 @@ public class Tester {
 
     @Test
     public void testPoleToPole() {
-        // Distance from North Pole to South Pole
         double lat1 = 90.0;
         double lon1 = 0.0;  // North Pole
         double lat2 = -90.0;

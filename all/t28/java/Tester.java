@@ -3,11 +3,10 @@ package org.real.temp;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
-
+import static org.real.temp.Answer.*;
 import static org.junit.Assert.assertEquals;
 
 public class Tester {
@@ -41,7 +40,7 @@ public class Tester {
         byte[] memorySection = new byte[]{(byte) 0b11001100, (byte) 0b11110000};
         printMemoryBits(memorySection);
         String output = outContent.toString().trim();
-        String expectedOutput = "11001100\n11110000";
+        String expectedOutput = "11001100\r\n11110000";
         assertEquals(expectedOutput, output);
     }
 

@@ -1,3 +1,5 @@
+import * as fs from 'fs';
+import * as path from 'path';
 /**
  * Concatenate the root-level array JSON files in the specified directory.
  * 

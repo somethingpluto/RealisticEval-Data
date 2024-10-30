@@ -32,7 +32,7 @@ describe('TestPrintMemoryBits', () => {
         expect(console.log).toHaveBeenCalledWith("00000000");
     });
 
-    it('should handle all ones correctly', () => => {
+    it('should handle all ones correctly', () =>{
         const memorySection = new Uint8Array([0b11111111]);
         printMemoryBits(memorySection);
         expect(console.log).toHaveBeenCalledWith("11111111");

@@ -2,7 +2,7 @@ package org.real.temp;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
-
+import static org.real.temp.Answer.*;
 public class Tester {
 
     @Test
@@ -14,7 +14,7 @@ public class Tester {
         Point expected = new Point(2.5, 2.5);
 
         Point result = getLineSegmentIntersection(seg1Start, seg1End, seg2Start, seg2End);
-        assertEquals("The intersection should be at (2.5, 2.5)", expected, result);
+        assertTrue("The intersection should be at (2.5, 2.5)",(expected.x == result.x)&&(expected.y == result.y));
     }
 
     @Test
@@ -59,61 +59,6 @@ public class Tester {
         Point expected = new Point(1500.0, 1500.0);
 
         Point result = getLineSegmentIntersection(seg1Start, seg1End, seg2Start, seg2End);
-        assertEquals("The intersection should be at (1500.0, 1500.0)", expected, result);
-    }
-    /**
-     * Represents a point with x and y coordinates.
-     */
-    static class Point {
-        double x, y;
-
-        /**
-         * Constructs a new Point with the specified coordinates.
-         *
-         * @param x The x-coordinate.
-         * @param y The y-coordinate.
-         */
-        public Point(double x, double y) {
-            this.x = x;
-            this.y = y;
-        }
-
-        /**
-         * Compares this Point with another Point for equality.
-         *
-         * @param obj The other Point to compare with.
-         * @return true if the Points are equal, false otherwise.
-         */
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
-                return true;
-            }
-            if (obj == null || getClass() != obj.getClass()) {
-                return false;
-            }
-            Point other = (Point) obj;
-            return Double.compare(x, other.x) == 0 && Double.compare(y, other.y) == 0;
-        }
-
-        /**
-         * Returns a string representation of the Point.
-         *
-         * @return A string in the format "(x, y)".
-         */
-        @Override
-        public String toString() {
-            return "(" + x + ", " + y + ")";
-        }
-
-        /**
-         * Generates a hash code for the Point.
-         *
-         * @return The hash code.
-         */
-        @Override
-        public int hashCode() {
-            return Objects.hash(x, y);
-        }
+        assertTrue("The intersection should be at (1500.0, 1500.0)", (expected.x == result.x)&&(expected.y == result.y));
     }
 }

@@ -18,11 +18,3 @@ std::string convert_to_comma_separated(const std::string& input_string) {
     std::string comma_separated_string = std::regex_replace(input_string, pattern, ",");
     return comma_separated_string;
 }
-
-int main() {
-    // Example usage
-    std::string test_string = "Hello*World;Example/Text-Another:Test";
-    std::string result = convert_to_comma_separated(test_string);
-    std::cout << result << std::endl;
-    return 0;
-}

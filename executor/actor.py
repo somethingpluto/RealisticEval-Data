@@ -46,7 +46,7 @@ class Actor:
 
 
 if __name__ == '__main__':
-    TASK_ID = "361"
+    TASK_ID = "31"
     LANGUAGE = "c&cpp"
     actor = Actor(task_id=TASK_ID, language=LANGUAGE)
     actor.execute()

@@ -1,10 +1,3 @@
-#define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
-#include "catch.hpp"
-#include <string>
-
-// Assuming the process_markdown function is defined elsewhere
-std::string process_markdown(const std::string& s);
-
 TEST_CASE("Tests for process_markdown function") {
 
     SECTION("Test single asterisk pair") {
