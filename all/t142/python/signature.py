@@ -1,11 +1,6 @@
 def camel_case_to_capitalized_with_spaces(input: str) -> str:
     """
-    Converts a camelCase string to a format with the first letter capitalized and spaces between words.
-
-    For example:
-        input: "thisIsTest"
-        output: "This is test"
-
+    Initialize the camelCase string to a format where only the first letter is capitalized and there are spaces between words.
     Args:
         input_string (str): The camelCase string to be converted.
 

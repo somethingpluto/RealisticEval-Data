@@ -12,27 +12,20 @@ def calculate_time_difference(given_date):
         'minutes': remaining_minutes,
     }
     """
-    # Convert given_date to a datetime object if it's a string
+    current_date = datetime.now()
     if isinstance(given_date, str):
         date_to_compare = datetime.fromisoformat(given_date)  # Assuming ISO format
     else:
         date_to_compare = given_date
-
-    current_date = datetime.now()
-
-    # Calculate the difference in seconds
     difference_in_seconds = (current_date - date_to_compare).total_seconds()
 
-    # If the given date is in the future
     if difference_in_seconds < 0:
         return {'days': 0, 'hours': 0, 'minutes': 0}
 
-    # Calculate days, hours, and minutes
     minutes = int(difference_in_seconds // 60)
     hours = minutes // 60
     days = hours // 24
 
-    # Calculate remaining hours and minutes
     remaining_hours = hours % 24
     remaining_minutes = minutes % 60
 

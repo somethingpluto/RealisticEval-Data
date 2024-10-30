@@ -1,51 +1,30 @@
 #define CATCH_CONFIG_MAIN
 #include "./lib/catch.hpp"
 #include "./solution.cpp"
-TEST_CASE("Test Calculate Distance") {
-    SECTION("Same Point") {
-        // Both agents are at the same point
-        std::map<std::string, std::map<std::string, float>> observations = {
-            {"agent1", {{"x", 0.0f}, {"y", 0.0f}}},
-            {"agent2", {{"x", 0.0f}, {"y", 0.0f}}}
-        };
-        REQUIRE(calculate_distance("agent1", "agent2", observations) == Approx(0.0f));
+TEST_CASE("Simpson's Rule Tests") {
+
+    SECTION("Basic Integral of x^2 from 0 to 1") {
+        // The exact integral of f(x) = x^2 from 0 to 1 is 1/3
+        double result = simpsons_rule(0.0, 1.0, 10);
+        REQUIRE(result == Approx(1.0 / 3.0).epsilon(0.01));
     }
 
-    SECTION("Horizontal Distance") {
-        // Agents are horizontally apart
-        std::map<std::string, std::map<std::string, float>> observations = {
-            {"agent1", {{"x", 0.0f}, {"y", 0.0f}}},
-            {"agent2", {{"x", 3.0f}, {"y", 0.0f}}}
-        };
-        REQUIRE(calculate_distance("agent1", "agent2", observations) == Approx(3.0f));
+    SECTION("Basic Integral of x^2 from 0 to 2") {
+        // The exact integral of f(x) = x^2 from 0 to 2 is 8/3
+        double result = simpsons_rule(0.0, 2.0, 10);
+        REQUIRE(result == Approx(8.0 / 3.0).epsilon(0.01));
     }
 
-    SECTION("Vertical Distance") {
-        // Agents are vertically apart
-        std::map<std::string, std::map<std::string, float>> observations = {
-            {"agent1", {{"x", 0.0f}, {"y", 0.0f}}},
-            {"agent2", {{"x", 0.0f}, {"y", 4.0f}}}
-        };
-        REQUIRE(calculate_distance("agent1", "agent2", observations) == Approx(4.0f));
+    SECTION("Negative Integral of x^2 from -1 to 0") {
+        // The exact integral of f(x) = x^2 from -1 to 0 is 1/3
+        double result = simpsons_rule(-1.0, 0.0, 10);
+        REQUIRE(result == Approx(1.0 / 3.0).epsilon(0.01));
     }
 
-    SECTION("Diagonal Distance") {
-        // Agents are diagonally apart
-        std::map<std::string, std::map<std::string, float>> observations = {
-            {"agent1", {{"x", 1.0f}, {"y", 2.0f}}},
-            {"agent2", {{"x", 4.0f}, {"y", 6.0f}}}
-        };
-        float expected_distance = std::sqrt(std::pow(4.0f - 1.0f, 2) + std::pow(6.0f - 2.0f, 2));
-        REQUIRE(calculate_distance("agent1", "agent2", observations) == Approx(expected_distance));
-    }
-
-    SECTION("Negative Coordinates") {
-        // Agents have negative coordinates
-        std::map<std::string, std::map<std::string, float>> observations = {
-            {"agent1", {{"x", -1.0f}, {"y", -1.0f}}},
-            {"agent2", {{"x", -4.0f}, {"y", -5.0f}}}
-        };
-        float expected_distance = std::sqrt(std::pow(-4.0f + 1.0f, 2) + std::pow(-5.0f + 1.0f, 2));
-        REQUIRE(calculate_distance("agent1", "agent2", observations) == Approx(expected_distance));
+    SECTION("Large Interval") {
+        // Test with a larger interval from 0 to 10
+        double result = simpsons_rule(0.0, 10.0, 20);
+        // The exact integral from 0 to 10 of f(x) = x^2 is (10^3)/3 = 1000/3
+        REQUIRE(result == Approx(1000.0 / 3.0).epsilon(0.01));
     }
 }

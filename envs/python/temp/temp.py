@@ -1,142 +1,57 @@
-from typing import List
+import datetime
 
 
-def parse_markdown_table(md_table: str) -> List[tuple]:
-    """
-    Parses a Markdown formatted table into a list of tuples, each tuple representing a row.
+def calculate_time_difference(given_date: str) -> dict:
+    current_date = datetime.datetime.now()
+    given_date = datetime.datetime.strptime(given_date, '%Y-%m-%d')
 
-    Args:
-        md_table (str): A string representing a Markdown table.
+    time_difference = current_date - given_date
+    total_seconds = time_difference.total_seconds()
 
-    Returns:
-        list of tuples: A list where each tuple represents a row in the table.
-    """
-    # Split the input string into lines and strip whitespace
-    lines = md_table.strip().split('\n')
+    days = total_seconds // (24 * 3600)
+    remaining_seconds = total_seconds % (24 * 3600)
+    hours = remaining_seconds // 3600
+    remaining_seconds %= 3600
+    minutes = remaining_seconds // 60
 
-    # Filter out the separator line for the header (which usually contains "---")
-    lines = [line for line in lines if not '---' in line.strip()]
+    return {
+        'days': int(days),
+        'hours': int(hours),
+        'minutes': int(minutes)
+    }
 
-    # Initialize the list to store each row as a tuple
-    table_data = []
 
-    # Process each line
-    for line in lines:
-        # Strip leading and trailing spaces and pipes, then split by "|"
-        row = line.strip().strip('|').split('|')
-        # Process each cell, strip spaces, handle empty cells, and create a tuple
-        tuple_row = tuple(cell.strip() if cell.strip() != '' else '' for cell in row)
-        # Add the tuple to the list
-        table_data.append(tuple_row)
-
-    return table_data
 import unittest
+from datetime import timedelta, datetime
 
 
-class TestParseMarkdownTable(unittest.TestCase):
-    def test_standard_table(self):
-        md_table = """
-        | Header 1 | Header 2 | Header 3 |
-        |----------|----------|----------|
-        | Row1Col1 | Row1Col2 | Row1Col3 |
-        | Row2Col1 | Row2Col2 | Row2Col3 |
-        """
-        expected = [
-            ('Header 1', 'Header 2', 'Header 3'),
-            ('Row1Col1', 'Row1Col2', 'Row1Col3'),
-            ('Row2Col1', 'Row2Col2', 'Row2Col3')
-        ]
-        result = parse_markdown_table(md_table)
-        self.assertEqual(result, expected)
+class TestCalculateTimeDifference(unittest.TestCase):
 
-    def test_inconsistent_columns(self):
-        md_table = """
-        | Header 1 | Header 2 |
-        |----------|----------|
-        | Row1     | Row1Col2 | ExtraCol |
-        | Row2     |
-        """
-        expected = [
-            ('Header 1', 'Header 2'),
-            ('Row1', 'Row1Col2', 'ExtraCol'),
-            ('Row2',)
-        ]
-        result = parse_markdown_table(md_table)
-        self.assertEqual(result, expected)
+    def test_should_return_correct_time_difference_for_a_date_in_the_past(self):
+        past_date = datetime.now() - timedelta(days=3, minutes=5)  # 3 days and 5 minutes ago
+        result = calculate_time_difference(past_date)
+        self.assertEqual(result, {'days': 3, 'hours': 0, 'minutes': 5})
 
-    def test_empty_cells(self):
-        md_table = """
-        | Header 1 | Header 2 | Header 3 |
-        |----------|----------|----------|
-        |          | Row1Col2 |          |
-        | Row2Col1 |          | Row2Col3 |
-        """
-        expected = [
-            ('Header 1', 'Header 2', 'Header 3'),
-            ('', 'Row1Col2', ''),
-            ('Row2Col1', '', 'Row2Col3')
-        ]
-        result = parse_markdown_table(md_table)
-        self.assertEqual(result, expected)
+    def test_should_return_correct_time_difference_for_a_date_that_is_exactly_now(self):
+        now = datetime.now()
+        result = calculate_time_difference(now)
+        self.assertEqual(result, {'days': 0, 'hours': 0, 'minutes': 0})
 
-    def test_all_empty_rows(self):
-        md_table = """
-        | Header 1 | Header 2 | Header 3 |
-        |----------|----------|----------|
-        |          |          |          |
-        |          |          |          |
-        """
-        expected = [
-            ('Header 1', 'Header 2', 'Header 3'),
-            ('', '', ''),
-            ('', '', '')
-        ]
-        result = parse_markdown_table(md_table)
-        self.assertEqual(result, expected)
+    def test_should_return_correct_time_difference_for_a_date_just_seconds_ago(self):
+        just_now = datetime.now() - timedelta(seconds=45)  # 45 seconds ago
+        result = calculate_time_difference(just_now)
+        self.assertEqual(result, {'days': 0, 'hours': 0, 'minutes': 0})
 
-    def test_excessive_whitespace(self):
-        md_table = """
-        |  Header 1  |  Header 2  |  Header 3  |
-        |------------|------------|------------|
-        |  Row1Col1  |  Row1Col2  |  Row1Col3  |
-        |  Row2Col1  |  Row2Col2  |  Row2Col3  |
-        """
-        expected = [
-            ('Header 1', 'Header 2', 'Header 3'),
-            ('Row1Col1', 'Row1Col2', 'Row1Col3'),
-            ('Row2Col1', 'Row2Col2', 'Row2Col3')
-        ]
-        result = parse_markdown_table(md_table)
-        self.assertEqual(result, expected)
+    def test_should_return_correct_time_difference_for_a_date_with_only_hours_difference(self):
+        hours_ago = datetime.now() - timedelta(hours=7)  # 7 hours ago
+        result = calculate_time_difference(hours_ago)
+        self.assertEqual(result, {'days': 0, 'hours': 7, 'minutes': 0})
 
+    def test_should_return_correct_time_difference_for_a_date_with_hours_and_minutes_difference(self):
+        hours_and_minutes_ago = datetime.now() - timedelta(days=1, minutes=3)  # 1 day and 3 minutes ago
+        result = calculate_time_difference(hours_and_minutes_ago)
+        self.assertEqual(result, {'days': 1, 'hours': 0, 'minutes': 3})
 
-def parse_markdown_table(md_table):
-    """
-    Parses a Markdown formatted table into a list of tuples, each tuple representing a row.
-
-    Args:
-        md_table (str): A string representing a Markdown table.
-
-    Returns:
-        list of tuples: A list where each tuple represents a row in the table.
-    """
-    # Split the input string into lines and strip whitespace
-    lines = md_table.strip().split('\n')
-
-    # Filter out the separator line for the header (which usually contains "---")
-    lines = [line for line in lines if not line.strip().startswith('|---')]
-
-    # Initialize the list to store each row as a tuple
-    table_data = []
-
-    # Process each line
-    for line in lines:
-        # Strip leading and trailing spaces and pipes, then split by "|"
-        row = line.strip('| \n').split('|')
-        # Strip spaces from each cell, handle empty cells, and create a tuple
-        table_data.append(tuple(cell.strip() for cell in row if cell.strip() or cell == ''))
-
-    return table_data
 
 if __name__ == '__main__':
     unittest.main()

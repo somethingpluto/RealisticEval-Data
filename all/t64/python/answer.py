@@ -3,7 +3,6 @@ import os
 
 
 def csv_to_sql_insert(csv_file_path):
-    # Extract the table name from the CSV file name, removing the suffix
     table_name = os.path.splitext(os.path.basename(csv_file_path))[0]
 
     # Open the CSV file and read its contents

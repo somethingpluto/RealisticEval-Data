@@ -1,28 +1,51 @@
-#include <iostream>
-#include <map>
-#include <cmath>
-#include <string>
+#include <stdexcept> // For std::invalid_argument
 
-// Function to calculate the Euclidean distance between two agents
-float calculate_distance(const std::string& agent1, const std::string& agent2, const std::map<std::string, std::map<std::string, float>>& observations) {
-    /**
-     * Calculates the Euclidean distance between two agents based on their coordinates in the observations.
-     *
-     * @param agent1: String representation of agent1's identifier.
-     * @param agent2: String representation of agent2's identifier.
-     * @param observations: Map containing observation data with agent identifiers as keys.
-     *                      Each value is a map with 'x' and 'y' keys representing coordinates.
-     * @return: Euclidean distance between the two agents.
-     */
-    
-    // Extract coordinates of both agents
-    float x1 = observations.at(agent1).at("x");
-    float y1 = observations.at(agent1).at("y");
-    float x2 = observations.at(agent2).at("x");
-    float y2 = observations.at(agent2).at("y");
+double function_to_integrate(double x) {
+    return x * x;
+}
 
-    // Calculate the Euclidean distance
-    float distance = std::sqrt(std::pow(x1 - x2, 2) + std::pow(y1 - y2, 2));
+/**
+ * @brief Computes the approximate integral of a function using Simpson's Rule.
+ *
+ * Simpson's Rule is a method for numerical integration that approximates the integral of a function
+ * over an interval by fitting parabolas. This function divides the interval [a, b] into n subintervals
+ * and calculates the weighted sum of the function values at specific points.
+ *
+ * @param a The lower limit of integration.
+ * @param b The upper limit of integration.
+ * @param n The number of subintervals (must be even).
+ * @return The approximate value of the integral.
+ *
+ * @throws std::invalid_argument If n is not positive or if it is not even.
+ */
+double simpsons_rule(double a, double b, int n) {
+    // Check if n is a positive even integer
+    if (n <= 0 || n % 2 != 0) {
+        throw std::invalid_argument("n must be a positive even integer.");
+    }
 
-    return distance;
+    // Calculate the width of each subinterval
+    double h = (b - a) / n;
+    double sum = 0.0;
+
+    // Calculate the weighted sum of the function values
+    for (int idx = 0; idx <= n; ++idx) {
+        double x = a + idx * h; // Calculate the x value at the current index
+        double fx = function_to_integrate(x); // Evaluate the function at x
+
+        // Apply the Simpson's Rule weighting
+        if (idx == 0 || idx == n) {
+            // First and last terms (f(a) and f(b))
+            sum += fx;
+        } else if (idx % 2 == 1) {
+            // Odd index terms (4 * f(a + b))
+            sum += 4.0 * fx;
+        } else {
+            // Even index terms (2 * f(a + b))
+            sum += 2.0 * fx;
+        }
+    }
+
+    // Final calculation to obtain the integral value
+    return (h / 3.0) * sum; // Simpson's Rule formula
 }

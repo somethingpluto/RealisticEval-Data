@@ -8,7 +8,7 @@ class Tester(unittest.TestCase):
         """Basic extraction."""
         input_data = "This is a sample text with some data {data: \"value\"} and more text."
         result = extract_string_from_braces(input_data)
-        self.assertEqual(result, "{data: \"value\"}")
+        self.assertEqual(result, "data: \"value\"")
 
     def test_no_braces(self):
         """No braces."""
@@ -32,11 +32,10 @@ class Tester(unittest.TestCase):
         """Multiple braces."""
         input_data = "First {first} and second {second} braces."
         result = extract_string_from_braces(input_data)
-        self.assertEqual(result, "{first}")
+        self.assertEqual(result, "first")
 
     def test_empty_braces(self):
         """Empty braces."""
         input_data = "This string has empty braces {} and some text."
         result = extract_string_from_braces(input_data)
-        self.assertEqual(result, "{}")
-
+        self.assertEqual(result, "")

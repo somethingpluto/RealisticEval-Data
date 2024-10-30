@@ -1,4 +1,3 @@
-#include <stdexcept> // For std::invalid_argument
 /**
  * @brief Computes the approximate integral of a function using Simpson's Rule.
  *
