@@ -1,27 +1,21 @@
-#include <vector>
-#include <tuple>
 #include <iostream>
+#include <vector>
+#include <unordered_set>
 
-float calculate_red_proportion(const std::vector<std::tuple<int, int, int>>& pixels) {
-    if (pixels.empty()) {
-        return 0.0f;
+int min_removals_to_make_unique(const std::vector<int>& nums) {
+    std::unordered_set<int> seen;
+    int minimumDistinct = 0;
+
+    for (int number : nums) {
+        // Check if the number has been seen before
+        if (seen.count(number) > 0) {
+            // If seen, we need to remove one occurrence
+            minimumDistinct++;
+        } else {
+            // If not seen, add it to the set
+            seen.insert(number);
+        }
     }
 
-    int totalRed = 0;
-    int totalIntensity = 0;
-
-    for (const auto& pixel : pixels) {
-        int r, g, b;
-        std::tie(r, g, b) = pixel;
-        totalRed += r;
-        totalIntensity += (r + g + b);
-    }
-
-    // Avoid division by zero
-    if (totalIntensity == 0) {
-        return 0.0f;
-    }
-
-    float redProportion = static_cast<float>(totalRed) / totalIntensity;
-    return redProportion;
+    return minimumDistinct;
 }

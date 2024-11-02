@@ -7,6 +7,4 @@
  * @param {number} height - The height of the toroidal space.
  * @returns {[number, number]} - An array containing the x and y differences, accounting for wrap-around.
  */
-function toroidalDiff(thisPoint: Point, otherPoint: Point, width: number, height: number): [number, number] {
-    // Function implementation goes here
-}
+function toroidalDiff(thisPoint: Point, otherPoint: Point, width: number, height: number): [number, number] {}

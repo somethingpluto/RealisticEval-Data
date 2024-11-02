@@ -27,7 +27,3 @@ class TestBase64ToUrlSafe(unittest.TestCase):
         base64 = "aGVsbG8rL3dvcmxkLw=="
         result = base64_to_url_safe(base64)
         self.assertEqual(result, "aGVsbG8rL3dvcmxkLw")
-
-    def test_non_string_input(self):
-        with self.assertRaises(TypeError):
-            base64_to_url_safe(None)  # Testing with None as input

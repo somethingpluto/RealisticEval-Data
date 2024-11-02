@@ -13,6 +13,4 @@ function safeSplice<T>(
     amountToRemove: number,
     indexToRemove: number,
     replaceWith?: T
-): T[] {
-    // function implementation
-}
+): T[] {}

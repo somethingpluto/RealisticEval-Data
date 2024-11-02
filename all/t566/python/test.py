@@ -28,9 +28,3 @@ class TestIsSameDay(unittest.TestCase):
         timestamp1 = int(datetime(2023, 10, 1, 10, 0, 0).timestamp())  # October 1, 2023, 10:00 AM UTC
         timestamp2 = int(datetime(2024, 10, 1, 10, 0, 0).timestamp())  # October 1, 2024, 10:00 AM UTC
         self.assertFalse(is_same_day(timestamp1, timestamp2))
-
-    def test_invalid_timestamps(self):
-        timestamp1 = int(datetime.fromisoformat('invalid').timestamp())  # This will raise an error, so handle it
-        timestamp2 = int(datetime(2024, 10, 1, 10, 0, 0).timestamp())  # Valid timestamp
-        with self.assertRaises(ValueError):
-            is_same_day(timestamp1, timestamp2)

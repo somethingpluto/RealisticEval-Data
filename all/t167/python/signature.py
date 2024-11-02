@@ -1,4 +1,4 @@
-def assert999(bit_name: str) -> bool:
+def assert_999(bit_name: str) -> bool:
     """
     Determines whether a given string (assumed to end with ".bit") is a valid 3-digit integer.
     Removes the ".bit" suffix, checks if the remaining part is a number,

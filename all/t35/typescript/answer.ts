@@ -7,18 +7,18 @@
  * @returns True if the point is inside the polygon, False otherwise.
  */
 function isPointInPolygon(point: [number, number], polygon: [number, number][]): boolean {
-    const [x, y] = point;
+    let [x, y] = point;
     let inside = false;
-    const n = polygon.length;
+    let n = polygon.length;
     let [p1x, p1y] = polygon[0];
 
     for (let i = 0; i < n + 1; i++) {
-        const [p2x, p2y] = polygon[i % n];
+        let [p2x, p2y] = polygon[i % n];
         if (y > Math.min(p1y, p2y)) {
             if (y <= Math.max(p1y, p2y)) {
                 if (x <= Math.max(p1x, p2x)) {
                     if (p1y !== p2y) {
-                        const xinters = (y - p1y) * (p2x - p1x) / (p2y - p1y) + p1x;
+                        let xinters = (y - p1y) * (p2x - p1x) / (p2y - p1y) + p1x;
                         if (p1x === p2x || x <= xinters) {
                             inside = !inside;
                         }

@@ -36,13 +36,3 @@ std::string rename_file_path(const std::string& path) {
 
     return new_path;
 }
-
-int main() {
-    // Example usage
-    std::string path = "C:\\Users\\Example\\Documents\\file:name.txt";
-    std::string new_path = rename_file_path(path);
-    std::cout << "Original Path: " << path << std::endl;
-    std::cout << "New Path: " << new_path << std::endl;
-
-    return 0;
-}

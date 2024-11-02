@@ -1,11 +1,3 @@
-#define CATCH_CONFIG_MAIN
-#include "catch.hpp"
-#include <vector>
-#include <stdexcept>
-
-// Assuming lanczos and QuadratureRule have these definitions
-#include "lanczos.h"
-
 TEST_CASE("OrthogonalPolynomial - Lanczos Basic Test", "[lanczos]") {
     std::vector<double> x = {0.0, 0.5, 1.0};
     std::vector<double> w = {0.333, 0.333, 0.334};

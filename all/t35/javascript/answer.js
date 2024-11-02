@@ -7,12 +7,12 @@
  * @returns {boolean} - True if the point is inside the polygon, False otherwise.
  */
 function isPointInPolygon(point, polygon) {
-    const x = point[0];
-    const y = point[1];
+    let x = point[0];
+    let y = point[1];
     let inside = false;
-    const n = polygon.length;
-    const p1x = polygon[0][0];
-    const p1y = polygon[0][1];
+    let n = polygon.length;
+    let p1x = polygon[0][0];
+    let p1y = polygon[0][1];
 
     for (let i = 0; i < n + 1; i++) {
         const p2x = polygon[i % n][0];

@@ -1,12 +1,18 @@
 def is_cron_between_2_and_4_am(cron_expression):
-    # Split the cron expression by spaces
     parts = cron_expression.split(' ')
-
-    # Get the hour part (second part in the cron expression)
     hour_part = parts[1]
 
-    # Split the hour part by comma and convert it to a list of integers
-    hours = list(map(int, hour_part.split(',')))
+    # 检查小时部分
+    hours = set()
 
-    # Check if any hour is between 2 (inclusive) and 4 (exclusive)
-    return any(2 <= hour < 4 for hour in hours)
+    for part in hour_part.split(','):
+        if '-' in part:
+            start, end = map(int, part.split('-'))
+            hours.update(range(start, end + 1))
+        elif part == '*':
+            return False  # 通配符，表示每个小时
+        else:
+            hours.add(int(part))
+
+    # 只检查是否包含 2 或 3
+    return 2 in hours or 3 in hours

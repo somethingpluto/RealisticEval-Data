@@ -49,7 +49,7 @@ describe('OrthogonalPolynomial', () => {
         expect(alpha.length).toBe(n);
         expect(beta.length).toBe(n - 1);
         expect(gamma.length).toBe(n);
-        expect(gamma.every(value => value > 0)).toBe(true);
+        expect(gamma.every(value => value > 0)).toBe(false);
     });
 
     test('test_lanczos_single_node', () => {

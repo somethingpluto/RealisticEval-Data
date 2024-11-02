@@ -5,6 +5,4 @@
  * @param {Array<any>} array - The input array to be adjusted.
  * @returns {Array<any>} - A new array that has been adjusted to the target length.
  */
-function adjustArrayLength<T>(targetLength: number, array: T[]): T[] {
-    // function implementation
-}
+function adjustArrayLength<T>(targetLength: number, array: T[]): T[] {}

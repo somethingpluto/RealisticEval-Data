@@ -6,7 +6,6 @@ import static org.junit.Assert.assertEquals;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.real.temp.Answer;
 
 public class Tester {
 
@@ -26,7 +25,7 @@ public class Tester {
             new ArrayList<>(Arrays.asList(2.0, 5.0, 7.0, 0.0))
         ));
         List<List<Double>> result = Answer.floydWarshallShortestPaths(matrix);
-        assertEquals(expected, result, "Basic functionality test failed");
+        assertEquals("Basic functionality test failed",expected, result);
     }
 
     @Test
@@ -39,7 +38,7 @@ public class Tester {
             new ArrayList<>(Arrays.asList(0.0))
         ));
         List<List<Double>> result = Answer.floydWarshallShortestPaths(matrix);
-        assertEquals(expected, result, "Single vertex graph test failed");
+        assertEquals("Single vertex graph test failed",expected, result);
     }
 
     @Test
@@ -54,7 +53,7 @@ public class Tester {
             new ArrayList<>(Arrays.asList(1.0, 0.0))
         ));
         List<List<Double>> result = Answer.floydWarshallShortestPaths(matrix);
-        assertEquals(expected, result, "Two vertices graph test failed");
+        assertEquals("Two vertices graph test failed",expected, result);
     }
 
     @Test
@@ -69,7 +68,7 @@ public class Tester {
             new ArrayList<>(Arrays.asList(Double.POSITIVE_INFINITY, 0.0))
         ));
         List<List<Double>> result = Answer.floydWarshallShortestPaths(matrix);
-        assertEquals(expected, result, "Large infinite weights test failed");
+        assertEquals("Large infinite weights test failed", expected, result );
     }
 
     @Test
@@ -86,6 +85,6 @@ public class Tester {
             new ArrayList<>(Arrays.asList(-2.0, -1.0, -2.0))
         ));
         List<List<Double>> result = Answer.floydWarshallShortestPaths(matrix);
-        assertEquals(expected, result, "Negative cycle test failed");
+        assertEquals("Negative cycle test failed",expected, result);
     }
 }

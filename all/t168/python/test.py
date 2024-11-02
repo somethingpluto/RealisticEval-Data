@@ -5,13 +5,12 @@ from unittest.mock import patch
 
 class TestFormatDate(unittest.TestCase):
 
-    @patch('your_module.datetime')
     def setUp(self, mock_datetime):
         # Set the system time to a fixed date for consistent testing
         mock_datetime.now.return_value = datetime(2024, 8, 25, 12, 0, 0)
 
     def test_one_day_ago(self):
-        date_string = '2024-08-24T12:00:00'
+        date_string = '2024-08-24T12:00:00' 
         result = format_date(date_string)
         self.assertIn(result, ['1 day ago', '24 hours ago'])
 

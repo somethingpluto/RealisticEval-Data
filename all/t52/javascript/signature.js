@@ -1,3 +1,4 @@
+import path from 'path';
 /**
  * Renames a Windows file path by replacing colons in the filename with underscores.
  * 

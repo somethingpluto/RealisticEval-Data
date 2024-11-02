@@ -1,3 +1,6 @@
+from typing import List, Optional
+
+
 class GitDiffChange:
     def __init__(self, diff: Optional[str] = None, code: Optional[str] = None):
         self.diff = diff

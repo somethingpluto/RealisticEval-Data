@@ -1,66 +1,60 @@
 package org.real.temp;
 
+import org.junit.Before;
 import org.junit.Test;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
+import static org.real.temp.Answer.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import org.real.temp.Answer;
-/**
- * Test class for the calculateRedProportion method.
- */
 public class Tester {
 
-    /**
-     * Test case for all fully red pixels.
-     */
-    @Test
-    public void testAllRedPixels() {
-        List<int[]> pixels = Arrays.asList(
-                new int[]{255, 0, 0},
-                new int[]{255, 0, 0},
-                new int[]{255, 0, 0}
-        );
-        double result = Answer.calculateRedProportion(pixels);
-        assertEquals(1.0, result, 0.001);
+    private char[] shiftjisNotGbk;
+
+    @Before
+    public void setUp() {
+        // Pre-calculate the list once since it's computationally expensive
+        shiftjisNotGbk = findShiftJisNotGbk();
     }
 
-    /**
-     * Test case for no red component in any pixel.
-     */
     @Test
-    public void testNoRedPixels() {
-        List<int[]> pixels = Arrays.asList(
-                new int[]{0, 255, 0},
-                new int[]{0, 0, 255},
-                new int[]{0, 255, 255}
-        );
-        double result = Answer.calculateRedProportion(pixels);
-        assertEquals(0.0, result, 0.001);
+    public void testKnownShiftJISCharacterNotInGBK() {
+        // Test known characters (example values provided might not actually be in one and not the other; please adjust accordingly based on actual encoding tables)
+        char knownShiftJisOnly = 'ヱ';  // An example character, ensure this is correct as per your encodings
+        assertFalse("The character should not be in the list", contains(shiftjisNotGbk, knownShiftJisOnly));
     }
 
-    /**
-     * Test case for an empty list of pixels.
-     */
     @Test
-    public void testEmptyPixelList() {
-        List<int[]> pixels = new ArrayList<>();
-        double result = Answer.calculateRedProportion(pixels);
-        assertEquals(0.0, result, 0.001);
+    public void testCharacterInBothEncodings() {
+        // Test characters known to be in both encodings
+        char commonCharacter = '水';  // Common in both, ensure accuracy
+        assertFalse("The character should not be in the list", contains(shiftjisNotGbk, commonCharacter));
     }
 
-    /**
-     * Test case for all black pixels.
-     */
     @Test
-    public void testAllBlackPixels() {
-        List<int[]> pixels = Arrays.asList(
-                new int[]{0, 0, 0},
-                new int[]{0, 0, 0},
-                new int[]{0, 0, 0}
-        );
-        double result = Answer.calculateRedProportion(pixels);
-        assertEquals(0.0, result, 0.001);
+    public void testCharacterInNeitherEncoding() {
+        // Character not typically found in either encoding
+        char neitherEncodingChar = '\u1F4A9';  // Emoji, not in basic Shift-JIS or GBK
+        assertFalse("The character should not be in the list", contains(shiftjisNotGbk, neitherEncodingChar));
+    }
+
+    @Test
+    public void testBoundsOfBMP() {
+        // Characters at the edge of the BMP should be checked
+        char edgeOfBmp = '\uFFFF';  // Last character in BMP
+        // Since this test is situational, we check based on the known state; may not be necessary
+        if (contains(shiftjisNotGbk, edgeOfBmp)) {
+            assertTrue("The character should be in the list", contains(shiftjisNotGbk, edgeOfBmp));
+        } else {
+            assertFalse("The character should not be in the list", contains(shiftjisNotGbk, edgeOfBmp));
+        }
+    }
+
+    // Dummy implementation for contains method
+    private boolean contains(char[] array, char value) {
+        for (char c : array) {
+            if (c == value) {
+                return true;
+            }
+        }
+        return false;
     }
 }

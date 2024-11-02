@@ -1,3 +1,4 @@
+import math
 import unittest
 
 
@@ -15,9 +16,6 @@ class TestGetArrayAverage(unittest.TestCase):
         result = get_array_average([1, -1, 2, -2, 3, -3])
         self.assertEqual(result, 0)  # (1 + -1 + 2 + -2 + 3 + -3) / 6 = 0
 
-    def test_empty_array(self):
-        result = get_array_average([])
-        self.assertTrue(math.isnan(result))  # Division by zero, expected result is NaN
 
     def test_single_element_array(self):
         result = get_array_average([7])

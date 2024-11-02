@@ -1,4 +1,8 @@
-function reorderData(imageScores: number[], imageNames: string[], imageIDs: string[]): { resultScores: number[], resultNames: string[], resultIDs: string[] } {
+function reorderData(
+    imageScores: number[], 
+    imageNames: string[], 
+    imageIDs: string[]
+): { resultScores: number[], resultNames: string[], resultIDs: string[] } {
     // Combine scores, names, and IDs into an array of objects
     const imageData = imageScores.map((score, index) => ({
         score,

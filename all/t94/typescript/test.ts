@@ -1,5 +1,3 @@
-import { createCircleOfFifths } from './path-to-your-function'; // Adjust the import path as necessary
-
 describe('createCircleOfFifths', () => {
     test('should return 12 notes in the circle', () => {
         const result: string[] = createCircleOfFifths('C');

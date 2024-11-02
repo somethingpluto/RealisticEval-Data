@@ -17,8 +17,8 @@ def have_same_unique_elements(array1: List[Any], array2: List[Any]) -> bool:
     >>> have_same_unique_elements(['a', 'b'], ['a', 'c'])
     False
     """
-    set1 = set(arr1)
-    set2 = set(arr2)
+    set1 = set(array1)
+    set2 = set(array2)
     
     if len(set1) != len(set2):
         return False

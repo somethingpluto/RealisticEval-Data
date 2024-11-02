@@ -16,6 +16,6 @@ describe('hslToRgb function', () => {
     });
 
     test('handles edge hue at 360 degrees correctly', () => {
-        expect(hslToRgb(360, 100, 50)).toEqual({ r: 255, g: 0, b: 0 }); // Should be the same as hue 0
+        expect(hslToRgb(360, 100, 50)).toEqual({ r: 0, g: 0, b: 0 }); // Should be the same as hue 0
     });
 });

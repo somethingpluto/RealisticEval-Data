@@ -1,6 +1,5 @@
 from decimal import Decimal, getcontext
 
-
 def compute_pi(digits: int) -> str:
     """
     Computing PI (π) Using Gauss-Legendre Algorithm with High-precision Arithmetic Library.
@@ -12,35 +11,21 @@ def compute_pi(digits: int) -> str:
         str: The value of π to the specified number of digits.
     """
     # Set the precision for Decimal calculations
-    getcontext().prec = digits + 10  # Extra precision to ensure accuracy
-    one = Decimal(1)
-    two = Decimal(2)
-    four = Decimal(4)
+    getcontext().prec = digits + 5  # Extra digits to ensure accuracy in calculations
 
-    # Initialize variables
-    a = one
-    b = one / two ** 0.5  # b0 = 1 / sqrt(2)
-    t = one / four  # t0 = 1/4
-    p = one
-    prev_pi = Decimal(0)
-    pi = None
+    # Initial values
+    a = Decimal(1)  # a_0
+    b = Decimal(1) / Decimal(2).sqrt()  # b_0
+    t = Decimal(1) / Decimal(4)  # t_0
+    p = Decimal(1)  # p_0
 
-    # Iterate until the desired precision is reached
-    for _ in range(10):
-        a_next = (a + b) / two
-        b_next = (a * b) ** 0.5
-        diff = a - a_next
-        t_next = t - (p * diff ** 2)
-        p_next = p * two
-        a, b, t, p = a_next, b_next, t_next, p_next
+    # Iterate to improve precision
+    for _ in range(100):  # Sufficiently large number of iterations
+        a_next = (a + b) / 2
+        b = (a * b).sqrt()
+        t -= p * (a - a_next) ** 2
+        a = a_next
+        p *= 2
 
-        pi = (a + b) ** 2 / (t * four)
-
-        # Check if the desired precision has been reached
-        if pi == prev_pi:
-            break
-
-        prev_pi = pi
-
-    # Return π to the specified number of digits
-    return str(pi.quantize(Decimal(10) ** -digits))  # Format to required precision
+    pi = (a + b) ** 2 / (4 * t)
+    return str(pi)[:digits + 2]  # Return π with the requested number of digits

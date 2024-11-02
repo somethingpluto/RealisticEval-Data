@@ -1,4 +1,4 @@
-function isSignificantNumber(input: unknown): boolean {
+function isSignificantNumber(input: string): boolean {
     // Check if input is a string
     if (typeof input !== 'string') {
         return false;

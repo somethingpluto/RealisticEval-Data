@@ -1,6 +1,6 @@
 describe('removeAds', () => {
     beforeEach(() => {
-        // Reset the DOM before each test
+        // Reset the DOM before each test.js
         document.body.innerHTML = '';
     });
 
@@ -87,3 +87,4 @@ describe('removeAds', () => {
         expect(listItems[1].textContent).toBe('Regular Item');
     });
 });
+

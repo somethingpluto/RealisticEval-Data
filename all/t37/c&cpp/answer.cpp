@@ -78,24 +78,3 @@ std::vector<double> operator-(const std::vector<double>& v, const std::vector<do
     }
     return result;
 }
-
-int main() {
-    // Example of how to use the code
-    QuadratureRule qr = { {0.0, 1.0, 2.0}, {1.0, 2.0, 1.5} };
-    int n = 3;
-    try {
-        OrthogonalPolynomial op = lanczos(n, qr);
-        // Print results
-        std::cout << "Alpha: ";
-        for (auto a : op.alpha) std::cout << a << " ";
-        std::cout << "\nBeta: ";
-        for (auto b : op.beta) std::cout << b << " ";
-        std::cout << "\nGamma: ";
-        for (auto g : op.gamma) std::cout << g << " ";
-        std::cout << "\n";
-    } catch (const std::invalid_argument& e) {
-        std::cerr << e.what() << "\n";
-    }
-
-    return 0;
-}

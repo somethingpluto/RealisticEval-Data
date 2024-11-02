@@ -8,6 +8,4 @@ import { JSDOM } from 'jsdom';
 const dom = new JSDOM();
 const { document } = dom.window;
 
-function replaceHtmlEntities(htmlString: string): string {
-    // Function implementation goes here
-}
+function replaceHtmlEntities(htmlString: string): string {}

@@ -16,15 +16,3 @@ std::pair<std::string, std::string> align_lines_left(const std::string& str1, co
 
     return {aligned_str1, aligned_str2};
 }
-
-int main() {
-    // Example usage
-    std::string str1 = "Hello";
-    std::string str2 = "World!";
-    auto [aligned_str1, aligned_str2] = align_lines_left(str1, str2);
-
-    std::cout << "Aligned str1: " << aligned_str1 << std::endl;
-    std::cout << "Aligned str2: " << aligned_str2 << std::endl;
-
-    return 0;
-}

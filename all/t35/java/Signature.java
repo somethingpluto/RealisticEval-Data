@@ -6,4 +6,13 @@
  * @param polygon A list of tuples (x, y) representing the vertices of the polygon.
  * @return True if the point is inside the polygon, False otherwise.
  */
+static class Point {
+    double x;
+    double y;
+
+    Point(double x, double y) {
+        this.x = x;
+        this.y = y;
+    }
+}
 public static boolean isPointInPolygon(Point point, List<Point> polygon) {}

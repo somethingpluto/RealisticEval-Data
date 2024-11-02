@@ -1,4 +1,4 @@
-const moment = require('moment'); // You need to install moment.js using npm or include it in your HTML file
+import moment from 'moment'
 /**
  * Returns the current time information including year, month, week of the month, and day of the week.
  * Optionally takes a date object for testing purposes.

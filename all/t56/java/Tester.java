@@ -1,14 +1,9 @@
 package org.real.temp;
 
-import org.junit.Before; // JUnit 4 Before annotation
-import org.junit.Test; // JUnit 4 Test annotation
-import static org.junit.Assert.*; // JUnit 4 assertion methods
-
-import java.nio.charset.Charset;
-import java.nio.charset.CharacterCodingException;
-import java.nio.charset.CharsetEncoder;
-import java.util.ArrayList;
-import java.util.List;
+import org.junit.Before;
+import org.junit.Test;
+import static org.junit.Assert.*;
+import static org.real.temp.Answer.*;
 
 public class Tester {
 

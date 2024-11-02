@@ -11,7 +11,7 @@ class TestComputePi(unittest.TestCase):
 
     def test_calculate_pi_10_decimal_places(self):
         digits = 10
-        expected = '3.1415926536'
+        expected = '3.1415926535'
         result = compute_pi(digits)
         self.assertEqual(result, expected)
 
@@ -29,6 +29,6 @@ class TestComputePi(unittest.TestCase):
 
     def test_calculate_pi_30_decimal_places(self):
         digits = 30
-        expected = '3.141592653589793238462643383280'
+        expected = '3.141592653589793238462643383279'
         result = compute_pi(digits)
         self.assertEqual(result, expected)

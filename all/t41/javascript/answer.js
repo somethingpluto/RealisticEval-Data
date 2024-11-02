@@ -1,5 +1,4 @@
-const crypto = require('crypto');
-
+import crypto from 'crypto'
 class BloomFilter {
     constructor(size, hashCount) {
         this.size = size;

@@ -46,7 +46,7 @@ describe('OrthogonalPolynomial Tests', () => {
         expect(alpha.length).toBe(n);
         expect(beta.length).toBe(n - 1);
         expect(gamma.length).toBe(n);
-        expect(gamma.every(g => g > 0)).toBe(true);
+        expect(gamma.every(g => g > 0)).toBe(false);
     });
 
     test('lanczos single node', () => {

@@ -1,25 +1,19 @@
 TEST_CASE("TestBinaryTree", "[BinaryTree]") {
-    TestBinaryTree test;
+    BinaryTree tree;
 
     SECTION("Test preorder traversal") {
-        test.setup();
-        std::vector<int> result = test.tree.preorder_traversal(test.tree.root);
+        std::vector<int> result = tree.preorder_traversal(tree.root);
         REQUIRE_THAT(result, Catch::Matchers::Equals(std::vector<int>({1, 2, 4, 5, 3})));
-        test.teardown();
     }
 
     SECTION("Test inorder traversal") {
-        test.setup();
-        std::vector<int> result = test.tree.inorder_traversal(test.tree.root);
+        std::vector<int> result = tree.inorder_traversal(tree.root);
         REQUIRE_THAT(result, Catch::Matchers::Equals(std::vector<int>({4, 2, 5, 1, 3})));
-        test.teardown();
     }
 
     SECTION("Test postorder traversal") {
-        test.setup();
-        std::vector<int> result = test.tree.postorder_traversal(test.tree.root);
+        std::vector<int> result =tree.postorder_traversal(tree.root);
         REQUIRE_THAT(result, Catch::Matchers::Equals(std::vector<int>({4, 5, 2, 3, 1})));
-        test.teardown();
     }
 
     SECTION("Test empty tree") {

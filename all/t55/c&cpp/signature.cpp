@@ -8,4 +8,4 @@
  * @param nums The vector of integers.
  * @return Minimum number of moves to make every value in nums unique.
  */
-int min_removals_to_make_unique(const std::vector<int>& nums) {
+int min_removals_to_make_unique(const std::vector<int>& nums) {}

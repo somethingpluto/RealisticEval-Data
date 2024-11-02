@@ -1,3 +1,6 @@
+import unittest
+
+
 class TestBackgroundBrightness(unittest.TestCase):
     def test_dark_background(self):
         """Test for a dark background color."""

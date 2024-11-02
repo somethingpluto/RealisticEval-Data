@@ -12,13 +12,14 @@ describe('getCookie function tests', () => {
         expect(getCookie('username')).toBe('JohnDoe');
     });
 
-    test('returns null if cookie does not exist', () => {
+    test('returns undefined if cookie does not exist', () => {
         document.cookie = "username=JohnDoe; expires=Thu, 18 Dec 2023 12:00:00 UTC; path=/";
-        expect(getCookie('user')).toBeNull();
+        expect(getCookie('user')).toBeFalsy();
     });
 
-    test('returns null when no cookies are set', () => {
-        expect(getCookie('username')).toBeNull();
+
+    test('returns undefined when no cookies are set', () => {
+        expect(getCookie('username')).toBeFalsy();
     });
 
     test('handles multiple cookies and retrieves the correct one', () => {

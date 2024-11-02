@@ -17,11 +17,9 @@ public class Answer {
      * @return The text with phone numbers replaced by [PHONE_NUM].
      */
     public static String replacePhoneNumbers(String text) {
-        // Define a regex pattern to match phone numbers
-        // This pattern matches optional country codes, spaces, dashes, and brackets commonly found in phone numbers
-        String phonePattern = "\\b(?:\\+\\d{1,2}\\s?)?(\\d{1,4}[-.\\s]?)?\\(？\\d{1,4}\\)?[-.\\s]?\\d{1,9}[-.\\s]?\\d{1,9}\\b";
+        String phonePattern = "\\b(?:\\+\\d{1,2}\\s?)?(\\d{1,4}[-.\\s]?)?\\(?\\d{1,4}\\)?[-.\\s]?\\d{1,9}[-.\\s]?\\d{1,9}\\b"
+                ;
 
-        // Replace all matches in the text with [PHONE_NUM]
         Pattern pattern = Pattern.compile(phonePattern);
         Matcher matcher = pattern.matcher(text);
         String replacedText = matcher.replaceAll("[PHONE_NUM]");

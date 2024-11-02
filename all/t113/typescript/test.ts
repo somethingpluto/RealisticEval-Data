@@ -1,5 +1,5 @@
 describe('getCSSFromSheet', () => {
-    let styleSheet: CSSStyleSheet | null;
+    let styleSheet;
 
     beforeEach(() => {
         // Create a style element with some CSS rules for testing
@@ -9,7 +9,7 @@ describe('getCSSFromSheet', () => {
             p { color: blue; }
         `));
         document.head.appendChild(style);
-        styleSheet = style.sheet as CSSStyleSheet;
+        styleSheet = style.sheet;
     });
 
     afterEach(() => {
@@ -17,10 +17,11 @@ describe('getCSSFromSheet', () => {
         document.head.innerHTML = '';
     });
 
+
     test('Empty Stylesheet: should return an empty string', () => {
         const emptyStyle = document.createElement('style');
         document.head.appendChild(emptyStyle);
-        const emptyStyleSheet = emptyStyle.sheet as CSSStyleSheet;
+        const emptyStyleSheet = emptyStyle.sheet;
 
         const cssText = getCSSFromSheet(emptyStyleSheet);
         expect(cssText).toBe('');
@@ -28,8 +29,8 @@ describe('getCSSFromSheet', () => {
 
     test('Invalid Input: should return an empty string for non-CSSStyleSheet input', () => {
         expect(getCSSFromSheet(null)).toBe('');
-        expect(getCSSFromSheet({} as CSSStyleSheet)).toBe('');
-        expect(getCSSFromSheet('not a stylesheet' as unknown as CSSStyleSheet)).toBe('');
+        expect(getCSSFromSheet({})).toBe('');
+        expect(getCSSFromSheet('not a stylesheet')).toBe('');
     });
 
     test('Cross-Origin Restrictions: should handle restricted stylesheets gracefully', () => {
@@ -40,7 +41,7 @@ describe('getCSSFromSheet', () => {
         document.head.appendChild(link);
 
         // Accessing cssRules of a cross-origin stylesheet should throw an error
-        const restrictedSheet = link.sheet as CSSStyleSheet;
+        const restrictedSheet = link.sheet;
 
         expect(() => {
             getCSSFromSheet(restrictedSheet);
@@ -56,7 +57,7 @@ describe('getCSSFromSheet', () => {
         styleElement.textContent = 'div { font-size: 16px; }';
         document.head.appendChild(styleElement);
 
-        const cssText = getCSSFromSheet(styleElement.sheet as CSSStyleSheet);
+        const cssText = getCSSFromSheet(styleElement.sheet);
         expect(cssText).toBe('div {font-size: 16px;}');
     });
 });

@@ -1,19 +1,4 @@
-def greet(name):
-    """
-    Greets someone with a personalized message.
-
-    Logs a personalized greeting message, using the provided name as input.
-
-    Args:
-        name (str): The name to include in the personalized message.
-    """
-    if not isinstance(name, str) or not name.strip():
-        print('Hello, Guest!')
-    else:
-        print(f'Hello, {name.strip()}!')
-
-
-def sum(arr):
+def calculate_sum(arr):
     """
     Calculates the sum of all elements in an array.
 

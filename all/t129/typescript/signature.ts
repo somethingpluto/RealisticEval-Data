@@ -4,6 +4,4 @@
  * @param {string} str - The URL string to validate.
  * @returns {boolean} True if the URL is valid, false otherwise.
  */
-function validURL(str: string): boolean {
-
-}
+function validURL(str: string): boolean {}

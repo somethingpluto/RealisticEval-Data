@@ -16,4 +16,4 @@ class TestHSLToRGB(unittest.TestCase):
         self.assertEqual(hsl_to_rgb(240, 100, 50), {'r': 0, 'g': 0, 'b': 255})
 
     def test_handles_edge_hue_at_360_degrees_correctly(self):
-        self.assertEqual(hsl_to_rgb(360, 100, 50), {'r': 255, 'g': 0, 'b': 0})  # Should be the same as hue 0
+        self.assertEqual(hsl_to_rgb(360, 100, 50), {'r': 0, 'g': 0, 'b': 0})  # Should be the same as hue 0

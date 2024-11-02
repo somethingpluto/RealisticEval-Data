@@ -16,16 +16,3 @@ std::vector<std::string> remove_triple_backticks(const std::vector<std::string>&
     }
     return processed_list;
 }
-
-int main() {
-    // Example usage
-    std::vector<std::string> string_list = {"Hello ``` World", "This is a test ```", "No backticks here"};
-    std::vector<std::string> result = remove_triple_backticks(string_list);
-
-    // Output the results
-    for (const auto& s : result) {
-        std::cout << s << std::endl;
-    }
-
-    return 0;
-}

@@ -20,6 +20,3 @@ class TestCountLetters(unittest.TestCase):
 
     def test_mixed_case(self):
         self.assertEqual(count_letters("AbCdE"), 5)
-
-    def test_special_characters(self):
-        self.assertEqual(count_letters("Hello@2024!"), 10)

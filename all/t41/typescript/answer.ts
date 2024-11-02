@@ -1,43 +1,43 @@
+import { createHash } from 'crypto';
+import BitArray from 'bitarray-js';
+
 class BloomFilter {
-    private size: number;
-    private hashCount: number;
-    private bitArray: boolean[];
+  private size: number;
+  private hashCount: number;
+  private bitArray: BitArray;
 
-    constructor(size: number, hashCount: number) {
-        this.size = size;
-        this.hashCount = hashCount;
-        this.bitArray = new Array(this.size).fill(false);
-    }
+  constructor(size: number, hashCount: number) {
+    this.size = size;
+    this.hashCount = hashCount;
+    this.bitArray = new BitArray(size);
+    this.bitArray.fill(false);
+  }
 
-    public add(item: string): void {
-        // Add an item to the bloom filter
-        const hashes = this.generateHashes(item);
-        for (const hash of hashes) {
-            this.bitArray[hash % this.size] = true;
-        }
+  private *hashes(item: string): Generator<number> {
+    // Generate multiple hashes for an item
+    const itemBuffer = Buffer.from(item, 'utf-8');
+    for (let i = 0; i < this.hashCount; i++) {
+      // Create a new hash for each hash count using a seed
+      const hashResult = createHash('sha256').update(itemBuffer).digest('hex');
+      const hashInt = parseInt(hashResult, 16) + i;
+      yield hashInt % this.size;
     }
+  }
 
-    public has(item: string): boolean {
-        // Check if an item might be in the bloom filter
-        const hashes = this.generateHashes(item);
-        return hashes.every(hash => this.bitArray[hash % this.size]);
+  add(item: string): void {
+    // Add an item to the bloom filter
+    for (const hashValue of this.hashes(item)) {
+      this.bitArray.set(hashValue, true);
     }
+  }
 
-    private generateHashes(item: string): number[] {
-        // Generate hash values for the item
-        const hashes: number[] = [];
-        for (let i = 0; i < this.hashCount; i++) {
-            hashes.push(this.hashFunction(item, i));
-        }
-        return hashes;
+  contains(item: string): boolean {
+    // Check if an item is in the bloom filter
+    for (const hashValue of this.hashes(item)) {
+      if (!this.bitArray.get(hashValue)) {
+        return false;
+      }
     }
-
-    private hashFunction(item: string, seed: number): number {
-        // Simple hash function using a seed
-        let hash = 0;
-        for (let i = 0; i < item.length; i++) {
-            hash = (hash * 31 + item.charCodeAt(i)) ^ seed;
-        }
-        return Math.abs(hash);
-    }
+    return true;
+  }
 }

@@ -1,32 +1,24 @@
 #define CATCH_CONFIG_MAIN
 #include "./lib/catch.hpp"
 #include "./solution.cpp"
-TEST_CASE("Test calculate_red_proportion", "[calculate_red_proportion]") {
-    SECTION("All red pixels") {
-        // All pixels are fully red
-        std::vector<std::tuple<int, int, int>> pixels = {{255, 0, 0}, {255, 0, 0}, {255, 0, 0}};
-        float result = calculate_red_proportion(pixels);
-        REQUIRE_THAT(result, Catch::Matchers::WithinAbs(1.0f, 0.001));
+TEST_CASE("Test cases for min_removals_to_make_unique", "[min_removals_to_make_unique]") {
+    SECTION("Test with a basic array where multiple removals are needed") {
+        REQUIRE(min_removals_to_make_unique({3, 3, 1, 2, 2, 1}) == 3);
     }
 
-    SECTION("No red pixels") {
-        // No red component in any pixel
-        std::vector<std::tuple<int, int, int>> pixels = {{0, 255, 0}, {0, 0, 255}, {0, 255, 255}};
-        float result = calculate_red_proportion(pixels);
-        REQUIRE_THAT(result, Catch::Matchers::WithinAbs(0.0f, 0.001));
+    SECTION("Test an array where all elements are identical") {
+        REQUIRE(min_removals_to_make_unique({4, 4, 4, 4}) == 3);
     }
 
-    SECTION("Empty pixel list") {
-        // Empty list of pixels
-        std::vector<std::tuple<int, int, int>> pixels = {};
-        float result = calculate_red_proportion(pixels);
-        REQUIRE_THAT(result, Catch::Matchers::WithinAbs(0.0f, 0.001));
+    SECTION("Test an array where all elements are already unique") {
+        REQUIRE(min_removals_to_make_unique({1, 2, 3, 4}) == 0);
     }
 
-    SECTION("All black pixels") {
-        // All pixels are black
-        std::vector<std::tuple<int, int, int>> pixels = {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}};
-        float result = calculate_red_proportion(pixels);
-        REQUIRE_THAT(result, Catch::Matchers::WithinAbs(0.0f, 0.001));
+    SECTION("Test an empty array") {
+        REQUIRE(min_removals_to_make_unique({}) == 0);
+    }
+
+    SECTION("Test a more complex case with a larger array") {
+        REQUIRE(min_removals_to_make_unique({1, 2, 2, 3, 3, 3, 4, 4, 4, 4}) == 6);
     }
 }

@@ -1,3 +1,6 @@
+import os
+
+
 def find_markdown_files(dir_path):
     """
     Recursively searches for Markdown files in the specified directory.

@@ -4,6 +4,4 @@
  * @param {number[]} midiNotes - An array of MIDI note numbers.
  * @returns {Object} An object containing arrays of octaves and root notes.
  */
-function separateOctaveAndRoot(midiNotes: number[]): { octaveNotes: number[]; rootNotes: number[] } {
-    // Implementation will go here
-}
+function separateOctaveAndRoot(midiNotes: number[]): { octaveNotes: number[]; rootNotes: number[] } {}

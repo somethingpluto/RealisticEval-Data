@@ -1,51 +1,54 @@
 package org.real.temp;
 
-import java.util.List;
-import java.util.Arrays;
+import java.nio.charset.Charset;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.CharsetEncoder;
 
 public class Answer {
 
-    /**
-     * Calculate the proportion of red in a list of pixels.
-     *
-     * @param pixels A list of pixels, where each pixel is represented as an array of [R, G, B].
-     * @return The proportion of red in the list of pixels, as a value between 0 and 1.
-     */
-    public static double calculateRedProportion(List<int[]> pixels) {
-        if (pixels.isEmpty()) {
-            return 0.0;
+    public static void main(String[] args) {
+        String[] uniqueToShiftJis = findShiftJisNotGbk();
+        for (String character : uniqueToShiftJis) {
+            System.out.println(character);
         }
-
-        int totalRed = 0;
-        int totalIntensity = 0;
-
-        for (int[] pixel : pixels) {
-            int r = pixel[0];
-            int g = pixel[1];
-            int b = pixel[2];
-
-            totalRed += r;
-            totalIntensity += (r + g + b);
-        }
-
-        // Avoid division by zero
-        if (totalIntensity == 0) {
-            return 0.0;
-        }
-
-        double redProportion = (double) totalRed / totalIntensity;
-        return redProportion;
     }
 
-    public static void main(String[] args) {
-        List<int[]> pixels = Arrays.asList(
-                new int[]{255, 0, 0}, // Red
-                new int[]{0, 255, 0}, // Green
-                new int[]{0, 0, 255}, // Blue
-                new int[]{255, 255, 255} // White
-        );
+    public static String[] findShiftJisNotGbk() {
+        // List to store characters that are in Shift-JIS but not in GBK
+        String[] uniqueToShiftJis = new String[65536];
+        int count = 0;
 
-        double result = calculateRedProportion(pixels);
-        System.out.println("Red Proportion: " + result);
+        // Iterate over a range of Unicode code points
+        // The BMP goes up to U+FFFF, which is 65535 in decimal
+        for (int codepoint = 0; codepoint < 65536; codepoint++) {
+            char character = (char) codepoint;
+
+            try {
+                // Try encoding the character in Shift-JIS
+                if (isEncodable(character, "Shift_JIS")) {
+                    try {
+                        // Try encoding the character in GBK
+                        if (!isEncodable(character, "GBK")) {
+                            // If it fails, the character is not representable in GBK but is in Shift-JIS
+                            uniqueToShiftJis[count++] = Character.toString(character);
+                        }
+                    } catch (CharacterCodingException e) {
+                        // If it fails, the character is not representable in GBK but is in Shift-JIS
+                        uniqueToShiftJis[count++] = Character.toString(character);
+                    }
+                }
+            } catch (CharacterCodingException e) {
+                // If it fails, the character is not representable in Shift-JIS, so we skip it
+                continue;
+            }
+        }
+
+        // Trim the array to the actual size
+        return java.util.Arrays.copyOf(uniqueToShiftJis, count);
+    }
+
+    private static boolean isEncodable(char character, String charsetName) throws CharacterCodingException {
+        CharsetEncoder encoder = Charset.forName(charsetName).newEncoder();
+        return encoder.canEncode(character);
     }
 }

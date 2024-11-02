@@ -24,7 +24,7 @@ int getWeekOfMonth(const std::tm& date) {
 }
 
 // Function to get current date information
-std::map<std::string, std::string> getCurrentDateInfo(const std::tm* test_date = nullptr) {
+std::map<std::string, std::string> get_current_date_info(const std::tm* test_date = nullptr) {
     std::tm today;
     if (test_date == nullptr) {
         time_t rawTime;
@@ -48,13 +48,4 @@ std::map<std::string, std::string> getCurrentDateInfo(const std::tm* test_date =
     };
 
     return result;
-}
-
-int main() {
-    // Example usage
-    auto currentDateInfo = getCurrentDateInfo();
-    for (const auto& info : currentDateInfo) {
-        std::cout << info.first << ": " << info.second << std::endl;
-    }
-    return 0;
 }

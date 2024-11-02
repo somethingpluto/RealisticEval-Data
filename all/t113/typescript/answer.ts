@@ -1,4 +1,4 @@
-function getCSSFromSheet(sheet: CSSStyleSheet): string {
+function getCSSFromSheet(sheet: CSSStyleSheet | null): string {
     // Check if the sheet is a valid CSSStyleSheet and has rules we can access
     if (!(sheet instanceof CSSStyleSheet) || !sheet.cssRules) {
         return '';

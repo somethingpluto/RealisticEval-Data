@@ -1,8 +1,7 @@
 #include <iostream>
 #include <vector>
-#include <utility> // For std::pair
+#include <utility>
 
-// Function to determine if a point (x, y) is inside a given polygon
 bool is_point_in_polygon(const std::pair<double, double>& point, const std::vector<std::pair<double, double>>& polygon) {
     double x = point.first;
     double y = point.second;
@@ -30,15 +29,4 @@ bool is_point_in_polygon(const std::pair<double, double>& point, const std::vect
     }
 
     return inside;
-}
-
-int main() {
-    // Example usage
-    std::pair<double, double> point = {3.0, 3.0};
-    std::vector<std::pair<double, double>> polygon = {{0.0, 0.0}, {5.0, 0.0}, {5.0, 5.0}, {0.0, 5.0}};
-
-    bool result = is_point_in_polygon(point, polygon);
-    std::cout << "Is the point inside the polygon? " << (result ? "Yes" : "No") << std::endl;
-
-    return 0;
 }

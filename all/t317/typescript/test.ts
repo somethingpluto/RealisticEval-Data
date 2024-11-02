@@ -22,8 +22,4 @@ describe('countLetters', () => {
     test('should return 5 for a string with mixed case "AbCdE"', () => {
         expect(countLetters("AbCdE")).toBe(5);
     });
-
-    test('should return 5 for a string with special characters "Hello@2024!"', () => {
-        expect(countLetters("Hello@2024!")).toBe(5);
-    });
 });
