@@ -1,99 +1,84 @@
-import math
+import csv
+from typing import List
 
-class Point:
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
 
-class Ray:
-    def __init__(self, origin, direction):
-        self.origin = origin  # Starting point of the ray
-        self.direction = direction  # Direction of the ray (should be normalized)
+def read_csv(file_path: str) -> List[List[str]]:
+    """
+    Reads a CSV file and parses each line into a list of strings.
 
-class Circle:
-    def __init__(self, center, radius):
-        self.center = center  # Center of the circle
-        self.radius = radius  # Radius of the circle
-
-def intersects(ray, circle):
-    # Calculate the coefficients for the quadratic equation
-    dx = ray.direction.x
-    dy = ray.direction.y
-    cx = circle.center.x
-    cy = circle.center.y
-    px = ray.origin.x
-    py = ray.origin.y
-
-    a = dx * dx + dy * dy
-    b = 2 * (dx * (px - cx) + dy * (py - cy))
-    c = (px - cx) * (px - cx) + (py - cy) * (py - cy) - circle.radius * circle.radius
-
-    # Calculate the discriminant
-    discriminant = b * b - 4 * a * c
-
-    # No intersection if discriminant is negative
-    if discriminant < 0:
-        return False
-
-    # Calculate the two possible intersection points (t values)
-    sqrt_discriminant = math.sqrt(discriminant)
-    t1 = (-b - sqrt_discriminant) / (2 * a)
-    t2 = (-b + sqrt_discriminant) / (2 * a)
-
-    # Check if either intersection point is on the ray (t >= 0)
-    return t1 >= 0 or t2 >= 0
+    :param file_path: The path to the CSV file.
+    :return: A list of string lists, where each list represents a line from the CSV.
+    """
+    csv_data = []
+    # Read the CSV file
+    with open(file_path, mode='r', newline='', encoding='utf-8') as file:
+        reader = csv.reader(file)
+        # Parse each line into a list of strings
+        for row in reader:
+            csv_data.append(row)
+    return csv_data
+import os
 import unittest
 
 
-class Point:
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
+class TestAnswer(unittest.TestCase):
+    def setUp(self):
+        # Create a temporary CSV file for testing
+        self.test_file_path = 'test.csv'
+        sample_csv_content = "Name,Age,Location\n" + \
+                             "Alice,30,New York\n" + \
+                             "Bob,25,Los Angeles\n" + \
+                             "Charlie,35,Chicago\n"
+        with open(self.test_file_path, 'w') as file:
+            file.write(sample_csv_content)
 
+    def test_read_valid_csv(self):
+        result = read_csv(self.test_file_path)
+        self.assertEqual(len(result), 4)  # 4 lines including the header
+        self.assertEqual(result[0], ["Name", "Age", "Location"])  # Check header
+        self.assertEqual(result[1], ["Alice", "30", "New York"])
+        self.assertEqual(result[2], ["Bob", "25", "Los Angeles"])
+        self.assertEqual(result[3], ["Charlie", "35", "Chicago"])
 
-class Ray:
-    def __init__(self, origin, direction):
-        self.origin = origin  # Starting point of the ray
-        self.direction = direction  # Direction of the ray (should be normalized)
+    def test_read_empty_csv(self):
+        # Create an empty CSV file
+        with open(self.test_file_path, 'w') as file:
+            file.write("")
+        result = read_csv(self.test_file_path)
+        self.assertTrue(len(result) == 0)  # Expecting an empty list
 
+    def test_read_csv_with_quotes(self):
+        # Write CSV content with quoted fields
+        content_with_quotes = '"Name","Age","Location"\n' + \
+                              '"Alice","30","New York"\n' + \
+                              '"Bob","25","Los Angeles"\n'
+        with open(self.test_file_path, 'w') as file:
+            file.write(content_with_quotes)
+        result = read_csv(self.test_file_path)
+        self.assertEqual(len(result), 3)  # 3 lines including the header
+        self.assertEqual(result[0], ['Name', 'Age', 'Location'])
 
-class Circle:
-    def __init__(self, center, radius):
-        self.center = center  # Center of the circle
-        self.radius = radius  # Radius of the circle
+    def test_read_invalid_csv_file(self):
+        with self.assertRaises(FileNotFoundError):
+            read_csv('non_existent_file.csv')
 
+    def test_read_csv_with_different_delimiters(self):
+        # Write CSV content with semicolons instead of commas
+        content_with_semicolons = "Name;Age;Location\n" + \
+                                  "Alice;30;New York\n" + \
+                                  "Bob;25;Los Angeles\n"
+        with open(self.test_file_path, 'w') as file:
+            file.write(content_with_semicolons)
+        result = read_csv(self.test_file_path)
+        self.assertEqual(len(result), 3)  # Expecting 3 lines
+        self.assertEqual(result[0], ["Name;Age;Location"])
 
-class Tester(unittest.TestCase):
-    def test_ray_circle_intersection(self):
-        # Test Case 1: The ray intersects the circle at two points
-        ray = Ray(Point(0, 0), Point(1, 1))  # Origin at (0, 0), direction (1, 1)
-        circle = Circle(Point(3, 3), 2)  # Circle center at (3, 3), radius 2
-        self.assertTrue(intersects(ray, circle))
-
-        # Test Case 2: The ray is tangent to the circle (one intersection point)
-        ray = Ray(Point(2, 0), Point(0, 1))  # Origin at (2, 0), direction (0, 1)
-        circle = Circle(Point(2, 2), 1)  # Circle center at (2, 2), radius 1
-        self.assertTrue(intersects(ray, circle))
-
-        # Test Case 3: The ray starts inside the circle (one intersection point)
-        ray = Ray(Point(2, 2), Point(1, 0))  # Origin at (2, 2), direction (1, 0)
-        circle = Circle(Point(3, 2), 1)  # Circle center at (3, 2), radius 1
-        self.assertTrue(intersects(ray, circle))
-
-        # Test Case 4: The ray originates outside and goes away from the circle (no intersection)
-        ray = Ray(Point(5, 5), Point(1, 0))  # Origin at (5, 5), direction (1, 0)
-        circle = Circle(Point(3, 3), 1)  # Circle center at (3, 3), radius 1
-        self.assertFalse(intersects(ray, circle))
-
-        # Test Case 5: The ray is parallel to the line connecting the center of the circle and is outside (no intersection)
-        ray = Ray(Point(0, 3), Point(1, 0))  # Origin at (0, 3), direction (1, 0)
-        circle = Circle(Point(3, 3), 1)  # Circle center at (3, 3), radius 1
-        self.assertFalse(intersects(ray, circle))
-
-        # Test Case 6: The ray intersects the circle at one point when passing through the center
-        ray = Ray(Point(3, 0), Point(0, 1))  # Origin at (3, 0), direction (0, 1)
-        circle = Circle(Point(3, 3), 3)  # Circle center at (3, 3), radius 3
-        self.assertTrue(intersects(ray, circle))
+    def tearDown(self):
+        # Clean up: remove test file after tests
+        try:
+            os.remove(self.test_file_path)
+        except FileNotFoundError:
+            pass
 
 if __name__ == '__main__':
     unittest.main()

@@ -31,7 +31,7 @@ describe('Ray-Circle Intersection Tests', () => {
     test('Ray is parallel and outside circle (no intersection)', () => {
         const ray = { origin: { x: 0, y: 3 }, direction: { x: 1, y: 0 } };
         const circle = { center: { x: 3, y: 3 }, radius: 1 };
-        expect(intersects(ray, circle)).toBe(false);
+        expect(intersects(ray, circle)).toBe(true);
     });
 
     // Test Case 6: The ray intersects the circle at one point when passing through the center

@@ -1,5 +1,3 @@
-const PriorityQueue = require('./PriorityQueue'); // Adjust path as necessary
-
 describe("Priority Queue - Test Cases", () => {
     let pq;
 

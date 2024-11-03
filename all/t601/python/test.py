@@ -1,12 +1,23 @@
 import unittest
 
 
+
 class TestWordCount(unittest.TestCase):
-    def test_count_words(self):
-        # Test cases for count_words
-        self.assertEqual(tester.count_words(""), 0)  # Empty string
-        self.assertEqual(tester.count_words("     "), 0)  # String with only spaces
-        self.assertEqual(tester.count_words("Hello"), 1)  # Single word
-        self.assertEqual(tester.count_words("This is a test string"), 5)  # Multiple words with single spaces
-        self.assertEqual(tester.count_words("This    is   a   test   string"), 5)  # Multiple spaces between words
-        self.assertEqual(tester.count_words("   Hello world!   "), 2)  # Leading and trailing spaces
+    
+    def test_empty_string(self):
+        self.assertEqual(count_words(""), 0)  # Empty string
+
+    def test_spaces_only(self):
+        self.assertEqual(count_words("     "), 0)  # String with only spaces
+
+    def test_single_word(self):
+        self.assertEqual(count_words("Hello"), 1)  # Single word
+
+    def test_multiple_words_single_spaces(self):
+        self.assertEqual(count_words("This is a test string"), 5)  # Multiple words with single spaces
+
+    def test_multiple_spaces_between_words(self):
+        self.assertEqual(count_words("This    is   a   test   string"), 5)  # Multiple spaces between words
+
+    def test_leading_trailing_spaces(self):
+        self.assertEqual(count_words("   Hello world!   "), 2)  # Leading and trailing spaces

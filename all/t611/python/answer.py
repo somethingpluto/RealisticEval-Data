@@ -1,19 +1,16 @@
 import random
+import string
 
+def generate_random_string() -> str:
+    """Generates a random string of length 25 containing both upper case (A-Z) and lower case (a-z) letters.
 
-def generate_random_string(cls):
-    # Use a list to construct the random string
-    random_string = []
+    Returns:
+        str: A randomly generated string that meets the criteria of including both upper and lower case letters.
+    """
+    # Define the character pool with upper and lower case letters
+    characters = string.ascii_letters  # This includes both a-z and A-Z
 
-    # Ensure at least one upper case and one lower case letter
-    random_string.append(random.choice(cls.LOWER_CASE))
-    random_string.append(random.choice(cls.UPPER_CASE))
+    # Generate a random string of length 25
+    random_string = ''.join(random.choice(characters) for _ in range(25))
 
-    # Fill the rest of the string length with random characters
-    all_characters = cls.LOWER_CASE + cls.UPPER_CASE
-    for _ in range(2, cls.LENGTH):
-        random_char = random.choice(all_characters)
-        random_string.append(random_char)
-
-    # Shuffle the characters to ensure randomness
-    return cls.shuffle_string(''.join(random_string))
+    return random_string

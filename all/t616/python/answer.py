@@ -7,13 +7,14 @@ def byte_count_to_display_size(size_in_bytes: int) -> str:
     Returns:
         str: A string representation of the size in an appropriate unit (bytes, KB, MB, GB, TB).
     """
-    # Check the size and format accordingly
+    # Define constants for byte conversions
     ONE_KB = 1024
     ONE_MB = ONE_KB * 1024
     ONE_GB = ONE_MB * 1024
     ONE_TB = ONE_GB * 1024
+
     if size_in_bytes < ONE_KB:
-        return f"{size_in_bytes:.2f} bytes"  # Return size in bytes
+        return f"{size_in_bytes} bytes"  # Return size in bytes without decimal
     elif size_in_bytes < ONE_MB:
         return f"{size_in_bytes / ONE_KB:.2f} KB"  # Return size in KB
     elif size_in_bytes < ONE_GB:

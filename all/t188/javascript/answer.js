@@ -18,8 +18,3 @@ function shellSort(arr) {
         }
     }
 }
-
-// Function to print an array
-function printArray(arr) {
-    console.log(arr.join(' '));
-}

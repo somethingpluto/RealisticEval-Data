@@ -1,5 +1,4 @@
-const fs = require('fs');
-const path = require('path');
+import path from "path";
 
 describe('TestAnswer', () => {
     const testFilePath = path.join(__dirname, 'test_output.csv'); // Path for test output file

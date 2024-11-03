@@ -19,7 +19,7 @@ class TestAnswer(unittest.TestCase):
     
     def test_unordered_list(self):
         input_html = "<ul><li>Item 1</li><li>Item 2</li></ul>"
-        expected_output = "* Item 1\n* Item 2"
+        expected_output = "* Item 1\n* Item 2\n"
         self.assertEqual(expected_output, convert(input_html))
     
     def test_anchor_tags(self):

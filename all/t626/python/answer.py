@@ -1,4 +1,4 @@
-def read_file_and_process_lines(self, path):
+def read_file_and_process_lines( path):
 
     processed_lines = []
     try:

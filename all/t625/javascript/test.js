@@ -1,5 +1,4 @@
-const fs = require('fs');
-const path = require('path');
+import path from 'path';
 
 describe('Tester', () => {
     // Helper function to create a test file

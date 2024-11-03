@@ -11,23 +11,21 @@ describe('byteCountToDisplaySize', () => {
         expect(byteCountToDisplaySize(inputSize)).toBe(expected);
     });
 
-    test('should return "1 KB" for exactly 1KB', () => {
+    test('should return "1 KB" or "1.00 KB" for exactly 1 KB', () => {
         const inputSize = 1024;
         const result = byteCountToDisplaySize(inputSize);
-        expect(result).toBe("1 KB");
-        expect(result).toBe("1.00 KB");
+        expect(result).toMatch(/1 KB|1\.00 KB/);
     });
 
-    test('should return "4.88 KB" for 5000 bytes', () => {
+    test('should return "4.88 KB" for a size between 1 KB and 1 MB', () => {
         const inputSize = 5000;
         const expected = "4.88 KB";
         expect(byteCountToDisplaySize(inputSize)).toBe(expected);
     });
 
-    test('should return "1 MB" for exactly 1MB', () => {
+    test('should return "1 MB" or "1.00 MB" for exactly 1 MB', () => {
         const inputSize = 1048576; // 1024 * 1024
         const result = byteCountToDisplaySize(inputSize);
-        expect(result).toBe("1 MB");
-        expect(result).toBe("1.00 MB");
+        expect(result).toMatch(/1 MB|1\.00 MB/);
     });
 });

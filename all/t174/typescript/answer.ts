@@ -59,12 +59,3 @@ function findTForX(targetX: number, p0: number, p1: number, p2: number): number 
 
     return t1; // Return the best approximation found
 }
-
-// Example usage
-const p0 = 0.0;
-const p1 = 1.0;
-const p2 = 2.0;
-const targetX = 1.5;
-
-const t = findTForX(targetX, p0, p1, p2);
-console.log(`Parameter t corresponding to targetX ${targetX} is: ${t}`);

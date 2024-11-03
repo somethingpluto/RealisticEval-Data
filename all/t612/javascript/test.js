@@ -1,5 +1,4 @@
-const fs = require('fs');
-const path = require('path');
+import path from "path";
 
 describe('TestFindAndReplace', () => {
     let tempDir;

@@ -1,4 +1,6 @@
-def reverse_range(v: list[int], a: int, b: int) -> None:
+from typing import List
+
+def reverse_range(v: List[int], a: int, b: int) -> None:
     """
     Reverses a range of elements in the list v from index a to index b (inclusive).
 

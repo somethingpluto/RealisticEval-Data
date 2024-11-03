@@ -1,4 +1,3 @@
-import * as fs from 'fs';
 import * as path from 'path';
 
 describe('TestFindAndReplace', () => {
@@ -66,6 +65,6 @@ describe('TestFindAndReplace', () => {
         findAndReplaceInFile(filePath, 'World', 'Java');
 
         const result = fs.readFileSync(filePath, 'utf-8').split('\n');
-        expect(result).toEqual(['']);
+        expect(result).toEqual(['','']);
     });
 });

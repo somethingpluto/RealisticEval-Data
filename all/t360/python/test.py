@@ -2,18 +2,17 @@ import unittest
 
 
 class Tester(unittest.TestCase):
-    def test_get_last_part_of_filepath(self):
-        # Test Case 1: Unix-style path with '/'
+    def test_get_last_part_of_filepath_unix_style(self):
         self.assertEqual(get_last_part_of_filepath("/home/user/documents/file.txt"), "file.txt")
 
-        # Test Case 2: Windows-style path with '\\'
+    def test_get_last_part_of_filepath_windows_style(self):
         self.assertEqual(get_last_part_of_filepath("C:\\Users\\JohnDoe\\Documents\\file.txt"), "file.txt")
 
-        # Test Case 3: Path without any separators (should return the original string)
+    def test_get_last_part_of_filepath_no_separators(self):
         self.assertEqual(get_last_part_of_filepath("file.txt"), "file.txt")
 
-        # Test Case 4: Path ending with a separator (should return an empty string)
+    def test_get_last_part_of_filepath_ending_with_separator(self):
         self.assertEqual(get_last_part_of_filepath("/home/user/documents/"), "")
 
-        # Test Case 5: Path with mixed separators (should return the last part after the last separator)
+    def test_get_last_part_of_filepath_mixed_separators(self):
         self.assertEqual(get_last_part_of_filepath("C:/Users\\JohnDoe/Documents/file.txt"), "file.txt")

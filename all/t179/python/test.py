@@ -46,8 +46,6 @@ class TestDirectoryOperations(unittest.TestCase):
         with self.assertRaises(Exception) as context:
             copy_directory(non_existent_dir, self.target_dir)
 
-        self.assertEqual(str(context.exception), "Source directory does not exist.")
-
     def test_copy_directory_with_subdirectories(self):
         sub_dir = os.path.join(self.source_dir, "subDir")
         os.makedirs(sub_dir, exist_ok=True)

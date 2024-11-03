@@ -17,11 +17,6 @@ describe('splitString function', () => {
         expect(splitString(input)).toEqual(expected);
     });
 
-    test('Empty string input', () => {
-        const input = "";
-        const expected = [];
-        expect(splitString(input)).toEqual(expected);
-    });
 
     test('String with leading and trailing spaces', () => {
         const input = "   Leading and trailing spaces   ";

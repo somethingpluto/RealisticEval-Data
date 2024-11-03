@@ -1,4 +1,7 @@
-def split_string(s: str) -> list[str]:
+from typing import List
+
+
+def split_string(s: str) -> List[str]:
     """
     Split the input string into a list of words.
 

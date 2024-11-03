@@ -1,4 +1,4 @@
-def modify_line_in_file(self, file_path, line_number, new_value):
+def modify_line_in_file(file_path, line_number, new_value):
     """
     Modifies a specific line in the given file.
 

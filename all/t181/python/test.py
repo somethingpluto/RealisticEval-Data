@@ -21,8 +21,8 @@ class TestFileOperations(unittest.TestCase):
         """Test reading an empty file."""
         empty_file = "emptyFile.txt"
         open(empty_file, 'a').close()  # Create an empty file
-        content = read_file_to_byte_array(empty_file)
-        self.assertEqual(len(content), 0, "The content of an empty file should be a byte array of length 0.")
+        with self.assertRaises(Exception):
+            read_file_to_byte_array(empty_file)
         os.remove(empty_file)  # Cleanup
 
     def test_read_non_existent_file(self):

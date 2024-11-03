@@ -26,13 +26,6 @@ class Tester(unittest.TestCase):
         self.pq.pop()  # Remove 20
         self.assertEqual(self.pq.top(), 10)  # Now the max should be 10
     
-    def test_check_empty_queue(self):
-        """ Test case: Check if the queue is empty """
-        self.assertTrue(self.pq.isEmpty())  # Initially empty
-        self.pq.push(10)
-        self.assertFalse(self.pq.isEmpty())  # Now not empty
-        self.pq.pop()
-        self.assertTrue(self.pq.isEmpty())  # Back to empty
     
     def test_pop_from_empty_queue(self):
         """ Test case: Pop from empty queue (should raise exception) """

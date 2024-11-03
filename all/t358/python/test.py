@@ -2,23 +2,22 @@ import unittest
 
 
 class Tester(unittest.TestCase):
-    def test_sort_names(self):
-        # Test Case 2: Same numbers, different names
-        arr2 = ["Alice10", "Charlie10", "Bob10"]
-        expected2 = ["Alice10", "Bob10", "Charlie10"]
-        self.assertEqual(sort_names(arr2), expected2)
+    def test_sort_names_same_numbers(self):
+        arr = ["Alice10", "Charlie10", "Bob10"]
+        expected = ["Alice10", "Bob10", "Charlie10"]
+        self.assertEqual(sort_names(arr), expected)
 
-        # Test Case 3: Mixed case with different names and numbers
-        arr3 = ["Alice3", "Bob2", "Charlie3", "Bob1"]
-        expected3 = ["Bob1", "Bob2", "Alice3", "Charlie3"]
-        self.assertEqual(sort_names(arr3), expected3)
+    def test_sort_names_mixed_case(self):
+        arr = ["Alice3", "Bob2", "Charlie3", "Bob1"]
+        expected = ["Bob1", "Bob2", "Alice3", "Charlie3"]
+        self.assertEqual(sort_names(arr), expected)
 
-        # Test Case 4: Single element
-        arr4 = ["Alice5"]
-        expected4 = ["Alice5"]
-        self.assertEqual(sort_names(arr4), expected4)
+    def test_sort_names_single_element(self):
+        arr = ["Alice5"]
+        expected = ["Alice5"]
+        self.assertEqual(sort_names(arr), expected)
 
-        # Test Case 5: Empty array
-        arr5 = []
-        expected5 = []
-        self.assertEqual(sort_names(arr5), expected5)
+    def test_sort_names_empty_array(self):
+        arr = []
+        expected = []
+        self.assertEqual(sort_names(arr), expected)

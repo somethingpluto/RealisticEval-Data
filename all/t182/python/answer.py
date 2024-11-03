@@ -18,8 +18,7 @@ def copy_file_with_buffered_stream(source_file_path, destination_file_path):
             # Use shutil.copyfileobj to copy data in chunks
             shutil.copyfileobj(source_file, destination_file, length=8192)
     except IOError as e:
-        print(f"Error: {e}")
-        return None  # Return None in case of error
+        raise Exception(f"{e}")
 
     end_time = time.time()  # End timing
     return (end_time - start_time) * 1000  # Convert to milliseconds

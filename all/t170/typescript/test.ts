@@ -19,7 +19,7 @@ describe('Answer', () => {
 
     test('testUnorderedList', () => {
         const input = '<ul><li>Item 1</li><li>Item 2</li></ul>';
-        const expectedOutput = '* Item 1\n* Item 2';
+        const expectedOutput = '* Item 1\n* Item 2\n';
         expect(convert(input)).toEqual(expectedOutput);
     });
 

@@ -1,5 +1,3 @@
-const fs = require('fs');
-
 describe('TestAnswer', () => {
     const testFilePath = 'test.csv';
 

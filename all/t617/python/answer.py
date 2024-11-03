@@ -21,8 +21,8 @@ def parse_json_file(file_path: str) -> Dict[str, Any]:
         with open(file_path, 'r') as file:
             result_dict = json.load(file)
     except FileNotFoundError:
-        print(f"File not found: {file_path}")
-    except json.JSONDecodeError:
-        print(f"Error decoding JSON from the file: {file_path}")
+        raise Exception(f"File not found: {file_path}")
+    except json.JSONDecodeError as e:
+        raise json.JSONDecodeError(f"Error decoding JSON from the file: {file_path}", e.doc, e.pos)
 
     return result_dict
