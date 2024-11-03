@@ -1,84 +1,132 @@
-import fs from 'fs'
+const sharp = require('sharp');
+const iconv = require('iconv');
+
 /**
- * Formats a list of strings into a single-line CSV string and writes it to a specified file.
+ * Convert a PNG image file to an ICO format file.
  *
- * @param {Array<string>} strings - List of strings to be formatted into CSV.
- * @param {string} filePath - The file path where the CSV string should be written.
- * @throws {Error} Throws an error if writing to the file fails.
+ * @param {string} pngFilePath - Path to the source PNG image file.
+ * @param {string} icoFilePath - Path to save the ICO file.
+ * @param {Array} iconSizes - Array of tuples specifying the sizes to include in the ICO file.
  */
-function writeCsvToFile(strings, filePath) {
-    // Join the list of strings into a single line CSV formatted string
-    const csvString = strings.join(',');
+async function convertPngToIco(pngFilePath, icoFilePath, iconSizes = [[32, 32]]) {
+    try {
+        // Load the PNG image using sharp
+        const img = await sharp(pngFilePath);
 
-    // Write the CSV string to the specified file
-    fs.promises.writeFile(filePath, csvString)
-        .then(() => {
-            console.log(`CSV written to file: ${filePath}`);
-        })
-        .catch(error => {
-            console.error(`Error writing to file: ${error.message}`);
+        // Resize the image to the specified sizes
+        const resizedImages = iconSizes.map(size => img.resize(size[0], size[1]));
+
+        // Convert the resized images to ICO format
+        const icoBuffer = await Promise.all(resizedImages).then(images => {
+            return iconv.toIco(images);
         });
+
+        // Save the ICO file
+        await sharp(icoBuffer).toFile(icoFilePath);
+
+        console.log(`ICO file saved at ${icoFilePath}`);
+    } catch (error) {
+        console.error('Error converting PNG to ICO:', error);
+    }
 }
-describe('TestAnswer', () => {
-    const testFilePath = 'test.csv';
+const fs = require('fs').promises; // Import fs.promises for mocking errors
 
-    beforeAll(() => {
-        // Create a temporary CSV file for testing
-        const sampleCsvContent = "Name,Age,Location\n" +
-                                  "Alice,30,New York\n" +
-                                  "Bob,25,Los Angeles\n" +
-                                  "Charlie,35,Chicago\n";
-        fs.writeFileSync(testFilePath, sampleCsvContent);
+describe('TestConvertPngToIco', () => {
+    beforeEach(() => {
+        jest.resetModules();
+        jest.clearAllMocks();
     });
 
-    test('read valid CSV', async () => {
-        const result = await readCsv(testFilePath);
-        expect(result.length).toBe(4);  // 4 lines including the header
-        expect(result[0]).toEqual(["Name", "Age", "Location"]);  // Check header
-        expect(result[1]).toEqual(["Alice", "30", "New York"]);
-        expect(result[2]).toEqual(["Bob", "25", "Los Angeles"]);
-        expect(result[3]).toEqual(["Charlie", "35", "Chicago"]);
+    describe('testSingleIconSize', () => {
+        it('should save the image with a single icon size', () => {
+            const mockImage = {
+                save: jest.fn()
+            };
+
+            const mockOpen = jest.fn().mockReturnValue({
+                __enter__: jest.fn().mockReturnValue(mockImage),
+                __exit__: jest.fn()
+            });
+
+            jest.doMock('sharp', () => ({
+                open: mockOpen
+            }));
+
+            convertPngToIco('source.png', 'output.ico', [[64, 64]]);
+            expect(mockImage.save).toHaveBeenCalledWith('output.ico', { format: 'ICO', sizes: [[64, 64]] });
+        });
     });
 
-    test('read empty CSV', async () => {
-        // Create an empty CSV file
-        fs.writeFileSync(testFilePath, "");
-        const result = await readCsv(testFilePath);
-        expect(result.length).toBe(0);  // Expecting an empty list
+    describe('testMultipleIconSizes', () => {
+        it('should save the image with multiple icon sizes', () => {
+            const mockImage = {
+                save: jest.fn()
+            };
+
+            const mockOpen = jest.fn().mockReturnValue({
+                __enter__: jest.fn().mockReturnValue(mockImage),
+                __exit__: jest.fn()
+            });
+
+            jest.doMock('sharp', () => ({
+                open: mockOpen
+            }));
+
+            convertPngToIco('source.png', 'output.ico', [[16, 16], [32, 32], [64, 64]]);
+            expect(mockImage.save).toHaveBeenCalledWith('output.ico', { format: 'ICO', sizes: [[16, 16], [32, 32], [64, 64]] });
+        });
     });
 
-    test('read CSV with quotes', async () => {
-        // Write CSV content with quoted fields
-        const contentWithQuotes = '"Name","Age","Location"\n' +
-                                   '"Alice","30","New York"\n' +
-                                   '"Bob","25","Los Angeles"\n';
-        fs.writeFileSync(testFilePath, contentWithQuotes);
-        const result = await readCsv(testFilePath);
-        expect(result.length).toBe(3);  // 3 lines including the header
-        expect(result[0]).toEqual(['Name', 'Age', 'Location']);
+    describe('testDefaultIconSize', () => {
+        it('should save the image with the default icon size', () => {
+            const mockImage = {
+                save: jest.fn()
+            };
+
+            const mockOpen = jest.fn().mockReturnValue({
+                __enter__: jest.fn().mockReturnValue(mockImage),
+                __exit__: jest.fn()
+            });
+
+            jest.doMock('sharp', () => ({
+                open: mockOpen
+            }));
+
+            convertPngToIco('source.png', 'output.ico');
+            expect(mockImage.save).toHaveBeenCalledWith('output.ico', { format: 'ICO', sizes: [[32, 32]] });
+        });
     });
 
-    test('read invalid CSV file', async () => {
-        await expect(readCsv('non_existent_file.csv')).rejects.toThrow(Error);
+    describe('testFileHandling', () => {
+        it('should save the image with the correct parameters', () => {
+            const mockImage = {
+                save: jest.fn()
+            };
+
+            const mockOpen = jest.fn().mockReturnValue({
+                __enter__: jest.fn().mockReturnValue(mockImage),
+                __exit__: jest.fn()
+            });
+
+            jest.doMock('sharp', () => ({
+                open: mockOpen
+            }));
+
+            convertPngToIco('source.png', 'output.ico');
+            expect(mockImage.save).toHaveBeenCalledTimes(1);
+            expect(mockImage.save).toHaveBeenCalledWith('output.ico', { format: 'ICO', sizes: [[32, 32]] });
+        });
     });
 
-    test('read CSV with different delimiters', async () => {
-        // Write CSV content with semicolons instead of commas
-        const contentWithSemicolons = "Name;Age;Location\n" +
-                                       "Alice;30;New York\n" +
-                                       "Bob;25;Los Angeles\n";
-        fs.writeFileSync(testFilePath, contentWithSemicolons);
-        const result = await readCsv(testFilePath);
-        expect(result.length).toBe(3);  // Expecting 3 lines
-        expect(result[0]).toEqual(["Name;Age;Location"]);
-    });
+    describe('testInvalidImagePath', () => {
+        it('should throw an error when the image path is invalid', async () => {
+            const mockOpen = jest.fn().mockRejectedValue(new Error('File not found'));
 
-    afterAll(() => {
-        // Clean up: remove test file after tests
-        try {
-            fs.unlinkSync(testFilePath);
-        } catch (err) {
-            // Handle error if necessary
-        }
+            jest.doMock('sharp', () => ({
+                open: mockOpen
+            }));
+
+            await expect(convertPngToIco('invalid.png', 'output.ico')).rejects.toThrow('File not found');
+        });
     });
 });

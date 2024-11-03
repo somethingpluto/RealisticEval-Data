@@ -1,55 +1,106 @@
-function parseExpression(expression: string): string[] {
-    const tokens: string[] = [];
-    // Regular expression to match numbers (including decimals) and operators
-    const regex = /\d+\.?\d*|[+*/()\-]/g;
-    // Use regex to find matches in the expression
-    const matches = expression.match(regex);
-    if (matches) {
-        // Add each found token to the list
-        tokens.push(...matches);
-    }
-    return tokens;
+import sharp from 'sharp'; // Assuming sharp is installed and can handle image conversions
+
+interface IconSizes {
+    width: number;
+    height: number;
 }
-describe('parseExpression', () => {
-    test('simple addition', () => {
-        const expression = "2 + 2";
-        const result = parseExpression(expression);
-        expect(result).toEqual(["2", "+", "2"]);
+
+/**
+ * Convert a PNG image file to an ICO format file.
+ *
+ * @param pngFilePath - Path to the source PNG image file.
+ * @param icoFilePath - Path to save the ICO file.
+ * @param iconSizes - List of tuples specifying the sizes to include in the ICO file.
+ */
+function convertPngToIco(pngFilePath: string, icoFilePath: string, iconSizes: IconSizes[] = [{ width: 32, height: 32 }]): void {
+    // Open the image file using sharp
+    sharp(pngFilePath)
+        .resize(iconSizes[0].width, iconSizes[0].height)
+        .toFile(icoFilePath, (err, info) => {
+            if (err) {
+                console.error('Error converting PNG to ICO:', err);
+            } else {
+                console.log('ICO file saved successfully:', icoFilePath);
+            }
+        });
+}
+import { mock } from 'jest-mock-extended';
+
+describe('TestConvertPngToIco', () => {
+    let mockImage: any;
+
+    beforeEach(() => {
+        mockImage = mock();
     });
 
-    test('complex expression', () => {
-        const expression = "3 + 5 * (2 - 8)";
-        const result = parseExpression(expression);
-        expect(result).toEqual(["3", "+", "5", "*", "(", "2", "-", "8", ")"]);
-    });
+    describe('convertPngToIco', () => {
+        it('should save ICO with a single icon size', () => {
+            const mockOpen = jest.fn().mockReturnValue({
+                __enter__: jest.fn().mockReturnValue(mockImage),
+                __exit__: jest.fn(),
+            });
 
-    test('negative numbers', () => {
-        const expression = "-1 + 4 - 5";
-        const result = parseExpression(expression);
-        expect(result).toEqual(["-", "1", "+", "4", "-", "5"]);
-    });
+            jest.spyOn(global, 'Image').mockImplementation(() => ({
+                open: mockOpen,
+            }));
 
-    test('decimals', () => {
-        const expression = "3.5 + 2.1";
-        const result = parseExpression(expression);
-        expect(result).toEqual(["3.5", "+", "2.1"]);
-    });
+            convertPngToIco('source.png', 'output.ico', [[64, 64]]);
+            expect(mockImage.save).toHaveBeenCalledWith('output.ico', { format: 'ICO', sizes: [[64, 64]] });
+        });
 
-    test('operators only', () => {
-        const expression = "+ - * /";
-        const result = parseExpression(expression);
-        expect(result).toEqual(["+", "-", "*", "/"]);
-    });
+        it('should save ICO with multiple icon sizes', () => {
+            const mockOpen = jest.fn().mockReturnValue({
+                __enter__: jest.fn().mockReturnValue(mockImage),
+                __exit__: jest.fn(),
+            });
 
-    test('empty expression', () => {
-        const expression = "";
-        const result = parseExpression(expression);
-        expect(result.length).toBe(0);
-    });
+            jest.spyOn(global, 'Image').mockImplementation(() => ({
+                open: mockOpen,
+            }));
 
-    test('single number', () => {
-        const expression = "42";
-        const result = parseExpression(expression);
-        expect(result).toEqual(["42"]);
+            convertPngToIco('source.png', 'output.ico', [[16, 16], [32, 32], [64, 64]]);
+            expect(mockImage.save).toHaveBeenCalledWith('output.ico', { format: 'ICO', sizes: [[16, 16], [32, 32], [64, 64]] });
+        });
+
+        it('should save ICO with the default icon size', () => {
+            const mockOpen = jest.fn().mockReturnValue({
+                __enter__: jest.fn().mockReturnValue(mockImage),
+                __exit__: jest.fn(),
+            });
+
+            jest.spyOn(global, 'Image').mockImplementation(() => ({
+                open: mockOpen,
+            }));
+
+            convertPngToIco('source.png', 'output.ico');
+            expect(mockImage.save).toHaveBeenCalledWith('output.ico', { format: 'ICO', sizes: [[32, 32]] });
+        });
+
+        it('should handle file opening correctly', () => {
+            const mockOpen = jest.fn().mockReturnValue({
+                __enter__: jest.fn().mockReturnValue(mockImage),
+                __exit__: jest.fn(),
+            });
+
+            jest.spyOn(global, 'Image').mockImplementation(() => ({
+                open: mockOpen,
+            }));
+
+            convertPngToIco('source.png', 'output.ico');
+            expect(mockImage.save).toHaveBeenCalledTimes(1);
+            expect(mockImage.save).toHaveBeenCalledWith('output.ico', { format: 'ICO', sizes: [[32, 32]] });
+        });
+
+        it('should throw an error when the image path is invalid', () => {
+            const mockOpen = jest.fn().mockImplementation(() => {
+                throw new Error('File not found');
+            });
+
+            jest.spyOn(global, 'Image').mockImplementation(() => ({
+                open: mockOpen,
+            }));
+
+            expect(() => convertPngToIco('invalid.png', 'output.ico')).toThrow('File not found');
+        });
     });
 });
