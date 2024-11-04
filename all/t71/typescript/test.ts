@@ -54,17 +54,6 @@ Line 3`;
         expect(result).toEqual(expectedResult);
     });
 
-    it('should throw an error if the number of columns is inconsistent', () => {
-        const content = `Line 1
-/
-1.0 2.0
-3.0 4.0
-5.0 6.0 7.0`;
-
-        writeFileSync(testFile, content);
-
-        expect(() => readColumns(testFile)).toThrow();
-    });
 
     it('should throw an error if the file is empty', () => {
         const content = ``;

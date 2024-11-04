@@ -1,5 +1,5 @@
-const xml2js = require('xml2js');
-const fs = require('fs');
+import xml2js from 'xml2js'
+import fs from 'fs'
 
 function parseXamlToDict(xamlFile) {
     /**

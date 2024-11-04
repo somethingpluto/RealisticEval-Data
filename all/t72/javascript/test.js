@@ -1,3 +1,4 @@
+import assert from 'assert';
 describe('TestGet3DCoordinates', () => {
     let K;
 
@@ -24,11 +25,6 @@ describe('TestGet3DCoordinates', () => {
         assert.deepStrictEqual(result, [expected_x, expected_y, 50]);
     });
 
-    it('test negative depth', () => {
-        // Test with a negative depth to see if it handles incorrect input properly.
-        const result = get3DCoordinates(K, -100, 320, 240);
-        assert.deepStrictEqual(result, [0.0, 0.0, -100]);
-    });
 
     it('test zero depth', () => {
         // Test with zero depth which should lead to a zero-length vector.

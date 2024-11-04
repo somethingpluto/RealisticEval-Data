@@ -1,132 +1,93 @@
-const sharp = require('sharp');
-const iconv = require('iconv');
+const fs = require('fs');
+const path = require('path');
 
-/**
- * Convert a PNG image file to an ICO format file.
- *
- * @param {string} pngFilePath - Path to the source PNG image file.
- * @param {string} icoFilePath - Path to save the ICO file.
- * @param {Array} iconSizes - Array of tuples specifying the sizes to include in the ICO file.
- */
-async function convertPngToIco(pngFilePath, icoFilePath, iconSizes = [[32, 32]]) {
-    try {
-        // Load the PNG image using sharp
-        const img = await sharp(pngFilePath);
+function emptyDirectory(directoryPath) {
+    /**
+     * Empties all files and subdirectories in the specified directory.
+     * @param {string} directoryPath - The path to the directory whose contents are to be emptied.
+     * @returns {Promise<void>} A promise that resolves when the directory is emptied or rejects with an error.
+     */
+    
+    return new Promise((resolve, reject) => {
+        if (!fs.existsSync(directoryPath)) {
+            return reject(new Error(`The specified path ${directoryPath} does not exist.`));
+        }
 
-        // Resize the image to the specified sizes
-        const resizedImages = iconSizes.map(size => img.resize(size[0], size[1]));
+        if (!fs.lstatSync(directoryPath).isDirectory()) {
+            return reject(new Error(`${directoryPath} is not a directory.`));
+        }
 
-        // Convert the resized images to ICO format
-        const icoBuffer = await Promise.all(resizedImages).then(images => {
-            return iconv.toIco(images);
+        fs.readdir(directoryPath, (err, files) => {
+            if (err) {
+                return reject(err);
+            }
+
+            const promises = files.map(file => {
+                const filePath = path.join(directoryPath, file);
+
+                return new Promise((resolve, reject) => {
+                    fs.stat(filePath, (err, stats) => {
+                        if (err) {
+                            return reject(err);
+                        }
+
+                        if (stats.isDirectory()) {
+                            fs.promises.rmdir(filePath, { recursive: true })
+                                .then(resolve)
+                                .catch(reject);
+                        } else {
+                            fs.unlink(filePath)
+                                .then(resolve)
+                                .catch(reject);
+                        }
+                    });
+                });
+            });
+
+            Promise.all(promises)
+                .then(() => resolve())
+                .catch(reject);
         });
-
-        // Save the ICO file
-        await sharp(icoBuffer).toFile(icoFilePath);
-
-        console.log(`ICO file saved at ${icoFilePath}`);
-    } catch (error) {
-        console.error('Error converting PNG to ICO:', error);
-    }
+    });
 }
-const fs = require('fs').promises; // Import fs.promises for mocking errors
+const fs = require('fs');
+const path = require('path');
+const { rm, unlink } = require('fs').promises;
+const { mkdtemp, rmdir } = require('fs').promises;
 
-describe('TestConvertPngToIco', () => {
-    beforeEach(() => {
-        jest.resetModules();
-        jest.clearAllMocks();
+describe('TestEmptyDirectory', () => {
+    let testDir;
+
+    beforeAll(async () => {
+        // Set up a temporary directory with some files and directories
+        testDir = await mkdtemp(path.join(os.tmpdir(), 'test-'));
+        // Create some files and directories
+        await fs.promises.mkdir(path.join(testDir, 'subdir'));
+        await fs.promises.writeFile(path.join(testDir, 'file1.txt'), 'Hello');
+        await fs.promises.writeFile(path.join(testDir, 'subdir', 'file2.txt'), 'World');
     });
 
-    describe('testSingleIconSize', () => {
-        it('should save the image with a single icon size', () => {
-            const mockImage = {
-                save: jest.fn()
-            };
-
-            const mockOpen = jest.fn().mockReturnValue({
-                __enter__: jest.fn().mockReturnValue(mockImage),
-                __exit__: jest.fn()
-            });
-
-            jest.doMock('sharp', () => ({
-                open: mockOpen
-            }));
-
-            convertPngToIco('source.png', 'output.ico', [[64, 64]]);
-            expect(mockImage.save).toHaveBeenCalledWith('output.ico', { format: 'ICO', sizes: [[64, 64]] });
-        });
+    afterAll(async () => {
+        // Remove the temporary directory after all tests
+        await rmdir(testDir, { recursive: true });
     });
 
-    describe('testMultipleIconSizes', () => {
-        it('should save the image with multiple icon sizes', () => {
-            const mockImage = {
-                save: jest.fn()
-            };
-
-            const mockOpen = jest.fn().mockReturnValue({
-                __enter__: jest.fn().mockReturnValue(mockImage),
-                __exit__: jest.fn()
-            });
-
-            jest.doMock('sharp', () => ({
-                open: mockOpen
-            }));
-
-            convertPngToIco('source.png', 'output.ico', [[16, 16], [32, 32], [64, 64]]);
-            expect(mockImage.save).toHaveBeenCalledWith('output.ico', { format: 'ICO', sizes: [[16, 16], [32, 32], [64, 64]] });
-        });
+    it('should empty the directory successfully', async () => {
+        // Test that the directory is emptied successfully
+        await emptyDirectory(testDir);
+        expect(await fs.promises.readdir(testDir)).toEqual([]);
     });
 
-    describe('testDefaultIconSize', () => {
-        it('should save the image with the default icon size', () => {
-            const mockImage = {
-                save: jest.fn()
-            };
-
-            const mockOpen = jest.fn().mockReturnValue({
-                __enter__: jest.fn().mockReturnValue(mockImage),
-                __exit__: jest.fn()
-            });
-
-            jest.doMock('sharp', () => ({
-                open: mockOpen
-            }));
-
-            convertPngToIco('source.png', 'output.ico');
-            expect(mockImage.save).toHaveBeenCalledWith('output.ico', { format: 'ICO', sizes: [[32, 32]] });
-        });
+    it('should empty a directory that includes subdirectories', async () => {
+        // Test emptying a directory that includes subdirectories
+        await emptyDirectory(testDir);
+        expect(await fs.promises.readdir(testDir)).toEqual([]);
     });
 
-    describe('testFileHandling', () => {
-        it('should save the image with the correct parameters', () => {
-            const mockImage = {
-                save: jest.fn()
-            };
-
-            const mockOpen = jest.fn().mockReturnValue({
-                __enter__: jest.fn().mockReturnValue(mockImage),
-                __exit__: jest.fn()
-            });
-
-            jest.doMock('sharp', () => ({
-                open: mockOpen
-            }));
-
-            convertPngToIco('source.png', 'output.ico');
-            expect(mockImage.save).toHaveBeenCalledTimes(1);
-            expect(mockImage.save).toHaveBeenCalledWith('output.ico', { format: 'ICO', sizes: [[32, 32]] });
-        });
-    });
-
-    describe('testInvalidImagePath', () => {
-        it('should throw an error when the image path is invalid', async () => {
-            const mockOpen = jest.fn().mockRejectedValue(new Error('File not found'));
-
-            jest.doMock('sharp', () => ({
-                open: mockOpen
-            }));
-
-            await expect(convertPngToIco('invalid.png', 'output.ico')).rejects.toThrow('File not found');
-        });
+    it('should handle an already empty directory', async () => {
+        // Test emptying a directory that is already empty
+        await emptyDirectory(testDir);  // First emptying
+        await emptyDirectory(testDir);  // Empty again
+        expect(await fs.promises.readdir(testDir)).toEqual([]);
     });
 });

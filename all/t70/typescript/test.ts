@@ -1,77 +1,77 @@
 describe('TestCodeBlockRemover', () => {
-    it('should handle a single code block correctly', () => {
+  it('should handle a single code block', () => {
       const markdown = `
-        This is a markdown with a code block.
-  
-        \`\`\`python
-        print("Hello, World!")
-        \`\`\`
-  
-        End of markdown.
+      This is a markdown with a code block.
+
+      \`\`\`python
+      print("Hello, World!")
+      \`\`\`
+
+      End of markdown.
       `;
       const expected = ['print("Hello, World!")'];
       const result = codeBlockRemover(markdown);
       expect(result).toEqual(expected);
-    });
-  
-    it('should handle multiple code blocks correctly', () => {
+  });
+
+  it('should handle multiple code blocks', () => {
       const markdown = `
-        First code block:
-  
-        \`\`\`python
-        print("Hello, World!")
-        \`\`\`
-  
-        Second code block:
-  
-        \`\`\`javascript
-        console.log("Hello, World!");
-        \`\`\`
+      First code block:
+
+      \`\`\`python
+      print("Hello, World!")
+      \`\`\`
+
+      Second code block:
+
+      \`\`\`javascript
+      console.log("Hello, World!");
+      \`\`\`
       `;
       const expected = [
-        'print("Hello, World!")',
-        'console.log("Hello, World!");'
+          'print("Hello, World!")',
+          'console.log("Hello, World!");'
       ];
       const result = codeBlockRemover(markdown);
       expect(result).toEqual(expected);
-    });
-  
-    it('should return an empty array when there are no code blocks', () => {
+  });
+
+  it('should handle no code blocks', () => {
       const markdown = `
-        This markdown has no code blocks.
-  
-        Just some plain text.
+      This markdown has no code blocks.
+
+      Just some plain text.
       `;
       const expected = [];
       const result = codeBlockRemover(markdown);
       expect(result).toEqual(expected);
-    });
-  
-    it('should handle an empty code block correctly', () => {
+  });
+
+  it('should handle an empty code block', () => {
       const markdown = `
-        Here is an empty code block:
-  
-        \`\`\`python
-        \`\`\`
-  
-        End of markdown.
+      Here is an empty code block:
+
+      \`\`\`python
+      \`\`\`
+
+      End of markdown.
       `;
       const expected = [''];
       const result = codeBlockRemover(markdown);
       expect(result).toEqual(expected);
-    });
-  
-    it('should not extract malformed code blocks', () => {
+  });
+
+  it('should handle a malformed code block', () => {
       const markdown = `
-        This code block is missing ending:
-  
-        \`\`\`python
-        print("Hello, World!")
-  
-        And some more text.
+      This code block is missing ending:
+
+      \`\`\`python
+      print("Hello, World!")
+
+      And some more text.
       `;
       const expected = [];
       const result = codeBlockRemover(markdown);
       expect(result).toEqual(expected);
-    });
   });
+});

@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const Papa = require('papaparse');
 
+
 function findCommonColumns(directory) {
     // List to store the parsed CSV data
     const csvData = [];

@@ -1,5 +1,4 @@
-const { parse } = require('xml2js');
-
+import {parse} from 'xml2js'
 describe('TestParseXamlToDict', () => {
     it('should correctly parse valid strings', () => {
         const xamlData = `

@@ -1,84 +1,71 @@
-import csv
-from typing import List
-
-
-def read_csv(file_path: str) -> List[List[str]]:
-    """
-    Reads a CSV file and parses each line into a list of strings.
-
-    :param file_path: The path to the CSV file.
-    :return: A list of string lists, where each list represents a line from the CSV.
-    """
-    csv_data = []
-    # Read the CSV file
-    with open(file_path, mode='r', newline='', encoding='utf-8') as file:
-        reader = csv.reader(file)
-        # Parse each line into a list of strings
-        for row in reader:
-            csv_data.append(row)
-    return csv_data
 import os
+import shutil
+
+
+def empty_directory(directory_path):
+    """
+    Empties all files and subdirectories in the specified directory, but keeps the directory itself.
+
+    Args:
+    directory_path (str): Path to the directory whose contents are to be emptied.
+
+    Raises:
+    ValueError: If the specified path does not exist or is not a directory.
+    """
+    # Check if the path exists and is a directory
+    if not os.path.exists(directory_path):
+        raise ValueError("The specified directory does not exist.")
+    if not os.path.isdir(directory_path):
+        raise ValueError("The specified path is not a directory.")
+
+    # Iterate over all items in the directory
+    for item in os.listdir(directory_path):
+        item_path = os.path.join(directory_path, item)
+
+        # Check if the item is a file or directory and delete accordingly
+        if os.path.isfile(item_path) or os.path.islink(item_path):
+            os.remove(item_path)  # Remove the file or link
+        elif os.path.isdir(item_path):
+            shutil.rmtree(item_path)  # Remove the directory and all its contents
+
+import os
+import shutil
+import tempfile
 import unittest
 
 
-class TestAnswer(unittest.TestCase):
+class TestEmptyDirectory(unittest.TestCase):
     def setUp(self):
-        # Create a temporary CSV file for testing
-        self.test_file_path = 'test.csv'
-        sample_csv_content = "Name,Age,Location\n" + \
-                             "Alice,30,New York\n" + \
-                             "Bob,25,Los Angeles\n" + \
-                             "Charlie,35,Chicago\n"
-        with open(self.test_file_path, 'w') as file:
-            file.write(sample_csv_content)
-
-    def test_read_valid_csv(self):
-        result = read_csv(self.test_file_path)
-        self.assertEqual(len(result), 4)  # 4 lines including the header
-        self.assertEqual(result[0], ["Name", "Age", "Location"])  # Check header
-        self.assertEqual(result[1], ["Alice", "30", "New York"])
-        self.assertEqual(result[2], ["Bob", "25", "Los Angeles"])
-        self.assertEqual(result[3], ["Charlie", "35", "Chicago"])
-
-    def test_read_empty_csv(self):
-        # Create an empty CSV file
-        with open(self.test_file_path, 'w') as file:
-            file.write("")
-        result = read_csv(self.test_file_path)
-        self.assertTrue(len(result) == 0)  # Expecting an empty list
-
-    def test_read_csv_with_quotes(self):
-        # Write CSV content with quoted fields
-        content_with_quotes = '"Name","Age","Location"\n' + \
-                              '"Alice","30","New York"\n' + \
-                              '"Bob","25","Los Angeles"\n'
-        with open(self.test_file_path, 'w') as file:
-            file.write(content_with_quotes)
-        result = read_csv(self.test_file_path)
-        self.assertEqual(len(result), 3)  # 3 lines including the header
-        self.assertEqual(result[0], ['Name', 'Age', 'Location'])
-
-    def test_read_invalid_csv_file(self):
-        with self.assertRaises(FileNotFoundError):
-            read_csv('non_existent_file.csv')
-
-    def test_read_csv_with_different_delimiters(self):
-        # Write CSV content with semicolons instead of commas
-        content_with_semicolons = "Name;Age;Location\n" + \
-                                  "Alice;30;New York\n" + \
-                                  "Bob;25;Los Angeles\n"
-        with open(self.test_file_path, 'w') as file:
-            file.write(content_with_semicolons)
-        result = read_csv(self.test_file_path)
-        self.assertEqual(len(result), 3)  # Expecting 3 lines
-        self.assertEqual(result[0], ["Name;Age;Location"])
+        # Set up a temporary directory with some files and directories
+        self.test_dir = tempfile.mkdtemp()
+        # Create some files and directories
+        os.mkdir(os.path.join(self.test_dir, 'subdir'))
+        with open(os.path.join(self.test_dir, 'file1.txt'), 'w') as f:
+            f.write("Hello")
+        with open(os.path.join(self.test_dir, 'subdir', 'file2.txt'), 'w') as f:
+            f.write("World")
 
     def tearDown(self):
-        # Clean up: remove test file after tests
-        try:
-            os.remove(self.test_file_path)
-        except FileNotFoundError:
-            pass
+        # Remove the temporary directory after each test.js
+        shutil.rmtree(self.test_dir)
+
+    def test_empty_directory_success(self):
+        """ Test that the directory is emptied successfully """
+        empty_directory(self.test_dir)
+        self.assertEqual(os.listdir(self.test_dir), [])  # Directory should be empty
+
+
+
+    def test_empty_directory_with_subdirectories(self):
+        """ Test emptying a directory that includes subdirectories """
+        empty_directory(self.test_dir)
+        self.assertFalse(os.listdir(self.test_dir))  # Directory and subdirectory should be empty
+
+    def test_empty_already_empty_directory(self):
+        """ Test emptying a directory that is already empty """
+        empty_directory(self.test_dir)  # First emptying
+        empty_directory(self.test_dir)  # Empty again
+        self.assertEqual(os.listdir(self.test_dir), [])  # Still should be empty
 
 if __name__ == '__main__':
     unittest.main()

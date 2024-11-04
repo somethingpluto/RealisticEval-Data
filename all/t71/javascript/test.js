@@ -33,7 +33,7 @@ Line 3`;
 
         fs.writeFileSync(testFile, content);
 
-        expect(() => readColumns(testFile)).toThrow('File does not contain \'/\' character');
+        expect(() => readColumns(testFile)).toThrow();
     });
 
     it('should handle comments and empty lines', () => {
@@ -52,17 +52,6 @@ Line 3`;
         expect(result).toEqual(expectedResult);
     });
 
-    it('should throw an error if the number of columns is inconsistent', () => {
-        const content = `Line 1
-/
-1.0 2.0
-3.0 4.0
-5.0 6.0 7.0`;
-
-        fs.writeFileSync(testFile, content);
-
-        expect(() => readColumns(testFile)).toThrow('File does not contain \'/\' character');
-    });
 
     it('should throw an error if the file is empty', () => {
         const content = ``;

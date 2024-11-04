@@ -1,106 +1,110 @@
-import sharp from 'sharp'; // Assuming sharp is installed and can handle image conversions
+import { Deque } from 'collections/deque';
 
-interface IconSizes {
-    width: number;
-    height: number;
+class UniqueDeque<T> {
+  private deque: Deque<T>;
+  private set: Set<T>;
+
+  constructor() {
+    this.deque = new Deque<T>();
+    this.set = new Set<T>();
+  }
+
+  add(item: T): boolean {
+    if (!this.set.has(item)) {
+      this.deque.push(item);
+      this.set.add(item);
+      return true;
+    }
+    return false;
+  }
+
+  delete(item: T): boolean {
+    if (this.set.has(item)) {
+      const index = this.deque.toArray().findIndex((x) => x === item);
+      if (index !== -1) {
+        this.deque.deleteAt(index);
+      }
+      this.set.delete(item);
+      return true;
+    }
+    return false;
+  }
+
+  contains(item: T): boolean {
+    return this.set.has(item);
+  }
+
+  length(): number {
+    return this.deque.length;
+  }
+
+  *[Symbol.iterator](): Iterator<T> {
+    for (const item of this.deque) {
+      yield item;
+    }
+  }
+
+  toString(): string {
+    return `UniqueDeque(${Array.from(this.deque).toString()})`;
+  }
 }
-
-/**
- * Convert a PNG image file to an ICO format file.
- *
- * @param pngFilePath - Path to the source PNG image file.
- * @param icoFilePath - Path to save the ICO file.
- * @param iconSizes - List of tuples specifying the sizes to include in the ICO file.
- */
-function convertPngToIco(pngFilePath: string, icoFilePath: string, iconSizes: IconSizes[] = [{ width: 32, height: 32 }]): void {
-    // Open the image file using sharp
-    sharp(pngFilePath)
-        .resize(iconSizes[0].width, iconSizes[0].height)
-        .toFile(icoFilePath, (err, info) => {
-            if (err) {
-                console.error('Error converting PNG to ICO:', err);
-            } else {
-                console.log('ICO file saved successfully:', icoFilePath);
-            }
-        });
-}
-import { mock } from 'jest-mock-extended';
-
-describe('TestConvertPngToIco', () => {
-    let mockImage: any;
-
-    beforeEach(() => {
-        mockImage = mock();
+describe('UniqueDeque', () => {
+    describe('testAddUniqueElements', () => {
+      it('should add unique elements and maintain the correct size and order', () => {
+        const ud = new UniqueDeque<number>();
+        expect(ud.add(1)).toBe(true);
+        expect(ud.add(2)).toBe(true);
+        expect(ud.add(3)).toBe(true);
+        expect(ud.length()).toBe(3);
+        expect(Array.from(ud)).toEqual([1, 2, 3]);
+      });
     });
-
-    describe('convertPngToIco', () => {
-        it('should save ICO with a single icon size', () => {
-            const mockOpen = jest.fn().mockReturnValue({
-                __enter__: jest.fn().mockReturnValue(mockImage),
-                __exit__: jest.fn(),
-            });
-
-            jest.spyOn(global, 'Image').mockImplementation(() => ({
-                open: mockOpen,
-            }));
-
-            convertPngToIco('source.png', 'output.ico', [[64, 64]]);
-            expect(mockImage.save).toHaveBeenCalledWith('output.ico', { format: 'ICO', sizes: [[64, 64]] });
-        });
-
-        it('should save ICO with multiple icon sizes', () => {
-            const mockOpen = jest.fn().mockReturnValue({
-                __enter__: jest.fn().mockReturnValue(mockImage),
-                __exit__: jest.fn(),
-            });
-
-            jest.spyOn(global, 'Image').mockImplementation(() => ({
-                open: mockOpen,
-            }));
-
-            convertPngToIco('source.png', 'output.ico', [[16, 16], [32, 32], [64, 64]]);
-            expect(mockImage.save).toHaveBeenCalledWith('output.ico', { format: 'ICO', sizes: [[16, 16], [32, 32], [64, 64]] });
-        });
-
-        it('should save ICO with the default icon size', () => {
-            const mockOpen = jest.fn().mockReturnValue({
-                __enter__: jest.fn().mockReturnValue(mockImage),
-                __exit__: jest.fn(),
-            });
-
-            jest.spyOn(global, 'Image').mockImplementation(() => ({
-                open: mockOpen,
-            }));
-
-            convertPngToIco('source.png', 'output.ico');
-            expect(mockImage.save).toHaveBeenCalledWith('output.ico', { format: 'ICO', sizes: [[32, 32]] });
-        });
-
-        it('should handle file opening correctly', () => {
-            const mockOpen = jest.fn().mockReturnValue({
-                __enter__: jest.fn().mockReturnValue(mockImage),
-                __exit__: jest.fn(),
-            });
-
-            jest.spyOn(global, 'Image').mockImplementation(() => ({
-                open: mockOpen,
-            }));
-
-            convertPngToIco('source.png', 'output.ico');
-            expect(mockImage.save).toHaveBeenCalledTimes(1);
-            expect(mockImage.save).toHaveBeenCalledWith('output.ico', { format: 'ICO', sizes: [[32, 32]] });
-        });
-
-        it('should throw an error when the image path is invalid', () => {
-            const mockOpen = jest.fn().mockImplementation(() => {
-                throw new Error('File not found');
-            });
-
-            jest.spyOn(global, 'Image').mockImplementation(() => ({
-                open: mockOpen,
-            }));
-
-            expect(() => convertPngToIco('invalid.png', 'output.ico')).toThrow('File not found');
-        });
+  
+    describe('testAddDuplicateElements', () => {
+      it('should not add duplicate elements and maintain the correct size', () => {
+        const ud = new UniqueDeque<number>();
+        expect(ud.add(1)).toBe(true);
+        expect(ud.add(1)).toBe(false); // Duplicate add should return false
+        expect(ud.length()).toBe(1);
+        expect(Array.from(ud)).toEqual([1]);
+      });
     });
-});
+  
+    describe('testDeleteElements', () => {
+      it('should delete elements and maintain the correct size and order', () => {
+        const ud = new UniqueDeque<number>();
+        ud.add(1);
+        ud.add(2);
+        ud.add(3);
+        expect(ud.delete(2)).toBe(true);
+        expect(ud.delete(2)).toBe(false); // Deleting non-existing element should return false
+        expect(ud.length()).toBe(2);
+        expect(Array.from(ud)).toEqual([1, 3]);
+      });
+    });
+  
+    describe('testContains', () => {
+      it('should correctly identify the presence of elements', () => {
+        const ud = new UniqueDeque<number>();
+        ud.add(1);
+        expect(ud.contains(1)).toBe(true);
+        expect(ud.contains(2)).toBe(false);
+        ud.delete(1);
+        expect(ud.contains(1)).toBe(false);
+      });
+    });
+  
+    describe('testIterAndLen', () => {
+      it('should correctly iterate and provide the correct length', () => {
+        const ud = new UniqueDeque<number>();
+        ud.add(1);
+        ud.add(2);
+        expect(ud.length()).toBe(2);
+        const items = Array.from(ud);
+        expect(items).toEqual([1, 2]);
+        ud.delete(1);
+        expect(ud.length()).toBe(1);
+        expect(Array.from(ud)).toEqual([2]);
+      });
+    });
+  });

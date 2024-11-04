@@ -1,21 +1,15 @@
-import { match } from "assert";
-
+/**
+ * Extracts all code block contents from a markdown string.
+ *
+ * @param {string} markdownString - The input markdown string.
+ * @returns {Array<string>} An array of strings, each representing the content of a code block.
+ *                           Returns an empty array if no code blocks are found.
+ */
 function codeBlockRemover(markdownString: string): string[] {
-    /**
-     * Extracts all code block contents from a markdown string.
-     *
-     * @param markdownString - The input markdown string.
-     * @returns An array of strings, each representing the content of a code block.
-     *          Returns an empty array if no code blocks are found.
-     */
-    // Define a pattern that captures content within triple backticks, with optional language specifier
-    const pattern = /```[a-zA-Z]*\n([\s\S]*?)```/g;
-
-    // Use String.match() to find all occurrences of the pattern
-    const matches = markdownString.match(pattern);
-
-    // Extract the content of each code block
-    const codeBlocks = matches ? matches.map(match => match.replace(/```[a-zA-Z]*\n|```/g, '')) : [];
-
-    return codeBlocks;
+    const pattern: RegExp = /```[a-zA-Z]*\n([\s\S]*?)```/g;
+    const codeBlocks: RegExpMatchArray | null = markdownString.match(pattern);
+    if (codeBlocks) {
+        return codeBlocks.map(block => block.replace(/```[a-zA-Z]*\n|```/g, '').trim());
+    }
+    return [];
 }
