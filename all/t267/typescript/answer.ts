@@ -1,24 +1,15 @@
 function extractSldTld(fqdn: string): [string, string] {
-    /**
-     * Extracts the second-level and top-level domain names from the fully qualified domain name FQDN and returns them.
-     * @param fqdn - The fully qualified domain name.
-     * @returns A tuple containing the second-level domain and top-level domain.
-     */
-
+    // Split the FQDN into parts
     const parts = fqdn.split('.');
 
+    // Check if there are enough parts to extract SLD and TLD
     if (parts.length < 2) {
-        throw new Error('Invalid FQDN');
+        throw new Error("The provided FQDN does not contain enough parts to extract SLD and TLD.");
     }
 
-    const tld = parts[parts.length - 1];
-    let sld = '';
-
-    if (parts.length === 3) {
-        sld = `${parts[0]}.${parts[1]}`;
-    } else {
-        sld = parts.slice(0, parts.length - 2).join('.');
-    }
+    // Extract the SLD and TLD
+    const sld = parts[parts.length - 2];  // Second to last item is the SLD
+    const tld = parts[parts.length - 1];  // Last item is the TLD
 
     return [sld, tld];
 }

@@ -1,36 +1,36 @@
 function handleNestedData(data) {
-    /**
-     * Handle nested question structures (e.g., objects, arrays, and enums),
-     * decode bytes to UTF8-strings, and convert numbers to integers or floating point numbers.
-     *
-     * @param {Object} data - Question object
-     * @return {Object} After converted question
-     */
-
     if (typeof data === 'object' && data !== null) {
-        for (let key in data) {
-            if (data.hasOwnProperty(key)) {
-                let value = data[key];
-
-                // If value is an array, recursively call handleNestedData on each item
-                if (Array.isArray(value)) {
-                    data[key] = value.map(item => handleNestedData(item));
-                }
-                // If value is an object, recursively call handleNestedData
-                else if (typeof value === 'object') {
-                    data[key] = handleNestedData(value);
-                }
-                // If value is a number, convert it to integer or float depending on its precision
-                else if (typeof value === 'number') {
-                    data[key] = Number.isInteger(value) ? Math.floor(value) : parseFloat(value.toFixed(2));
-                }
-                // If value is a byte string, decode it to UTF-8 string
-                else if (value instanceof Uint8Array) {
-                    data[key] = new TextDecoder('utf-8').decode(value);
+        if (Array.isArray(data)) {
+            // If it's an array, apply the function recursively to each item
+            return data.map(item => handleNestedData(item));
+        } else if (data.constructor === Object) {
+            // If it's an object, apply the function recursively to each value
+            const result = {};
+            for (const key in data) {
+                if (data.hasOwnProperty(key)) {
+                    result[key] = handleNestedData(data[key]);
                 }
             }
+            return result;
         }
+    } else if (typeof data === 'string') {
+        // Try to parse the string as a number
+        const num = Number(data);
+        if (!isNaN(num)) {
+            return num;
+        }
+        // Decode bytes if the string is in base64 format
+        try {
+            const buffer = Buffer.from(data, 'base64');
+            return buffer.toString('utf8');
+        } catch (error) {
+            // Return the original string if it's not a valid base64 encoded string
+            return data;
+        }
+    } else if (typeof data === 'number') {
+        // If it's already a number, return as is
+        return data;
     }
-
+    // Return the input as is for any other type
     return data;
 }

@@ -1,5 +1,6 @@
-const fs = require('fs');
-const { mock } = require('jest-mock-extended');
+import fs from 'fs'
+import {mock} from 'jest-mock-extended'
+
 describe('TestReadLog', () => {
     it('test_read_correct_data', () => {
         const mockFileContent = '{"test_acc1": 88.5, "train_loss": 0.75}\n{"test_acc1": 89.0, "train_loss": 0.70}';

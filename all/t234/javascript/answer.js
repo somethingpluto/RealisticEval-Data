@@ -1,6 +1,6 @@
-const fs = require('fs');
-const csvParser = require('csv-parser');
-const fastCsv = require('fast-csv');
+import fs from 'fs'
+import csvParser from 'csv-parser'
+import fastCsv from 'fast-csv'
 
 function appendOrSkipRow(filePath, rowCandidate) {
     return new Promise((resolve, reject) => {

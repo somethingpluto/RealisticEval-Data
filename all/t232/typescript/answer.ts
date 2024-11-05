@@ -1,25 +1,31 @@
-/**
- * Convert a time duration string in the format 'XhYminZs' to milliseconds.
- *
- * This function takes a string representing a time duration, where hours, minutes, and seconds
- * are optionally provided, and converts this duration into the equivalent number of milliseconds.
- *
- * @param {string} timeStr - A string representing the time duration, e.g., '1h20min30s'.
- * @returns {(number | null)} The equivalent duration in milliseconds, or null if the input is invalid.
- */
-function convertHmsToMilliseconds(timeStr: string): number | null {
-    const regex = /^(\d+)h(\d+)min(\d+)s$/;
-    const matches = timeStr.match(regex);
+import { match } from "assert";
 
-    if (!matches) {
-        return null; // Return null for invalid input
+function convertHmsToMilliseconds(timeStr: string): number | null {
+    /**
+     * Convert a time duration string in the format 'XhYminZs' to milliseconds.
+     *
+     * This function takes a string representing a time duration, where hours, minutes, and seconds
+     * are optionally provided, and converts this duration into the equivalent number of milliseconds.
+     *
+     * @param timeStr - A string representing the time duration, e.g., '1h20min30s'.
+     * @returns The equivalent duration in milliseconds, or null if the input is invalid.
+     */
+    const regex = /^(?:(\d+)h)?(?:(\d+)min)?(?:(\d+)s)?$/;
+    const match = timeStr.match(regex);
+
+    if (!match) {
+        console.log(`remindme.ts: Cannot convert time string "${timeStr}" to milliseconds!`);
+        return null;
     }
 
-    // Extract hours, minutes, and seconds from the matched groups
-    const [hours, minutes, seconds] = matches.slice(1).map(Number);
+    // Extract hours, minutes, and seconds from the regex groups, defaulting to 0 if not present
+    const [_, hoursStr, minutesStr, secondsStr] = match;
+    const hours = hoursStr ? parseInt(hoursStr, 10) : 0;
+    const minutes = minutesStr ? parseInt(minutesStr, 10) : 0;
+    const seconds = secondsStr ? parseInt(secondsStr, 10) : 0;
 
-    // Calculate total milliseconds
-    const milliseconds = (hours * 60 * 60 + minutes * 60 + seconds) * 1000;
+    // Convert to milliseconds
+    const totalMilliseconds = (hours * 60 * 60 + minutes * 60 + seconds) * 1000;
 
-    return milliseconds;
+    return totalMilliseconds;
 }

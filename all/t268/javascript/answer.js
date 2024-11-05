@@ -1,26 +1,20 @@
 function canCompleteCircuit(gas, cost) {
-    /**
-     * Determines if there exists a starting gas station's index where you can travel
-     * around the circuit once in a clockwise direction.
-     *
-     * @param {number[]} gas - Array of integers representing the amount of gas at each station.
-     * @param {number[]} cost - Array of integers representing the cost of gas to travel from each station to the next.
-     * @returns {number} - The starting gas station's index if the circuit can be completed, otherwise -1.
-     */
-
+    const n = gas.length;
     let totalGas = 0;
-    let currentGas = 0;
-    let startStation = 0;
+    let totalCost = 0;
+    let tank = 0;
+    let startIndex = 0;
 
-    for(let i = 0; i < gas.length; i++) {
-        totalGas += gas[i] - cost[i];
-        currentGas += gas[i] - cost[i];
+    for (let i = 0; i < n; i++) {
+        totalGas += gas[i];
+        totalCost += cost[i];
+        tank += gas[i] - cost[i];
 
-        if(currentGas < 0) {
-            startStation = i + 1;
-            currentGas = 0;
+        if (tank < 0) {  // If tank becomes negative, update startIndex and reset tank
+            startIndex = i + 1;
+            tank = 0;
         }
     }
 
-    return totalGas >= 0 ? startStation : -1;
+    return totalGas >= totalCost ? startIndex : -1;
 }

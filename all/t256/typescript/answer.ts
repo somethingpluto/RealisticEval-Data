@@ -1,21 +1,21 @@
 function bitsToBytes(bits: number[]): Uint8Array {
-    // Calculate the number of full bytes that can be formed
+    // Ensure that the number of bits is a multiple of 8
     const numFullBytes = Math.floor(bits.length / 8);
 
-    // Create a new Uint8Array with the calculated number of full bytes
-    const bytes = new Uint8Array(numFullBytes);
+    // Create a Uint8Array to store the byte values
+    const byteArray = new Uint8Array(numFullBytes);
 
+    // Process each group of 8 bits
     for (let i = 0; i < numFullBytes; i++) {
-        let byteValue = 0;
-
-        // Compose 8 bits into one byte
-        for (let j = 0; j < 8; j++) {
-            byteValue = (byteValue << 1) | bits[i * 8 + j];
-        }
-
-        // Store the composed byte in the array
-        bytes[i] = byteValue;
+        // Slice the bits array to get 8 bits
+        const byteBits = bits.slice(i * 8, (i + 1) * 8);
+        // Convert the list of bits to a string of bits
+        const byteStr = byteBits.join('');
+        // Convert the string of bits to an integer and then to a byte
+        const byte = parseInt(byteStr, 2);
+        // Assign the byte to the corresponding index in the Uint8Array
+        byteArray[i] = byte;
     }
 
-    return bytes;
+    return byteArray;
 }

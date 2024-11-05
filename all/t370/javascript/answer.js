@@ -1,27 +1,22 @@
 function decompose(n, shape) {
-    if (typeof n !== 'number' || typeof shape !== 'object') {
-        throw new Error('Invalid arguments');
+    // Calculate the total size of the array
+    let size = 1;
+    for (let dim of shape) {
+        size *= dim;
     }
 
+    // Check if the index is within bounds
+    if (!(0 <= n && n < size)) {
+        throw new Error("Index out of bounds");
+    }
+
+    // Decompose the index
     let result = [];
-    let totalElements = 1;
-
-    // Calculate total number of elements in the array
-    for(let i=0; i<shape.length; i++) {
-        totalElements *= shape[i];
+    for (let dim of shape.slice().reverse()) {
+        result.push(n % dim);
+        n = Math.floor(n / dim);  // Update n by integer division
     }
 
-    // Check if n is within valid range
-    if(n < 0 || n >= totalElements) {
-        throw new Error('Index out of bounds');
-    }
-
-    // Calculate multidimensional index
-    for(let i=shape.length-1; i>=0; i--) {
-        result.unshift(Math.floor(n / totalElements));
-        n %= totalElements;
-        totalElements /= shape[i];
-    }
-
-    return result;
+    // Reverse the result to match the original shape order and return as an array
+    return result.reverse();
 }

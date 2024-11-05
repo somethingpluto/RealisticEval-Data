@@ -1,17 +1,21 @@
-interface FileNamesByExtension {
-  [key: string]: string[];
-}
+function classifyFilesByExtension(fileNames: string[]): {[key: string]: string[]} {
+  const classifiedFiles: {[key: string]: string[]} = {};
 
-function classifyFilesByExtension(fileNames: string[]): FileNamesByExtension {
-  let result: FileNamesByExtension = {};
+  for (const file of fileNames) {
+      // Split the file name into name and extension
+      const parts = file.split('.');
+      const name = parts.slice(0, -1).join('.');
+      const ext = parts[parts.length - 1] || null;
 
-  for(let fileName of fileNames) {
-    let extension = fileName.split('.').pop();
-    if(!result[extension]) {
-      result[extension] = [];
-    }
-    result[extension].push(fileName);
+      // If there is an extension, classify it
+      if (ext) {
+          const normalizedExt = ext.toLowerCase();  // Normalize the extension to lowercase
+          if (!classifiedFiles[normalizedExt]) {
+              classifiedFiles[normalizedExt] = [];
+          }
+          classifiedFiles[normalizedExt].push(file);
+      }
   }
 
-  return result;
+  return classifiedFiles;
 }

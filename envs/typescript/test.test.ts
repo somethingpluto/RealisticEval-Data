@@ -1,110 +1,45 @@
-import { Deque } from 'collections/deque';
-
-class UniqueDeque<T> {
-  private deque: Deque<T>;
-  private set: Set<T>;
-
-  constructor() {
-    this.deque = new Deque<T>();
-    this.set = new Set<T>();
-  }
-
-  add(item: T): boolean {
-    if (!this.set.has(item)) {
-      this.deque.push(item);
-      this.set.add(item);
-      return true;
+function extractEmailDetails(email: string): [string, string] {
+    if (!email.includes('@')) {
+        throw new Error("Invalid email address. Email must contain an '@' character.");
     }
-    return false;
-  }
 
-  delete(item: T): boolean {
-    if (this.set.has(item)) {
-      const index = this.deque.toArray().findIndex((x) => x === item);
-      if (index !== -1) {
-        this.deque.deleteAt(index);
-      }
-      this.set.delete(item);
-      return true;
+    // Split the email at the '@' and assign parts to username and domain
+    const [username, domain] = email.split('@');
+
+    // Return a tuple of username and domain
+    if (!domain) {
+        throw new Error("Invalid email address. Domain part is missing.");
     }
-    return false;
-  }
 
-  contains(item: T): boolean {
-    return this.set.has(item);
-  }
-
-  length(): number {
-    return this.deque.length;
-  }
-
-  *[Symbol.iterator](): Iterator<T> {
-    for (const item of this.deque) {
-      yield item;
-    }
-  }
-
-  toString(): string {
-    return `UniqueDeque(${Array.from(this.deque).toString()})`;
-  }
+    return [username, domain];
 }
-describe('UniqueDeque', () => {
-    describe('testAddUniqueElements', () => {
-      it('should add unique elements and maintain the correct size and order', () => {
-        const ud = new UniqueDeque<number>();
-        expect(ud.add(1)).toBe(true);
-        expect(ud.add(2)).toBe(true);
-        expect(ud.add(3)).toBe(true);
-        expect(ud.length()).toBe(3);
-        expect(Array.from(ud)).toEqual([1, 2, 3]);
-      });
+
+describe('TestExtractEmailDetails', () => {
+    it('test_valid_email', () => {
+        // Test with a typical email address
+        const email = "user@example.com";
+        const expected = ["user", "example.com"];
+        const result = extractEmailDetails(email);
+        expect(result).toEqual(expected);
     });
-  
-    describe('testAddDuplicateElements', () => {
-      it('should not add duplicate elements and maintain the correct size', () => {
-        const ud = new UniqueDeque<number>();
-        expect(ud.add(1)).toBe(true);
-        expect(ud.add(1)).toBe(false); // Duplicate add should return false
-        expect(ud.length()).toBe(1);
-        expect(Array.from(ud)).toEqual([1]);
-      });
+
+    it('test_valid_email_with_subdomain', () => {
+        // Test with an email that includes a subdomain
+        const email = "user@mail.office.com";
+        const expected = ["user", "mail.office.com"];
+        const result = extractEmailDetails(email);
+        expect(result).toEqual(expected);
     });
-  
-    describe('testDeleteElements', () => {
-      it('should delete elements and maintain the correct size and order', () => {
-        const ud = new UniqueDeque<number>();
-        ud.add(1);
-        ud.add(2);
-        ud.add(3);
-        expect(ud.delete(2)).toBe(true);
-        expect(ud.delete(2)).toBe(false); // Deleting non-existing element should return false
-        expect(ud.length()).toBe(2);
-        expect(Array.from(ud)).toEqual([1, 3]);
-      });
+
+    it('test_email_without_at_symbol', () => {
+        // Test with an email that lacks an '@' symbol
+        const email = "userexample.com";
+        expect(() => extractEmailDetails(email)).toThrowError("Invalid email address. Email must contain an '@' character.");
     });
-  
-    describe('testContains', () => {
-      it('should correctly identify the presence of elements', () => {
-        const ud = new UniqueDeque<number>();
-        ud.add(1);
-        expect(ud.contains(1)).toBe(true);
-        expect(ud.contains(2)).toBe(false);
-        ud.delete(1);
-        expect(ud.contains(1)).toBe(false);
-      });
+
+    it('test_empty_email', () => {
+        // Test with an empty string as an email
+        const email = "";
+        expect(() => extractEmailDetails(email)).toThrowError("Invalid email address. Email must contain an '@' character.");
     });
-  
-    describe('testIterAndLen', () => {
-      it('should correctly iterate and provide the correct length', () => {
-        const ud = new UniqueDeque<number>();
-        ud.add(1);
-        ud.add(2);
-        expect(ud.length()).toBe(2);
-        const items = Array.from(ud);
-        expect(items).toEqual([1, 2]);
-        ud.delete(1);
-        expect(ud.length()).toBe(1);
-        expect(Array.from(ud)).toEqual([2]);
-      });
-    });
-  });
+});

@@ -1,43 +1,57 @@
-interface Matrix {
-    [key: number]: number[];
-}
-
-class MatrixTraversal {
-    spiralTraversal(matrix: Matrix[]): number[] {
-        let result: number[] = [];
-        if (matrix.length === 0) return result;
-
-        let top = 0;
-        let bottom = matrix.length - 1;
-        let left = 0;
-        let right = matrix[0].length - 1;
-
-        while (top <= bottom && left <= right) {
-            for (let i = left; i <= right; i++) {
-                result.push(matrix[top][i]);
-            }
-            top++;
-
-            for (let i = top; i <= bottom; i++) {
-                result.push(matrix[i][right]);
-            }
-            right--;
-
-            if (top <= bottom) {
-                for (let i = right; i >= left; i--) {
-                    result.push(matrix[bottom][i]);
-                }
-                bottom--;
-            }
-
-            if (left <= right) {
-                for (let i = bottom; i >= top; i--) {
-                    result.push(matrix[i][left]);
-                }
-                left++;
-            }
-        }
-
-        return result;
+function spiralTraversal(matrix: number[][]): number[] {
+    /**
+     * Traverse a given m x n matrix in a spiral order and return all elements as an array.
+     *
+     * The function starts at the top-left corner of the matrix and traverses it in a
+     * clockwise spiral order, moving right across the top row, down the right column,
+     * left across the bottom row, and up the left column, repeating this process
+     * until all elements are traversed.
+     *
+     * @param matrix - A 2D array representing the matrix with m rows and n columns.
+     * @returns An array of numbers representing the elements of the matrix
+     *          in the order they were traversed.
+     */
+    if (!matrix.length) {
+      return [];
     }
-}
+
+    const m = matrix.length;
+    const n = matrix[0].length;
+    let rowStart = 0;
+    let rowEnd = m - 1;
+    let colStart = 0;
+    let colEnd = n - 1;
+    const result: number[] = [];
+
+    while (rowStart <= rowEnd && colStart <= colEnd) {
+      // Traverse Right along the top row
+      for (let j = colStart; j <= colEnd; j++) {
+        result.push(matrix[rowStart][j]);
+      }
+      rowStart++;
+
+      // Traverse Down along the right column
+      for (let i = rowStart; i <= rowEnd; i++) {
+        result.push(matrix[i][colEnd]);
+      }
+      colEnd--;
+
+      // Traverse Left along the bottom row, if still within bounds
+      if (rowStart <= rowEnd) {
+        for (let j = colEnd; j >= colStart; j--) {
+          result.push(matrix[rowEnd][j]);
+        }
+        rowEnd--;
+      }
+
+      // Traverse Up along the left column, if still within bounds
+      if (colStart <= colEnd) {
+        for (let i = rowEnd; i >= rowStart; i--) {
+          result.push(matrix[i][colStart]);
+        }
+        colStart++;
+      }
+    }
+
+    return result;
+  }

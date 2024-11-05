@@ -1,4 +1,3 @@
-import { Dictionary } from "lodash";
 describe('TestSanitizeData', () => {
   describe('test_empty_dict', () => {
     it('should return an empty dictionary when given an empty dictionary', () => {

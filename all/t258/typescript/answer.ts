@@ -1,23 +1,33 @@
 function extractCharacterBits(byteArray: Uint8Array, char: string, charset: string = 'utf-8'): [number, string] | null {
-    // Convert the character to its UTF-8 encoded byte array
-    const charBytes = new TextEncoder().encode(char);
-
-    // Check if the character is in the byte array
-    for (let i = 0; i < byteArray.length; i++) {
-        let match = true;
-        for (let j = 0; j < charBytes.length; j++) {
-            if (byteArray[i + j] !== charBytes[j]) {
-                match = false;
-                break;
-            }
+    try {
+        // Decode byte array to string using the specified character set
+        const string = new TextDecoder(charset).decode(byteArray);
+        
+        // Check if the character is in the decoded string
+        if (string.includes(char)) {
+            const position = string.indexOf(char);
+            
+            // Find the byte position of the character
+            const bytePosition = new TextEncoder().encode(string.slice(0, position)).length;
+            
+            // Determine the length of the character in bytes
+            const charLength = new TextEncoder().encode(char).length;
+            
+            // Extract the bits corresponding to the character
+            const bits = byteArray.subarray(bytePosition, bytePosition + charLength);
+            
+            // Convert bits to a human-readable binary string
+            const bitsAsString = Array.from(bits).map(byte => `${byte.toString(2).padStart(8, '0')}`).join(' ');
+            
+            return [position, bitsAsString];
+        } else {
+            console.log(`The character '${char}' is not in the byte array.`);
+            return null;
         }
-
-        if (match) {
-            // Return the position and bits of the character
-            return [i, char];
+    } catch (error) {
+        if (error instanceof Error && error.name === 'SyntaxError') {
+            console.log("Failed to decode the byte array.");
         }
+        return null;
     }
-
-    // If the character is not found, return null
-    return null;
 }

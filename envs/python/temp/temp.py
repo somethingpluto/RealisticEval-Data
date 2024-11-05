@@ -1,71 +1,52 @@
-import os
-import shutil
-
-
-def empty_directory(directory_path):
+def extract_email_details(email):
     """
-    Empties all files and subdirectories in the specified directory, but keeps the directory itself.
+    Extracts the username and mailbox suffix from an email address.
 
-    Args:
-    directory_path (str): Path to the directory whose contents are to be emptied.
+    :param email: str, the email address to extract details from
+    :return: tuple, (username, domain) where:
+        username is the part before '@'
+        domain is the part after '@'
 
-    Raises:
-    ValueError: If the specified path does not exist or is not a directory.
+    Example:
+        extract_email_details("xxx@gmail.com") returns ('xxx', 'gmail.com')
     """
-    # Check if the path exists and is a directory
-    if not os.path.exists(directory_path):
-        raise ValueError("The specified directory does not exist.")
-    if not os.path.isdir(directory_path):
-        raise ValueError("The specified path is not a directory.")
+    # Check if '@' is in the email
+    if '@' not in email:
+        raise ValueError("Invalid email address. Email must contain an '@' character.")
 
-    # Iterate over all items in the directory
-    for item in os.listdir(directory_path):
-        item_path = os.path.join(directory_path, item)
+    # Split the email at the '@' and assign parts to username and domain
+    username, domain = email.split('@', 1)
 
-        # Check if the item is a file or directory and delete accordingly
-        if os.path.isfile(item_path) or os.path.islink(item_path):
-            os.remove(item_path)  # Remove the file or link
-        elif os.path.isdir(item_path):
-            shutil.rmtree(item_path)  # Remove the directory and all its contents
-
-import os
-import shutil
-import tempfile
+    return username, domain
 import unittest
 
+class TestExtractEmailDetails(unittest.TestCase):
 
-class TestEmptyDirectory(unittest.TestCase):
-    def setUp(self):
-        # Set up a temporary directory with some files and directories
-        self.test_dir = tempfile.mkdtemp()
-        # Create some files and directories
-        os.mkdir(os.path.join(self.test_dir, 'subdir'))
-        with open(os.path.join(self.test_dir, 'file1.txt'), 'w') as f:
-            f.write("Hello")
-        with open(os.path.join(self.test_dir, 'subdir', 'file2.txt'), 'w') as f:
-            f.write("World")
+    def test_valid_email(self):
+        # Test with a typical email address
+        email = "user@example.com"
+        expected = ("user", "example.com")
+        result = extract_email_details(email)
+        self.assertEqual(result, expected)
 
-    def tearDown(self):
-        # Remove the temporary directory after each test.js
-        shutil.rmtree(self.test_dir)
-
-    def test_empty_directory_success(self):
-        """ Test that the directory is emptied successfully """
-        empty_directory(self.test_dir)
-        self.assertEqual(os.listdir(self.test_dir), [])  # Directory should be empty
+    def test_valid_email_with_subdomain(self):
+        # Test with an email that includes a subdomain
+        email = "user@mail.office.com"
+        expected = ("user", "mail.office.com")
+        result = extract_email_details(email)
+        self.assertEqual(result, expected)
 
 
+    def test_email_without_at_symbol(self):
+        # Test with an email that lacks an '@' symbol
+        email = "userexample.com"
+        with self.assertRaises(ValueError):
+            extract_email_details(email)
 
-    def test_empty_directory_with_subdirectories(self):
-        """ Test emptying a directory that includes subdirectories """
-        empty_directory(self.test_dir)
-        self.assertFalse(os.listdir(self.test_dir))  # Directory and subdirectory should be empty
-
-    def test_empty_already_empty_directory(self):
-        """ Test emptying a directory that is already empty """
-        empty_directory(self.test_dir)  # First emptying
-        empty_directory(self.test_dir)  # Empty again
-        self.assertEqual(os.listdir(self.test_dir), [])  # Still should be empty
-
+    def test_empty_email(self):
+        # Test with an empty string as an email
+        email = ""
+        with self.assertRaises(ValueError):
+            extract_email_details(email)
 if __name__ == '__main__':
     unittest.main()

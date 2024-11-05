@@ -1,17 +1,13 @@
 function calculateBearing(lat1, lon1, lat2, lon2) {
-    // Convert decimal degrees to radians
-    const deg2rad = (deg) => deg * (Math.PI/180);
-
-    let dLat = deg2rad(lat2-lat1);
-    let dLon = deg2rad(lon2-lon1);
-
-    let a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-            Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
-            Math.sin(dLon/2) * Math.sin(dLon/2);
-
-    let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-
-    let bearing = (deg2rad(lon2)-deg2rad(lon1)) / c;
-
-    return (bearing*180/Math.PI + 360) % 360;
+    const lat1Rad = lat1 * Math.PI / 180;
+    const lon1Rad = lon1 * Math.PI / 180;
+    const lat2Rad = lat2 * Math.PI / 180;
+    const lon2Rad = lon2 * Math.PI / 180;
+    const deltaLonRad = lon2Rad - lon1Rad;
+    const x = Math.sin(deltaLonRad) * Math.cos(lat2Rad);
+    const y = Math.cos(lat1Rad) * Math.sin(lat2Rad) - (Math.sin(lat1Rad) * Math.cos(lat2Rad) * Math.cos(deltaLonRad));
+    const initialBearingRad = Math.atan2(x, y);
+    const initialBearingDeg = initialBearingRad * 180 / Math.PI;
+    const compassBearing = (initialBearingDeg + 360) % 360;
+    return compassBearing;
 }

@@ -1,26 +1,20 @@
 function convertHmsToMilliseconds(timeStr) {
-    // Regular expression to match the pattern XhYminZs
-    const regex = /^(\d+)(?:h)?(\d+)(?:min)?(\d+)(?:s)?$/;
-
-    // Match the input string with the regular expression
+    // Regex to match hours, minutes, and seconds
+    const regex = /^(?:(\d+)h)?(?:(\d+)min)?(?:(\d+)s)?$/;
     const match = timeStr.match(regex);
 
-    // If there is no match, return null
     if (!match) {
+        console.log(`remindme.js: Cannot convert time string "${timeStr}" to milliseconds!`);
         return null;
     }
 
-    // Extract hours, minutes, and seconds from the matched groups
-    let [_, hours, minutes, seconds] = match;
+    // Extract hours, minutes, and seconds from the regex groups, defaulting to 0 if not present
+    const hours = match[1] ? parseInt(match[1], 10) : 0;
+    const minutes = match[2] ? parseInt(match[2], 10) : 0;
+    const seconds = match[3] ? parseInt(match[3], 10) : 0;
 
-    // Convert the extracted values to integers
-    hours = parseInt(hours, 10);
-    minutes = parseInt(minutes, 10);
-    seconds = parseInt(seconds, 10);
+    // Calculate the total duration in milliseconds
+    const totalMilliseconds = (hours * 60 * 60 + minutes * 60 + seconds) * 1000;
 
-    // Calculate the total milliseconds
-    const milliseconds = (hours * 60 * 60 + minutes * 60 + seconds) * 1000;
-
-    // Return the calculated milliseconds
-    return milliseconds;
+    return totalMilliseconds;
 }

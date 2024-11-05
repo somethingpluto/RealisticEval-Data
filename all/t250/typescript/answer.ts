@@ -1,16 +1,18 @@
-function invertDictionary(originalDict: {[key: string]: any}): {[key: string]: any} {
-    let invertedDict: {[key: string]: any} = {};
-
-    for(let key in originalDict){
-        if(invertedDict[originalDict[key]]){
-            if(!Array.isArray(invertedDict[originalDict[key]])){
-                invertedDict[originalDict[key]] = [invertedDict[originalDict[key]]];
+function invertDictionary(originalDict: Record<string, string | string[]>): Record<string, string | string[]> {
+    const newDict: Record<string, string | string[]> = {};
+    for (const key in originalDict) {
+        if (originalDict.hasOwnProperty(key)) {
+            const value = originalDict[key];
+            if (!(value in newDict)) {
+                newDict[value] = key;
+            } else {
+                // If the value already exists as a key, we need to append to or create a list
+                if (!Array.isArray(newDict[value])) {
+                    newDict[value] = [newDict[value]];
+                }
+                (newDict[value] as string[]).push(key);
             }
-            invertedDict[originalDict[key]].push(key);
-        } else {
-            invertedDict[originalDict[key]] = key;
         }
     }
-
-    return invertedDict;
+    return newDict;
 }

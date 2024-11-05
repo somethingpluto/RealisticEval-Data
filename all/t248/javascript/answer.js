@@ -1,19 +1,25 @@
 function sanitizeData(data, keyToRemove = null) {
-    // Check if keyToRemove is null or undefined and set it as an empty array if true
-    if (!keyToRemove) {
-        keyToRemove = [];
+    // Recursively sanitize an object by removing specific keys.
+    if (keyToRemove === null) {
+        keyToRemove = new Set([
+            "email", "pc_conflicts", "metadata", 
+            "eligible_student_paper_prize", "talk_poster", 
+            "submitted_at", "decision", "status", 
+            "submitted", "submission"
+        ]);
     }
 
-    // Create a new object to store the sanitized data
-    let sanitizedData = {};
-
-    // Iterate over each key-value pair in the original data
-    for(let key in data) {
-        // If the current key is not in the keyToRemove array, add it to the sanitizedData object
-        if(!keyToRemove.includes(key)) {
-            sanitizedData[key] = data[key];
+    if (typeof data === 'object' && !Array.isArray(data) && data !== null) {
+        const result = {};
+        for (const [key, value] of Object.entries(data)) {
+            if (!keyToRemove.has(key)) {
+                result[key] = sanitizeData(value, keyToRemove);
+            }
         }
+        return result;
+    } else if (Array.isArray(data)) {
+        return data.map(value => sanitizeData(value, keyToRemove));
+    } else {
+        return data;
     }
-
-    return sanitizedData;
 }

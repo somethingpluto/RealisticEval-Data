@@ -1,8 +1,3 @@
-const csvParser = require('csv-parser');
-const createObjectCsvWriter = require('csv-writer').createObjectCsvWriter;
-const fs = require('fs');
-const path = require('path');
-
 /**
  * Processes a CSV file and removes rows with two or more empty columns.
  * If the file is empty, returns an empty string.

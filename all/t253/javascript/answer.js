@@ -1,22 +1,24 @@
+import json from 'json'
 function log(item) {
-    /*
-    Logs an item by printing it. Handles strings, numbers, arrays, and objects by printing
-    them directly or as a JSON-formatted string. Other types are reported as errors.
-    Args:
-        item (any): The item to be logged. Can be of any type.
-
-    Returns:
-        item: The item to be logged. Can be of any type.
-    */
+    /**
+     * Logs an item by printing it. Handles strings, numbers, arrays, and objects by printing
+     * them directly or as a JSON-formatted string. Other types are reported as errors.
+     *
+     * @param {*} item - The item to be logged. Can be of any type.
+     */
+    // Handling for strings, numbers
     if (typeof item === 'string' || typeof item === 'number') {
         console.log(item);
-    } else if (Array.isArray(item)) {
-        console.log(JSON.stringify(item));
-    } else if (typeof item === 'object') {
-        console.log(JSON.stringify(item));
-    } else {
-        throw new Error('Unsupported type');
     }
-
-    return item;
+    // Handling for objects and arrays to convert to JSON string
+    else if (Array.isArray(item) || typeof item === 'object' && item !== null) {
+        try {
+            console.log(JSON.stringify(item, null, 4));  // Pretty print JSON for better readability
+        } catch (e) {
+            console.log(`Error: Failed to serialize item to JSON. ${e.message}`);
+        }
+    } else {
+        // Print an informative error message for unsupported types
+        console.log(`Error: Unsupported type ${typeof item} for logging.`);
+    }
 }
