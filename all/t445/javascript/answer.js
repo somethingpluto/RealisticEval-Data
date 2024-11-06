@@ -1,29 +1,32 @@
-const math = require('mathjs');
-
 function createRotMatrix(angleDeg, axis) {
-    let angleRad = math.rad(angleDeg);
-    let cosAngle = math.cos(angleRad);
-    let sinAngle = math.sin(angleRad);
+    const angleRad = angleDeg * (Math.PI / 180);
 
-    if (axis === 'X') {
-        return math.matrix([
-            [1, 0, 0],
-            [0, cosAngle, -sinAngle],
-            [0, sinAngle, cosAngle]
-        ]);
-    } else if (axis === 'Y') {
-        return math.matrix([
-            [cosAngle, 0, sinAngle],
-            [0, 1, 0],
-            [-sinAngle, 0, cosAngle]
-        ]);
-    } else if (axis === 'Z') {
-        return math.matrix([
-            [cosAngle, -sinAngle, 0],
-            [sinAngle, cosAngle, 0],
-            [0, 0, 1]
-        ]);
+    // Define the rotation matrix based on the specified axis
+    let rotationMatrix;
+    if (axis.toLowerCase() === 'x') {
+        rotationMatrix = [
+            [1, 0, 0, 0],
+            [0, Math.cos(angleRad), -Math.sin(angleRad), 0],
+            [0, Math.sin(angleRad), Math.cos(angleRad), 0],
+            [0, 0, 0, 1]
+        ];
+    } else if (axis.toLowerCase() === 'y') {
+        rotationMatrix = [
+            [Math.cos(angleRad), 0, Math.sin(angleRad), 0],
+            [0, 1, 0, 0],
+            [-Math.sin(angleRad), 0, Math.cos(angleRad), 0],
+            [0, 0, 0, 1]
+        ];
+    } else if (axis.toLowerCase() === 'z') {
+        rotationMatrix = [
+            [Math.cos(angleRad), -Math.sin(angleRad), 0, 0],
+            [Math.sin(angleRad), Math.cos(angleRad), 0, 0],
+            [0, 0, 1, 0],
+            [0, 0, 0, 1]
+        ];
     } else {
-        throw new Error("Invalid axis provided. Must be 'X', 'Y' or 'Z'.");
+        throw new Error("Invalid axis. Must be one of 'X', 'Y', or 'Z'.");
     }
+
+    return rotationMatrix;
 }

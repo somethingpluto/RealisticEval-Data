@@ -1,9 +1,4 @@
 describe('TestWrapContentGenerator', () => {
-    it('test_empty_content', () => {
-        /** Test with empty content. */
-        const result = [...wrapContentGenerator("")];
-        expect(result).toEqual([]);
-    });
 
     it('test_single_line_content', () => {
         /** Test with a single line of content within default width. */

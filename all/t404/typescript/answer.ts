@@ -1,46 +1,42 @@
-function power(matrix: Matrix, n: number): Matrix {
-    /**
-     * Computes the n-th power of a matrix using the fast exponentiation method.
-     *
-     * @param {Matrix} matrix - A square matrix to be exponentiated.
-     * @param {number} n - The exponent to raise the matrix to. Must be a non-negative integer.
-     * @returns {Matrix} - The matrix raised to the power of n.
-     * @throws {Error} - If n is negative.
-     */
-    
-    if (n < 0) {
-        throw new Error("The exponent must be a non-negative integer.");
-    }
+type Matrix = number[][];
 
-    const identity: Matrix = Array.from({ length: matrix.length }, () => 
-        Array(matrix.length).fill(0).map((_, i) => (i === 0 ? 1 : 0))
-    );
-
-    let result: Matrix = identity;
-
-    while (n > 0) {
-        if (n % 2 === 1) {
-            result = multiplyMatrices(result, matrix);
+function multiplyMatrices(A: Matrix, B: Matrix): Matrix {
+    const result: Matrix = [];
+    for (let i = 0; i < A.length; i++) {
+        const row: number[] = [];
+        for (let j = 0; j < B[0].length; j++) {
+            let sum = 0;
+            for (let k = 0; k < A[0].length; k++) {
+                sum += A[i][k] * B[k][j];
+            }
+            row.push(sum);
         }
-        matrix = multiplyMatrices(matrix, matrix);
-        n = Math.floor(n / 2);
+        result.push(row);
     }
-
     return result;
 }
 
-function multiplyMatrices(a: Matrix, b: Matrix): Matrix {
-    const result: Matrix = [];
+function power(matrix: Matrix, n: number): Matrix {
+    if (n < 0) {
+        throw new Error("The exponent n must be a non-negative integer.");
+    }
+    if (!Number.isInteger(n)) {
+        throw new TypeError("The exponent n must be an integer.");
+    }
 
-    for (let i = 0; i < a.length; i++) {
-        result.push([]);
-        for (let j = 0; j < b[0].length; j++) {
-            let sum = 0;
-            for (let k = 0; k < b.length; k++) {
-                sum += a[i][k] * b[k][j];
-            }
-            result[i].push(sum);
+    // Identity matrix of the same size as the input matrix
+    const result: Matrix = matrix.map((_, i) => 
+        matrix.map((_, j) => i === j ? 1 : 0)
+    );
+
+    let base = [...matrix];
+
+    while (n > 0) {
+        if (n % 2 === 1) {
+            result = multiplyMatrices(result, base);
         }
+        base = multiplyMatrices(base, base);
+        n = Math.floor(n / 2);
     }
 
     return result;

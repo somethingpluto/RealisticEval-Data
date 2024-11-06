@@ -1,5 +1,3 @@
-const math = require('mathjs');
-
 /**
  * Given a 3x3 matrix, return the corresponding translation vector.
  *

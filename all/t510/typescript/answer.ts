@@ -1,16 +1,4 @@
 function findPowers(num: number): [number, number] | null {
-    /**
-     * Find the powers of 2 and 3 that multiply to produce the given number.
-     *
-     * Parameters:
-     * num (number): A positive integer greater than zero.
-     *
-     * Returns:
-     * [number, number] | null: A tuple [n, m] where n is the power of 2 and m is the power of 3.
-     *                           Returns null if the number is zero or if the number has prime factors other than 2 and 3.
-     */
-
-    // Input validation
     if (num <= 0) {
         throw new Error("Input must be a positive integer greater than zero.");
     }

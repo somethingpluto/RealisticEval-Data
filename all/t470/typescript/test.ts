@@ -1,5 +1,3 @@
-import * as math from 'mathjs';
-
 describe('TestShearTransformation', () => {
   /**
    * Test with zero shear factor which should return the original matrix unchanged.

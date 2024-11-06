@@ -1,52 +1,42 @@
-def extract_email_details(email):
+def hex_to_ansi(hex_color):
     """
-    Extracts the username and mailbox suffix from an email address.
+    Convert a hexadecimal color code to an ANSI escape code.
 
-    :param email: str, the email address to extract details from
-    :return: tuple, (username, domain) where:
-        username is the part before '@'
-        domain is the part after '@'
+    Parameters:
+    hex_color (str): A string representing the hexadecimal color code, e.g., '#FF5733'.
 
-    Example:
-        extract_email_details("xxx@gmail.com") returns ('xxx', 'gmail.com')
+    Returns:
+    str: An ANSI escape code for the specified RGB color.
     """
-    # Check if '@' is in the email
-    if '@' not in email:
-        raise ValueError("Invalid email address. Email must contain an '@' character.")
 
-    # Split the email at the '@' and assign parts to username and domain
-    username, domain = email.split('@', 1)
+    # Check if the input is a valid hex color
+    if len(hex_color) != 7 or hex_color[0] != '#':
+        raise ValueError("Invalid hex color format. Use '#RRGGBB'.")
 
-    return username, domain
+    # Extract the red, green, and blue components from the hex string
+    r = int(hex_color[1:3], 16)
+    g = int(hex_color[3:5], 16)
+    b = int(hex_color[5:7], 16)
+
+    # Create the ANSI escape code
+    ansi_code = f"\x1b[38;2;{r};{g};{b}m"
+
+    return ansi_code
 import unittest
 
-class TestExtractEmailDetails(unittest.TestCase):
 
-    def test_valid_email(self):
-        # Test with a typical email address
-        email = "user@example.com"
-        expected = ("user", "example.com")
-        result = extract_email_details(email)
-        self.assertEqual(result, expected)
+class TestHexToAnsi(unittest.TestCase):
 
-    def test_valid_email_with_subdomain(self):
-        # Test with an email that includes a subdomain
-        email = "user@mail.office.com"
-        expected = ("user", "mail.office.com")
-        result = extract_email_details(email)
-        self.assertEqual(result, expected)
+    def test_valid_colors(self):
+        """Test valid hex color inputs."""
+        self.assertEqual(hex_to_ansi("#FF5733"), "\x1b[38;2;255;87;51m")
+        self.assertEqual(hex_to_ansi("#00FF00"), "\x1b[38;2;0;255;0m")
+        self.assertEqual(hex_to_ansi("#0000FF"), "\x1b[38;2;0;0;255m")
 
+    def test_black_and_white(self):
+        """Test edge cases with black and white colors."""
+        self.assertEqual(hex_to_ansi("#000000"), "\x1b[38;2;0;0;0m")  # Black
+        self.assertEqual(hex_to_ansi("#FFFFFF"), "\x1b[38;2;255;255;255m")  # White
 
-    def test_email_without_at_symbol(self):
-        # Test with an email that lacks an '@' symbol
-        email = "userexample.com"
-        with self.assertRaises(ValueError):
-            extract_email_details(email)
-
-    def test_empty_email(self):
-        # Test with an empty string as an email
-        email = ""
-        with self.assertRaises(ValueError):
-            extract_email_details(email)
 if __name__ == '__main__':
     unittest.main()

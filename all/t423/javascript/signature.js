@@ -1,5 +1,3 @@
-const fs = require('fs');
-
 /**
  * Writes a line to a text file only if the line with the same content does not already exist.
  * 

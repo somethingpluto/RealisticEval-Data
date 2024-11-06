@@ -1,18 +1,9 @@
 function findPlaceholders(text: string): string[] {
-    /**
-     * Find and return an array of all placeholders in the format {{ placeholder }} from the input text.
-     *
-     * @param {string} text - The input string containing potential placeholders.
-     * @returns {string[]} An array of matching placeholders.
-     */
-    
-    const regex = /\{\{([^}]+)\}\}/g;
-    let match: RegExpExecArray | null;
-    const placeholders: string[] = [];
-
-    while ((match = regex.exec(text)) !== null) {
-        placeholders.push(match[1]);
+    // Use a regular expression to find placeholders in the specified format
+    const placeholders = text.matchAll(/{{\s*([\w]+)\s*}}/g);
+    const results: string[] = [];
+    for (const match of placeholders) {
+        results.push(match[1]);
     }
-
-    return placeholders;
+    return results;
 }

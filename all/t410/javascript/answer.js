@@ -1,22 +1,15 @@
 function checkXorSum(combination) {
-    // Ensure that combination is a typed array or a regular array and convert it to a typed array
-    let arr = new Uint8Array(combination.flat());
+    combination = combination.map(row => row.map(item => Math.floor(item)));
 
-    // Check if the length of the flattened array is divisible by 4 (assuming we're dealing with 32-bit integers)
-    if(arr.length % 4 !== 0){
-        throw new Error('The length of the array must be divisible by 4');
-    }
+    // Calculate XOR sums for specified columns
+    const xorSum036 = combination.map(row => row[0] ^ row[3] ^ row[6]);
+    const xorSum147 = combination.map(row => row[1] ^ row[4] ^ row[7]);
+    const xorSum25 = combination.map(row => row[2] ^ row[5]);
 
-    // Initialize variables to hold the xor sums
-    let xor1 = 0;
-    let xor2 = 0;
+    // Check if the XOR sums match the expected values
+    const allMatch036 = xorSum036.every(value => value === 0x6b);
+    const allMatch147 = xorSum147.every(value => value === 0x76);
+    const allMatch25 = xorSum25.every(value => value === 0x12);
 
-    // Loop through the array and calculate the xor sums
-    for(let i = 0; i < arr.length; i += 4){
-        xor1 ^= arr[i];
-        xor2 ^= arr[i + 1];
-    }
-
-    // Check if the xor sums match the required values
-    return xor1 === 0 && xor2 === 0;
+    return allMatch036 && allMatch147 && allMatch25;
 }

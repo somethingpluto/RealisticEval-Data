@@ -1,5 +1,3 @@
-const math = require('mathjs');
-
 describe('TestGetTranslationFunction', () => {
     describe('test_identity_matrix', () => {
         it('should return the correct translation for the identity matrix', () => {

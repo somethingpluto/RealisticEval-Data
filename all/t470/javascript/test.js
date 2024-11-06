@@ -1,5 +1,4 @@
-const assert = require('assert');
-
+import assert from 'assert';
 
 describe('TestShearTransformation', () => {
     it('test_identity_shear', () => {

@@ -1,5 +1,5 @@
-const fs = require('fs');
-const path = require('path');
+import path from 'path';
+
 describe('TestWriteUniqueLineToFile', () => {
     const filename = 'test_file.txt';
 

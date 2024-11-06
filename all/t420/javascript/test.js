@@ -1,5 +1,4 @@
-const fs = require('fs');
-
+import fs from 'fs'
 describe('TestGetMinDistance', () => {
     beforeEach(() => {
         jest.spyOn(fs, 'readFileSync').mockImplementation(() => '');

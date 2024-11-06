@@ -1,4 +1,3 @@
-const math = require('mathjs');
 
 /**
  * Multiplies a given matrix by a vector using mathjs's multiply function.

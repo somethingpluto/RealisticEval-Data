@@ -18,4 +18,4 @@ describe('TestLookAndSay', () => {
         // Test a more complex sequence
         expect(lookAndSay('312211')).toBe('13112221');
     });
-});
+}); 

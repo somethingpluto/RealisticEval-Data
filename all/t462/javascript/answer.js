@@ -1,29 +1,43 @@
 function spiralOrder(matrix) {
-    let result = [];
-    while (matrix.length > 0) {
-        // top row
-        if (matrix[0].length > 0) {
-            result.push(...matrix.shift());
-        }
+    if (!matrix || !matrix.length || !matrix[0].length) {
+        return [];
+    }
 
-        // right column
-        for (let i = 0; i < matrix.length - 1; i++) {
-            if (matrix[i] && matrix[i].length > 0) {
-                result.push(matrix[i].pop());
+    const rows = matrix.length;
+    const cols = matrix[0].length;
+    let top = 0, bottom = rows - 1;
+    let left = 0, right = cols - 1;
+    const result = [];
+
+    while (top <= bottom && left <= right) {
+        // Traverse Right
+        for (let col = left; col <= right; col++) {
+            result.push(matrix[top][col]);
+        }
+        top++;
+
+        // Traverse Down
+        for (let row = top; row <= bottom; row++) {
+            result.push(matrix[row][right]);
+        }
+        right--;
+
+        // Traverse Left
+        if (top <= bottom) {
+            for (let col = right; col >= left; col--) {
+                result.push(matrix[bottom][col]);
             }
+            bottom--;
         }
 
-        // bottom row
-        if (matrix[matrix.length - 1].length > 0) {
-            result.push(...matrix.pop().reverse());
-        }
-
-        // left column
-        for (let i = matrix.length - 1; i >= 0; i--) {
-            if (matrix[i] && matrix[i].length > 0) {
-                result.push(matrix[i].shift());
+        // Traverse Up
+        if (left <= right) {
+            for (let row = bottom; row >= top; row--) {
+                result.push(matrix[row][left]);
             }
+            left++;
         }
     }
+
     return result;
 }

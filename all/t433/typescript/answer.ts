@@ -1,14 +1,4 @@
 function extractParagraphsAndLines(text: string): { paragraphs: string[], lines: string[] } {
-    /**
-     * Extracts paragraphs and lines from the given text.
-     *
-     * @param text - The input text from which paragraphs and lines will be extracted.
-     * @returns An object containing:
-     *          - 'paragraphs': An array of paragraphs extracted from the text.
-     *          - 'lines': An array of lines extracted from the text.
-     */
-
-    // Split the text into paragraphs
     const paragraphs = text.split('\n\n');
 
     // Split each paragraph into lines

@@ -1,21 +1,22 @@
+import * as math from 'mathjs';
+
+/**
+ * Checks the XOR sums of specific columns in a given combination array.
+ *
+ * @param combination - A 2D array where each column corresponds to a specific value.
+ * @returns true if the XOR sums of the specified columns match the required values; otherwise, false.
+ */
 function checkXorSum(combination: number[][]): boolean {
-    // Initialize an empty array for storing XOR results
-    let xorResults: number[] = [];
+    // Ensure that combination is an array of integers
+    const intCombination = combination.map(row => row.map(num => Math.floor(num)));
 
-    // Loop through each row of the combination matrix
-    for(let i = 0; i < combination.length; i++) {
-        // For each row, loop through each column and perform XOR operation
-        for(let j = 0; j < combination[i].length; j++) {
-            // If it's the first row, simply add the value to the result array
-            if(i === 0) {
-                xorResults.push(combination[i][j]);
-            } else {
-                // For subsequent rows, perform XOR operation with the previous result
-                xorResults[j] ^= combination[i][j];
-            }
-        }
-    }
+    // Calculate XOR sums for specified columns
+    const xorSum036 = intCombination.map(row => row[0] ^ row[3] ^ row[6]);
+    const xorSum147 = intCombination.map(row => row[1] ^ row[4] ^ row[7]);
+    const xorSum25 = intCombination.map(row => row[2] ^ row[5]);
 
-    // Check if all XOR results are zero
-    return xorResults.every(result => result === 0);
+    // Check if the XOR sums match the expected values
+    return xorSum036.every(val => val === 0x6b) &&
+           xorSum147.every(val => val === 0x76) &&
+           xorSum25.every(val => val === 0x12);
 }

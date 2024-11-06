@@ -1,23 +1,34 @@
-function power(matrix, n) {
-    // Checks if input values are valid
-    if (!Array.isArray(matrix) || !matrix.every(Array.isArray)) throw new Error('Matrix must be a 2D array');
-    if (typeof n !== 'number' || n < 0) throw new Error('Exponent must be a non-negative number');
+function multiplyMatrices(A, B) {
+    // Multiplies two matrices A and B and returns the result.
+    return A.map(A_row => 
+        B[0].map((_, colIndex) => 
+            A_row.reduce((sum, a, rowIndex) => 
+                sum + a * B[rowIndex][colIndex], 0)
+        )
+    );
+}
 
-    // Initialize result as identity matrix
-    let result = Array.from({length: matrix.length}, () => Array(matrix[0].length).fill(0));
-    for(let i=0; i<matrix.length; i++) {
-        result[i][i] = 1;
+function power(matrix, n) {
+    if (n < 0) {
+        throw new Error("The exponent n must be a non-negative integer.");
+    }
+    if (!Number.isInteger(n)) {
+        throw new TypeError("The exponent n must be an integer.");
     }
 
-    // Copy matrix to temp variable
-    let temp = [...matrix];
+    // Identity matrix of the same size as the input matrix
+    const size = matrix.length;
+    const result = Array.from({ length: size }, (_, i) =>
+        Array.from({ length: size }, (_, j) => (i === j ? 1 : 0))
+    );
 
-    // Perform fast exponentiation
-    while(n > 0) {
-        if(n % 2 === 1) {
-            result = multiplyMatrices(result, temp);
+    let base = matrix.map(row => row.slice());
+
+    while (n > 0) {
+        if (n % 2 === 1) {
+            result = multiplyMatrices(result, base);
         }
-        temp = multiplyMatrices(temp, temp);
+        base = multiplyMatrices(base, base);
         n = Math.floor(n / 2);
     }
 

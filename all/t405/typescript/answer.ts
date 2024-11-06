@@ -1,12 +1,21 @@
 function removePartsOfString(...strings: string[]): string[] {
-    return strings.map(str => {
-        let indexFirstUpperCase = str.search(/[A-Z]/);
-        let indexFirstLowerCase = str.search(/[a-z]/);
+    const results: string[] = [];
+    for (const string of strings) {
+        try {
+            // Remove all characters before the first uppercase letter
+            const uppercaseIndex = string.split('').findIndex(char => char === char.toUpperCase() && char !== char.toLowerCase());
+            let modifiedString = string.substring(uppercaseIndex);
 
-        if (indexFirstUpperCase !== -1 && indexFirstLowerCase !== -1) {
-            return str.substring(indexFirstUpperCase, indexFirstLowerCase + 1);
+            // Remove all characters before the first lowercase letter
+            const lowercaseIndex = modifiedString.split('').findIndex(char => char === char.toLowerCase() && char !== char.toUpperCase());
+            modifiedString = modifiedString.substring(lowercaseIndex - 1);
+
+            results.push(modifiedString);
+        } catch (error) {
+            // Handle cases where no uppercase or lowercase letters are found
+            results.push(string);  // You may decide to push an empty string or an error message
         }
+    }
 
-        return str;
-    });
+    return results;
 }

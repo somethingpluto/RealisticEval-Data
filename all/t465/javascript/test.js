@@ -1,5 +1,3 @@
-const math = require('mathjs');
-
 describe('TestMatrixVectorMultiplication', () => {
     it('test_case_1', () => {
         // Test with a simple 2x2 matrix and a 2-element vector

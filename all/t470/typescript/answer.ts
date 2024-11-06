@@ -2,21 +2,24 @@ function applyShearX(matrix: number[][], shearFactor: number): number[][] {
     /**
      * Applies a shear transformation to a 2D matrix along the x-axis.
      *
-     * @param matrix - A 2D array representing the original matrix.
-     * @param shearFactor - The factor by which the matrix is sheared along the x-axis.
-     *
-     * @returns The sheared matrix.
+     * @param {Array<Array<number>>} matrix - A 2D array representing the original matrix.
+     * @param {number} shearFactor - The factor by which the matrix is sheared along the x-axis.
+     * @returns {Array<Array<number>>} The sheared matrix.
      */
 
-    // Create an empty 2D array with the same dimensions as the input matrix
-    let resultMatrix: number[][] = new Array(matrix.length).fill(0).map(() => new Array(matrix[0].length).fill(0));
+    // Define the shear transformation matrix for shearing along the x-axis
+    const shearMatrix: number[][] = [
+        [1, shearFactor],
+        [0, 1]
+    ];
 
-    for(let i=0; i<matrix.length; i++) {
-        for(let j=0; j<matrix[i].length; j++) {
-            // Apply the shear transformation formula
-            resultMatrix[i][j] = matrix[i][j] + shearFactor * matrix[i][j-1];
-        }
-    }
+    // Applying the shear transformation
+    const transformedMatrix: number[][] = matrix.map((row: number[]) => {
+        return [
+            row[0] * shearMatrix[0][0] + row[1] * shearMatrix[1][0],
+            row[0] * shearMatrix[0][1] + row[1] * shearMatrix[1][1]
+        ];
+    });
 
-    return resultMatrix;
+    return transformedMatrix;
 }

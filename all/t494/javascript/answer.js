@@ -1,11 +1,4 @@
 function cleanDictionary(inputDict) {
-    /**
-     * Cleans the input object by removing keys with invalid values.
-     * Valid values are non-NaN, non-null, and non-whitespace strings.
-     *
-     * @param {Object} inputDict - An object to be cleaned.
-     * @return {Object} A new object containing only valid values.
-     */
     const cleanedDict = {};
 
     for (const [key, value] of Object.entries(inputDict)) {

@@ -1,23 +1,11 @@
+import * as fs from 'fs';
+
 describe('TestSaveContentToFile', () => {
-    let testFilePath = 'test_output.txt';
-
-    beforeAll(() => {
-        // Set up a temporary file path for testing
-        testFilePath = 'test_output.txt';
-    });
-
-    afterAll(() => {
-        // Clean up the test file after all tests
-        if (fs.existsSync(testFilePath)) {
-            fs.unlinkSync(testFilePath);
-        }
-    });
+    let testFilePath: string;
 
     beforeEach(() => {
-        // Ensure the test file is clean before each test
-        if (fs.existsSync(testFilePath)) {
-            fs.unlinkSync(testFilePath);
-        }
+        // Set up a temporary file path for testing
+        testFilePath = 'test_output.txt';
     });
 
     afterEach(() => {
@@ -31,6 +19,7 @@ describe('TestSaveContentToFile', () => {
         const content = "Hello,  World!  ";
         const expected = "Hello, World!";
         saveContentToFile(content, testFilePath);
+
         const result = fs.readFileSync(testFilePath, 'utf-8').trim();
         expect(result).toEqual(expected);
     });
@@ -44,6 +33,7 @@ describe('TestSaveContentToFile', () => {
         `;
         const expected = "This is a test. Another line.";
         saveContentToFile(content, testFilePath);
+
         const result = fs.readFileSync(testFilePath, 'utf-8').trim();
         expect(result).toEqual(expected);
     });
@@ -52,6 +42,7 @@ describe('TestSaveContentToFile', () => {
         const content = "    \n  \n   ";
         const expected = "";
         saveContentToFile(content, testFilePath);
+
         const result = fs.readFileSync(testFilePath, 'utf-8').trim();
         expect(result).toEqual(expected);
     });
@@ -60,7 +51,8 @@ describe('TestSaveContentToFile', () => {
         const content = "";
         const expected = "";
         saveContentToFile(content, testFilePath);
+
         const result = fs.readFileSync(testFilePath, 'utf-8').trim();
         expect(result).toEqual(expected);
     });
-});
+}); 

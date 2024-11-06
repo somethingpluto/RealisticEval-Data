@@ -46,7 +46,7 @@ class Actor:
 
 
 if __name__ == '__main__':
-    TASK_ID = "381"
-    LANGUAGE = "typescript"
+    TASK_ID = "512"
+    LANGUAGE = "javascript"
     actor = Actor(task_id=TASK_ID, language=LANGUAGE)
     actor.execute()
