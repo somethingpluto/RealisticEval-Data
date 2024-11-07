@@ -20,7 +20,6 @@ class TestReadTsvFromStdin(unittest.TestCase):
         mock_stdin.seek(0)
         expected_output = [['col1'], ['val1'], ['val2']]
         self.assertEqual(read_tsv_data_from_std_input(), expected_output)
-        @patch('sys.stdin', new_callable=io.StringIO)
     
 
     @patch('sys.stdin', new_callable=io.StringIO)

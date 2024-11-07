@@ -1,7 +1,8 @@
+package org.real.temp;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
-public class TimestampConverter {
+public class Answer {
     public static String timestampToReadableDate(long unixTimestamp) {
         // Convert UNIX timestamp to milliseconds
         long millis = unixTimestamp * 1000;

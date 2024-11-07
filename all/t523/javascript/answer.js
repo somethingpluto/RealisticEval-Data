@@ -1,6 +1,6 @@
 // Import necessary packages
-const _ = require('lodash'); // For deep equality check
-const math = require('mathjs'); // For matrix operations
+import _ from 'lodash'; // For deep equality check
+import * as math from 'mathjs'; // For matrix operations
 
 /**
  * Translate the point cloud by a given vector.

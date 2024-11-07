@@ -1,4 +1,6 @@
-public class AbcModifier {
+package org.real.temp;
+
+public class Answer {
 
     /**
      * Modify the ABC string by inserting the specified clef (e.g., "clef=bass") 

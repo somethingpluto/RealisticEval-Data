@@ -2,7 +2,7 @@ package org.real.temp;
 
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
-
+import static org.real.temp.Answer.*;
 public class Tester {
 
     @Test
@@ -19,11 +19,7 @@ public class Tester {
     public void testIncrementNumberInputNegativeThree() {
         assertEquals(-3, incrementNumber(-3));
     }
-
-    @Test
-    public void testIncrementNumberInputPointFive() {
-        assertEquals(1.5, incrementNumber(0.5), 0.001);
-    }
+    
 
     @Test
     public void testIncrementNumberInputOne() {

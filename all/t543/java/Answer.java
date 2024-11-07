@@ -1,3 +1,5 @@
+package org.real.temp;
+
 /**
  * Increments the entered number.
  * If the number is non-positive (<= 0), returns the original value.

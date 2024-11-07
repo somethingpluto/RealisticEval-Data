@@ -1,42 +1,44 @@
 package org.real.temp;
 
-import org.junit.Test;
+public class Answer {
 
-import static org.junit.Assert.assertEquals;
-import static org.real.temp.Answer.*;
+    public static class RGB {
+        public int r, g, b;
 
-public class Tester {
-
-    @Test
-    public void testConvertsPureRedHueCorrectly() {
-        RGB result = hslToRgb(0, 100, 50);
-        assertEquals(255, result.r);
-        assertEquals(0, result.g);
-        assertEquals(0, result.b);
+        public RGB(int r, int g, int b) {
+            this.r = r;
+            this.g = g;
+            this.b = b;
+        }
     }
 
-    @Test
-    public void testReturnsGrayForZeroSaturation() {
-        RGB result = hslToRgb(240, 0, 50);
-        assertEquals(128, result.r);
-        assertEquals(128, result.g);
-        assertEquals(128, result.b);
-    }
+    public static RGB hslToRgb(double h, double s, double l) {
+        s /= 100;
+        l /= 100;
 
-    @Test
-    public void testReturnsWhiteForFullLightness() {
-        RGB result = hslToRgb(120, 50, 100);
-        assertEquals(255, result.r);
-        assertEquals(255, result.g);
-        assertEquals(255, result.b);
-    }
+        double c = (1 - Math.abs(2 * l - 1)) * s;
+        double x = c * (1 - Math.abs((h / 60) % 2 - 1));
+        double m = l - c / 2;
+        double r = 0, g = 0, b = 0;
 
-    @Test
-    public void testConvertsFullSaturationMidLightnessBlueCorrectly() {
-        RGB result = hslToRgb(240, 100, 50);
-        assertEquals(0, result.r);
-        assertEquals(0, result.g);
-        assertEquals(255, result.b);
-    }
+        if (h >= 0 && h < 60) {
+            r = c; g = x; b = 0;
+        } else if (h >= 60 && h < 120) {
+            r = x; g = c; b = 0;
+        } else if (h >= 120 && h < 180) {
+            r = 0; g = c; b = x;
+        } else if (h >= 180 && h < 240) {
+            r = 0; g = x; b = c;
+        } else if (h >= 240 && h < 300) {
+            r = x; g = 0; b = c;
+        } else if (h >= 300 && h < 360) {
+            r = c; g = 0; b = x;
+        }
 
+        r = Math.round((r + m) * 255);
+        g = Math.round((g + m) * 255);
+        b = Math.round((b + m) * 255);
+
+        return new RGB((int) r, (int) g, (int) b);
+    }
 }

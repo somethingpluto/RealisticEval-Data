@@ -1,6 +1,5 @@
-const fs = require('fs');
-const path = require('path');
-
+import fs from 'fs'
+import path from 'path';
 /**
  * Reads a JSON Lines file and returns its content as an array of objects.
  *

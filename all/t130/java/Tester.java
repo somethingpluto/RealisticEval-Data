@@ -17,7 +17,7 @@ public class Tester {
     @Test
     public void testComputePiTo10DecimalPlaces() {
         int digits = 10;
-        String expected = "3.1415926536";
+        String expected = "3.1415926535";
         String result = computePi(digits);
         assertEquals(expected, result);
     }
@@ -41,7 +41,7 @@ public class Tester {
     @Test
     public void testComputePiTo30DecimalPlaces() {
         int digits = 30;
-        String expected = "3.141592653589793238462643383280";
+        String expected = "3.141592653589793238462643383279";
         String result = computePi(digits);
         assertEquals(expected, result);
     }

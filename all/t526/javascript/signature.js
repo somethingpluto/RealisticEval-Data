@@ -6,6 +6,4 @@
  * @returns {string} The minimum window substring of `s` that contains all characters of `t`.
  *                   Returns an empty string if no such substring exists.
  */
-function minWindow(s, t) {
-
-}
+function minWindow(s, t) {}

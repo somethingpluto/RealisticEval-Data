@@ -1,4 +1,6 @@
-public class BreakTimeChecker {
+package org.real.temp;
+
+public class Answer {
     /**
      * Determines if the current time falls within the break time range.
      * 

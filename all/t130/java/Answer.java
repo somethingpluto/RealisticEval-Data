@@ -17,7 +17,7 @@ public class Answer {
         BigDecimal p = one;
 
         BigDecimal prevPi = BigDecimal.ZERO;
-        BigDecimal pi;
+        BigDecimal pi = null;
 
         // Iterate until the desired precision is reached
         for (int i = 0; i < 10; i++) {

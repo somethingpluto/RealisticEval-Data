@@ -60,3 +60,12 @@ function minWindow(s: string, t: string): string {
     // Return the minimum window found or an empty string if none exists
     return minString;
 }
+
+// Helper function to count characters in a string
+function countChars(str: string): Record<string, number> {
+    const result: Record<string, number> = {};
+    for (const char of str) {
+        result[char] = (result[char] || 0) + 1;
+    }
+    return result;
+}

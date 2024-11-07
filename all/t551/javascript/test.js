@@ -1,6 +1,4 @@
 describe('TestGetMidsFromEdges', () => {
-    const getMidsFromEdges = require('./getMidsFromEdges'); // Import the function to test
-
     describe('test_basic_case', () => {
         it('should handle a standard range of edges', () => {
             const edges = [1, 2, 3, 4];

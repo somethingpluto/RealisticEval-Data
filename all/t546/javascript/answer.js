@@ -1,5 +1,5 @@
-const csvParser = require('csv-parser');
-const process = require('process');
+import csvParser from 'csv-parser';
+import process from 'process';
 
 function readTSVFromStdin() {
     // Create a stream to read from standard input

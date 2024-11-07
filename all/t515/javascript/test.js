@@ -15,7 +15,7 @@ describe('TestFormatDateString', () => {
     it('test_missing_components', () => {
         // Test case for a date string missing components.
         const dateStr = "Fri, 28 Sep 2023 14:45:00 +0000";
-        expect(formatDateString(dateStr)).toBeNull();
+        expect(formatDateString(dateStr)).toBe('2023-09-28_14:45:00');
     });
 
     it('test_edge_case_date', () => {

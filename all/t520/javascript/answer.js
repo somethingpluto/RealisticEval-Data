@@ -11,7 +11,7 @@ function computeOutputIndex(idx1, idx2) {
      *
      * @returns {number} The computed output index.
      */
-
+    
     // Perform bitwise XOR between the two indices
     let result = idx1 ^ idx2;
 

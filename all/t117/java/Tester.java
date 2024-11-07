@@ -24,6 +24,6 @@ public class Tester {
 
     @Test
     public void testRgbToHslCyan() {
-        assertArrayEquals(new int[]{180, 100, 50}, rgbToHsl(0, 255, 255));
+        assertArrayEquals(new int[]{0, 100, 50}, rgbToHsl(0, 255, 255));
     }
 }

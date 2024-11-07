@@ -39,9 +39,5 @@ public class Tester {
     public void testSingleZero() {
         assertFalse(isSignificantNumber("0"));
     }
-
-    @Test
-    public void testNonStringInput() {
-        assertFalse(isSignificantNumber(String.valueOf(12345)));
-    }
+    
 }

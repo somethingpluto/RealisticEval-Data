@@ -1,6 +1,6 @@
 describe('TestRotatePointCloud', () => {
     it('test_no_rotation', () => {
-        /**
+        /** 
          * Test when rotation angle is 0 (should return the same point cloud).
          */
         const pointCloud = [[1.0, 2.0, 3.0]];
@@ -12,7 +12,7 @@ describe('TestRotatePointCloud', () => {
     });
 
     it('test_180_degree_rotation', () => {
-        /**
+        /** 
          * Test rotation of 180 degrees (π radians) around Y axis.
          */
         const pointCloud = [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]];
@@ -24,7 +24,7 @@ describe('TestRotatePointCloud', () => {
     });
 
     it('test_full_rotation', () => {
-        /**
+        /** 
          * Test rotation of 360 degrees (2π radians) around Y axis (should return same point cloud).
          */
         const pointCloud = [[1.0, 2.0, 3.0]];

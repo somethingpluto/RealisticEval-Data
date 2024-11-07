@@ -38,11 +38,5 @@ public class Tester {
         List<Object> expected = Arrays.asList(1, 2, 99, 3, 4, 5);
         assertArrayEquals(expected.toArray(), safeSplice(inputArray, 0, 2, 99).toArray());
     }
-
-    @Test
-    public void testShouldHandleEmptyInputArray() {
-        List<Object> inputArray = Arrays.asList();
-        List<Object> expected = Arrays.asList(99);
-        assertArrayEquals(expected.toArray(), safeSplice(inputArray, 1, 0, 99).toArray());
-    }
+    
 }

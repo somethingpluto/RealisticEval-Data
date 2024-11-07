@@ -1,5 +1,4 @@
-const math = require('mathjs');
-
+import * from 'mathjs'
 /**
  * Compares two sets of floats for equality within a relative and absolute tolerance.
  *
