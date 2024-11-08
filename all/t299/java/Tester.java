@@ -1,7 +1,7 @@
 package org.real.temp;
 
 import static org.junit.Assert.assertEquals;
-
+import static org.real.temp.Answer.*;
 import org.junit.Test;
 
 public class Tester {

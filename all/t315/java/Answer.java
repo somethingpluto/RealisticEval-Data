@@ -6,7 +6,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
-public class UrlUtil {
+public class Answer {
 
     /**
      * Extract the file ID from the given URL query args.

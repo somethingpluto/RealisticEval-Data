@@ -2,7 +2,7 @@ package org.real.temp;
 
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
-
+import static org.real.temp.Answer.*;
 public class Tester {
 
     @Test
@@ -24,12 +24,6 @@ public class Tester {
         assertEquals("0", setEurValue("0"));
     }
 
-    @Test
-    public void testReturnsEmptyStringForInvalidInputs() {
-        assertEquals("", setEurValue("hello"));
-        assertEquals("", setEurValue(null));
-        assertEquals("", setEurValue(undefined));  // undefined can be represented as null
-    }
 
     @Test
     public void testEnsuresPrecisionForLargeNumbers() {

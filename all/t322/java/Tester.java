@@ -3,36 +3,37 @@ package org.real.temp;
 import org.junit.Test;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
+import static org.real.temp.Answer.*;
 
 public class Tester {
 
     @Test
     public void testValidSimpleEmail() {
-        boolean result = EmailValidator.isValidEmail("test@example.com");
+        boolean result = isValidEmail("test@example.com");
         assertTrue(result); // 'test@example.com' is a valid email
     }
 
     @Test
     public void testValidEmailWithSubdomain() {
-        boolean result = EmailValidator.isValidEmail("user@mail.example.com");
+        boolean result = isValidEmail("user@mail.example.com");
         assertTrue(result); // 'user@mail.example.com' is a valid email
     }
 
     @Test
     public void testEmailMissingAtSymbol() {
-        boolean result = EmailValidator.isValidEmail("invalid-email.com");
+        boolean result = isValidEmail("invalid-email.com");
         assertFalse(result); // 'invalid-email.com' is missing the @ symbol
     }
 
     @Test
     public void testEmailMissingDomainPart() {
-        boolean result = EmailValidator.isValidEmail("user@.com");
+        boolean result = isValidEmail("user@.com");
         assertFalse(result); // 'user@.com' is missing a valid domain name
     }
 
     @Test
     public void testEmailWithSpaces() {
-        boolean result = EmailValidator.isValidEmail("user name@example.com");
+        boolean result = isValidEmail("user name@example.com");
         assertFalse(result); // 'user name@example.com' contains spaces
     }
 }

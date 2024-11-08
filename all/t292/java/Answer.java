@@ -1,3 +1,5 @@
+package org.real.temp;
+
 /**
  * Calculate the remaining payment for a loan based on the given debt, monthly interest rate, and total payments.
  *

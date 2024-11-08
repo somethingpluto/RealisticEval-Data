@@ -2,6 +2,7 @@ package org.real.temp;
 
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
+import static org.real.temp.Answer.*;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;

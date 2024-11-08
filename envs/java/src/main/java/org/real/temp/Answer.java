@@ -1,20 +1,16 @@
 package org.real.temp;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 public class Answer {
-    
-    public static double calculateDiscount(double originalPrice, double actualPrice) {
-        // Validate input
-        if (originalPrice <= 0) {
-            throw new IllegalArgumentException("Original price must be greater than zero.");
-        }
-        if (actualPrice < 0) {
-            throw new IllegalArgumentException("Actual price cannot be negative.");
-        }
+    public static String getTime() {
+        SimpleDateFormat formatter = new SimpleDateFormat("hh:mm a");
+        Date currentDate = new Date();
+        return formatter.format(currentDate);
+    }
 
-        // Calculate the discount
-        double discountAmount = originalPrice - actualPrice;
-        double discountPercentage = (discountAmount / originalPrice) * 100;
-
-        // Return the discount percentage, rounded to two decimal places
-        return Math.round(discountPercentage * 100.0) / 100.0;
+    public static void main(String[] args) {
+        System.out.println(getTime());
     }
 }

@@ -1,3 +1,5 @@
+package org.real.temp;
+
 /**
  * Count the number of letters in a string.
  *

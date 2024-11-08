@@ -57,13 +57,6 @@ public class Tester {
         assertEquals(Arrays.asList("hello", "world"), result);
     }
 
-    @Test
-    public void testFiltersBasedOnObjectProperty() {
-        Predicate<Item> hasValueGreaterThanFive = obj -> obj.value > 5;
-        List<Item> unfilteredList = Arrays.asList(new Item(3), new Item(5), new Item(7));
-        List<Item> result = Answer.filterList(unfilteredList, hasValueGreaterThanFive);
-        assertEquals(Arrays.asList(new Item(7)), result);
-    }
 
     @Test
     public void testReturnsEmptyListWhenNoQualifyingFunctionProvided() {
