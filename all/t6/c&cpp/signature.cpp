@@ -7,4 +7,4 @@
  * @param path The Windows file path string.
  * @return The simplified path string.
  */
-std::string simplifyWindowsPath(const std::string& path) {}
+std::string simplify_windows_path(const std::string& path) {}

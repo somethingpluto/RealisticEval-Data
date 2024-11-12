@@ -1,21 +1,30 @@
-#include <iostream>
-#include <vector>
-#include <unordered_set>
+#include <string>
 
-int min_removals_to_make_unique(const std::vector<int>& nums) {
-    std::unordered_set<int> seen;
-    int minimumDistinct = 0;
-
-    for (int number : nums) {
-        // Check if the number has been seen before
-        if (seen.count(number) > 0) {
-            // If seen, we need to remove one occurrence
-            minimumDistinct++;
-        } else {
-            // If not seen, add it to the set
-            seen.insert(number);
+std::string process_markdown(const std::string& s) {
+    // Count occurrences of '*'
+    int count = 0;
+    for (char c : s) {
+        if (c == '*') {
+            count++;
         }
     }
 
-    return minimumDistinct;
+    if (count <= 2) {
+        return s;
+    }
+
+    // Find the first and last occurrence of '*'
+    size_t first_star_index = s.find('*');
+    size_t last_star_index = s.rfind('*');
+
+    // Create a new string with '*' removed between first and last occurrence
+    std::string result = s.substr(0, first_star_index + 1);
+    for (size_t i = first_star_index + 1; i < last_star_index; ++i) {
+        if (s[i] != '*') {
+            result += s[i];
+        }
+    }
+    result += s.substr(last_star_index);
+
+    return result;
 }

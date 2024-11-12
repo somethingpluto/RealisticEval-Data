@@ -1,74 +1,84 @@
 package org.real.temp;
 
-import org.junit.After;
-import org.junit.Before;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.List;
 import org.junit.Test;
-
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.TimeZone;
+import org.mockito.Mockito;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.real.temp.Answer.getTime;
+import static org.junit.Assert.assertThrows;
 
 public class Tester {
-    private static final String originalTimeZone = TimeZone.getDefault().getID();
 
-    @Before
-    public void setUp() {
-        TimeZone.setDefault(TimeZone.getTimeZone("UTC")); // Set a consistent timezone for testing
+    private static final String FILE1_CONTENT = "Line1\nLine2\nLine3\n";
+    private static final String FILE2_CONTENT = "Line1\nLineChanged\nLine3\n";
+
+    private Path file1Path;
+    private Path file2Path;
+
+    @BeforeEach
+    public void setUp(@TempDir Path tempDir) {
+        file1Path = tempDir.resolve("file1.txt");
+        file2Path = tempDir.resolve("file2.txt");
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
-        TimeZone.setDefault(TimeZone.getTimeZone(originalTimeZone)); // Restore original timezone
-    }
-
-    private String mockDate(String dateString) {
-        System.setProperty("current.time", dateString); // Simulate mock date (you would need to implement this in getTime)
-        return getTime();
-    }
-
-    @Test
-    public void shouldReturnAString() {
-        String result = mockDate("2024-10-01T10:30:00");
-        assertTrue(result instanceof String);
+        if (file1Path.toFile().exists()) {
+            file1Path.toFile().delete();
+        }
+        if (file2Path.toFile().exists()) {
+            file2Path.toFile().delete();
+        }
     }
 
     @Test
-    public void shouldReturnFormattedTimeStringIncludingAMPM() {
-        String result = mockDate("2024-10-01T15:45:00");
-        assertTrue(result.matches("^\\d{1,2}:\\d{2} (AM|PM)$"));
+    public void testIdenticalFiles() throws IOException {
+        writeToFile(file1Path, FILE1_CONTENT);
+        writeToFile(file2Path, FILE1_CONTENT);
+
+        List<String> result = compareFiles(file1Path.toString(), file2Path.toString());
+        assertEquals(0, result.size(), "There should be no differences detected");
     }
 
     @Test
-    public void shouldReturnCorrectTimeDuringAMHours() {
-        String result = mockDate("2024-10-01T08:15:00");
-        assertEquals("8:15 AM", result);
+    public void testFilesWithDifferences() throws IOException {
+        writeToFile(file1Path, FILE1_CONTENT);
+        writeToFile(file2Path, FILE2_CONTENT);
+
+        List<String> result = compareFiles(file1Path.toString(), file2Path.toString());
+        assertNotEquals(0, result.size(), "There should be differences detected");
     }
 
     @Test
-    public void shouldReturnCorrectTimeDuringPMHours() {
-        String result = mockDate("2024-10-01T17:20:00");
-        assertEquals("5:20 PM", result);
+    public void testNonexistentFile() {
+        try (MockedStatic<Answer> mockedStatic = Mockito.mockStatic(Answer.class)) {
+            mockedStatic.when(() -> Answer.readFile("nonexistent.txt"))
+                    .thenThrow(new java.io.FileNotFoundException("File not found"));
+
+            Exception exception = assertThrows(java.io.FileNotFoundException.class,
+                    () -> compareFiles("nonexistent.txt", file2Path.toString()));
+            assertEquals("File not found", exception.getMessage());
+        }
     }
 
     @Test
-    public void shouldReturn12AMAtMidnight() {
-        String result = mockDate("2024-10-01T00:00:00");
-        assertEquals("12:00 AM", result);
+    public void testFileReadingError() {
+        try (MockedStatic<Answer> mockedStatic = Mockito.mockStatic(Answer.class)) {
+            mockedStatic.when(() -> Answer.readFile(file1Path.toString()))
+                    .thenThrow(new java.io.IOException("Error reading file"));
+
+            Exception exception = assertThrows(java.io.IOException.class,
+                    () -> compareFiles(file1Path.toString(), file2Path.toString()));
+            assertEquals("Error reading file", exception.getMessage());
+        }
     }
 
-    @Test
-    public void shouldReturn12PMAtNoon() {
-        String result = mockDate("2024-10-01T12:00:00");
-        assertEquals("12:00 PM", result);
-    }
-
-    @Test
-    public void shouldHandleSingleDigitMinutesCorrectly() {
-        String result = mockDate("2024-10-01T09:05:00");
-        assertEquals("9:05 AM", result);
+    private void writeToFile(Path filePath, String content) throws IOException {
+        try (FileWriter writer = new FileWriter(filePath.toFile())) {
+            writer.write(content);
+        }
     }
 }

@@ -3,7 +3,7 @@
 #include <iomanip>
 #include <sstream>
 
-std::string timePassed(long long startTimeInMillis) {
+std::string time_passed(long long startTimeInMillis) {
     // Get the current time in milliseconds
     auto currentTimeInMillis = std::chrono::duration_cast<std::chrono::milliseconds>(
         std::chrono::system_clock::now().time_since_epoch()).count();

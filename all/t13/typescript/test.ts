@@ -1,5 +1,5 @@
 describe('parseMarkdownTable', () => {
-    test('should correctly parse a standard table', () => {
+    it('should correctly parse a standard table', () => {
         const mdTable = `
         | Header 1 | Header 2 | Header 3 |
         |----------|----------|----------|
@@ -15,7 +15,7 @@ describe('parseMarkdownTable', () => {
         expect(result).toEqual(expected);
     });
 
-    test('should correctly parse a table with inconsistent columns', () => {
+    it('should correctly parse a table with inconsistent columns', () => {
         const mdTable = `
         | Header 1 | Header 2 |
         |----------|----------|
@@ -31,7 +31,7 @@ describe('parseMarkdownTable', () => {
         expect(result).toEqual(expected);
     });
 
-    test('should correctly parse a table with empty cells', () => {
+    it('should correctly parse a table with empty cells', () => {
         const mdTable = `
         | Header 1 | Header 2 | Header 3 |
         |----------|----------|----------|
@@ -47,7 +47,7 @@ describe('parseMarkdownTable', () => {
         expect(result).toEqual(expected);
     });
 
-    test('should correctly parse a table with all empty rows', () => {
+    it('should correctly parse a table with all empty rows', () => {
         const mdTable = `
         | Header 1 | Header 2 | Header 3 |
         |----------|----------|----------|
@@ -63,7 +63,7 @@ describe('parseMarkdownTable', () => {
         expect(result).toEqual(expected);
     });
 
-    test('should correctly parse a table with excessive whitespace', () => {
+    it('should correctly parse a table with excessive whitespace', () => {
         const mdTable = `
         |  Header 1  |  Header 2  |  Header 3  |
         |------------|------------|------------|

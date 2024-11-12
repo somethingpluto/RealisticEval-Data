@@ -2,32 +2,27 @@
 #include <string>
 #include <algorithm>
 
-// Function to split the drive from the path
-std::pair<std::string, std::string> splitdrive(const std::string& path) {
-    size_t pos = path.find(':');
-    if (pos == std::string::npos) {
-        return {"", path};
-    }
-    return {path.substr(0, pos + 1), path.substr(pos + 1)};
-}
-
-// Function to simplify the Windows path
-std::string simplifyWindowsPath(const std::string& path) {
-    // Split the drive letter and the rest of the path
-    auto [drive, pathWithoutDrive] = splitdrive(path);
+std::string simplify_windows_path(const std::string& path) {
+    // Check if the path is a valid Windows path with a drive letter
+    std::string simplified_path = path;
     
-    // Simplify the drive letter by replacing ':' with '_'
-    std::string simplifiedDrive = drive;
-    simplifiedDrive.erase(std::remove(simplifiedDrive.begin(), simplifiedDrive.end(), ':'), simplifiedDrive.end());
-    simplifiedDrive += '_';
+    // Find the drive letter and remove it (if present)
+    size_t colon_pos = simplified_path.find(':');
+    std::string simplified_drive = "";
 
-    // Replace backslashes with underscores and strip any trailing backslash
-    std::string simplifiedPath = pathWithoutDrive;
-    std::replace(simplifiedPath.begin(), simplifiedPath.end(), '\\', '_');
-    simplifiedPath.erase(std::find_if(simplifiedPath.rbegin(), simplifiedPath.rend(), [](char ch) { return ch != '_'; }).base(), simplifiedPath.end());
+    if (colon_pos != std::string::npos) {
+        simplified_drive = simplified_path.substr(0, colon_pos) + "_";  // Add the underscore
+        simplified_path = simplified_path.substr(colon_pos + 1);  // Remove the drive part
+    }
 
-    // Concatenate the simplified drive and the remaining path
-    std::string finalPath = simplifiedDrive + simplifiedPath;
+    // Replace backslashes with underscores
+    std::replace(simplified_path.begin(), simplified_path.end(), '\\', '_');
 
-    return finalPath;
+    // Strip trailing underscores
+    if (!simplified_path.empty() && simplified_path.back() == '_') {
+        simplified_path.pop_back();
+    }
+
+    // Concatenate the simplified drive and path
+    return simplified_drive + simplified_path;
 }

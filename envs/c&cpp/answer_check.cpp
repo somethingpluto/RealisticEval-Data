@@ -1,24 +1,35 @@
 #define CATCH_CONFIG_MAIN
 #include "./lib/catch.hpp"
 #include "./solution.cpp"
-TEST_CASE("Test cases for min_removals_to_make_unique", "[min_removals_to_make_unique]") {
-    SECTION("Test with a basic array where multiple removals are needed") {
-        REQUIRE(min_removals_to_make_unique({3, 3, 1, 2, 2, 1}) == 3);
+TEST_CASE("Tests for process_markdown function") {
+
+    SECTION("Test single asterisk pair") {
+        std::string content = "This is a *test.js* string.";
+        std::string expected = "This is a *test.js* string.";
+        REQUIRE(process_markdown(content) == expected);
     }
 
-    SECTION("Test an array where all elements are identical") {
-        REQUIRE(min_removals_to_make_unique({4, 4, 4, 4}) == 3);
+    SECTION("Test nested asterisks") {
+        std::string content = "Example of **nested *asterisks***.";
+        std::string expected = "Example of *nested asterisks*.";
+        REQUIRE(process_markdown(content) == expected);
     }
 
-    SECTION("Test an array where all elements are already unique") {
-        REQUIRE(min_removals_to_make_unique({1, 2, 3, 4}) == 0);
+    SECTION("Test multiple asterisk pairs") {
+        std::string content = "*Multiple* pairs of *asterisks* in *one* sentence.";
+        std::string expected = "*Multiple pairs of asterisks in one* sentence.";
+        REQUIRE(process_markdown(content) == expected);
     }
 
-    SECTION("Test an empty array") {
-        REQUIRE(min_removals_to_make_unique({}) == 0);
+    SECTION("Test asterisks with no text") {
+        std::string content = "Asterisks with ** no text.";
+        std::string expected = "Asterisks with ** no text.";
+        REQUIRE(process_markdown(content) == expected);
     }
 
-    SECTION("Test a more complex case with a larger array") {
-        REQUIRE(min_removals_to_make_unique({1, 2, 2, 3, 3, 3, 4, 4, 4, 4}) == 6);
+    SECTION("Test asterisks around spaces") {
+        std::string content = "Asterisks around * *spaces* * are tricky.";
+        std::string expected = "Asterisks around * spaces * are tricky.";
+        REQUIRE(process_markdown(content) == expected);
     }
 }

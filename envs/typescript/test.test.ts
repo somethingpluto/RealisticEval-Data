@@ -1,42 +1,56 @@
 /**
- * Decodes HTML entities in a given HTML string.
- * @param {string} htmlString - The HTML string containing entities to decode.
- * @returns {string} The decoded string with HTML entities converted back to their original characters.
+ * Transforms the input text by finding and modifying patterns that match the format '(*...*)'.
+ * Specifically, it removes any asterisks inside the parentheses while preserving the outer format.
+ * For example:
+ *     input: *he*l*lo*
+ *     output: *hello*
+ *
+ * @param {string} text - The input text containing patterns to be transformed.
+ * @returns {string} - The transformed text with asterisks inside '(*...*)' patterns removed.
  */
-function replaceHtmlEntities(htmlString: string): string {
-    if (typeof htmlString !== 'string') {
-        throw new TypeError('Input must be a string.');
-    }
+function removeInnerAsterisks(text: string): string {
+    // Regular expression to find patterns like (*...*)
+    const pattern = /\(\*(.*?)\*\)/g;
 
-    // Use a DOMParser to parse the string as HTML
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(htmlString, 'text/html');
+    // Function to replace matched patterns
+    const replaceAsterisks = (match: string, content: string): string => {
+        const cleanedContent = content.replace(/\*/g, ''); // Remove inner asterisks
+        return `(*${cleanedContent}*)`; // Return the modified format
+    };
 
-    // Return the text content, effectively decoding HTML entities
-    return doc.documentElement.textContent || "";
+    // Substitute the pattern in text with the processed content
+    return text.replace(pattern, replaceAsterisks);
 }
-describe('replaceHtmlEntities', () => {
-    test('decodes standard HTML entities', () => {
-        const input: string = 'The &amp; symbol should become an &quot;and&quot; sign.';
-        const expected: string = 'The & symbol should become an "and" sign.';
-        expect(replaceHtmlEntities(input)).toBe(expected);
+
+describe('removeInnerAsterisks', () => {
+    test('basic case', () => {
+        const text = "Hello (*wo*rld*)!";
+        const expected = "Hello (*world*)!";
+        expect(removeInnerAsterisks(text)).toBe(expected);
     });
 
-    test('returns empty string for empty input', () => {
-        const input: string = '';
-        const expected: string = '';
-        expect(replaceHtmlEntities(input)).toBe(expected);
+    test('multiple asterisks', () => {
+        const text = "(*he*l*lo*)";
+        const expected = "(*hello*)";
+        expect(removeInnerAsterisks(text)).toBe(expected);
     });
 
-    test('decodes multiple different entities in one string', () => {
-        const input: string = '&lt;div&gt;Hello &amp; Welcome to the &apos;World&apos;!&lt;/div&gt;';
-        const expected: string = '<div>Hello & Welcome to the \'World\'!</div>';
-        expect(replaceHtmlEntities(input)).toBe(expected);
+    test('no asterisks inside', () => {
+        const text = "(*hello*)";
+        const expected = "(*hello*)";
+        expect(removeInnerAsterisks(text)).toBe(expected);
     });
 
-    test('handles strings with no entities', () => {
-        const input: string = 'Just a normal string without entities.';
-        const expected: string = 'Just a normal string without entities.';
-        expect(replaceHtmlEntities(input)).toBe(expected);
+    test('multiple patterns', () => {
+        const text = "(*hi*), (*there*), (*world*)!";
+        const expected = "(*hi*), (*there*), (*world*)!";
+        expect(removeInnerAsterisks(text)).toBe(expected);
+    });
+
+    test('no matching pattern', () => {
+        const text = "This is a test without matching parentheses.";
+        const expected = "This is a test without matching parentheses.";
+        expect(removeInnerAsterisks(text)).toBe(expected);
     });
 });
+

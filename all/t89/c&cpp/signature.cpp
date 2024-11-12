@@ -5,4 +5,4 @@
  * @param startTimeInMillis The start time in milliseconds.
  * @return A string representing the elapsed time in minutes and seconds.
  */
-std::string timePassed(long long startTimeInMillis) {}
+std::string time_passed(long long startTimeInMillis) {}
