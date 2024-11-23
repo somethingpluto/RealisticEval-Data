@@ -17,21 +17,5 @@ std::vector<int> calculate_column_widths(const std::vector<std::vector<std::stri
             widths[idx] = std::max(widths[idx], static_cast<int>(row[idx].length()));
         }
     }
-
-    // Return the vector of maximum widths for each column.
     return widths;
-}
-
-int main() {
-    // Example usage
-    std::vector<std::vector<std::string>> data = {{"apple", "banana"}, {"cherry", "date"}};
-    std::vector<int> result = calculate_column_widths(data);
-    
-    // Output the results
-    for (int width : result) {
-        std::cout << width << " ";
-    }
-    std::cout << std::endl;
-
-    return 0;
 }

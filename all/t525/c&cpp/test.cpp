@@ -1,8 +1,3 @@
-#include <catch2/catch_test_macros.hpp>
-#include <Eigen/Dense>
-#include <stdexcept>
-
-using Eigen::MatrixXd;
 TEST_CASE("TestFlipPointCloud", "[FlipPointCloud]") {
     SECTION("test_flip_x_axis") {
         // Test flipping the point cloud across the x-axis.

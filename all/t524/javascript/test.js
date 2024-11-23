@@ -1,6 +1,4 @@
 describe('TestScalePointCloud', () => {
-    const scalePointCloud = require('./scalePointCloud'); // Import the scalePointCloud function
-
     describe('test_simple_scaling', () => {
         it('should scale a single point correctly', () => {
             const pointCloud = [[1.0, 2.0, 3.0]];

@@ -4,26 +4,26 @@ describe('degreesToRadians', () => {
     });
 
     it('should convert 90 degrees to π/2 radians', () => {
-        expect(degreesToRadians(90)).toBeCloseTo(PI / 2, 5);
+        expect(degreesToRadians(90)).toBeCloseTo(pi / 2, 5);
     });
 
     it('should convert 180 degrees to π radians', () => {
-        expect(degreesToRadians(180)).toBeCloseTo(PI, 5);
+        expect(degreesToRadians(180)).toBeCloseTo(pi, 5);
     });
 
     it('should convert 270 degrees to 3π/2 radians', () => {
-        expect(degreesToRadians(270)).toBeCloseTo(3 * PI / 2, 5);
+        expect(degreesToRadians(270)).toBeCloseTo(3 * pi / 2, 5);
     });
 
     it('should convert 360 degrees to 2π radians', () => {
-        expect(degreesToRadians(360)).toBeCloseTo(2 * PI, 5);
+        expect(degreesToRadians(360)).toBeCloseTo(2 * pi, 5);
     });
 
     it('should convert -90 degrees to -π/2 radians', () => {
-        expect(degreesToRadians(-90)).toBeCloseTo(-PI / 2, 5);
+        expect(degreesToRadians(-90)).toBeCloseTo(-pi / 2, 5);
     });
 
     it('should convert 720 degrees to 4π radians', () => {
-        expect(degreesToRadians(720)).toBeCloseTo(4 * PI, 5);
+        expect(degreesToRadians(720)).toBeCloseTo(4 * pi, 5);
     });
 });

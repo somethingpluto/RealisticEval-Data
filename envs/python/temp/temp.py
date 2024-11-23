@@ -1,93 +1,54 @@
-import difflib
-from typing import List
+import numpy as np
 
-
-def diff_files(file1_path: str, file2_path: str) -> List[str]:
+def rotate_point_cloud(point_cloud: np.ndarray, rotation_angle: float) -> np.ndarray:
     """
-    Compare the contents of two files and print the differences in unified diff format.
+    Rotate the point cloud around the Y axis by a given angle.
 
-    Args:
-    file1_path (str): Path to the first file.
-    file2_path (str): Path to the second file.
+    Parameters:
+    - point_cloud: A N x 3 numpy array representing the 3D point cloud.
+    - rotation_angle: The angle (in radians) to rotate the point cloud.
 
     Returns:
-    List[str]: A list containing the lines of differences, if any.
-
-    Raises:
-    FileNotFoundError: If either file does not exist.
-    IOError: If there is an error reading the files.
+    - A N x 3 numpy array of the rotated point cloud.
     """
-    try:
-        with open(file1_path, 'r') as file1, open(file2_path, 'r') as file2:
-            lines1 = file1.readlines()
-            lines2 = file2.readlines()
-    except FileNotFoundError:
-        raise FileNotFoundError("One of the files was not found.")
-    except IOError as e:
-        raise IOError(f"Error reading files: {e}")
+    # Create the rotation matrix for a rotation around the Y axis
+    rotation_matrix = np.array([
+        [np.cos(rotation_angle), 0, np.sin(rotation_angle)],
+        [0, 1, 0],
+        [-np.sin(rotation_angle), 0, np.cos(rotation_angle)]
+    ])
 
-    diff = difflib.unified_diff(lines1, lines2, fromfile=file1_path, tofile=file2_path)
-    diff_lines = list(diff)
+    # Rotate the point cloud by multiplying with the rotation matrix
+    rotated_point_cloud = np.dot(point_cloud, rotation_matrix)
 
-    for line in diff_lines:
-        print(line, end="")
-
-    return diff_lines
-
-import os
+    return rotated_point_cloud
 import unittest
-from unittest.mock import mock_open, patch
+
+import numpy as np
 
 
-class TestCompareFiles(unittest.TestCase):
+class TestRotatePointCloud(unittest.TestCase):
 
-    def setUp(self):
-        # 创建文件用于测试
-        self.file1_path = 'file1.txt'
-        self.file2_path = 'file2.txt'
+    def test_no_rotation(self):
+        """Test when rotation angle is 0 (should return the same point cloud)."""
+        point_cloud = np.array([[1.0, 2.0, 3.0]])
+        rotation_angle = 0
+        expected_output = point_cloud
+        np.testing.assert_array_almost_equal(rotate_point_cloud(point_cloud, rotation_angle), expected_output)
 
-    def tearDown(self):
-        # 删除创建的文件
-        if os.path.exists(self.file1_path):
-            os.remove(self.file1_path)
-        if os.path.exists(self.file2_path):
-            os.remove(self.file2_path)
+    def test_180_degree_rotation(self):
+        """Test rotation of 180 degrees (π radians) around Y axis."""
+        point_cloud = np.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]])
+        rotation_angle = np.pi  # 180 degrees
+        expected_output = np.array([[-1.0, 0.0, 0.0], [0.0, 1.0, 0.0]])  # [1,0,0] -> [-1,0,0]
+        np.testing.assert_array_almost_equal(rotate_point_cloud(point_cloud, rotation_angle), expected_output)
 
-    def test_identical_files(self):
-        # Mock question for two identical files
-        file1_content = "Line1\nLine2\nLine3\n"
-        file2_content = "Line1\nLine2\nLine3\n"
-
-        with open(self.file1_path, 'w') as f1, open(self.file2_path, 'w') as f2:
-            f1.write(file1_content)
-            f2.write(file2_content)
-
-        result = diff_files(self.file1_path, self.file2_path)
-        self.assertEqual(len(result), 0, "There should be no differences detected")
-
-    def test_files_with_differences(self):
-        # Mock question for two different files
-        file1_content = "Line1\nLine2\nLine3\n"
-        file2_content = "Line1\nLineChanged\nLine3\n"
-
-        with open(self.file1_path, 'w') as f1, open(self.file2_path, 'w') as f2:
-            f1.write(file1_content)
-            f2.write(file2_content)
-
-        result = diff_files(self.file1_path, self.file2_path)
-        self.assertNotEqual(len(result), 0, "There should be differences detected")
-
-    def test_nonexistent_file(self):
-        # Test when one of the files does not exist
-        with patch('builtins.open', side_effect=FileNotFoundError("File not found")):
-            with self.assertRaises(FileNotFoundError):
-                diff_files('nonexistent.txt', 'file2.txt')
-
-    def test_file_reading_error(self):
-        # Test when there's an error reading the file
-        with patch('builtins.open', side_effect=IOError("Error reading file")):
-            with self.assertRaises(IOError):
-                diff_files('file1.txt', 'file2.txt')
+    def test_full_rotation(self):
+        """Test rotation of 360 degrees (2π radians) around Y axis (should return same point cloud)."""
+        point_cloud = np.array([[1.0, 2.0, 3.0]])
+        rotation_angle = 2 * np.pi  # 360 degrees
+        expected_output = point_cloud  # Should return the same point cloud
+        np.testing.assert_array_almost_equal(rotate_point_cloud(point_cloud, rotation_angle), expected_output)
 
 if __name__ == '__main__':
     unittest.main()

@@ -10,7 +10,7 @@ bool isclose(double a, double b, double rtol, double atol) {
 }
 
 // Function to compare two sets of floats for equality within a relative and absolute tolerance
-bool areSetsEqual(const std::set<double>& set1, const std::set<double>& set2, double rtol = 1e-5, double atol = 1e-6) {
+bool are_sets_equal(const std::set<double>& set1, const std::set<double>& set2, double rtol = 1e-5, double atol = 1e-6) {
     // Convert sets to sorted vectors for comparison
     std::vector<double> list1(set1.begin(), set1.end());
     std::vector<double> list2(set2.begin(), set2.end());
@@ -28,15 +28,4 @@ bool areSetsEqual(const std::set<double>& set1, const std::set<double>& set2, do
     }
 
     return true;
-}
-
-int main() {
-    // Example usage
-    std::set<double> set1 = {1.0, 2.0, 3.0};
-    std::set<double> set2 = {1.0, 2.0, 3.0};
-
-    bool result = areSetsEqual(set1, set2);
-    std::cout << "Are the sets equal? " << (result ? "Yes" : "No") << std::endl;
-
-    return 0;
 }

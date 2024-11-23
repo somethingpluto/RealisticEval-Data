@@ -1,7 +1,3 @@
-#include <catch2/catch_test_macros.hpp>
-#include <Eigen/Dense>
-#include <stdexcept>
-
 TEST_CASE("Test scaling of point clouds", "[scalePointCloud]") {
     SECTION("Test simple scaling") {
         Eigen::MatrixXd pointCloud(1, 3);

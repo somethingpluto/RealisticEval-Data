@@ -2,7 +2,7 @@ package org.real.temp;
 
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
-
+import static org.real.temp.Answer.*;
 public class Tester {
 
     /**
@@ -13,7 +13,7 @@ public class Tester {
         String s = "ADOBECODEBANC";
         String t = "ABC";
         String expectedOutput = "BANC";
-        assertEquals(expectedOutput, Answer.minWindow(s, t));
+        assertEquals(expectedOutput, minWindow(s, t));
     }
 
     /**
@@ -24,7 +24,7 @@ public class Tester {
         String s = "A";
         String t = "AA";
         String expectedOutput = "";
-        assertEquals(expectedOutput, Answer.minWindow(s, t));
+        assertEquals(expectedOutput, minWindow(s, t));
     }
 
     /**
@@ -35,7 +35,7 @@ public class Tester {
         String s = "";
         String t = "ABC";
         String expectedOutput = "";
-        assertEquals(expectedOutput, Answer.minWindow(s, t));
+        assertEquals(expectedOutput, minWindow(s, t));
     }
 
     /**
@@ -46,6 +46,6 @@ public class Tester {
         String s = "AA";
         String t = "AA";
         String expectedOutput = "AA";
-        assertEquals(expectedOutput, Answer.minWindow(s, t));
+        assertEquals(expectedOutput, minWindow(s, t));
     }
 }

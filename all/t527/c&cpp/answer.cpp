@@ -19,16 +19,3 @@ bool is_point_inside_triangle(double px, double py, double x1, double y1, double
     // Check if the sum of A1, A2, and A3 is equal to A
     return std::abs(A - (A1 + A2 + A3)) < 1e-9; // Using a small epsilon value for floating-point comparison
 }
-
-int main() {
-    // Example usage
-    double px = 1.0, py = 1.0;
-    double x1 = 0.0, y1 = 0.0;
-    double x2 = 2.0, y2 = 0.0;
-    double x3 = 1.0, y3 = 2.0;
-
-    bool result = is_point_inside_triangle(px, py, x1, y1, x2, y2, x3, y3);
-    std::cout << "Is the point inside the triangle? " << (result ? "Yes" : "No") << std::endl;
-
-    return 0;
-}

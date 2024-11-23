@@ -3,6 +3,7 @@ package org.real.temp;
 import org.junit.Test;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
+import static org.real.temp.Answer.*;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Arrays;

@@ -2,8 +2,7 @@
 #include <vector>
 #include <cmath>
 
-// Function to calculate midpoints from a given vector of edges
-std::vector<double> getMidsFromEdges(const std::vector<double>& edges) {
+std::vector<double> get_mids_from_edges(const std::vector<double>& edges) {
     // Calculate midpoints using vectorized operations
     std::vector<double> mids;
     for (size_t i = 0; i < edges.size() - 1; ++i) {
@@ -12,18 +11,4 @@ std::vector<double> getMidsFromEdges(const std::vector<double>& edges) {
     }
 
     return mids;
-}
-
-int main() {
-    // Example usage
-    std::vector<double> edges = {1.0, 3.0, 5.0, 7.0};
-    std::vector<double> mids = getMidsFromEdges(edges);
-
-    // Print the midpoints
-    for (const auto& mid : mids) {
-        std::cout << mid << " ";
-    }
-    std::cout << std::endl;
-
-    return 0;
 }

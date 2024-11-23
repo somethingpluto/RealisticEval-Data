@@ -1,8 +1,12 @@
 package org.real.temp;
 
 import org.junit.Test;
-import static org.junit.Assert.assertArrayEquals;
 
+import java.util.Arrays;
+
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertTrue;
+import static org.real.temp.Answer.*;
 /**
  * Test class for scaling a 3D point cloud.
  */
@@ -19,7 +23,8 @@ public class Tester {
 
         double[][] scaledPointCloud = scalePointCloud(pointCloud, scaleFactor);
 
-        assertArrayEquals(expectedOutput, scaledPointCloud, 0.001);
+        // Use Arrays.deepEquals to compare two-dimensional arrays
+        assertTrue(Arrays.deepEquals(expectedOutput, scaledPointCloud));
     }
 
     /**
@@ -33,7 +38,7 @@ public class Tester {
 
         double[][] scaledPointCloud = scalePointCloud(pointCloud, scaleFactor);
 
-        assertArrayEquals(expectedOutput, scaledPointCloud, 0.001);
+        assertTrue(Arrays.deepEquals(expectedOutput, scaledPointCloud));
     }
 
     /**
@@ -47,7 +52,7 @@ public class Tester {
 
         double[][] scaledPointCloud = scalePointCloud(pointCloud, scaleFactor);
 
-        assertArrayEquals(expectedOutput, scaledPointCloud, 0.001);
+        assertTrue(Arrays.deepEquals(expectedOutput, scaledPointCloud));
     }
 
     /**
@@ -61,24 +66,6 @@ public class Tester {
 
         double[][] scaledPointCloud = scalePointCloud(pointCloud, scaleFactor);
 
-        assertArrayEquals(expectedOutput, scaledPointCloud, 0.001);
-    }
-
-    // Utility method to scale the point cloud
-    private double[][] scalePointCloud(double[][] pointCloud, double scaleFactor) {
-        // Ensure pointCloud is a 2D array
-        if (pointCloud == null || pointCloud.length == 0 || pointCloud[0].length != 3) {
-            throw new IllegalArgumentException("pointCloud must be a 2D array with shape (N, 3)");
-        }
-
-        // Scale the point cloud by the given factor
-        double[][] scaledPointCloud = new double[pointCloud.length][3];
-        for (int i = 0; i < pointCloud.length; i++) {
-            scaledPointCloud[i] = Arrays.stream(pointCloud[i])
-                                        .map(x -> x * scaleFactor)
-                                        .toArray();
-        }
-
-        return scaledPointCloud;
+        assertTrue(Arrays.deepEquals(expectedOutput, scaledPointCloud));
     }
 }

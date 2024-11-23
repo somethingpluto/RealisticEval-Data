@@ -1,97 +1,50 @@
-import {fs} from 'fs';
-import {diff} from 'diff'
-/**
- * Compare the contents of two files and print the differences in unified diff format.
- *
- * @param {string} file1Path - Path to the first file.
- * @param {string} file2Path - Path to the second file.
- * @returns {Promise<Array<string>>} A promise that resolves to a list containing the lines of differences, if any.
- * @throws {Error} If either file does not exist or there is an error reading the files.
- */
-async function compareFiles(file1Path, file2Path) {
-    try {
-        const file1Content = await fs.promises.readFile(file1Path, 'utf8');
-        const file2Content = await fs.promises.readFile(file2Path, 'utf8');
+import math from 'mathjs'
+function rotatePointCloud(pointCloud, rotationAngle) {
+    const rotationMatrix = math.matrix([
+        [math.cos(rotationAngle), 0, math.sin(rotationAngle)],
+        [0, 1, 0],
+        [-math.sin(rotationAngle), 0, math.cos(rotationAngle)]
+    ]);
 
-        const lines1 = file1Content.split('\n');
-        const lines2 = file2Content.split('\n');
+    // Rotate the point cloud by multiplying with the rotation matrix
+    const rotatedPointCloud = math.multiply(pointCloud, rotationMatrix);
 
-        const diffResult = diff.diffLines(lines1.join('\n'), lines2.join('\n'));
-        const diffLines = diffResult.map(part => part.value).join('\n').split('\n');
-
-        diffLines.forEach(line => console.log(line));
-
-        return diffLines;
-    } catch (error) {
-        if (error.code === 'ENOENT') {
-            throw new Error('One of the files was not found.');
-        }
-        throw new Error(`Error reading files: ${error.message}`);
-    }
+    return rotatedPointCloud;
 }
-describe('TestCompareFiles', () => {
-  let file1Path;
-  let file2Path;
+describe('TestRotatePointCloud', () => {
+    it('test_no_rotation', () => {
+        /** 
+         * Test when rotation angle is 0 (should return the same point cloud).
+         */
+        const pointCloud = [[1.0, 2.0, 3.0]];
+        const rotationAngle = 0;
+        const expectedOutput = pointCloud;
 
-  beforeEach(() => {
-      // Create files for testing
-      file1Path = 'file1.txt';
-      file2Path = 'file2.txt';
-  });
+        const rotatedPointCloud = rotatePointCloud(pointCloud, rotationAngle);
+        expect(rotatedPointCloud).toEqual(expectedOutput);
+    });
 
-  afterEach(() => {
-      // Remove created files
-      if (fs.existsSync(file1Path)) {
-          fs.unlinkSync(file1Path);
-      }
-      if (fs.existsSync(file2Path)) {
-          fs.unlinkSync(file2Path);
-      }
-  });
+    it('test_180_degree_rotation', () => {
+        /** 
+         * Test rotation of 180 degrees (π radians) around Y axis.
+         */
+        const pointCloud = [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]];
+        const rotationAngle = Math.PI; // 180 degrees
+        const expectedOutput = [[-1.0, 0.0, 0.0], [0.0, 1.0, 0.0]]; // [1,0,0] -> [-1,0,0]
 
-  it('should detect no differences in identical files', () => {
-      const file1Content = "Line1\nLine2\nLine3\n";
-      const file2Content = "Line1\nLine2\nLine3\n";
+        const rotatedPointCloud = rotatePointCloud(pointCloud, rotationAngle);
+        expect(rotatedPointCloud).toEqual(expectedOutput);
+    });
 
-      fs.writeFileSync(file1Path, file1Content);
-      fs.writeFileSync(file2Path, file2Content);
+    it('test_full_rotation', () => {
+        /** 
+         * Test rotation of 360 degrees (2π radians) around Y axis (should return same point cloud).
+         */
+        const pointCloud = [[1.0, 2.0, 3.0]];
+        const rotationAngle = 2 * Math.PI; // 360 degrees
+        const expectedOutput = pointCloud; // Should return the same point cloud
 
-      const result = compareFiles(file1Path, file2Path);
-      expect(result.length).toBe(0, "There should be no differences detected");
-  });
-
-  it('should detect differences in different files', () => {
-      const file1Content = "Line1\nLine2\nLine3\n";
-      const file2Content = "Line1\nLineChanged\nLine3\n";
-
-      fs.writeFileSync(file1Path, file1Content);
-      fs.writeFileSync(file2Path, file2Content);
-
-      const result = compareFiles(file1Path, file2Path);
-      expect(result.length).not.toBe(0, "There should be differences detected");
-  });
-
-  it('should throw an error when one of the files does not exist', () => {
-      const mockOpen = jest.fn().mockImplementation(() => {
-          throw new Error('File not found');
-      });
-
-      global.open = mockOpen;
-
-      expect(() => compareFiles('nonexistent.txt', 'file2.txt')).toThrow('One of the files was not found.');
-
-      delete global.open;
-  });
-
-  it('should throw an error when there is an error reading the file', () => {
-      const mockOpen = jest.fn().mockImplementation(() => {
-          throw new Error('Error reading file');
-      });
-
-      global.open = mockOpen;
-
-      expect(() => compareFiles('file1.txt', 'file2.txt')).toThrow('Error reading files: Error reading file');
-
-      delete global.open;
-  });
+        const rotatedPointCloud = rotatePointCloud(pointCloud, rotationAngle);
+        expect(rotatedPointCloud).toEqual(expectedOutput);
+    });
 });

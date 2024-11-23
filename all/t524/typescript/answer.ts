@@ -8,8 +8,10 @@ import { Matrix } from 'mathjs';
  * @returns A N x 3 matrix of the scaled point cloud.
  */
 function scalePointCloud(pointCloud: Matrix, scaleFactor: number): Matrix {
-    // Ensure pointCloud is a matrix
-    pointCloud = Matrix(pointCloud);
+    // Ensure pointCloud is a Matrix instance (use `new Matrix` if necessary)
+    if (!(pointCloud instanceof Matrix)) {
+        pointCloud = new Matrix(pointCloud);
+    }
 
     // Validate input shape
     const shape = pointCloud.size();
@@ -17,8 +19,8 @@ function scalePointCloud(pointCloud: Matrix, scaleFactor: number): Matrix {
         throw new Error('pointCloud must be a 2D array with shape (N, 3)');
     }
 
-    // Scale the point cloud by the given factor
-    const scaledPointCloud = pointCloud.multiply(scaleFactor);
+    // Scale the point cloud by the given factor (use dotMultiply for element-wise scaling)
+    const scaledPointCloud = pointCloud.dotMultiply(scaleFactor);
 
     return scaledPointCloud;
 }

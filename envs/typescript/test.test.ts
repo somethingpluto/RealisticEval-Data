@@ -1,56 +1,85 @@
+import { Float32Array } from "typed-array";
+
 /**
- * Transforms the input text by finding and modifying patterns that match the format '(*...*)'.
- * Specifically, it removes any asterisks inside the parentheses while preserving the outer format.
- * For example:
- *     input: *he*l*lo*
- *     output: *hello*
+ * Translate the point cloud by a given vector.
  *
- * @param {string} text - The input text containing patterns to be transformed.
- * @returns {string} - The transformed text with asterisks inside '(*...*)' patterns removed.
+ * @param pointCloud - A N x 3 Float32Array representing the 3D point cloud.
+ * @param translationVector - A 1 x 3 Float32Array or array representing the translation vector.
+ * @returns A N x 3 Float32Array of the translated point cloud.
  */
-function removeInnerAsterisks(text: string): string {
-    // Regular expression to find patterns like (*...*)
-    const pattern = /\(\*(.*?)\*\)/g;
+function translatePointCloud(pointCloud: Float32Array, translationVector: Float32Array | number[]): Float32Array {
+    // Ensure the translationVector is a Float32Array for broadcasting
+    const translationVectorTyped = new Float32Array(translationVector);
 
-    // Function to replace matched patterns
-    const replaceAsterisks = (match: string, content: string): string => {
-        const cleanedContent = content.replace(/\*/g, ''); // Remove inner asterisks
-        return `(*${cleanedContent}*)`; // Return the modified format
-    };
+    // Check if translationVector is of correct shape
+    if (translationVectorTyped.length !== 3) {
+        throw new Error("translationVector must be a 1D array of length 3");
+    }
 
-    // Substitute the pattern in text with the processed content
-    return text.replace(pattern, replaceAsterisks);
+    // Calculate the number of points in the point cloud
+    const numPoints = pointCloud.length / 3;
+
+    // Create a new Float32Array for the translated point cloud
+    const translatedPointCloud = new Float32Array(pointCloud.length);
+
+    // Translate the point cloud by adding the translation vector to each point
+    for (let i = 0; i < numPoints; i++) {
+        const index = i * 3;
+        translatedPointCloud[index] = pointCloud[index] + translationVectorTyped[0];
+        translatedPointCloud[index + 1] = pointCloud[index + 1] + translationVectorTyped[1];
+        translatedPointCloud[index + 2] = pointCloud[index + 2] + translationVectorTyped[2];
+    }
+
+    return translatedPointCloud;
 }
 
-describe('removeInnerAsterisks', () => {
-    test('basic case', () => {
-        const text = "Hello (*wo*rld*)!";
-        const expected = "Hello (*world*)!";
-        expect(removeInnerAsterisks(text)).toBe(expected);
+describe('TestTranslatePointCloud', () => {
+    /**
+     * Test a simple translation of a single point.
+     */
+    it('testSimpleTranslation', () => {
+        const pointCloud = new Float32Array([1.0, 2.0, 3.0]);
+        const translationVector = new Float32Array([1.0, 1.0, 1.0]);
+        const expectedOutput = new Float32Array([2.0, 3.0, 4.0]);
+
+        const result = translatePointCloud(pointCloud, translationVector);
+        expect(result).toEqual(expectedOutput);
     });
 
-    test('multiple asterisks', () => {
-        const text = "(*he*l*lo*)";
-        const expected = "(*hello*)";
-        expect(removeInnerAsterisks(text)).toBe(expected);
+    /**
+     * Test translation of multiple points.
+     */
+    it('testMultiplePointsTranslation', () => {
+        const pointCloud = new Float32Array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0]);
+        const translationVector = new Float32Array([1.0, 2.0, 3.0]);
+        const expectedOutput = new Float32Array([2.0, 4.0, 6.0, 5.0, 7.0, 9.0]);
+
+        const result = translatePointCloud(pointCloud, translationVector);
+        expect(result).toEqual(expectedOutput);
     });
 
-    test('no asterisks inside', () => {
-        const text = "(*hello*)";
-        const expected = "(*hello*)";
-        expect(removeInnerAsterisks(text)).toBe(expected);
+    /**
+     * Test translation by a zero vector (should return the same point cloud).
+     */
+    it('testZeroTranslation', () => {
+        const pointCloud = new Float32Array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0]);
+        const translationVector = new Float32Array([0.0, 0.0, 0.0]);
+        const expectedOutput = new Float32Array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0]);
+
+        const result = translatePointCloud(pointCloud, translationVector);
+        expect(result).toEqual(expectedOutput);
     });
 
-    test('multiple patterns', () => {
-        const text = "(*hi*), (*there*), (*world*)!";
-        const expected = "(*hi*), (*there*), (*world*)!";
-        expect(removeInnerAsterisks(text)).toBe(expected);
-    });
+    /**
+     * Test translation with negative values.
+     */
+    it('testNegativeTranslation', () => {
+        const pointCloud = new Float32Array([1.0, 2.0, 3.0]);
+        const translationVector = new Float32Array([-1.0, -2.0, -3.0]);
+        const expectedOutput = new Float32Array([0.0, 0.0, 0.0]);
 
-    test('no matching pattern', () => {
-        const text = "This is a test without matching parentheses.";
-        const expected = "This is a test without matching parentheses.";
-        expect(removeInnerAsterisks(text)).toBe(expected);
+        const result = translatePointCloud(pointCloud, translationVector);
+        expect(result).toEqual(expectedOutput);
     });
 });
 

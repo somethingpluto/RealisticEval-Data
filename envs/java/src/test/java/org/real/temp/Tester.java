@@ -1,84 +1,59 @@
 package org.real.temp;
 
-import java.io.FileWriter;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.List;
 import org.junit.Test;
-import org.mockito.Mockito;
-
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.factory.Nd4j;
 
 public class Tester {
 
-    private static final String FILE1_CONTENT = "Line1\nLine2\nLine3\n";
-    private static final String FILE2_CONTENT = "Line1\nLineChanged\nLine3\n";
+    private static final double DELTA = 1e-15;
 
-    private Path file1Path;
-    private Path file2Path;
+    @Test
+    public void testSimpleTranslation() {
+        // Test a simple translation of a single point
+        INDArray pointCloud = Nd4j.create(new double[][]{{1.0, 2.0, 3.0}});
+        double[] translationVector = {1.0, 1.0, 1.0};
+        INDArray expectedOutput = Nd4j.create(new double[][]{{2.0, 3.0, 4.0}});
 
-    @BeforeEach
-    public void setUp(@TempDir Path tempDir) {
-        file1Path = tempDir.resolve("file1.txt");
-        file2Path = tempDir.resolve("file2.txt");
-    }
+        INDArray translatedPointCloud = Answer.translatePointCloud(pointCloud, translationVector);
 
-    @AfterEach
-    public void tearDown() {
-        if (file1Path.toFile().exists()) {
-            file1Path.toFile().delete();
-        }
-        if (file2Path.toFile().exists()) {
-            file2Path.toFile().delete();
-        }
+        assertEquals(String.valueOf(expectedOutput), translatedPointCloud, DELTA);
     }
 
     @Test
-    public void testIdenticalFiles() throws IOException {
-        writeToFile(file1Path, FILE1_CONTENT);
-        writeToFile(file2Path, FILE1_CONTENT);
+    public void testMultiplePointsTranslation() {
+        // Test translation of multiple points
+        INDArray pointCloud = Nd4j.create(new double[][]{{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}});
+        double[] translationVector = {1.0, 2.0, 3.0};
+        INDArray expectedOutput = Nd4j.create(new double[][]{{2.0, 4.0, 6.0}, {5.0, 7.0, 9.0}});
 
-        List<String> result = compareFiles(file1Path.toString(), file2Path.toString());
-        assertEquals(0, result.size(), "There should be no differences detected");
+        INDArray translatedPointCloud = Answer.translatePointCloud(pointCloud, translationVector);
+
+        assertEquals(String.valueOf(expectedOutput), translatedPointCloud, DELTA);
     }
 
     @Test
-    public void testFilesWithDifferences() throws IOException {
-        writeToFile(file1Path, FILE1_CONTENT);
-        writeToFile(file2Path, FILE2_CONTENT);
+    public void testZeroTranslation() {
+        // Test translation by a zero vector (should return the same point cloud)
+        INDArray pointCloud = Nd4j.create(new double[][]{{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}});
+        double[] translationVector = {0.0, 0.0, 0.0};
+        INDArray expectedOutput = pointCloud;  // No change expected
 
-        List<String> result = compareFiles(file1Path.toString(), file2Path.toString());
-        assertNotEquals(0, result.size(), "There should be differences detected");
+        INDArray translatedPointCloud = Answer.translatePointCloud(pointCloud, translationVector);
+
+        assertEquals(String.valueOf(expectedOutput), translatedPointCloud, DELTA);
     }
 
     @Test
-    public void testNonexistentFile() {
-        try (MockedStatic<Answer> mockedStatic = Mockito.mockStatic(Answer.class)) {
-            mockedStatic.when(() -> Answer.readFile("nonexistent.txt"))
-                    .thenThrow(new java.io.FileNotFoundException("File not found"));
+    public void testNegativeTranslation() {
+        // Test translation with negative values
+        INDArray pointCloud = Nd4j.create(new double[][]{{1.0, 2.0, 3.0}});
+        double[] translationVector = {-1.0, -2.0, -3.0};
+        INDArray expectedOutput = Nd4j.create(new double[][]{{0.0, 0.0, 0.0}});
 
-            Exception exception = assertThrows(java.io.FileNotFoundException.class,
-                    () -> compareFiles("nonexistent.txt", file2Path.toString()));
-            assertEquals("File not found", exception.getMessage());
-        }
-    }
+        INDArray translatedPointCloud = Answer.translatePointCloud(pointCloud, translationVector);
 
-    @Test
-    public void testFileReadingError() {
-        try (MockedStatic<Answer> mockedStatic = Mockito.mockStatic(Answer.class)) {
-            mockedStatic.when(() -> Answer.readFile(file1Path.toString()))
-                    .thenThrow(new java.io.IOException("Error reading file"));
-
-            Exception exception = assertThrows(java.io.IOException.class,
-                    () -> compareFiles(file1Path.toString(), file2Path.toString()));
-            assertEquals("Error reading file", exception.getMessage());
-        }
-    }
-
-    private void writeToFile(Path filePath, String content) throws IOException {
-        try (FileWriter writer = new FileWriter(filePath.toFile())) {
-            writer.write(content);
-        }
+        assertEquals(String.valueOf(expectedOutput), translatedPointCloud, DELTA);
     }
 }

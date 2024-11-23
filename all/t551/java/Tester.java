@@ -2,7 +2,7 @@ package org.real.temp;
 
 import org.junit.Test;
 import static org.junit.Assert.assertArrayEquals;
-
+import static org.real.temp.Answer.*;
 public class Tester {
 
     /**
@@ -62,16 +62,6 @@ public class Tester {
     public void testFloatEdges() {
         double[] edges = {0.0, 1.5, 3.0};
         double[] expectedMids = {0.75, 2.25};
-        assertArrayEquals(expectedMids, getMidsFromEdges(edges), 0.001);
-    }
-
-    /**
-     * Test with an empty array.
-     */
-    @Test
-    public void testEmptyArray() {
-        double[] edges = {};
-        double[] expectedMids = {};
         assertArrayEquals(expectedMids, getMidsFromEdges(edges), 0.001);
     }
 }

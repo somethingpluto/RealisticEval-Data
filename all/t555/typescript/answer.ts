@@ -1,5 +1,5 @@
 function quaternionToAngle(quaternion: [number, number, number, number]): number {
-    // Ensure the quaternion is a valid 4-element array
+    // Ensure the quaternion is a valid 4-element tuple
     if (quaternion.length !== 4) {
         throw new Error("Quaternion must have 4 components (w, x, y, z)");
     }

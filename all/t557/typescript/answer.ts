@@ -1,6 +1,6 @@
-import { PI } from "mathjs";
+import { pi } from "mathjs";
 
 function radiansToDegrees(radians: number): number {
-    const degrees = radians * (180 / PI);
+    const degrees = radians * (180 / pi);
     return degrees;
 }
