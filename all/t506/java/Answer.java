@@ -3,7 +3,7 @@ package org.real.temp;
 public class Answer {
 
     /**
-     * Convert a snake_case string to CamelCase.
+     * Converts a snake_case string to CamelCase.
      *
      * @param snakeStr The snake_case string to convert.
      * @return The converted CamelCase string.
@@ -11,11 +11,14 @@ public class Answer {
     public static String snakeToCamel(String snakeStr) {
         // Split the snake_case string into words
         String[] words = snakeStr.split("_");
+
         // Capitalize the first letter of each word and join them
         StringBuilder camelCaseStr = new StringBuilder();
         for (String word : words) {
-            camelCaseStr.append(Character.toUpperCase(word.charAt(0)));
-            camelCaseStr.append(word.substring(1));
+            if (!word.isEmpty()) {
+                camelCaseStr.append(Character.toUpperCase(word.charAt(0)));
+                camelCaseStr.append(word.substring(1));
+            }
         }
         return camelCaseStr.toString();
     }

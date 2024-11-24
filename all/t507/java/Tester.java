@@ -2,7 +2,7 @@ package org.real.temp;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
-
+import static org.real.temp.Answer.*;
 public class Tester {
 
     /**
@@ -51,31 +51,5 @@ public class Tester {
     @Test
     public void testValidWithSpecialCharacters() {
         assertTrue(isStrongPassword("Strong!Password1"));
-    }
-
-    // Utility method to check if a password is strong
-    private boolean isStrongPassword(String password) {
-        // Check password length
-        if (password.length() < 8) {
-            return false;
-        }
-
-        // Check for at least one lowercase letter
-        if (!password.matches(".*[a-z].*")) {
-            return false;
-        }
-
-        // Check for at least one uppercase letter
-        if (!password.matches(".*[A-Z].*")) {
-            return false;
-        }
-
-        // Check for at least one number
-        if (!password.matches(".*\\d.*")) {
-            return false;
-        }
-
-        // If all checks passed, return true
-        return true;
     }
 }

@@ -4,7 +4,6 @@
 #include <sstream>
 #include <stdexcept>
 
-// Function to convert a string representation of a score to its decimal value
 std::optional<float> convert_score_to_decimal(const std::string& score_str) {
     try {
         // Check if the score is a fraction

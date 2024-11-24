@@ -1,41 +1,48 @@
 package org.real.temp;
 
-import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.factory.Nd4j;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Answer {
 
     /**
-     * Translate the point cloud by a given vector.
+     * Extracts a numeric value from the input string based on the given regex pattern.
      *
-     * @param pointCloud A N x 3 INDArray representing the 3D point cloud.
-     * @param translationVector A 1 x 3 INDArray or double array representing the translation vector.
-     * @return A N x 3 INDArray of the translated point cloud.
+     * @param x       The input from which to extract the value. It will be converted to a string.
+     * @param pattern The regular expression pattern to use for matching.
+     * @return The extracted weight value as a float if a match is found, otherwise an empty string.
      */
-    public static INDArray translatePointCloud(INDArray pointCloud, double[] translationVector) {
-        // Ensure the translationVector is an INDArray for broadcasting
-        INDArray vectorNdArray = Nd4j.create(translationVector);
+    public static String cleanPattern(Object x, String pattern) {
+        // Convert input to string
+        String input = x.toString();
 
-        // Check if translationVector is of correct shape
-        if (vectorNdArray.length() != 3) {
-            throw new IllegalArgumentException("translationVector must be a 1D array of length 3");
+        // Compile the pattern
+        Pattern compiledPattern = Pattern.compile(pattern);
+        Matcher matcher = compiledPattern.matcher(input);
+
+        if (matcher.find()) {
+            // Extract the weight value from the first matching group
+            String weight = matcher.group(1);  // Can also use matcher.group(3) if needed
+
+            try {
+                // Convert the weight to a float and return it as a string
+                float weightValue = Float.parseFloat(weight);
+                return Float.toString(weightValue);
+            } catch (NumberFormatException e) {
+                // Handle cases where conversion to float fails
+                System.out.println("Warning: Unable to convert '" + weight + "' to float.");
+                return "";
+            }
+        } else {
+            return "";  // Return empty string if no match is found
         }
-
-        // Translate the point cloud by adding the translation vector to each point
-        INDArray translatedPointCloud = pointCloud.add(vectorNdArray);
-
-        return translatedPointCloud;
     }
 
     public static void main(String[] args) {
         // Example usage
-        double[] translationVector = {1.0, 2.0, 3.0};
-        INDArray pointCloud = Nd4j.create(new double[][]{
-            {1.0, 2.0, 3.0},
-            {4.0, 5.0, 6.0}
-        });
-
-        INDArray translatedPointCloud = translatePointCloud(pointCloud, translationVector);
-        System.out.println(translatedPointCloud);
+        Object input = "The weight is 123.45 kg";
+        String pattern = "(\\d+\\.\\d+)";
+        String result = cleanPattern(input, pattern);
+        System.out.println("Extracted Value: " + result);
     }
 }

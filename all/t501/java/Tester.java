@@ -2,7 +2,7 @@ package org.real.temp;
 
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
-
+import static org.real.temp.Answer.*;
 /**
  * Test class for the convertToShortFormat method.
  */
@@ -39,20 +39,5 @@ public class Tester {
     public void testSingleSegment() {
         assertEquals("s", convertToShortFormat("single"));
     }
-
-    // Helper method to simulate the convertToShortFormat method
-    private String convertToShortFormat(String inputStr) {
-        // Split the input string by underscores
-        String[] segments = inputStr.split("_");
-
-        // Extract the first character from each segment and join them
-        StringBuilder shortFormat = new StringBuilder();
-        for (String segment : segments) {
-            if (!segment.isEmpty()) {
-                shortFormat.append(segment.charAt(0));
-            }
-        }
-
-        return shortFormat.toString();
-    }
+    
 }

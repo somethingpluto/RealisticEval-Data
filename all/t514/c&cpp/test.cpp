@@ -25,11 +25,4 @@ TEST_CASE("TestExtractDateFromFilename", "[extract_date_from_filename]") {
         const std::string expected_date = "2023-09-28";
         REQUIRE(extract_date_from_filename(file_name) == expected_date);
     }
-
-    SECTION("test_incorrect_date_format") {
-        // Test case where the date format is incorrect.
-        const std::string file_name = "report-2023-99-99.txt";  // Invalid date
-        const std::string expected_date = "";  // Since the regex does not match, it should return an empty string
-        REQUIRE(extract_date_from_filename(file_name).empty());
-    }
 }

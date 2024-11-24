@@ -2,7 +2,7 @@ package org.real.temp;
 
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
-
+import static org.real.temp.Answer.*;
 /**
  * Test class for verifying the correctness of the camelToSnake method.
  */
@@ -48,10 +48,4 @@ public class Tester {
         assertEquals("", camelToSnake(""));
     }
 
-    // Method to be tested
-    private String camelToSnake(String camelStr) {
-        // Use regular expression to insert underscores before each uppercase letter,
-        // and then convert the whole string to lowercase
-        return camelStr.replaceAll("(?<!^)(?=[A-Z])", "_").toLowerCase();
-    }
 }

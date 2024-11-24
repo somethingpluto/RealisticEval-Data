@@ -1,85 +1,70 @@
-import { Float32Array } from "typed-array";
+function cleanPattern(x: unknown, pattern: string): number | string {
+    const inputString = String(x);
 
-/**
- * Translate the point cloud by a given vector.
- *
- * @param pointCloud - A N x 3 Float32Array representing the 3D point cloud.
- * @param translationVector - A 1 x 3 Float32Array or array representing the translation vector.
- * @returns A N x 3 Float32Array of the translated point cloud.
- */
-function translatePointCloud(pointCloud: Float32Array, translationVector: Float32Array | number[]): Float32Array {
-    // Ensure the translationVector is a Float32Array for broadcasting
-    const translationVectorTyped = new Float32Array(translationVector);
+    // Create a RegExp object from the pattern
+    const regex = new RegExp(pattern);
 
-    // Check if translationVector is of correct shape
-    if (translationVectorTyped.length !== 3) {
-        throw new Error("translationVector must be a 1D array of length 3");
+    // Search for the pattern in the input string
+    const match = inputString.match(regex);
+
+    if (match) {
+        // Extract the weight value from the first matching group
+        const weight = match[1];  // Can also use match[3] if needed
+
+        try {
+            // Convert the weight to a float and return it
+            const weightValue = parseFloat(weight);
+            if (!isNaN(weightValue)) {
+                return weightValue;
+            } else {
+                console.warn(`Warning: Unable to convert '${weight}' to float.`);
+                return '';
+            }
+        } catch (error) {
+            // Handle cases where conversion to float fails
+            console.warn(`Warning: Unable to convert '${weight}' to float.`);
+            return '';
+        }
+    } else {
+        return '';  // Return empty string if no match is found
     }
-
-    // Calculate the number of points in the point cloud
-    const numPoints = pointCloud.length / 3;
-
-    // Create a new Float32Array for the translated point cloud
-    const translatedPointCloud = new Float32Array(pointCloud.length);
-
-    // Translate the point cloud by adding the translation vector to each point
-    for (let i = 0; i < numPoints; i++) {
-        const index = i * 3;
-        translatedPointCloud[index] = pointCloud[index] + translationVectorTyped[0];
-        translatedPointCloud[index + 1] = pointCloud[index + 1] + translationVectorTyped[1];
-        translatedPointCloud[index + 2] = pointCloud[index + 2] + translationVectorTyped[2];
-    }
-
-    return translatedPointCloud;
 }
 
-describe('TestTranslatePointCloud', () => {
-    /**
-     * Test a simple translation of a single point.
-     */
-    it('testSimpleTranslation', () => {
-        const pointCloud = new Float32Array([1.0, 2.0, 3.0]);
-        const translationVector = new Float32Array([1.0, 1.0, 1.0]);
-        const expectedOutput = new Float32Array([2.0, 3.0, 4.0]);
+describe('TestCleanPattern', () => {
+  let pattern: string;
 
-        const result = translatePointCloud(pointCloud, translationVector);
-        expect(result).toEqual(expectedOutput);
-    });
+  beforeEach(() => {
+    // Sets up a common regex pattern for testing
+    pattern = '(\\d+\\.?\\d*) kg';  // Regex pattern to match weight in kg
+  });
 
-    /**
-     * Test translation of multiple points.
-     */
-    it('testMultiplePointsTranslation', () => {
-        const pointCloud = new Float32Array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0]);
-        const translationVector = new Float32Array([1.0, 2.0, 3.0]);
-        const expectedOutput = new Float32Array([2.0, 4.0, 6.0, 5.0, 7.0, 9.0]);
+  it('should handle valid integer weight', () => {
+    const inputString = "The weight is 25 kg";
+    const result = cleanPattern(inputString, pattern);
+    expect(result).toEqual(25.0);
+  });
 
-        const result = translatePointCloud(pointCloud, translationVector);
-        expect(result).toEqual(expectedOutput);
-    });
+  it('should handle valid float weight', () => {
+    const inputString = "Weight measured at 15.75 kg";
+    const result = cleanPattern(inputString, pattern);
+    expect(result).toEqual(15.75);
+  });
 
-    /**
-     * Test translation by a zero vector (should return the same point cloud).
-     */
-    it('testZeroTranslation', () => {
-        const pointCloud = new Float32Array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0]);
-        const translationVector = new Float32Array([0.0, 0.0, 0.0]);
-        const expectedOutput = new Float32Array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0]);
+  it('should return an empty string when no weight is found', () => {
+    const inputString = "No weight provided.";
+    const result = cleanPattern(inputString, pattern);
+    expect(result).toEqual('');
+  });
 
-        const result = translatePointCloud(pointCloud, translationVector);
-        expect(result).toEqual(expectedOutput);
-    });
+  it('should return an empty string for non-numeric weight', () => {
+    const inputString = "The weight is thirty kg";
+    const result = cleanPattern(inputString, pattern);
+    expect(result).toEqual('');
+  });
 
-    /**
-     * Test translation with negative values.
-     */
-    it('testNegativeTranslation', () => {
-        const pointCloud = new Float32Array([1.0, 2.0, 3.0]);
-        const translationVector = new Float32Array([-1.0, -2.0, -3.0]);
-        const expectedOutput = new Float32Array([0.0, 0.0, 0.0]);
-
-        const result = translatePointCloud(pointCloud, translationVector);
-        expect(result).toEqual(expectedOutput);
-    });
+  it('should handle weight with extra text', () => {
+    const inputString = "The total weight is 45.3 kg as per the last measurement.";
+    const result = cleanPattern(inputString, pattern);
+    expect(result).toEqual(45.3);
+  });
 });
-

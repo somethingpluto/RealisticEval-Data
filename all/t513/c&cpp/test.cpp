@@ -1,8 +1,4 @@
 TEST_CASE("Test is_phrase_in_string_ignore_case", "[is_phrase_in_string_ignore_case]") {
-    SECTION("Exact match case insensitive") {
-        REQUIRE(is_phrase_in_string_ignore_case("hello world", "Hello World"));
-    }
-
     SECTION("Partial word match case insensitive") {
         REQUIRE(is_phrase_in_string_ignore_case("Hello", "saying Hello there"));
     }

@@ -1,6 +1,3 @@
-#include <catch2/catch_test_macros.hpp>
-#include <cstdint>
-
 TEST_CASE("Test Compute Output Index", "[compute_output_index]") {
     SECTION("Test with two standard positive integers") {
         uint64_t idx_1 = 3;  // binary: 11

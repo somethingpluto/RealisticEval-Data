@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.json.JSONObject;
-
+import static org.real.temp.Answer.*;
 public class Tester {
 
     private static final String VALID_JSONL_FILE = "test_valid.jsonl";
@@ -72,29 +72,5 @@ public class Tester {
 
         // Cleanup after the test
         new File(EMPTY_JSONL_FILE).delete();
-    }
-
-    // Utility method to read JSON Lines file
-    private static List<JSONObject> readJsonl(String filePath) throws IOException {
-        // Check if the file exists
-        File file = new File(filePath);
-        if (!file.exists()) {
-            throw new IOException("The file '" + filePath + "' does not exist.");
-        }
-
-        List<JSONObject> jsonList = new ArrayList<>();
-        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                try {
-                    JSONObject jsonObject = new JSONObject(new JSONTokener(line));
-                    jsonList.add(jsonObject);
-                } catch (Exception e) {
-                    throw new IOException("Error parsing line: " + line.trim() + " - " + e.getMessage());
-                }
-            }
-        }
-
-        return jsonList;
     }
 }

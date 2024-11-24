@@ -1,48 +1,36 @@
 #define CATCH_CONFIG_MAIN
 #include "./lib/catch.hpp"
 #include "./solution.cpp"
-TEST_CASE("Test scaling of point clouds", "[scalePointCloud]") {
-    SECTION("Test simple scaling") {
-        Eigen::MatrixXd pointCloud(1, 3);
-        pointCloud << 1.0, 2.0, 3.0;
-        double scale_factor = 2.0;
-        Eigen::MatrixXd expected_output(1, 3);
-        expected_output << 2.0, 4.0, 6.0;
+TEST_CASE("TestCleanPattern", "[clean_pattern]") {
+    const std::string pattern = R"((\d+\.?\d*) kg)";  // Regex pattern to match weight in kg
 
-        REQUIRE((scale_point_cloud(pointCloud, scale_factor)).isApprox(expected_output));
+    SECTION("test_valid_integer_weight") {
+        std::string input_string = "The weight is 25 kg";
+        std::string result = clean_pattern(input_string, pattern);
+        REQUIRE(result == "25.0");
     }
 
-    SECTION("Test multiple points scaling") {
-        Eigen::MatrixXd pointCloud(2, 3);
-        pointCloud << 1.0, 2.0, 3.0,
-                      4.0, 5.0, 6.0;
-        double scale_factor = 0.5;
-        Eigen::MatrixXd expected_output(2, 3);
-        expected_output << 0.5, 1.0, 1.5,
-                           2.0, 2.5, 3.0;
-
-        REQUIRE((scale_point_cloud(pointCloud, scale_factor)).isApprox(expected_output));
+    SECTION("test_valid_float_weight") {
+        std::string input_string = "Weight measured at 15.75 kg";
+        std::string result = clean_pattern(input_string, pattern);
+        REQUIRE(result == "15.75");
     }
 
-    SECTION("Test zero scaling") {
-        Eigen::MatrixXd pointCloud(2, 3);
-        pointCloud << 1.0, 2.0, 3.0,
-                      4.0, 5.0, 6.0;
-        double scale_factor = 0.0;
-        Eigen::MatrixXd expected_output(2, 3);
-        expected_output << 0.0, 0.0, 0.0,
-                           0.0, 0.0, 0.0;
-
-        REQUIRE((scale_point_cloud(pointCloud, scale_factor)).isApprox(expected_output));
+    SECTION("test_no_weight_found") {
+        std::string input_string = "No weight provided.";
+        std::string result = clean_pattern(input_string, pattern);
+        REQUIRE(result.empty());
     }
 
-    SECTION("Test negative scaling") {
-        Eigen::MatrixXd pointCloud(1, 3);
-        pointCloud << 1.0, 2.0, 3.0;
-        double scale_factor = -2.0;
-        Eigen::MatrixXd expected_output(1, 3);
-        expected_output << -2.0, -4.0, -6.0;
+    SECTION("test_invalid_float_conversion") {
+        std::string input_string = "The weight is thirty kg";
+        std::string result = clean_pattern(input_string, pattern);
+        REQUIRE(result.empty());
+    }
 
-        REQUIRE((scale_point_cloud(pointCloud, scale_factor)).isApprox(expected_output));
+    SECTION("test_weight_with_extra_text") {
+        std::string input_string = "The total weight is 45.3 kg as per the last measurement.";
+        std::string result = clean_pattern(input_string, pattern);
+        REQUIRE(result == "45.3");
     }
 }

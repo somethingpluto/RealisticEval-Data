@@ -1,50 +1,74 @@
-import math from 'mathjs'
-function rotatePointCloud(pointCloud, rotationAngle) {
-    const rotationMatrix = math.matrix([
-        [math.cos(rotationAngle), 0, math.sin(rotationAngle)],
-        [0, 1, 0],
-        [-math.sin(rotationAngle), 0, math.cos(rotationAngle)]
-    ]);
+function cleanPattern(x, pattern) {
+    const inputString = String(x);
 
-    // Rotate the point cloud by multiplying with the rotation matrix
-    const rotatedPointCloud = math.multiply(pointCloud, rotationMatrix);
+    // Create a RegExp object from the pattern
+    const regex = new RegExp(pattern);
 
-    return rotatedPointCloud;
+    // Search for the pattern in the input string
+    const match = inputString.match(regex);
+
+    if (match) {
+        // Extract the weight value from the first matching group
+        const weight = match[1];  // Can also use match[3] if needed
+
+        try {
+            // Convert the weight to a float and return it
+            const weightValue = parseFloat(weight);
+            if (!isNaN(weightValue)) {
+                return weightValue;
+            } else {
+                console.warn(`Warning: Unable to convert '${weight}' to float.`);
+                return '';
+            }
+        } catch (error) {
+            // Handle cases where conversion to float fails
+            console.warn(`Warning: Unable to convert '${weight}' to float.`);
+            return '';
+        }
+    } else {
+        return '';  // Return empty string if no match is found
+    }
 }
-describe('TestRotatePointCloud', () => {
-    it('test_no_rotation', () => {
-        /** 
-         * Test when rotation angle is 0 (should return the same point cloud).
-         */
-        const pointCloud = [[1.0, 2.0, 3.0]];
-        const rotationAngle = 0;
-        const expectedOutput = pointCloud;
+describe('TestCleanPattern', () => {
+    let pattern;
 
-        const rotatedPointCloud = rotatePointCloud(pointCloud, rotationAngle);
-        expect(rotatedPointCloud).toEqual(expectedOutput);
+    beforeEach(() => {
+        // Sets up a common regex pattern for testing
+        pattern = /(\d+\.?\d*) kg/;
     });
 
-    it('test_180_degree_rotation', () => {
-        /** 
-         * Test rotation of 180 degrees (π radians) around Y axis.
-         */
-        const pointCloud = [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]];
-        const rotationAngle = Math.PI; // 180 degrees
-        const expectedOutput = [[-1.0, 0.0, 0.0], [0.0, 1.0, 0.0]]; // [1,0,0] -> [-1,0,0]
-
-        const rotatedPointCloud = rotatePointCloud(pointCloud, rotationAngle);
-        expect(rotatedPointCloud).toEqual(expectedOutput);
+    it('test_valid_integer_weight', () => {
+        // Test case for valid integer weight
+        const inputString = "The weight is 25 kg";
+        const result = cleanPattern(inputString, pattern);
+        expect(result).toBe(25.0);
     });
 
-    it('test_full_rotation', () => {
-        /** 
-         * Test rotation of 360 degrees (2π radians) around Y axis (should return same point cloud).
-         */
-        const pointCloud = [[1.0, 2.0, 3.0]];
-        const rotationAngle = 2 * Math.PI; // 360 degrees
-        const expectedOutput = pointCloud; // Should return the same point cloud
+    it('test_valid_float_weight', () => {
+        // Test case for valid float weight
+        const inputString = "Weight measured at 15.75 kg";
+        const result = cleanPattern(inputString, pattern);
+        expect(result).toBe(15.75);
+    });
 
-        const rotatedPointCloud = rotatePointCloud(pointCloud, rotationAngle);
-        expect(rotatedPointCloud).toEqual(expectedOutput);
+    it('test_no_weight_found', () => {
+        // Test case where no weight is present
+        const inputString = "No weight provided.";
+        const result = cleanPattern(inputString, pattern);
+        expect(result).toBe('');
+    });
+
+    it('test_invalid_float_conversion', () => {
+        // Test case for non-numeric weight
+        const inputString = "The weight is thirty kg";
+        const result = cleanPattern(inputString, pattern);
+        expect(result).toBe('');
+    });
+
+    it('test_weight_with_extra_text', () => {
+        // Test case for weight with additional text
+        const inputString = "The total weight is 45.3 kg as per the last measurement.";
+        const result = cleanPattern(inputString, pattern);
+        expect(result).toBe(45.3);
     });
 });

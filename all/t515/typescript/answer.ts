@@ -1,27 +1,28 @@
-import { moment } from 'moment-timezone';
-
-/**
- * Converts a date string from the format '%a, %d %b %Y %H:%M:%S %z (%Z)'
- * to the format '%Y-%m-%d_%H:%M:%S'.
- *
- * @param dateStr - The input date string.
- * @returns The formatted date string in the format '%Y-%m-%d_%H:%M:%S', or null if the input date string is invalid.
- */
 function formatDateString(dateStr: string): string | null {
     try {
-        // Convert to a moment object using the specified format
-        const dateObject = moment(dateStr, 'ddd, DD MMM YYYY HH:mm:ss ZZ (Z)', true);
+        // Convert to a Date object using the specified format
+        const dateObject = new Date(dateStr);
 
-        if (!dateObject.isValid()) {
-            throw new Error('Invalid date format');
+        // Check if the date is valid
+        if (isNaN(dateObject.getTime())) {
+            console.log("Error parsing date: Invalid date string");
+            return null;
         }
 
-        // Convert to the desired output format
-        const formattedDate = dateObject.format('YYYY-MM-DD_HH:mm:ss');
+        // Extract components of the date
+        const year: number = dateObject.getUTCFullYear();
+        const month: string = String(dateObject.getUTCMonth() + 1).padStart(2, '0');
+        const day: string = String(dateObject.getUTCDate()).padStart(2, '0');
+        const hours: string = String(dateObject.getUTCHours()).padStart(2, '0');
+        const minutes: string = String(dateObject.getUTCMinutes()).padStart(2, '0');
+        const seconds: string = String(dateObject.getUTCSeconds()).padStart(2, '0');
+
+        // Format the date string
+        const formattedDate: string = `${year}-${month}-${day}_${hours}:${minutes}:${seconds}`;
 
         return formattedDate;
     } catch (error) {
-        console.error(`Error parsing date: ${error}`);
+        console.log(`Error parsing date: ${error}`);
         return null;
     }
 }

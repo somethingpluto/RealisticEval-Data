@@ -1,4 +1,3 @@
-import assert from 'assert';
 function wordFilterCounter(text, filterWords) {
     const filterWordsSet = new Set(filterWords.map(word => word.toLowerCase()));
 

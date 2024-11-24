@@ -1,10 +1,3 @@
-#include <catch2/catch_test_macros.hpp>
-#include <optional>
-#include <string>
-#include <sstream>
-#include <stdexcept>
-
-// Test cases using Catch2
 TEST_CASE("Test convert_score_to_decimal") {
     SECTION("Test a simple decimal score") {
         REQUIRE(convert_score_to_decimal("2.5").value() == Approx(2.5f));

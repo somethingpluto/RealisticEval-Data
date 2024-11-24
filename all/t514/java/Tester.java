@@ -2,7 +2,7 @@ package org.real.temp;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
-
+import static org.real.temp.Answer.*;
 /**
  * Test cases for the extractDateFromFilename method.
  */
@@ -55,21 +55,5 @@ public class Tester {
         String fileName = "report-2023-99-99.txt";  // Invalid date
         String expectedDate = "2023-99-99";
         assertEquals(expectedDate, extractDateFromFilename(fileName));
-    }
-
-    // Utility method to extract the date from the filename
-    private String extractDateFromFilename(String fileName) {
-        // Define the regex pattern for matching a date in the format YYYY-MM-DD
-        Pattern datePattern = Pattern.compile("\\d{4}-\\d{2}-\\d{2}");
-
-        // Search for the date pattern in the file name
-        Matcher matcher = datePattern.matcher(fileName);
-
-        // If a match is found, return the matched date; otherwise, return null
-        if (matcher.find()) {
-            return matcher.group(0);
-        } else {
-            return null;
-        }
     }
 }

@@ -12,6 +12,4 @@
  *   Returns:
  *       uint64_t: The computed output index.
  */
-uint64_t compute_output_index(uint64_t idx_1, uint64_t idx_2) {
-
-}
+uint64_t compute_output_index(uint64_t idx_1, uint64_t idx_2) {}

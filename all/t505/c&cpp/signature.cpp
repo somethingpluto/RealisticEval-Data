@@ -5,4 +5,4 @@
  *
  * @return The converted snake_case string.
  */
-std::string convert_camel_to_snake(const std::string &camel_str){}
+std::string camel_to_snake(const std::string &camel_str){}

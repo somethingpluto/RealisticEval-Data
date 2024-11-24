@@ -1,7 +1,5 @@
 package org.real.temp;
 
-import java.util.regex.Pattern;
-
 public class Answer {
 
     /**
@@ -13,8 +11,7 @@ public class Answer {
     public static String camelToSnake(String camelStr) {
         // Use regular expression to insert underscores before each uppercase letter,
         // and then convert the whole string to lowercase
-        String snakeCaseStr = Pattern.compile("(?<!^)(?=[A-Z])").matcher(camelStr).replaceAll("_").toLowerCase();
-        return snakeCaseStr;
+        return camelStr.replaceAll("(?<!^)(?=[A-Z])", "_").toLowerCase();
     }
 
     // Example usage

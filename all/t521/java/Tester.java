@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import static org.real.temp.Answer.*;
 
 /**
  * Test cases for the wordFilterCounter method.
@@ -70,38 +71,5 @@ public class Tester {
 
         Map<String, Integer> actualOutput = wordFilterCounter(text, filterWords);
         assertEquals(expectedOutput, actualOutput);
-    }
-
-    // Method to be tested
-    private Map<String, Integer> wordFilterCounter(String text, List<String> filterWords) {
-        // Convert filter words to lowercase for case-insensitive comparison
-        Set<String> filterWordsSet = new HashSet<>();
-        for (String word : filterWords) {
-            filterWordsSet.add(word.toLowerCase());
-        }
-
-        // Find all words in the text using a regex pattern
-        Pattern pattern = Pattern.compile("\\b\\w+(?:'\\w+)?\\b");
-        Matcher matcher = pattern.matcher(text.toLowerCase());
-        List<String> words = new ArrayList<>();
-        while (matcher.find()) {
-            words.add(matcher.group());
-        }
-
-        // Count occurrences of filtered words
-        Map<String, Integer> wordCounts = new HashMap<>();
-        for (String word : words) {
-            if (filterWordsSet.contains(word)) {
-                wordCounts.put(word, wordCounts.getOrDefault(word, 0) + 1);
-            }
-        }
-
-        // Create an ordered output based on the original order of filterWords
-        Map<String, Integer> orderedOutput = new LinkedHashMap<>();
-        for (String word : filterWords) {
-            orderedOutput.put(word, wordCounts.getOrDefault(word.toLowerCase(), 0));
-        }
-
-        return orderedOutput;
     }
 }

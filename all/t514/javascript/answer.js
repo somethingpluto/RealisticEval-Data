@@ -1,11 +1,4 @@
 function extractDateFromFileName(fileName) {
-    /**
-     * Extracts the date in the format YYYY-MM-DD from the given file name.
-     *
-     * @param {string} fileName - The name of the file which may contain a date.
-     * @returns {string | null} - The extracted date string in YYYY-MM-DD format if found, else null.
-     */
-    // Define the regex pattern for matching a date in the format YYYY-MM-DD
     const datePattern = /\d{4}-\d{2}-\d{2}/;
 
     // Search for the date pattern in the file name

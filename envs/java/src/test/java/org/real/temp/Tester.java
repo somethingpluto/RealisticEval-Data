@@ -1,59 +1,59 @@
 package org.real.temp;
 
+import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
-import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.factory.Nd4j;
-
+import static org.real.temp.Answer.*;
+/**
+ * Test class for the cleanPattern method.
+ */
 public class Tester {
 
-    private static final double DELTA = 1e-15;
+    private String pattern;
 
-    @Test
-    public void testSimpleTranslation() {
-        // Test a simple translation of a single point
-        INDArray pointCloud = Nd4j.create(new double[][]{{1.0, 2.0, 3.0}});
-        double[] translationVector = {1.0, 1.0, 1.0};
-        INDArray expectedOutput = Nd4j.create(new double[][]{{2.0, 3.0, 4.0}});
-
-        INDArray translatedPointCloud = Answer.translatePointCloud(pointCloud, translationVector);
-
-        assertEquals(String.valueOf(expectedOutput), translatedPointCloud, DELTA);
+    @Before
+    public void setUp() {
+        // Set up a common regex pattern for testing
+        pattern = "(\\d+\\.?\\d*) kg";  // Regex pattern to match weight in kg
     }
 
     @Test
-    public void testMultiplePointsTranslation() {
-        // Test translation of multiple points
-        INDArray pointCloud = Nd4j.create(new double[][]{{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}});
-        double[] translationVector = {1.0, 2.0, 3.0};
-        INDArray expectedOutput = Nd4j.create(new double[][]{{2.0, 4.0, 6.0}, {5.0, 7.0, 9.0}});
-
-        INDArray translatedPointCloud = Answer.translatePointCloud(pointCloud, translationVector);
-
-        assertEquals(String.valueOf(expectedOutput), translatedPointCloud, DELTA);
+    public void testValidIntegerWeight() {
+        // Test case for valid integer weight
+        String inputString = "The weight is 25 kg";
+        Object result = cleanPattern(inputString, pattern);
+        assertEquals(25.0f, result);
     }
 
     @Test
-    public void testZeroTranslation() {
-        // Test translation by a zero vector (should return the same point cloud)
-        INDArray pointCloud = Nd4j.create(new double[][]{{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}});
-        double[] translationVector = {0.0, 0.0, 0.0};
-        INDArray expectedOutput = pointCloud;  // No change expected
-
-        INDArray translatedPointCloud = Answer.translatePointCloud(pointCloud, translationVector);
-
-        assertEquals(String.valueOf(expectedOutput), translatedPointCloud, DELTA);
+    public void testValidFloatWeight() {
+        // Test case for valid float weight
+        String inputString = "Weight measured at 15.75 kg";
+        Object result = cleanPattern(inputString, pattern);
+        assertEquals(15.75f, result);
     }
 
     @Test
-    public void testNegativeTranslation() {
-        // Test translation with negative values
-        INDArray pointCloud = Nd4j.create(new double[][]{{1.0, 2.0, 3.0}});
-        double[] translationVector = {-1.0, -2.0, -3.0};
-        INDArray expectedOutput = Nd4j.create(new double[][]{{0.0, 0.0, 0.0}});
+    public void testNoWeightFound() {
+        // Test case where no weight is present
+        String inputString = "No weight provided.";
+        Object result = cleanPattern(inputString, pattern);
+        assertEquals("", result);
+    }
 
-        INDArray translatedPointCloud = Answer.translatePointCloud(pointCloud, translationVector);
+    @Test
+    public void testInvalidFloatConversion() {
+        // Test case for non-numeric weight
+        String inputString = "The weight is thirty kg";
+        Object result = cleanPattern(inputString, pattern);
+        assertEquals("", result);
+    }
 
-        assertEquals(String.valueOf(expectedOutput), translatedPointCloud, DELTA);
+    @Test
+    public void testWeightWithExtraText() {
+        // Test case for weight with additional text
+        String inputString = "The total weight is 45.3 kg as per the last measurement.";
+        Object result = cleanPattern(inputString, pattern);
+        assertEquals(45.3f, result);
     }
 }
