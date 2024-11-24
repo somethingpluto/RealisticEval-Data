@@ -1,8 +1,3 @@
-#include <catch2/catch_test_macros.hpp>
-#include <map>
-#include <string>
-#include <cctype>
-
 TEST_CASE("Test clean_dictionary function", "[clean_dictionary]") {
     SECTION("Test a dictionary with valid strings") {
         std::map<std::string, std::string> input_dict = {

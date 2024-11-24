@@ -2,7 +2,7 @@ package org.real.temp;
 
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
-
+import static org.real.temp.Answer.*;
 public class Tester {
 
     @Test
@@ -35,32 +35,5 @@ public class Tester {
         String longString = "a".repeat(1000);  // A string of 1000 'a' characters
         String expectedHash = "cabe45dcc9ae5b66ba86600cca6b8ba8";  // MD5 of 'aaaa....' (1000 'a's)
         assertEquals(expectedHash, computeMD5(longString));
-    }
-
-    // Method to compute the MD5 hash of a string
-    private String computeMD5(String inputString) {
-        try {
-            // Create an MD5 MessageDigest instance
-            MessageDigest md = MessageDigest.getInstance("MD5");
-
-            // Update the digest using the specified array of bytes
-            md.update(inputString.getBytes());
-
-            // Complete the hash computation
-            byte[] digest = md.digest();
-
-            // Convert the byte array to a hex string
-            StringBuilder hexString = new StringBuilder();
-            for (byte b : digest) {
-                String hex = Integer.toHexString(0xff & b);
-                if (hex.length() == 1) hexString.append('0');
-                hexString.append(hex);
-            }
-
-            // Return the hexadecimal representation of the hash
-            return hexString.toString();
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("MD5 algorithm not found", e);
-        }
     }
 }

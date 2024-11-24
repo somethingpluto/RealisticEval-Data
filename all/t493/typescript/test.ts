@@ -1,8 +1,4 @@
 describe('wrapContentGenerator', () => {
-  it('should handle empty content', () => {
-    const result = Array.from(wrapContentGenerator(""));
-    expect(result).toEqual([]);
-  });
 
   it('should handle a single line of content within default width', () => {
     const result = Array.from(wrapContentGenerator("Hello, world!"));

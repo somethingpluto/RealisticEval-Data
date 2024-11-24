@@ -1,59 +1,89 @@
 package org.real.temp;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.real.temp.Answer.*;
-/**
- * Test class for the cleanPattern method.
- */
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+
 public class Tester {
 
-    private String pattern;
+    private static final String TEST_FILE_PATH = "test_output.txt";
 
     @Before
     public void setUp() {
-        // Set up a common regex pattern for testing
-        pattern = "(\\d+\\.?\\d*) kg";  // Regex pattern to match weight in kg
+        // Set up a temporary file path for testing.
+    }
+
+    @After
+    public void tearDown() {
+        // Clean up the test file after each test.
+        File file = new File(TEST_FILE_PATH);
+        if (file.exists()) {
+            file.delete();
+        }
     }
 
     @Test
-    public void testValidIntegerWeight() {
-        // Test case for valid integer weight
-        String inputString = "The weight is 25 kg";
-        Object result = cleanPattern(inputString, pattern);
-        assertEquals(25.0f, result);
+    public void testBasicContent() throws IOException {
+        // Test with basic content and check if it saves correctly.
+        String content = "Hello,  World!  ";
+        String expected = "Hello, World!";
+        saveContentToFile(content, TEST_FILE_PATH);
+
+        try (FileReader reader = new FileReader(TEST_FILE_PATH)) {
+            char[] buffer = new char[1024];
+            int length = reader.read(buffer);
+            String result = new String(buffer, 0, length).trim();
+            assertEquals(expected, result);
+        }
     }
 
     @Test
-    public void testValidFloatWeight() {
-        // Test case for valid float weight
-        String inputString = "Weight measured at 15.75 kg";
-        Object result = cleanPattern(inputString, pattern);
-        assertEquals(15.75f, result);
+    public void testMultipleSpacesAndEmptyLines() throws IOException {
+        // Test handling of multiple spaces and empty lines.
+        String content = "\n\n\nThis is a    test.\n\nAnother line.      \n";
+        String expected = "This is a test. Another line.";
+        saveContentToFile(content, TEST_FILE_PATH);
+
+        try (FileReader reader = new FileReader(TEST_FILE_PATH)) {
+            char[] buffer = new char[1024];
+            int length = reader.read(buffer);
+            String result = new String(buffer, 0, length).trim();
+            assertEquals(expected, result);
+        }
     }
 
     @Test
-    public void testNoWeightFound() {
-        // Test case where no weight is present
-        String inputString = "No weight provided.";
-        Object result = cleanPattern(inputString, pattern);
-        assertEquals("", result);
+    public void testOnlyWhitespace() throws IOException {
+        // Test if only whitespace is handled correctly.
+        String content = "    \n  \n   ";
+        String expected = "";
+        saveContentToFile(content, TEST_FILE_PATH);
+
+        try (FileReader reader = new FileReader(TEST_FILE_PATH)) {
+            char[] buffer = new char[1024];
+            int length = reader.read(buffer);
+            String result = new String(buffer, 0, length).trim();
+            assertEquals(expected, result);
+        }
     }
 
     @Test
-    public void testInvalidFloatConversion() {
-        // Test case for non-numeric weight
-        String inputString = "The weight is thirty kg";
-        Object result = cleanPattern(inputString, pattern);
-        assertEquals("", result);
-    }
+    public void testEmptyContent() throws IOException {
+        // Test if empty content is saved correctly.
+        String content = "";
+        String expected = "";
+        saveContentToFile(content, TEST_FILE_PATH);
 
-    @Test
-    public void testWeightWithExtraText() {
-        // Test case for weight with additional text
-        String inputString = "The total weight is 45.3 kg as per the last measurement.";
-        Object result = cleanPattern(inputString, pattern);
-        assertEquals(45.3f, result);
+        try (FileReader reader = new FileReader(TEST_FILE_PATH)) {
+            char[] buffer = new char[1024];
+            int length = reader.read(buffer);
+            String result = new String(buffer, 0, length).trim();
+            assertEquals(expected, result);
+        }
     }
 }

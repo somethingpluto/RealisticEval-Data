@@ -1,74 +1,70 @@
-function cleanPattern(x, pattern) {
-    const inputString = String(x);
+function saveContentToFile(content, path) {
+    const lines = content.split('\n').filter(line => line.trim().length > 0).map(line => line.trim());
+    content = lines.join('\n');
 
-    // Create a RegExp object from the pattern
-    const regex = new RegExp(pattern);
+    // Replace multiple spaces with a single space.
+    content = content.replace(/\s+/g, ' ');
 
-    // Search for the pattern in the input string
-    const match = inputString.match(regex);
-
-    if (match) {
-        // Extract the weight value from the first matching group
-        const weight = match[1];  // Can also use match[3] if needed
-
-        try {
-            // Convert the weight to a float and return it
-            const weightValue = parseFloat(weight);
-            if (!isNaN(weightValue)) {
-                return weightValue;
-            } else {
-                console.warn(`Warning: Unable to convert '${weight}' to float.`);
-                return '';
-            }
-        } catch (error) {
-            // Handle cases where conversion to float fails
-            console.warn(`Warning: Unable to convert '${weight}' to float.`);
-            return '';
-        }
-    } else {
-        return '';  // Return empty string if no match is found
-    }
+    // Write the cleaned content to the specified file.
+    const fs = require('fs');
+    fs.writeFileSync(path, content, { encoding: 'utf-8' });
 }
-describe('TestCleanPattern', () => {
-    let pattern;
+
+import * as fs from 'fs';
+
+describe('TestSaveContentToFile', () => {
+    let testFilePath: string;
 
     beforeEach(() => {
-        // Sets up a common regex pattern for testing
-        pattern = /(\d+\.?\d*) kg/;
+        // Set up a temporary file path for testing
+        testFilePath = 'test_output.txt';
     });
 
-    it('test_valid_integer_weight', () => {
-        // Test case for valid integer weight
-        const inputString = "The weight is 25 kg";
-        const result = cleanPattern(inputString, pattern);
-        expect(result).toBe(25.0);
+    afterEach(() => {
+        // Clean up the test file after each test
+        if (fs.existsSync(testFilePath)) {
+            fs.unlinkSync(testFilePath);
+        }
     });
 
-    it('test_valid_float_weight', () => {
-        // Test case for valid float weight
-        const inputString = "Weight measured at 15.75 kg";
-        const result = cleanPattern(inputString, pattern);
-        expect(result).toBe(15.75);
+    it('should save basic content correctly', () => {
+        const content = "Hello,  World!  ";
+        const expected = "Hello, World!";
+        saveContentToFile(content, testFilePath);
+
+        const result = fs.readFileSync(testFilePath, 'utf-8').trim();
+        expect(result).toEqual(expected);
     });
 
-    it('test_no_weight_found', () => {
-        // Test case where no weight is present
-        const inputString = "No weight provided.";
-        const result = cleanPattern(inputString, pattern);
-        expect(result).toBe('');
+    it('should handle multiple spaces and empty lines correctly', () => {
+        const content = `
+
+        This is a    test.
+
+        Another line.      
+        `;
+        const expected = "This is a test. Another line.";
+        saveContentToFile(content, testFilePath);
+
+        const result = fs.readFileSync(testFilePath, 'utf-8').trim();
+        expect(result).toEqual(expected);
     });
 
-    it('test_invalid_float_conversion', () => {
-        // Test case for non-numeric weight
-        const inputString = "The weight is thirty kg";
-        const result = cleanPattern(inputString, pattern);
-        expect(result).toBe('');
+    it('should handle only whitespace correctly', () => {
+        const content = "    \n  \n   ";
+        const expected = "";
+        saveContentToFile(content, testFilePath);
+
+        const result = fs.readFileSync(testFilePath, 'utf-8').trim();
+        expect(result).toEqual(expected);
     });
 
-    it('test_weight_with_extra_text', () => {
-        // Test case for weight with additional text
-        const inputString = "The total weight is 45.3 kg as per the last measurement.";
-        const result = cleanPattern(inputString, pattern);
-        expect(result).toBe(45.3);
+    it('should handle empty content correctly', () => {
+        const content = "";
+        const expected = "";
+        saveContentToFile(content, testFilePath);
+
+        const result = fs.readFileSync(testFilePath, 'utf-8').trim();
+        expect(result).toEqual(expected);
     });
 });

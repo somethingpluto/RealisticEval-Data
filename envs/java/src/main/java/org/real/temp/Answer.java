@@ -1,48 +1,42 @@
 package org.real.temp;
 
-import java.util.regex.Matcher;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.regex.Pattern;
 
 public class Answer {
 
     /**
-     * Extracts a numeric value from the input string based on the given regex pattern.
+     * Saves the provided content to a specified file after cleaning up redundant whitespace.
      *
-     * @param x       The input from which to extract the value. It will be converted to a string.
-     * @param pattern The regular expression pattern to use for matching.
-     * @return The extracted weight value as a float if a match is found, otherwise an empty string.
+     * @param content The text content to be saved to the file.
+     * @param path    The file path where the content will be saved.
      */
-    public static String cleanPattern(Object x, String pattern) {
-        // Convert input to string
-        String input = x.toString();
+    public static void saveContentToFile(String content, String path) {
+        // Remove redundant whitespace from the content.
+        // Split the content into lines, strip leading/trailing whitespace,
+        // and filter out empty lines.
+        content = String.join("\n",
+            content.lines()
+                   .filter(line -> !line.trim().isEmpty())
+                   .map(String::trim)
+                   .toArray(String[]::new));
 
-        // Compile the pattern
-        Pattern compiledPattern = Pattern.compile(pattern);
-        Matcher matcher = compiledPattern.matcher(input);
+        // Replace multiple spaces with a single space.
+        content = Pattern.compile("\\s+").matcher(content).replaceAll(" ");
 
-        if (matcher.find()) {
-            // Extract the weight value from the first matching group
-            String weight = matcher.group(1);  // Can also use matcher.group(3) if needed
-
-            try {
-                // Convert the weight to a float and return it as a string
-                float weightValue = Float.parseFloat(weight);
-                return Float.toString(weightValue);
-            } catch (NumberFormatException e) {
-                // Handle cases where conversion to float fails
-                System.out.println("Warning: Unable to convert '" + weight + "' to float.");
-                return "";
-            }
-        } else {
-            return "";  // Return empty string if no match is found
+        // Write the cleaned content to the specified file.
+        try (FileWriter writer = new FileWriter(path, false)) {
+            writer.write(content);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
     public static void main(String[] args) {
         // Example usage
-        Object input = "The weight is 123.45 kg";
-        String pattern = "(\\d+\\.\\d+)";
-        String result = cleanPattern(input, pattern);
-        System.out.println("Extracted Value: " + result);
+        String content = "   This is a test.\n\n\nThis is another test.   \n";
+        String path = "example.txt";
+        saveContentToFile(content, path);
     }
 }

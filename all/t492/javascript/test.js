@@ -55,4 +55,4 @@ describe('TestSaveContentToFile', () => {
         const result = fs.readFileSync(testFilePath, 'utf-8').trim();
         expect(result).toEqual(expected);
     });
-}); 
+});

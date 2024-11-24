@@ -14,7 +14,7 @@ long long binomialCoefficient(int n, int k) {
 }
 
 // Function to generate the ith row of Pascal's Triangle
-std::vector<long long> pascalTriangleRow(int i) {
+std::vector<long long> pascal_triangle_row(int i) {
     std::vector<long long> row(i + 1, 0); // Initialize vector with zeros
     for (int k = 0; k <= i; ++k) {
         row[k] = binomialCoefficient(i, k);

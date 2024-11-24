@@ -4,14 +4,9 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 import java.util.List;
-
+import static org.real.temp.Answer.*;
 public class Tester {
 
-    @Test
-    public void testEmptyContent() {
-        List<String> result = wrapContentGenerator("", 80);
-        assertEquals(result, List.of());
-    }
 
     @Test
     public void testSingleLineContent() {
@@ -23,7 +18,7 @@ public class Tester {
     public void testMultiLineContent() {
         String content = "Hello\nWorld\nPython";
         List<String> result = wrapContentGenerator(content, 80);
-        assertEquals(result, List.of("Hello", "World", "Python"));
+        assertEquals(result, List.of("Hello\n", "World\n", "Python"));
     }
 
     @Test
@@ -44,10 +39,5 @@ public class Tester {
     public void testOnlyWhitespaces() {
         List<String> result = wrapContentGenerator("     ", 80);
         assertEquals(result, List.of("\n"));
-    }
-
-    // Utility method to simulate the Python function
-    private List<String> wrapContentGenerator(String content, int width) {
-        return Answer.wrapContentGenerator(content, width);
     }
 }

@@ -1,75 +1,82 @@
-import re
-
-
-def clean_pattern(x, pattern):
+def save_content_to_file(content: str, path: str) -> None:
     """
-    Extracts a numeric value from the input string based on the given regex pattern.
+    Saves the provided content to a specified file after cleaning up
+    redundant whitespace.
 
     Args:
-        x (str or any): The input from which to extract the value. It will be converted to a string.
-        pattern (str): The regular expression pattern to use for matching.
+        content (str): The text content to be saved to the file.
+        path (str): The file path where the content will be saved.
 
     Returns:
-        float: The extracted weight value if a match is found, otherwise an empty string.
+        None
     """
-    # Convert input to string
-    x = str(x)
+    # Remove redundant whitespace from the content.
+    # Split the content into lines, strip leading/trailing whitespace,
+    # and filter out empty lines.
+    content = '\n'.join(line.strip() for line in content.splitlines() if line.strip())
 
-    # Search for the pattern in the input string
-    match = re.search(pattern, x)
+    # Replace multiple spaces with a single space.
+    content = ' '.join(content.split())
 
-    if match:
-        # Extract the weight value from the first matching group
-        weight = match.group(1)  # Can also use match.group(3) if needed
-        try:
-            # Convert the weight to a float and return it
-            weight_value = float(weight)
-            return weight_value
-        except ValueError:
-            # Handle cases where conversion to float fails
-            print(f"Warning: Unable to convert '{weight}' to float.")
-            return ''
-    else:
-        return ''  # Return empty string if no match is found
+    # Write the cleaned content to the specified file.
+    with open(path, 'w', encoding='utf-8') as file:
+        file.write(content)
 
+import os
 import unittest
 
 
-class TestCleanPattern(unittest.TestCase):
+class TestSaveContentToFile(unittest.TestCase):
 
     def setUp(self):
-        """Sets up a common regex pattern for testing."""
-        self.pattern = r'(\d+\.?\d*) kg'  # Regex pattern to match weight in kg
+        """Set up a temporary file path for testing."""
+        self.test_file_path = 'test_output.txt'
 
-    def test_valid_integer_weight(self):
-        """Test case for valid integer weight."""
-        input_string = "The weight is 25 kg"
-        result = clean_pattern(input_string, self.pattern)
-        self.assertEqual(result, 25.0)
+    def tearDown(self):
+        """Clean up the test file after each test."""
+        if os.path.exists(self.test_file_path):
+            os.remove(self.test_file_path)
 
-    def test_valid_float_weight(self):
-        """Test case for valid float weight."""
-        input_string = "Weight measured at 15.75 kg"
-        result = clean_pattern(input_string, self.pattern)
-        self.assertEqual(result, 15.75)
+    def test_basic_content(self):
+        """Test with basic content and check if it saves correctly."""
+        content = "Hello,  World!  "
+        expected = "Hello, World!"
+        save_content_to_file(content, self.test_file_path)
+        with open(self.test_file_path, 'r', encoding='utf-8') as file:
+            result = file.read().strip()
+        self.assertEqual(result, expected)
 
-    def test_no_weight_found(self):
-        """Test case where no weight is present."""
-        input_string = "No weight provided."
-        result = clean_pattern(input_string, self.pattern)
-        self.assertEqual(result, '')
+    def test_multiple_spaces_and_empty_lines(self):
+        """Test handling of multiple spaces and empty lines."""
+        content = """
 
-    def test_invalid_float_conversion(self):
-        """Test case for non-numeric weight."""
-        input_string = "The weight is thirty kg"
-        result = clean_pattern(input_string, self.pattern)
-        self.assertEqual(result, '')
+        This is a    test.
 
-    def test_weight_with_extra_text(self):
-        """Test case for weight with additional text."""
-        input_string = "The total weight is 45.3 kg as per the last measurement."
-        result = clean_pattern(input_string, self.pattern)
-        self.assertEqual(result, 45.3)
+        Another line.      
+        """
+        expected = "This is a test. Another line."
+        save_content_to_file(content, self.test_file_path)
+        with open(self.test_file_path, 'r', encoding='utf-8') as file:
+            result = file.read().strip()
+        self.assertEqual(result, expected)
+
+    def test_only_whitespace(self):
+        """Test if only whitespace is handled correctly."""
+        content = "    \n  \n   "
+        expected = ""
+        save_content_to_file(content, self.test_file_path)
+        with open(self.test_file_path, 'r', encoding='utf-8') as file:
+            result = file.read().strip()
+        self.assertEqual(result, expected)
+
+    def test_empty_content(self):
+        """Test if empty content is saved correctly."""
+        content = ""
+        expected = ""
+        save_content_to_file(content, self.test_file_path)
+        with open(self.test_file_path, 'r', encoding='utf-8') as file:
+            result = file.read().strip()
+        self.assertEqual(result, expected)
 
 if __name__ == '__main__':
     unittest.main()

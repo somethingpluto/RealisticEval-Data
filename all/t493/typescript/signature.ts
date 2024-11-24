@@ -1,5 +1,3 @@
-import { wrap } from 'textwrap';
-
 /**
  * Wrap the text content to the specified maximum width and generate these lines line by line.
  *

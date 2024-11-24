@@ -4,12 +4,11 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import java.util.HashMap;
 import java.util.Map;
-
+import static org.real.temp.Answer.*;
 public class Tester {
 
     @Test
     public void testValidStrings() {
-        """ Test a dictionary with valid strings. """
         Map<String, Object> inputDict = new HashMap<>();
         inputDict.put("key1", "valid string");
         inputDict.put("key2", "another valid string");
@@ -23,7 +22,6 @@ public class Tester {
 
     @Test
     public void testNoneAndNaNValues() {
-        """ Test a dictionary with None and NaN values. """
         Map<String, Object> inputDict = new HashMap<>();
         inputDict.put("key1", null);
         inputDict.put("key3", "valid string");
@@ -36,7 +34,6 @@ public class Tester {
 
     @Test
     public void testWhitespaceStrings() {
-        """ Test a dictionary with whitespace strings. """
         Map<String, Object> inputDict = new HashMap<>();
         inputDict.put("key1", "   ");
         inputDict.put("key2", "");
@@ -50,29 +47,9 @@ public class Tester {
 
     @Test
     public void testEmptyDictionary() {
-        """ Test an empty dictionary. """
         Map<String, Object> inputDict = new HashMap<>();
         Map<String, Object> expectedOutput = new HashMap<>();
 
         assertEquals(expectedOutput, cleanDictionary(inputDict));
-    }
-
-    // Utility method to simulate the cleanDictionary function
-    private Map<String, Object> cleanDictionary(Map<String, Object> inputDict) {
-        Map<String, Object> cleanedMap = new HashMap<>();
-
-        for (Map.Entry<String, Object> entry : inputDict.entrySet()) {
-            Object value = entry.getValue();
-
-            // Check if the value is not null and not a blank string
-            if (value instanceof String && !((String) value).trim().isEmpty()) {
-                // Check if value is a number (Integer or Double) and is not NaN
-                if (!(value instanceof Double && ((Double) value).isNaN())) {
-                    cleanedMap.put(entry.getKey(), value);
-                }
-            }
-        }
-
-        return cleanedMap;
     }
 }
