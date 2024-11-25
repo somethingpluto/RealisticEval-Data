@@ -1,89 +1,73 @@
 package org.real.temp;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertArrayEquals;
 import static org.real.temp.Answer.*;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-
+/**
+ * Test class for matrix-vector multiplication.
+ */
 public class Tester {
 
-    private static final String TEST_FILE_PATH = "test_output.txt";
+    private static final double[] ZERO_VECTOR = {0, 0};
+    private static final double[] EXPECTED_RESULT_1 = {17, 39};
+    private static final double[] EXPECTED_RESULT_2 = {13, 14, 7};
+    private static final double[] EXPECTED_RESULT_3 = {0, 0};
+    private static final double[] EXPECTED_RESULT_4 = {-3, -7};
+    private static final double[] EXPECTED_RESULT_5 = {4, 10};
 
-    @Before
-    public void setUp() {
-        // Set up a temporary file path for testing.
-    }
+    @Test
+    public void testCase1() {
+        // Test with a simple 2x2 matrix and a 2-element vector
+        double[][] matrix = {{1, 2}, {3, 4}};
+        double[] vector = {5, 6};
+        double[] expectedResult = EXPECTED_RESULT_1;
 
-    @After
-    public void tearDown() {
-        // Clean up the test file after each test.
-        File file = new File(TEST_FILE_PATH);
-        if (file.exists()) {
-            file.delete();
-        }
+        double[] result = matrixVectorMultiplication(matrix, vector);
+        assertArrayEquals(expectedResult, result, 0.0);
     }
 
     @Test
-    public void testBasicContent() throws IOException {
-        // Test with basic content and check if it saves correctly.
-        String content = "Hello,  World!  ";
-        String expected = "Hello, World!";
-        saveContentToFile(content, TEST_FILE_PATH);
+    public void testCase2() {
+        // Test with a 3x3 matrix and a 3-element vector
+        double[][] matrix = {{1, 0, 2}, {0, 1, 2}, {1, 1, 0}};
+        double[] vector = {3, 4, 5};
+        double[] expectedResult = EXPECTED_RESULT_2;
 
-        try (FileReader reader = new FileReader(TEST_FILE_PATH)) {
-            char[] buffer = new char[1024];
-            int length = reader.read(buffer);
-            String result = new String(buffer, 0, length).trim();
-            assertEquals(expected, result);
-        }
+        double[] result = matrixVectorMultiplication(matrix, vector);
+        assertArrayEquals(expectedResult, result, 0.0);
     }
 
     @Test
-    public void testMultipleSpacesAndEmptyLines() throws IOException {
-        // Test handling of multiple spaces and empty lines.
-        String content = "\n\n\nThis is a    test.\n\nAnother line.      \n";
-        String expected = "This is a test. Another line.";
-        saveContentToFile(content, TEST_FILE_PATH);
+    public void testCase3() {
+        // Test with a zero matrix and a vector
+        double[][] matrix = {{0, 0}, {0, 0}};
+        double[] vector = {1, 1};
+        double[] expectedResult = ZERO_VECTOR;
 
-        try (FileReader reader = new FileReader(TEST_FILE_PATH)) {
-            char[] buffer = new char[1024];
-            int length = reader.read(buffer);
-            String result = new String(buffer, 0, length).trim();
-            assertEquals(expected, result);
-        }
+        double[] result = matrixVectorMultiplication(matrix, vector);
+        assertArrayEquals(expectedResult, result, 0.0);
     }
 
     @Test
-    public void testOnlyWhitespace() throws IOException {
-        // Test if only whitespace is handled correctly.
-        String content = "    \n  \n   ";
-        String expected = "";
-        saveContentToFile(content, TEST_FILE_PATH);
+    public void testCase4() {
+        // Test with a matrix having negative values
+        double[][] matrix = {{-1, -2}, {-3, -4}};
+        double[] vector = {1, 1};
+        double[] expectedResult = EXPECTED_RESULT_4;
 
-        try (FileReader reader = new FileReader(TEST_FILE_PATH)) {
-            char[] buffer = new char[1024];
-            int length = reader.read(buffer);
-            String result = new String(buffer, 0, length).trim();
-            assertEquals(expected, result);
-        }
+        double[] result = matrixVectorMultiplication(matrix, vector);
+        assertArrayEquals(expectedResult, result, 0.0);
     }
 
     @Test
-    public void testEmptyContent() throws IOException {
-        // Test if empty content is saved correctly.
-        String content = "";
-        String expected = "";
-        saveContentToFile(content, TEST_FILE_PATH);
+    public void testCase5() {
+        // Test with non-square matrix (2x3) and a compatible vector (3-element)
+        double[][] matrix = {{1, 2, 3}, {4, 5, 6}};
+        double[] vector = {1, 0, 1};
+        double[] expectedResult = EXPECTED_RESULT_5;
 
-        try (FileReader reader = new FileReader(TEST_FILE_PATH)) {
-            char[] buffer = new char[1024];
-            int length = reader.read(buffer);
-            String result = new String(buffer, 0, length).trim();
-            assertEquals(expected, result);
-        }
+        double[] result = matrixVectorMultiplication(matrix, vector);
+        assertArrayEquals(expectedResult, result, 0.0);
     }
+
 }

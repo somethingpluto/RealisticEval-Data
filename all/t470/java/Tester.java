@@ -1,36 +1,74 @@
 package org.real.temp;
 
-import static org.junit.Assert.assertArrayEquals;
 import org.junit.Test;
+import static org.junit.Assert.assertArrayEquals;
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.factory.Nd4j;
 
 public class Tester {
 
+
     @Test
-    public void testApplyShearX() {
-        // Define the input matrix and expected output matrix
-        double[][] inputMatrix = {{1, 2}, {3, 4}};
-        double shearFactor = 0.5; // Example shear factor
-        double[][] expectedOutputMatrix = {{1 + 0.5 * 2, 2}, {3 + 0.5 * 4, 4}};
-
-        // Call the method under test
-        double[][] resultMatrix = applyShearX(inputMatrix, shearFactor);
-
-        // Assert that the result matches the expected output
-        assertArrayEquals(expectedOutputMatrix, resultMatrix);
+    public void testIdentityShear() {
+        // Test with zero shear factor which should return the original matrix unchanged.
+        INDArray matrix = Nd4j.create(new double[][]{
+            {1, 2},
+            {3, 4}
+        });
+        double shearFactor = 0;
+        INDArray expectedOutput = Nd4j.create(new double[][]{
+            {1, 2},
+            {3, 4}
+        });
+        INDArray result = applyShearX(matrix, shearFactor);
+        assertArrayEquals(expectedOutput.data().asDouble(), result.data().asDouble(), 0.0);
     }
 
-    // Dummy implementation of applyShearX for demonstration purposes
-    private double[][] applyShearX(double[][] matrix, double shearFactor) {
-        int rows = matrix.length;
-        int cols = matrix[0].length;
-        double[][] result = new double[rows][cols];
+    @Test
+    public void testPositiveShear() {
+        // Test with a positive shear factor.
+        INDArray matrix = Nd4j.create(new double[][]{
+            {1, 2},
+            {3, 4}
+        });
+        double shearFactor = 1;
+        INDArray expectedOutput = Nd4j.create(new double[][]{
+            {1, 3},
+            {3, 7}
+        });
+        INDArray result = applyShearX(matrix, shearFactor);
+        assertArrayEquals(expectedOutput.data().asDouble(), result.data().asDouble(), 0.0);
+    }
 
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                result[i][j] = matrix[i][j] + shearFactor * matrix[i][j];
-            }
-        }
+    @Test
+    public void testNegativeShear() {
+        // Test with a negative shear factor.
+        INDArray matrix = Nd4j.create(new double[][]{
+            {1, 2},
+            {3, 4}
+        });
+        double shearFactor = -1;
+        INDArray expectedOutput = Nd4j.create(new double[][]{
+            {1, 1},
+            {3, 1}
+        });
+        INDArray result = applyShearX(matrix, shearFactor);
+        assertArrayEquals(expectedOutput.data().asDouble(), result.data().asDouble(), 0.0);
+    }
 
-        return result;
+    @Test
+    public void testHighShearFactor() {
+        // Test with a high shear factor to see how the matrix adapts to extreme transformations.
+        INDArray matrix = Nd4j.create(new double[][]{
+            {1, 1},
+            {1, 1}
+        });
+        double shearFactor = 10;
+        INDArray expectedOutput = Nd4j.create(new double[][]{
+            {1, 11},
+            {1, 11}
+        });
+        INDArray result = applyShearX(matrix, shearFactor);
+        assertArrayEquals(expectedOutput.data().asDouble(), result.data().asDouble(), 0.0);
     }
 }

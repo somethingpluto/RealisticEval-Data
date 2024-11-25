@@ -1,70 +1,54 @@
-function saveContentToFile(content, path) {
-    const lines = content.split('\n').filter(line => line.trim().length > 0).map(line => line.trim());
-    content = lines.join('\n');
+import {Matrix} from 'mathjs'
+function getTranslation(matrix) {
+    if (!(matrix instanceof Matrix)) {
+        throw new Error('Input must be a 3x3 matrix');
+    }
 
-    // Replace multiple spaces with a single space.
-    content = content.replace(/\s+/g, ' ');
+    const m = matrix.toArray();
+    if (m.length !== 9 || m[0].length !== 3) {
+        throw new Error('Input must be a 3x3 matrix');
+    }
 
-    // Write the cleaned content to the specified file.
-    const fs = require('fs');
-    fs.writeFileSync(path, content, { encoding: 'utf-8' });
+    const translationX = m[2][0];
+    const translationY = m[2][1];
+
+    return [translationX, translationY];
 }
 
-import * as fs from 'fs';
-
-describe('TestSaveContentToFile', () => {
-    let testFilePath: string;
-
-    beforeEach(() => {
-        // Set up a temporary file path for testing
-        testFilePath = 'test_output.txt';
+describe('TestGetTranslationFunction', () => {
+    describe('test_identity_matrix', () => {
+        it('should return the correct translation for the identity matrix', () => {
+            const matrix = [
+                [1, 0, 0],
+                [0, 1, 0],
+                [0, 0, 1]
+            ];
+            const expectedTranslation = [0.0, 0.0];
+            expect(getTranslation(matrix)).toEqual(expectedTranslation);
+        });
     });
 
-    afterEach(() => {
-        // Clean up the test file after each test
-        if (fs.existsSync(testFilePath)) {
-            fs.unlinkSync(testFilePath);
-        }
+    describe('test_translation_matrix', () => {
+        it('should return the correct translation for a translation matrix (5 in x, 10 in y)', () => {
+            const matrix = [
+                [1, 0, 5],
+                [0, 1, 10],
+                [0, 0, 1]
+            ];
+            const expectedTranslation = [5.0, 10.0];
+            expect(getTranslation(matrix)).toEqual(expectedTranslation);
+        });
     });
 
-    it('should save basic content correctly', () => {
-        const content = "Hello,  World!  ";
-        const expected = "Hello, World!";
-        saveContentToFile(content, testFilePath);
-
-        const result = fs.readFileSync(testFilePath, 'utf-8').trim();
-        expect(result).toEqual(expected);
-    });
-
-    it('should handle multiple spaces and empty lines correctly', () => {
-        const content = `
-
-        This is a    test.
-
-        Another line.      
-        `;
-        const expected = "This is a test. Another line.";
-        saveContentToFile(content, testFilePath);
-
-        const result = fs.readFileSync(testFilePath, 'utf-8').trim();
-        expect(result).toEqual(expected);
-    });
-
-    it('should handle only whitespace correctly', () => {
-        const content = "    \n  \n   ";
-        const expected = "";
-        saveContentToFile(content, testFilePath);
-
-        const result = fs.readFileSync(testFilePath, 'utf-8').trim();
-        expect(result).toEqual(expected);
-    });
-
-    it('should handle empty content correctly', () => {
-        const content = "";
-        const expected = "";
-        saveContentToFile(content, testFilePath);
-
-        const result = fs.readFileSync(testFilePath, 'utf-8').trim();
-        expect(result).toEqual(expected);
+    describe('test_negative_translation', () => {
+        it('should return the correct translation for a translation matrix with negative values', () => {
+            const matrix = [
+                [1, 0, -3],
+                [0, 1, -6],
+                [0, 0, 1]
+            ];
+            const expectedTranslation = [-3.0, -6.0];
+            expect(getTranslation(matrix)).toEqual(expectedTranslation);
+        });
     });
 });

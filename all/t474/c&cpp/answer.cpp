@@ -1,7 +1,7 @@
 #include <vector>
 using namespace std;
 
-bool areSiblings(vector<int>& tree, int val1, int val2) {
+bool are_siblings(vector<int>& tree, int val1, int val2) {
     // Check if both nodes are present in the tree.
     auto it1 = find(tree.begin(), tree.end(), val1);
     auto it2 = find(tree.begin(), tree.end(), val2);
@@ -15,6 +15,4 @@ bool areSiblings(vector<int>& tree, int val1, int val2) {
     // Check if they have same parent.
     return parentIndex == (it2 - tree.begin() - 1) / 2;
 }
-```
 
-And here's the equivalent C code:

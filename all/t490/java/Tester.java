@@ -2,7 +2,7 @@ package org.real.temp;
 
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
-
+import static org.real.temp.Answer.*;
 /**
  * Test class for the formatStr method.
  */
@@ -56,28 +56,5 @@ public class Tester {
         Object inputValue = 123;
         String expectedOutput = "> 123";
         assertEquals(expectedOutput, formatStr(inputValue));
-    }
-
-    // The formatStr method implementation
-    private String formatStr(Object x) {
-        // Convert x to string if it's not already a string.
-        String str = x.toString();
-
-        // Ensure there is a matching number of code block delimiters.
-        // If the count of delimiters is odd, append an additional one to balance.
-        int delimiterCount = str.length() - str.replace("```", "").length();
-        if (delimiterCount % 2 == 1) {
-            str += "\n```";
-        }
-
-        // Format each line by prepending '> ' and join them with newlines.
-        String[] lines = str.split("\n");
-        StringBuilder formattedLines = new StringBuilder();
-        for (String line : lines) {
-            formattedLines.append("> ").append(line).append("\n");
-        }
-
-        // Return the final formatted string.
-        return formattedLines.toString();
     }
 }

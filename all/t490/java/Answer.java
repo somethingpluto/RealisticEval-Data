@@ -28,9 +28,10 @@ public class Answer {
         for (String line : lines) {
             formattedLines.append("> ").append(line).append("\n");
         }
-
+        String s = formattedLines.toString();
+        s = s.replaceAll("[\r\n]+$", "");
         // Return the final formatted string.
-        return formattedLines.toString();
+        return s;
     }
 
     public static void main(String[] args) {

@@ -2,7 +2,7 @@
 #include <string>
 #include <map>
 
-std::string safeFormat(const std::string& templateStr, const std::map<std::string, std::string>& kwargs) {
+std::string safe_format(const std::string& templateStr, const std::map<std::string, std::string>& kwargs) {
     std::string result = templateStr;
     size_t pos = 0;
 
@@ -20,11 +20,4 @@ std::string safeFormat(const std::string& templateStr, const std::map<std::strin
     }
 
     return result;
-}
-
-int main() {
-    std::map<std::string, std::string> args = {{"name", "John"}, {"age", "30"}};
-    std::cout << safeFormat("Hello, {name}! You are {age} years old.", args);
-
-    return 0;
 }

@@ -1,30 +1,30 @@
 package org.real.temp;
 
-import org.apache.commons.math3.linear.Array2DRowRealMatrix;
-import org.apache.commons.math3.linear.RealVector;
-
 public class Answer {
 
     /**
-     * Multiplies a given matrix by a vector using Apache Commons Math library.
-     *
-     * @param matrix The 2D array (matrix) of shape (m, n).
-     * @param vector The 1D array (vector) of shape (n,) that represents a vector
-     *               compatible for multiplication with the given matrix.
-     * @return A 1D array (resulting vector) of shape (m,) representing the product of
-     *         the matrix and the vector.
+     * Performs matrix-vector multiplication.
+     * 
+     * @param matrix The matrix as a 2D array.
+     * @param vector The vector as a 1D array.
+     * @return The resulting vector after multiplication.
      */
-    public static RealVector matrixVectorMultiplication(double[][] matrix, double[] vector) {
-        // Create an Array2DRowRealMatrix instance from the input matrix.
-        Array2DRowRealMatrix mat = new Array2DRowRealMatrix(matrix);
-
-        // Create a RealVector instance from the input vector.
-        RealVector vec = new ArrayRealVector(vector);
-
-        // Perform matrix-vector multiplication using the multiply method.
-        RealVector result = mat.operate(vec);
-
-        // Return the resulting vector from the multiplication.
+    public static double[] matrixVectorMultiplication(double[][] matrix, double[] vector) {
+        int rows = matrix.length;
+        int cols = matrix[0].length;
+        
+        if (cols != vector.length) {
+            throw new IllegalArgumentException("Matrix columns must match vector length.");
+        }
+        
+        double[] result = new double[rows];
+        
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                result[i] += matrix[i][j] * vector[j];
+            }
+        }
+        
         return result;
     }
 
@@ -32,12 +32,18 @@ public class Answer {
         // Example usage
         double[][] matrix = {
             {1, 2, 3},
-            {4, 5, 6}
+            {4, 5, 6},
+            {7, 8, 9}
         };
-
-        double[] vector = {7, 8, 9};
-
-        RealVector result = matrixVectorMultiplication(matrix, vector);
-        System.out.println(result);
+        
+        double[] vector = {1, 0, 1};
+        
+        double[] result = matrixVectorMultiplication(matrix, vector);
+        
+        // Print the result
+        System.out.println("Result:");
+        for (double value : result) {
+            System.out.println(value);
+        }
     }
 }

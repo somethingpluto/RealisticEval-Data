@@ -2,7 +2,7 @@ package org.real.temp;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
-
+import static org.real.temp.Answer.*;
 /**
  * Test class for checking if a string contains an email address.
  */

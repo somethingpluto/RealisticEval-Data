@@ -3,8 +3,6 @@
 #include <vector>
 #include <sstream>
 
-// Function to format a string by prepending '> ' to each line and ensuring proper
-// formatting of code blocks.
 std::string format_str(const std::string& x) {
     // Convert x to string if it's not already a string (not necessary in C++).
 

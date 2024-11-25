@@ -1,42 +1,49 @@
 package org.real.temp;
 
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.regex.Pattern;
-
 public class Answer {
 
     /**
-     * Saves the provided content to a specified file after cleaning up redundant whitespace.
-     *
-     * @param content The text content to be saved to the file.
-     * @param path    The file path where the content will be saved.
+     * Performs matrix-vector multiplication.
+     * 
+     * @param matrix The matrix as a 2D array.
+     * @param vector The vector as a 1D array.
+     * @return The resulting vector after multiplication.
      */
-    public static void saveContentToFile(String content, String path) {
-        // Remove redundant whitespace from the content.
-        // Split the content into lines, strip leading/trailing whitespace,
-        // and filter out empty lines.
-        content = String.join("\n",
-            content.lines()
-                   .filter(line -> !line.trim().isEmpty())
-                   .map(String::trim)
-                   .toArray(String[]::new));
-
-        // Replace multiple spaces with a single space.
-        content = Pattern.compile("\\s+").matcher(content).replaceAll(" ");
-
-        // Write the cleaned content to the specified file.
-        try (FileWriter writer = new FileWriter(path, false)) {
-            writer.write(content);
-        } catch (IOException e) {
-            e.printStackTrace();
+    public static double[] matrixVectorMultiplication(double[][] matrix, double[] vector) {
+        int rows = matrix.length;
+        int cols = matrix[0].length;
+        
+        if (cols != vector.length) {
+            throw new IllegalArgumentException("Matrix columns must match vector length.");
         }
+        
+        double[] result = new double[rows];
+        
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                result[i] += matrix[i][j] * vector[j];
+            }
+        }
+        
+        return result;
     }
 
     public static void main(String[] args) {
         // Example usage
-        String content = "   This is a test.\n\n\nThis is another test.   \n";
-        String path = "example.txt";
-        saveContentToFile(content, path);
+        double[][] matrix = {
+            {1, 2, 3},
+            {4, 5, 6},
+            {7, 8, 9}
+        };
+        
+        double[] vector = {1, 0, 1};
+        
+        double[] result = matrixVectorMultiplication(matrix, vector);
+        
+        // Print the result
+        System.out.println("Result:");
+        for (double value : result) {
+            System.out.println(value);
+        }
     }
 }

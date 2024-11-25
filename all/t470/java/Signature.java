@@ -1,6 +1,3 @@
-import org.apache.commons.math3.linear.Array2DRowRealMatrix;
-import org.apache.commons.math3.linear.RealMatrix;
-
 /**
  * Applies a shear transformation to a 2D matrix along the x-axis.
  *

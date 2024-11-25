@@ -1,47 +1,45 @@
 package org.real.temp;
-
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import org.junit.jupiter.api.Test;
-
+import org.junit.Before;
+import org.junit.Test;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.real.temp.Answer.*;
 public class Tester {
 
-    @Test
-    public void testAreSiblings() {
-        // Test data for a binary tree represented as an array
-        int[] tree = {1, 2, 3, 4, 5, 6, 7};
+    private int[] tree;
 
-        // Test cases
-        assertTrue(areSiblings(tree, 4, 5)); // 4 and 5 are siblings
-        assertFalse(areSiblings(tree, 2, 3)); // 2 and 3 are not siblings
-        assertFalse(areSiblings(tree, 4, 7)); // 4 and 7 are not siblings
-        assertFalse(areSiblings(tree, 8, 9)); // 8 and 9 do not exist in the tree
+    @Before
+    public void setUp() {
+        // Setting up a binary tree used for all the test cases
+        tree = new int[]{1, 2, 3, 4, 5, 6, 7};
     }
 
-    private boolean areSiblings(int[] tree, int val1, int val2) {
-        int n = tree.length;
+    @Test
+    public void testBasicCase() {
+        // Test with nodes 4 and 5, which are siblings
+        boolean result = areSiblings(tree, 4, 5);
+        assertTrue(result);
+    }
 
-        // Find parent of val1
-        int i = 0;
-        while (i < n && tree[i] != val1) {
-            i++;
-        }
-        int parentVal1 = -1;
-        if (i < n) {
-            parentVal1 = tree[(i - 1) / 2];
-        }
+    @Test
+    public void testNonSiblingCase() {
+        // Test with nodes 4 and 6, which are not siblings
+        boolean result = areSiblings(tree, 4, 6);
+        assertFalse(result);
+    }
 
-        // Find parent of val2
-        i = 0;
-        while (i < n && tree[i] != val2) {
-            i++;
-        }
-        int parentVal2 = -1;
-        if (i < n) {
-            parentVal2 = tree[(i - 1) / 2];
-        }
 
-        // Check if both nodes have the same parent
-        return parentVal1 == parentVal2 && parentVal1 != -1;
+    @Test
+    public void testNonExistentValues() {
+        // Test with non-existent values
+        boolean result = areSiblings(tree, 8, 9);
+        assertFalse(result);
+    }
+
+    @Test
+    public void testSameNodeCase() {
+        // Test with the same node for both values
+        boolean result = areSiblings(tree, 4, 4);
+        assertFalse(result);
     }
 }

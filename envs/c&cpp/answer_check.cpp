@@ -1,59 +1,29 @@
 #define CATCH_CONFIG_MAIN
 #include "./lib/catch.hpp"
 #include "./solution.cpp"
-TEST_CASE("TestWrapContentGenerator", "[wrap_content_generator]") {
-    SECTION("test_empty_content") {
-        std::vector<std::string> result;
-        wrap_content_generator("", 80, [&result](const std::string &line) {
-            result.push_back(line);
-        });
-        REQUIRE(result == std::vector<std::string>({"\n"}));
+TEST_CASE("timePassed function") {
+    SECTION("should correctly calculate time passed from 1 minute ago") {
+        long long startTime = 1609459140000; // 1 minute earlier
+        REQUIRE(time_passed(startTime) == "1:00");
     }
 
-    SECTION("test_single_line_content") {
-        std::vector<std::string> result;
-        wrap_content_generator("Hello, world!", 80, [&result](const std::string &line) {
-            result.push_back(line);
-        });
-        REQUIRE(result == std::vector<std::string>({"Hello, world!"}));
+    SECTION("should handle the boundary of 59 seconds correctly") {
+        long long startTime = 1609459194100; // 59 seconds and 900 milliseconds earlier
+        REQUIRE(time_passed(startTime) == "0:05");
     }
 
-    SECTION("test_multi_line_content") {
-        std::vector<std::string> result;
-        std::string content = "Hello\nWorld\nPython";
-        wrap_content_generator(content, 80, [&result](const std::string &line) {
-            result.push_back(line);
-        });
-        REQUIRE(result == std::vector<std::string>({"Hello", "World", "Python"}));
+    SECTION("should return 0:00 when start time is the same as current time") {
+        REQUIRE(time_passed(1609459200000) == "0:00");
     }
 
-    SECTION("test_long_line") {
-        std::vector<std::string> result;
-        std::string content = "This is a very long line that should definitely be wrapped around the default width of 80 characters.";
-        wrap_content_generator(content, 80, [&result](const std::string &line) {
-            result.push_back(line);
-        });
-        REQUIRE(std::all_of(result.begin(), result.end(), [](const std::string &line) {
-            return line.length() <= 80;
-        }));
+    SECTION("should handle negative time differences (future start time)") {
+        long long startTime = 1609459260000; // 1 minute into the future
+        std::string result = time_passed(startTime);
+        REQUIRE(result.find('-') != std::string::npos); // Expecting negative output or error handling
     }
 
-    SECTION("test_custom_width") {
-        std::vector<std::string> result;
-        std::string content = "This is a test for custom width setting.";
-        wrap_content_generator(content, 10, [&result](const std::string &line) {
-            result.push_back(line);
-        });
-        REQUIRE(std::all_of(result.begin(), result.end(), [](const std::string &line) {
-            return line.length() <= 10;
-        }));
-    }
-
-    SECTION("test_only_whitespaces") {
-        std::vector<std::string> result;
-        wrap_content_generator("     ", 80, [&result](const std::string &line) {
-            result.push_back(line);
-        });
-        REQUIRE(result == std::vector<std::string>({"\n"}));
+    SECTION("should handle very large time differences correctly") {
+        long long startTime = 1483228800000; // January 1, 2017, 00:00:00 (4 years difference)
+        REQUIRE(time_passed(startTime) == "2103840:00"); // Calculated minutes for 4 years
     }
 }
