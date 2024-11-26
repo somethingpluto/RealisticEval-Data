@@ -1,9 +1,11 @@
-#include <Eigen/Dense>
+#include <iostream>
+#include <Eigen/Dense> // For matrix operations
+#include <cmath>       // For trigonometric functions
 
 /**
- * @brief Extracts the rotation angle from a 2D affine transformation matrix.
+ * Given an affine transformation matrix, return the corresponding rotation angle in radians.
  *
- * @param matrix A 2x3 Eigen::Matrix representing a 2D affine transformation matrix.
- * @return double The rotation angle in radians, extracted from the affine matrix.
+ * @param matrix A 2D affine transformation matrix.
+ * @return The rotation angle in radians, extracted from the affine matrix.
  */
-double get_rotation(const Eigen::Matrix2d& matrix);
+double get_rotation(const Eigen::Matrix3d& matrix) {}

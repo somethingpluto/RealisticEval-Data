@@ -7,4 +7,4 @@
  * @param matrix A 2D vector of integers.
  * @return std::vector<int> A vector of integers representing the matrix elements in spiral order.
  */
-std::vector<int> spiralOrder(const std::vector<std::vector<int>>& matrix);
+std::vector<int> spiral_order(const std::vector<std::vector<int>>& matrix);

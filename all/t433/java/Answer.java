@@ -17,43 +17,40 @@ public class Answer {
      */
     public static Map<String, List<String>> extractParagraphsAndLines(String text) {
         // Split the text into paragraphs
-        String[] paragraphs = text.split("\n\n");
-
-        // Split each paragraph into lines
+        String[] paragraphsArray = text.split("\n\n");
+        
+        // Initialize lists to store paragraphs and lines
+        List<String> paragraphs = new ArrayList<>();
         List<String> lines = new ArrayList<>();
-        for (String paragraph : paragraphs) {
-            String[] paragraphLines = paragraph.split("\n");
-            for (String line : paragraphLines) {
-                lines.add(line);
+
+        // Process each paragraph
+        for (String paragraph : paragraphsArray) {
+            String trimmedParagraph = paragraph.trim();
+            if (!trimmedParagraph.isEmpty()) {
+                paragraphs.add(trimmedParagraph);
+
+                // Split each paragraph into lines
+                String[] linesArray = paragraph.split("\n");
+                for (String line : linesArray) {
+                    String trimmedLine = line.trim();
+                    if (!trimmedLine.isEmpty()) {
+                        lines.add(trimmedLine);
+                    }
+                }
             }
         }
 
-        // Remove empty paragraphs and lines
-        List<String> filteredParagraphs = new ArrayList<>();
-        for (String paragraph : paragraphs) {
-            if (!paragraph.trim().isEmpty()) {
-                filteredParagraphs.add(paragraph.trim());
-            }
-        }
-
-        List<String> filteredLines = new ArrayList<>();
-        for (String line : lines) {
-            if (!line.trim().isEmpty()) {
-                filteredLines.add(line.trim());
-            }
-        }
-
-        // Return the extracted paragraphs and lines in a Map
+        // Create and return the map with extracted paragraphs and lines
         Map<String, List<String>> result = new HashMap<>();
-        result.put("paragraphs", filteredParagraphs);
-        result.put("lines", filteredLines);
+        result.put("paragraphs", paragraphs);
+        result.put("lines", lines);
 
         return result;
     }
 
+    // Example usage
     public static void main(String[] args) {
-        // Example usage
-        String text = "This is a paragraph.\n\nThis is another paragraph.\nIt has multiple lines.\n\n";
+        String text = "This is the first paragraph.\nIt has multiple lines.\n\nThis is the second paragraph.";
         Map<String, List<String>> result = extractParagraphsAndLines(text);
         System.out.println(result);
     }

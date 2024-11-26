@@ -1,29 +1,35 @@
 #define CATCH_CONFIG_MAIN
 #include "./lib/catch.hpp"
 #include "./solution.cpp"
-TEST_CASE("timePassed function") {
-    SECTION("should correctly calculate time passed from 1 minute ago") {
-        long long startTime = 1609459140000; // 1 minute earlier
-        REQUIRE(time_passed(startTime) == "1:00");
+TEST_CASE("TestCheckSequences", "[check_sequences]") {
+    // Set up the test cases with sequences.
+    std::string test_file = "test_sequences.dat";
+
+    // Write test sequences to the file
+    std::ofstream f(test_file);
+    f << "2,4,6,8\n";    // Munodi sequence (d = 2)
+    f << "1,3,5,7\n";    // Munodi sequence (d = 2)
+    f << "10,20,30\n";   // Munodi sequence (d = 10)
+    f << "1,2,4,8\n";    // Not a Munodi sequence (d changes)
+    f << "5,10,15,20\n"; // Munodi sequence (d = 5)
+    f.close();
+
+    // Expected results
+    std::map<std::vector<int>, bool> expected_results = {
+        {{2, 4, 6, 8}, true},
+        {{1, 3, 5, 7}, true},
+        {{10, 20, 30}, true},
+        {{1, 2, 4, 8}, false},
+        {{5, 10, 15, 20}, true}
+    };
+
+    // Check the sequences
+    auto results = check_sequences(test_file);
+    for (const auto& [seq, expected] : expected_results) {
+        REQUIRE(results.find(seq) != results.end());
+        CHECK(results.at(seq) == expected);
     }
 
-    SECTION("should handle the boundary of 59 seconds correctly") {
-        long long startTime = 1609459194100; // 59 seconds and 900 milliseconds earlier
-        REQUIRE(time_passed(startTime) == "0:05");
-    }
-
-    SECTION("should return 0:00 when start time is the same as current time") {
-        REQUIRE(time_passed(1609459200000) == "0:00");
-    }
-
-    SECTION("should handle negative time differences (future start time)") {
-        long long startTime = 1609459260000; // 1 minute into the future
-        std::string result = time_passed(startTime);
-        REQUIRE(result.find('-') != std::string::npos); // Expecting negative output or error handling
-    }
-
-    SECTION("should handle very large time differences correctly") {
-        long long startTime = 1483228800000; // January 1, 2017, 00:00:00 (4 years difference)
-        REQUIRE(time_passed(startTime) == "2103840:00"); // Calculated minutes for 4 years
-    }
+    // Clean up the test file after tests
+    std::filesystem::remove(test_file);
 }

@@ -13,9 +13,9 @@ public class Answer {
         return String.join(" ", inputString.split("\\s+"));
     }
 
-    // A simple check function to test the method with some sample data points.
+    // A simple check function to test the method
     public static void main(String[] args) {
-        System.out.println(compressWhitespace("This    is  a   test")); // Should print "This is a test"
-        System.out.println(compressWhitespace("  Leading and trailing  ")); // Should print "Leading and trailing"
+        String testString = "This   is  a    test";
+        System.out.println(compressWhitespace(testString));
     }
 }

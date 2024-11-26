@@ -1,17 +1,16 @@
-#include <Eigen/Dense>
-#include <cmath>
+#include <iostream>
+#include <Eigen/Dense> // For matrix operations
+#include <cmath>       // For trigonometric functions
 
-double get_rotation(Eigen::Matrix2d matrix) {
-    double cos_angle = (matrix(0,0) + matrix(1,1)) / 2;
-    if (cos_angle > 1)
-        cos_angle = 1; // Avoid acos domain error
-    else if (cos_angle < -1)
-        cos_angle = -1; // Avoid acos domain error
+// Function to calculate the rotation angle from a 3x3 affine transformation matrix
+double get_rotation(const Eigen::Matrix3d& matrix) {
+    // Ensure the matrix is a 3x3 affine transformation matrix
+    if (matrix.rows() != 3 || matrix.cols() != 3) {
+        throw std::invalid_argument("Input must be a 3x3 affine transformation matrix.");
+    }
 
-    double angle = std::acos(cos_angle);
+    // Calculate the rotation angle using atan2
+    double rotation_angle = std::atan2(matrix(1, 0), matrix(0, 0));
 
-    if ((matrix(0,1) - matrix(1,0)) < 0)
-        angle = -angle;
-
-    return angle;
+    return rotation_angle;
 }

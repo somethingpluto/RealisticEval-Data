@@ -1,32 +1,67 @@
 package org.real.temp;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import org.junit.Test;
-
+import static org.junit.Assert.assertEquals;
+import static org.real.temp.Answer.*;
+/**
+ * Test class for the getRotation function.
+ */
 public class Tester {
 
+    /**
+     * Test for a rotation of 0 degrees (identity matrix).
+     */
     @Test
-    public void testGetRotation() {
-        // Assuming we have a way to create a rotation matrix and expected result
-        double[][] matrix = { {Math.cos(Math.PI / 4), -Math.sin(Math.PI / 4), 0},
-                              {Math.sin(Math.PI / 4), Math.cos(Math.PI / 4), 0},
-                              {0, 0, 1} };
-        double expectedResult = Math.PI / 4;
-
-        double actualResult = getRotation(np.array(matrix));
-
-        assertEquals(expectedResult, actualResult, 0.0001);
+    public void testRotation0Degrees() {
+        double[][] matrix = {
+            {1.0, 0.0, 0.0},
+            {0.0, 1.0, 0.0},
+            {0.0, 0.0, 1.0}
+        };
+        double expectedRotation = 0.0;
+        assertEquals(expectedRotation, getRotation(matrix), 1e-6);
     }
 
-    private double getRotation(double[][] matrix) {
-        /*
-         * Implement the logic to extract the rotation angle from the given matrix.
-         * This is just a placeholder implementation.
-         */
-        double cosTheta = matrix[0][0];
-        double sinTheta = matrix[1][0];
-        return Math.atan2(sinTheta, cosTheta);
+    /**
+     * Test for a rotation of 90 degrees.
+     */
+    @Test
+    public void testRotation90Degrees() {
+        double[][] matrix = {
+            {0.0, -1.0, 0.0},
+            {1.0, 0.0, 0.0},
+            {0.0, 0.0, 1.0}
+        };
+        double expectedRotation = Math.PI / 2;  // 90 degrees in radians
+        assertEquals(expectedRotation, getRotation(matrix), 1e-6);
     }
+
+    /**
+     * Test for a rotation of 180 degrees.
+     */
+    @Test
+    public void testRotation180Degrees() {
+        double[][] matrix = {
+            {-1.0, 0.0, 0.0},
+            {0.0, -1.0, 0.0},
+            {0.0, 0.0, 1.0}
+        };
+        double expectedRotation = Math.PI;  // 180 degrees in radians
+        assertEquals(expectedRotation, getRotation(matrix), 1e-6);
+    }
+
+    /**
+     * Test for a rotation of -90 degrees.
+     */
+    @Test
+    public void testRotationNegative90Degrees() {
+        double[][] matrix = {
+            {0.0, 1.0, 0.0},
+            {-1.0, 0.0, 0.0},
+            {0.0, 0.0, 1.0}
+        };
+        double expectedRotation = -Math.PI / 2;  // -90 degrees in radians
+        assertEquals(expectedRotation, getRotation(matrix), 1e-6);
+    }
+
 }

@@ -1,80 +1,45 @@
-function matrixVectorMultiplication(matrix: number[][], vector: number[]): number[] {
+function intersectVertically(rect1: [number, number, number, number], rect2: [number, number, number, number]): boolean {
     /**
-     * Multiplies a given matrix by a vector using a nested loop approach.
+     * Determine if two rectangles intersect vertically.
      *
-     * Parameters:
-     * matrix (number[][]): A 2D array (matrix) of shape (m, n) where m is the number of rows
-                             and n is the number of columns.
-     * vector (number[]): A 1D array (vector) of shape (n,) that represents a vector
-                         compatible for multiplication with the given matrix.
+     * Each rectangle is defined by a tuple (x1, y1, x2, y2), where:
+     * - (x1, y1) are the coordinates of the bottom-left corner.
+     * - (x2, y2) are the coordinates of the top-right corner.
      *
-     * Returns:
-     * number[]: A 1D array (resulting vector) of shape (m,) representing the product of
-                 the matrix and the vector.
+     * @param rect1 - The first rectangle defined by (x1, y1, x2, y2).
+     * @param rect2 - The second rectangle defined by (x1, y1, x2, y2).
+     * @returns True if the rectangles intersect vertically, False otherwise.
      */
-
-    // Check if the number of columns in the matrix matches the length of the vector
-    if (matrix[0].length !== vector.length) {
-        throw new Error("The number of columns in the matrix must match the length of the vector.");
-    }
-
-    const m = matrix.length;
-    const n = vector.length;
-
-    // Initialize the resulting vector with zeros
-    const result: number[] = new Array(m).fill(0);
-
-    // Perform matrix-vector multiplication using nested loops
-    for (let i = 0; i < m; i++) {
-        for (let j = 0; j < n; j++) {
-            result[i] += matrix[i][j] * vector[j];
-        }
-    }
-
-    // Return the resulting vector from the multiplication
-    return result;
+    return !(rect1[3] < rect2[1] || rect2[3] < rect1[1]);
 }
-
-import * as math from 'mathjs';
-
-describe('TestMatrixVectorMultiplication', () => {
-  it('test_case_1', () => {
-    // Test with a simple 2x2 matrix and a 2-element vector
-    const matrix: number[][] = [[1, 2], [3, 4]];
-    const vector: number[] = [5, 6];
-    const expectedResult: number[] = [17, 39];  // [1*5 + 2*6, 3*5 + 4*6]
-    expect(matrixVectorMultiplication(matrix, vector)).toEqual(expectedResult);
+describe('intersectVertically', () => {
+  it('should return true for overlapping rectangles', () => {
+    const rect1: [number, number, number, number] = [0, 0, 2, 2];
+    const rect2: [number, number, number, number] = [1, 1, 3, 3];
+    expect(intersectVertically(rect1, rect2)).toBe(true);
   });
 
-  it('test_case_2', () => {
-    // Test with a 3x3 matrix and a 3-element vector
-    const matrix: number[][] = [[1, 0, 2], [0, 1, 2], [1, 1, 0]];
-    const vector: number[] = [3, 4, 5];
-    const expectedResult: number[] = [13, 14, 7];  // [1*3 + 0*4 + 2*5, 0*3 + 1*4 + 2*5, 1*3 + 1*4 + 0*5]
-    expect(matrixVectorMultiplication(matrix, vector)).toEqual(expectedResult);
+  it('should return true for overlapping rectangles with negative coordinates', () => {
+    const rect1: [number, number, number, number] = [-1, -1, 1, 1];
+    const rect2: [number, number, number, number] = [0, 0, 2, 2];
+    expect(intersectVertically(rect1, rect2)).toBe(true);
   });
 
-  it('test_case_3', () => {
-    // Test with a zero matrix and a vector
-    const matrix: number[][] = [[0, 0], [0, 0]];
-    const vector: number[] = [1, 1];
-    const expectedResult: number[] = [0, 0];  // Zero matrix multiplied by any vector yields zero
-    expect(matrixVectorMultiplication(matrix, vector)).toEqual(expectedResult);
+  it('should return true for partially overlapping rectangles vertically', () => {
+    const rect1: [number, number, number, number] = [0, 1, 2, 4];
+    const rect2: [number, number, number, number] = [1, 0, 3, 2];
+    expect(intersectVertically(rect1, rect2)).toBe(true);
   });
 
-  it('test_case_4', () => {
-    // Test with a matrix having negative values
-    const matrix: number[][] = [[-1, -2], [-3, -4]];
-    const vector: number[] = [1, 1];
-    const expectedResult: number[] = [-3, -7];  // [-1*1 + -2*1, -3*1 + -4*1]
-    expect(matrixVectorMultiplication(matrix, vector)).toEqual(expectedResult);
+  it('should return true for identical rectangles', () => {
+    const rect1: [number, number, number, number] = [0, 0, 2, 2];
+    const rect2: [number, number, number, number] = [0, 0, 2, 2];
+    expect(intersectVertically(rect1, rect2)).toBe(true);
   });
 
-  it('test_case_5', () => {
-    // Test with non-square matrix (2x3) and a compatible vector (3-element)
-    const matrix: number[][] = [[1, 2, 3], [4, 5, 6]];
-    const vector: number[] = [1, 0, 1];
-    const expectedResult: number[] = [4, 10];  // [1*1 + 2*0 + 3*1, 4*1 + 5*0 + 6*1]
-    expect(matrixVectorMultiplication(matrix, vector)).toEqual(expectedResult);
+  it('should return true when one rectangle is completely inside the other', () => {
+    const rect1: [number, number, number, number] = [0, 0, 4, 4];
+    const rect2: [number, number, number, number] = [1, 1, 2, 2];
+    expect(intersectVertically(rect1, rect2)).toBe(true);
   });
 });

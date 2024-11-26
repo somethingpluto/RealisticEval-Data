@@ -1,35 +1,71 @@
-import static org.junit.Assert.assertArrayEquals;
-import org.junit.Test;
+package org.real.temp;
 
+import org.junit.Test;
+import static org.junit.Assert.assertArrayEquals;
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.factory.Nd4j;
+
+/**
+ * Test class for the getTranslation function.
+ */
 public class Tester {
 
+    /**
+     * Test for the identity matrix (no translation).
+     */
     @Test
-    public void testGetTranslation() {
-        // Define a sample input matrix
-        double[][] matrix = {
-            {1.0, 0.0, 5.0},
-            {0.0, 1.0, 3.0},
-            {0.0, 0.0, 1.0}
-        };
-
-        // Call the getTranslation method from MatrixUtils
-        double[] result = MatrixUtils.getTranslation(matrix);
-
-        // Expected translation vector
-        double[] expected = {5.0, 3.0};
-
-        // Assert that the result matches the expected output
-        assertArrayEquals(expected, result, 0.001);
+    public void testIdentityMatrix() {
+        INDArray matrix = Nd4j.create(new double[][]{
+            {1, 0, 0},
+            {0, 1, 0},
+            {0, 0, 1}
+        });
+        INDArray expectedTranslation = Nd4j.create(new double[]{0.0, 0.0});
+        
+        assertArrayEquals(expectedTranslation, getTranslation(matrix), 1e-6);
     }
-}
 
-// Assuming there's a utility class with the getTranslation method
-class MatrixUtils {
-    public static double[] getTranslation(double[][] matrix) {
-        if (matrix.length != 3 || matrix[0].length != 3 || matrix[1].length != 3 || matrix[2].length != 3) {
-            throw new IllegalArgumentException("Input matrix must be 3x3");
+    /**
+     * Test for a translation matrix (5 in x, 10 in y).
+     */
+    @Test
+    public void testTranslationMatrix() {
+        INDArray matrix = Nd4j.create(new double[][]{
+            {1, 0, 5},
+            {0, 1, 10},
+            {0, 0, 1}
+        });
+        INDArray expectedTranslation = Nd4j.create(new double[]{5.0, 10.0});
+        
+        assertArrayEquals(expectedTranslation, getTranslation(matrix), 1e-6);
+    }
+
+    /**
+     * Test for a translation matrix with negative values.
+     */
+    @Test
+    public void testNegativeTranslation() {
+        INDArray matrix = Nd4j.create(new double[][]{
+            {1, 0, -3},
+            {0, 1, -6},
+            {0, 0, 1}
+        });
+        INDArray expectedTranslation = Nd4j.create(new double[]{-3.0, -6.0});
+        
+        assertArrayEquals(expectedTranslation, getTranslation(matrix), 1e-6);
+    }
+
+    // Utility method to get the translation
+    private INDArray getTranslation(INDArray matrix) {
+        // Ensure the matrix is a 3x3 array
+        if (matrix == null || matrix.rows() != 3 || matrix.columns() != 3) {
+            throw new IllegalArgumentException("Input must be a 3x3 affine transformation matrix.");
         }
 
-        return new double[]{matrix[0][2], matrix[1][2]};
+        // Extract the translation components from the matrix
+        INDArray translation = matrix.get(NDArrayIndex.interval(0, 2), NDArrayIndex.point(2));
+
+        // Ensure the return type is double
+        return translation.castTo(double.class);
     }
 }

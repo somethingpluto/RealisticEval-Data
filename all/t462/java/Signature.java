@@ -1,54 +1,7 @@
-import java.util.ArrayList;
-import java.util.List;
-
 /**
- * Given a 2D matrix, return all elements of the matrix in spiral order.
+ * Given a 2D matrix, returns all elements of the matrix in spiral order.
  *
- * @param matrix The 2D list of integers.
+ * @param matrix A 2D array of integers.
  * @return A list of integers representing the matrix elements in spiral order.
  */
-public class SpiralMatrix {
-    public List<Integer> spiralOrder(int[][] matrix) {
-        List<Integer> result = new ArrayList<>();
-        if (matrix == null || matrix.length == 0 || matrix[0].length == 0) {
-            return result;
-        }
-
-        int top = 0;
-        int bottom = matrix.length - 1;
-        int left = 0;
-        int right = matrix[0].length - 1;
-
-        while (true) {
-            // Traverse from left to right along the top row
-            for (int i = left; i <= right; i++) {
-                result.add(matrix[top][i]);
-            }
-            top++;
-            if (top > bottom) break;
-
-            // Traverse downwards along the right column
-            for (int i = top; i <= bottom; i++) {
-                result.add(matrix[i][right]);
-            }
-            right--;
-            if (left > right) break;
-
-            // Traverse from right to left along the bottom row
-            for (int i = right; i >= left; i--) {
-                result.add(matrix[bottom][i]);
-            }
-            bottom--;
-            if (top > bottom) break;
-
-            // Traverse upwards along the left column
-            for (int i = bottom; i >= top; i--) {
-                result.add(matrix[i][left]);
-            }
-            left++;
-            if (left > right) break;
-        }
-
-        return result;
-    }
-}
+public static List<Integer> spiralOrder(int[][] matrix) {}

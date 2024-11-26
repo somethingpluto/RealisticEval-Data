@@ -1,35 +1,39 @@
 package org.real.temp;
 
-import java.util.Arrays;
+import java.lang.IllegalArgumentException;
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.factory.Nd4j;
 
 public class Answer {
 
     /**
-     * Given a 3x3 matrix, return the corresponding translation vector.
-     *
+     * Given a 3x3 matrix, returns the corresponding translation vector.
+     * 
      * @param matrix A 3x3 affine transformation matrix.
      * @return A 2-element array containing the translation components (translation_x, translation_y).
      */
-    public static double[] getTranslation(double[][] matrix) {
-        if (matrix == null || matrix.length != 3 || matrix[0].length != 3 || matrix[1].length != 3 || matrix[2].length != 3) {
-            throw new IllegalArgumentException("Input must be a 3x3 matrix.");
+    public static INDArray getTranslation(INDArray matrix) {
+        // Ensure the matrix is a 3x3 array
+        if (matrix == null || matrix.rows() != 3 || matrix.columns() != 3) {
+            throw new IllegalArgumentException("Input must be a 3x3 affine transformation matrix.");
         }
 
-        // Extract the translation components from the last row of the matrix
-        double translationX = matrix[2][0];
-        double translationY = matrix[2][1];
+        // Extract the translation components from the matrix
+        INDArray translation = matrix.get(NDArrayIndex.interval(0, 2), NDArrayIndex.point(2));
 
-        return new double[]{translationX, translationY};
+        // Ensure the return type is double
+        return translation.castTo(double.class);
     }
 
     public static void main(String[] args) {
-        double[][] matrix = {
-            {1, 0, 5},
-            {0, 1, 10},
+        // Example usage
+        INDArray matrix = Nd4j.create(new double[][]{
+            {1, 0, 10},
+            {0, 1, 20},
             {0, 0, 1}
-        };
+        });
 
-        double[] translation = getTranslation(matrix);
-        System.out.println(Arrays.toString(translation)); // Output should be [5.0, 10.0]
+        INDArray translation = getTranslation(matrix);
+        System.out.println(translation);
     }
 }

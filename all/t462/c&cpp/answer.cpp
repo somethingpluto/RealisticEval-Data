@@ -1,7 +1,7 @@
 #include <vector>
 #include <iostream>
 
-std::vector<int> spiralOrder(const std::vector<std::vector<int>>& matrix) {
+std::vector<int> spiral_order(const std::vector<std::vector<int>>& matrix) {
     std::vector<int> result;
     if (matrix.empty() || matrix[0].empty()) {
         return result;

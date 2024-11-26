@@ -1,4 +1,16 @@
 function dijkstra(graph, start) {
+    /**
+     * Implements Dijkstra's algorithm to find the shortest path from the start node to all other nodes in the graph.
+     *
+     * Parameters:
+     * - graph (object): An object representing the adjacency list of the graph. Each key is a node, and the value is an array of objects {neighbor, weight}.
+     * - start: The starting node for the shortest path search.
+     *
+     * Returns:
+     * - object: An object with the shortest distance from the start node to each node.
+     */
+
+    // Priority queue for the minimum distance nodes
     const queue = [];
     // Object to store the shortest path to each node
     const shortestPaths = {};

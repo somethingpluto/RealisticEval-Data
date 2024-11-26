@@ -1,5 +1,3 @@
-import * as math from 'mathjs';
-
 describe('TestGetRotationFunction', () => {
     it('test_rotation_0_degrees', () => {
         const matrix = [

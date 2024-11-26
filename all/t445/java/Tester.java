@@ -1,72 +1,92 @@
 package org.real.temp;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
+import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
+import static org.real.temp.Answer.*;
+/**
+ * Test class for the createRotMatrix method.
+ */
 public class Tester {
 
-    private double[][] identityMatrix = {
+    /**
+     * Test rotation around the X-axis for 90 degrees.
+     */
+    @Test
+    public void testRotationX90Degrees() {
+        double[][] expectedMatrix = {
+            {1, 0, 0, 0},
+            {0, 0, -1, 0},
+            {0, 1, 0, 0},
+            {0, 0, 0, 1}
+        };
+        double[][] resultMatrix = createRotMatrix(90, "x");
+        assertArrayEquals(expectedMatrix, resultMatrix, 1e-6);
+    }
+
+    /**
+     * Test rotation around the Y-axis for 180 degrees.
+     */
+    @Test
+    public void testRotationY180Degrees() {
+        double[][] expectedMatrix = {
+            {-1, 0, 0, 0},
+            {0, 1, 0, 0},
+            {0, 0, -1, 0},
+            {0, 0, 0, 1}
+        };
+        double[][] resultMatrix = createRotMatrix(180, "y");
+        assertArrayEquals(expectedMatrix, resultMatrix, 1e-6);
+    }
+
+    /**
+     * Test rotation around the Z-axis for 270 degrees (or -90 degrees).
+     */
+    @Test
+    public void testRotationZ270Degrees() {
+        double[][] expectedMatrix = {
+            {0, 1, 0, 0},
+            {-1, 0, 0, 0},
+            {0, 0, 1, 0},
+            {0, 0, 0, 1}
+        };
+        double[][] resultMatrix = createRotMatrix(270, "z");
+        assertArrayEquals(expectedMatrix, resultMatrix, 1e-6);
+    }
+
+    /**
+     * Test behavior with invalid axis input.
+     */
+    @Test
+    public void testInvalidAxis() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            createRotMatrix(90, "a");
+        });
+    }
+
+    /**
+     * Test zero degree rotation which should lead to the identity matrix.
+     */
+    @Test
+    public void testZeroRotation() {
+        double[][] expectedMatrix = {
             {1, 0, 0, 0},
             {0, 1, 0, 0},
             {0, 0, 1, 0},
             {0, 0, 0, 1}
-    };
-
-    @BeforeEach
-    public void setUp() {
-        // Setup code if needed
-    }
-
-    @Test
-    public void testCreateRotMatrix_XAxis_90Degrees() {
-        double[][] expected = {
-                {1, 0, 0, 0},
-                {0, 0, -1, 0},
-                {0, 1, 0, 0},
-                {0, 0, 0, 1}
         };
-        double[][] result = createRotMatrix(90, "X");
-        assertArrayEquals(expected, result);
+        double[][] resultMatrix = createRotMatrix(0, "x");
+        assertArrayEquals(expectedMatrix, resultMatrix, 1e-6);
     }
 
-    @Test
-    public void testCreateRotMatrix_YAxis_90Degrees() {
-        double[][] expected = {
-                {0, 0, 1, 0},
-                {0, 1, 0, 0},
-                {-1, 0, 0, 0},
-                {0, 0, 0, 1}
-        };
-        double[][] result = createRotMatrix(90, "Y");
-        assertArrayEquals(expected, result);
-    }
-
-    @Test
-    public void testCreateRotMatrix_ZAxis_90Degrees() {
-        double[][] expected = {
-                {0, -1, 0, 0},
-                {1, 0, 0, 0},
-                {0, 0, 1, 0},
-                {0, 0, 0, 1}
-        };
-        double[][] result = createRotMatrix(90, "Z");
-        assertArrayEquals(expected, result);
-    }
-
-    @Test
-    public void testCreateRotMatrix_InvalidAxis() {
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            createRotMatrix(90, "W");
-        });
-        assertEquals("Invalid axis provided", exception.getMessage());
-    }
-
-    private double[][] createRotMatrix(double angleDeg, String axis) {
-        // Implement the logic for creating the rotation matrix here
-        // For simplicity, let's assume it returns an identity matrix
-        return identityMatrix;
+    // Helper method to compare arrays with a tolerance
+    private static void assertArrayEquals(double[][] expected, double[][] actual, double delta) {
+        assertEquals(expected.length, actual.length);
+        for (int i = 0; i < expected.length; i++) {
+            assertEquals(expected[i].length, actual[i].length);
+            for (int j = 0; j < expected[i].length; j++) {
+                assertEquals(expected[i][j], actual[i][j], delta);
+            }
+        }
     }
 }

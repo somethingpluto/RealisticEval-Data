@@ -1,5 +1,5 @@
 /**
- * @brief This function modifies a SQL query string containing named parameters
+ * This function modifies a SQL query string containing named parameters
  * (like $name, $age) into a format compatible with libraries that require
  * positional parameters (like $1, $2, etc.), such as asyncpg. It returns
  * a pair containing the modified SQL string and a vector of parameter values

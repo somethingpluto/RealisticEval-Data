@@ -1,18 +1,18 @@
 TEST_CASE("Test Spiral Order", "[spiralOrder]") {
     SECTION("Empty Matrix") {
-        REQUIRE(spiralOrder({}) == std::vector<int>{});
+        REQUIRE(spiral_order({}) == std::vector<int>{});
     }
 
     SECTION("Single Row Matrix") {
-        REQUIRE(spiralOrder({{1, 2, 3}}) == std::vector<int>({1, 2, 3}));
+        REQUIRE(spiral_order({{1, 2, 3}}) == std::vector<int>({1, 2, 3}));
     }
 
     SECTION("Single Column Matrix") {
-        REQUIRE(spiralOrder({{1}, {2}, {3}}) == std::vector<int>({1, 2, 3}));
+        REQUIRE(spiral_order({{1}, {2}, {3}}) == std::vector<int>({1, 2, 3}));
     }
 
     SECTION("Square Matrix") {
-        REQUIRE(spiralOrder({
+        REQUIRE(spiral_order({
             {1, 2, 3},
             {4, 5, 6},
             {7, 8, 9}
@@ -20,7 +20,7 @@ TEST_CASE("Test Spiral Order", "[spiralOrder]") {
     }
 
     SECTION("Rectangle Matrix") {
-        REQUIRE(spiralOrder({
+        REQUIRE(spiral_order({
             {1, 2, 3, 4},
             {5, 6, 7, 8},
             {9, 10, 11, 12}

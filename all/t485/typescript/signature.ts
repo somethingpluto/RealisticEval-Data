@@ -1,5 +1,3 @@
-import { match, replace } from 'lodash';
-
 /**
  * This function modifies a SQL query string containing named parameters
  * (like $name, $age) into a format compatible with libraries that require

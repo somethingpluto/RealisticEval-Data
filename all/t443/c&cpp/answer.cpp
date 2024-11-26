@@ -17,7 +17,7 @@ std::string compress_whitespace(const std::string& input_string) {
     std::string token;
     std::string result;
 
-    // Extract tokens separated by whitespace and join them with a single space
+    // Read each word from the input string and append it to the result with a single space
     while (iss >> token) {
         if (!result.empty()) {
             result += " ";

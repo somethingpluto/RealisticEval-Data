@@ -1,18 +1,18 @@
 #include <iostream>
-#include <vector>
+#include <Eigen/Dense>  // For matrix operations
+#include <utility>      // For std::pair
+#include <stdexcept>    // For std::invalid_argument
 
-using namespace std;
-
-typedef pair<double, double> ScaleFactors;
-typedef vector<vector<double>> Matrix;
-
-ScaleFactors get_scale(const Matrix& matrix) {
-    if (matrix.size() != 3 || matrix[0].size() != 3 || matrix[1].size() != 3 || matrix[2].size() != 3) {
-        throw invalid_argument("Matrix must be 3x3");
+// Function to calculate the scaling factors from a 3x3 affine transformation matrix
+std::pair<double, double> get_scale(const Eigen::MatrixXd& matrix) {
+    // Ensure the matrix is a 3x3 matrix
+    if (matrix.rows() != 3 || matrix.cols() != 3) {
+        throw std::invalid_argument("Input must be a 3x3 affine transformation matrix.");
     }
 
-    double scale_x = sqrt(pow(matrix[0][0], 2) + pow(matrix[1][0], 2));
-    double scale_y = sqrt(pow(matrix[0][1], 2) + pow(matrix[1][1], 2));
+    // Calculate the scale factors using the norm of the columns
+    double scale_x = matrix.block(0, 0, 2, 1).norm();  // Using the first two rows for x-scale
+    double scale_y = matrix.block(0, 1, 2, 1).norm();  // Using the first two rows for y-scale
 
-    return make_pair(scale_x, scale_y);
+    return std::make_pair(scale_x, scale_y);
 }

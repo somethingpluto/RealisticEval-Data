@@ -1,48 +1,23 @@
+#include <iostream>
 #include <vector>
 #include <stdexcept>
 
+// Function to perform matrix-vector multiplication
 std::vector<float> matrix_vector_multiplication(const std::vector<std::vector<float>>& matrix, const std::vector<float>& vector) {
+    // Ensure matrix dimensions are compatible with vector length
     if (matrix[0].size() != vector.size()) {
-        throw std::invalid_argument("Matrix and vector dimensions do not match.");
+        throw std::invalid_argument("Matrix and vector dimensions are not compatible for multiplication");
     }
 
-    std::vector<float> result(vector.size());
+    // Initialize the result vector with zeros
+    std::vector<float> result(matrix.size(), 0.0f);
 
-    for (int i = 0; i < vector.size(); ++i) {
-        for (int j = 0; j < matrix.size(); ++j) {
-            result[i] += matrix[j][i] * vector[j];
-        }
-    }
-
-    return result;
-}
-```
-
-And here's the equivalent C code using pointers and dynamic memory allocation:
-
-```C
-#include <stdlib.h>
-#include <string.h>
-
-float* matrix_vector_multiplication(float** matrix, int rows, float* vector, int cols) {
-    if (cols != 1) {
-        fprintf(stderr, "Vector must be a column vector.\n");
-        exit(1);
-    }
-
-    float* result = malloc(sizeof(float) * rows);
-
-    for (int i = 0; i < rows; ++i) {
-        result[i] = 0;
-
-        for (int j = 0; j < cols; ++j) {
+    // Perform the matrix-vector multiplication
+    for (size_t i = 0; i < matrix.size(); ++i) {
+        for (size_t j = 0; j < vector.size(); ++j) {
             result[i] += matrix[i][j] * vector[j];
         }
     }
 
     return result;
-}
-
-void free_result(float* result) {
-    free(result);
 }

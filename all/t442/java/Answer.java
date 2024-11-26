@@ -1,5 +1,6 @@
 package org.real.temp;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,20 +10,20 @@ public class Answer {
     public static Object convertStringsToNumbers(Object data) {
         if (data instanceof Map) {
             @SuppressWarnings("unchecked")
-            Map<Object, Object> map = (Map<Object, Object>) data;
-            Map<Object, Object> convertedMap = new HashMap<>();
-            for (Map.Entry<Object, Object> entry : map.entrySet()) {
-                convertedMap.put(entry.getKey(), convertStringsToNumbers(entry.getValue()));
+            Map<String, Object> map = (Map<String, Object>) data;
+            Map<String, Object> newMap = new HashMap<>();
+            for (Map.Entry<String, Object> entry : map.entrySet()) {
+                newMap.put(entry.getKey(), convertStringsToNumbers(entry.getValue()));
             }
-            return convertedMap;
+            return newMap;
         } else if (data instanceof List) {
             @SuppressWarnings("unchecked")
             List<Object> list = (List<Object>) data;
-            List<Object> convertedList = new ArrayList<>();
+            List<Object> newList = new ArrayList<>();
             for (Object item : list) {
-                convertedList.add(convertStringsToNumbers(item));
+                newList.add(convertStringsToNumbers(item));
             }
-            return convertedList;
+            return newList;
         } else if (data instanceof String) {
             String str = (String) data;
             try {
@@ -33,10 +34,10 @@ public class Answer {
                     return Integer.parseInt(str);
                 }
             } catch (NumberFormatException e) {
-                return data; // Return original string if conversion fails
+                return str;  // Return original string if conversion fails
             }
         } else {
-            return data; // Return data unchanged if it's not a string
+            return data;  // Return data unchanged if it's not a string
         }
     }
 
@@ -44,9 +45,12 @@ public class Answer {
         // Example usage
         Map<String, Object> data = new HashMap<>();
         data.put("a", "123");
-        data.put("b", List.of("456", "789.0"));
-        data.put("c", "not_a_number");
+        data.put("b", "456.789");
+        data.put("c", "hello");
+
+        List<Object> listData = List.of("100", "200.5", "world");
 
         System.out.println(convertStringsToNumbers(data));
+        System.out.println(convertStringsToNumbers(listData));
     }
 }

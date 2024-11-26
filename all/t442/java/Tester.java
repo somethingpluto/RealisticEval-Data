@@ -1,83 +1,108 @@
 package org.real.temp;
 
-import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
+import static org.real.temp.Answer.*;
 public class Tester {
 
-    /**
-     * Test the conversion of strings in nested structures to numbers.
-     */
     @Test
-    public void testConvertStringsToNumbers() {
-        // Test with a dictionary
-        Map<String, Object> dataDict = new HashMap<>();
-        dataDict.put("a", "123");
-        dataDict.put("b", Arrays.asList("456", "789.0"));
-        dataDict.put("c", "not_a_number");
+    public void testFlatDict() {
+        Map<String, Object> data = new HashMap<>();
+        data.put("a", "1");
+        data.put("b", "2.5");
+        data.put("c", "not a number");
 
-        Map<String, Object> expectedDict = new HashMap<>();
-        expectedDict.put("a", 123);
-        expectedDict.put("b", Arrays.asList(456, 789.0f));
-        expectedDict.put("c", "not_a_number");
+        Map<String, Object> expected = new HashMap<>();
+        expected.put("a", 1);
+        expected.put("b", 2.5);
+        expected.put("c", "not a number");
 
-        assertEquals(expectedDict, convertStringsToNumbers(dataDict));
-
-        // Test with a list
-        List<Object> dataList = Arrays.asList("123", "456.7", "not_a_number");
-
-        List<Object> expectedList = Arrays.asList(123, 456.7f, "not_a_number");
-
-        assertEquals(expectedList, convertStringsToNumbers(dataList));
-
-        // Test with a string
-        String dataStr = "123";
-        assertEquals(123, convertStringsToNumbers(dataStr));
-
-        dataStr = "456.7";
-        assertEquals(456.7f, convertStringsToNumbers(dataStr));
-
-        dataStr = "not_a_number";
-        assertEquals("not_a_number", convertStringsToNumbers(dataStr));
+        assertEquals(expected.toString(), convertStringsToNumbers(data).toString());
     }
 
-    private Object convertStringsToNumbers(Object data) {
-        if (data instanceof Map) {
-            @SuppressWarnings("unchecked")
-            Map<Object, Object> map = (Map<Object, Object>) data;
-            Map<Object, Object> convertedMap = new HashMap<>();
-            for (Map.Entry<Object, Object> entry : map.entrySet()) {
-                convertedMap.put(entry.getKey(), convertStringsToNumbers(entry.getValue()));
-            }
-            return convertedMap;
-        } else if (data instanceof List) {
-            @SuppressWarnings("unchecked")
-            List<Object> list = (List<Object>) data;
-            List<Object> convertedList = new ArrayList<>();
-            for (Object item : list) {
-                convertedList.add(convertStringsToNumbers(item));
-            }
-            return convertedList;
-        } else if (data instanceof String) {
-            String str = (String) data;
-            try {
-                // Try converting to float first, then to int if possible
-                if (str.contains(".")) {
-                    return Float.parseFloat(str);
-                } else {
-                    return Integer.parseInt(str);
-                }
-            } catch (NumberFormatException e) {
-                return data; // Return original string if conversion fails
-            }
-        } else {
-            return data; // Return data unchanged if it's not a string
-        }
+    @Test
+    public void testNestedDict() {
+        Map<String, Object> nestedData = new HashMap<>();
+        nestedData.put("y", "10");
+        nestedData.put("z", "3.14");
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("x", nestedData);
+        data.put("w", "20.0");
+
+        Map<String, Object> expectedNestedData = new HashMap<>();
+        expectedNestedData.put("y", 10);
+        expectedNestedData.put("z", 3.14);
+
+        Map<String, Object> expected = new HashMap<>();
+        expected.put("x", expectedNestedData);
+        expected.put("w", 20.0);
+
+        assertEquals(expected.toString(), convertStringsToNumbers(data).toString());
+    }
+
+    @Test
+    public void testListOfStrings() {
+        List<Object> data = new ArrayList<>();
+        data.add("1");
+        data.add("2.5");
+        data.add("3");
+        data.add("invalid");
+
+        List<Object> expected = new ArrayList<>();
+        expected.add(1);
+        expected.add(2.5);
+        expected.add(3);
+        expected.add("invalid");
+
+        assertEquals(expected.toString(), convertStringsToNumbers(data).toString());
+    }
+
+    @Test
+    public void testMixedStructure() {
+        Map<String, Object> nestedData = new HashMap<>();
+        nestedData.put("num", "4");
+
+        List<Object> numbers = new ArrayList<>();
+        numbers.add("1");
+        numbers.add("2.0");
+        numbers.add(3);
+
+        List<Object> moreNumbers = new ArrayList<>();
+        moreNumbers.add(nestedData);
+        moreNumbers.add("5");
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("numbers", numbers);
+        data.put("more_numbers", moreNumbers);
+
+        List<Object> expectedNumbers = new ArrayList<>();
+        expectedNumbers.add(1);
+        expectedNumbers.add(2.0);
+        expectedNumbers.add(3);
+
+        List<Object> expectedMoreNumbers = new ArrayList<>();
+        expectedMoreNumbers.add(nestedData);
+        expectedMoreNumbers.add(5);
+
+        Map<String, Object> expected = new HashMap<>();
+        expected.put("numbers", expectedNumbers);
+        expected.put("more_numbers", expectedMoreNumbers);
+
+        assertEquals(expected.toString(), convertStringsToNumbers(data).toString());
+    }
+
+    @Test
+    public void testEmptyStructure() {
+        Map<String, Object> data = new HashMap<>();
+
+        Map<String, Object> expected = new HashMap<>();
+
+        assertEquals(expected.toString(), convertStringsToNumbers(data).toString());
     }
 }
