@@ -1,7 +1,7 @@
 /**
- * Given an array of integers nums, find the length of the longest strictly increasing subsequence in it.
+ * Finds the length of the longest strictly increasing subsequence in an array of integers.
  *
- * @param nums the input integer list
+ * @param nums the array of integers
  * @return the length of the longest strictly increasing subsequence
  */
-public int lengthOfLIS(List<Integer> nums) {}
+public static int lengthOfLIS(int[] nums) {}

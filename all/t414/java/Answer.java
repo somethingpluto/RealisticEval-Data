@@ -4,57 +4,91 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Answer {
-    public List<Map<String, String>> extractBibInfo(String bibFile) throws IOException {
-        List<Map<String, String>> results = new ArrayList<>();
-        
-        try (BufferedReader br = new BufferedReader(new FileReader(bibFile))) {
-            StringBuilder sb = new StringBuilder();
+
+    /**
+     * Extracts the title, author, and year from a BibTeX file.
+     *
+     * @param bibFile The path to the BibTeX file.
+     * @return A list containing dictionaries with title, author, and year for each article.
+     */
+    public static List<Dictionary> extractBibInfo(String bibFile) {
+        List<Dictionary> articles = new ArrayList<>();
+
+        // Regular expressions to match title, author, and year
+        Pattern titlePattern = Pattern.compile("title\\s*=\\s*{([^}]*)}", Pattern.CASE_INSENSITIVE);
+        Pattern authorPattern = Pattern.compile("author\\s*=\\s*{([^}]*)}", Pattern.CASE_INSENSITIVE);
+        Pattern yearPattern = Pattern.compile("year\\s*=\\s*{([^}]*)}", Pattern.CASE_INSENSITIVE);
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(bibFile))) {
+            StringBuilder content = new StringBuilder();
             String line;
-            
-            while ((line = br.readLine()) != null) {
-                if (!line.trim().startsWith("@")) {
-                    sb.append(line).append("\n");
-                } else {
-                    Map<String, String> infoMap = parseEntry(sb.toString());
-                    if (infoMap != null) {
-                        results.add(infoMap);
-                    }
-                    sb.setLength(0); // clear stringbuilder
-                    sb.append(line).append("\n"); // start new entry
-                }
+
+            while ((line = reader.readLine()) != null) {
+                content.append(line).append("\n");
             }
 
-            // add last entry if there is one
-            if (sb.length() > 0) {
-                Map<String, String> infoMap = parseEntry(sb.toString());
-                if (infoMap != null) {
-                    results.add(infoMap);
+            // Split the content into individual entries based on '@'
+            String[] entries = content.toString().split("@");
+
+            // Skip the first split, which is empty
+            for (int i = 1; i < entries.length; i++) {
+                Matcher titleMatcher = titlePattern.matcher(entries[i]);
+                Matcher authorMatcher = authorPattern.matcher(entries[i]);
+                Matcher yearMatcher = yearPattern.matcher(entries[i]);
+
+                Dictionary article = new Dictionary();
+
+                if (titleMatcher.find()) {
+                    article.put("title", titleMatcher.group(1));
+                } else {
+                    article.put("title", null);
                 }
+
+                if (authorMatcher.find()) {
+                    article.put("author", authorMatcher.group(1));
+                } else {
+                    article.put("author", null);
+                }
+
+                if (yearMatcher.find()) {
+                    article.put("year", yearMatcher.group(1));
+                } else {
+                    article.put("year", null);
+                }
+
+                articles.add(article);
             }
+
+        } catch (IOException e) {
+            System.out.println("Error: The file '" + bibFile + "' was not found.");
         }
 
-        return results;
+        return articles;
     }
 
-    private Map<String, String> parseEntry(String entry) {
-        Map<String, String> infoMap = new HashMap<>();
+    public static void main(String[] args) {
+        List<Dictionary> articles = extractBibInfo("path/to/bibtex/file.bib");
+        for (Dictionary article : articles) {
+            System.out.println(article);
+        }
+    }
 
-        String[] parts = entry.split(",");
-        for (String part : parts) {
-            part = part.trim();
-            if (part.startsWith("author") || part.startsWith("title") || part.startsWith("year")) {
-                String key = part.substring(0, part.indexOf("=")).trim();
-                String value = part.substring(part.indexOf("=") + 1, part.indexOf(",")).trim();
-                value = value.replace("{", "").replace("}", "").replace("\"", ""); // clean up value
-                infoMap.put(key, value);
-            }
+    // Simple implementation of a dictionary (key-value store)
+    public static class Dictionary {
+        private final java.util.Map<String, String> map = new java.util.HashMap<>();
+
+        public void put(String key, String value) {
+            map.put(key, value);
         }
 
-        return !infoMap.isEmpty() ? infoMap : null;
+        @Override
+        public String toString() {
+            return map.toString();
+        }
     }
 }

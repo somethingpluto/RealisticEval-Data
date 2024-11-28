@@ -1,15 +1,17 @@
 #include <iostream>
-using namespace std;
+#include <optional>
 
-// Function to find the largest integer between a given number n and half of it that is divisible by 10 or 5
-int findLargestDivisible(int n) {
-    // Iterate from n down to half of n
-    for (int i = n; i >= n / 2; --i) {
-        // Check if the number is divisible by 10 or 5
-        if (i % 10 == 0 || i % 5 == 0) {
+// Function to find the largest integer between n and half of n that is divisible by 5.
+std::optional<int> find_largest_divisible(int n) {
+    // Start checking from n and go down to half of n
+    int start = n;
+    int end = n / 2;
+
+    for (int i = start; i > end; --i) {
+        if (i % 5 == 0) {
             return i;
         }
     }
-    // Return -1 if no such number exists
-    return -1;
+
+    return std::nullopt;  // Return std::nullopt if no number divisible by 5 is found
 }

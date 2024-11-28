@@ -3,7 +3,7 @@ package org.real.temp;
 import org.junit.Test;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertThrows;
-
+import static org.real.temp.Answer.*;
 /**
  * Test class for the extractEmailDetails method.
  */
@@ -51,20 +51,5 @@ public class Tester {
         // Test with an empty string as an email
         String email = "";
         assertThrows(IllegalArgumentException.class, () -> extractEmailDetails(email));
-    }
-
-    // Utility method to simulate the extractEmailDetails method for testing purposes
-    private String[] extractEmailDetails(String email) {
-        // Check if '@' is in the email
-        if (!email.contains("@")) {
-            throw new IllegalArgumentException("Invalid email address. Email must contain an '@' character.");
-        }
-
-        // Split the email at the '@' and assign parts to username and domain
-        String[] parts = email.split("@", 2);
-        String username = parts[0];
-        String domain = parts[1];
-
-        return new String[]{username, domain};
     }
 }

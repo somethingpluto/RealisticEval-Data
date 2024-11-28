@@ -1,52 +1,73 @@
 package org.real.temp;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import org.junit.jupiter.api.Test;
-
+import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.real.temp.Answer.*;
+/**
+ * Test class for the lengthOfLIS method.
+ */
 public class Tester {
 
+    /**
+     * Tests the function with an empty list.
+     */
     @Test
-    public void testLengthOfLIS() {
-        // Test case 1
-        int[] nums1 = {10, 9, 2, 5, 3, 7, 101, 18};
-        assertEquals(4, lengthOfLIS(nums1), "Test case 1 failed");
-
-        // Test case 2
-        int[] nums2 = {0, 1, 0, 3, 2, 3};
-        assertEquals(4, lengthOfLIS(nums2), "Test case 2 failed");
-
-        // Test case 3
-        int[] nums3 = {7, 7, 7, 7, 7, 7, 7};
-        assertEquals(1, lengthOfLIS(nums3), "Test case 3 failed");
-
-        // Test case 4
-        int[] nums4 = {};
-        assertEquals(0, lengthOfLIS(nums4), "Test case 4 failed");
-
-        // Test case 5
-        int[] nums5 = {1};
-        assertEquals(1, lengthOfLIS(nums5), "Test case 5 failed");
+    public void testEmptyList() {
+        // Test the function with an empty list
+        assertEquals(0, lengthOfLIS(new int[]{}));
     }
 
-    private int lengthOfLIS(int[] nums) {
-        if (nums == null || nums.length == 0) {
-            return 0;
-        }
-        
-        int n = nums.length;
-        int[] dp = new int[n];
-        int maxLength = 1;
+    /**
+     * Tests the function with a list containing only one element.
+     */
+    @Test
+    public void testSingleElement() {
+        // Test with a list containing only one element
+        assertEquals(1, lengthOfLIS(new int[]{7}));
+    }
 
-        for (int i = 0; i < n; i++) {
-            dp[i] = 1;
-            for (int j = 0; j < i; j++) {
-                if (nums[i] > nums[j]) {
-                    dp[i] = Math.max(dp[i], dp[j] + 1);
-                }
-            }
-            maxLength = Math.max(maxLength, dp[i]);
-        }
+    /**
+     * Tests the function with a list where the elements are strictly increasing.
+     */
+    @Test
+    public void testIncreasingSequence() {
+        // Test with a list where the elements are strictly increasing
+        assertEquals(5, lengthOfLIS(new int[]{1, 2, 3, 4, 5}));
+    }
 
-        return maxLength;
+    /**
+     * Tests the function with a list where the elements are strictly decreasing.
+     */
+    @Test
+    public void testDecreasingSequence() {
+        // Test with a list where the elements are strictly decreasing
+        assertEquals(1, lengthOfLIS(new int[]{5, 4, 3, 2, 1}));
+    }
+
+    /**
+     * Tests the function with a complex sequence with a mix of increasing and decreasing elements.
+     */
+    @Test
+    public void testComplexSequence() {
+        // Test with a complex sequence with a mix of increasing and decreasing elements
+        assertEquals(4, lengthOfLIS(new int[]{10, 9, 2, 5, 3, 7, 101, 18}));
+    }
+
+    /**
+     * Tests the function with all elements in the list being equal.
+     */
+    @Test
+    public void testAllEqualElements() {
+        // Test with all elements in the list being equal
+        assertEquals(1, lengthOfLIS(new int[]{2, 2, 2, 2}));
+    }
+
+    /**
+     * Tests the function with a mix of negative and positive numbers.
+     */
+    @Test
+    public void testWithNegativeNumbers() {
+        // Test with a mix of negative and positive numbers
+        assertEquals(4, lengthOfLIS(new int[]{-1, -2, -3, 0, 1, 2}));
     }
 }

@@ -1,17 +1,29 @@
 #include <iostream>
 #include <vector>
+#include <tuple>
+#include <stdexcept>
 
-std::vector<int> decompose(int n, const std::vector<int>& shape) {
-    if (n < 0 || n >= 1) { // Assuming the upper bound is 1 for simplicity.
-        std::cerr << "Error: Index out of bounds." << std::endl;
-        exit(1);
-    }
-
-    std::vector<int> result(shape.size());
+// Function to decompose a flat index into a multidimensional index based on the given shape
+std::tuple<int, int, int> decompose(int n, const std::vector<int>& shape) {
+    // Calculate the total size of the array
     int size = 1;
-    for (size_t i = 0; i < shape.size(); ++i) {
-        result[i] = n / size % shape[i];
-        size *= shape[i];
+    for (int dim : shape) {
+        size *= dim;
     }
-    return result;
+
+    // Check if the index is within bounds
+    if (n < 0 || n >= size) {
+        throw std::out_of_range("Index out of bounds");
+    }
+
+    // Decompose the index
+    std::vector<int> result;
+    for (auto it = shape.rbegin(); it != shape.rend(); ++it) {
+        result.push_back(n % *it);
+        n /= *it;  // Update n by integer division
+    }
+
+    // Reverse the result to match the original shape order and return as tuple
+    std::tuple<int, int, int> result_tuple(result.back(), result[1], result.front());
+    return result_tuple;
 }

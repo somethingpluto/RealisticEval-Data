@@ -1,45 +1,59 @@
-function intersectVertically(rect1: [number, number, number, number], rect2: [number, number, number, number]): boolean {
+function squaredEuclideanDistance(vec1: number[], vec2: number[]): number {
     /**
-     * Determine if two rectangles intersect vertically.
+     * Compute the squared Euclidean distance between two vectors.
      *
-     * Each rectangle is defined by a tuple (x1, y1, x2, y2), where:
-     * - (x1, y1) are the coordinates of the bottom-left corner.
-     * - (x2, y2) are the coordinates of the top-right corner.
-     *
-     * @param rect1 - The first rectangle defined by (x1, y1, x2, y2).
-     * @param rect2 - The second rectangle defined by (x1, y1, x2, y2).
-     * @returns True if the rectangles intersect vertically, False otherwise.
+     * @param {number[]} vec1 - First vector.
+     * @param {number[]} vec2 - Second vector.
+     * @returns {number} - Euclidean distance between vec1 and vec2.
      */
-    return !(rect1[3] < rect2[1] || rect2[3] < rect1[1]);
+    if (vec1.length !== vec2.length) {
+        throw new Error("Vectors must have the same length");
+    }
+
+    let sum = 0;
+    for (let i = 0; i < vec1.length; i++) {
+        sum += Math.pow(vec1[i] - vec2[i], 2);
+    }
+    return sum;
 }
-describe('intersectVertically', () => {
-  it('should return true for overlapping rectangles', () => {
-    const rect1: [number, number, number, number] = [0, 0, 2, 2];
-    const rect2: [number, number, number, number] = [1, 1, 3, 3];
-    expect(intersectVertically(rect1, rect2)).toBe(true);
-  });
+describe('SquaredEuclideanDistance', () => {
+    describe('test_standard_vectors', () => {
+        it('should calculate the squared distance correctly for typical vectors', () => {
+            const vec1 = [1, 2, 3];
+            const vec2 = [4, 5, 6];
+            const expectedResult = 27; // (3^2 + 3^2 + 3^2)
+            const result = squaredEuclideanDistance(vec1, vec2);
+            expect(result).toBe(expectedResult);
+        });
+    });
 
-  it('should return true for overlapping rectangles with negative coordinates', () => {
-    const rect1: [number, number, number, number] = [-1, -1, 1, 1];
-    const rect2: [number, number, number, number] = [0, 0, 2, 2];
-    expect(intersectVertically(rect1, rect2)).toBe(true);
-  });
+    describe('test_vectors_with_zeros', () => {
+        it('should handle vectors that include zero values', () => {
+            const vec1 = [0, 0, 0];
+            const vec2 = [0, 0, 0];
+            const expectedResult = 0;
+            const result = squaredEuclideanDistance(vec1, vec2);
+            expect(result).toBe(expectedResult);
+        });
+    });
 
-  it('should return true for partially overlapping rectangles vertically', () => {
-    const rect1: [number, number, number, number] = [0, 1, 2, 4];
-    const rect2: [number, number, number, number] = [1, 0, 3, 2];
-    expect(intersectVertically(rect1, rect2)).toBe(true);
-  });
+    describe('test_vectors_with_negative_values', () => {
+        it('should handle vectors that include negative values', () => {
+            const vec1 = [-1, -2, -3];
+            const vec2 = [-4, -5, -6];
+            const expectedResult = 27; // (3^2 + 3^2 + 3^2)
+            const result = squaredEuclideanDistance(vec1, vec2);
+            expect(result).toBe(expectedResult);
+        });
+    });
 
-  it('should return true for identical rectangles', () => {
-    const rect1: [number, number, number, number] = [0, 0, 2, 2];
-    const rect2: [number, number, number, number] = [0, 0, 2, 2];
-    expect(intersectVertically(rect1, rect2)).toBe(true);
-  });
-
-  it('should return true when one rectangle is completely inside the other', () => {
-    const rect1: [number, number, number, number] = [0, 0, 4, 4];
-    const rect2: [number, number, number, number] = [1, 1, 2, 2];
-    expect(intersectVertically(rect1, rect2)).toBe(true);
-  });
+    describe('test_single_element_vectors', () => {
+        it('should handle single element vectors', () => {
+            const vec1 = [5];
+            const vec2 = [-5];
+            const expectedResult = 100; // (10^2)
+            const result = squaredEuclideanDistance(vec1, vec2);
+            expect(result).toBe(expectedResult);
+        });
+    });
 });

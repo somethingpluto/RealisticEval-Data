@@ -1,38 +1,52 @@
 package org.real.temp;
 
-import junit.framework.TestCase;
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
-import java.util.ArrayList;
+import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import java.util.Arrays;
 import java.util.List;
 
-public class Tester extends TestCase {
+/**
+ * Test class for the findPlaceholders method.
+ */
+public class Tester {
 
-    // Assuming you have a method that needs testing, for example, findPlaceholders
-    public void testFindPlaceholders() {
-        String inputText = "This is a sample text with placeholders like {{ name }}, {{ age }}, and {{ address }}.";
-        List<String> expectedPlaceholders = new ArrayList<>();
-        expectedPlaceholders.add("{{ name }}");
-        expectedPlaceholders.add("{{ age }}");
-        expectedPlaceholders.add("{{ address }}");
-
-        List<String> actualPlaceholders = findPlaceholders(inputText);
-
-        assertEquals(expectedPlaceholders.size(), actualPlaceholders.size());
-        for (String expected : expectedPlaceholders) {
-            assertTrue(actualPlaceholders.contains(expected));
-        }
+    /**
+     * Test string with multiple placeholders.
+     */
+    @Test
+    public void testMultiplePlaceholders() {
+        String inputText = "Here are some placeholders: {{ placeholder1 }}, {{ placeholder2 }}, and {{ placeholder3 }}.";
+        List<String> expectedOutput = Arrays.asList("placeholder1", "placeholder2", "placeholder3");
+        assertEquals(expectedOutput, Answer.findPlaceholders(inputText));
     }
 
-    private List<String> findPlaceholders(String text) {
-        Pattern pattern = Pattern.compile("\\{\\{\\s*([a-zA-Z0-9_]+)\\s*\\}\\}");
-        Matcher matcher = pattern.matcher(text);
-        List<String> placeholders = new ArrayList<>();
+    /**
+     * Test string with no placeholders.
+     */
+    @Test
+    public void testNoPlaceholders() {
+        String inputText = "This string has no placeholders.";
+        List<String> expectedOutput = Arrays.asList();
+        assertEquals(expectedOutput, Answer.findPlaceholders(inputText));
+    }
 
-        while (matcher.find()) {
-            placeholders.add(matcher.group(1));
-        }
+    /**
+     * Test string with a single placeholder.
+     */
+    @Test
+    public void testSinglePlaceholder() {
+        String inputText = "The only placeholder is {{ singlePlaceholder }}.";
+        List<String> expectedOutput = Arrays.asList("singlePlaceholder");
+        assertEquals(expectedOutput, Answer.findPlaceholders(inputText));
+    }
 
-        return placeholders;
+    /**
+     * Test string with placeholders that have extra spaces.
+     */
+    @Test
+    public void testPlaceholderWithSpaces() {
+        String inputText = "Placeholders with spaces: {{  placeholder_with_spaces  }} and {{ placeholder2 }}.";
+        List<String> expectedOutput = Arrays.asList("placeholder_with_spaces", "placeholder2");
+        assertEquals(expectedOutput, Answer.findPlaceholders(inputText));
     }
 }

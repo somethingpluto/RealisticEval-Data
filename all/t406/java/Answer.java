@@ -1,34 +1,40 @@
 package org.real.temp;
 
-public class Answer {
-    
+public final class Answer {
+
+    private static final String RESET = "\033[0m";
+    private static final String RED = "\033[91m";
+    private static final String GREEN = "\033[92m";
+    private static final String BLUE = "\033[94m";
+    private static final String YELLOW = "\033[93m";
+    private static final String MAGENTA = "\033[95m";
+    private static final String CYAN = "\033[96m";
+
+    private Answer() {
+        // Private constructor to prevent instantiation
+    }
+
     public static String red(String text) {
-        // Implement method to return text in red color
-        return "\033[31m" + text + "\033[0m";
+        return RED + text + RESET;
     }
 
     public static String green(String text) {
-        // Implement method to return text in green color
-        return "\033[32m" + text + "\033[0m";
+        return GREEN + text + RESET;
     }
 
     public static String blue(String text) {
-        // Implement method to return text in blue color
-        return "\033[34m" + text + "\033[0m";
+        return BLUE + text + RESET;
     }
 
     public static String yellow(String text) {
-        // Implement method to return text in yellow color
-        return "\033[33m" + text + "\033[0m";
+        return YELLOW + text + RESET;
     }
 
     public static String magenta(String text) {
-        // Implement method to return text in magenta color
-        return "\033[35m" + text + "\033[0m";
+        return MAGENTA + text + RESET;
     }
 
     public static String cyan(String text) {
-        // Implement method to return text in cyan color
-        return "\033[36m" + text + "\033[0m";
+        return CYAN + text + RESET;
     }
 }

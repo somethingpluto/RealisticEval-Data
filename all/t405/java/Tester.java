@@ -1,54 +1,52 @@
 package org.real.temp;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
+
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
 
 public class Tester {
 
     @Test
-    public void testRemovePartsOfString() {
-        // Test case 1
-        assertEquals("AbCde5678", removePartsOfStrings("1234AbCde5678"));
-
-        // Test case 2
-        assertEquals("HelloWorld", removePartsOfStrings("HelloWorld"));
-
-        // Test case 3
-        assertEquals("JavaIsFun", removePartsOfStrings("JavaIsFun"));
-
-        // Test case 4
-        assertEquals("", removePartsOfStrings("1234567890"));
-
-        // Test case 5
-        assertEquals("", removePartsOfStrings("!@#$%^&*()_+"));
-
-        // Test case 6
-        assertEquals("ABCD", removePartsOfStrings("ABCD"));
+    public void testCase3() {
+        // Test with a string that has no uppercase letters
+        List<String> result = Answer.removePartsOfStrings("abcdefg");
+        assertEquals("[abcdefg]", result.toString());
     }
 
-    private String removePartsOfStrings(String... strings) {
-        if (strings == null || strings.length == 0) {
-            return "";
-        }
+    @Test
+    public void testCase4() {
+        // Test with a string that has no lowercase letters
+        List<String> result = Answer.removePartsOfStrings("ABCDEFG");
+        assertEquals("[ABCDEFG]", result.toString());
+    }
 
-        String input = strings[0];
-        int startIndex = -1;
-        int endIndex = -1;
+    @Test
+    public void testCase5() {
+        // Test with a string that has mixed cases
+        List<String> result = Answer.removePartsOfStrings("1234AbCde5678");
+        assertEquals("[AbCde5678]", result.toString());
+    }
 
-        for (int i = 0; i < input.length(); i++) {
-            char c = input.charAt(i);
-            if (Character.isUpperCase(c)) {
-                startIndex = i;
-            } else if (Character.isLowerCase(c)) {
-                endIndex = i;
-                break;
-            }
-        }
+    @Test
+    public void testCase6() {
+        // Test with an empty string
+        List<String> result = Answer.removePartsOfStrings("");
+        assertEquals("[]", result.toString());
+    }
 
-        if (startIndex == -1 || endIndex == -1) {
-            return input;
-        }
+    @Test
+    public void testCase7() {
+        // Test with a string that has only one uppercase letter
+        List<String> result = Answer.removePartsOfStrings("X");
+        assertEquals("[X]", result.toString());
+    }
 
-        return input.substring(startIndex, endIndex + 1);
+    @Test
+    public void testCase8() {
+        // Test with a string that has only one lowercase letter
+        List<String> result = Answer.removePartsOfStrings("y");
+        assertEquals("[y]", result.toString());
     }
 }

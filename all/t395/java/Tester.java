@@ -1,35 +1,64 @@
-import static org.junit.Assert.assertEquals;
-import org.junit.Test;
+package org.real.temp;
 
+import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+
+import java.util.ArrayList;
+import java.util.List;
+import static org.real.temp.Answer.*;
 public class Tester {
 
     @Test
-    public void testSumCalibrationValues() {
-        // Test data
-        String[] calibrationDocument = {"1abc2", "3def4ghi5"};
-        
-        // Call the method under test
-        int result = sumCalibrationValues(calibrationDocument);
-        
-        // Assert the expected outcome
-        assertEquals(100, result);  // Assuming that 12 + 45 should give 57
+    public void testBasicCalculations() {
+        // Test with a simple input where lines contain at least two digits
+        List<String> document = new ArrayList<>();
+        document.add("Reading 1234 calibration");
+        document.add("Measure 5678 complete");
+        document.add("End of data 91011");
+
+        int expectedSum = 163;
+        int actualSum = sumCalibrationValues(document);
+
+        assertEquals(expectedSum, actualSum);
     }
 
-    /**
-     * Sums up calibration values extracted from the document.
-     * Each calibration value is formed by combining the first and last digits of numbers found in each line
-     * into a two-digit number.
-     *
-     * @param calibrationDocument An array of strings, each representing a line of text.
-     * @return The total sum of all calibration values.
-     */
-    private int sumCalibrationValues(String[] calibrationDocument) {
-        int sum = 0;
-        for (String line : calibrationDocument) {
-            int firstDigit = Character.getNumericValue(line.charAt(0));
-            int lastDigit = Character.getNumericValue(line.charAt(line.length() - 1));
-            sum += firstDigit * 10 + lastDigit;
-        }
-        return sum;
+    @Test
+    public void testNoDigits() {
+        // Test lines with no digits
+        List<String> document = new ArrayList<>();
+        document.add("No numbers here");
+        document.add("Still no numbers");
+
+        int expectedSum = 0;
+        int actualSum = sumCalibrationValues(document);
+
+        assertEquals(expectedSum, actualSum);
+    }
+
+    @Test
+    public void testEmptyLines() {
+        // Test with empty lines or lines with spaces
+        List<String> document = new ArrayList<>();
+        document.add("");
+        document.add("   ");
+
+        int expectedSum = 0;
+        int actualSum = sumCalibrationValues(document);
+
+        assertEquals(expectedSum, actualSum);
+    }
+
+    @Test
+    public void testMixedContent() {
+        // Test with a mixture of valid and invalid lines
+        List<String> document = new ArrayList<>();
+        document.add("Good line 1524 end");
+        document.add("Bad line");
+        document.add("Another good line 7681");
+
+        int expectedSum = 85;
+        int actualSum = sumCalibrationValues(document);
+
+        assertEquals(expectedSum, actualSum);
     }
 }

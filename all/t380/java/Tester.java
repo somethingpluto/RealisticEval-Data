@@ -1,9 +1,9 @@
 package org.real.temp;
+
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.real.temp.Answer.*;
 public class Tester {
-
     @Test
     public void testCompleteTime() {
         // Test with full values provided for days, hours, minutes, and seconds

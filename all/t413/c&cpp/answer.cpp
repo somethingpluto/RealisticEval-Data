@@ -1,24 +1,22 @@
 #include <iostream>
 #include <vector>
+#include <string>
+#include <algorithm>
 
-bool isPalindrome(int num) {
-    int originalNum = num;
-    int reversedNum = 0;
-
-    while(num != 0) {
-        int digit = num % 10;
-        reversedNum = reversedNum * 10 + digit;
-        num /= 10;
-    }
-
-    return originalNum == reversedNum;
+// Function to check if a string is a palindrome
+bool is_palindrome(const std::string& str) {
+    std::string reversed_str = str;
+    std::reverse(reversed_str.begin(), reversed_str.end());
+    return str == reversed_str;
 }
 
-std::vector<int> getPalindromeList(int n) {
+// Function to generate a list of palindrome numbers up to n
+std::vector<int> get_palindrome_list(int n) {
     std::vector<int> palindromes;
 
-    for(int i=1; i<=n; i++) {
-        if(isPalindrome(i)) {
+    for (int i = 0; i < n; ++i) {
+        std::string num_str = std::to_string(i);
+        if (is_palindrome(num_str)) {
             palindromes.push_back(i);
         }
     }

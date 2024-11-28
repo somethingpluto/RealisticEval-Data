@@ -1,22 +1,41 @@
-import * as fs from 'fs';
-
 function formatText(inputFile: string = 'input.txt', outputFile: string = 'output.txt'): void {
     try {
-        // Read the content of the input file
-        const data: string = fs.readFileSync(inputFile, 'utf8');
+        // Open the input file in read mode
+        const fs = require('fs').promises;
+        const content = fs.readFile(inputFile, 'utf8');
 
-        // Process the data to remove newlines and add a space
-        const processedContent: string = data.split('\n').map(line => line.trim()).join(' ');
+        // Read the content of the input file line by line
+        content.then((data) => {
+            const lines = data.split('\n');
 
-        // Write the processed content to the output file
-        fs.writeFileSync(outputFile, processedContent);
+            // Process each line
+            const processedLines: string[] = [];
+            for (const line of lines) {
+                // Remove newline characters and add a space
+                const processedLine = line.trimEnd();
+                processedLines.push(processedLine);  // Append the processed line
+            }
 
-        console.log(`Line breaks removed and spaces added. Output written to ${outputFile}`);
+            // Join the processed lines with spaces
+            const contentWithoutNewlines = processedLines.join(' ');
+
+            // Open the output file in write mode
+            fs.writeFile(outputFile, contentWithoutNewlines)
+                .then(() => {
+                    console.log("Line breaks removed and spaces added. Output written to", outputFile);
+                })
+                .catch((error) => {
+                    console.error("Error writing to output file:", error);
+                });
+        })
+        .catch((error) => {
+            if (error.code === 'ENOENT') {
+                console.error("Input file not found.");
+            } else {
+                console.error("Error reading input file:", error);
+            }
+        });
     } catch (error) {
-        if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-            console.error('Input file not found.');
-        } else {
-            console.error('An error occurred:', (error as Error).message);
-        }
+        console.error("An unexpected error occurred:", error);
     }
 }

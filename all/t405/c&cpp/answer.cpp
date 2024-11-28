@@ -1,28 +1,38 @@
+#include <iostream>
+#include <vector>
 #include <string>
-#include <cctype>
+#include <cctype> // For isupper() and islower()
 
-std::string remove_parts_of_string(const std::string &str) {
-    int start = -1;
-    for (int i = 0; i < str.size(); ++i) {
-        if (isupper(str[i])) {
-            start = i;
-            break;
+// Function to find the index of the first character that satisfies the predicate
+int find_index(const std::string& str, bool (*predicate)(int)) {
+    for (size_t i = 0; i < str.length(); ++i) {
+        if (predicate(str[i])) {
+            return static_cast<int>(i);
         }
     }
+    return -1; // Return -1 if no matching character is found
+}
 
-    if (start == -1)
-        return "";
+// Function to remove parts of the string based on the criteria
+std::vector<std::string> remove_parts_of_string(const std::vector<std::string>& strings) {
+    std::vector<std::string> results;
+    for (const auto& string : strings) {
+        std::string modifiedString = string;
 
-    int end = -1;
-    for (int i = start + 1; i < str.size(); ++i) {
-        if (islower(str[i])) {
-            end = i;
-            break;
+        // Remove all characters before the first uppercase letter
+        int upperIndex = find_index(modifiedString, ::isupper);
+        if (upperIndex != -1) {
+            modifiedString = modifiedString.substr(upperIndex);
         }
+
+        // Remove all characters before the first lowercase letter
+        int lowerIndex = find_index(modifiedString, ::islower);
+        if (lowerIndex != -1) {
+            modifiedString = modifiedString.substr(lowerIndex - 1);
+        }
+
+        results.push_back(modifiedString);
     }
 
-    if (end == -1)
-        return "";
-
-    return str.substr(start);
+    return results;
 }

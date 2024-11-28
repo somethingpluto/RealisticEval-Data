@@ -4,26 +4,26 @@ TEST_CASE("Test Length of LIS", "[LIS]") {
     }
 
     SECTION("Single element") {
-        REQUIRE(length_of_lis({7}) == 1);
+        REQUIRE(length_of_LIS({7}) == 1);
     }
 
     SECTION("Strictly increasing sequence") {
-        REQUIRE(length_of_lis({1, 2, 3, 4, 5}) == 5);
+        REQUIRE(length_of_LIS({1, 2, 3, 4, 5}) == 5);
     }
 
     SECTION("Strictly decreasing sequence") {
-        REQUIRE(length_of_lis({5, 4, 3, 2, 1}) == 1);
+        REQUIRE(length_of_LIS({5, 4, 3, 2, 1}) == 1);
     }
 
     SECTION("Complex sequence") {
-        REQUIRE(length_of_lis({10, 9, 2, 5, 3, 7, 101, 18}) == 4);
+        REQUIRE(length_of_LIS({10, 9, 2, 5, 3, 7, 101, 18}) == 4);
     }
 
     SECTION("All equal elements") {
-        REQUIRE(length_of_lis({2, 2, 2, 2}) == 1);
+        REQUIRE(length_of_LIS({2, 2, 2, 2}) == 1);
     }
 
     SECTION("With negative numbers") {
-        REQUIRE(length_of_lis({-1, -2, -3, 0, 1, 2}) == 4);
+        REQUIRE(length_of_LIS({-1, -2, -3, 0, 1, 2}) == 4);
     }
 }

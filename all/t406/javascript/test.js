@@ -36,4 +36,14 @@ describe('Colors', () => {
       expect(Colors.cyan(inputText)).toEqual(expectedOutput);
     });
   });
+
+  describe('Combined Colors', () => {
+    it('test_combined_colors', () => {
+      const inputTextRed = Colors.red('Red');
+      const inputTextBlue = Colors.blue('Blue');
+      const inputTextCombined = `${inputTextRed} and ${inputTextBlue}`;
+      const expectedOutput = '\x1b[91mRed\x1b[0m and \x1b[94mBlue\x1b[0m';
+      expect(inputTextCombined).toEqual(expectedOutput);
+    });
+  });
 });

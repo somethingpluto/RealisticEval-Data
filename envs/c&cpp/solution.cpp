@@ -1,55 +1,18 @@
 #include <iostream>
-#include <fstream>
 #include <vector>
-#include <string>
-#include <map>
-#include <sstream>
+#include <stdexcept>
 
-// Function to read sequences from a file and return them as a vector of vectors.
-std::vector<std::vector<int>> read_sequences_from_file(const std::string& filename) {
-    std::vector<std::vector<int>> sequences;
-    std::ifstream file(filename);
-    if (!file.is_open()) {
-        std::cerr << "Error opening file: " << filename << std::endl;
-        return sequences;
+double squared_euclidean_distance(const std::vector<double>& vec1, const std::vector<double>& vec2) {
+    // Check if the vectors are of the same length
+    if (vec1.size() != vec2.size()) {
+        throw std::invalid_argument("Vectors must be of the same length");
     }
 
-    std::string line;
-    while (std::getline(file, line)) {
-        std::istringstream iss(line);
-        std::vector<int> seq;
-        std::string number;
-        while (std::getline(iss, number, ',')) {
-            seq.push_back(std::stoi(number));
-        }
-        sequences.push_back(seq);
+    double distanceSquared = 0.0;
+    // Compute the squared Euclidean distance
+    for (size_t i = 0; i < vec1.size(); ++i) {
+        double diff = vec1[i] - vec2[i];
+        distanceSquared += diff * diff;
     }
-    file.close();
-    return sequences;
-}
-
-// Function to check if the given sequence is a Munodi sequence (arithmetic progression).
-bool is_munodi_sequence(const std::vector<int>& sequence) {
-    if (sequence.size() < 2) {
-        return false; // A sequence with less than 2 elements cannot be a Munodi sequence
-    }
-
-    int common_difference = sequence[1] - sequence[0];
-    for (size_t i = 2; i < sequence.size(); ++i) {
-        if (sequence[i] - sequence[i - 1] != common_difference) {
-            return false; // Found a different difference, not a Munodi sequence
-        }
-    }
-    return true; // All differences are the same
-}
-
-// Function to read sequences from a file and determine if each is a Munodi sequence.
-std::map<std::vector<int>, bool> check_sequences(const std::string& filename) {
-    std::vector<std::vector<int>> sequences = read_sequences_from_file(filename);
-    std::map<std::vector<int>, bool> results;
-
-    for (const auto& seq : sequences) {
-        results[seq] = is_munodi_sequence(seq);
-    }
-    return results;
+    return distanceSquared;
 }

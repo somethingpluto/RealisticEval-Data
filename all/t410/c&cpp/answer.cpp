@@ -1,30 +1,20 @@
-#include <iostream>
 #include <Eigen/Dense>
+#include <iostream>
 
-bool check_xor_sum(const Eigen::MatrixXd &combination) {
-    // Assuming that the required XOR sum values are stored in a vector or array,
-    // and you have defined them before calling this function.
-    std::vector<int> requiredXorSum = { /* ... */ };
+// Function to check XOR sums of specific columns in a given combination matrix.
+bool check_xor_sum(const Eigen::ArrayXi& combination) {
+    // Ensure that combination is an array of integers (Eigen handles this internally).
 
-    // Get the number of rows and columns in the combination matrix
-    int numRows = combination.rows();
-    int numCols = combination.cols();
+    // Calculate XOR sums for specified columns
+    Eigen::ArrayXi xor_sum_0_3_6 = (combination.col(0) ^ combination.col(3) ^ combination.col(6)).eval();
+    Eigen::ArrayXi xor_sum_1_4_7 = (combination.col(1) ^ combination.col(4) ^ combination.col(7)).eval();
+    Eigen::ArrayXi xor_sum_2_5 = (combination.col(2) ^ combination.col(5)).eval();
 
-    // Iterate over each column in the combination matrix
-    for(int col = 0; col < numCols; ++col) {
-        int xorSum = 0;
-        
-        // Calculate the XOR sum of the current column
-        for(int row = 0; row < numRows; ++row) {
-            xorSum ^= combination(row, col);
-        }
+    // Check if the XOR sums match the expected values
+    bool all_match = true;
+    all_match &= (xor_sum_0_3_6 == 0x6b).all();
+    all_match &= (xor_sum_1_4_7 == 0x76).all();
+    all_match &= (xor_sum_2_5 == 0x12).all();
 
-        // Check if the calculated XOR sum matches the required XOR sum
-        if(xorSum != requiredXorSum[col]) {
-            return false;
-        }
-    }
-
-    // If all columns pass the XOR sum check, return true
-    return true;
+    return all_match;
 }

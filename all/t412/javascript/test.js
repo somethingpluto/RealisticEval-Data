@@ -1,12 +1,10 @@
-const fs = require('fs');
-const path = require('path');
-const { tmpdir } = require('os');
 
-// Mock the formatText function (assuming it's defined elsewhere)
+import fs from 'fs'
+import path from 'path';
+import { tmpdir } from 'os';
 jest.mock('./formatText', () => ({
     formatText: jest.fn()
 }));
-
 
 describe('TestFormatText', () => {
     afterEach(() => {

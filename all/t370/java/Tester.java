@@ -1,4 +1,5 @@
 package org.real.temp;
+
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
@@ -40,5 +41,4 @@ public class Tester {
         // Test case 6: Out of bounds case (index too large)
         assertThrows(IllegalArgumentException.class, () -> decompose(100, new int[]{3, 4, 5}));
     }
-
 }

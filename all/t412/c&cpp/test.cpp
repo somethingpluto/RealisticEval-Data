@@ -1,4 +1,4 @@
-TEST_CASE("Testformat_text", "[format_text]") {
+TEST_CASE("TestFormatText", "[formatText]") {
     SECTION("test_basic_text") {
         // Test with basic text
         std::string input_text = "This is line one.\nThis is line two.\nThis is line three.";
@@ -14,8 +14,8 @@ TEST_CASE("Testformat_text", "[format_text]") {
         input_file << input_text;
         input_file.close();
 
-        // Call the format_text function
-        format_text(input_file_path, output_file_path);
+        // Call the formatText function
+        formatText(input_file_path, output_file_path);
 
         // Read the output file
         std::ifstream output_file(output_file_path);
@@ -45,8 +45,8 @@ TEST_CASE("Testformat_text", "[format_text]") {
         input_file << input_text;
         input_file.close();
 
-        // Call the format_text function
-        format_text(input_file_path, output_file_path);
+        // Call the formatText function
+        formatText(input_file_path, output_file_path);
 
         // Read the output file
         std::ifstream output_file(output_file_path);
@@ -76,8 +76,8 @@ TEST_CASE("Testformat_text", "[format_text]") {
         input_file << input_text;
         input_file.close();
 
-        // Call the format_text function
-        format_text(input_file_path, output_file_path);
+        // Call the formatText function
+        formatText(input_file_path, output_file_path);
 
         // Read the output file
         std::ifstream output_file(output_file_path);
@@ -107,8 +107,8 @@ TEST_CASE("Testformat_text", "[format_text]") {
         input_file << input_text;
         input_file.close();
 
-        // Call the format_text function
-        format_text(input_file_path, output_file_path);
+        // Call the formatText function
+        formatText(input_file_path, output_file_path);
 
         // Read the output file
         std::ifstream output_file(output_file_path);

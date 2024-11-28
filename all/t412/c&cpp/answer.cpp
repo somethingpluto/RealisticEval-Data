@@ -55,8 +55,3 @@ void formatText(const std::string& input_file = "input.txt", const std::string& 
         std::cerr << e.what() << std::endl;
     }
 }
-
-int main() {
-    formatText();
-    return 0;
-}

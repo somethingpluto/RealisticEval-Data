@@ -1,22 +1,25 @@
 #include <iostream>
-using namespace std;
+#include <vector>
+#include <array>
 
-int calculateTotalSeconds(int time[], int size) {
-    if(size > 4 || size <= 0){
-        cout << "Invalid input! Please enter an array with elements between 1 and 4.";
-        return -1;
-    }
+int calculate_total_seconds(const std::vector<int>& time) {
+    const int SECONDS_PER_DAY = 86400;
+    const int SECONDS_PER_HOUR = 3600;
+    const int SECONDS_PER_MINUTE = 60;
 
-    int total_seconds = 0;
-    for(int i=0; i<size; ++i){
-        switch(i){
-            case 0: total_seconds += time[i]*24*60*60; break;
-            case 1: total_seconds += time[i]*60*60; break;
-            case 2: total_seconds += time[i]*60; break;
-            case 3: total_seconds += time[i]; break;
-            default: break;
-        }
-    }
+    // Unpacking the time with defaults
+    int days = 0, hours = 0, minutes = 0, seconds = 0;
+    if (time.size() > 0) days = time[0];
+    if (time.size() > 1) hours = time[1];
+    if (time.size() > 2) minutes = time[2];
+    if (time.size() > 3) seconds = time[3];
+
+    int total_seconds = (
+        days * SECONDS_PER_DAY +
+        hours * SECONDS_PER_HOUR +
+        minutes * SECONDS_PER_MINUTE +
+        seconds
+    );
 
     return total_seconds;
 }
