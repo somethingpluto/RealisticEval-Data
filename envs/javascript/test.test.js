@@ -1,45 +1,65 @@
-function squaredEuclideanDistance(vec1, vec2) {
-    if (vec1.length !== vec2.length) {
-        throw new Error('Vectors must have same length');
+function sanitizeData(data, keyToRemove = null) {
+    // Recursively sanitize an object by removing specific keys.
+    if (keyToRemove === null) {
+        keyToRemove = new Set([
+            "email", "pc_conflicts", "metadata", 
+            "eligible_student_paper_prize", "talk_poster", 
+            "submitted_at", "decision", "status", 
+            "submitted", "submission"
+        ]);
     }
 
-    let sum = 0;
-    for(let i=0; i<vec1.length; i++) {
-        sum += Math.pow(vec1[i] - vec2[i], 2);
+    if (typeof data === 'object' && !Array.isArray(data) && data !== null) {
+        const result = {};
+        for (const [key, value] of Object.entries(data)) {
+            if (!keyToRemove.has(key)) {
+                result[key] = sanitizeData(value, keyToRemove);
+            }
+        }
+        return result;
+    } else if (Array.isArray(data)) {
+        return data.map(value => sanitizeData(value, keyToRemove));
+    } else {
+        return data;
     }
-
-    return sum;
 }
-describe('SquaredEuclideanDistance', () => {
-    it('test standard vectors', () => {
-        const vec1 = [1, 2, 3];
-        const vec2 = [4, 5, 6];
-        const expectedResult = 27; // (3^2 + 3^2 + 3^2)
-        const result = squaredEuclideanDistance(vec1, vec2);
-        expect(result).toBe(expectedResult);
-    });
+describe('TestSanitizeData', () => {
+  it('test_empty_dict', () => {
+      // Test with an empty dictionary.
+      const data = {};
+      const keyToRemove = ["email", "metadata"];
 
-    it('test vectors with zeros', () => {
-        const vec1 = [0, 0, 0];
-        const vec2 = [0, 0, 0];
-        const expectedResult = 0;
-        const result = squaredEuclideanDistance(vec1, vec2);
-        expect(result).toBe(expectedResult);
-    });
+      const expected = {};
+      expect(sanitizeData(data, keyToRemove)).toEqual(expected);
+  });
 
-    it('test vectors with negative values', () => {
-        const vec1 = [-1, -2, -3];
-        const vec2 = [-4, -5, -6];
-        const expectedResult = 27; // (3^2 + 3^2 + 3^2)
-        const result = squaredEuclideanDistance(vec1, vec2);
-        expect(result).toBe(expectedResult);
-    });
+  it('test_remove_default_keys', () => {
+      // Test removing default keys from a nested structure.
+      const data = {
+          name: "John Doe",
+          email: "johndoe@example.com",
+          metadata: { submitted_at: "2021-07-10", status: "pending" },
+          comments: ["Good", "Needs review"]
+      };
+      const keyToRemove = ["email", "metadata"];
+      const expected = {
+          name: "John Doe",
+          comments: ["Good", "Needs review"]
+      };
+      expect(sanitizeData(data, keyToRemove)).toEqual(expected);
+  });
 
-    it('test single element vectors', () => {
-        const vec1 = [5];
-        const vec2 = [-5];
-        const expectedResult = 100; // (10^2)
-        const result = squaredEuclideanDistance(vec1, vec2);
-        expect(result).toBe(expectedResult);
-    });
+  it('test_specified_key_to_remove', () => {
+      // Test removing a specified key from the dictionary.
+      const data = {
+          name: "John Doe",
+          location: "Earth",
+          email: "johndoe@example.com"
+      };
+      const expected = {
+          name: "John Doe",
+          location: "Earth"
+      };
+      expect(sanitizeData(data, keyToRemove: ["email"])).toEqual(expected);
+  });
 });

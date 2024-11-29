@@ -1,28 +1,35 @@
 #include <iostream>
 #include <string>
-#include <sstream>
-#include <vector>
+#include <boost/asio.hpp>
 
-bool isCompliantIP(const std::string& ip) {
-    // Split the IP address by '.'
-    std::istringstream iss(ip);
-    std::vector<int> parts;
-    std::string part;
+// Function to check if the given IP address is compliant based on predefined criteria.
+bool is_compliant_ip(const std::string& ip) {
+    try {
+        // Convert the input string to an IP address object
+        boost::asio::ip::address ip_obj = boost::asio::ip::make_address(ip);
 
-    while (std::getline(iss, part, '.')) {
-        if (part.empty()) return false;  // Empty segment
+        // Check compliance criteria: for example, whether the IP is private
+        // Note: In Boost.Asio, there is no direct equivalent to `is_private` from Python's ipaddress,
+        // so we need to check if the IP falls within private ranges manually.
+        std::string ip_str = ip_obj.to_string();
+        // Define private IP ranges
+        bool is_private = false;
 
-        // Convert part to integer
-        int num = std::stoi(part);
+        // IPv4 private ranges
+        if (ip_obj.is_v4()) {
+            is_private = (ip_str.find("10.") == 0 ||
+                          (ip_str.find("172.") == 0 && ip_str.find(".16.") != std::string::npos && ip_str.find(".31.") != std::string::npos) ||
+                          ip_str.find("192.168.") == 0);
+        }
 
-        // Check if the number is within the valid range [0, 255]
-        if (num < 0 || num > 255) return false;
+        // IPv6 private ranges (limited to commonly used ones)
+        if (ip_obj.is_v6()) {
+            is_private = (ip_str.find("fd") == 0 || ip_str.find("fe80:") == 0);
+        }
 
-        parts.push_back(num);
+        return is_private;
+    } catch (const std::exception& e) {
+        // If the input is not a valid IP address, it cannot be compliant
+        return false;
     }
-
-    // There should be exactly four segments
-    if (parts.size() != 4) return false;
-
-    return true;
 }

@@ -1,57 +1,43 @@
 function spiralTraversal(matrix: number[][]): number[] {
-    /**
-     * Traverse a given m x n matrix in a spiral order and return all elements as an array.
-     *
-     * The function starts at the top-left corner of the matrix and traverses it in a
-     * clockwise spiral order, moving right across the top row, down the right column,
-     * left across the bottom row, and up the left column, repeating this process
-     * until all elements are traversed.
-     *
-     * @param matrix - A 2D array representing the matrix with m rows and n columns.
-     * @returns An array of numbers representing the elements of the matrix
-     *          in the order they were traversed.
-     */
-    if (!matrix.length) {
+  if (matrix.length === 0) {
       return [];
-    }
+  }
 
-    const m = matrix.length;
-    const n = matrix[0].length;
-    let rowStart = 0;
-    let rowEnd = m - 1;
-    let colStart = 0;
-    let colEnd = n - 1;
-    const result: number[] = [];
+  const m: number = matrix.length;
+  const n: number = matrix[0].length;
+  let rowStart: number = 0, rowEnd: number = m - 1;
+  let colStart: number = 0, colEnd: number = n - 1;
+  let result: number[] = [];
 
-    while (rowStart <= rowEnd && colStart <= colEnd) {
+  while (rowStart <= rowEnd && colStart <= colEnd) {
       // Traverse Right along the top row
       for (let j = colStart; j <= colEnd; j++) {
-        result.push(matrix[rowStart][j]);
+          result.push(matrix[rowStart][j]);
       }
       rowStart++;
 
       // Traverse Down along the right column
       for (let i = rowStart; i <= rowEnd; i++) {
-        result.push(matrix[i][colEnd]);
+          result.push(matrix[i][colEnd]);
       }
       colEnd--;
 
       // Traverse Left along the bottom row, if still within bounds
       if (rowStart <= rowEnd) {
-        for (let j = colEnd; j >= colStart; j--) {
-          result.push(matrix[rowEnd][j]);
-        }
-        rowEnd--;
+          for (let j = colEnd; j >= colStart; j--) {
+              result.push(matrix[rowEnd][j]);
+          }
+          rowEnd--;
       }
 
       // Traverse Up along the left column, if still within bounds
       if (colStart <= colEnd) {
-        for (let i = rowEnd; i >= rowStart; i--) {
-          result.push(matrix[i][colStart]);
-        }
-        colStart++;
+          for (let i = rowEnd; i >= rowStart; i--) {
+              result.push(matrix[i][colStart]);
+          }
+          colStart++;
       }
-    }
-
-    return result;
   }
+
+  return result;
+}

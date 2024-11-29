@@ -8,7 +8,7 @@ struct TreeNode {
     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
 };
 
-std::vector<double> averageOfLevels(TreeNode* root) {
+std::vector<double> average_of_levels(TreeNode* root) {
     std::vector<double> result;
     if (!root)
         return result;

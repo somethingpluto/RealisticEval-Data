@@ -1,7 +1,7 @@
-const csvParser = require('csv-parser');
-const createObjectCsvWriter = require('csv-writer').createObjectCsvWriter;
-const fs = require('fs');
-const path = require('path');
+import csvParser from 'csv-parser';
+import { createObjectCsvWriter } from 'csv-writer';
+import fs from 'fs';
+import path from 'path';
 
 async function processCSV(filePath, outputPath) {
     /**

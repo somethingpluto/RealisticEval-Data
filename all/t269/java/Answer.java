@@ -1,41 +1,33 @@
 package org.real.temp;
-
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-
 public class Answer {
-
     /**
-     * Check if the given IP address is compliant based on predefined criteria.
-     * 
-     * @param ip The IP address in string format.
-     * @return true if the IP is compliant (private), false otherwise.
+     * 检查IP地址是否符合要求，返回true表示私人IP地址，false表示公共IP或无效IP
      */
     public static boolean isCompliantIP(String ip) {
-        try {
-            // Convert the input string to an InetAddress object
-            InetAddress ipObj = InetAddress.getByName(ip);
-
-            // Check compliance criteria: for example, whether the IP is private
-            // Note: Java does not have a direct equivalent of ipaddress.is_private,
-            // so we use a workaround to determine if the IP is private.
-            byte[] addressBytes = ipObj.getAddress();
-            if (ipObj.isSiteLocalAddress()) {
-                // Check if it's a private IP address based on the byte values
-                return (addressBytes[0] == -10 || // 10.0.0.0/8
-                        (addressBytes[0] == -17 && addressBytes[1] == -17) || // 172.16.0.0/12
-                        (addressBytes[0] == -85 && addressBytes[1] == -96)); // 192.168.0.0/16
-            }
-            return false;
-        } catch (UnknownHostException e) {
-            // If the input is not a valid IP address, it cannot be compliant
-            return false;
+        // 正则表达式验证IP格式是否合法
+        String regex =
+                "^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$";
+        if (!ip.matches(regex)) {
+            return false; // 非法的IP格式
         }
+
+        // 如果是合法IP，判断是否为私人IP
+        String[] parts = ip.split("\\.");
+        int firstByte = Integer.parseInt(parts[0]);
+        int secondByte = Integer.parseInt(parts[1]);
+
+        // 检查私人IP地址的范围
+        if ((firstByte == 10) ||
+                (firstByte == 172 && secondByte >= 16 && secondByte <= 31) ||
+                (firstByte == 192 && secondByte == 168)) {
+            return true;  // 属于私人IP地址
+        }
+
+        return false;  // 公共IP地址
     }
 
     public static void main(String[] args) {
-        // Example usage
-        String ipAddress = "192.168.1.1";
-        System.out.println("Is the IP address compliant? " + isCompliantIP(ipAddress));
+        System.out.println(isCompliantIP("192.168.1.1"));  // true
+        System.out.println(isCompliantIP("256.256.256.256"));  // false
     }
 }

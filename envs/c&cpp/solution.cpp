@@ -1,18 +1,34 @@
 #include <iostream>
+#include <string>
 #include <vector>
-#include <stdexcept>
+#include <nlohmann/json.hpp>
 
-double squared_euclidean_distance(const std::vector<double>& vec1, const std::vector<double>& vec2) {
-    // Check if the vectors are of the same length
-    if (vec1.size() != vec2.size()) {
-        throw std::invalid_argument("Vectors must be of the same length");
-    }
+using json = nlohmann::json;
 
-    double distanceSquared = 0.0;
-    // Compute the squared Euclidean distance
-    for (size_t i = 0; i < vec1.size(); ++i) {
-        double diff = vec1[i] - vec2[i];
-        distanceSquared += diff * diff;
+// Function to sanitize a JSON object by removing specific keys.
+json sanitize_data(const json& data, const std::set<std::string>* key_to_remove = nullptr) {
+    static const std::set<std::string> default_keys_to_remove = {
+        "email", "pc_conflicts", "metadata", "eligible_student_paper_prize", "talk_poster",
+        "submitted_at", "decision", "status", "submitted", "submission"
+    };
+
+    const std::set<std::string>& keys_to_remove = (key_to_remove == nullptr) ? default_keys_to_remove : *key_to_remove;
+
+    if (data.is_object()) {
+        json sanitized;
+        for (const auto& item : data.items()) {
+            if (keys_to_remove.find(item.key()) == keys_to_remove.end()) {
+                sanitized[item.key()] = sanitize_data(item.value());
+            }
+        }
+        return sanitized;
+    } else if (data.is_array()) {
+        json sanitized;
+        for (const auto& value : data) {
+            sanitized.push_back(sanitize_data(value));
+        }
+        return sanitized;
+    } else {
+        return data;
     }
-    return distanceSquared;
 }

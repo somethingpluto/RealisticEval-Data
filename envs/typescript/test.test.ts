@@ -1,59 +1,59 @@
-function squaredEuclideanDistance(vec1: number[], vec2: number[]): number {
-    /**
-     * Compute the squared Euclidean distance between two vectors.
-     *
-     * @param {number[]} vec1 - First vector.
-     * @param {number[]} vec2 - Second vector.
-     * @returns {number} - Euclidean distance between vec1 and vec2.
-     */
-    if (vec1.length !== vec2.length) {
-        throw new Error("Vectors must have the same length");
+function invertDictionary(originalDict: Record<string, string | string[]>): Record<string, string | string[]> {
+    const newDict: Record<string, string | string[]> = {};
+    for (const key in originalDict) {
+        if (originalDict.hasOwnProperty(key)) {
+            const value = originalDict[key];
+            if (!(value in newDict)) {
+                newDict[value] = key;
+            } else {
+                // If the value already exists as a key, we need to append to or create a list
+                if (!Array.isArray(newDict[value])) {
+                    newDict[value] = [newDict[value]];
+                }
+                (newDict[value] as string[]).push(key);
+            }
+        }
     }
-
-    let sum = 0;
-    for (let i = 0; i < vec1.length; i++) {
-        sum += Math.pow(vec1[i] - vec2[i], 2);
-    }
-    return sum;
+    return newDict;
 }
-describe('SquaredEuclideanDistance', () => {
-    describe('test_standard_vectors', () => {
-        it('should calculate the squared distance correctly for typical vectors', () => {
-            const vec1 = [1, 2, 3];
-            const vec2 = [4, 5, 6];
-            const expectedResult = 27; // (3^2 + 3^2 + 3^2)
-            const result = squaredEuclideanDistance(vec1, vec2);
-            expect(result).toBe(expectedResult);
-        });
+describe('TestInvertDictionary', () => {
+    it('test_normal_dictionary', () => {
+        /** Test inversion of a dictionary without duplicate values. */
+        const originalDict = { 'a': 1, 'b': 2, 'c': 3 };
+        const expected = { 1: 'a', 2: 'b', 3: 'c' };
+        const result = invertDictionary(originalDict);
+        expect(result).toEqual(expected);
     });
 
-    describe('test_vectors_with_zeros', () => {
-        it('should handle vectors that include zero values', () => {
-            const vec1 = [0, 0, 0];
-            const vec2 = [0, 0, 0];
-            const expectedResult = 0;
-            const result = squaredEuclideanDistance(vec1, vec2);
-            expect(result).toBe(expectedResult);
-        });
+    it('test_dictionary_with_duplicates', () => {
+        /** Test inversion of a dictionary with duplicate values. */
+        const originalDict = { 'a': 1, 'b': 1, 'c': 2 };
+        const expected = { 1: ['a', 'b'], 2: 'c' };
+        const result = invertDictionary(originalDict);
+        expect(result).toEqual(expected);
     });
 
-    describe('test_vectors_with_negative_values', () => {
-        it('should handle vectors that include negative values', () => {
-            const vec1 = [-1, -2, -3];
-            const vec2 = [-4, -5, -6];
-            const expectedResult = 27; // (3^2 + 3^2 + 3^2)
-            const result = squaredEuclideanDistance(vec1, vec2);
-            expect(result).toBe(expectedResult);
-        });
+    it('test_empty_dictionary', () => {
+        /** Test inversion of an empty dictionary. */
+        const originalDict = {};
+        const expected = {};
+        const result = invertDictionary(originalDict);
+        expect(result).toEqual(expected);
     });
 
-    describe('test_single_element_vectors', () => {
-        it('should handle single element vectors', () => {
-            const vec1 = [5];
-            const vec2 = [-5];
-            const expectedResult = 100; // (10^2)
-            const result = squaredEuclideanDistance(vec1, vec2);
-            expect(result).toBe(expectedResult);
-        });
+    it('test_non_string_keys', () => {
+        /** Test inversion of a dictionary with non-string keys. */
+        const originalDict = { 1: 'apple', 2: 'banana', 3: 'apple' };
+        const expected = { 'apple': [1, 3], 'banana': 2 };
+        const result = invertDictionary(originalDict);
+        expect(result).toEqual(expected);
+    });
+
+    it('test_mixed_types', () => {
+        /** Test inversion of a dictionary with mixed key and value types. */
+        const originalDict = { 'a': 1, 2: 'two', 'three': 3 };
+        const expected = { 1: 'a', 'two': 2, 3: 'three' };
+        const result = invertDictionary(originalDict);
+        expect(result).toEqual(expected);
     });
 });

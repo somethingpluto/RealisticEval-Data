@@ -1,6 +1,5 @@
-const fs = require('fs');
-const os = require('os');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
 
 describe('TestProcessCSV', () => {
     let input_data_1 = `A,B,C

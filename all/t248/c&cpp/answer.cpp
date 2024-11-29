@@ -1,14 +1,34 @@
 #include <iostream>
-#include <map>
-#include <vector>
 #include <string>
+#include <vector>
+#include <nlohmann/json.hpp>
 
-std::map<std::string, std::string> sanitizeData(const std::map<std::string, std::string>& data, const std::vector<std::string>& keyToRemove = {}) {
-    std::map<std::string, std::string> sanitizedData;
-    for (const auto& pair : data) {
-        if (std::find(keyToRemove.begin(), keyToRemove.end(), pair.first) == keyToRemove.end()) {
-            sanitizedData[pair.first] = pair.second;
+using json = nlohmann::json;
+
+// Function to sanitize a JSON object by removing specific keys.
+json sanitize_data(const json& data, const std::set<std::string>* key_to_remove = nullptr) {
+    static const std::set<std::string> default_keys_to_remove = {
+        "email", "pc_conflicts", "metadata", "eligible_student_paper_prize", "talk_poster",
+        "submitted_at", "decision", "status", "submitted", "submission"
+    };
+
+    const std::set<std::string>& keys_to_remove = (key_to_remove == nullptr) ? default_keys_to_remove : *key_to_remove;
+
+    if (data.is_object()) {
+        json sanitized;
+        for (const auto& item : data.items()) {
+            if (keys_to_remove.find(item.key()) == keys_to_remove.end()) {
+                sanitized[item.key()] = sanitize_data(item.value());
+            }
         }
+        return sanitized;
+    } else if (data.is_array()) {
+        json sanitized;
+        for (const auto& value : data) {
+            sanitized.push_back(sanitize_data(value));
+        }
+        return sanitized;
+    } else {
+        return data;
     }
-    return sanitizedData;
 }

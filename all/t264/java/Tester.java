@@ -10,7 +10,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
-import static org.real.temp.Answer.*;
+import java.nio.file.Paths;
+
 public class Tester {
 
     private static final String LOG_FILE_PATH = "test_log.log";
@@ -92,4 +93,44 @@ public class Tester {
         }
     }
 
+    // Method to be tested
+    public static void extractLogEntries(String logFilePath) throws IOException {
+        if (!Files.exists(Paths.get(logFilePath))) {
+            throw new IOException("No log file found at the specified path: " + logFilePath);
+        }
+
+        Map<String, String> outputFiles = new HashMap<>();
+        outputFiles.put("WARNING", "warning_logs.txt");
+        outputFiles.put("ERROR", "error_logs.txt");
+        outputFiles.put("CRITICAL", "critical_logs.txt");
+        outputFiles.put("ALERT", "alert_logs.txt");
+
+        Map<String, ArrayList<String>> logs = new HashMap<>();
+        logs.put("WARNING", new ArrayList<>());
+        logs.put("ERROR", new ArrayList<>());
+        logs.put("CRITICAL", new ArrayList<>());
+        logs.put("ALERT", new ArrayList<>());
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(logFilePath))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                for (String level : logs.keySet()) {
+                    if (line.contains(level)) {
+                        logs.get(level).add(line);
+                        break;
+                    }
+                }
+            }
+        }
+
+        for (Map.Entry<String, ArrayList<String>> entry : logs.entrySet()) {
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputFiles.get(entry.getKey())))) {
+                for (String entryLine : entry.getValue()) {
+                    writer.write(entryLine);
+                    writer.newLine();
+                }
+                System.out.println("Saved " + entry.getValue().size() + " '" + entry.getKey() + "' entries to " + outputFiles.get(entry.getKey()) + ".");
+            }
+        }
+    }
 }

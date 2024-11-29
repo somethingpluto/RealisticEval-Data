@@ -1,45 +1,44 @@
 #include <iostream>
-#include <map>
 #include <string>
-#include <variant>
+#include <vector>
+#include <map>
+#include <typeinfo>
+#include <stdexcept>
 
-// Define a variant type to represent different types of values in the dictionary
-using Value = std::variant<std::string, int, double, std::map<std::string, Value>>;
+// Function to handle nested data
+std::variant<std::map<std::string, std::variant<int, double, std::string>>, std::vector<std::variant<int, double, std::string>>, std::string, int, double> handle_nested_data(const std::variant<std::map<std::string, std::variant<int, double, std::string>>, std::vector<std::variant<int, double, std::string>>, std::string, int, double>& data) {
+    using VarType = std::variant<std::map<std::string, std::variant<int, double, std::string>>, std::vector<std::variant<int, double, std::string>>, std::string, int, double>;
 
-class NestedDataHandler {
-public:
-    // Function to handle nested data
-    static Value handleNestedData(const Value& data) {
-        return std::visit(handleVisitor{}, data);
+    if (std::holds_alternative<std::map<std::string, VarType>>(data)) {
+        auto mapData = std::get<std::map<std::string, VarType>>(data);
+        std::map<std::string, VarType> result;
+        for (const auto& pair : mapData) {
+            result[pair.first] = handle_nested_data(pair.second);
+        }
+        return result;
+    } else if (std::holds_alternative<std::vector<VarType>>(data)) {
+        auto vecData = std::get<std::vector<VarType>>(data);
+        std::vector<VarType> result;
+        for (const auto& item : vecData) {
+            result.push_back(handle_nested_data(item));
+        }
+        return result;
+    } else if (std::holds_alternative<std::string>(data)) {
+        auto strData = std::get<std::string>(data);
+        try {
+            return std::stoi(strData);
+        } catch (const std::invalid_argument&) {
+            try {
+                return std::stod(strData);
+            } catch (const std::invalid_argument&) {
+                return strData; // Return the original string if it's not a number
+            }
+        }
+    } else if (std::holds_alternative<int>(data)) {
+        return std::get<int>(data);
+    } else if (std::holds_alternative<double>(data)) {
+        return std::get<double>(data);
     }
 
-private:
-    // Visitor class to handle different variants
-    struct HandleVisitor {
-        Value operator()(const std::string& str) const {
-            // Decode bytes to UTF-8 strings (assuming already decoded)
-            return str;
-        }
-
-        Value operator()(int num) const {
-            // Convert numbers to integers
-            return num;
-        }
-
-        Value operator()(double num) const {
-            // Convert numbers to floating point numbers
-            return num;
-        }
-
-        Value operator()(const std::map<std::string, Value>& dict) const {
-            // Recursively handle nested dictionaries
-            std::map<std::string, Value> result;
-            for (const auto& [key, value] : dict) {
-                result[key] = handleNestedData(value);
-            }
-            return result;
-        }
-    };
-
-    static HandleVisitor handleVisitor;
-};
+    throw std::runtime_error("Unsupported data type");
+}

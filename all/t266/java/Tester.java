@@ -1,49 +1,94 @@
 package org.real.temp;
 
-import static org.junit.Assert.*;
 import org.junit.Test;
+import org.junit.Assert;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-
+import static org.real.temp.Answer.*;
 public class Tester {
 
     @Test
-    public void testHandleNestedData() {
-        // Arrange
-        Map<String, Object> input = new HashMap<>();
-        input.put("key1", "value1".getBytes());
-        input.put("key2", 42);
-        input.put("key3", 3.14);
+    public void testSimpleDictionary() {
+        Map<String, Object> data = new HashMap<>();
+        data.put("name", "Alice".getBytes());
+        data.put("age", "30");
 
-        Map<String, Object> expectedOutput = new HashMap<>();
-        expectedOutput.put("key1", "value1");
-        expectedOutput.put("key2", 42);
-        expectedOutput.put("key3", 3.14);
+        Map<String, Object> expected = new HashMap<>();
+        expected.put("name", "Alice");
+        expected.put("age", 30);
 
-        // Act
-        Map<String, Object> actualOutput = handleNestedData(input);
-
-        // Assert
-        assertEquals(expectedOutput, actualOutput);
+        Assert.assertEquals(expected, handleNestedData(data));
     }
 
-    private Map<String, Object> handleNestedData(Map<String, Object> data) {
-        Map<String, Object> result = new HashMap<>();
+    @Test
+    public void testNestedDictionary() {
+        Map<String, Object> nestedDetails = new HashMap<>();
+        nestedDetails.put("age", "25");
+        nestedDetails.put("height", "175.5");
 
-        for (Map.Entry<String, Object> entry : data.entrySet()) {
-            String key = entry.getKey();
-            Object value = entry.getValue();
+        Map<String, Object> nestedUser = new HashMap<>();
+        nestedUser.put("name", "Bob".getBytes());
+        nestedUser.put("details", nestedDetails);
 
-            if (value instanceof byte[]) {
-                value = new String((byte[]) value);
-            } else if (value instanceof Number) {
-                Number number = (Number) value;
-                value = number.doubleValue(); // Assuming we want to keep it as double for simplicity
-            }
+        Map<String, Object> data = new HashMap<>();
+        data.put("user", nestedUser);
 
-            result.put(key, value);
-        }
+        Map<String, Object> expectedDetails = new HashMap<>();
+        expectedDetails.put("age", 25);
+        expectedDetails.put("height", 175.5);
 
-        return result;
+        Map<String, Object> expectedUser = new HashMap<>();
+        expectedUser.put("name", "Bob");
+        expectedUser.put("details", expectedDetails);
+
+        Map<String, Object> expected = new HashMap<>();
+        expected.put("user", expectedUser);
+
+        Assert.assertEquals(expected, handleNestedData(data));
+    }
+
+    @Test
+    public void testListOfMixedDataTypes() {
+        List<Object> data = Arrays.asList("100", "200".getBytes(), 300.0, "400.5");
+
+        List<Object> expected = Arrays.asList(100, "200", 300.0, 400.5);
+
+        Assert.assertEquals(expected, handleNestedData(data));
+    }
+
+
+    @Test
+    public void testComplexNestedStructure() {
+        Map<String, Object> charlieScores = new HashMap<>();
+        charlieScores.put("name", "Charlie".getBytes());
+        charlieScores.put("scores", Arrays.asList("1000", "2000.2"));
+
+        Map<String, Object> daisySkills = new HashMap<>();
+        daisySkills.put("name", "Daisy".getBytes());
+        daisySkills.put("skills", Arrays.asList("Coding".getBytes(), "Design".getBytes()));
+        daisySkills.put("age", "22");
+
+        List<Object> team = Arrays.asList(charlieScores, daisySkills);
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("team", team);
+
+        Map<String, Object> expectedCharlieScores = new HashMap<>();
+        expectedCharlieScores.put("name", "Charlie");
+        expectedCharlieScores.put("scores", Arrays.asList(1000, 2000.2));
+
+        Map<String, Object> expectedDaisySkills = new HashMap<>();
+        expectedDaisySkills.put("name", "Daisy");
+        expectedDaisySkills.put("skills", Arrays.asList("Coding", "Design"));
+        expectedDaisySkills.put("age", 22);
+
+        List<Object> expectedTeam = Arrays.asList(expectedCharlieScores, expectedDaisySkills);
+
+        Map<String, Object> expected = new HashMap<>();
+        expected.put("team", expectedTeam);
+
+        Assert.assertEquals(expected, handleNestedData(data));
     }
 }

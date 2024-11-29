@@ -1,43 +1,58 @@
-import ipaddress
+import json
 
 
-def is_compliant_ip(ip):
-    """
-    Check if the given IP address is compliant based on predefined criteria.
-
-    Args:
-    ip (str): The IP address in string format.
-
-    Returns:
-    bool: True if the IP is compliant, False otherwise.
-    """
-    try:
-        # Convert the input string to an IP address object
-        ip_obj = ipaddress.ip_address(ip)
-
-        # Check compliance criteria: for example, whether the IP is private
-        # You can modify or extend this check based on other criteria, e.g., ip_obj.is_global, ip_obj.is_multicast, etc.
-        return ip_obj.is_private
-
-    except ValueError:
-        # If the input is not a valid IP address, it cannot be compliant
-        return False
+def sanitize_data(data, key_to_remove=None
+                  ):
+    """Recursively sanitize a dictionary by removing specific keys."""
+    if key_to_remove is None:
+        key_to_remove = {"email", "pc_conflicts", "metadata", "eligible_student_paper_prize", "talk_poster",
+                         "submitted_at",
+                         "decision", "status", "submitted", "submission"}
+    if isinstance(data, dict):
+        return {key: sanitize_data(value) for key, value in data.items() if key not in key_to_remove}
+    elif isinstance(data, list):
+        return [sanitize_data(value) for value in data]
+    else:
+        return data
 
 import unittest
 
 
-class TestIsCompliantIP(unittest.TestCase):
-    def test_private_ip(self):
-        # Test that private IPs return True
-        self.assertTrue(is_compliant_ip('192.168.1.1'))
+class TestSanitizeData(unittest.TestCase):
+    def test_empty_dict(self):
+        """ Test with an empty dictionary. """
+        data = {}
+        key_to_remove = ["email", "metadata"]
 
-    def test_public_ip(self):
-        # Test that public IPs return False
-        self.assertTrue(is_compliant_ip('8.8.8.8'))
+        expected = {}
+        self.assertEqual(sanitize_data(data, key_to_remove), expected)
 
-    def test_invalid_ip(self):
-        # Test that invalid IP strings return False
-        self.assertFalse(is_compliant_ip('999.999.999.999'))
+    def test_remove_default_keys(self):
+        """ Test removing default keys from a nested structure. """
+        data = {
+            "name": "John Doe",
+            "email": "johndoe@example.com",
+            "metadata": {"submitted_at": "2021-07-10", "status": "pending"},
+            "comments": ["Good", "Needs review"]
+        }
+        key_to_remove = ["email", "metadata"]
+        expected = {
+            "name": "John Doe",
+            "comments": ["Good", "Needs review"]
+        }
+        self.assertEqual(sanitize_data(data, key_to_remove), expected)
 
+    def test_specified_key_to_remove(self):
+        """ Test removing a specified key from the dictionary. """
+        data = {
+            "name": "John Doe",
+            "location": "Earth",
+            "email": "johndoe@example.com"
+        }
+        expected = {
+            "name": "John Doe",
+            "location": "Earth"
+        }
+        self.assertEqual(sanitize_data(data, key_to_remove=["email"]), expected)
 if __name__ == '__main__':
     unittest.main()
