@@ -1,16 +1,25 @@
-TEST_CASE("Remove comments from a string", "[remove_comments]") {
-    REQUIRE(remove_comments("Hello, world! # This is a comment") == "Hello, world!");
-    REQUIRE(remove_comments("# This is a comment\nHello, world!") == "\nHello, world!");
-    REQUIRE(remove_comments("No comments here!") == "No comments here!");
-    REQUIRE(remove_comments("Multiple #comments\n#on multiple lines") == "\n");
-    REQUIRE(remove_comments("Comments before newline #should stay") == "Comments before newline ");
-    REQUIRE(remove_comments("Comments after newline\n#should be removed") == "Comments after newline\n");
-}
+TEST_CASE("Test removeComments functionality", "[removeComments]") {
+    SECTION("Test string with a comment on a single line") {
+        std::string input_string = "Hello, world!# This is a comment";
+        std::string expected_output = "Hello, world!";
+        REQUIRE(remove_comments(input_string) == expected_output);
+    }
 
-TEST_CASE("Edge cases", "[remove_comments]") {
-    REQUIRE(remove_comments("") == "");
-    REQUIRE(remove_comments("\n") == "\n");
-    REQUIRE(remove_comments("#") == "");
-    REQUIRE(remove_comments("##") == "#");
-    REQUIRE(remove_comments("a#b#c") == "ab#c");
+    SECTION("Test string with no comments") {
+        std::string input_string = "Hello, world!\nPython is fun!";
+        std::string expected_output = "Hello, world!\nPython is fun!";
+        REQUIRE(remove_comments(input_string) == expected_output);
+    }
+
+    SECTION("Test an empty string") {
+        std::string input_string = "";
+        std::string expected_output = "";
+        REQUIRE(remove_comments(input_string) == expected_output);
+    }
+
+    SECTION("Test string where all lines are comments") {
+        std::string input_string = "# comment only line\n#another comment line";
+        std::string expected_output = "\n";
+        REQUIRE(remove_comments(input_string) == expected_output);
+    }
 }

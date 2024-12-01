@@ -5,6 +5,6 @@
  *     output: 2KB
  *
  * @param size_bytes The size in bytes to be converted.
- * @return A string representing the converted size in a human-readable format (e.g., "2KB", "1MB").
+ * @return The converted size in a human-readable format (e.g., "2KB", "1MB").
  */
-std::string convertFileSize(int64_t sizeBytes);
+std::string convert_file_size(long long size_bytes) {}

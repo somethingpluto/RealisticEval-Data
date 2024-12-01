@@ -33,13 +33,3 @@ std::vector<int> rotate_vector(const std::vector<int>& elements) {
 
     return rotated;
 }
-
-// Function to check the correctness of the rotate_vector function.
-void check_rotate_vector() {
-    assert(rotate_vector({}) == std::vector<int>({}));
-    assert(rotate_vector({1}) == std::vector<int>({1}));
-    assert(rotate_vector({1, 2, 3, 4}) == std::vector<int>({2, 3, 4, 1}));
-    assert(rotate_vector({5, 6, 7}) == std::vector<int>({6, 7, 5}));
-
-    std::cout << "All test cases passed!" << std::endl;
-}

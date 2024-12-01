@@ -2,7 +2,7 @@ package org.real.temp;
 
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
-
+import static org.real.temp.Answer.*;
 public class Tester {
 
     @Test
@@ -35,28 +35,5 @@ public class Tester {
         String inputString = "# comment only line\n#another comment line";
         String expectedOutput = "\n";
         assertEquals(expectedOutput, removeComments(inputString));
-    }
-
-    // Utility method to remove comments from a string
-    private String removeComments(String input) {
-        // Split the string into lines
-        String[] lines = input.split("\n");
-
-        // Remove the comment part from each line
-        StringBuilder cleanedString = new StringBuilder();
-        for (String line : lines) {
-            int commentIndex = line.indexOf('#');
-            if (commentIndex != -1) {
-                line = line.substring(0, commentIndex);
-            }
-            cleanedString.append(line).append("\n");
-        }
-
-        // Remove the last newline character added during the loop
-        if (cleanedString.length() > 0) {
-            cleanedString.setLength(cleanedString.length() - 1);
-        }
-
-        return cleanedString.toString();
     }
 }

@@ -1,65 +1,102 @@
-function sanitizeData(data, keyToRemove = null) {
-    // Recursively sanitize an object by removing specific keys.
-    if (keyToRemove === null) {
-        keyToRemove = new Set([
-            "email", "pc_conflicts", "metadata", 
-            "eligible_student_paper_prize", "talk_poster", 
-            "submitted_at", "decision", "status", 
-            "submitted", "submission"
-        ]);
-    }
+import xml2js from 'xml2js'
+import fs from 'fs'
 
-    if (typeof data === 'object' && !Array.isArray(data) && data !== null) {
-        const result = {};
-        for (const [key, value] of Object.entries(data)) {
-            if (!keyToRemove.has(key)) {
-                result[key] = sanitizeData(value, keyToRemove);
+function parseXamlToDict(xamlFile) {
+    /**
+     * Parse a XAML file and extract key-value pairs from 'String' elements.
+     *
+     * @param {string} xamlFile - Path to the XAML file.
+     * @returns {Object} A dictionary containing the key-value pairs extracted from 'String' elements.
+     */
+    try {
+        // Read the XAML file
+        const xamlContent = fs.readFileSync(xamlFile, 'utf8');
+
+        // Parse the XAML content
+        const parser = new xml2js.Parser();
+        parser.parseString(xamlContent, (err, result) => {
+            if (err) {
+                console.error(`Error parsing the XAML file: ${err}`);
+                return {};
             }
+
+            // Dictionary to hold the key-value pairs
+            const resultDict = {};
+
+            // Iterate through all 'String' elements in the XAML file
+            if (result && result.root && Array.isArray(result.root.String)) {
+                result.root.String.forEach((stringElement) => {
+                    const key = stringElement.$.Key;
+                    if (key) {
+                        if (!stringElement._ || stringElement._ === '') {
+                            resultDict[key] = "";
+                        } else {
+                            resultDict[key] = stringElement._;
+                        }
+                    }
+                });
+            }
+
+            return resultDict;
+        });
+
+    } catch (error) {
+        if (error.code === 'ENOENT') {
+            console.error(`Error: The file ${xamlFile} does not exist.`);
+            return {};
+        } else {
+            console.error(`Error parsing the XAML file: ${error.message}`);
+            return {};
         }
-        return result;
-    } else if (Array.isArray(data)) {
-        return data.map(value => sanitizeData(value, keyToRemove));
-    } else {
-        return data;
     }
 }
-describe('TestSanitizeData', () => {
-  it('test_empty_dict', () => {
-      // Test with an empty dictionary.
-      const data = {};
-      const keyToRemove = ["email", "metadata"];
+import {parse} from 'xml2js'
+describe('TestParseXamlToDict', () => {
+    it('should correctly parse valid strings', () => {
+        const xamlData = `
+            <root>
+                <String Key="Username">Alice</String>
+                <String Key="Password">secret</String>
+            </root>
+        `;
+        const expected = { Username: 'Alice', Password: 'secret' };
+        const result = parseXamlToDict(xamlData);
+        expect(result).toEqual(expected);
+    });
 
-      const expected = {};
-      expect(sanitizeData(data, keyToRemove)).toEqual(expected);
-  });
+    it('should handle missing key attribute', () => {
+        const xamlData = `
+            <root>
+                <String>Alice</String>
+            </root>
+        `;
+        const expected = {};
+        const result = parseXamlToDict(xamlData);
+        expect(result).toEqual(expected);
+    });
 
-  it('test_remove_default_keys', () => {
-      // Test removing default keys from a nested structure.
-      const data = {
-          name: "John Doe",
-          email: "johndoe@example.com",
-          metadata: { submitted_at: "2021-07-10", status: "pending" },
-          comments: ["Good", "Needs review"]
-      };
-      const keyToRemove = ["email", "metadata"];
-      const expected = {
-          name: "John Doe",
-          comments: ["Good", "Needs review"]
-      };
-      expect(sanitizeData(data, keyToRemove)).toEqual(expected);
-  });
+    it('should handle no string tags', () => {
+        const xamlData = `
+            <root>
+                <Data>Some question</Data>
+            </root>
+        `;
+        const expected = {};
+        const result = parseXamlToDict(xamlData);
+        expect(result).toEqual(expected);
+    });
 
-  it('test_specified_key_to_remove', () => {
-      // Test removing a specified key from the dictionary.
-      const data = {
-          name: "John Doe",
-          location: "Earth",
-          email: "johndoe@example.com"
-      };
-      const expected = {
-          name: "John Doe",
-          location: "Earth"
-      };
-      expect(sanitizeData(data, keyToRemove: ["email"])).toEqual(expected);
-  });
+    it('should correctly parse nested string tags', () => {
+        const xamlData = `
+            <root>
+                <Container>
+                    <String Key="Username">Bob</String>
+                </Container>
+                <String Key="Location">Earth</String>
+            </root>
+        `;
+        const expected = { Username: 'Bob', Location: 'Earth' };
+        const result = parseXamlToDict(xamlData);
+        expect(result).toEqual(expected);
+    });
 });

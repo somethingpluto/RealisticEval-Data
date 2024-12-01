@@ -15,14 +15,14 @@ TEST_CASE("Test classifyFilesByExtension") {
             {"zip", {"archive.zip"}}
         };
 
-        REQUIRE(classify_files_by_extension(files) == expected_result);
+        REQUIRE(classifyFilesByExtension(files) == expected_result);
     }
 
     SECTION("Test with an empty list of file names") {
         std::vector<std::string> files = {};
         std::unordered_map<std::string, std::vector<std::string>> expected_result = {};
 
-        REQUIRE(classify_files_by_extension(files) == expected_result);
+        REQUIRE(classifyFilesByExtension(files) == expected_result);
     }
 
     SECTION("Test with multiple files having the same extension") {
@@ -35,7 +35,7 @@ TEST_CASE("Test classifyFilesByExtension") {
             {"txt", {"file1.txt", "file2.txt", "file3.txt"}}
         };
 
-        REQUIRE(classify_files_by_extension(files) == expected_result);
+        REQUIRE(classifyFilesByExtension(files) == expected_result);
     }
 
     SECTION("Test files that have multiple dots in their names") {
@@ -52,6 +52,6 @@ TEST_CASE("Test classifyFilesByExtension") {
             {"zip", {"archive.backup.zip"}}
         };
 
-        REQUIRE(classify_files_by_extension(files) == expected_result);
+        REQUIRE(classifyFilesByExtension(files) == expected_result);
     }
 }

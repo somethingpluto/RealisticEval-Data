@@ -1,4 +1,3 @@
-// Helper function to compare floating point values with a tolerance
 bool approximately_equal(double a, double b, double epsilon = 1e-9) {
     return std::abs(a - b) < epsilon;
 }

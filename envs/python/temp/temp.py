@@ -1,58 +1,88 @@
-import json
+import xml.etree.ElementTree as ET
 
 
-def sanitize_data(data, key_to_remove=None
-                  ):
-    """Recursively sanitize a dictionary by removing specific keys."""
-    if key_to_remove is None:
-        key_to_remove = {"email", "pc_conflicts", "metadata", "eligible_student_paper_prize", "talk_poster",
-                         "submitted_at",
-                         "decision", "status", "submitted", "submission"}
-    if isinstance(data, dict):
-        return {key: sanitize_data(value) for key, value in data.items() if key not in key_to_remove}
-    elif isinstance(data, list):
-        return [sanitize_data(value) for value in data]
-    else:
-        return data
+def parse_xaml_to_dict(xaml_file):
+    """
+    Parse a XAML file and extract key-value pairs from 'String' elements.
+
+    Args:
+    xaml_file (str): Path to the XAML file.
+
+    Returns:
+    dict: A dictionary containing the key-value pairs extracted from 'String' elements.
+    """
+    try:
+        # Parse the XAML file
+        tree = ET.parse(xaml_file)
+        root = tree.getroot()
+
+        # Dictionary to hold the key-value pairs
+        result_dict = {}
+
+        # Iterate through all 'String' elements in the XAML file
+        for string_element in root.findall(".//String"):
+            key = string_element.get('Key')
+            if key:
+                if string_element.text is None:
+                    result_dict[key] = ""
+                else:
+                    result_dict[key] = string_element.text
+
+        return result_dict
+
+    except ET.ParseError as e:
+        print(f"Error parsing the XAML file: {e}")
+        return {}
+    except FileNotFoundError:
+        print(f"Error: The file {xaml_file} does not exist.")
+        return {}
 
 import unittest
+import xml.etree.ElementTree as ET
+from io import StringIO
 
 
-class TestSanitizeData(unittest.TestCase):
-    def test_empty_dict(self):
-        """ Test with an empty dictionary. """
-        data = {}
-        key_to_remove = ["email", "metadata"]
+class TestParseXamlToDict(unittest.TestCase):
+    def test_valid_strings(self):
+        xaml_data = """<root>
+                         <String Key="Username">Alice</String>
+                         <String Key="Password">secret</String>
+                       </root>"""
+        xaml_input = StringIO(xaml_data)
+        expected = {'Username': 'Alice', 'Password': 'secret'}
+        result = parse_xaml_to_dict(xaml_input)
+        self.assertEqual(result, expected)
 
+    def test_missing_key_attribute(self):
+        xaml_data = """<root>
+                         <String>Alice</String>
+                       </root>"""
+        xaml_input = StringIO(xaml_data)
         expected = {}
-        self.assertEqual(sanitize_data(data, key_to_remove), expected)
+        result = parse_xaml_to_dict(xaml_input)
+        self.assertEqual(result, expected)
 
-    def test_remove_default_keys(self):
-        """ Test removing default keys from a nested structure. """
-        data = {
-            "name": "John Doe",
-            "email": "johndoe@example.com",
-            "metadata": {"submitted_at": "2021-07-10", "status": "pending"},
-            "comments": ["Good", "Needs review"]
-        }
-        key_to_remove = ["email", "metadata"]
-        expected = {
-            "name": "John Doe",
-            "comments": ["Good", "Needs review"]
-        }
-        self.assertEqual(sanitize_data(data, key_to_remove), expected)
 
-    def test_specified_key_to_remove(self):
-        """ Test removing a specified key from the dictionary. """
-        data = {
-            "name": "John Doe",
-            "location": "Earth",
-            "email": "johndoe@example.com"
-        }
-        expected = {
-            "name": "John Doe",
-            "location": "Earth"
-        }
-        self.assertEqual(sanitize_data(data, key_to_remove=["email"]), expected)
+    def test_no_string_tags(self):
+        xaml_data = """<root>
+                         <Data>Some question</Data>
+                       </root>"""
+        xaml_input = StringIO(xaml_data)
+        expected = {}
+        result = parse_xaml_to_dict(xaml_input)
+        self.assertEqual(result, expected)
+
+    def test_nested_string_tags(self):
+        xaml_data = """<root>
+                         <Container>
+                           <String Key="Username">Bob</String>
+                         </Container>
+                         <String Key="Location">Earth</String>
+                       </root>"""
+        xaml_input = StringIO(xaml_data)
+        expected = {'Username': 'Bob', 'Location': 'Earth'}
+        result = parse_xaml_to_dict(xaml_input)
+        self.assertEqual(result, expected)
+
 if __name__ == '__main__':
     unittest.main()

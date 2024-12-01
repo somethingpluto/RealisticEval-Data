@@ -1,55 +1,49 @@
 package org.real.temp;
-import java.util.*;
 
 public class Answer {
 
-    private static final Set<String> defaultKeysToRemove = new HashSet<>(Arrays.asList(
-            "email", "pc_conflicts", "metadata", "eligible_student_paper_prize", "talk_poster",
-            "submitted_at", "decision", "status", "submitted", "submission"
-    ));
-
     /**
-     * Recursively sanitize a Map by removing specific keys.
+     * Removes the common leading indentation from each line in a given multi-line string,
+     * preserving the relative indentation of the text.
      *
-     * @param data           the input data to sanitize
-     * @param keyToBeRemoved the set of keys to remove; if null, uses default keys
-     * @return the sanitized data
+     * @param multilineText The input string containing multiple lines.
+     * @return The sanitized string with common leading indentation removed.
      */
-    public static Object sanitizeData(Object data, Set<String> keyToBeRemoved) {
-        if (keyToBeRemoved == null) {
-            keyToBeRemoved = defaultKeysToRemove;
-        }
-        if (data instanceof Map) {
-            Map<?, ?> map = (Map<?, ?>) data;
-            Map<String, Object> sanitizedMap = new HashMap<>();
-            for (Map.Entry<?, ?> entry : map.entrySet()) {
-                String key = (String) entry.getKey();
-                if (!keyToBeRemoved.contains(key)) {
-                    sanitizedMap.put(key, sanitizeData(entry.getValue(), keyToBeRemoved));
-                }
+    public static String removeCommonIndentation(String multilineText) {
+        String[] lines = multilineText.split("\n");
+
+        // Filter out lines that are empty or only whitespace, as they do not affect minimum indentation
+        int minIndent = Integer.MAX_VALUE;
+        for (String line : lines) {
+            String trimmedLine = line.trim();
+            if (!trimmedLine.isEmpty()) {
+                int indent = line.length() - trimmedLine.length();
+                minIndent = Math.min(minIndent, indent);
             }
-            return sanitizedMap;
-        } else if (data instanceof List) {
-            List<?> list = (List<?>) data;
-            List<Object> sanitizedList = new ArrayList<>();
-            for (Object item : list) {
-                sanitizedList.add(sanitizeData(item, keyToBeRemoved));
-            }
-            return sanitizedList;
-        } else {
-            return data;
         }
+
+        // If there's no indentation or all lines are empty, return the original string
+        if (minIndent == Integer.MAX_VALUE) {
+            return multilineText;
+        }
+
+        // Remove the common leading indentation from each line
+        StringBuilder sanitizedLines = new StringBuilder();
+        for (String line : lines) {
+            if (sanitizedLines.length() > 0) {
+                sanitizedLines.append("\n");
+            }
+            sanitizedLines.append(line.substring(minIndent));
+        }
+
+        return sanitizedLines.toString();
     }
 
-    // Example usage
     public static void main(String[] args) {
-        Map<String, Object> sampleData = new HashMap<>();
-        sampleData.put("name", "John Doe");
-        sampleData.put("email", "john.doe@example.com");
-        sampleData.put("age", 30);
-        sampleData.put("metadata", "some metadata");
-
-        Map<String, Object> sanitizedData = (Map<String, Object>) sanitizeData(sampleData, null);
-        System.out.println(sanitizedData);
+        // Example usage
+        String multilineText = "    This is a test.\n" +
+                               "      This is another line.\n" +
+                               "    And this is the last line.";
+        System.out.println(removeCommonIndentation(multilineText));
     }
 }

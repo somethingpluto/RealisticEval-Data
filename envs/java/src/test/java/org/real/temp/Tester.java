@@ -1,53 +1,48 @@
 package org.real.temp;
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
-import java.util.*;
-import static org.real.temp.Answer.*;
 
+import org.junit.Test;
+
+import static junit.framework.TestCase.assertEquals;
+import static org.real.temp.Answer.*;
 public class Tester {
 
-
-
+    /**
+     * Tests the edge case with an empty string.
+     */
     @Test
-    public void testEmptyDict() {
-        Map<String, Object> data = new HashMap<>();
-        Set<String> keyToBeRemoved = new HashSet<>(Arrays.asList("email", "metadata"));
-
-        Map<String, Object> expected = new HashMap<>();
-        assertEquals(expected, sanitizeData(data, keyToBeRemoved));
+    public void testEmptyString() {
+        // Testing edge case with an empty string
+        assertEquals("Should return an empty string", "", removeCommonIndentation(""));
     }
 
+    /**
+     * Tests a single line with no indentation.
+     */
     @Test
-    public void testRemoveDefaultKeys() {
-        Map<String, Object> data = new HashMap<>();
-        data.put("name", "John Doe");
-        data.put("email", "johndoe@example.com");
-        data.put("metadata", new HashMap<>(Map.of(
-                "submitted_at", "2021-07-10",
-                "status", "pending"
-        )));
-        data.put("comments", Arrays.asList("Good", "Needs review"));
-
-        Set<String> keyToBeRemoved = new HashSet<>(Arrays.asList("email", "metadata"));
-        Map<String, Object> expected = new HashMap<>();
-        expected.put("name", "John Doe");
-        expected.put("comments", Arrays.asList("Good", "Needs review"));
-
-        assertEquals(expected, sanitizeData(data, keyToBeRemoved));
+    public void testSingleLineString() {
+        // Testing a single line with no indentation
+        assertEquals("Should return the same string as input", "No indentation here", removeCommonIndentation("No indentation here"));
     }
 
+    /**
+     * Tests basic logic with uniform indentation across multiple lines.
+     */
     @Test
-    public void testSpecifiedKeyToRemove() {
-        Map<String, Object> data = new HashMap<>();
-        data.put("name", "John Doe");
-        data.put("location", "Earth");
-        data.put("email", "johndoe@example.com");
+    public void testMultipleLinesWithUniformIndentation() {
+        // Testing basic logic with uniform indentation across multiple lines
+        String inputText = "    Line one\n    Line two\n    Line three";
+        String expectedOutput = "Line one\nLine two\nLine three";
+        assertEquals("Should remove common leading indentation", expectedOutput, removeCommonIndentation(inputText));
+    }
 
-        Set<String> keyToBeRemoved = new HashSet<>(Arrays.asList("email"));
-        Map<String, Object> expected = new HashMap<>();
-        expected.put("name", "John Doe");
-        expected.put("location", "Earth");
-
-        assertEquals(expected, sanitizeData(data, keyToBeRemoved));
+    /**
+     * Tests lines with mixed indentation levels.
+     */
+    @Test
+    public void testMultipleLinesWithMixedIndentation() {
+        // Testing lines with mixed indentation levels
+        String inputText = "  Line one\n  Line two\n  Line three";
+        String expectedOutput = "Line one\nLine two\nLine three";
+        assertEquals("Should remove the minimum common indentation", expectedOutput, removeCommonIndentation(inputText));
     }
 }

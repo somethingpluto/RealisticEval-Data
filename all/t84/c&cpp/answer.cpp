@@ -46,3 +46,12 @@ std::string find_min_window_substring(const std::string& source, const std::stri
 
     return min_window;
 }
+
+bool all_characters_match(const std::unordered_map<char, int>& required_chars, const std::unordered_map<char, int>& window_chars) {
+    for (const auto& pair : required_chars) {
+        if (window_chars[pair.first] < pair.second) {
+            return false;
+        }
+    }
+    return true;
+}
