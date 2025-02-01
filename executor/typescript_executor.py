@@ -3,82 +3,64 @@ import json
 import os
 import re
 import subprocess
+import time
 
-import pandas as pd
 from tqdm import tqdm
 
-TYPESCRIPT_RUN_ENV = "../envs/typescript"
+
+TYPESCRIPT_RUN_ENV = "../envs/typescript/test_item/"
 
 
 class TypeScriptExecutor:
-    def __init__(self, type, model_name=""):
+    def __init__(self,type, model_name=""):
         self._env_path = TYPESCRIPT_RUN_ENV
         self.model_name = model_name
         self.type = type
-        self.file_path = f"{self._env_path}/test.test.ts"
         self.language = "typescript"
-
-    def single_run(self, code, test_code):
-        with open(self.file_path, "w", encoding="utf8") as file:
-            file.write(code)
-            file.write("\n")
-            file.write(test_code)
-            file.write("\n")
-            file.flush()
-            self._execute()
 
     def batch_run(self, file_path):
         result_list = []
-        data_list = []
         with open(file_path, "r", encoding="utf8") as file:
             json_lines = [line.strip() for line in file.readlines()]
             for item in json_lines:
                 result_list.append(json.loads(item))
-
-        for item in tqdm(result_list[180:]):
+        # 1.生成所有的测试文件
+        for item in tqdm(result_list):
             try:
-                print(item["task_id"])
-                language_item = item['language_version_list']["typescript"]
+                task_id = item["task_id"]
+                language_item = item['language_version_list']["javascript"]
                 answer_list = language_item["answer_list"]
                 test_code = language_item["test_code"]
                 addition_info = language_item["addition_info"]
+                # 生成每个测试问题的测试文件文件
                 for index, answer in enumerate(answer_list):
                     code = answer['response_code']
                     if code == None or code == "":
                         continue
-                    with open(self.file_path, "w", encoding="utf8") as file:
+                    with open(self._env_path+f"{task_id}.test.ts", "w", encoding="utf8") as file:
+                        file.write(addition_info)
                         file.write(code)
                         file.write("\n")
                         file.write(test_code)
                         file.write("\n")
                         file.flush()
-                    process, stdout, stderr, returncode = self._execute()
-                    process.kill()
-                    item["result_return_code"] = returncode
-                    item["stderr"] = self._remove_color_codes(stderr)
-                    item["stdout"] = self._remove_color_codes(stdout)
-                    item["answer_index"] = index
-                    item["model"] = answer["model_name"]
-                    with open(f"{self._env_path}/test.test.ts", "r", encoding="utf8") as f:
-                        item["full_content"] = f.read()
-                    data_list.append(item)
-                    with open(
-                            f"../analysis/model_answer_result/{self.model_name}/{self.type}/{self.model_name}_{self.language}_{self.type}.csv",
-                            "a+", encoding="utf8") as file:
-                        file.write(f"{item['task_id']},{returncode},{answer['model_name']}\n")
             except Exception as e:
                 print(e)
                 continue
-        result_data = pd.DataFrame(data_list)
-        result_data.to_excel(
-            f"../analysis/model_answer_result/{self.model_name}/{self.type}/{self.model_name}_{self.language}_{self.type}.xlsx",
-            engine="xlsxwriter")
-        result_data.to_excel(
-            rf"C:\Users\pluto\Desktop\temp\{self.model_name}\{self.model_name}_{self.language}_{self.type}.xlsx",
-            engine="xlsxwriter")
+        # 2.执行命令
+        # self._execute()
+        # time.sleep(2)
+        # # 3.去除颜色
+        # with open("../envs/typescript/jest-results.json","r",encoding="utf8") as read_json_file:
+        #     result_content = read_json_file.read()
+        # with open("../envs/typescript/jest-results.json","w",encoding="utf8") as write_json_file:
+        #     write_json_file.write(self._remove_color_codes(result_content))
+        #     write_json_file.flush()
+
 
     def _execute(self):
         command = self._generate_command()
+        print(command)
         process = subprocess.Popen(
             command,
             stdout=subprocess.PIPE,
@@ -90,14 +72,21 @@ class TypeScriptExecutor:
         )
         try:
             # 等待进程结束或超时
-            stdout, stderr = process.communicate(timeout=20)
+            stdout, stderr = process.communicate(timeout=60)
             print(stdout)
             print(stderr)
             print("Process completed with return code:", process.returncode)
-            return process, stdout, stderr, process.returncode
         except subprocess.TimeoutExpired:
             print("Process is being killed after timeout")
             process.kill()
+
+
+    def _get_file_disk_flag(self):
+        # 获取当前文件的绝对路径
+        current_file_path = os.path.abspath(__file__)
+        # 分离盘符和路径
+        drive_letter = os.path.splitdrive(current_file_path)[0]
+        return drive_letter
 
     def _remove_color_codes(self, text):
         """
@@ -113,17 +102,9 @@ class TypeScriptExecutor:
         ansi_escape = re.compile(r'\x1B[@-_][0-?]*[ -/]*[@-~]')
         return ansi_escape.sub('', text)
 
-    def _get_file_disk_flag(self):
-        # 获取当前文件的绝对路径
-        current_file_path = os.path.abspath(__file__)
-        # 分离盘符和路径
-        drive_letter = os.path.splitdrive(current_file_path)[0]
-        return drive_letter
-
     def _generate_command(self):
         driver_flag = self._get_file_disk_flag()
-        # TODO: 替换为 本机中 RealisticEval-Data\envs\typescript 文件中的路径 不必填写盘符
-        command = rf"{driver_flag} && cd {driver_flag}/code/code_back/python_project/RealisticEval-Data/envs/typescript && npm run test-silent"
+        command = f"{driver_flag} && cd {driver_flag}/code/code_back/python_project/RealisticEval-Data/envs/typescript/test_item && npm run test-silent"
         return command
 
 
@@ -140,3 +121,4 @@ if __name__ == '__main__':
     executor = TypeScriptExecutor(args.type, args.model_name)
     file_path = rf"E:\code\code_back\python_project\llm\qa\{args.model_name}_answer\typescript_answer_{args.type}.jsonl"
     executor.batch_run(file_path)
+
