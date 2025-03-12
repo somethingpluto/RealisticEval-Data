@@ -7,46 +7,57 @@
  *                   Returns an empty string if no such substring exists.
  */
 function minWindow(s, t) {
-    if (s.length === 0 || t.length === 0) return "";
+    const targetMap = {};
+    const windowMap = {};
+    let requiredCount = 0;
+    let formedCount = 0;
+    let left = 0;
+    let right = 0;
+    let minLength = Infinity;
+    let minWindowStart = 0;
 
-    const need = {};
-    const window = {};
-
+    // Populate the target map with the frequency of each character in `t`
     for (let char of t) {
-        need[char] = (need[char] || 0) + 1;
+        if (targetMap[char]) {
+            targetMap[char]++;
+        } else {
+            targetMap[char] = 1;
+            requiredCount++;
+        }
     }
 
-    let left = 0, right = 0;
-    let valid = 0;
-    let start = 0, length = Infinity;
-
+    // Expand the window by moving the right pointer
     while (right < s.length) {
-        const c = s[right];
-        right++;
-        if (need[c]) {
-            window[c] = (window[c] || 0) + 1;
-            if (window[c] === need[c]) {
-                valid++;
+        const char = s[right];
+        if (targetMap[char]) {
+            windowMap[char] = (windowMap[char] || 0) + 1;
+            if (windowMap[char] === targetMap[char]) {
+                formedCount++;
             }
         }
 
-        while (valid === Object.keys(need).length) {
-            if (right - left < length) {
-                start = left;
-                length = right - left;
+        // Try to contract the window by moving the left pointer
+        while (left <= right && formedCount === requiredCount) {
+            const currentLength = right - left + 1;
+            if (currentLength < minLength) {
+                minLength = currentLength;
+                minWindowStart = left;
             }
-            const d = s[left];
-            left++;
-            if (need[d]) {
-                if (window[d] === need[d]) {
-                    valid--;
+
+            const leftChar = s[left];
+            if (targetMap[leftChar]) {
+                windowMap[leftChar]--;
+                if (windowMap[leftChar] < targetMap[leftChar]) {
+                    formedCount--;
                 }
-                window[d]--;
             }
+            left++;
         }
+
+        right++;
     }
 
-    return length === Infinity ? "" : s.substring(start, start + length);
+    return minLength === Infinity ? "" : s.substring(minWindowStart, minWindowStart + minLength);
 }
 describe('TestMinWindow', () => {
     it('test basic case', () => {

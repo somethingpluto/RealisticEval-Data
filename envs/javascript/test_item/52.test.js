@@ -5,11 +5,16 @@
  * @returns {string} The modified file path with colons in the filename replaced by underscores.
  */
 function renameFilePath(path) {
-    const parts = path.split('\\');
-    const lastPart = parts[parts.length - 1];
-    const modifiedLastPart = lastPart.replace(':', '_');
-    parts[parts.length - 1] = modifiedLastPart;
-    return parts.join('\\');
+    // Split the path into directory and filename
+    const lastBackslashIndex = path.lastIndexOf('\\');
+    const directory = path.substring(0, lastBackslashIndex + 1);
+    let filename = path.substring(lastBackslashIndex + 1);
+
+    // Replace colons in the filename with underscores
+    filename = filename.replace(/:/g, '_');
+
+    // Combine the directory and the modified filename
+    return directory + filename;
 }
 describe('TestRenameFilePath', () => {
   it('should rename a path with colon in the filename', () => {

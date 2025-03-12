@@ -1,3 +1,6 @@
+const fs = require('fs').promises;
+const path = require('path');
+
 /**
  * Empties all files and subdirectories in the specified directory.
  * 
@@ -8,27 +11,36 @@
  * @throws {Error} - If the specified path does not exist or is not a directory.
  */
 async function emptyDirectory(directoryPath) {
-    const fs = require('fs').promises;
-    const path = require('path');
-
     try {
-        const entries = await fs.readdir(directoryPath, { withFileTypes: true });
+        // Check if the directory exists and is a directory
+        const stats = await fs.stat(directoryPath);
+        if (!stats.isDirectory()) {
+            throw new Error(`The specified path is not a directory: ${directoryPath}`);
+        }
 
-        for (const entry of entries) {
-            const fullPath = path.join(directoryPath, entry.name);
-            if (entry.isDirectory()) {
-                await emptyDirectory(fullPath);
-                await fs.rmdir(fullPath);
+        // Read the directory contents
+        const items = await fs.readdir(directoryPath);
+
+        // Iterate over each item in the directory
+        for (const item of items) {
+            const itemPath = path.join(directoryPath, item);
+            const itemStats = await fs.stat(itemPath);
+
+            if (itemStats.isDirectory()) {
+                // Recursively empty the subdirectory
+                await emptyDirectory(itemPath);
+                // Remove the now-empty subdirectory
+                await fs.rmdir(itemPath);
             } else {
-                await fs.unlink(fullPath);
+                // Remove the file
+                await fs.unlink(itemPath);
             }
         }
     } catch (error) {
         if (error.code === 'ENOENT') {
-            throw new Error('The specified path does not exist.');
-        } else if (error.code !== 'ENOTDIR') {
-            throw error;
+            throw new Error(`The specified path does not exist: ${directoryPath}`);
         }
+        throw error;
     }
 }
 const fs = require('fs');

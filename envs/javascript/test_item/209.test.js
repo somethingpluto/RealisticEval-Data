@@ -22,28 +22,28 @@ class LinkedList {
     // Method to add a node at the end of the list
     insertAtTail(value) {
         const newNode = new Node(value);
-        if (!this.head) {
+        if (this.head === null) {
             this.head = newNode;
-            return;
+        } else {
+            let current = this.head;
+            while (current.next !== null) {
+                current = current.next;
+            }
+            current.next = newNode;
         }
-        let current = this.head;
-        while (current.next) {
-            current = current.next;
-        }
-        current.next = newNode;
     }
 
     // Method to delete a node with a specific value
     deleteValue(value) {
-        if (!this.head) {
-            return;
-        }
+        if (this.head === null) return;
+
         if (this.head.data === value) {
             this.head = this.head.next;
             return;
         }
+
         let current = this.head;
-        while (current.next) {
+        while (current.next !== null) {
             if (current.next.data === value) {
                 current.next = current.next.next;
                 return;
@@ -55,7 +55,7 @@ class LinkedList {
     // Method to search for a value in the list
     search(value) {
         let current = this.head;
-        while (current) {
+        while (current !== null) {
             if (current.data === value) {
                 return true;
             }
@@ -67,13 +67,10 @@ class LinkedList {
     // Method to print all elements in the list
     printList() {
         let current = this.head;
-        let listString = '';
-        while (current) {
-            listString += current.data + ' -> ';
+        while (current !== null) {
+            console.log(current.data);
             current = current.next;
         }
-        listString += 'null';
-        console.log(listString);
     }
 }
 describe("LinkedList operations", () => {

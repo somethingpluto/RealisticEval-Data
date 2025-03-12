@@ -11,43 +11,57 @@ const path = require('path');
  * @param {string} outputPath - The path where the processed CSV file will be saved.
  */
 async function processCSV(filePath, outputPath) {
-  return new Promise((resolve, reject) => {
-    const results = [];
-    const emptyColumnsCount = {};
+    return new Promise((resolve, reject) => {
+        const rows = [];
+        let header = null;
 
-    fs.createReadStream(filePath)
-      .pipe(csvParser())
-      .on('data', (data) => {
-        let emptyCount = 0;
-        for (const key in data) {
-          if (data[key] === '') {
-            emptyCount++;
-          }
+        // Check if the file is empty
+        const stats = fs.statSync(filePath);
+        if (stats.size === 0) {
+            resolve('');
+            return;
         }
-        if (emptyCount < 2) {
-          results.push(data);
-        }
-        emptyColumnsCount[emptyCount] = (emptyColumnsCount[emptyCount] || 0) + 1;
-      })
-      .on('end', () => {
-        if (results.length === 0) {
-          resolve('');
-        } else {
-          const csvWriter = createObjectCsvWriter({
-            path: outputPath,
-            header: Object.keys(results[0]).map(key => ({ id: key, title: key }))
-          });
 
-          csvWriter.writeRecords(results)
-            .then(() => resolve('CSV file processed successfully.'))
-            .catch((error) => reject(error));
-        }
-      })
-      .on('error', (error) => reject(error));
-  });
+        fs.createReadStream(filePath)
+            .pipe(csvParser())
+            .on('headers', (headers) => {
+                header = headers;
+            })
+            .on('data', (row) => {
+                let emptyCount = 0;
+                for (const key in row) {
+                    if (row[key] === '') {
+                        emptyCount++;
+                    }
+                }
+                if (emptyCount < 2) {
+                    rows.push(row);
+                }
+            })
+            .on('end', () => {
+                if (rows.length === 0) {
+                    resolve('');
+                    return;
+                }
+
+                const csvWriter = createObjectCsvWriter({
+                    path: outputPath,
+                    header: header.map(col => ({ id: col, title: col }))
+                });
+
+                csvWriter.writeRecords(rows)
+                    .then(() => {
+                        resolve();
+                    })
+                    .catch(err => {
+                        reject(err);
+                    });
+            })
+            .on('error', (err) => {
+                reject(err);
+            });
+    });
 }
-
-module.exports = processCSV;
 const fs = require('fs');
 const os = require('os');
 const path = require('path');

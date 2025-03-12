@@ -6,35 +6,46 @@
  * @returns {Array<Array<number>>} - 4x4 pose matrix representing the rotation.
  */
 function createRotMatrix(angleDeg, axis) {
-    const angleRad = angleDeg * Math.PI / 180;
+    // Convert angle from degrees to radians
+    const angleRad = angleDeg * (Math.PI / 180);
+
+    // Initialize the 4x4 identity matrix
+    const matrix = [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [0, 0, 0, 1]
+    ];
+
+    // Calculate the sine and cosine of the angle
     const cos = Math.cos(angleRad);
     const sin = Math.sin(angleRad);
-    const rotMatrix = [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]];
 
+    // Modify the matrix based on the axis of rotation
     switch (axis) {
         case 'X':
-            rotMatrix[1][1] = cos;
-            rotMatrix[1][2] = -sin;
-            rotMatrix[2][1] = sin;
-            rotMatrix[2][2] = cos;
+            matrix[1][1] = cos;
+            matrix[1][2] = -sin;
+            matrix[2][1] = sin;
+            matrix[2][2] = cos;
             break;
         case 'Y':
-            rotMatrix[0][0] = cos;
-            rotMatrix[0][2] = sin;
-            rotMatrix[2][0] = -sin;
-            rotMatrix[2][2] = cos;
+            matrix[0][0] = cos;
+            matrix[0][2] = sin;
+            matrix[2][0] = -sin;
+            matrix[2][2] = cos;
             break;
         case 'Z':
-            rotMatrix[0][0] = cos;
-            rotMatrix[0][1] = -sin;
-            rotMatrix[1][0] = sin;
-            rotMatrix[1][1] = cos;
+            matrix[0][0] = cos;
+            matrix[0][1] = -sin;
+            matrix[1][0] = sin;
+            matrix[1][1] = cos;
             break;
         default:
-            throw new Error('Invalid axis. Must be one of "X", "Y", or "Z".');
+            throw new Error("Invalid axis. Must be one of 'X', 'Y', or 'Z'.");
     }
 
-    return rotMatrix;
+    return matrix;
 }
 describe('TestCreateRotMatrix', () => {
     it('test_rotation_x_90_degrees', () => {

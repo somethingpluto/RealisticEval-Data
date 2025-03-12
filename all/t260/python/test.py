@@ -37,7 +37,7 @@ class TestProcessCSV(unittest.TestCase):
         input_file_path = "input.csv"
         output_file_path = "output.csv"
 
-        # Write input data to a temp CSV file
+        # Write input data to a qa_item CSV file
         with open(input_file_path, 'w') as f:
             f.write(input_data)
 
@@ -48,7 +48,7 @@ class TestProcessCSV(unittest.TestCase):
         with open(output_file_path, 'r') as f:
             output_data = f.read()
 
-        # Clean up temp files
+        # Clean up qa_item files
         os.remove(input_file_path)
         os.remove(output_file_path)
 

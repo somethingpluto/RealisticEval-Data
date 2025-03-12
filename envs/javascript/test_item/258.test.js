@@ -7,20 +7,19 @@
  * @returns {Array|undefined} - A tuple of (position, bits) if the character is found, otherwise undefined.
  */
 function extractCharacterBits(byteArray, char, charset = 'utf-8') {
-  const encoder = new TextEncoder(charset);
-  const decoder = new TextDecoder(charset);
-  const charBytes = encoder.encode(char);
-  const charBits = charBytes.map(byte => byte.toString(2).padStart(8, '0')).join('');
+    const decoder = new TextDecoder(charset);
+    const text = decoder.decode(byteArray);
 
-  for (let i = 0; i < byteArray.length; i++) {
-    const byte = byteArray[i];
-    const byteBits = byte.toString(2).padStart(8, '0');
-    if (byteBits === charBits) {
-      return [i, byteBits];
+    const charIndex = text.indexOf(char);
+    if (charIndex === -1) {
+        return undefined;
     }
-  }
 
-  return undefined;
+    const charCode = char.charCodeAt(0);
+    const bytePosition = charIndex * (charset === 'utf-8' ? Math.ceil(charCode / 6) : 1);
+    const bits = byteArray.slice(bytePosition, bytePosition + (charset === 'utf-8' ? Math.ceil(charCode / 6) : 1));
+
+    return [bytePosition, bits];
 }
 describe('TestExtractCharacterBits', () => {
     it('test_case_1_valid_utf8', () => {

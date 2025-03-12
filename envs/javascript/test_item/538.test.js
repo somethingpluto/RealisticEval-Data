@@ -8,10 +8,13 @@
  */
 function sortByField(array, field, ascending = true) {
     return array.sort((a, b) => {
-        if (a[field] < b[field]) {
+        const valueA = a[field].toString().toLowerCase();
+        const valueB = b[field].toString().toLowerCase();
+
+        if (valueA < valueB) {
             return ascending ? -1 : 1;
         }
-        if (a[field] > b[field]) {
+        if (valueA > valueB) {
             return ascending ? 1 : -1;
         }
         return 0;

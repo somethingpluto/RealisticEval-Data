@@ -1,16 +1,14 @@
 /**
  * Replaces all phone numbers in the string with the string [PHONE_NUM].
- * For example:
- *   input: "Call me at 123-456-7890."
- *   output: "Call me at [PHONE_NUM]."
- *
+ * 
  * @param {string} text - The input string that may contain phone numbers.
  * @returns {string} The modified string with phone numbers replaced by '[PHONE_NUM]'.
  */
 function replacePhoneNumbers(text) {
-    // Regular expression to match phone numbers in various formats
+    // Regular expression to match common phone number formats
     const phoneRegex = /\b\d{3}[-.\s]?\d{3}[-.\s]?\d{4}\b/g;
-    // Replace all matches with [PHONE_NUM]
+    
+    // Replace all occurrences of phone numbers with [PHONE_NUM]
     return text.replace(phoneRegex, '[PHONE_NUM]');
 }
 describe('replacePhoneNumbers', () => {

@@ -1,5 +1,5 @@
 const fs = require('fs');
-const csvParser = require('csv-parser');
+const csv = require('csv-parser');
 
 /**
  * Appends a new row to a CSV file if there isn't a row with matching values in the first three columns.
@@ -9,41 +9,32 @@ const csvParser = require('csv-parser');
  * @param {Array} rowCandidate - Array containing the new row to be appended.
  */
 function appendOrSkipRow(fileHandler, reader, rowCandidate) {
-  let existingRows = [];
-  let shouldAppend = true;
+    let rowExists = false;
 
-  // Read existing rows from the CSV file
-  reader.on('data', (row) => {
-    existingRows.push(row);
-  });
+    // Read the existing rows to check for duplicates
+    reader.on('data', (row) => {
+        // Compare the first three columns of the existing row with the candidate row
+        if (row[0] === rowCandidate[0] && row[1] === rowCandidate[1] && row[2] === rowCandidate[2]) {
+            rowExists = true;
+            reader.destroy(); // Stop reading the file
+        }
+    });
 
-  // Check if the new row already exists in the first three columns
-  reader.on('end', () => {
-    for (const existingRow of existingRows) {
-      if (
-        existingRow[reader.options.headers[0]] === rowCandidate[0] &&
-        existingRow[reader.options.headers[1]] === rowCandidate[1] &&
-        existingRow[reader.options.headers[2]] === rowCandidate[2]
-      ) {
-        shouldAppend = false;
-        break;
-      }
-    }
+    // When the reading is finished, decide whether to append the new row
+    reader.on('end', () => {
+        if (!rowExists) {
+            // Append the new row to the file
+            fileHandler.write(`\n${rowCandidate.join(',')}`);
+        }
+        fileHandler.end(); // Close the file handler
+    });
 
-    // Append the new row if it doesn't exist
-    if (shouldAppend) {
-      const newRowString = rowCandidate.join(',') + '\n';
-      fileHandler.write(newRowString);
-    }
-  });
+    // Handle any errors that occur during reading
+    reader.on('error', (err) => {
+        console.error('Error reading CSV file:', err);
+        fileHandler.end(); // Close the file handler
+    });
 }
-
-// Example usage:
-// const fileStream = fs.createReadStream('path/to/your/csvfile.csv');
-// const csvStream = csvParser({ headers: ['col1', 'col2', 'col3', 'col4'] });
-// const fileHandler = fs.createWriteStream('path/to/your/csvfile.csv', { flags: 'r+' });
-
-// appendOrSkipRow(fileHandler, csvStream, ['value1', 'value2', 'value3', 'value4']);
 const { createWriteStream } = require('fs');
 const { createStringReader } = require('csv-parser');
 const { createObjectCsvWriter } = require('csv-writer');

@@ -5,11 +5,17 @@
  * @returns {number[]} An array of length 32, where positions with holes are 0 and others are 1.
  */
 function convertToRingFormat(holes) {
-    let ringFormat = new Array(32).fill(1);
-    for (let i = 0; i < holes.length; i++) {
-        ringFormat[holes[i]] = 0;
+    // Initialize an array of length 32 with all elements set to 1
+    const ring = Array(32).fill(1);
+
+    // Set the positions specified in the holes array to 0
+    for (const hole of holes) {
+        if (hole >= 0 && hole < 32) {
+            ring[hole] = 0;
+        }
     }
-    return ringFormat;
+
+    return ring;
 }
 describe('TestConvertToRingFormat', () => {
     it('test_no_holes', () => {

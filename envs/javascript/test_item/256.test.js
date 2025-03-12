@@ -8,17 +8,30 @@
  * @returns {Uint8Array} An array of bytes constructed from the bits.
  */
 function bitsToBytes(bits) {
-    let bytes = [];
-    for (let i = 0; i < bits.length; i += 8) {
-        let byte = 0;
+    // Calculate the number of complete bytes that can be formed
+    const numBytes = Math.floor(bits.length / 8);
+    
+    // Create a new Uint8Array to store the bytes
+    const bytes = new Uint8Array(numBytes);
+    
+    // Loop through each byte
+    for (let i = 0; i < numBytes; i++) {
+        let byteValue = 0;
+        
+        // Loop through the 8 bits of the current byte
         for (let j = 0; j < 8; j++) {
-            if (bits[i + j] === 1) {
-                byte |= (1 << (7 - j));
-            }
+            // Calculate the bit position in the bits array
+            const bitIndex = i * 8 + j;
+            
+            // Shift the current byte value left by 1 and add the current bit
+            byteValue = (byteValue << 1) | bits[bitIndex];
         }
-        bytes.push(byte);
+        
+        // Store the constructed byte in the bytes array
+        bytes[i] = byteValue;
     }
-    return new Uint8Array(bytes);
+    
+    return bytes;
 }
 describe('TestBitsToBytes', () => {
     describe('test_exact_multiple_of_eight', () => {

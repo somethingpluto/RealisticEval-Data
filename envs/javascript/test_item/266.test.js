@@ -4,66 +4,35 @@
  * @returns {Object} - The processed data.
  */
 function handleNestedData(data) {
-  // Helper function to process individual values
-  function processValue(value) {
-    if (typeof value === 'string') {
-      // Attempt to decode bytes to UTF-8 string
-      try {
-        return decodeURIComponent(escape(value));
-      } catch (e) {
-        // If decoding fails, return the original string
-        return value;
-      }
-    } else if (typeof value === 'number') {
-      // Convert numbers to integers or floating-point numbers
-      if (Number.isInteger(value)) {
-        return parseInt(value, 10);
-      } else {
-        return parseFloat(value);
-      }
-    } else {
-      // Return the value as is for non-string and non-number types
-      return value;
-    }
-  }
-
-  // Recursively process the data object
-  function processObject(obj) {
-    const processedObj = {};
-    for (const key in obj) {
-      if (obj.hasOwnProperty(key)) {
-        const value = obj[key];
-        if (typeof value === 'object' && value !== null) {
-          // Recursively process nested objects or arrays
-          processedObj[key] = Array.isArray(value) ? processArray(value) : processObject(value);
-        } else {
-          // Process individual values
-          processedObj[key] = processValue(value);
+    function processValue(value) {
+        if (typeof value === 'string' && /^[\x00-\x7F]*$/.test(value)) {
+            // Decode bytes to UTF-8 string
+            return decodeURIComponent(escape(value));
+        } else if (typeof value === 'number') {
+            // Convert numbers to integers or floating-point numbers
+            return Number(value);
+        } else if (Array.isArray(value)) {
+            // Process each element in the array
+            return value.map(processValue);
+        } else if (typeof value === 'object' && value !== null) {
+            // Process each property in the object
+            return handleNestedData(value);
         }
-      }
+        return value;
     }
-    return processedObj;
-  }
 
-  // Recursively process the data array
-  function processArray(arr) {
-    return arr.map(item => {
-      if (typeof item === 'object' && item !== null) {
-        // Recursively process nested objects or arrays
-        return Array.isArray(item) ? processArray(item) : processObject(item);
-      } else {
-        // Process individual values
-        return processValue(item);
-      }
-    });
-  }
-
-  // Start processing from the root of the data
-  if (Array.isArray(data)) {
-    return processArray(data);
-  } else {
-    return processObject(data);
-  }
+    if (Array.isArray(data)) {
+        return data.map(processValue);
+    } else if (typeof data === 'object' && data !== null) {
+        const processedData = {};
+        for (const key in data) {
+            if (data.hasOwnProperty(key)) {
+                processedData[key] = processValue(data[key]);
+            }
+        }
+        return processedData;
+    }
+    return data;
 }
 describe('TestHandleNestedData', () => {
   describe('test_simple_dictionary', () => {

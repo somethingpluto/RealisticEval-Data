@@ -1,15 +1,20 @@
 /**
- * Extract the file extension and return it if it exists. If not, an empty string is returned
+ * Extract the file extension and return it if it exists. If not, an empty string is returned.
  *
  * @param {string} file_name - The full name of the file from which to extract the extension.
  * @returns {string} The file extension without the dot, or an empty string if no extension is found.
  */
 function getFileExtension(file_name) {
-    const extensionIndex = file_name.lastIndexOf('.');
-    if (extensionIndex === -1) {
+    // Find the last occurrence of the dot in the file name
+    const lastDotIndex = file_name.lastIndexOf('.');
+    
+    // If there is no dot or the dot is the first character, return an empty string
+    if (lastDotIndex === -1 || lastDotIndex === 0) {
         return '';
     }
-    return file_name.substring(extensionIndex + 1);
+    
+    // Extract and return the extension (substring after the last dot)
+    return file_name.substring(lastDotIndex + 1);
 }
 describe('getFileExtension', () => {
     test('should return the file extension for a standard file', () => {

@@ -6,7 +6,8 @@
  * @returns {boolean} Returns true if the port number is valid, false otherwise.
  */
 function isValidPortNumber(port) {
-    return Number.isInteger(port) && port >= 1 && port <= 65535;
+    // Check if the port is a number and within the valid range
+    return typeof port === 'number' && port >= 1 && port <= 65535;
 }
 describe('isValidPortNumber', () => {
     test('returns true for a valid port number in the middle of the range', () => {

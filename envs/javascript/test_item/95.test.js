@@ -7,13 +7,12 @@
  * @returns {Array} - An array of objects, each containing the matched element and its index.
  */
 function findMatchingElements(arr, comparisonFn) {
-    const matches = [];
-    for (let i = 0; i < arr.length; i++) {
-        if (comparisonFn(arr[i])) {
-            matches.push({ element: arr[i], index: i });
+    return arr.reduce((result, element, index) => {
+        if (comparisonFn(element)) {
+            result.push({ element, index });
         }
-    }
-    return matches;
+        return result;
+    }, []);
 }
 describe('findMatchingElements', () => {
     test('should return an empty array for an empty input array', () => {

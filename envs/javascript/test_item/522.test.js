@@ -6,11 +6,26 @@
  * @returns {Array<Array<number>>} - A N x 3 array of the rotated point cloud.
  */
 function rotatePointCloud(pointCloud, rotationAngle) {
-    const rotatedPointCloud = pointCloud.map(point => {
-        const x = point[0] * Math.cos(rotationAngle) - point[2] * Math.sin(rotationAngle);
-        const z = point[0] * Math.sin(rotationAngle) + point[2] * Math.cos(rotationAngle);
-        return [x, point[1], z];
-    });
+    // Create a new array to store the rotated points
+    const rotatedPointCloud = [];
+
+    // Precompute the cosine and sine of the rotation angle
+    const cosAngle = Math.cos(rotationAngle);
+    const sinAngle = Math.sin(rotationAngle);
+
+    // Iterate over each point in the point cloud
+    for (let i = 0; i < pointCloud.length; i++) {
+        const [x, y, z] = pointCloud[i];
+
+        // Apply the rotation matrix around the Y axis
+        const rotatedX = x * cosAngle + z * sinAngle;
+        const rotatedY = y;
+        const rotatedZ = z * cosAngle - x * sinAngle;
+
+        // Add the rotated point to the new point cloud
+        rotatedPointCloud.push([rotatedX, rotatedY, rotatedZ]);
+    }
+
     return rotatedPointCloud;
 }
 describe('TestRotatePointCloud', () => {

@@ -6,21 +6,26 @@
  */
 export const getTimestamp = (createdAt) => {
     const now = new Date();
-    const diff = now - createdAt;
+    const diffInMilliseconds = now - createdAt;
+    const diffInSeconds = Math.floor(diffInMilliseconds / 1000);
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    const diffInDays = Math.floor(diffInHours / 24);
+    const diffInMonths = Math.floor(diffInDays / 30);
+    const diffInYears = Math.floor(diffInDays / 365);
 
-    const seconds = Math.floor(diff / 1000);
-    const minutes = Math.floor(seconds / 60);
-    const hours = Math.floor(minutes / 60);
-    const days = Math.floor(hours / 24);
-
-    if (days > 0) {
-        return `${days} day${days > 1 ? 's' : ''} ago`;
-    } else if (hours > 0) {
-        return `${hours} hour${hours > 1 ? 's' : ''} ago`;
-    } else if (minutes > 0) {
-        return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+    if (diffInYears > 0) {
+        return `${diffInYears} year${diffInYears > 1 ? 's' : ''} ago`;
+    } else if (diffInMonths > 0) {
+        return `${diffInMonths} month${diffInMonths > 1 ? 's' : ''} ago`;
+    } else if (diffInDays > 0) {
+        return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
+    } else if (diffInHours > 0) {
+        return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
+    } else if (diffInMinutes > 0) {
+        return `${diffInMinutes} minute${diffInMinutes > 1 ? 's' : ''} ago`;
     } else {
-        return `${seconds} second${seconds > 1 ? 's' : ''} ago`;
+        return `${diffInSeconds} second${diffInSeconds > 1 ? 's' : ''} ago`;
     }
 };
 describe('getTimestamp', () => {

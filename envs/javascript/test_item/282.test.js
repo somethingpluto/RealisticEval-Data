@@ -5,7 +5,20 @@
  * @returns {Array} A one-dimensional array containing all elements of the input.
  */
 function flattenArray(multiDimArray) {
-    return multiDimArray.flat(Infinity);
+    const result = [];
+
+    function flatten(arr) {
+        for (let element of arr) {
+            if (Array.isArray(element)) {
+                flatten(element);
+            } else {
+                result.push(element);
+            }
+        }
+    }
+
+    flatten(multiDimArray);
+    return result;
 }
 describe('TestFlattenArray', () => {
   it('test a deeply nested array', () => {

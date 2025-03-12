@@ -1,39 +1,48 @@
+const fs = require('fs');
+const readline = require('readline');
+
 /**
  * Reads data from a specified file and determines the type of each line.
  * This function processes each line of the specified file and attempts to convert it
  * into either an integer, a floating-point number, or a string.
  *
  * @param {string} path - The path to the file to be read. The file should exist and be accessible for reading.
- * @returns {Array<number|string>} - A list containing the converted values of each line in the file. Each element
+ * @returns {Promise<Array<number|string>>} - A promise that resolves to a list containing the converted values of each line in the file. Each element
  *                                    can be a number (int or float) or a string, depending on the content of the line.
  * @throws {Error} If an error occurs while reading the file.
  */
-function readDataFromFile(path) {
-    const fs = require('fs');
-    const readline = require('readline');
-
-    const lines = [];
-    const fileStream = fs.createReadStream(path);
-    const rl = readline.createInterface({
-        input: fileStream,
-        crlfDelay: Infinity
-    });
-
-    rl.on('line', (line) => {
-        let value;
-        if (!isNaN(line) && line.indexOf('.') === -1) {
-            value = parseInt(line, 10);
-        } else if (!isNaN(line)) {
-            value = parseFloat(line);
-        } else {
-            value = line;
-        }
-        lines.push(value);
-    });
-
+async function readDataFromFile(path) {
     return new Promise((resolve, reject) => {
+        const data = [];
+        const rl = readline.createInterface({
+            input: fs.createReadStream(path),
+            crlfDelay: Infinity
+        });
+
+        rl.on('line', (line) => {
+            const trimmedLine = line.trim();
+            if (trimmedLine === '') {
+                // Skip empty lines
+                return;
+            }
+
+            const intValue = parseInt(trimmedLine, 10);
+            if (!isNaN(intValue)) {
+                data.push(intValue);
+                return;
+            }
+
+            const floatValue = parseFloat(trimmedLine);
+            if (!isNaN(floatValue)) {
+                data.push(floatValue);
+                return;
+            }
+
+            data.push(trimmedLine);
+        });
+
         rl.on('close', () => {
-            resolve(lines);
+            resolve(data);
         });
 
         rl.on('error', (err) => {

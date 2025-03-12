@@ -1,5 +1,5 @@
 /**
- * count the number of numbers in a string
+ * Count the number of numbers in a string
  *
  * @param {string} str - The string from which to count numeric digits.
  * @returns {number} - The total count of numeric digits found in the string.
@@ -7,7 +7,7 @@
 function countNumbers(str) {
     let count = 0;
     for (let i = 0; i < str.length; i++) {
-        if (!isNaN(str[i])) {
+        if (!isNaN(str[i]) && str[i] !== ' ') {
             count++;
         }
     }

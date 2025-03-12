@@ -7,19 +7,23 @@
  * @throws {Error} - If `n` is out of bounds for the array defined by `shape`.
  */
 function decompose(n, shape) {
-    if (n < 0 || n >= shape.reduce((a, b) => a * b, 1)) {
-        throw new Error('Index out of bounds');
+    // Check if the flat index is out of bounds
+    const totalElements = shape.reduce((acc, dim) => acc * dim, 1);
+    if (n < 0 || n >= totalElements) {
+        throw new Error("Index out of bounds for the given shape.");
     }
 
-    const index = [];
-    let remaining = n;
+    // Initialize the result array
+    const result = new Array(shape.length).fill(0);
+
+    // Decompose the flat index into the multidimensional index
     for (let i = shape.length - 1; i >= 0; i--) {
         const dimSize = shape[i];
-        index[i] = Math.floor(remaining / dimSize);
-        remaining %= dimSize;
+        result[i] = n % dimSize;
+        n = Math.floor(n / dimSize);
     }
 
-    return index;
+    return result;
 }
 describe('TestDecomposeFunction', () => {
   it('should handle edge case with larger shape', () => {

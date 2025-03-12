@@ -6,24 +6,31 @@
  *                       Returns null if the number is zero or if the number has prime factors other than 2 and 3.
  */
 function findPowers(num) {
-    if (num <= 0) return null;
+    if (num <= 0) {
+        return null;
+    }
 
-    let powerOfTwo = 0;
-    let powerOfThree = 0;
+    let powerOf2 = 0;
+    let powerOf3 = 0;
 
+    // Divide by 2 until num is no longer divisible by 2
     while (num % 2 === 0) {
         num /= 2;
-        powerOfTwo++;
+        powerOf2++;
     }
 
+    // Divide by 3 until num is no longer divisible by 3
     while (num % 3 === 0) {
         num /= 3;
-        powerOfThree++;
+        powerOf3++;
     }
 
-    if (num !== 1) return null;
+    // If num is not 1, it means there are other prime factors
+    if (num !== 1) {
+        return null;
+    }
 
-    return [powerOfTwo, powerOfThree];
+    return [powerOf2, powerOf3];
 }
 describe('TestFindPowers', () => {
     describe('Valid Cases', () => {

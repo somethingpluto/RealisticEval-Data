@@ -3,65 +3,49 @@
  * If all queens cannot be placed, it will print "No solution".
  */
 function eightQueens() {
-    const N = 8; // Number of queens and the size of the chessboard
+    const N = 8;
     let board = Array.from({ length: N }, () => Array(N).fill('.'));
 
-    function isSafe(row, col) {
+    function isSafe(board, row, col) {
         // Check this row on left side
         for (let i = 0; i < col; i++) {
-            if (board[row][i] === 'Q') {
-                return false;
-            }
+            if (board[row][i] === 'Q') return false;
         }
 
         // Check upper diagonal on left side
         for (let i = row, j = col; i >= 0 && j >= 0; i--, j--) {
-            if (board[i][j] === 'Q') {
-                return false;
-            }
+            if (board[i][j] === 'Q') return false;
         }
 
         // Check lower diagonal on left side
-        for (let i = row, j = col; i < N && j >= 0; i++, j--) {
-            if (board[i][j] === 'Q') {
-                return false;
-            }
+        for (let i = row, j = col; j >= 0 && i < N; i++, j--) {
+            if (board[i][j] === 'Q') return false;
         }
 
         return true;
     }
 
-    function solveNQueensUtil(col) {
-        // Base case: If all queens are placed
-        if (col >= N) {
-            printBoard(board);
-            return;
-        }
+    function solveNQueensUtil(board, col) {
+        if (col >= N) return true;
 
-        // Consider this column and try placing this queen in all rows one by one
         for (let i = 0; i < N; i++) {
-            if (isSafe(i, col)) {
-                board[i][col] = 'Q'; // Place this queen in board[i][col]
+            if (isSafe(board, i, col)) {
+                board[i][col] = 'Q';
 
-                // Recur to place rest of the queens
-                solveNQueensUtil(col + 1);
+                if (solveNQueensUtil(board, col + 1)) return true;
 
-                // If placing queen in board[i][col] doesn't lead to a solution, then remove queen from board[i][col]
-                board[i][col] = '.';
+                board[i][col] = '.'; // Backtrack
             }
         }
+
+        return false;
     }
 
-    function printBoard(board) {
-        for (let i = 0; i < N; i++) {
-            let row = board[i].join(' ');
-            console.log(row);
-        }
-        console.log('\n');
+    if (!solveNQueensUtil(board, 0)) {
+        console.log("No solution");
+    } else {
+        board.forEach(row => console.log(row.join(' ')));
     }
-
-    // Initialize the board and start solving the problem
-    solveNQueensUtil(0);
 }
 
 // Call the function to solve the Eight Queens problem

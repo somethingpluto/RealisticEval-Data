@@ -5,28 +5,33 @@
  * @returns {Object} - An object with the shortest distance from the start node to each node.
  */
 function dijkstra(graph, start) {
+    // Initialize distances with infinity for all nodes except the start node
     const distances = {};
-    const previous = {};
-    const queue = new PriorityQueue((a, b) => a.priority - b.priority);
+    const visited = new Set();
+    const priorityQueue = new MinHeap();
 
-    // Initialize distances and previous nodes
     for (const node in graph) {
         distances[node] = Infinity;
-        previous[node] = null;
     }
-
     distances[start] = 0;
-    queue.enqueue({ node: start, priority: 0 });
 
-    while (!queue.isEmpty()) {
-        const { node } = queue.dequeue();
+    // Insert the start node into the priority queue
+    priorityQueue.insert(start, 0);
 
-        for (const neighbor of graph[node]) {
-            const alt = distances[node] + neighbor.weight;
-            if (alt < distances[neighbor.neighbor]) {
-                distances[neighbor.neighbor] = alt;
-                previous[neighbor.neighbor] = node;
-                queue.enqueue({ node: neighbor.neighbor, priority: alt });
+    while (!priorityQueue.isEmpty()) {
+        const currentNode = priorityQueue.extractMin();
+
+        if (visited.has(currentNode)) continue;
+        visited.add(currentNode);
+
+        // Explore neighbors
+        for (const { neighbor, weight } of graph[currentNode]) {
+            if (visited.has(neighbor)) continue;
+
+            const newDistance = distances[currentNode] + weight;
+            if (newDistance < distances[neighbor]) {
+                distances[neighbor] = newDistance;
+                priorityQueue.insert(neighbor, newDistance);
             }
         }
     }
@@ -34,70 +39,82 @@ function dijkstra(graph, start) {
     return distances;
 }
 
-// PriorityQueue class for managing nodes in the queue
-class PriorityQueue {
-    constructor(comparator = (a, b) => a - b) {
-        this._heap = [];
-        this._comparator = comparator;
+// MinHeap class for the priority queue
+class MinHeap {
+    constructor() {
+        this.heap = [];
+        this.nodeIndexMap = new Map();
     }
 
-    size() {
-        return this._heap.length;
+    insert(node, priority) {
+        this.heap.push({ node, priority });
+        this.nodeIndexMap.set(node, this.heap.length - 1);
+        this.bubbleUp(this.heap.length - 1);
+    }
+
+    extractMin() {
+        if (this.heap.length === 1) {
+            const min = this.heap.pop();
+            this.nodeIndexMap.clear();
+            return min.node;
+        }
+
+        const min = this.heap[0];
+        this.heap[0] = this.heap.pop();
+        this.nodeIndexMap.set(this.heap[0].node, 0);
+        this.nodeIndexMap.delete(min.node);
+        this.bubbleDown(0);
+
+        return min.node;
     }
 
     isEmpty() {
-        return this.size() == 0;
+        return this.heap.length === 0;
     }
 
-    peek() {
-        return this._heap[0];
-    }
-
-    push(value) {
-        this._heap.push(value);
-        this._siftUp();
-    }
-
-    pop() {
-        const poppedValue = this.peek();
-        const bottom = this.size() - 1;
-        if (bottom > 0) {
-            this._swap(0, bottom);
-        }
-        this._heap.pop();
-        this._siftDown();
-        return poppedValue;
-    }
-
-    _greater(i, j) {
-        return this._comparator(this._heap[i], this._heap[j]) > 0;
-    }
-
-    _swap(i, j) {
-        [this._heap[i], this._heap[j]] = [this._heap[j], this._heap[i]];
-    }
-
-    _siftUp() {
-        let node = this.size() - 1;
-        while (node > 0 && this._greater(Math.floor((node - 1) / 2), node)) {
-            this._swap(node, Math.floor((node - 1) / 2));
-            node = Math.floor((node - 1) / 2);
-        }
-    }
-
-    _siftDown() {
-        let node = 0;
-        while (
-            (2 * node + 1 < this.size() && this._greater(node, 2 * node + 1)) ||
-            (2 * node + 2 < this.size() && this._greater(node, 2 * node + 2))
-        ) {
-            let maxChild = 2 * node + 1;
-            if (2 * node + 2 < this.size() && this._greater(2 * node + 2, 2 * node + 1)) {
-                maxChild = 2 * node + 2;
+    bubbleUp(index) {
+        while (index > 0) {
+            const parentIndex = Math.floor((index - 1) / 2);
+            if (this.heap[index].priority < this.heap[parentIndex].priority) {
+                this.swap(index, parentIndex);
+                index = parentIndex;
+            } else {
+                break;
             }
-            this._swap(node, maxChild);
-            node = maxChild;
         }
+    }
+
+    bubbleDown(index) {
+        const length = this.heap.length;
+        while (true) {
+            const leftChildIndex = 2 * index + 1;
+            const rightChildIndex = 2 * index + 2;
+            let smallestIndex = index;
+
+            if (leftChildIndex < length && this.heap[leftChildIndex].priority < this.heap[smallestIndex].priority) {
+                smallestIndex = leftChildIndex;
+            }
+
+            if (rightChildIndex < length && this.heap[rightChildIndex].priority < this.heap[smallestIndex].priority) {
+                smallestIndex = rightChildIndex;
+            }
+
+            if (smallestIndex !== index) {
+                this.swap(index, smallestIndex);
+                index = smallestIndex;
+            } else {
+                break;
+            }
+        }
+    }
+
+    swap(index1, index2) {
+        const temp = this.heap[index1];
+        this.heap[index1] = this.heap[index2];
+        this.heap[index2] = temp;
+
+        this.nodeIndexMap.set(this.heap[index1].node, index1);
+        this.nodeIndexMap.set(this.heap[index2].node, index2);
     }
 }
 describe('Dijkstra Algorithm Tests', () => {

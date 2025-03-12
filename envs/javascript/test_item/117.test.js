@@ -7,46 +7,49 @@
  * @returns {Object} An object containing the HSL values.
  */
 function rgbToHsl(r, g, b) {
-    // Make r, g, and b fractions of 1
+    // Normalize RGB values to the range [0, 1]
     r /= 255;
     g /= 255;
     b /= 255;
 
-    // Find the minimum and maximum values of r, g, and b
-    const min = Math.min(r, g, b);
+    // Find the maximum and minimum values among r, g, b
     const max = Math.max(r, g, b);
-    const delta = max - min;
-
-    // Calculate hue
-    let h;
-    if (delta === 0) {
-        h = 0;
-    } else if (max === r) {
-        h = ((g - b) / delta) % 6;
-    } else if (max === g) {
-        h = (b - r) / delta + 2;
-    } else {
-        h = (r - g) / delta + 4;
-    }
-    h *= 60;
+    const min = Math.min(r, g, b);
 
     // Calculate lightness
-    const l = (max + min) / 2;
+    let l = (max + min) / 2;
 
-    // Calculate saturation
-    let s;
-    if (delta === 0) {
+    // Calculate saturation and hue
+    let h, s;
+    if (max === min) {
+        // Achromatic case (gray)
+        h = 0;
         s = 0;
     } else {
-        s = delta / (1 - Math.abs(2 * l - 1));
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+
+        switch (max) {
+            case r:
+                h = (g - b) / d + (g < b ? 6 : 0);
+                break;
+            case g:
+                h = (b - r) / d + 2;
+                break;
+            case b:
+                h = (r - g) / d + 4;
+                break;
+        }
+
+        h /= 6;
     }
 
-    // Return the HSL values
-    return {
-        h: Math.round(h),
-        s: Math.round(s * 100),
-        l: Math.round(l * 100)
-    };
+    // Convert h, s, l to the range [0, 1]
+    h = Math.round(h * 360);
+    s = Math.round(s * 100);
+    l = Math.round(l * 100);
+
+    return { h, s, l };
 }
 describe('rgbToHsl function', () => {
     test('converts pure red to HSL', () => {

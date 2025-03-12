@@ -6,9 +6,9 @@
  * @returns {Object|null} The object with the matching `id`, or `null` if no match is found.
  */
 function getObjectById(id, list) {
-    for (let i = 0; i < list.length; i++) {
-        if (list[i].id === id) {
-            return list[i];
+    for (let obj of list) {
+        if (obj.id === id) {
+            return obj;
         }
     }
     return null;

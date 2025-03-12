@@ -11,12 +11,12 @@
  */
 function floydWarshallShortestPaths(adjacencyMatrix) {
     const n = adjacencyMatrix.length;
-    let shortestPaths = adjacencyMatrix.slice();
+    const shortestPaths = adjacencyMatrix.map(row => row.slice());
 
     for (let k = 0; k < n; k++) {
         for (let i = 0; i < n; i++) {
             for (let j = 0; j < n; j++) {
-                if (shortestPaths[i][j] > shortestPaths[i][k] + shortestPaths[k][j]) {
+                if (shortestPaths[i][k] + shortestPaths[k][j] < shortestPaths[i][j]) {
                     shortestPaths[i][j] = shortestPaths[i][k] + shortestPaths[k][j];
                 }
             }

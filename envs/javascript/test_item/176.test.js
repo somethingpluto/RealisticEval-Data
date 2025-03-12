@@ -29,15 +29,15 @@ class Point {
 function findKNearestNeighbors(points, queryPoint, k) {
     // Calculate distances from the query point to all other points
     const distances = points.map(point => ({
-        point: point,
-        distance: point.distanceTo(queryPoint)
+        point,
+        distance: queryPoint.distanceTo(point)
     }));
 
-    // Sort the points by distance in ascending order
+    // Sort the points by distance
     distances.sort((a, b) => a.distance - b.distance);
 
     // Return the k nearest points
-    return distances.slice(0, k).map(distance => distance.point);
+    return distances.slice(0, k).map(item => item.point);
 }
 describe('Point', () => {
     test('find k nearest neighbors simple case', () => {

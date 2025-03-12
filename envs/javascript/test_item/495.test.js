@@ -10,20 +10,40 @@
  * @returns {string} - A string containing the filtered content with additional context.
  */
 function filterContentWithContext(content, keywords, linesBefore = 1, linesAfter = 1) {
+    // Split the content into lines
     const lines = content.split('\n');
-    const regex = new RegExp(`\\b(${keywords.join('|')})\\b`, 'g');
-    const filteredLines = [];
 
+    // Create a regex pattern for whole word matching of keywords
+    const keywordPatterns = keywords.map(keyword => `\\b${keyword}\\b`);
+    const regexPattern = new RegExp(keywordPatterns.join('|'), 'g');
+
+    // Initialize an array to hold the result lines
+    const resultLines = [];
+
+    // Iterate over the lines to find matches and build the result
     for (let i = 0; i < lines.length; i++) {
-        if (regex.test(lines[i])) {
-            const start = Math.max(0, i - linesBefore);
-            const end = Math.min(lines.length, i + linesAfter + 1);
-            filteredLines.push(...lines.slice(start, end));
-            i = end - 1; // Skip the lines that have already been added
+        if (regexPattern.test(lines[i])) {
+            // Add lines before the match
+            for (let j = Math.max(0, i - linesBefore); j < i; j++) {
+                if (!resultLines.includes(lines[j])) {
+                    resultLines.push(lines[j]);
+                }
+            }
+
+            // Add the matching line
+            resultLines.push(lines[i]);
+
+            // Add lines after the match
+            for (let j = i + 1; j <= i + linesAfter && j < lines.length; j++) {
+                if (!resultLines.includes(lines[j])) {
+                    resultLines.push(lines[j]);
+                }
+            }
         }
     }
 
-    return filteredLines.join('\n');
+    // Join the result lines into a single string and return
+    return resultLines.join('\n');
 }
 describe('TestFilterContentWithContext', () => {
     describe('Single Keyword Match', () => {

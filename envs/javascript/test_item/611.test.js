@@ -4,13 +4,17 @@
  * @returns {string} A randomly generated string that meets the criteria of including both upper and lower case letters.
  */
 function generateRandomString() {
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-    let result = '';
-    const charactersLength = characters.length;
+    const upperCaseLetters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const lowerCaseLetters = 'abcdefghijklmnopqrstuvwxyz';
+    const allLetters = upperCaseLetters + lowerCaseLetters;
+    let randomString = '';
+
     for (let i = 0; i < 25; i++) {
-        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+        const randomIndex = Math.floor(Math.random() * allLetters.length);
+        randomString += allLetters[randomIndex];
     }
-    return result;
+
+    return randomString;
 }
 describe('generateRandomString', () => {
     

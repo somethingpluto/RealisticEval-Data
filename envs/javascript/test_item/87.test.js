@@ -1,15 +1,19 @@
 /**
- * convert the UNIX timestamp to the string format 'Jan 1, 8: 00'.
- * for example:
- *      input: 1672531200 output: Jan 1, 8:00
- *      input: 1696516800 output: Oct 5, 22:40
+ * Convert the UNIX timestamp to the string format 'Jan 1, 8:00'.
  *
  * @param unixTimestamp
  */
 function timestampToReadableDate(unixTimestamp) {
-    const date = new Date(unixTimestamp * 1000);
-    const options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
-    return date.toLocaleDateString('en-US', options).replace(',', '').replace(/:00$/, '');
+    const date = new Date(unixTimestamp * 1000); // Convert to milliseconds
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    
+    const month = monthNames[date.getMonth()];
+    const day = date.getDate();
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+    
+    const formattedTime = `${month} ${day}, ${hours}:${minutes.toString().padStart(2, '0')}`;
+    return formattedTime;
 }
 describe('timestampToReadableDate', () => {
     test('should convert UNIX timestamp to readable format', () => {

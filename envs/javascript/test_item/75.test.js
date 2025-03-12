@@ -13,22 +13,29 @@ const path = require('path');
  * @throws {Error} Throws an error if the directory cannot be accessed or if an error occurs during renaming.
  */
 function renameFiles(directory) {
-  try {
-    const files = fs.readdirSync(directory).filter(file => path.extname(file).toLowerCase() === '.png');
-    files.sort();
+    try {
+        // Read the directory contents
+        const files = fs.readdirSync(directory);
 
-    let sequenceNumber = 1;
-    files.forEach(file => {
-      const oldPath = path.join(directory, file);
-      const newFileName = `${path.basename(file, path.extname(file))}${1000 + sequenceNumber}${path.extname(file)}`;
-      const newPath = path.join(directory, newFileName);
+        // Filter out only the PNG files
+        const pngFiles = files.filter(file => path.extname(file).toLowerCase() === '.png');
 
-      fs.renameSync(oldPath, newPath);
-      sequenceNumber++;
-    });
-  } catch (error) {
-    throw new Error(`Error renaming files in directory ${directory}: ${error.message}`);
-  }
+        // Sort the PNG files alphabetically
+        pngFiles.sort();
+
+        // Rename each file with a sequence number
+        pngFiles.forEach((file, index) => {
+            const oldPath = path.join(directory, file);
+            const baseName = path.basename(file, '.png');
+            const newName = `${baseName}${String(index + 1).padStart(4, '0')}.png`;
+            const newPath = path.join(directory, newName);
+
+            // Rename the file
+            fs.renameSync(oldPath, newPath);
+        });
+    } catch (error) {
+        throw new Error(`Error renaming files: ${error.message}`);
+    }
 }
 describe('TestRenameFiles', () => {
     let testDir;

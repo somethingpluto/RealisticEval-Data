@@ -11,24 +11,32 @@
  */
 function circleIntersectionArea(x1, y1, r1, x2, y2, r2) {
     // Calculate the distance between the centers of the two circles
-    const distance = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+    const distance = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
 
-    // If the circles do not intersect, return 0
+    // If the distance is greater than the sum of the radii, they do not intersect
     if (distance >= r1 + r2) {
         return 0;
     }
 
-    // If one circle is completely inside the other, return the area of the smaller circle
+    // If one circle is inside the other, the intersection area is the area of the smaller circle
     if (distance <= Math.abs(r1 - r2)) {
-        return Math.pow(Math.min(r1, r2), 2) * Math.PI;
+        return Math.PI * Math.min(r1, r2) ** 2;
     }
 
-    // Calculate the intersection area using the formula
-    const a = r1 * r1 * Math.acos((distance * distance + r1 * r1 - r2 * r2) / (2 * distance * r1 * r1));
-    const b = r2 * r2 * Math.acos((distance * distance + r2 * r2 - r1 * r1) / (2 * distance * r2 * r2));
-    const c = 0.5 * Math.sqrt((-distance + r1 + r2) * (distance + r1 - r2) * (distance - r1 + r2) * (distance + r1 + r2));
+    // Calculate the angles for the sector areas
+    const angle1 = 2 * Math.acos((r1 ** 2 + distance ** 2 - r2 ** 2) / (2 * r1 * distance));
+    const angle2 = 2 * Math.acos((r2 ** 2 + distance ** 2 - r1 ** 2) / (2 * r2 * distance));
 
-    return a + b - c;
+    // Calculate the areas of the sectors
+    const sectorArea1 = 0.5 * r1 ** 2 * angle1;
+    const sectorArea2 = 0.5 * r2 ** 2 * angle2;
+
+    // Calculate the areas of the triangles
+    const triangleArea1 = 0.5 * r1 ** 2 * Math.sin(angle1);
+    const triangleArea2 = 0.5 * r2 ** 2 * Math.sin(angle2);
+
+    // The intersection area is the sum of the sector areas minus the sum of the triangle areas
+    return sectorArea1 + sectorArea2 - triangleArea1 - triangleArea2;
 }
 describe("Testing circleIntersectionArea function", () => {
     const tolerance = 1e-5;

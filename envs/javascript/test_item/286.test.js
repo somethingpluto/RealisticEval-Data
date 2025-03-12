@@ -6,12 +6,22 @@
  *                              null if no such number exists.
  */
 function findLargestDivisible(n) {
-    let half = n / 2;
-    for (let i = n; i >= half; i--) {
-        if (i % 5 === 0 || i % 10 === 0) {
+    // Ensure n is an integer
+    if (!Number.isInteger(n) || n <= 0) {
+        return null;
+    }
+
+    // Calculate half of n
+    const halfN = Math.floor(n / 2);
+
+    // Iterate from n down to halfN
+    for (let i = n; i >= halfN; i--) {
+        if (i % 5 === 0) {
             return i;
         }
     }
+
+    // If no number is found, return null
     return null;
 }
 describe('findLargestDivisible', () => {

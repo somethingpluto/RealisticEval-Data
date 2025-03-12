@@ -9,76 +9,47 @@
  *                        sorted.
  */
 function mergeSort(arr, left, right) {
-    if (left < right) {
-        // Find the middle point to divide the array into two halves
-        let middle = Math.floor((left + right) / 2);
-
-        // Call mergeSort for the first half
-        mergeSort(arr, left, middle);
-
-        // Call mergeSort for the second half
-        mergeSort(arr, middle + 1, right);
-
-        // Merge the two halves sorted in step 2 and 3
-        merge(arr, left, middle, right);
+    if (left >= right) {
+        return;
     }
+
+    const mid = Math.floor((left + right) / 2);
+
+    mergeSort(arr, left, mid);
+    mergeSort(arr, mid + 1, right);
+
+    merge(arr, left, mid, right);
 }
 
 /**
- * Merges two halves of an array.
+ * Merges two sorted portions of an array into a single sorted portion.
  *
- * @param {number[]} arr - The array to be sorted.
- * @param {number} left - The starting index of the first half.
- * @param {number} middle - The ending index of the first half and starting index of the second half.
- * @param {number} right - The ending index of the second half.
+ * @param {number[]} arr - The array containing the portions to be merged.
+ * @param {number} left - The starting index of the first portion.
+ * @param {number} mid - The ending index of the first portion and the starting
+ *                      index of the second portion.
+ * @param {number} right - The ending index of the second portion.
  */
-function merge(arr, left, middle, right) {
-    // Find the sizes of the two halves
-    let n1 = middle - left + 1;
-    let n2 = right - middle;
+function merge(arr, left, mid, right) {
+    const leftArr = arr.slice(left, mid + 1);
+    const rightArr = arr.slice(mid + 1, right + 1);
 
-    /* Create temp arrays */
-    let L = new Array(n1);
-    let R = new Array(n2);
+    let i = 0, j = 0, k = left;
 
-    /* Copy data to temp arrays */
-    for (let i = 0; i < n1; ++i) {
-        L[i] = arr[left + i];
-    }
-    for (let j = 0; j < n2; ++j) {
-        R[j] = arr[middle + 1 + j];
-    }
-
-    /* Merge the temp arrays */
-
-    // Initial indexes of first and second subarrays
-    let i = 0, j = 0;
-
-    // Initial index of merged subarray array
-    let k = left;
-    while (i < n1 && j < n2) {
-        if (L[i] <= R[j]) {
-            arr[k] = L[i];
-            i++;
+    while (i < leftArr.length && j < rightArr.length) {
+        if (leftArr[i] <= rightArr[j]) {
+            arr[k++] = leftArr[i++];
         } else {
-            arr[k] = R[j];
-            j++;
+            arr[k++] = rightArr[j++];
         }
-        k++;
     }
 
-    /* Copy the remaining elements of L[], if there are any */
-    while (i < n1) {
-        arr[k] = L[i];
-        i++;
-        k++;
+    while (i < leftArr.length) {
+        arr[k++] = leftArr[i++];
     }
 
-    /* Copy the remaining elements of R[], if there are any */
-    while (j < n2) {
-        arr[k] = R[j];
-        j++;
-        k++;
+    while (j < rightArr.length) {
+        arr[k++] = rightArr[j++];
     }
 }
 describe("Merge Sort Test Cases", () => {

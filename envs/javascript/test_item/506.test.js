@@ -5,9 +5,9 @@
  * @returns {string} The converted CamelCase string.
  */
 function snakeToCamel(snakeStr) {
-    return snakeStr.replace(/(_\w)/g, function(match) {
-        return match[1].toUpperCase();
-    });
+    return snakeStr.replace(/([-_][a-z])/g, (group) =>
+        group.toUpperCase().replace('-', '').replace('_', '')
+    );
 }
 describe('Test snakeToCamel', () => {
     test('test basic snake_case to CamelCase conversion', () => {

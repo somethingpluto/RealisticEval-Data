@@ -6,9 +6,23 @@
  * @returns {number|string} - The extracted weight value if a match is found, otherwise an empty string.
  */
 function cleanPattern(x, pattern) {
-    const str = String(x);
-    const match = str.match(pattern);
-    return match ? Number(match[0]) : '';
+    // Convert the input to a string
+    const inputString = String(x);
+    
+    // Create a regular expression object from the pattern
+    const regex = new RegExp(pattern);
+    
+    // Execute the regex on the input string
+    const match = inputString.match(regex);
+    
+    // If a match is found, extract the numeric value
+    if (match && match[1]) {
+        const numericValue = parseFloat(match[1]);
+        return isNaN(numericValue) ? '' : numericValue;
+    }
+    
+    // If no match is found, return an empty string
+    return '';
 }
 describe('TestCleanPattern', () => {
     let pattern;

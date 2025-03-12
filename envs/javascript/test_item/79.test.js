@@ -3,55 +3,55 @@
  * only one month will be displayed. If not, the start and end months will be displayed separately. For example, if you
  * enter the start date and end date as "2023-08-01" and "2023-08-15" respectively, you will finally output "August 1 to 15, 2023".
  *
- * Example:
- *   Input:
- *     start_date: 2023-08-01
- *     end_date: 2023-08-15
- *   Output:
- *     August 1 to 15, 2023
- *
  * @param {string} start_date - The start date in 'YYYY-MM-DD' format.
  * @param {string} end_date - The end date in 'YYYY-MM-DD' format.
  * @returns {string} A string representing the date range in a human-readable format.
  * @throws {Error} If the start_date or end_date are not in the correct format or if start_date is after end_date.
  */
 function dateRangeString(start_date, end_date) {
-  // Validate input dates
-  const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-  if (!dateRegex.test(start_date) || !dateRegex.test(end_date)) {
-    throw new Error('Invalid date format. Please use YYYY-MM-DD.');
-  }
+    // Helper function to validate date format
+    function isValidDate(dateString) {
+        const regex = /^\d{4}-\d{2}-\d{2}$/;
+        if (!regex.test(dateString)) return false;
+        const date = new Date(dateString);
+        return date instanceof Date && !isNaN(date);
+    }
 
-  // Parse dates
-  const start = new Date(start_date);
-  const end = new Date(end_date);
-  if (start > end) {
-    throw new Error('Start date cannot be after end date.');
-  }
+    // Helper function to get month name from month number
+    function getMonthName(month) {
+        const monthNames = ["January", "February", "March", "April", "May", "June", 
+                            "July", "August", "September", "October", "November", "December"];
+        return monthNames[month];
+    }
 
-  // Get month names
-  const monthNames = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
-  ];
+    // Validate input dates
+    if (!isValidDate(start_date) || !isValidDate(end_date)) {
+        throw new Error("Invalid date format. Dates must be in 'YYYY-MM-DD' format.");
+    }
 
-  // Get month and year from dates
-  const startMonth = monthNames[start.getMonth()];
-  const endMonth = monthNames[end.getMonth()];
-  const startYear = start.getFullYear();
-  const endYear = end.getFullYear();
+    const startDate = new Date(start_date);
+    const endDate = new Date(end_date);
 
-  // Format the date range string
-  let dateRange = '';
-  if (startMonth === endMonth && startYear === endYear) {
-    // Same month and year
-    dateRange = `${startMonth} ${start.getDate()} to ${end.getDate()}, ${startYear}`;
-  } else {
-    // Different month or year
-    dateRange = `${startMonth} ${start.getDate()}, ${startYear} to ${endMonth} ${end.getDate()}, ${endYear}`;
-  }
+    if (startDate > endDate) {
+        throw new Error("Start date cannot be after end date.");
+    }
 
-  return dateRange;
+    const startYear = startDate.getFullYear();
+    const startMonth = startDate.getMonth();
+    const startDay = startDate.getDate();
+
+    const endYear = endDate.getFullYear();
+    const endMonth = endDate.getMonth();
+    const endDay = endDate.getDate();
+
+    const startMonthName = getMonthName(startMonth);
+    const endMonthName = getMonthName(endMonth);
+
+    if (startYear === endYear && startMonth === endMonth) {
+        return `${startMonthName} ${startDay} to ${endDay}, ${startYear}`;
+    } else {
+        return `${startMonthName} ${startDay}, ${startYear} to ${endMonthName} ${endDay}, ${endYear}`;
+    }
 }
 describe('TestDateRangeString', () => {
     it('should correctly format dates within the same month', () => {

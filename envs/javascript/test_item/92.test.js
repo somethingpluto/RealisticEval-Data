@@ -10,17 +10,10 @@ const { document } = dom.window;
  * @returns {string} The decoded string with HTML entities converted back to their original characters.
  */
 function replaceHtmlEntities(htmlString) {
-  // Create a temporary DOM element to hold the HTML string
-  const tempElement = document.createElement('div');
-  tempElement.innerHTML = htmlString;
-
-  // Return the decoded text content of the temporary element
-  return tempElement.textContent || tempElement.innerText || '';
+    const tempElement = document.createElement('div');
+    tempElement.innerHTML = htmlString;
+    return tempElement.textContent || tempElement.innerText || '';
 }
-
-// Example usage:
-// const decodedString = replaceHtmlEntities('&lt;div&gt;Hello, World!&lt;/div&gt;');
-// console.log(decodedString); // Output: <div>Hello, World!</div>
 describe('replaceHtmlEntities', () => {
     test('decodes standard HTML entities', () => {
         const input = 'The &amp; symbol should become an &quot;and&quot; sign.';

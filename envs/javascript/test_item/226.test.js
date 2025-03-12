@@ -8,42 +8,31 @@ const readline = require('readline');
  * @param {string} jsonlFile - The path to the JSONL file.
  */
 function tsvToJSONL(tsvFile, jsonlFile) {
-  const tsvStream = fs.createReadStream(tsvFile);
-  const jsonlStream = fs.createWriteStream(jsonlFile);
+    const readStream = fs.createReadStream(tsvFile, { encoding: 'utf8' });
+    const writeStream = fs.createWriteStream(jsonlFile, { encoding: 'utf8' });
+    const rl = readline.createInterface({ input: readStream });
 
-  const rl = readline.createInterface({
-    input: tsvStream,
-    crlfDelay: Infinity
-  });
+    let headers = null;
 
-  rl.on('line', (line) => {
-    const jsonLine = convertTSVToJSON(line);
-    jsonlStream.write(`${JSON.stringify(jsonLine)}\n`);
-  });
+    rl.on('line', (line) => {
+        if (!headers) {
+            headers = line.split('\t');
+        } else {
+            const values = line.split('\t');
+            const jsonObject = {};
 
-  rl.on('close', () => {
-    jsonlStream.end();
-    console.log(`Conversion complete. JSONL file saved to ${jsonlFile}`);
-  });
+            headers.forEach((header, index) => {
+                jsonObject[header] = values[index];
+            });
+
+            writeStream.write(JSON.stringify(jsonObject) + '\n');
+        }
+    });
+
+    rl.on('close', () => {
+        writeStream.end();
+    });
 }
-
-/**
- * Convert a TSV line to a JSON object.
- *
- * @param {string} tsvLine - The TSV line to convert.
- * @returns {Object} - The JSON object.
- */
-function convertTSVToJSON(tsvLine) {
-  const columns = tsvLine.split('\t');
-  const json = {};
-  columns.forEach((column, index) => {
-    json[index] = column;
-  });
-  return json;
-}
-
-// Example usage:
-// tsvToJSONL('input.tsv', 'output.jsonl');
 const os = require('os');
 const fs = require('fs');
 const path = require('path');

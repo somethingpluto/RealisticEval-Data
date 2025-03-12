@@ -7,56 +7,48 @@
  *                   Returns an empty string if no such window exists.
  */
 function findMinWindowSubstring(source, target) {
-    if (source.length === 0 || target.length === 0 || source.length < target.length) {
-        return "";
-    }
+    if (source.length === 0 || target.length === 0) return "";
 
-    let targetMap = {};
-    let windowMap = {};
-    let required = 0;
-    let formed = 0;
-    let minLen = Infinity;
-    let minStr = "";
-    let left = 0;
-
-    // Populate the targetMap and count the required characters
+    const targetMap = {};
     for (let char of target) {
         targetMap[char] = (targetMap[char] || 0) + 1;
-        required++;
     }
 
-    // Iterate through the source string
-    for (let right = 0; right < source.length; right++) {
-        let char = source[right];
-        windowMap[char] = (windowMap[char] || 0) + 1;
+    let requiredChars = Object.keys(targetMap).length;
+    let left = 0, right = 0;
+    let formed = 0;
+    const windowCounts = {};
+    let ans = [Infinity, null, null]; // [window length, left, right]
 
-        // If the current character is required and its count matches the targetMap, increment formed
-        if (targetMap[char] && windowMap[char] === targetMap[char]) {
+    while (right < source.length) {
+        let char = source[right];
+        windowCounts[char] = (windowCounts[char] || 0) + 1;
+
+        if (targetMap[char] && windowCounts[char] === targetMap[char]) {
             formed++;
         }
 
-        // Try and contract the window till the point it ceases to be 'desirable'
-        while (left <= right && formed === required) {
+        while (left <= right && formed === requiredChars) {
             char = source[left];
 
-            // Save the smallest window until now
-            if (right - left + 1 < minLen) {
-                minLen = right - left + 1;
-                minStr = source.substring(left, right + 1);
+            if (right - left + 1 < ans[0]) {
+                ans[0] = right - left + 1;
+                ans[1] = left;
+                ans[2] = right;
             }
 
-            // The character at the position pointed by the `left` pointer is no longer a part of the window
-            windowMap[char]--;
-            if (targetMap[char] && windowMap[char] < targetMap[char]) {
+            windowCounts[char]--;
+            if (targetMap[char] && windowCounts[char] < targetMap[char]) {
                 formed--;
             }
 
-            // Move the left pointer ahead, this would help to look for a new window
             left++;
         }
+
+        right++;
     }
 
-    return minStr;
+    return ans[0] === Infinity ? "" : source.slice(ans[1], ans[2] + 1);
 }
 describe('TestFindMinWindowSubstring', () => {
     it('should return an empty string when source is empty', () => {

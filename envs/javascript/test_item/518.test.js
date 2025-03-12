@@ -9,18 +9,25 @@
  */
 function convertCsvValues(row) {
     const convertedRow = {};
-    for (const [key, value] of Object.entries(row)) {
-        if (typeof value === 'string') {
-            const numericValue = value.replace(',', '.');
-            if (!isNaN(numericValue)) {
-                convertedRow[key] = parseFloat(numericValue);
+
+    for (const key in row) {
+        if (row.hasOwnProperty(key)) {
+            const value = row[key];
+            if (typeof value === 'string') {
+                // Remove commas and replace with dots
+                const numericValue = value.replace(/,/g, '.');
+                // Check if the resulting string is a valid number
+                if (!isNaN(numericValue) && numericValue !== '') {
+                    convertedRow[key] = numericValue;
+                } else {
+                    convertedRow[key] = null;
+                }
             } else {
                 convertedRow[key] = null;
             }
-        } else {
-            convertedRow[key] = value;
         }
     }
+
     return convertedRow;
 }
 describe('TestConvertCsvValues', () => {

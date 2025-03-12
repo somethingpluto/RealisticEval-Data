@@ -5,15 +5,14 @@
  * @returns {Array<string>} - A list of sentences extracted from the input text, cleaned and stripped of leading/trailing whitespace.
  */
 function splitIntoSentences(text) {
-  // Regular expression to match sentence boundaries
-  const sentenceRegex = /(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<=\.|\?)\s/;
-  // Split the text into sentences using the regular expression
-  const sentences = text.split(sentenceRegex);
-  // Clean up each sentence by trimming whitespace
-  const cleanedSentences = sentences.map(sentence => sentence.trim());
-  // Filter out any empty strings that may have been created by the split operation
-  const nonEmptySentences = cleanedSentences.filter(sentence => sentence.length > 0);
-  return nonEmptySentences;
+    // Regular expression to match sentence-ending punctuation followed by a space or newline.
+    const sentenceRegex = /(?<=[.!?])\s+(?=[A-Z])/g;
+    
+    // Split the text into sentences using the regex.
+    const sentences = text.split(sentenceRegex);
+    
+    // Clean and strip leading/trailing whitespace from each sentence.
+    return sentences.map(sentence => sentence.trim());
 }
 describe('TestSplitIntoSentences', () => {
     describe('test_basic_splitting', () => {

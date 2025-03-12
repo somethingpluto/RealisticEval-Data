@@ -4,12 +4,15 @@
  * @return {number} The parsed floating-point number.
  */
 function hexStringToFloat(hexStr) {
-    const intBits = parseInt(hexStr, 16);
-    const sign = (intBits >> 31) ? -1 : 1;
-    const exponent = ((intBits >> 23) & 0xFF) - 127;
-    const mantissa = (intBits & 0x7FFFFF) | 0x800000;
-    const floatVal = sign * mantissa * Math.pow(2, exponent - 23);
-    return floatVal;
+    // Convert the hexadecimal string to a 32-bit integer
+    const intValue = parseInt(hexStr, 16);
+    
+    // Create a new Float32Array and set the value using the 32-bit integer
+    const floatArray = new Float32Array(1);
+    floatArray[0] = intValue;
+    
+    // Return the floating-point number
+    return floatArray[0];
 }
 describe("Hexadecimal String to Float Conversion", () => {
     

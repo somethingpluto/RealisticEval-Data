@@ -9,38 +9,24 @@
  */
 function eulerToRotationMatrix(roll, pitch, yaw) {
     // Convert degrees to radians
-    const toRadians = (angle) => angle * (Math.PI / 180);
-
-    // Convert Euler angles to radians
+    const toRadians = (deg) => deg * (Math.PI / 180);
     const rollRad = toRadians(roll);
     const pitchRad = toRadians(pitch);
     const yawRad = toRadians(yaw);
 
-    // Calculate the rotation matrix components
-    const cosRoll = Math.cos(rollRad);
-    const sinRoll = Math.sin(rollRad);
-    const cosPitch = Math.cos(pitchRad);
-    const sinPitch = Math.sin(pitchRad);
-    const cosYaw = Math.cos(yawRad);
-    const sinYaw = Math.sin(yawRad);
+    // Calculate sine and cosine values for each angle
+    const cr = Math.cos(rollRad);
+    const sr = Math.sin(rollRad);
+    const cp = Math.cos(pitchRad);
+    const sp = Math.sin(pitchRad);
+    const cy = Math.cos(yawRad);
+    const sy = Math.sin(yawRad);
 
     // Construct the rotation matrix
     const rotationMatrix = [
-        [
-            cosYaw * cosPitch,
-            cosYaw * sinPitch * sinRoll - sinYaw * cosRoll,
-            cosYaw * sinPitch * cosRoll + sinYaw * sinRoll,
-        ],
-        [
-            sinYaw * cosPitch,
-            sinYaw * sinPitch * sinRoll + cosYaw * cosRoll,
-            sinYaw * sinPitch * cosRoll - cosYaw * sinRoll,
-        ],
-        [
-            -sinPitch,
-            cosPitch * sinRoll,
-            cosPitch * cosRoll,
-        ],
+        [cy * cp, cy * sp * sr - sy * cr, cy * sp * cr + sy * sr],
+        [sy * cp, sy * sp * sr + cy * cr, sy * sp * cr - cy * sr],
+        [-sp, cp * sr, cp * cr]
     ];
 
     return rotationMatrix;

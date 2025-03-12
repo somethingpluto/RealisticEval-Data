@@ -4,19 +4,50 @@
  * @returns {string[]} An array of characters that are unique to Shift-JIS and not encodable in GBK.
  */
 function findShiftJisNotGbk() {
-    const shiftJisNotGbk = [];
-    for (let code = 0x80; code <= 0x9F; code++) {
-        const char = String.fromCharCode(code);
-        try {
-            // Attempt to encode the character in GBK
-            const gbkEncoded = new TextEncoder('gbk').encode(char);
-            // If successful, the character is also encodable in GBK
-        } catch (e) {
-            // If an error is thrown, the character is not encodable in GBK
-            shiftJisNotGbk.push(char);
+    const shiftJisChars = [];
+    const gbkChars = new Set();
+    const uniqueToShiftJis = [];
+
+    // Generate all possible Shift-JIS characters
+    for (let byte1 = 0x81; byte1 <= 0x9F; byte1++) {
+        for (let byte2 = 0x40; byte2 <= 0xFC; byte2++) {
+            if (byte2 !== 0x7F) { // Skip invalid byte 0x7F
+                const codePoint = (byte1 << 8) | byte2;
+                const char = String.fromCharCode(codePoint);
+                shiftJisChars.push(char);
+            }
         }
     }
-    return shiftJisNotGbk;
+
+    for (let byte1 = 0xE0; byte1 <= 0xEF; byte1++) {
+        for (let byte2 = 0x40; byte2 <= 0xFC; byte2++) {
+            if (byte2 !== 0x7F) { // Skip invalid byte 0x7F
+                const codePoint = (byte1 << 8) | byte2;
+                const char = String.fromCharCode(codePoint);
+                shiftJisChars.push(char);
+            }
+        }
+    }
+
+    // Generate all possible GBK characters
+    for (let byte1 = 0x81; byte1 <= 0xFE; byte1++) {
+        for (let byte2 = 0x40; byte2 <= 0xFE; byte2++) {
+            if (byte2 !== 0x7F) { // Skip invalid byte 0x7F
+                const codePoint = (byte1 << 8) | byte2;
+                const char = String.fromCharCode(codePoint);
+                gbkChars.add(char);
+            }
+        }
+    }
+
+    // Find characters that are in Shift-JIS but not in GBK
+    for (const char of shiftJisChars) {
+        if (!gbkChars.has(char)) {
+            uniqueToShiftJis.push(char);
+        }
+    }
+
+    return uniqueToShiftJis;
 }
 describe('TestFindShiftJISNotGBK', () => {
   let shiftjisNotGbk;

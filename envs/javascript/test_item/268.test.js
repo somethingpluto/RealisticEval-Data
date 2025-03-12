@@ -8,26 +8,20 @@
  */
 function canCompleteCircuit(gas, cost) {
     let totalGas = 0;
-    let totalCost = 0;
-    let start = 0;
-    let gasTank = 0;
+    let currentGas = 0;
+    let startIndex = 0;
 
     for (let i = 0; i < gas.length; i++) {
-        totalGas += gas[i];
-        totalCost += cost[i];
-        gasTank += gas[i] - cost[i];
+        totalGas += gas[i] - cost[i];
+        currentGas += gas[i] - cost[i];
 
-        if (gasTank < 0) {
-            start = i + 1;
-            gasTank = 0;
+        if (currentGas < 0) {
+            startIndex = i + 1;
+            currentGas = 0;
         }
     }
 
-    if (totalGas < totalCost) {
-        return -1;
-    } else {
-        return start;
-    }
+    return totalGas >= 0 ? startIndex : -1;
 }
 describe('TestCanCompleteCircuit', () => {
   describe('Single Station Tests', () => {

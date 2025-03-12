@@ -1,15 +1,28 @@
 /**
- * calculates the elapsed time from a given start time in milliseconds and returns
+ * Calculates the elapsed time from a given start time in milliseconds and returns
  * it as a formatted string in "minutes:seconds" format.
  *
  * @param {number} startTimeInMillis - The start time in milliseconds.
  * @return {string} A string representing the elapsed time in minutes and seconds.
  */
 function timePassed(startTimeInMillis) {
-    const elapsedTimeInMillis = Date.now() - startTimeInMillis;
-    const minutes = Math.floor(elapsedTimeInMillis / 60000);
-    const seconds = ((elapsedTimeInMillis % 60000) / 1000).toFixed(0);
-    return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+    // Get the current time in milliseconds
+    const currentTimeInMillis = Date.now();
+    
+    // Calculate the elapsed time in milliseconds
+    const elapsedTimeInMillis = currentTimeInMillis - startTimeInMillis;
+    
+    // Convert the elapsed time to seconds
+    const elapsedTimeInSeconds = Math.floor(elapsedTimeInMillis / 1000);
+    
+    // Calculate the minutes and seconds
+    const minutes = Math.floor(elapsedTimeInSeconds / 60);
+    const seconds = elapsedTimeInSeconds % 60;
+    
+    // Format the minutes and seconds as a string
+    const formattedTime = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    
+    return formattedTime;
 }
 describe('timePassed function', () => {
     const originalDateNow = Date.now;

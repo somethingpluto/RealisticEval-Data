@@ -9,11 +9,6 @@
  * @returns {boolean} - Returns true if the input is a significant number; otherwise, false.
  */
 function isSignificantNumber(input) {
-    // Check if the input is a string
-    if (typeof input !== 'string') {
-        return false;
-    }
-
     // Check if the length of the input is between 5 and 18 characters
     if (input.length < 5 || input.length > 18) {
         return false;
@@ -29,7 +24,7 @@ function isSignificantNumber(input) {
         return false;
     }
 
-    // If all checks pass, the input is a significant number
+    // If all conditions are met, return true
     return true;
 }
 describe('isSignificantNumber', () => {

@@ -1,40 +1,35 @@
 /**
  * Generate a random UUID of length 36
- * The UUID At least one uppercase letter,At least one lowercase letter,At least one digit
+ * The UUID contains at least one uppercase letter, one lowercase letter, and one digit.
  *
  * @returns {string} A 36-character UUID string.
  */
 function generateUUID() {
-    let result = '';
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    const charactersLength = characters.length;
-    let hasUpperCase = false;
-    let hasLowerCase = false;
-    let hasDigit = false;
+    const characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    const uuidLength = 36;
+    let uuid = '';
 
-    for (let i = 0; i < 36; i++) {
-        const randomIndex = Math.floor(Math.random() * charactersLength);
-        const randomCharacter = characters.charAt(randomIndex);
-        result += randomCharacter;
+    // Ensure at least one uppercase letter, one lowercase letter, and one digit
+    const ensureUppercase = () => characters[Math.floor(Math.random() * 26) + 26];
+    const ensureLowercase = () => characters[Math.floor(Math.random() * 26)];
+    const ensureDigit = () => characters[Math.floor(Math.random() * 10) + 52];
 
-        if (i === 8 || i === 13 || i === 18 || i === 23) {
-            result += '-';
-        }
+    uuid += ensureUppercase();
+    uuid += ensureLowercase();
+    uuid += ensureDigit();
 
-        if (randomCharacter >= 'A' && randomCharacter <= 'Z') {
-            hasUpperCase = true;
-        } else if (randomCharacter >= 'a' && randomCharacter <= 'z') {
-            hasLowerCase = true;
-        } else if (randomCharacter >= '0' && randomCharacter <= '9') {
-            hasDigit = true;
-        }
+    // Fill the rest of the UUID with random characters
+    for (let i = 3; i < uuidLength; i++) {
+        uuid += characters[Math.floor(Math.random() * characters.length)];
     }
 
-    if (!hasUpperCase || !hasLowerCase || !hasDigit) {
-        return generateUUID(); // Recursively generate a new UUID if the conditions are not met
-    }
+    // Shuffle the UUID to ensure randomness
+    uuid = uuid.split('').sort(() => 0.5 - Math.random()).join('');
 
-    return result;
+    // Insert hyphens at the correct positions
+    uuid = uuid.substring(0, 8) + '-' + uuid.substring(8, 12) + '-' + uuid.substring(12, 16) + '-' + uuid.substring(16, 20) + '-' + uuid.substring(20, 32);
+
+    return uuid;
 }
 describe('generateUUID', () => {
 

@@ -5,12 +5,15 @@
  * @return {number} - The minimum number of element changes required to make the matrix symmetric.
  */
 function minChangesToSymmetric(matrix) {
-    let changes = 0;
     const n = matrix.length;
+    let changes = 0;
 
+    // Iterate over the upper triangular part of the matrix
     for (let i = 0; i < n; i++) {
-        for (let j = 0; j <= i; j++) {
+        for (let j = i + 1; j < n; j++) {
+            // Check if the element at (i, j) is not equal to the element at (j, i)
             if (matrix[i][j] !== matrix[j][i]) {
+                // Increment the change counter
                 changes++;
             }
         }

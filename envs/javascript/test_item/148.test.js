@@ -5,13 +5,22 @@
  * @returns An ArrayBuffer representing the decoded bytes.
  */
 export function base64ToArrayBuffer(base64) {
-    const binaryString = window.atob(base64);
-    const len = binaryString.length;
-    const bytes = new Uint8Array(len);
-    for (let i = 0; i < len; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
+    // Convert the Base64 string to a binary string
+    const binaryString = atob(base64);
+    
+    // Create a new ArrayBuffer with the length of the binary string
+    const buffer = new ArrayBuffer(binaryString.length);
+    
+    // Create a Uint8Array view on the ArrayBuffer
+    const uint8Array = new Uint8Array(buffer);
+    
+    // Fill the Uint8Array with the binary data from the binary string
+    for (let i = 0; i < binaryString.length; i++) {
+        uint8Array[i] = binaryString.charCodeAt(i);
     }
-    return bytes.buffer;
+    
+    // Return the ArrayBuffer
+    return buffer;
 }
 describe('base64ToArrayBuffer function', () => {
     // Test Case 1

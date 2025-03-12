@@ -18,32 +18,42 @@
  *         returns the best approximation.
  */
 function findTForX(targetX, p0, p1, p2) {
-    const tolerance = 0.00001;
-    let t0 = 0;
-    let t1 = 1;
-    let t = 0.5;
+    const MAX_ITERATIONS = 100;
+    const TOLERANCE = 1e-6;
 
-    while (Math.abs(bezierX(t, p0, p1, p2) - targetX) > tolerance) {
-        if (bezierX(t, p0, p1, p2) === targetX) {
-            break;
-        }
-
-        if (bezierX(t0, p0, p1, p2) === bezierX(t1, p0, p1, p2)) {
-            // If both t0 and t1 produce the same x value, we cannot proceed
-            // with the secant method, so we return the best approximation.
-            return t;
-        }
-
-        t = t1 - (bezierX(t1, p0, p1, p2) - targetX) * (t1 - t0) / (bezierX(t1, p0, p1, p2) - bezierX(t0, p0, p1, p2));
-        t0 = t1;
-        t1 = t;
+    // Helper function to evaluate the x-coordinate of the Bézier curve at a given t
+    function bezierX(t) {
+        return (1 - t) * (1 - t) * p0.x + 2 * (1 - t) * t * p1.x + t * t * p2.x;
     }
 
-    return t;
-}
+    // Initial guesses for the secant method
+    let t0 = 0;
+    let t1 = 1;
+    let x0 = bezierX(t0);
+    let x1 = bezierX(t1);
 
-function bezierX(t, p0, p1, p2) {
-    return (1 - t) * (1 - t) * p0 + 2 * (1 - t) * t * p1 + t * t * p2;
+    // Iterate using the secant method
+    for (let i = 0; i < MAX_ITERATIONS; i++) {
+        // Calculate the next t using the secant method formula
+        let tNext = t1 - (x1 - targetX) * ((t1 - t0) / (x1 - x0));
+
+        // Evaluate the x-coordinate at the new t
+        let xNext = bezierX(tNext);
+
+        // Check if the new t is close enough to the targetX
+        if (Math.abs(xNext - targetX) < TOLERANCE) {
+            return tNext;
+        }
+
+        // Update the values for the next iteration
+        t0 = t1;
+        t1 = tNext;
+        x0 = x1;
+        x1 = xNext;
+    }
+
+    // If no precise value is found, return the best approximation
+    return t1;
 }
 describe('TestFindTForX', () => {
     test('findTForX at start', () => {

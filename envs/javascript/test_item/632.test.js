@@ -9,33 +9,46 @@
  */
 function parseExpression(expression) {
     const tokens = [];
-    let currentNumber = '';
-    const operators = '+-*/^';
+    let currentToken = '';
 
     for (let i = 0; i < expression.length; i++) {
         const char = expression[i];
 
-        if (operators.includes(char)) {
-            if (currentNumber !== '') {
-                tokens.push(currentNumber);
-                currentNumber = '';
-            }
-            tokens.push(char);
-        } else if (char === ' ') {
-            if (currentNumber !== '') {
-                tokens.push(currentNumber);
-                currentNumber = '';
-            }
+        if (isDigit(char) || char === '.') {
+            // If the character is a digit or a decimal point, continue building the number
+            currentToken += char;
         } else {
-            currentNumber += char;
+            // If we have a current token (number), push it to the tokens array
+            if (currentToken !== '') {
+                tokens.push(currentToken);
+                currentToken = '';
+            }
+
+            // Handle operators and parentheses
+            if (isOperator(char) || isParenthesis(char)) {
+                tokens.push(char);
+            }
         }
     }
 
-    if (currentNumber !== '') {
-        tokens.push(currentNumber);
+    // Push the last token if it's a number
+    if (currentToken !== '') {
+        tokens.push(currentToken);
     }
 
     return tokens;
+}
+
+function isDigit(char) {
+    return char >= '0' && char <= '9';
+}
+
+function isOperator(char) {
+    return ['+', '-', '*', '/', '^', '%'].includes(char);
+}
+
+function isParenthesis(char) {
+    return ['(', ')'].includes(char);
 }
 describe('parseExpression', () => {
     

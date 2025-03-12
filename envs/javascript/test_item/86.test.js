@@ -12,19 +12,19 @@
  * @returns {Array.<Array.<number>>} An array where each sub-array contains the x and y coordinates of a point on the line.
  */
 function bresenhamLine(x1, y1, x2, y2) {
-    const line = [];
-    const dx = Math.abs(x2 - x1);
-    const dy = Math.abs(y2 - y1);
-    const sx = (x1 < x2) ? 1 : -1;
-    const sy = (y1 < y2) ? 1 : -1;
+    const points = [];
+    let dx = Math.abs(x2 - x1);
+    let dy = Math.abs(y2 - y1);
+    let sx = (x1 < x2) ? 1 : -1;
+    let sy = (y1 < y2) ? 1 : -1;
     let err = dx - dy;
 
     while (true) {
-        line.push([x1, y1]);
+        points.push([x1, y1]);
 
-        if ((x1 === x2) && (y1 === y2)) break;
+        if (x1 === x2 && y1 === y2) break;
 
-        const e2 = 2 * err;
+        let e2 = 2 * err;
         if (e2 > -dy) {
             err -= dy;
             x1 += sx;
@@ -35,7 +35,7 @@ function bresenhamLine(x1, y1, x2, y2) {
         }
     }
 
-    return line;
+    return points;
 }
 describe('Bresenham Line Algorithm', () => {
     it('should generate horizontal line correctly', () => {

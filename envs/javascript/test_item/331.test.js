@@ -9,24 +9,26 @@
  * @throws Will throw an error if price or discount aren't valid numbers or if the discount is out of the expected range.
  */
 function calculateFinalPrice(price, discount) {
-    // Validate that price and discount are valid numbers
+    // Validate price
+    if (typeof price !== 'string' || isNaN(price)) {
+        throw new Error('Invalid price: price must be a valid number string.');
+    }
+
+    // Validate discount
+    if (typeof discount !== 'string' || isNaN(discount)) {
+        throw new Error('Invalid discount: discount must be a valid number string.');
+    }
+
     const priceNum = parseFloat(price);
     const discountNum = parseFloat(discount);
 
-    if (isNaN(priceNum) || isNaN(discountNum)) {
-        throw new Error('Price and discount must be valid numbers.');
-    }
-
-    // Validate that the discount is between 0 and 100
+    // Validate discount range
     if (discountNum < 0 || discountNum > 100) {
-        throw new Error('Discount must be between 0 and 100.');
+        throw new Error('Invalid discount: discount must be a percentage value between 0 and 100.');
     }
-
-    // Calculate the discount amount
-    const discountAmount = priceNum * (discountNum / 100);
 
     // Calculate the final price
-    const finalPrice = priceNum - discountAmount;
+    const finalPrice = priceNum * (1 - discountNum / 100);
 
     // Return the final price rounded to two decimal places
     return finalPrice.toFixed(2);

@@ -1,17 +1,25 @@
 /**
  * @jest-environment jsdom
  *//**
- * gets the cookie value for the specified name from the cookie in the browser. The format of the cookie is key=value;key=value;key=value
+ * Gets the cookie value for the specified name from the cookie in the browser. The format of the cookie is key=value;key=value;key=value
  * @param name cookie key name
  */
 function getCookie(name) {
+    // Split the cookie string into an array of key=value pairs
     const cookies = document.cookie.split(';');
+
+    // Iterate through the array to find the specified cookie name
     for (let i = 0; i < cookies.length; i++) {
-        const cookie = cookies[i].trim();
-        if (cookie.startsWith(name + '=')) {
+        let cookie = cookies[i].trim();
+
+        // Check if the cookie starts with the specified name
+        if (cookie.indexOf(name + '=') === 0) {
+            // Return the value part of the cookie
             return cookie.substring(name.length + 1);
         }
     }
+
+    // Return null if the cookie is not found
     return null;
 }
 describe('getCookie function tests', () => {

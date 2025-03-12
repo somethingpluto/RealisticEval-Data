@@ -11,7 +11,7 @@ function calculateAverageDifference(numbers) {
 
     let totalDifference = 0;
     for (let i = 1; i < numbers.length; i++) {
-        totalDifference += numbers[i] - numbers[i - 1];
+        totalDifference += Math.abs(numbers[i] - numbers[i - 1]);
     }
 
     return totalDifference / (numbers.length - 1);

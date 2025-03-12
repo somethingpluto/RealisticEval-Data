@@ -1,3 +1,5 @@
+const fs = require('fs').promises;
+
 /**
  * Read a text file, replace words according to a dictionary map, and return the modified text.
  *
@@ -8,19 +10,18 @@
 async function replaceWordsInFile(file_path, replacement_dict) {
     try {
         // Read the file content
-        const fs = require('fs').promises;
-        const text = await fs.readFile(file_path, 'utf-8');
+        const fileContent = await fs.readFile(file_path, 'utf-8');
 
-        // Replace words according to the dictionary
-        let modifiedText = text;
+        // Replace words according to the dictionary map
+        let modifiedContent = fileContent;
         for (const [key, value] of Object.entries(replacement_dict)) {
-            const regex = new RegExp(key, 'gi'); // 'g' for global, 'i' for case-insensitive
-            modifiedText = modifiedText.replace(regex, value);
+            const regex = new RegExp(`\\b${key}\\b`, 'g');
+            modifiedContent = modifiedContent.replace(regex, value);
         }
 
-        return modifiedText;
+        return modifiedContent;
     } catch (error) {
-        return `Error reading or processing the file: ${error.message}`;
+        return `Error: ${error.message}`;
     }
 }
 const fs = require('fs');

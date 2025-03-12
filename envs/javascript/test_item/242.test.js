@@ -5,20 +5,17 @@
  * @returns {Object} - Dictionary with file extensions as keys and lists of file names as values.
  */
 function classifyFilesByExtension(fileNames) {
-    const fileExtensionMap = {};
+    const fileDict = {};
 
     fileNames.forEach(fileName => {
-        const extensionStart = fileName.lastIndexOf('.');
-        const extension = (extensionStart !== -1) ? fileName.substring(extensionStart + 1) : 'no_extension';
-
-        if (!fileExtensionMap[extension]) {
-            fileExtensionMap[extension] = [];
+        const extension = fileName.split('.').pop();
+        if (!fileDict[extension]) {
+            fileDict[extension] = [];
         }
-
-        fileExtensionMap[extension].push(fileName);
+        fileDict[extension].push(fileName);
     });
 
-    return fileExtensionMap;
+    return fileDict;
 }
 describe('TestClassifyFilesByExtension', () => {
   it('test with multiple file types', () => {

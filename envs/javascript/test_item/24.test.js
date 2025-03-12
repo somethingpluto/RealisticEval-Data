@@ -1,4 +1,30 @@
-npm install js-yaml
+const fs = require('fs');
+const yaml = require('js-yaml');
+
+/**
+ * Convert a YAML file to a JSON file.
+ * @param {string} yamlFile - Path to the input YAML file.
+ * @param {string} jsonFile - Path to the output JSON file.
+ */
+function convertYamlToJson(yamlFile, jsonFile) {
+    try {
+        // Read the YAML file
+        const yamlContent = fs.readFileSync(yamlFile, 'utf8');
+        
+        // Parse the YAML content to a JavaScript object
+        const jsonContent = yaml.load(yamlContent);
+        
+        // Convert the JavaScript object to a JSON string
+        const jsonString = JSON.stringify(jsonContent, null, 2);
+        
+        // Write the JSON string to the output file
+        fs.writeFileSync(jsonFile, jsonString, 'utf8');
+        
+        console.log(`Successfully converted ${yamlFile} to ${jsonFile}`);
+    } catch (error) {
+        console.error(`Error converting YAML to JSON: ${error.message}`);
+    }
+}
 describe('TestConvertYamlToJson', () => {
     let simpleYaml;
     let nestedYaml;

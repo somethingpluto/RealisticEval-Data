@@ -11,12 +11,18 @@
  * @returns {boolean} - True if the password is strong, False otherwise.
  */
 function isStrongPassword(password) {
-    const hasLower = /[a-z]/.test(password);
-    const hasUpper = /[A-Z]/.test(password);
-    const hasNumber = /[0-9]/.test(password);
-    const hasMinLength = password.length >= 8;
+    // Check if the password is at least 8 characters long
+    if (password.length < 8) {
+        return false;
+    }
 
-    return hasLower && hasUpper && hasNumber && hasMinLength;
+    // Regular expressions to check for at least one lowercase letter, one uppercase letter, and one number
+    const hasLowercase = /[a-z]/.test(password);
+    const hasUppercase = /[A-Z]/.test(password);
+    const hasNumber = /\d/.test(password);
+
+    // Return true only if all criteria are met
+    return hasLowercase && hasUppercase && hasNumber;
 }
 describe('TestStrongPassword', () => {
     it('should validate a strong password that meets all criteria', () => {

@@ -6,21 +6,14 @@
  * @returns {string} - The modified URL with the specified parameter removed.
  */
 function removeQueryParam(url, key) {
-    // Create an anchor element to parse the URL
-    const anchor = document.createElement('a');
-    anchor.href = url;
-
-    // Get the query string and parse it into an object
-    const queryParams = new URLSearchParams(anchor.search);
-
-    // Remove the specified parameter
-    queryParams.delete(key);
-
-    // Update the anchor's search property with the modified query string
-    anchor.search = queryParams.toString();
-
-    // Return the modified URL
-    return anchor.href;
+    // Create a URL object to easily manipulate the URL
+    const urlObj = new URL(url);
+    
+    // Remove the specified query parameter
+    urlObj.searchParams.delete(key);
+    
+    // Return the modified URL as a string
+    return urlObj.toString();
 }
 describe('removeQueryParam', () => {
     test('should remove an existing parameter from the URL', () => {

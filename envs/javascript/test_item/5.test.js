@@ -6,18 +6,20 @@
  * @returns {Array<Array<number>>} The result of multiplying matrixA by matrixB
  */
 function matrixMultiply(matrixA, matrixB) {
-    // Check if the matrices can be multiplied
-    if (matrixA[0].length !== matrixB.length) {
-        throw new Error('Matrices cannot be multiplied');
+    const rowsA = matrixA.length;
+    const colsA = matrixA[0].length;
+    const rowsB = matrixB.length;
+    const colsB = matrixB[0].length;
+
+    if (colsA !== rowsB) {
+        throw new Error("Matrix dimensions do not match for multiplication.");
     }
 
-    // Initialize the result matrix with zeros
-    const result = Array.from({ length: matrixA.length }, () => Array(matrixB[0].length).fill(0));
+    const result = new Array(rowsA).fill(0).map(() => new Array(colsB).fill(0));
 
-    // Perform matrix multiplication
-    for (let i = 0; i < matrixA.length; i++) {
-        for (let j = 0; j < matrixB[0].length; j++) {
-            for (let k = 0; k < matrixA[0].length; k++) {
+    for (let i = 0; i < rowsA; i++) {
+        for (let j = 0; j < colsB; j++) {
+            for (let k = 0; k < colsA; k++) {
                 result[i][j] += matrixA[i][k] * matrixB[k][j];
             }
         }

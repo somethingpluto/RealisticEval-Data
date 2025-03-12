@@ -5,10 +5,10 @@
  * @returns {boolean} A boolean indicating whether the coordinate is valid.
  */
 function isValidCoordinate(coord) {
-    // Regular expression to match valid latitude and longitude values
-    const regex = /^-?([1-8]?\d(\.\d+)?|90(\.0+)?)$/;
-
-    // Check if the coordinate matches the regular expression
+    // Regular expression to match valid latitude or longitude formats
+    const regex = /^-?(([1-8]?[0-9](\.\d+)?)|(90(\.0+)?)),\s*-?((((1[0-7][0-9])|([1-9]?[0-9]))(\.\d+)?)|(180(\.0+)?))/;
+    
+    // Test the coordinate against the regex
     return regex.test(coord);
 }
 describe('isValidCoordinate', () => {

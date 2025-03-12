@@ -7,32 +7,45 @@
  * @returns {number} - The probability of drawing exactly n red balls.
  */
 function probabilityOfRedBalls(n, x, y) {
-    if (n < 0 || n > 15 || x < 0 || y < 0 || x + y < 15) {
-        throw new Error('Invalid input');
-    }
+    // Total number of balls in the jar
+    const totalBalls = x + y;
 
-    // Calculate the total number of ways to draw 15 balls from x + y balls
-    const totalWays = factorial(x + y) / (factorial(x) * factorial(y));
+    // Total number of ways to draw 15 balls from the jar
+    const totalWays = binomialCoefficient(totalBalls, 15);
 
-    // Calculate the number of ways to draw exactly n red balls
-    const redWays = factorial(x) / (factorial(n) * factorial(x - n));
+    // Number of ways to draw n red balls from x red balls
+    const waysToDrawRedBalls = binomialCoefficient(x, n);
 
-    // Calculate the number of ways to draw the remaining 15 - n balls
-    const blueWays = factorial(y) / (factorial(15 - n) * factorial(y - (15 - n)));
+    // Number of ways to draw (15 - n) blue balls from y blue balls
+    const waysToDrawBlueBalls = binomialCoefficient(y, 15 - n);
 
-    // Calculate the probability
-    const probability = (redWays * blueWays) / totalWays;
+    // Total number of favorable outcomes
+    const favorableOutcomes = waysToDrawRedBalls * waysToDrawBlueBalls;
+
+    // Probability of drawing exactly n red balls
+    const probability = favorableOutcomes / totalWays;
 
     return probability;
 }
 
-// Helper function to calculate factorial
-function factorial(n) {
-    let result = 1;
-    for (let i = 2; i <= n; i++) {
-        result *= i;
+/**
+ * Calculate the binomial coefficient (n choose k).
+ *
+ * @param {number} n - Total number of items.
+ * @param {number} k - Number of items to choose.
+ * @returns {number} - The binomial coefficient.
+ */
+function binomialCoefficient(n, k) {
+    if (k > n) return 0;
+    if (k === 0 || k === n) return 1;
+
+    let coefficient = 1;
+    for (let i = 0; i < k; i++) {
+        coefficient *= (n - i);
+        coefficient /= (i + 1);
     }
-    return result;
+
+    return coefficient;
 }
 const { isClose } = require('mathjs'); // Assuming we use mathjs for isClose function
 

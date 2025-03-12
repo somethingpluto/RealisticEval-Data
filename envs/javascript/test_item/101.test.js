@@ -4,31 +4,25 @@
  * @param {string} startTime - The start time of the break in HH:MM format.
  * @param {string} endTime - The end time of the break in HH:MM format.
  * @param {string} currentTime - The current time in HH:MM format.
- * @returns {boolean} - Returns true if the current time is within the specified time range, otherwise false.
+ * @returns {boolean} - True if the current time is within the break time, otherwise false.
  */
 function isBreakTime(startTime, endTime, currentTime) {
-    const start = convertToMinutes(startTime);
-    const end = convertToMinutes(endTime);
-    const current = convertToMinutes(currentTime);
-
-    if (start <= end) {
-        // Normal case, no wrap around midnight
-        return current >= start && current < end;
-    } else {
-        // Wrap around midnight
-        return current >= start || current < end;
+    // Helper function to convert HH:MM format to minutes since midnight
+    function timeToMinutes(time) {
+        const [hours, minutes] = time.split(':').map(Number);
+        return hours * 60 + minutes;
     }
-}
 
-/**
- * Helper function to convert time in HH:MM format to minutes since midnight
- * 
- * @param {string} time - Time in HH:MM format
- * @returns {number} - Minutes since midnight
- */
-function convertToMinutes(time) {
-    const [hours, minutes] = time.split(':').map(Number);
-    return hours * 60 + minutes;
+    const startMinutes = timeToMinutes(startTime);
+    const endMinutes = timeToMinutes(endTime);
+    const currentMinutes = timeToMinutes(currentTime);
+
+    // Check if the end time is less than the start time (indicating a range that spans midnight)
+    if (endMinutes < startMinutes) {
+        return currentMinutes >= startMinutes || currentMinutes < endMinutes;
+    } else {
+        return currentMinutes >= startMinutes && currentMinutes < endMinutes;
+    }
 }
 describe('isBreakTime Function Tests', () => {
     test('should return true when current time is exactly at the start time', () => {

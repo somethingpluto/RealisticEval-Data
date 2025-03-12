@@ -20,43 +20,40 @@
  * @return {string} A string formatted in Markdown, reflecting the input HTML structure.
  */
 function convert(html) {
-  // Replace line breaks
-  html = html.replace(/<br\s*\/?>/gi, '\n');
+    // Replace line breaks
+    html = html.replace(/<br\s*\/?>/gi, '\n');
 
-  // Replace paragraphs
-  html = html.replace(/<p>/gi, '');
-  html = html.replace(/<\/p>/gi, '\n\n');
+    // Replace paragraphs
+    html = html.replace(/<p>/gi, '').replace(/<\/p>/gi, '\n\n');
 
-  // Replace strong emphasis
-  html = html.replace(/<strong>/gi, '**');
-  html = html.replace(/<\/strong>/gi, '**');
+    // Replace strong emphasis
+    html = html.replace(/<strong>/gi, '**').replace(/<\/strong>/gi, '**');
 
-  // Replace italics
-  html = html.replace(/<em>/gi, '*');
-  html = html.replace(/<\/em>/gi, '*');
+    // Replace italics
+    html = html.replace(/<em>/gi, '*').replace(/<\/em>/gi, '*');
 
-  // Replace underlined text
-  html = html.replace(/<u>/gi, '*');
-  html = html.replace(/<\/u>/gi, '*');
+    // Replace underlined text
+    html = html.replace(/<u>/gi, '*').replace(/<\/u>/gi, '*');
 
-  // Replace code snippets
-  html = html.replace(/<code>/gi, '`');
-  html = html.replace(/<\/code>/gi, '`');
+    // Replace code snippets
+    html = html.replace(/<code>/gi, '`').replace(/<\/code>/gi, '`');
 
-  // Replace unordered lists
-  html = html.replace(/<\/?ul>/gi, '');
+    // Remove unordered lists
+    html = html.replace(/<ul>/gi, '').replace(/<\/ul>/gi, '');
 
-  // Replace ordered lists
-  html = html.replace(/<\/?ol>/gi, '');
+    // Remove ordered lists
+    html = html.replace(/<ol>/gi, '').replace(/<\/ol>/gi, '');
 
-  // Replace list items
-  html = html.replace(/<li>/gi, '* ');
-  html = html.replace(/<\/li>/gi, '\n');
+    // Replace list items
+    html = html.replace(/<li>/gi, '* ').replace(/<\/li>/gi, '\n');
 
-  // Replace hyperlinks
-  html = html.replace(/<a href="([^"]*)">([^<]*)<\/a>/gi, '[$2]($1)');
+    // Replace hyperlinks
+    html = html.replace(/<a\s+href="([^"]+)">([^<]+)<\/a>/gi, '[$2]($1)');
 
-  return html;
+    // Trim any leading or trailing newlines
+    html = html.trim();
+
+    return html;
 }
 describe('HTML to Markdown Converter', () => {
   

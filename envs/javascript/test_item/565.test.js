@@ -6,17 +6,21 @@
  * @returns {{x: number, y: number}} The calculated Coordinates at the given parameter t.
  */
 function getBezierPoint(t, points) {
+    // Base case: if there's only one point left, return it
     if (points.length === 1) {
         return points[0];
-    } else {
-        const newPoints = [];
-        for (let i = 0; i < points.length - 1; i++) {
-            const x = (1 - t) * points[i].x + t * points[i + 1].x;
-            const y = (1 - t) * points[i].y + t * points[i + 1].y;
-            newPoints.push({ x, y });
-        }
-        return getBezierPoint(t, newPoints);
     }
+
+    // Recursive case: calculate new points by interpolating between each pair of points
+    let newPoints = [];
+    for (let i = 0; i < points.length - 1; i++) {
+        let x = (1 - t) * points[i].x + t * points[i + 1].x;
+        let y = (1 - t) * points[i].y + t * points[i + 1].y;
+        newPoints.push({ x, y });
+    }
+
+    // Recursively call the function with the new set of points
+    return getBezierPoint(t, newPoints);
 }
 describe('getBezierPoint', () => {
     // Test case 1: Test with a simple linear curve

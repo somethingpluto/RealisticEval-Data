@@ -11,35 +11,58 @@ const fs = require('fs');
  * @returns {Object} An object mapping each sequence to a boolean indicating whether it is a Munodi sequence.
  */
 function checkSequences(filename) {
-    const munodiSequences = {};
+    // Read the file content
+    const fileContent = fs.readFileSync(filename, 'utf-8');
+    
+    // Split the file content by lines
+    const lines = fileContent.split('\n');
+    
+    // Initialize the result object
+    const result = {};
 
-    fs.readFile(filename, 'utf8', (err, data) => {
-        if (err) {
-            console.error(`Error reading file from disk: ${err}`);
-        } else {
-            const lines = data.split('\n');
-            lines.forEach(line => {
-                const sequence = line.split(',').map(Number);
-                munodiSequences[line] = isMunodiSequence(sequence);
-            });
-        }
+    // Iterate over each line
+    lines.forEach(line => {
+        // Trim any leading/trailing whitespace and split by commas
+        const sequence = line.trim().split(',').map(Number);
+        
+        // Check if the sequence is a Munodi sequence
+        const isMunodiSequence = isMunodi(sequence);
+        
+        // Add the result to the result object
+        result[sequence.join(',')] = isMunodiSequence;
     });
 
-    return munodiSequences;
+    return result;
 }
 
-function isMunodiSequence(sequence) {
-    if (sequence.length === 0) return false;
-    const [first, ...rest] = sequence;
-    if (first === 1) return true;
-    if (first % 2 === 0) {
-        return isMunodiSequence([...rest, first / 2]);
-    } else {
-        return isMunodiSequence([...rest, 3 * first + 1]);
+/**
+ * Helper function to determine if a given sequence is a Munodi sequence.
+ * @param {Array<number>} sequence - The sequence to check.
+ * @returns {boolean} True if the sequence is a Munodi sequence, false otherwise.
+ */
+function isMunodi(sequence) {
+    // Iterate over the sequence
+    for (let i = 0; i < sequence.length; i++) {
+        const current = sequence[i];
+        const next = sequence[i + 1];
+
+        // If the current number is even, the next should be half of it
+        if (current % 2 === 0) {
+            if (next !== current / 2) {
+                return false;
+            }
+        } 
+        // If the current number is odd, the next should be 3*n + 1
+        else {
+            if (next !== 3 * current + 1) {
+                return false;
+            }
+        }
     }
-}
 
-module.exports = { checkSequences };
+    // If we reach the end of the sequence without issues, it's a Munodi sequence
+    return true;
+}
 const fs = require('fs');
 const os = require('os');
 const path = require('path');

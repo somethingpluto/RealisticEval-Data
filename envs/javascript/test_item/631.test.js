@@ -7,17 +7,11 @@ const fs = require('fs');
  * @param {string} filePath - The file path where the CSV string should be written.
  */
 function writeCsvToFile(strings, filePath) {
-  // Join the strings with a comma to create a CSV string
-  const csvString = strings.join(',');
+    // Join the strings with a comma separator to create a CSV string
+    const csvString = strings.join(',');
 
-  // Write the CSV string to the specified file
-  fs.writeFile(filePath, csvString, (err) => {
-    if (err) {
-      console.error(`Error writing to file: ${err}`);
-    } else {
-      console.log(`CSV data written to ${filePath}`);
-    }
-  });
+    // Write the CSV string to the specified file
+    fs.writeFileSync(filePath, csvString);
 }
 const fs = require('fs');
 const path = require('path');

@@ -7,17 +7,22 @@
  * @returns {boolean} - true if val1 and val2 are siblings, false otherwise
  */
 function areSiblings(tree, val1, val2) {
-    if (tree.length < 2) {
-        return false;
+    // Helper function to find the parent of a given value
+    function findParent(value) {
+        let index = tree.indexOf(value);
+        if (index === -1) return -1; // Value not found in the tree
+        return Math.floor((index - 1) / 2);
     }
 
-    for (let i = 0; i < tree.length; i += 2) {
-        if ((tree[i] === val1 && tree[i + 1] === val2) || (tree[i] === val2 && tree[i + 1] === val1)) {
-            return true;
-        }
-    }
+    // Find the parents of both values
+    let parent1 = findParent(val1);
+    let parent2 = findParent(val2);
 
-    return false;
+    // If either value is not found in the tree, they cannot be siblings
+    if (parent1 === -1 || parent2 === -1) return false;
+
+    // Check if both values have the same parent
+    return parent1 === parent2;
 }
 describe('TestAreSiblings', () => {
   let tree;

@@ -5,14 +5,18 @@
  * @returns {Array<number>} - An array of palindrome numbers.
  */
 function getPalindromeList(n) {
-  let palindromes = [];
-  for (let i = 1; i <= n; i++) {
-    let str = i.toString();
-    if (str === str.split('').reverse().join('')) {
-      palindromes.push(i);
+    const palindromes = [];
+
+    for (let i = 0; i <= n; i++) {
+        const str = i.toString();
+        const reversedStr = str.split('').reverse().join('');
+
+        if (str === reversedStr) {
+            palindromes.push(i);
+        }
     }
-  }
-  return palindromes;
+
+    return palindromes;
 }
 describe('TestNthPalindrome', () => {
     it('test_single_digit', () => {

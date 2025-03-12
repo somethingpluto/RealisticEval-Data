@@ -5,6 +5,7 @@
  * @returns {string} - The processed string with compressed whitespace.
  */
 function compressWhitespace(inputString) {
+    // Use a regular expression to replace multiple consecutive whitespace characters with a single space
     return inputString.replace(/\s+/g, ' ');
 }
 describe('compressWhitespace', () => {

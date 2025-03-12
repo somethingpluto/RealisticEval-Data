@@ -7,15 +7,14 @@ import subprocess
 import pandas as pd
 from tqdm import tqdm
 
-
 JAVA_RUN_ENV = "../envs/java/src"
 
 
-def check_code_is_valid(code: str)->str:
+def check_code_is_valid(code: str) -> str:
     array_code = code.split("\n")
-    if not array_code[0].startswith("package org.real.temp"):
-        array_code.insert(0, "package org.real.temp;")
-    for i,line in enumerate(array_code):
+    if not array_code[0].startswith("package org.real.qa_item"):
+        array_code.insert(0, "package org.real.qa_item;")
+    for i, line in enumerate(array_code):
         if "public class" in array_code[i]:
             array_code[i] = re.sub(r'public class \w+', 'public class Answer', array_code[i])
     return "\n".join(array_code)
@@ -30,11 +29,11 @@ class JavaExecutor:
 
     def single_run(self, code: str, test_code: str):
         # 向Answer.java文件写入
-        with open(f"{JAVA_RUN_ENV}/main/java/org/real/temp/Answer.java", "w", encoding="utf8") as code_file:
+        with open(f"{JAVA_RUN_ENV}/main/java/org/real/qa_item/Answer.java", "w", encoding="utf8") as code_file:
             code_file.write(code)
             code_file.flush()
         # 向Test.java文件写入写入
-        with open(f"{JAVA_RUN_ENV}/test/java/org/real/temp/Tester.java", "w", encoding="utf8") as test_file:
+        with open(f"{JAVA_RUN_ENV}/test/java/org/real/qa_item/Tester.java", "w", encoding="utf8") as test_file:
             test_file.write(test_code)
             test_file.flush()
         self._execute()
@@ -52,7 +51,8 @@ class JavaExecutor:
                 print(item["task_id"])
                 language_item = item['language_version_list']["java"]
                 answer_list = language_item["answer_list"]
-                with open(rf"E:\code\code_back\python_project\RealisticEval-Data\all\t{item['task_id']}\java\Tester.java") as test:
+                with open(
+                        rf"E:\code\code_back\python_project\RealisticEval-Data\all\t{item['task_id']}\java\Tester.java") as test:
                     test_code = test.read()
                 addition_info = language_item["addition_info"]
                 for index, answer in enumerate(answer_list[:1]):
@@ -60,11 +60,13 @@ class JavaExecutor:
                     code = check_code_is_valid(code)
                     if code == None or code == "":
                         continue
-                    with open(f"{JAVA_RUN_ENV}/main/java/org/real/temp/Answer.java", "w", encoding="utf8") as code_file:
+                    with open(f"{JAVA_RUN_ENV}/main/java/org/real/qa_item/Answer.java", "w",
+                              encoding="utf8") as code_file:
                         code_file.write(code)
                         code_file.flush()
                     # 向Test.java文件写入写入
-                    with open(f"{JAVA_RUN_ENV}/test/java/org/real/temp/Tester.java", "w", encoding="utf8") as test_file:
+                    with open(f"{JAVA_RUN_ENV}/test/java/org/real/qa_item/Tester.java", "w",
+                              encoding="utf8") as test_file:
                         test_file.write(test_code)
                         test_file.flush()
                     stdout, stderr, returncode = self._execute()
@@ -80,8 +82,7 @@ class JavaExecutor:
                 print(e)
                 continue
         data = pd.DataFrame(data_list)
-        data.to_excel(f"../analysis/model_answer_result/{self.model_name}/{self.model_name}_java.xlsx",
-                      engine='xlsxwriter')
+        data.to_csv(f"../model_answer/{self.model_name}/{self.model_name}_{self.language}_{self.type}.csv", index=True)
 
     def _execute(self):
         command = self._generate_command()
@@ -106,7 +107,6 @@ class JavaExecutor:
 
     def _generate_command(self):
         driver_flag = self._get_file_disk_flag()
-        # TODO: 替换为 本机中 RealisticEval-Data\envs\javascript 文件中的路径 不必填写盘符
         command = f"{driver_flag} && cd {driver_flag}/code/code_back/python_project/RealisticEval-Data/envs/java && mvn -Dstyle.color=never test"
         return command
 

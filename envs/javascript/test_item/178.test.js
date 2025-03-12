@@ -5,37 +5,37 @@
  * @returns {number[]} A list containing the longest non-decreasing subsequence.
  */
 function findLongestNonDecreasingSubsequence(nums) {
-    if (nums.length === 0) {
-        return [];
-    }
+    if (nums.length === 0) return [];
 
-    let dp = new Array(nums.length).fill(1);
-    let maxLen = 1;
-    let maxIndex = 0;
+    // dp[i] will store the length of the longest non-decreasing subsequence ending at index i
+    const dp = Array(nums.length).fill(1);
+    // prev[i] will store the index of the previous element in the longest non-decreasing subsequence ending at index i
+    const prev = Array(nums.length).fill(-1);
+
+    let maxLength = 1;
+    let endIndex = 0;
 
     for (let i = 1; i < nums.length; i++) {
         for (let j = 0; j < i; j++) {
-            if (nums[i] >= nums[j]) {
-                dp[i] = Math.max(dp[i], dp[j] + 1);
+            if (nums[i] >= nums[j] && dp[i] < dp[j] + 1) {
+                dp[i] = dp[j] + 1;
+                prev[i] = j;
             }
         }
-        if (dp[i] > maxLen) {
-            maxLen = dp[i];
-            maxIndex = i;
+        if (dp[i] > maxLength) {
+            maxLength = dp[i];
+            endIndex = i;
         }
     }
 
-    let longestSubsequence = [];
-    longestSubsequence.push(nums[maxIndex]);
-
-    for (let i = maxIndex - 1; i >= 0; i--) {
-        if (nums[i] <= longestSubsequence[longestSubsequence.length - 1] && dp[i] === dp[maxIndex] - 1) {
-            longestSubsequence.push(nums[i]);
-            maxIndex = i;
-        }
+    // Reconstruct the longest non-decreasing subsequence
+    const result = [];
+    while (endIndex !== -1) {
+        result.unshift(nums[endIndex]);
+        endIndex = prev[endIndex];
     }
 
-    return longestSubsequence.reverse();
+    return result;
 }
 describe('TestAnswer', () => {
     test('non-decreasing sequence', () => {

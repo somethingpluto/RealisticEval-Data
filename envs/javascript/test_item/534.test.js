@@ -7,8 +7,8 @@
  */
 function removeElementInArray(array, element) {
     const index = array.indexOf(element);
-    if (index > -1) {
-        return array.filter((_, i) => i !== index);
+    if (index !== -1) {
+        return array.slice(0, index).concat(array.slice(index + 1));
     }
     return array;
 }

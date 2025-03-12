@@ -35,20 +35,27 @@ class Circle {
  * @return true if the ray intersects the circle; false otherwise.
  */
 function intersects(ray, circle) {
-    // Calculate the vector from the ray's origin to the circle's center
-    const v = new Point(circle.center.x - ray.origin.x, circle.center.y - ray.origin.y);
-    
-    // Project the vector v onto the ray's direction vector
-    const t = v.x * ray.direction.x + v.y * ray.direction.y;
-    
-    // Calculate the closest point on the ray to the circle's center
-    const closestPoint = new Point(ray.origin.x + t * ray.direction.x, ray.origin.y + t * ray.direction.y);
-    
-    // Calculate the distance from the closest point to the circle's center
-    const distance = Math.sqrt(Math.pow(closestPoint.x - circle.center.x, 2) + Math.pow(closestPoint.y - circle.center.y, 2));
-    
-    // Check if the distance is less than or equal to the circle's radius
-    return distance <= circle.radius;
+    const dx = ray.origin.x - circle.center.x;
+    const dy = ray.origin.y - circle.center.y;
+    const a = ray.direction.x * ray.direction.x + ray.direction.y * ray.direction.y;
+    const b = 2 * (dx * ray.direction.x + dy * ray.direction.y);
+    const c = dx * dx + dy * dy - circle.radius * circle.radius;
+
+    const discriminant = b * b - 4 * a * c;
+
+    if (discriminant < 0) {
+        return false; // No intersection
+    } else {
+        const sqrtDiscriminant = Math.sqrt(discriminant);
+        const t1 = (-b + sqrtDiscriminant) / (2 * a);
+        const t2 = (-b - sqrtDiscriminant) / (2 * a);
+
+        if (t1 >= 0 || t2 >= 0) {
+            return true; // Intersection at some positive t value
+        } else {
+            return false; // Intersection behind the ray's origin
+        }
+    }
 }
 describe("Ray-Circle Intersection Tests", () => {
     // Test Case 1: The ray intersects the circle at two points

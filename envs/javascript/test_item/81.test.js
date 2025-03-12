@@ -7,17 +7,19 @@
  */
 function findClosestElement(target, elements) {
     if (elements.length === 0) {
-        throw new Error('The array of elements is empty.');
+        throw new Error("The elements array must not be empty.");
     }
 
     let closestElement = elements[0];
-    let minDistance = Math.abs(target - closestElement);
+    let smallestDifference = Math.abs(target - closestElement);
 
     for (let i = 1; i < elements.length; i++) {
-        const distance = Math.abs(target - elements[i]);
-        if (distance < minDistance) {
-            minDistance = distance;
-            closestElement = elements[i];
+        const currentElement = elements[i];
+        const currentDifference = Math.abs(target - currentElement);
+
+        if (currentDifference < smallestDifference) {
+            smallestDifference = currentDifference;
+            closestElement = currentElement;
         }
     }
 

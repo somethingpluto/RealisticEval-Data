@@ -6,7 +6,20 @@
  * @returns {Array} - A new array containing the elements that qualify.
  */
 function filterArray(unfilteredArray, isQualified) {
-    return unfilteredArray.filter(isQualified);
+    // Initialize an empty array to store the qualified elements
+    const filteredArray = [];
+
+    // Iterate over each element in the unfiltered array
+    for (let i = 0; i < unfilteredArray.length; i++) {
+        // Check if the current element qualifies
+        if (isQualified(unfilteredArray[i])) {
+            // If it qualifies, add it to the filtered array
+            filteredArray.push(unfilteredArray[i]);
+        }
+    }
+
+    // Return the filtered array
+    return filteredArray;
 }
 describe('filterArray', () => {
     // Qualification function that checks if a number is greater than 10

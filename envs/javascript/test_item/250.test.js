@@ -7,19 +7,22 @@
  */
 function invertDictionary(originalDict) {
     const invertedDict = {};
+
     for (const key in originalDict) {
         if (originalDict.hasOwnProperty(key)) {
             const value = originalDict[key];
-            if (invertedDict.hasOwnProperty(value)) {
+
+            if (invertedDict[value] === undefined) {
+                invertedDict[value] = key;
+            } else {
                 if (!Array.isArray(invertedDict[value])) {
                     invertedDict[value] = [invertedDict[value]];
                 }
                 invertedDict[value].push(key);
-            } else {
-                invertedDict[value] = key;
             }
         }
     }
+
     return invertedDict;
 }
 describe('TestInvertDictionary', () => {

@@ -7,14 +7,27 @@
  */
 function sortNames(arr) {
     return arr.sort((a, b) => {
-        const [nameA, numberA] = a.split(' ');
-        const [nameB, numberB] = b.split(' ');
+        // Extract the name and number parts
+        const nameA = a.slice(0, -1); // Everything except the last character
+        const nameB = b.slice(0, -1); // Everything except the last character
+        const numA = parseInt(a.slice(-1), 10); // Last character as a number
+        const numB = parseInt(b.slice(-1), 10); // Last character as a number
 
-        if (numberA === numberB) {
-            return nameA.localeCompare(nameB);
+        // Compare numbers first
+        if (numA < numB) {
+            return -1;
+        } else if (numA > numB) {
+            return 1;
+        } else {
+            // If numbers are the same, compare names
+            if (nameA < nameB) {
+                return -1;
+            } else if (nameA > nameB) {
+                return 1;
+            } else {
+                return 0;
+            }
         }
-
-        return numberA - numberB;
     });
 }
 describe("sortNames Test Cases", () => {

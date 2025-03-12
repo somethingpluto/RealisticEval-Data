@@ -5,14 +5,11 @@
  * @returns {string} A sanitized string that is safe to use as a Windows filename.
  */
 function sanitizeFilename(filename) {
-  // Define the regular expression for illegal characters in Windows filenames
-  const illegalChars = /[<>:"\/\\|?*\x00-\x1F]/g;
-  // Replace illegal characters with an empty string
-  const sanitizedFilename = filename.replace(illegalChars, '');
-  // Replace any double dots (..) with a single dot (.)
-  const sanitizedFilenameWithoutDots = sanitizedFilename.replace(/\.{2,}/g, '.');
-  // Return the sanitized filename
-  return sanitizedFilenameWithoutDots;
+    // Define illegal characters for Windows filenames
+    const illegalChars = /[<>:"\/\\|?*\x00-\x1F]/g;
+    
+    // Replace illegal characters with an empty string
+    return filename.replace(illegalChars, '');
 }
 describe('TestSanitizeFilename', () => {
     it('should handle valid filenames correctly', () => {

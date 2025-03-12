@@ -4,34 +4,36 @@
  * @returns {Array} An array of arrays, where each inner array contains [ticker, exDividendDate] that have different dividend amounts.
  */
 function checkDividendVariances(records) {
-    const dateMap = new Map();
+    // Create a map to store ex-dividend dates and their corresponding dividend amounts
+    const exDividendMap = new Map();
 
-    records.forEach(record => {
-        const [ticker, exDividendDate, dividendAmount] = record;
-        const key = `${exDividendDate}`;
+    // Iterate through each record
+    for (const [ticker, exDividendDate, dividendAmount] of records) {
+        // Create a unique key for the ex-dividend date
+        const key = `${ticker}-${exDividendDate}`;
 
-        if (!dateMap.has(key)) {
-            dateMap.set(key, new Map());
-        }
-
-        const tickerMap = dateMap.get(key);
-        if (tickerMap.has(ticker)) {
-            const existingAmount = tickerMap.get(ticker);
+        // If the key already exists in the map, check if the dividend amount is different
+        if (exDividendMap.has(key)) {
+            const existingAmount = exDividendMap.get(key);
             if (existingAmount !== dividendAmount) {
-                tickerMap.set(ticker, dividendAmount);
+                // If different, store the key in the map with the new amount
+                exDividendMap.set(key, null); // Use null to indicate variance
             }
         } else {
-            tickerMap.set(ticker, dividendAmount);
+            // If the key does not exist, store the dividend amount
+            exDividendMap.set(key, dividendAmount);
         }
-    });
+    }
 
+    // Filter out the keys that have variances
     const result = [];
-    dateMap.forEach((tickerMap, exDividendDate) => {
-        if (tickerMap.size > 1) {
-            const tickers = Array.from(tickerMap.keys());
-            result.push([tickers.join(','), exDividendDate]);
+    for (const [key, amount] of exDividendMap.entries()) {
+        if (amount === null) {
+            // Extract the ticker and ex-dividend date from the key
+            const [ticker, exDividendDate] = key.split('-');
+            result.push([ticker, exDividendDate]);
         }
-    });
+    }
 
     return result;
 }

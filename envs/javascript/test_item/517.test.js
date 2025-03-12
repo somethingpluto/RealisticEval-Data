@@ -1,3 +1,5 @@
+const fs = require('fs').promises;
+
 /**
  * Reads a JSON Lines file and returns its content as an array of objects.
  *
@@ -7,32 +9,29 @@
  * @throws {SyntaxError} If there is an error parsing a line in the JSON Lines file.
  */
 async function readJsonl(filePath) {
-  const fs = require('fs').promises;
-  const readline = require('readline');
-
-  try {
-    const fileStream = fs.createReadStream(filePath);
-    const rl = readline.createInterface({
-      input: fileStream,
-      crlfDelay: Infinity
-    });
-
-    const data = [];
-    for await (const line of rl) {
-      try {
-        data.push(JSON.parse(line));
-      } catch (error) {
-        throw new SyntaxError(`Error parsing JSON line: ${line}`);
-      }
+    try {
+        // Read the file content
+        const fileContent = await fs.readFile(filePath, 'utf-8');
+        
+        // Split the file content by lines
+        const lines = fileContent.split('\n');
+        
+        // Parse each line as a JSON object
+        const jsonObjects = lines
+            .filter(line => line.trim() !== '') // Remove empty lines
+            .map(line => JSON.parse(line)); // Parse each line as JSON
+        
+        return jsonObjects;
+    } catch (error) {
+        // Handle file not found or syntax errors
+        if (error.code === 'ENOENT') {
+            throw new Error(`File not found: ${filePath}`);
+        } else if (error instanceof SyntaxError) {
+            throw new SyntaxError(`Error parsing JSON in file: ${filePath}`);
+        } else {
+            throw error;
+        }
     }
-
-    return data;
-  } catch (error) {
-    if (error.code === 'ENOENT') {
-      throw new Error(`File not found: ${filePath}`);
-    }
-    throw error;
-  }
 }
 describe('TestReadJsonl', () => {
   let validJsonlFile = 'test_valid.jsonl';

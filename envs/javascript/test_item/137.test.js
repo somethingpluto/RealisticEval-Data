@@ -7,7 +7,24 @@
  * @returns {Object} - The resulting object after merging.
  */
 function mergeObjects(obj1, obj2) {
-    return { ...obj1, ...obj2 };
+    // Create a new object to hold the merged properties
+    const mergedObject = {};
+
+    // Copy all properties from obj1 to the mergedObject
+    for (let key in obj1) {
+        if (obj1.hasOwnProperty(key)) {
+            mergedObject[key] = obj1[key];
+        }
+    }
+
+    // Copy all properties from obj2 to the mergedObject, potentially overwriting existing properties
+    for (let key in obj2) {
+        if (obj2.hasOwnProperty(key)) {
+            mergedObject[key] = obj2[key];
+        }
+    }
+
+    return mergedObject;
 }
 describe('mergeObjects', () => {
     test('correctly merges two objects with non-conflicting keys', () => {

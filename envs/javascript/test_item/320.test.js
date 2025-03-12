@@ -1,5 +1,5 @@
 /**
- * calculate the average of an array of numbers
+ * Calculate the average of an array of numbers.
  *
  * @param {number[]} array - An array of numbers for which the average is to be calculated.
  * @returns {number} - The average (mean) of the array's elements, or NaN if the array is empty.
@@ -8,8 +8,11 @@ function getArrayAverage(array) {
     if (array.length === 0) {
         return NaN;
     }
+
     const sum = array.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
-    return sum / array.length;
+    const average = sum / array.length;
+
+    return average;
 }
 describe('getArrayAverage', () => {
     test('should return the average of an array of positive integers', () => {

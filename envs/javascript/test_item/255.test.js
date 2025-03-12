@@ -9,23 +9,39 @@ const Jimp = require('jimp');
  * @returns {Promise<Array<number>>} A promise that resolves to an array of bits (0 or 1) representing the image.
  */
 async function convertImageToBits(imagePath) {
-  try {
-    const image = await Jimp.read(imagePath);
-    image.grayscale(); // Convert image to black and white mode
+    try {
+        // Load the image
+        const image = await Jimp.read(imagePath);
 
-    const bits = [];
-    image.scan(0, 0, image.bitmap.width, image.bitmap.height, (x, y, idx) => {
-      // Get the pixel's grayscale value
-      const grayscale = image.bitmap.data[idx] + image.bitmap.data[idx + 1] + image.bitmap.data[idx + 2];
-      // Determine if the pixel is white or black and add the corresponding bit to the array
-      bits.push(grayscale === 255 ? 1 : 0);
-    });
+        // Convert the image to black and white mode
+        image.greyscale();
 
-    return bits;
-  } catch (error) {
-    console.error('Error converting image to bits:', error);
-    throw error;
-  }
+        // Get the width and height of the image
+        const width = image.getWidth();
+        const height = image.getHeight();
+
+        // Initialize an array to store the bits
+        const bits = [];
+
+        // Iterate over each pixel in the image
+        for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++) {
+                // Get the color of the pixel
+                const pixelColor = Jimp.intToRGBA(image.getPixelColor(x, y));
+
+                // Determine the bit value based on the pixel color
+                const bit = pixelColor.r === 255 ? 1 : 0;
+
+                // Add the bit to the array
+                bits.push(bit);
+            }
+        }
+
+        // Return the array of bits
+        return bits;
+    } catch (error) {
+        throw new Error(`Failed to convert image to bits: ${error.message}`);
+    }
 }
 const Jimp = require('jimp');
 const fs = require('fs');

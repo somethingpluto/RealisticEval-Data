@@ -6,7 +6,7 @@
  * @returns {Object[]} The sorted array based on the specified key.
  */
 function sortByKey(array, key) {
-    return array.sort(function(a, b) {
+    return array.sort((a, b) => {
         if (a[key] < b[key]) {
             return -1;
         }

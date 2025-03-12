@@ -9,61 +9,50 @@ const fs = require('fs');
  * @param {string} mismatchFile - Path to save mismatching objects JSON.
  */
 function classifyJsonObjectsByPid(sourceFile, pidList, matchFile, mismatchFile) {
-  // Read the source JSON file
-  fs.readFile(sourceFile, 'utf8', (err, data) => {
-    if (err) {
-      console.error(`Error reading the file: ${err}`);
-      return;
-    }
-
-    try {
-      // Parse the JSON data
-      const jsonData = JSON.parse(data);
-      if (!Array.isArray(jsonData)) {
-        throw new Error('The JSON data is not an array.');
-      }
-
-      // Initialize arrays for matches and mismatches
-      const matches = [];
-      const mismatches = [];
-
-      // Iterate over the JSON objects
-      jsonData.forEach(obj => {
-        if (obj.pid && pidList.includes(obj.pid)) {
-          // Add to matches if pid is in the list
-          matches.push(obj);
-        } else {
-          // Add to mismatches otherwise
-          mismatches.push(obj);
-        }
-      });
-
-      // Write matches to the match file
-      fs.writeFile(matchFile, JSON.stringify(matches, null, 2), 'utf8', (err) => {
+    // Read the source JSON file
+    fs.readFile(sourceFile, 'utf8', (err, data) => {
         if (err) {
-          console.error(`Error writing to the match file: ${err}`);
-        } else {
-          console.log(`Matches written to ${matchFile}`);
+            console.error(`Error reading source file: ${err}`);
+            return;
         }
-      });
 
-      // Write mismatches to the mismatch file
-      fs.writeFile(mismatchFile, JSON.stringify(mismatches, null, 2), 'utf8', (err) => {
-        if (err) {
-          console.error(`Error writing to the mismatch file: ${err}`);
-        } else {
-          console.log(`Mismatches written to ${mismatchFile}`);
+        try {
+            // Parse the JSON data
+            const jsonData = JSON.parse(data);
+
+            // Initialize arrays to hold matching and mismatching objects
+            const matches = [];
+            const mismatches = [];
+
+            // Iterate through each object in the JSON data
+            jsonData.forEach(obj => {
+                // Check if the object's pid is in the pidList
+                if (pidList.includes(obj.pid)) {
+                    matches.push(obj);
+                } else {
+                    mismatches.push(obj);
+                }
+            });
+
+            // Write matching objects to the match file
+            fs.writeFile(matchFile, JSON.stringify(matches, null, 2), 'utf8', err => {
+                if (err) {
+                    console.error(`Error writing to match file: ${err}`);
+                }
+            });
+
+            // Write mismatching objects to the mismatch file
+            fs.writeFile(mismatchFile, JSON.stringify(mismatches, null, 2), 'utf8', err => {
+                if (err) {
+                    console.error(`Error writing to mismatch file: ${err}`);
+                }
+            });
+
+        } catch (parseErr) {
+            console.error(`Error parsing JSON: ${parseErr}`);
         }
-      });
-
-    } catch (parseError) {
-      console.error(`Error parsing JSON: ${parseError}`);
-    }
-  });
+    });
 }
-
-// Example usage:
-// classifyJsonObjectsByPid('path/to/source.json', [1, 2, 3], 'path/to/matches.json', 'path/to/mismatches.json');
 const fs = require('fs');
 const path = require('path');
 describe('Classify JSON Objects by PID', () => {

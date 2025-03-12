@@ -5,33 +5,11 @@
  * @returns {boolean} - True if the string is in KEBAB_CASE, otherwise false.
  */
 function isKebabCase(input) {
-    // Check if the string contains any uppercase letters
-    if (/[A-Z]/.test(input)) {
-        return false;
-    }
-
-    // Check if the string contains any spaces
-    if (/\s/.test(input)) {
-        return false;
-    }
-
-    // Check if the string contains any non-alphanumeric characters except for hyphens
-    if (/[^a-z0-9\-]/.test(input)) {
-        return false;
-    }
-
-    // Check if the string contains multiple consecutive hyphens
-    if (/\-{2,}/.test(input)) {
-        return false;
-    }
-
-    // Check if the string starts or ends with a hyphen
-    if (input.startsWith('-') || input.endsWith('-')) {
-        return false;
-    }
-
-    // If all checks pass, the string is in KEBAB_CASE
-    return true;
+    // Regular expression to match KEBAB_CASE
+    const kebabCaseRegex = /^[a-z]+(-[a-z]+)*$/;
+    
+    // Test the input string against the regular expression
+    return kebabCaseRegex.test(input);
 }
 describe('isKebabCase', () => {
     test('should return true for a valid kebab-case string', () => {

@@ -8,19 +8,19 @@
  * @note The output string will be in lowercase hexadecimal format.
  */
 function floatToHex(value) {
-    // Convert the float to a 64-bit integer representation
-    const buffer = new ArrayBuffer(8);
-    const view = new DataView(buffer);
-    view.setFloat64(0, value);
-
-    // Extract the 64-bit integer representation
-    const int64 = view.getUint64(0, false);
-
+    // Convert the float to a 32-bit integer representation
+    const buffer = new ArrayBuffer(4);
+    const floatView = new Float32Array(buffer);
+    const intView = new Uint32Array(buffer);
+    
+    floatView[0] = value;
+    const intValue = intView[0];
+    
     // Convert the integer to a hexadecimal string
-    const hex = int64.toString(16);
-
-    // Return the hexadecimal string
-    return hex;
+    const hexString = intValue.toString(16);
+    
+    // Ensure the hexadecimal string is 8 characters long
+    return hexString.padStart(8, '0');
 }
 describe("floatToHex tests", () => {
     test("Test with positive float 123.456", () => {

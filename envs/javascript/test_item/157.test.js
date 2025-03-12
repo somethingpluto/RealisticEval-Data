@@ -6,14 +6,15 @@
  */
 function bytesToSize(bytes) {
     const units = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    let size = bytes;
     let unitIndex = 0;
 
-    while (bytes >= 1024 && unitIndex < units.length - 1) {
-        bytes /= 1024;
+    while (size >= 1024 && unitIndex < units.length - 1) {
+        size /= 1024;
         unitIndex++;
     }
 
-    return bytes.toFixed(2) + ' ' + units[unitIndex];
+    return `${size.toFixed(2)} ${units[unitIndex]}`;
 }
 describe('bytesToSize', () => {
     test('should convert bytes to KB correctly', () => {

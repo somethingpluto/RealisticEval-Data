@@ -1,29 +1,32 @@
 /**
- * Compresses long filenames to the specified maximum length by inserting an ellipsis in the middle while preserving the filename extension, which defaults to 18 characters
- * For example:
- *      compressFilename('verylongfilename.txt', 10) output: verylongfi***.txt
+ * Compresses long filenames to the specified maximum length by inserting an ellipsis in the middle while preserving the filename extension, which defaults to 18 characters.
  *
  * @param {string} fileName - The original file name to be compressed.
  * @param {number} maxLength - The maximum allowed length for the compressed file name. Defaults to 18.
  * @returns {string} The compressed file name, with the middle section replaced by ellipses ('...'), or the original file name if it is within the maximum length.
  */
 function compressFileName(fileName, maxLength = 18) {
-    const extensionIndex = fileName.lastIndexOf('.');
-    const nameLength = extensionIndex > -1 ? extensionIndex : fileName.length;
-    const namePart = fileName.substring(0, nameLength);
-    const extPart = extensionIndex > -1 ? fileName.substring(extensionIndex) : '';
-
-    if (nameLength <= maxLength) {
+    // Check if the fileName is already within the maxLength
+    if (fileName.length <= maxLength) {
         return fileName;
     }
 
-    const namePartLength = maxLength - extPart.length;
-    const ellipsisLength = 3;
-    const startPartLength = Math.floor((namePartLength - ellipsisLength) / 2);
-    const endPartLength = namePartLength - startPartLength - ellipsisLength;
+    // Extract the file extension
+    const lastDotIndex = fileName.lastIndexOf('.');
+    const hasExtension = lastDotIndex !== -1;
+    const extension = hasExtension ? fileName.substring(lastDotIndex) : '';
+    const baseName = hasExtension ? fileName.substring(0, lastDotIndex) : fileName;
 
-    const compressedName = namePart.substring(0, startPartLength) + '***' + namePart.substring(namePart.length - endPartLength);
-    return compressedName + extPart;
+    // Calculate the length of the baseName that can be preserved
+    const maxBaseLength = maxLength - extension.length;
+
+    // Calculate the length of the parts before and after the ellipsis
+    const partLength = Math.floor((maxBaseLength - 3) / 2); // 3 for the ellipsis
+
+    // Construct the compressed filename
+    const compressedBaseName = baseName.substring(0, partLength) + '...' + baseName.substring(baseName.length - partLength);
+
+    return compressedBaseName + extension;
 }
 describe('compressFilename', () => {
     test('should return the filename unchanged if under max length', () => {

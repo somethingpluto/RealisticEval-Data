@@ -7,31 +7,37 @@
  * @returns {Array<Array<string>>} A list of arrays, where each inner array represents a row of data.
  */
 function readTSVFromStdin() {
-    const readline = require('readline');
-    const rl = readline.createInterface({
-        input: process.stdin,
-        output: process.stdout,
-        terminal: false
-    });
-
-    let rows = [];
-    let maxRowLength = 0;
-
     return new Promise((resolve, reject) => {
-        rl.on('line', (line) => {
-            let row = line.split('\t');
-            if (row.length > maxRowLength) {
-                maxRowLength = row.length;
+        const rows = [];
+        let maxLength = 0;
+
+        process.stdin.setEncoding('utf8');
+
+        process.stdin.on('readable', () => {
+            let chunk;
+            while ((chunk = process.stdin.read()) !== null) {
+                const lines = chunk.split('\n');
+                for (const line of lines) {
+                    const row = line.split('\t');
+                    rows.push(row);
+                    if (row.length > maxLength) {
+                        maxLength = row.length;
+                    }
+                }
             }
-            rows.push(row);
-        }).on('close', () => {
+        });
+
+        process.stdin.on('end', () => {
+            // Pad rows to ensure all rows have the same length
             for (let i = 0; i < rows.length; i++) {
-                while (rows[i].length < maxRowLength) {
+                while (rows[i].length < maxLength) {
                     rows[i].push('');
                 }
             }
             resolve(rows);
-        }).on('error', (err) => {
+        });
+
+        process.stdin.on('error', (err) => {
             reject(err);
         });
     });

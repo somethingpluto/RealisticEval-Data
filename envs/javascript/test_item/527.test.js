@@ -12,16 +12,22 @@
  * @returns {boolean} True if the point (px, py) is inside or on the edge of the triangle formed by the vertices (x1, y1), (x2, y2), (x3, y3); False otherwise.
  */
 function isPointInsideTriangle(px, py, x1, y1, x2, y2, x3, y3) {
-    // Calculate the area of the triangle formed by the vertices
-    const area = 0.5 * (-y2 * x3 + y1 * (-x2 + x3) + x1 * (y2 - y3) + x2 * y3);
+    // Helper function to calculate the area of a triangle given its vertices
+    function triangleArea(x1, y1, x2, y2, x3, y3) {
+        return Math.abs((x1 * (y2 - y3) + x2 * (y3 - y1) + x3 * (y1 - y2)) / 2);
+    }
 
-    // Calculate the areas of the triangles formed by the point and each pair of vertices
-    const area1 = 0.5 * (-py * x3 + y1 * (px - x3) + x1 * (py - y3) + px * y3);
-    const area2 = 0.5 * (-py * x1 + y2 * (px - x1) + x2 * (py - y1) + px * y1);
-    const area3 = 0.5 * (-py * x2 + y3 * (px - x2) + x3 * (py - y2) + px * y2);
+    // Calculate the area of the main triangle
+    const mainArea = triangleArea(x1, y1, x2, y2, x3, y3);
 
-    // Check if the sum of the areas is equal to the area of the triangle
-    return Math.abs(area - (area1 + area2 + area3)) < 0.000001;
+    // Calculate the area of the sub-triangles formed by the point and the vertices of the main triangle
+    const area1 = triangleArea(px, py, x1, y1, x2, y2);
+    const area2 = triangleArea(px, py, x2, y2, x3, y3);
+    const area3 = triangleArea(px, py, x3, y3, x1, y1);
+
+    // If the sum of the areas of the sub-triangles equals the area of the main triangle,
+    // the point is inside or on the edge of the triangle
+    return mainArea === area1 + area2 + area3;
 }
 describe('TestPointInsideTriangle', () => {
     it('should return true when the point is inside the triangle', () => {

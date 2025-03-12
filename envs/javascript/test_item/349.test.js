@@ -14,23 +14,25 @@ function generateCombinations(inputLists) {
         return [];
     }
 
-    const result = [];
-
-    function combine(index, currentCombination) {
-        if (index === inputLists.length) {
-            result.push([...currentCombination]);
-            return;
+    function combine(lists, index) {
+        if (index === lists.length) {
+            return [[]];
         }
 
-        for (const element of inputLists[index]) {
-            currentCombination.push(element);
-            combine(index + 1, currentCombination);
-            currentCombination.pop();
+        const currentList = lists[index];
+        const remainingCombinations = combine(lists, index + 1);
+        const combinations = [];
+
+        for (const element of currentList) {
+            for (const combination of remainingCombinations) {
+                combinations.push([element, ...combination]);
+            }
         }
+
+        return combinations;
     }
 
-    combine(0, []);
-    return result;
+    return combine(inputLists, 0);
 }
 describe('generateCombinations', () => {
     

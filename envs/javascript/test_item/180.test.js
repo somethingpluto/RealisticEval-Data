@@ -10,6 +10,7 @@ function binarySearchClosest(array, target) {
     let left = 0;
     let right = array.length - 1;
     let closestIndex = -1;
+    let closestDistance = Infinity;
 
     while (left <= right) {
         const mid = Math.floor((left + right) / 2);
@@ -17,15 +18,18 @@ function binarySearchClosest(array, target) {
 
         if (midValue === target) {
             return mid;
-        } else if (midValue < target) {
+        }
+
+        const distance = Math.abs(midValue - target);
+        if (distance < closestDistance) {
+            closestDistance = distance;
+            closestIndex = mid;
+        }
+
+        if (midValue < target) {
             left = mid + 1;
         } else {
             right = mid - 1;
-        }
-
-        // Update the closest index if the current mid value is closer to the target
-        if (closestIndex === -1 || Math.abs(array[mid] - target) < Math.abs(array[closestIndex] - target)) {
-            closestIndex = mid;
         }
     }
 

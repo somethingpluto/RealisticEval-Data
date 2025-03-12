@@ -6,8 +6,15 @@
  * @returns {boolean} - True if the phrase is found as a whole word in the string, False otherwise.
  */
 function isPhraseInStringIgnoreCase(phrase, string) {
-    const regex = new RegExp(`\\b${phrase}\\b`, 'i');
-    return regex.test(string);
+    // Normalize both the phrase and the string by removing extra whitespaces and converting to lowercase
+    const normalizedPhrase = phrase.trim().replace(/\s+/g, ' ').toLowerCase();
+    const normalizedString = string.trim().replace(/\s+/g, ' ').toLowerCase();
+
+    // Create a regex pattern that matches the phrase as a whole word
+    const regexPattern = new RegExp(`\\b${normalizedPhrase}\\b`);
+
+    // Test the regex pattern against the normalized string
+    return regexPattern.test(normalizedString);
 }
 describe('TestIsPhraseInStringIgnoreCase', () => {
     describe('test_exact_match_case_insensitive', () => {

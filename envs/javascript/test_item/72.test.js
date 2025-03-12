@@ -8,18 +8,18 @@
  * @returns {Array} - x, y, z 3D point coordinates in camera RDF coordinates
  */
 function get3DCoordinates(K, d, x, y) {
-    // Extract focal length and principal point from intrinsic matrix
+    // Extract the intrinsic parameters from the camera matrix K
     const fx = K[0][0];
     const fy = K[1][1];
     const cx = K[0][2];
     const cy = K[1][2];
 
-    // Calculate 3D coordinates
-    const X = (x - cx) * d / fx;
-    const Y = (y - cy) * d / fy;
-    const Z = d;
+    // Calculate the 3D coordinates in the camera's RDF coordinate system
+    const z = d;
+    const X = (x - cx) * z / fx;
+    const Y = (y - cy) * z / fy;
 
-    return [X, Y, Z];
+    return [X, Y, z];
 }
 describe('TestGet3DCoordinates', () => {
     let K;

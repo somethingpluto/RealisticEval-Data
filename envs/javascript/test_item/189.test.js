@@ -13,20 +13,24 @@ function base64Encode(data) {
     let i = 0;
 
     while (i < data.length) {
-        let octet1 = data[i++];
-        let octet2 = i < data.length ? data[i++] : 0;
-        let octet3 = i < data.length ? data[i++] : 0;
+        // First 6 bits of the first byte
+        const byte1 = data[i++];
+        const char1 = byte1 >> 2;
 
-        let triple = (octet1 << 16) | (octet2 << 8) | octet3;
+        // Last 2 bits of the first byte and first 4 bits of the second byte
+        const byte2 = i < data.length ? data[i++] : 0;
+        const char2 = ((byte1 & 3) << 4) | (byte2 >> 4);
 
-        result += base64Chars[(triple >> 18) & 0x3F];
-        result += base64Chars[(triple >> 12) & 0x3F];
-        result += base64Chars[(triple >> 6) & 0x3F];
-        result += base64Chars[triple & 0x3F];
-    }
+        // Last 4 bits of the second byte and first 2 bits of the third byte
+        const byte3 = i < data.length ? data[i++] : 0;
+        const char3 = ((byte2 & 15) << 2) | (byte3 >> 6);
 
-    while ((result.length % 4) !== 0) {
-        result += '=';
+        // Last 6 bits of the third byte
+        const char4 = byte3 & 63;
+
+        result += base64Chars[char1] + base64Chars[char2] + 
+                  (i - 2 < data.length ? base64Chars[char3] : '=') + 
+                  (i - 1 < data.length ? base64Chars[char4] : '=');
     }
 
     return result;

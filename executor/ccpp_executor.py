@@ -28,6 +28,7 @@ def kill_process_by_name(process_name):
     except subprocess.CalledProcessError as e:
         print(f"Error occurred: {e}")
 
+
 class CCPPExecutor:
     def __init__(self, type, model_name=""):
         self._env_path = CCPP_RUN_ENV
@@ -56,7 +57,7 @@ class CCPPExecutor:
             for item in json_lines:
                 result_list.append(json.loads(item))
 
-        for item in tqdm(result_list[150:]):
+        for item in tqdm(result_list):
             try:
                 print(item["task_id"])
                 language_item = item['language_version_list']["c&cpp"]
@@ -85,7 +86,7 @@ class CCPPExecutor:
                     with open(f"{self._env_path}/answer_check.cpp", "r", encoding="utf8") as f:
                         item["full_content"] = f.read()
                     with open(
-                            f"../analysis/model_answer_result/{self.model_name}/{self.type}/{self.model_name}_{self.language}_{self.type}.csv",
+                            f"../model_answer/{self.model_name}/{self.type}/{self.model_name}_{self.language}_{self.type}.csv",
                             "a+", encoding="utf8") as file:
                         file.write(f"{item['task_id']},{returncode},{answer['model_name']}\n")
                     time.sleep(0.5)
@@ -141,5 +142,5 @@ def parse_args():
 if __name__ == '__main__':
     args = parse_args()
     executor = CCPPExecutor(args.type, args.model_name)
-    file_path = rf"E:\code\code_back\python_project\llm\qa\{args.model_name}_answer\c&cpp_answer_{args.type}.jsonl"
+    file_path = rf"E:\code\code_back\python_project\llm\qa\model_answer\{args.model_name}_answer\c&cpp_answer_{args.type}.jsonl"
     executor.batch_run(file_path)

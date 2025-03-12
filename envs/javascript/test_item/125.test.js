@@ -1,40 +1,36 @@
 /**
  * Compresses an HTML string by removing unnecessary whitespace without disrupting
  * the integrity of content within <pre>, <div>, <script>, and <style> tags.
- * For example:
- *      input: '   <div>   Content  </div>   '
- *      output: '<div> Content </div>'
  *
  * @param {string} htmlString - The HTML content to compress.
  * @returns {string} The compressed HTML content.
  */
 function compressHTML(htmlString) {
-    const tagRegex = /<(\/)?(pre|div|script|style)(.*?)>/gi;
-    const whitespaceRegex = /\s+/g;
+    // Regular expression to match HTML tags and content within <pre>, <div>, <script>, and <style> tags
+    const regex = /(<pre[^>]*>.*?<\/pre>|<div[^>]*>.*?<\/div>|<script[^>]*>.*?<\/script>|<style[^>]*>.*?<\/style>|<[^>]+>|[^<>\s]+)/gs;
 
-    let result = '';
-    let lastIndex = 0;
-    let match;
+    // Split the HTML string into parts based on the regex
+    const parts = htmlString.match(regex);
 
-    while ((match = tagRegex.exec(htmlString)) !== null) {
-        const preTag = match[0];
-        const isClosingTag = match[1] === '/';
-        const tagName = match[2];
-        const tagAttributes = match[3];
+    // Initialize an array to hold the compressed parts
+    const compressedParts = [];
 
-        result += htmlString.slice(lastIndex, match.index).replace(whitespaceRegex, ' ');
-        lastIndex = tagRegex.lastIndex;
-
-        if (isClosingTag) {
-            result += preTag;
+    // Iterate over each part
+    parts.forEach(part => {
+        if (part.startsWith('<pre') || part.startsWith('<div') || part.startsWith('<script') || part.startsWith('<style')) {
+            // If the part is a <pre>, <div>, <script>, or <style> tag, keep it as is
+            compressedParts.push(part);
+        } else if (part.startsWith('<') && part.endsWith('>')) {
+            // If the part is a regular HTML tag, trim its whitespace
+            compressedParts.push(part.trim());
         } else {
-            result += preTag.replace(whitespaceRegex, '');
+            // If the part is plain text, compress its whitespace
+            compressedParts.push(part.replace(/\s+/g, ' ').trim());
         }
-    }
+    });
 
-    result += htmlString.slice(lastIndex).replace(whitespaceRegex, ' ');
-
-    return result;
+    // Join the compressed parts back into a single string
+    return compressedParts.join('');
 }
 describe('compressHTML', () => {
     test('should remove leading and trailing spaces around tags', () => {

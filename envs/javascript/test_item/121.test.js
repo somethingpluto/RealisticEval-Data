@@ -6,23 +6,24 @@
  * @returns {Array} - A new array that has been adjusted to the target length.
  */
 function adjustArrayLength(targetLength, array) {
-    if (targetLength < 0) {
-        throw new Error('Target length must be a non-negative number');
+    if (targetLength <= 0) {
+        return [];
     }
 
-    if (array.length === targetLength) {
+    const currentLength = array.length;
+
+    if (currentLength > targetLength) {
+        return array.slice(0, targetLength);
+    } else if (currentLength < targetLength) {
+        const repeatedArray = [];
+        let repeatCount = Math.ceil(targetLength / currentLength);
+        for (let i = 0; i < repeatCount; i++) {
+            repeatedArray.push(...array);
+        }
+        return repeatedArray.slice(0, targetLength);
+    } else {
         return array;
     }
-
-    if (array.length > targetLength) {
-        return array.slice(0, targetLength);
-    }
-
-    let result = [];
-    for (let i = 0; i < targetLength; i++) {
-        result.push(array[i % array.length]);
-    }
-    return result;
 }
 describe('adjustArrayLength function tests', () => {
     test('Array length equal to the target length', () => {

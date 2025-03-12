@@ -10,16 +10,20 @@
  * @throws {RangeError} If the month is not between 1 and 12.
  */
 function getDaysInMonth(year, month) {
-  if (month < 1 || month > 12) {
-    throw new RangeError('Month must be between 1 and 12');
-  }
+    if (month < 1 || month > 12) {
+        throw new RangeError("Month must be between 1 and 12.");
+    }
 
-  const daysInMonth = [31, isLeapYear(year) ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-  return daysInMonth[month - 1];
-}
+    const daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
-function isLeapYear(year) {
-  return (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
+    if (month === 2) {
+        // Check for leap year
+        if ((year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0)) {
+            return 29;
+        }
+    }
+
+    return daysInMonth[month - 1];
 }
 describe("getDaysInMonth function", () => {
     describe("Regular months", () => {

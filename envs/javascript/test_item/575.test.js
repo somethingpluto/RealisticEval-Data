@@ -8,8 +8,14 @@
  * @returns {string} - A formatted string indicating the number of threads.
  */
 function formatThreadCount(count) {
-    let threadString = count === 1 ? 'Thread' : 'Threads';
-    return `${count.toString().padStart(2, '0')} ${threadString}`;
+    // Convert the count to a string and pad with leading zeros if necessary
+    const paddedCount = count.toString().padStart(2, '0');
+    
+    // Determine the correct pluralization of "Thread"
+    const threadLabel = count === 1 ? 'Thread' : 'Threads';
+    
+    // Return the formatted string
+    return `${paddedCount} ${threadLabel}`;
 }
 describe('formatThreadCount', () => {
     test('should return "01 Thread" for a count of 1', () => {

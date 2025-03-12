@@ -1,4 +1,30 @@
-npm install docx
+const { Document, Packer, Parser } = require('docx');
+const fs = require('fs').promises;
+const path = require('path');
+
+/**
+ * Extracts text content from a given Word file (.docx).
+ *
+ * @param {string} docxFilePath - The path to the Word file.
+ * @returns {Promise<string | null>} A promise that resolves to the extracted text content or null if an error occurs.
+ */
+async function extractTextFromWord(docxFilePath) {
+    try {
+        // Read the file from the provided path
+        const fileBuffer = await fs.readFile(docxFilePath);
+
+        // Parse the document
+        const doc = await Document.load(fileBuffer);
+
+        // Extract text from the document
+        const text = doc.getText();
+
+        return text;
+    } catch (error) {
+        console.error(`Error extracting text from Word file: ${error.message}`);
+        return null;
+    }
+}
 const { Document } = require('docx');
 const fs = require('fs');
 

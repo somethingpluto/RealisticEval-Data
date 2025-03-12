@@ -1,5 +1,5 @@
 /**
- * calculates the intersection point of two line segments, if it exists.
+ * Calculates the intersection point of two line segments, if it exists.
  *
  * @param {Array} seg1 - Coordinates of the first line segment, defined as [[x1, y1], [x2, y2]].
  * @param {Array} seg2 - Coordinates of the second line segment, defined as [[x3, y3], [x4, y4]].
@@ -7,28 +7,30 @@
  *                         otherwise null.
  */
 function getLineSegmentIntersection(seg1, seg2) {
-    const x1 = seg1[0][0], y1 = seg1[0][1];
-    const x2 = seg1[1][0], y2 = seg1[1][1];
-    const x3 = seg2[0][0], y3 = seg2[0][1];
-    const x4 = seg2[1][0], y4 = seg2[1][1];
+    const [p1, p2] = seg1;
+    const [p3, p4] = seg2;
 
-    const denominator = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
-    if (denominator === 0) {
-        // Lines are parallel
-        return null;
+    const x1 = p1[0], y1 = p1[1];
+    const x2 = p2[0], y2 = p2[1];
+    const x3 = p3[0], y3 = p3[1];
+    const x4 = p4[0], y4 = p4[1];
+
+    const denom = (y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1);
+
+    if (denom === 0) {
+        return null; // Lines are parallel
     }
 
-    const ua = ((x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4)) / denominator;
-    const ub = ((x1 - x3) * (y1 - y2) - (y1 - y3) * (x1 - x2)) / denominator;
+    const ua = ((x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3)) / denom;
+    const ub = ((x2 - x1) * (y1 - y3) - (y2 - y1) * (x1 - x3)) / denom;
 
-    // Check if the intersection point is on both line segments
     if (ua < 0 || ua > 1 || ub < 0 || ub > 1) {
-        return null;
+        return null; // Intersection point is outside the segments
     }
 
-    // Return the intersection point
     const x = x1 + ua * (x2 - x1);
     const y = y1 + ua * (y2 - y1);
+
     return [x, y];
 }
 describe('TestLineSegmentIntersection', () => {

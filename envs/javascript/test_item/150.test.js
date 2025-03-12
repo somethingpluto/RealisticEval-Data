@@ -1,45 +1,38 @@
 /**
  * Convert an RGB color object to a HEX color string.
- * @param {Object} rgb - An object containing the red, green, and blue components of the color.
- * @param {number} rgb.r - The red component of the color (0-255).
- * @param {number} rgb.g - The green component of the color (0-255).
- * @param {number} rgb.b - The blue component of the color (0-255).
- * @returns {string} A string representing the HEX color code.
+ * @param rgb - An object containing the red, green, and blue components of the color.
+ * @returns A string representing the HEX color code.
  */
 export function rgbToHex(rgb) {
-  function componentToHex(c) {
-    const hex = c.toString(16);
-    return hex.length === 1 ? "0" + hex : hex;
-  }
-
-  return "#" + componentToHex(rgb.r) + componentToHex(rgb.g) + componentToHex(rgb.b);
+    const { r, g, b } = rgb;
+    const toHex = (value) => {
+        const hex = value.toString(16);
+        return hex.length === 1 ? '0' + hex : hex;
+    };
+    return `#${toHex(r)}${toHex(g)}${toHex(b)}`.toUpperCase();
 }
 
 /**
  * Convert a HEX color string to an RGB color object.
- * @param {string} hex - A string representing the HEX color code.
- * @returns {Object|null} An object containing the red, green, and blue components of the color, or null if the HEX code is invalid.
+ * @param hex - A string representing the HEX color code.
+ * @returns An object containing the red, green, and blue components of the color, or null if the HEX code is invalid.
  */
 export function hexToRgb(hex) {
-  // Remove the hash at the start if it exists
-  hex = hex.replace(/^#/, "");
+    const isValidHex = (hex) => /^#?([0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})$/.test(hex);
+    if (!isValidHex(hex)) {
+        return null;
+    }
 
-  // Check if the hex code is valid
-  if (!/^([0-9A-Fa-f]{3}){1,2}$/.test(hex)) {
-    return null;
-  }
+    let normalizedHex = hex.startsWith('#') ? hex.slice(1) : hex;
+    if (normalizedHex.length === 3) {
+        normalizedHex = normalizedHex.split('').map(char => char + char).join('');
+    }
 
-  // If shorthand notation, expand it
-  if (hex.length === 3) {
-    hex = hex.split("").map(char => char + char).join("");
-  }
+    const r = parseInt(normalizedHex.slice(0, 2), 16);
+    const g = parseInt(normalizedHex.slice(2, 4), 16);
+    const b = parseInt(normalizedHex.slice(4, 6), 16);
 
-  const bigint = parseInt(hex, 16);
-  const r = (bigint >> 16) & 255;
-  const g = (bigint >> 8) & 255;
-  const b = bigint & 255;
-
-  return { r, g, b };
+    return { r, g, b };
 }
 describe('rgbToHex and hexToRgb', () => {
 

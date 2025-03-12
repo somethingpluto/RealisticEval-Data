@@ -1,4 +1,5 @@
 const fs = require('fs');
+const readline = require('readline');
 
 /**
  * Writes a line to a text file only if the line with the same content does not already exist.
@@ -7,29 +8,41 @@ const fs = require('fs');
  * @param {string} lineContent - The content of the line to write.
  */
 function writeUniqueLineToFile(filename, lineContent) {
-  fs.readFile(filename, 'utf8', (err, data) => {
-    if (err) {
-      if (err.code === 'ENOENT') {
-        // File does not exist, create it and write the line
-        fs.writeFile(filename, lineContent + '\n', (err) => {
-          if (err) throw err;
-          console.log(`Line written to new file: ${lineContent}`);
+    // Check if the file exists
+    fs.access(filename, fs.constants.F_OK, (err) => {
+        if (err) {
+            // If the file does not exist, create it and write the line
+            fs.writeFile(filename, lineContent + '\n', (err) => {
+                if (err) throw err;
+            });
+            return;
+        }
+
+        // If the file exists, check if the line already exists
+        const fileStream = fs.createReadStream(filename);
+        const rl = readline.createInterface({
+            input: fileStream,
+            crlfDelay: Infinity
         });
-      } else {
-        throw err;
-      }
-    } else {
-      // File exists, check if the line already exists
-      if (!data.includes(lineContent)) {
-        fs.appendFile(filename, lineContent + '\n', (err) => {
-          if (err) throw err;
-          console.log(`Line appended to file: ${lineContent}`);
+
+        let lineExists = false;
+
+        rl.on('line', (line) => {
+            if (line === lineContent) {
+                lineExists = true;
+                rl.close();
+            }
         });
-      } else {
-        console.log(`Line already exists in file: ${lineContent}`);
-      }
-    }
-  });
+
+        rl.on('close', () => {
+            if (!lineExists) {
+                // Append the line to the file if it does not exist
+                fs.appendFile(filename, lineContent + '\n', (err) => {
+                    if (err) throw err;
+                });
+            }
+        });
+    });
 }
 const fs = require('fs');
 const path = require('path');

@@ -6,35 +6,29 @@
  * @returns True if the objects have equal depth, otherwise false.
  */
 function compareObjectsDepth(obj1, obj2) {
-    if (typeof obj1 !== 'object' || typeof obj2 !== 'object' || obj1 === null || obj2 === null) {
-        return false;
+    // Helper function to get the depth of an object
+    function getObjectDepth(obj) {
+        if (typeof obj !== 'object' || obj === null) {
+            return 0;
+        }
+        let maxDepth = 0;
+        for (let key in obj) {
+            if (obj.hasOwnProperty(key)) {
+                const depth = getObjectDepth(obj[key]);
+                if (depth > maxDepth) {
+                    maxDepth = depth;
+                }
+            }
+        }
+        return maxDepth + 1;
     }
 
-    const keys1 = Object.keys(obj1);
-    const keys2 = Object.keys(obj2);
+    // Get the depth of both objects
+    const depth1 = getObjectDepth(obj1);
+    const depth2 = getObjectDepth(obj2);
 
-    if (keys1.length !== keys2.length) {
-        return false;
-    }
-
-    for (let key of keys1) {
-        if (!keys2.includes(key)) {
-            return false;
-        }
-
-        const value1 = obj1[key];
-        const value2 = obj2[key];
-
-        if (typeof value1 !== typeof value2) {
-            return false;
-        }
-
-        if (typeof value1 === 'object' && !compareObjectsDepth(value1, value2)) {
-            return false;
-        }
-    }
-
-    return true;
+    // Compare the depths
+    return depth1 === depth2;
 }
 describe('compareObjectsDepth function tests', () => {
     test('should return true for equal depth and structure', () => {

@@ -6,8 +6,7 @@
  *                           Returns an empty array if no code blocks are found.
  */
 function codeBlockRemover(markdownString) {
-    const codeBlocks = [];
-    const regex = /
+    const codeBlockRegex = /
 describe('TestCodeBlockRemover', () => {
   it('should handle a single code block', () => {
       const markdown = `

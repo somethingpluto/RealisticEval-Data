@@ -12,6 +12,6 @@ def shell_sort(arr):
             while j >= gap and arr[j - gap] > temp:
                 arr[j] = arr[j - gap]
                 j -= gap
-            # Put temp (the original arr[i]) in its correct location
+            # Put qa_item (the original arr[i]) in its correct location
             arr[j] = temp
         gap //= 2  # Reduce the gap

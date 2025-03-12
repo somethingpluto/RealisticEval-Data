@@ -6,25 +6,35 @@
  */
 function uint8ArrayToBase64(uint8Array) {
     const base64Chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
-    let base64String = '';
+    let result = '';
+    let i = 0;
 
-    for (let i = 0; i < uint8Array.length; i += 3) {
-        const chunk = uint8Array.slice(i, i + 3);
-        const chunkBits = chunk.reduce((acc, byte, index) => acc + (byte << (8 * index)), 0);
-        const base64Chunk = [
-            (chunkBits >> 18) & 0x3F,
-            (chunkBits >> 12) & 0x3F,
-            (chunkBits >> 6) & 0x3F,
-            chunkBits & 0x3F
-        ].map(code => base64Chars[code]).join('');
+    while (i < uint8Array.length) {
+        // First 6 bits of the first byte
+        const byte1 = uint8Array[i++];
+        const char1 = byte1 >> 2;
 
-        base64String += base64Chunk;
+        // Last 2 bits of the first byte and first 4 bits of the second byte
+        const byte2 = uint8Array[i++] || 0;
+        const char2 = ((byte1 & 3) << 4) | (byte2 >> 4);
+
+        // Last 4 bits of the second byte and first 2 bits of the third byte
+        const byte3 = uint8Array[i++] || 0;
+        const char3 = ((byte2 & 15) << 2) | (byte3 >> 6);
+
+        // Last 6 bits of the third byte
+        const char4 = byte3 & 63;
+
+        result += base64Chars[char1] + base64Chars[char2] + base64Chars[char3] + base64Chars[char4];
     }
 
-    const padding = (uint8Array.length % 3) ? (3 - uint8Array.length % 3) : 0;
-    base64String += '='.repeat(padding);
+    // Add padding if necessary
+    const paddingLength = (3 - (uint8Array.length % 3)) % 3;
+    if (paddingLength > 0) {
+        result = result.slice(0, result.length - paddingLength) + '=='.slice(0, paddingLength);
+    }
 
-    return base64String;
+    return result;
 }
 describe('uint8ArrayToBase64', () => {
     test('should convert an empty Uint8Array', () => {

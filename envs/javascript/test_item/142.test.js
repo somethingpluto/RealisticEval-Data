@@ -4,24 +4,16 @@
  *      input: "thisIsTest"
  *      output: "This is test"
  *
- * @param {string} input The camelCase string to be converted.
- * @returns {string} The converted string with spaces and initial capitalization.
+ * @param input The camelCase string to be converted.
+ * @returns The converted string with spaces and initial capitalization.
  */
 function camelCaseToCapitalizedWithSpaces(input) {
-    if (typeof input !== 'string') {
-        throw new Error('Input must be a string');
-    }
-
-    let result = '';
-    for (let i = 0; i < input.length; i++) {
-        if (i === 0) {
-            result += input[i].toUpperCase();
-        } else if (input[i] === input[i].toUpperCase() && input[i] !== input[i].toLowerCase()) {
-            result += ' ' + input[i].toUpperCase();
-        } else {
-            result += input[i];
-        }
-    }
+    // Insert a space before each uppercase letter and convert the entire string to lowercase
+    let result = input.replace(/([A-Z])/g, ' $1').toLowerCase();
+    
+    // Capitalize the first letter of the result
+    result = result.charAt(0).toUpperCase() + result.slice(1);
+    
     return result;
 }
 describe('convertCamelCaseToSentence', () => {

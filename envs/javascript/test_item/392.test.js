@@ -8,14 +8,16 @@
 function lookAndSay(number) {
     let result = '';
     let count = 1;
+
     for (let i = 0; i < number.length; i++) {
-        if (number[i] === number[i + 1]) {
+        if (i + 1 < number.length && number[i] === number[i + 1]) {
             count++;
         } else {
-            result += count.toString() + number[i];
+            result += count + number[i];
             count = 1;
         }
     }
+
     return result;
 }
 describe('TestLookAndSay', () => {

@@ -5,25 +5,29 @@
  * @returns {boolean} - True if the string is in CAMEL_CASE, otherwise false.
  */
 function isCamelCase(input) {
-    // Check if the input is a string
-    if (typeof input !== 'string') {
+    // Check if the input is a non-empty string
+    if (typeof input !== 'string' || input.length === 0) {
         return false;
     }
 
     // Check if the string starts with a lowercase letter
-    if (input[0] === input[0].toLowerCase()) {
+    if (!/^[a-z]/.test(input)) {
         return false;
     }
 
-    // Check if the string contains any uppercase letters followed by lowercase letters
-    for (let i = 1; i < input.length; i++) {
-        if (input[i] === input[i].toUpperCase() && input[i + 1] === input[i + 1].toLowerCase()) {
-            continue;
-        } else if (input[i] === input[i].toLowerCase() || input[i] === input[i].toUpperCase()) {
-            continue;
-        } else {
-            return false;
-        }
+    // Check if the string contains only alphanumeric characters
+    if (!/^[a-zA-Z0-9]+$/.test(input)) {
+        return false;
+    }
+
+    // Check if the string has no consecutive uppercase letters
+    if (/[A-Z]{2,}/.test(input)) {
+        return false;
+    }
+
+    // Check if the string has at least one uppercase letter (indicating camelCase)
+    if (!/[A-Z]/.test(input)) {
+        return false;
     }
 
     return true;

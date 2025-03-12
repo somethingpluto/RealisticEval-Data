@@ -5,15 +5,18 @@
  * @returns {Array} An array representing the RGB color.
  */
 function floatToRGB(value) {
+    // Ensure the value is within the valid range
     if (value < 0 || value > 1) {
-        throw new Error('Value must be between 0 and 1');
+        throw new Error("Value must be between 0 and 1.");
     }
 
-    const red = Math.floor(255 * (1 - value));
-    const green = Math.floor(255 * value);
-    const blue = 0;
+    // Calculate the RGB values
+    let r = Math.round(255 * (1 - value));
+    let g = Math.round(255 * value);
+    let b = 0;
 
-    return [red, green, blue];
+    // Return the RGB array
+    return [r, g, b];
 }
 describe('TestFloatToRGB', () => {
     it('should return pure red for value 0.0', () => {

@@ -5,12 +5,16 @@
  * @returns {Array<string>} An array containing the second-level domain and top-level domain.
  */
 function extractSldTld(fqdn) {
+    // Split the FQDN by dots
     const parts = fqdn.split('.');
-    if (parts.length < 2) {
-        throw new Error('Invalid FQDN');
-    }
-    const sld = parts[parts.length - 2];
-    const tld = parts[parts.length - 1];
+
+    // The TLD is the last part
+    const tld = parts.pop();
+
+    // The SLD is the second last part
+    const sld = parts.pop();
+
+    // Return the SLD and TLD as an array
     return [sld, tld];
 }
 describe('TestExtractSldTld', () => {

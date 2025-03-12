@@ -9,7 +9,12 @@ function truncateStringWithReplacement(str, maxLength) {
     if (str.length <= maxLength) {
         return str;
     }
-    return str.substring(0, maxLength - 3) + '...';
+    const ellipsis = '...';
+    const truncatedLength = maxLength - ellipsis.length;
+    if (truncatedLength <= 0) {
+        return ellipsis;
+    }
+    return str.slice(0, truncatedLength) + ellipsis;
 }
 describe('truncateStringWithReplacement', () => {
     test('should return the original string if it is shorter than maxLength', () => {

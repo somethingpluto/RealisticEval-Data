@@ -6,16 +6,17 @@
 function getTime() {
     const now = new Date();
     let hours = now.getHours();
-    const minutes = now.getMinutes();
+    let minutes = now.getMinutes();
     const ampm = hours >= 12 ? 'PM' : 'AM';
 
+    // Convert hours to 12-hour format
     hours = hours % 12;
-    hours = hours ? hours : 12; // The hour '0' should be '12'
+    hours = hours ? hours : 12; // the hour '0' should be '12'
 
-    const formattedHours = hours < 10 ? '0' + hours : hours;
-    const formattedMinutes = minutes < 10 ? '0' + minutes : minutes;
+    // Add leading zero to minutes if necessary
+    minutes = minutes < 10 ? '0' + minutes : minutes;
 
-    return `${formattedHours}:${formattedMinutes} ${ampm}`;
+    return `${hours}:${minutes} ${ampm}`;
 }
 describe('getTime', () => {
     const mockDate = (dateString) => {

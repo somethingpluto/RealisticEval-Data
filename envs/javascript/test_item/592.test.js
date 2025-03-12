@@ -29,13 +29,13 @@ function applyOp(a, b, op) {
             return a * b;
         case '/':
             if (b === 0) {
-                throw new Error('Division by zero is not allowed.');
+                throw new Error("Division by zero is not allowed.");
             }
             return a / b;
         case '^':
             return Math.pow(a, b);
         default:
-            throw new Error('Unsupported operator.');
+            throw new Error("Unrecognized operator: " + op);
     }
 }
 describe("applyOp function tests", () => {

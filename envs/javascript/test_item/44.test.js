@@ -6,9 +6,14 @@
  * @returns {Array<string>} An array containing the aligned str1 and aligned str2.
  */
 function alignLinesLeft(str1, str2) {
+    // Determine the maximum length between the two strings
     const maxLength = Math.max(str1.length, str2.length);
+
+    // Pad the strings with spaces to the right to match the maximum length
     const alignedStr1 = str1.padEnd(maxLength, ' ');
     const alignedStr2 = str2.padEnd(maxLength, ' ');
+
+    // Return the aligned strings in an array
     return [alignedStr1, alignedStr2];
 }
 describe('alignLinesLeft', () => {

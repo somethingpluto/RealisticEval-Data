@@ -1,31 +1,61 @@
+const fs = require('fs');
+
 /**
  * Extracts the title, author, and year from a BibTeX file.
- * Example BibTeX file content:
  * 
- * @article{sample2024,
- *   author = {John Doe and Jane Smith},
- *   title = {A Comprehensive Study on AI},
- *   year = {2024}
- * }
- *
  * @param {string} bibFile - The path to the BibTeX file.
  * @returns {Array<Object>} - An array containing objects with title, author, and year for each article.
  */
 function extractBibInfo(bibFile) {
-    const fs = require('fs');
-    const content = fs.readFileSync(bibFile, 'utf8');
-    const regex = /@article\{[^}]*\s*author\s*=\s*{([^}]*)}\s*title\s*=\s*{([^}]*)}\s*year\s*=\s*{([^}]*)}/g;
-    const matches = content.matchAll(regex);
-    const result = [];
+    try {
+        // Read the content of the BibTeX file
+        const content = fs.readFileSync(bibFile, 'utf8');
 
-    for (const match of matches) {
-        const author = match[1].trim().replace(/ and /g, ', ');
-        const title = match[2].trim();
-        const year = match[3].trim();
-        result.push({ author, title, year });
+        // Regular expression to match BibTeX entries
+        const bibEntryRegex = /@(\w+)\s*\{\s*([^,]+),\s*([\s\S]*?)\s*\}/g;
+        const fieldRegex = /^\s*(\w+)\s*=\s*\{([^}]+)\}/m;
+
+        let match;
+        const entries = [];
+
+        // Iterate over each BibTeX entry
+        while ((match = bibEntryRegex.exec(content)) !== null) {
+            const entryType = match[1];
+            const entryKey = match[2];
+            const entryContent = match[3];
+
+            const entry = {
+                title: null,
+                author: null,
+                year: null
+            };
+
+            // Extract fields from the entry content
+            let fieldMatch;
+            while ((fieldMatch = fieldRegex.exec(entryContent)) !== null) {
+                const fieldName = fieldMatch[1].toLowerCase();
+                const fieldValue = fieldMatch[2].trim();
+
+                if (fieldName === 'title') {
+                    entry.title = fieldValue;
+                } else if (fieldName === 'author') {
+                    entry.author = fieldValue;
+                } else if (fieldName === 'year') {
+                    entry.year = fieldValue;
+                }
+            }
+
+            // Add the entry to the list if it has the required fields
+            if (entry.title && entry.author && entry.year) {
+                entries.push(entry);
+            }
+        }
+
+        return entries;
+    } catch (error) {
+        console.error('Error reading or parsing BibTeX file:', error);
+        return [];
     }
-
-    return result;
 }
 const fs = require('fs');
 const { mock } = require('jest-mock-extended');

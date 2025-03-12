@@ -8,7 +8,13 @@
  * @returns {string} The simplified path string.
  */
 function simplifyWindowsPath(path) {
-    return path.replace(/\\/g, '_');
+    // Replace backslashes with underscores
+    let simplifiedPath = path.replace(/\\/g, '_');
+    
+    // Replace colons with underscores
+    simplifiedPath = simplifiedPath.replace(/:/g, '_');
+    
+    return simplifiedPath;
 }
 describe('TestSimplifyWindowsPath', () => {
     test('should simplify a simple path', () => {

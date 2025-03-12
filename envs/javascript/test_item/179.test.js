@@ -9,30 +9,29 @@ const path = require('path');
  * @returns {void}
  */
 function copyDirectory(sourceDir, targetDir) {
-  // Ensure the target directory exists
-  if (!fs.existsSync(targetDir)){
-    fs.mkdirSync(targetDir, { recursive: true });
-  }
-
-  // Read the contents of the source directory
-  const files = fs.readdirSync(sourceDir);
-
-  // Iterate over each file and directory
-  files.forEach(file => {
-    const sourcePath = path.join(sourceDir, file);
-    const targetPath = path.join(targetDir, file);
-
-    // Check if the item is a file or a directory
-    const stat = fs.lstatSync(sourcePath);
-
-    if (stat.isDirectory()) {
-      // If it's a directory, recursively copy it
-      copyDirectory(sourcePath, targetPath);
-    } else {
-      // If it's a file, copy it
-      fs.copyFileSync(sourcePath, targetPath);
+    // Create the target directory if it doesn't exist
+    if (!fs.existsSync(targetDir)) {
+        fs.mkdirSync(targetDir, { recursive: true });
     }
-  });
+
+    // Read the contents of the source directory
+    const items = fs.readdirSync(sourceDir);
+
+    items.forEach(item => {
+        const sourceItemPath = path.join(sourceDir, item);
+        const targetItemPath = path.join(targetDir, item);
+
+        // Check if the item is a directory or a file
+        const stat = fs.lstatSync(sourceItemPath);
+
+        if (stat.isDirectory()) {
+            // Recursively copy the subdirectory
+            copyDirectory(sourceItemPath, targetItemPath);
+        } else if (stat.isFile()) {
+            // Copy the file
+            fs.copyFileSync(sourceItemPath, targetItemPath);
+        }
+    });
 }
 const fs = require('fs');
 const path = require('path');

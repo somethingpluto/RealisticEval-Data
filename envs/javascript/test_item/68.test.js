@@ -10,13 +10,14 @@
 function divideList(lst, n) {
     const result = [];
     const len = lst.length;
-    const quotient = Math.floor(len / n);
-    const remainder = len % n;
+    const baseSize = Math.floor(len / n);
+    const extra = len % n;
+    let start = 0;
 
     for (let i = 0; i < n; i++) {
-        const start = i * quotient + Math.min(i, remainder);
-        const end = (i + 1) * quotient + Math.min(i + 1, remainder);
-        result.push(lst.slice(start, end));
+        const size = baseSize + (i < extra ? 1 : 0);
+        result.push(lst.slice(start, start + size));
+        start += size;
     }
 
     return result;

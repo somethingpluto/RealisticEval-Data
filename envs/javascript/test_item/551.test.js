@@ -1,22 +1,15 @@
 /**
  * Calculate the midpoints from a given array of edges.
- * For example:
- *   input: [0, 1, 2]
- *   output: [0.5, 1.5]
- *
+ * 
  * @param {Array<number>} edges - An array of edge values.
  * @returns {Array<number>} An array of midpoints calculated from the edges.
  */
 function getMidsFromEdges(edges) {
-    if (!Array.isArray(edges) || edges.length < 2) {
-        throw new Error('Input must be an array with at least two numbers.');
-    }
-
     const midpoints = [];
     for (let i = 0; i < edges.length - 1; i++) {
-        midpoints.push((edges[i] + edges[i + 1]) / 2);
+        const midpoint = (edges[i] + edges[i + 1]) / 2;
+        midpoints.push(midpoint);
     }
-
     return midpoints;
 }
 describe('TestGetMidsFromEdges', () => {

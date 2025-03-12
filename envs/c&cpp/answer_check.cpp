@@ -1,28 +1,56 @@
 #define CATCH_CONFIG_MAIN
 #include "./lib/catch.hpp"
-#include "./solution.cpp"
-TEST_CASE("Test remove_common_indentation function", "[remove_common_indentation]") {
-    SECTION("test_empty_string") {
-        // Testing edge case with an empty string
-        CHECK(remove_common_indentation("") == "");
+#include <iostream>
+#include <cmath>
+#include <stdexcept>
+
+double calculateSteeringAngle(double angularVelocity, double speed, double wheelbase) {
+    if (speed <= 0) {
+        throw std::invalid_argument("Speed must be greater than zero.");
     }
 
-    SECTION("test_single_line_string") {
-        // Testing a single line with no indentation
-        CHECK(remove_common_indentation("No indentation here") == "No indentation here");
+    double steeringAngle = atan((angularVelocity * wheelbase) / speed);
+    return steeringAngle;
+}TEST_CASE("Calculate Steering Angle Tests") {
+    const double wheelbase = 2.5; // Setting wheelbase constant for all tests
+
+    SECTION("Normal case") {
+        double angularVelocity = 1.0; // radians/second
+        double speed = 10.0;          // meters/second
+        double expectedAngle = atan((angularVelocity * wheelbase) / speed);
+        REQUIRE(calculateSteeringAngle(angularVelocity, speed, wheelbase) == Approx(expectedAngle));
     }
 
-    SECTION("test_multiple_lines_with_uniform_indentation") {
-        // Testing basic logic with uniform indentation across multiple lines
-        std::string input_text = "    Line one\n    Line two\n    Line three";
-        std::string expected_output = "Line one\nLine two\nLine three";
-        CHECK(remove_common_indentation(input_text) == expected_output);
+    SECTION("Zero speed") {
+        double angularVelocity = 1.0; // radians/second
+        double speed = 0.0;           // meters/second
+        REQUIRE_THROWS_AS(calculateSteeringAngle(angularVelocity, speed, wheelbase), std::invalid_argument);
     }
 
-    SECTION("test_multiple_lines_with_mixed_indentation") {
-        // Testing lines with mixed indentation levels
-        std::string input_text = "  Line one\n  Line two\n  Line three";
-        std::string expected_output = "Line one\nLine two\nLine three";
-        CHECK(remove_common_indentation(input_text) == expected_output);
+    SECTION("Negative speed") {
+        double angularVelocity = 1.0; // radians/second
+        double speed = -5.0;          // meters/second
+        REQUIRE_THROWS_AS(calculateSteeringAngle(angularVelocity, speed, wheelbase), std::invalid_argument);
+    }
+
+    SECTION("Zero angular velocity") {
+        double angularVelocity = 0.0; // radians/second
+        double speed = 10.0;          // meters/second
+        double expectedAngle = 0.0;   // Steering angle should be zero
+        REQUIRE(calculateSteeringAngle(angularVelocity, speed, wheelbase) == Approx(expectedAngle));
+    }
+
+    SECTION("Large values") {
+        double angularVelocity = 100.0; // radians/second
+        double speed = 1000.0;          // meters/second
+        double expectedAngle = atan((angularVelocity * wheelbase) / speed);
+        REQUIRE(calculateSteeringAngle(angularVelocity, speed, wheelbase) == Approx(expectedAngle));
+    }
+
+    SECTION("High angular velocity") {
+        double angularVelocity = 10.0; // radians/second
+        double speed = 1.0;             // meters/second
+        double expectedAngle = atan((angularVelocity * wheelbase) / speed);
+        REQUIRE(calculateSteeringAngle(angularVelocity, speed, wheelbase) == Approx(expectedAngle));
     }
 }

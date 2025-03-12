@@ -7,25 +7,25 @@
  * @returns {Array<number>} Decrypted data.
  */
 function performPolynomialDecryption(degree, modulus, key, encryptedData) {
-    // Initialize an array to hold the decrypted data
-    let decryptedData = [];
+    // Initialize the decrypted data array
+    const decryptedData = [];
 
     // Iterate over each encrypted data point
     for (let i = 0; i < encryptedData.length; i++) {
-        // Initialize the value of the polynomial at this point to 0
-        let polynomialValue = 0;
+        let decryptedValue = 0;
 
-        // Iterate over each coefficient in the key
-        for (let j = 0; j < key.length; j++) {
-            // Add the product of the coefficient and the power of the point to the polynomial value
-            polynomialValue = (polynomialValue + key[j] * Math.pow(i, j)) % modulus;
+        // Evaluate the polynomial at the current index
+        for (let j = 0; j < degree; j++) {
+            decryptedValue += key[j] * Math.pow(i + 1, j);
         }
 
-        // Add the decrypted data point to the array
-        decryptedData.push(polynomialValue);
+        // Apply the modulus to the decrypted value
+        decryptedValue = (decryptedValue % modulus + modulus) % modulus;
+
+        // Subtract the decrypted value from the encrypted data to get the original data
+        decryptedData.push((encryptedData[i] - decryptedValue + modulus) % modulus);
     }
 
-    // Return the decrypted data
     return decryptedData;
 }
 describe('TestDecryptFunction', () => {

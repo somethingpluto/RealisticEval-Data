@@ -8,16 +8,25 @@ const crypto = require('crypto');
  * @returns {Buffer} A byte array containing the salt followed by the hashed password.
  */
 function hashPasswordWithSalt(password) {
-  // Generate a 16-byte random salt
-  const salt = crypto.randomBytes(16);
+    // Generate a 16-byte random salt
+    const salt = crypto.randomBytes(16);
 
-  // Hash the password with the salt using SHA-256
-  const hash = crypto.createHash('sha256').update(password + salt.toString('hex')).digest();
+    // Create a hash using the SHA-256 algorithm
+    const hash = crypto.createHash('sha256');
 
-  // Combine the salt and the hashed password
-  const saltedHash = Buffer.concat([salt, hash]);
+    // Update the hash with the salt and the password
+    hash.update(salt);
+    hash.update(password, 'utf8');
 
-  return saltedHash;
+    // Get the hashed password as a Buffer
+    const hashedPassword = hash.digest();
+
+    // Combine the salt and the hashed password into a single Buffer
+    const result = Buffer.alloc(salt.length + hashedPassword.length);
+    salt.copy(result, 0);
+    hashedPassword.copy(result, salt.length);
+
+    return result;
 }
 describe('Hashing Tests', () => {
     test('hashPasswordWithSalt returns a byte array with the correct length', () => {

@@ -10,25 +10,29 @@
  * }
  */
 function calculateTimeDifference(givenDate) {
-    const currentDate = new Date();
-    const providedDate = new Date(givenDate);
-
-    if (isNaN(providedDate.getTime())) {
-        throw new Error('Invalid date provided');
+    // Convert givenDate to a Date object if it's a string
+    if (typeof givenDate === 'string') {
+        givenDate = new Date(givenDate);
     }
 
-    const differenceInMilliseconds = currentDate - providedDate;
-    const differenceInMinutes = Math.floor(differenceInMilliseconds / (1000 * 60));
-    const differenceInHours = Math.floor(differenceInMinutes / 60);
-    const days = Math.floor(differenceInHours / 24);
+    // Get the current date and time
+    const currentDate = new Date();
 
-    const remainingHours = differenceInHours % 24;
-    const remainingMinutes = differenceInMinutes % 60;
+    // Calculate the difference in milliseconds
+    const timeDifference = currentDate - givenDate;
 
+    // Convert milliseconds to days, hours, and minutes
+    const totalMinutes = Math.floor(timeDifference / (1000 * 60));
+    const days = Math.floor(totalMinutes / (60 * 24));
+    const remainingMinutes = totalMinutes % (60 * 24);
+    const hours = Math.floor(remainingMinutes / 60);
+    const minutes = remainingMinutes % 60;
+
+    // Return the result as an object
     return {
         days: days,
-        hours: remainingHours,
-        minutes: remainingMinutes,
+        hours: hours,
+        minutes: minutes,
     };
 }
 describe('calculateTimeDifference', () => {

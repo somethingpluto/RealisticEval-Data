@@ -13,6 +13,7 @@ function separateOctaveAndRoot(midiNotes) {
     midiNotes.forEach(note => {
         const octave = Math.floor(note / 12);
         const rootNote = note % 12;
+
         result.octaves.push(octave);
         result.rootNotes.push(rootNote);
     });

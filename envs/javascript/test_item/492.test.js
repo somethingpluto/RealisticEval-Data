@@ -1,3 +1,6 @@
+const fs = require('fs');
+const path = require('path');
+
 /**
  * Saves the provided content to a specified file after cleaning up
  * redundant whitespace.
@@ -5,15 +8,18 @@
  * @param {string} content - The text content to be saved to the file.
  * @param {string} path - The file path where the content will be saved.
  */
-function saveContentToFile(content, path) {
-  // Remove redundant whitespace
-  const cleanedContent = content.replace(/\s+/g, ' ').trim();
+function saveContentToFile(content, filePath) {
+    // Clean up redundant whitespace
+    const cleanedContent = content.replace(/\s+/g, ' ').trim();
 
-  // Save the cleaned content to the specified file path
-  // This is a placeholder for the actual file saving logic
-  // In a real-world scenario, you would use a library like fs in Node.js
-  // or a similar mechanism in the environment you are working in
-  console.log(`Saving cleaned content to ${path}: ${cleanedContent}`);
+    // Ensure the directory exists
+    const dir = path.dirname(filePath);
+    if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+    }
+
+    // Write the cleaned content to the file
+    fs.writeFileSync(filePath, cleanedContent, 'utf8');
 }
 describe('TestSaveContentToFile', () => {
     let testFilePath = 'test_output.txt';

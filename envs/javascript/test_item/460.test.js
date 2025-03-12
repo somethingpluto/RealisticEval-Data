@@ -7,18 +7,22 @@
  * @throws {Error} If the dimensions of the matrix and vector are not compatible for multiplication.
  */
 function matrixVectorMultiplication(matrix, vector) {
-    if (matrix[0].length !== vector.length) {
-        throw new Error('The dimensions of the matrix and vector are not compatible for multiplication.');
+    // Check if the number of columns in the matrix matches the length of the vector
+    const numRows = matrix.length;
+    const numCols = matrix[0].length;
+
+    if (numCols !== vector.length) {
+        throw new Error("Matrix and vector dimensions are not compatible for multiplication.");
     }
 
-    const result = [];
+    // Initialize the resulting vector with zeros
+    const result = new Array(numRows).fill(0);
 
-    for (let i = 0; i < matrix.length; i++) {
-        let sum = 0;
-        for (let j = 0; j < matrix[i].length; j++) {
-            sum += matrix[i][j] * vector[j];
+    // Perform the matrix-vector multiplication
+    for (let i = 0; i < numRows; i++) {
+        for (let j = 0; j < numCols; j++) {
+            result[i] += matrix[i][j] * vector[j];
         }
-        result.push(sum);
     }
 
     return result;

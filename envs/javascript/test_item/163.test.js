@@ -4,18 +4,31 @@
  * @param {string} binaryStr - The binary string to be converted.
  * @returns {Uint8Array} - The resulting Uint8Array containing the binary question.
  */
-// @ts-ignore
 function binaryStringToUint8Array(binaryStr) {
-    const uint8Array = new Uint8Array(Math.ceil(binaryStr.length / 8));
-    for (let i = 0; i < uint8Array.length; i++) {
-        let byte = 0;
-        for (let j = 0; j < 8; j++) {
-            if (i * 8 + j < binaryStr.length) {
-                byte = (byte << 1) | (binaryStr[i * 8 + j] === '1' ? 1 : 0);
-            }
-        }
-        uint8Array[i] = byte;
+    // Ensure the binary string length is a multiple of 8
+    if (binaryStr.length % 8 !== 0) {
+        throw new Error("The length of the binary string must be a multiple of 8.");
     }
+
+    // Calculate the number of bytes needed
+    const numBytes = binaryStr.length / 8;
+
+    // Create a new Uint8Array with the calculated number of bytes
+    const uint8Array = new Uint8Array(numBytes);
+
+    // Loop through the binary string in chunks of 8 bits
+    for (let i = 0; i < binaryStr.length; i += 8) {
+        // Extract the 8-bit chunk
+        const byteStr = binaryStr.substring(i, i + 8);
+
+        // Convert the 8-bit binary string to an integer
+        const byteValue = parseInt(byteStr, 2);
+
+        // Store the integer in the Uint8Array
+        uint8Array[i / 8] = byteValue;
+    }
+
+    // Return the resulting Uint8Array
     return uint8Array;
 }
 describe('binaryStringToUint8Array', () => {

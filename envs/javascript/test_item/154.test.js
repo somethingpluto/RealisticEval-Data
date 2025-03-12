@@ -4,34 +4,54 @@
  * @param {string} diffText - The Git diff text to parse.
  * @returns {Array} - An array of objects representing the diff for each file.
  */
-// @ts-ignore
 function parseGitDiff(diffText) {
-  const diffLines = diffText.split('\n');
-  const files = [];
-  let currentFile = null;
-  let currentHunk = null;
+    const files = [];
+    const lines = diffText.split('\n');
+    let currentFile = null;
+    let currentHunk = null;
 
-  diffLines.forEach(line => {
-    if (line.startsWith('diff --git')) {
-      if (currentFile) {
+    lines.forEach(line => {
+        if (line.startsWith('diff --git')) {
+            // Start of a new file
+            if (currentFile) {
+                files.push(currentFile);
+            }
+            currentFile = {
+                oldFile: line.match(/^diff --git a\/(.*) b\/(.*)$/)[1],
+                newFile: line.match(/^diff --git a\/(.*) b\/(.*)$/)[2],
+                hunks: []
+            };
+        } else if (line.startsWith('@@')) {
+            // Start of a new hunk
+            if (currentHunk) {
+                currentFile.hunks.push(currentHunk);
+            }
+            const hunkInfo = line.match(/^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@/);
+            currentHunk = {
+                oldStart: parseInt(hunkInfo[1], 10),
+                oldLines: hunkInfo[2] ? parseInt(hunkInfo[2], 10) : 1,
+                newStart: parseInt(hunkInfo[3], 10),
+                newLines: hunkInfo[4] ? parseInt(hunkInfo[4], 10) : 1,
+                changes: []
+            };
+        } else if (currentHunk && (line.startsWith(' ') || line.startsWith('+') || line.startsWith('-'))) {
+            // Line within a hunk
+            currentHunk.changes.push({
+                type: line.startsWith(' ') ? 'context' : line.startsWith('+') ? 'add' : 'remove',
+                content: line
+            });
+        }
+    });
+
+    // Push the last file if it exists
+    if (currentFile) {
+        if (currentHunk) {
+            currentFile.hunks.push(currentHunk);
+        }
         files.push(currentFile);
-      }
-      currentFile = { changes: [] };
-    } else if (line.startsWith('@@')) {
-      currentHunk = { lines: [] };
-      currentFile.changes.push(currentHunk);
-    } else if (line.startsWith('+') || line.startsWith('-') || line.startsWith(' ')) {
-      if (currentHunk) {
-        currentHunk.lines.push(line);
-      }
     }
-  });
 
-  if (currentFile) {
-    files.push(currentFile);
-  }
-
-  return files;
+    return files;
 }
 describe('parseGitDiff', () => {
 

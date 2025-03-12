@@ -7,15 +7,18 @@
  * @returns {(number|string)} - The converted value or the original string.
  */
 function numericalStrConvert(value) {
-    if (!isNaN(value) && !isNaN(parseFloat(value))) {
-        if (Number.isInteger(parseFloat(value))) {
-            return parseInt(value);
-        } else {
-            return parseFloat(value);
-        }
-    } else {
-        return value;
+    // Check if the value is an integer
+    if (/^-?\d+$/.test(value)) {
+        return parseInt(value, 10);
     }
+    
+    // Check if the value is a floating-point number
+    if (/^-?\d+(\.\d+)?$/.test(value)) {
+        return parseFloat(value);
+    }
+    
+    // If neither, return the original string
+    return value;
 }
 describe('TestSmartConvert', () => {
     it('should convert to integer', () => {

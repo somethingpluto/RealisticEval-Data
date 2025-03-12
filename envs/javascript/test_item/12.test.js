@@ -8,17 +8,21 @@
  * @returns {number} Euclidean distance between the two agents.
  */
 function calculateDistance(agent1, agent2, observations) {
-    const agent1Coordinates = observations[agent1];
-    const agent2Coordinates = observations[agent2];
+    // Retrieve the coordinates of the two agents
+    const agent1Coords = observations[agent1];
+    const agent2Coords = observations[agent2];
 
-    if (!agent1Coordinates || !agent2Coordinates) {
-        throw new Error('One or both agents not found in observations.');
+    // Ensure both agents have valid coordinates
+    if (!agent1Coords || !agent2Coords) {
+        throw new Error("One or both agents do not have valid coordinates in the observations.");
     }
 
-    const dx = agent1Coordinates.x - agent2Coordinates.x;
-    const dy = agent1Coordinates.y - agent2Coordinates.y;
+    // Calculate the Euclidean distance
+    const dx = agent1Coords.x - agent2Coords.x;
+    const dy = agent1Coords.y - agent2Coords.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
 
-    return Math.sqrt(dx * dx + dy * dy);
+    return distance;
 }
 describe('TestCalculateDistance', () => {
     it('should calculate the distance when both agents are at the same point', () => {

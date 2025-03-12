@@ -5,15 +5,15 @@
  * @returns {Array} An array of matching placeholders.
  */
 function findPlaceholders(text) {
-    const regex = /\{\{(\w+)\}\}/g;
-    const matches = [];
+    const placeholderRegex = /{{([^}]+)}}/g;
+    const placeholders = [];
     let match;
 
-    while ((match = regex.exec(text)) !== null) {
-        matches.push(match[0]);
+    while ((match = placeholderRegex.exec(text)) !== null) {
+        placeholders.push(match[0]);
     }
 
-    return matches;
+    return placeholders;
 }
 describe('TestFindPlaceholders', () => {
   it('test string with multiple placeholders', () => {

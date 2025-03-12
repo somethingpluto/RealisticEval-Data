@@ -1,16 +1,27 @@
 /**
- * Calculate age based on the birth date string entered by the user.Input birthDateString format such as 2000-01-01
- * @param {string} birthDateString
+ * Calculate age based on the birth date string entered by the user. Input birthDateString format such as 2000-01-01
+ * @param birthDateString
  * @returns {string|number}
  */
 function calculateAge(birthDateString) {
+    if (!birthDateString || typeof birthDateString !== 'string') {
+        return 'Invalid input';
+    }
+
     const birthDate = new Date(birthDateString);
     const today = new Date();
+
+    if (isNaN(birthDate.getTime())) {
+        return 'Invalid date format';
+    }
+
     let age = today.getFullYear() - birthDate.getFullYear();
-    const m = today.getMonth() - birthDate.getMonth();
-    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+    const monthDifference = today.getMonth() - birthDate.getMonth();
+
+    if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
         age--;
     }
+
     return age;
 }
 describe('calculateAge', () => {

@@ -7,17 +7,12 @@
  * @returns {string} The smallest letter in the array that is larger than the target letter.
  */
 export function nextGreatestLetter(letters, target) {
-    const len = letters.length;
-    let low = 0, high = len - 1;
-    while (low <= high) {
-        const mid = Math.floor((low + high) / 2);
-        if (letters[mid] > target) {
-            high = mid - 1;
-        } else {
-            low = mid + 1;
+    for (let i = 0; i < letters.length; i++) {
+        if (letters[i] > target) {
+            return letters[i];
         }
     }
-    return letters[low % len];
+    return letters[0];
 }
 describe('nextGreatestLetter', () => {
 

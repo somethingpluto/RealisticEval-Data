@@ -7,10 +7,10 @@ class SeededRandom {
      * @param {number} seed - The initial seed value for the random number generator.
      */
     constructor(seed) {
-        this.a = 1664525; // Multiplier
-        this.c = 1013904223; // Increment
-        this.m = 2**32; // Modulus
         this.seed = seed;
+        this.a = 1664525;
+        this.c = 1013904223;
+        this.m = Math.pow(2, 32);
     }
 
     /**

@@ -5,19 +5,19 @@
  * @returns {string} A string representation of the size in an appropriate unit (bytes, KB, MB, GB, TB).
  */
 function byteCountToDisplaySize(sizeInBytes) {
-    if (isNaN(sizeInBytes) || sizeInBytes < 0) {
-        return 'Invalid size';
-    }
-
     const units = ['bytes', 'KB', 'MB', 'GB', 'TB'];
+    let size = sizeInBytes;
     let unitIndex = 0;
 
-    while (sizeInBytes >= 1024 && unitIndex < units.length - 1) {
-        sizeInBytes /= 1024;
+    while (size >= 1024 && unitIndex < units.length - 1) {
+        size /= 1024;
         unitIndex++;
     }
 
-    return `${sizeInBytes.toFixed(2)} ${units[unitIndex]}`;
+    // Round to 2 decimal places for better readability
+    size = Math.round(size * 100) / 100;
+
+    return `${size} ${units[unitIndex]}`;
 }
 describe('byteCountToDisplaySize', () => {
     test('should return "0 bytes" for 0 bytes', () => {

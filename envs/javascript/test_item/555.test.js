@@ -5,14 +5,8 @@
  * @returns {number} The rotation angle in radians
  */
 function quaternionToAngle(quaternion) {
-    // Extract the scalar part (w) of the quaternion
-    const w = quaternion[0];
-    
-    // Calculate the rotation angle in radians
-    // The arccosine of the scalar part (w) of the quaternion, multiplied by 2
+    const [w, x, y, z] = quaternion;
     const angle = 2 * Math.acos(w);
-    
-    // Return the rotation angle in radians
     return angle;
 }
 describe('TestQuaternionToAngle', () => {

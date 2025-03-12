@@ -1,38 +1,32 @@
 /**
- * calculate the date of Good Friday in a given year
- * For example:
- *      input: 2024
- *      output: Fri Mar 29 2024
- * @param year
+ * Calculate the date of Good Friday in a given year
+ * @param {number} year - The year to calculate Good Friday for
+ * @returns {Date} - The date of Good Friday in the given year
  */
 function calculateGoodFriday(year) {
-    // Good Friday is the Friday before Easter Sunday
-    // Easter Sunday is the first Sunday after the first full moon after the vernal equinox
-    // The following algorithm is based on the Computus algorithm
+    // Calculate the date of Easter Sunday using the Meeus/Jones/Butcher algorithm
+    const a = year % 19;
+    const b = Math.floor(year / 100);
+    const c = year % 100;
+    const d = Math.floor(b / 4);
+    const e = b % 4;
+    const f = Math.floor((b + 8) / 25);
+    const g = Math.floor((b - f + 1) / 3);
+    const h = (19 * a + b - d - g + 15) % 30;
+    const i = Math.floor(c / 4);
+    const k = c % 4;
+    const l = (32 + 2 * e + 2 * i - h - k) % 7;
+    const m = Math.floor((a + 11 * h + 22 * l) / 451);
+    const month = Math.floor((h + l - 7 * m + 114) / 31) - 1; // Months are 0-based in JavaScript Date
+    const day = ((h + l - 7 * m + 114) % 31) + 1;
 
-    // Calculate the golden number
-    let goldenNumber = year % 19;
+    // Create a Date object for Easter Sunday
+    const easterSunday = new Date(year, month, day);
 
-    // Calculate the century
-    let century = Math.floor(year / 100);
+    // Subtract 2 days to get Good Friday
+    easterSunday.setDate(easterSunday.getDate() - 2);
 
-    // Calculate the correction for the century
-    let correctionForCentury = (century - Math.floor(century / 4) - Math.floor((8 * century + 13) / 25) + 19 * goldenNumber) % 30;
-
-    // Calculate the epact
-    let epact = correctionForCentury + Math.floor((21 * goldenNumber + correctionForCentury) / 11);
-
-    // Calculate the day of the month
-    let dayOfMonth = (epact + Math.floor((29578 - (year * 365 + century * 367 + Math.floor((3 * (century + 1)) / 4) + Math.floor((5 * year) / 4) - 329)) / 153)) % 7;
-
-    // Calculate the date of Easter Sunday
-    let easterSunday = new Date(year, 2, (22 + dayOfMonth));
-
-    // Calculate the date of Good Friday
-    let goodFriday = new Date(easterSunday.getTime() - (3 * 24 * 60 * 60 * 1000));
-
-    // Return the date of Good Friday in the format "Day Mon DD YYYY"
-    return goodFriday.toDateString();
+    return easterSunday;
 }
 describe('calculateGoodFriday', () => {
     it('should correctly calculate Good Friday for 2024', () => {

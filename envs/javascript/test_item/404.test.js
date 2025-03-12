@@ -10,40 +10,58 @@
  * @throws {TypeError} If matrix is not a list of lists or n is not an integer.
  */
 function power(matrix, n) {
-    if (!Array.isArray(matrix) || matrix.some(row => !Array.isArray(row) || row.some(cell => typeof cell !== 'number'))) {
-        throw new TypeError('Matrix must be a list of lists of numbers.');
+    // Validate input types
+    if (!Array.isArray(matrix) || !matrix.every(Array.isArray)) {
+        throw new TypeError('Matrix must be a list of lists.');
     }
-    if (!Number.isInteger(n) || n < 0) {
-        throw new Error('Exponent must be a non-negative integer.');
+    if (!Number.isInteger(n)) {
+        throw new TypeError('Exponent n must be an integer.');
     }
-    if (n === 0) {
-        return matrix.map(row => row.map(() => 1));
+    if (n < 0) {
+        throw new Error('Exponent n must be non-negative.');
     }
-    if (n === 1) {
-        return matrix;
-    }
-    if (n % 2 === 0) {
-        const halfPower = power(matrix, n / 2);
-        return multiply(halfPower, halfPower);
-    } else {
-        const halfPower = power(matrix, Math.floor(n / 2));
-        return multiply(multiply(halfPower, halfPower), matrix);
-    }
-}
 
-function multiply(a, b) {
-    const result = [];
-    for (let i = 0; i < a.length; i++) {
-        result[i] = [];
-        for (let j = 0; j < b[0].length; j++) {
-            let sum = 0;
-            for (let k = 0; k < a[0].length; k++) {
-                sum += a[i][k] * b[k][j];
+    // Helper function to multiply two matrices
+    function multiplyMatrices(A, B) {
+        const size = A.length;
+        const result = Array.from({ length: size }, () => Array(size).fill(0));
+
+        for (let i = 0; i < size; i++) {
+            for (let j = 0; j < size; j++) {
+                for (let k = 0; k < size; k++) {
+                    result[i][j] += A[i][k] * B[k][j];
+                }
             }
-            result[i][j] = sum;
+        }
+
+        return result;
+    }
+
+    // Fast exponentiation algorithm
+    function fastExponentiation(matrix, n) {
+        if (n === 0) {
+            // Return the identity matrix of the same size as matrix
+            const size = matrix.length;
+            return Array.from({ length: size }, (_, i) => 
+                Array.from({ length: size }, (_, j) => (i === j ? 1 : 0))
+            );
+        }
+
+        if (n === 1) {
+            return matrix;
+        }
+
+        const halfPower = fastExponentiation(matrix, Math.floor(n / 2));
+        const result = multiplyMatrices(halfPower, halfPower);
+
+        if (n % 2 === 0) {
+            return result;
+        } else {
+            return multiplyMatrices(result, matrix);
         }
     }
-    return result;
+
+    return fastExponentiation(matrix, n);
 }
 describe('TestMatrixPower', () => {
   describe('test_identity_matrix', () => {

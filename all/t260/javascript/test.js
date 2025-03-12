@@ -27,7 +27,7 @@ describe('TestProcessCSV', () => {
 
         // Helper function to process data
         const process_data = (input_data) => {
-            // Write input data to a temp CSV file
+            // Write input data to a qa_item CSV file
             fs.writeFileSync(inputFilePath, input_data);
 
             // Process the CSV
@@ -36,7 +36,7 @@ describe('TestProcessCSV', () => {
             // Read the output
             const output_data = fs.readFileSync(outputFilePath, 'utf8');
 
-            // Clean up temp files
+            // Clean up qa_item files
             fs.unlinkSync(inputFilePath);
             fs.unlinkSync(outputFilePath);
 

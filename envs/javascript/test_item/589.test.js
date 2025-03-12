@@ -14,25 +14,25 @@
  *         empty string if no complete object is found.
  */
 function extractJson(response) {
-    let openBraceIndex = response.indexOf('{');
-    if (openBraceIndex === -1) {
+    let startIndex = response.indexOf('{');
+    if (startIndex === -1) {
         return '';
     }
 
-    let closeBraceIndex = openBraceIndex + 1;
-    let braceBalance = 1;
+    let braceCount = 1;
+    let endIndex = startIndex + 1;
 
-    while (braceBalance > 0 && closeBraceIndex < response.length) {
-        if (response[closeBraceIndex] === '{') {
-            braceBalance++;
-        } else if (response[closeBraceIndex] === '}') {
-            braceBalance--;
+    while (braceCount > 0 && endIndex < response.length) {
+        if (response[endIndex] === '{') {
+            braceCount++;
+        } else if (response[endIndex] === '}') {
+            braceCount--;
         }
-        closeBraceIndex++;
+        endIndex++;
     }
 
-    if (braceBalance === 0) {
-        return response.substring(openBraceIndex, closeBraceIndex);
+    if (braceCount === 0) {
+        return response.substring(startIndex, endIndex);
     } else {
         return '';
     }

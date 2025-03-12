@@ -10,14 +10,14 @@
  * @returns {boolean} - True if the rectangles intersect horizontally, False otherwise.
  */
 function intersectHorizontally(rect1, rect2) {
-    // Extract the y-coordinates of the bottom and top of each rectangle
-    const y1Top = rect1[3];
-    const y2Top = rect2[3];
-    const y1Bottom = rect1[1];
-    const y2Bottom = rect2[1];
-
+    // Extract coordinates for rect1
+    const [x1_1, y1_1, x2_1, y2_1] = rect1;
+    
+    // Extract coordinates for rect2
+    const [x1_2, y1_2, x2_2, y2_2] = rect2;
+    
     // Check if the rectangles intersect horizontally
-    return !(y1Top < y2Bottom || y2Top < y1Bottom);
+    return !(x2_1 < x1_2 || x2_2 < x1_1);
 }
 describe('intersectHorizontally', () => {
     it('test with overlapping rectangles', () => {

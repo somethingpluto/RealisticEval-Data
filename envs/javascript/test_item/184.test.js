@@ -25,31 +25,29 @@ class PriorityQueue {
 
     // Heapify up to maintain the max-heap property after insertion
     heapifyUp(index) {
-        let parentIndex = this.parent(index);
-        while (index > 0 && this.heap[index] > this.heap[parentIndex]) {
-            this.swap(index, parentIndex);
-            index = parentIndex;
-            parentIndex = this.parent(index);
+        while (index > 0 && this.heap[index] > this.heap[this.parent(index)]) {
+            this.swap(index, this.parent(index));
+            index = this.parent(index);
         }
     }
 
     // Heapify down to maintain the max-heap property after deletion
     heapifyDown(index) {
-        let leftIndex = this.leftChild(index);
-        let rightIndex = this.rightChild(index);
-        let largest = index;
+        let maxIndex = index;
+        let left = this.leftChild(index);
+        let right = this.rightChild(index);
 
-        if (leftIndex < this.heap.length && this.heap[leftIndex] > this.heap[largest]) {
-            largest = leftIndex;
+        if (left < this.heap.length && this.heap[left] > this.heap[maxIndex]) {
+            maxIndex = left;
         }
 
-        if (rightIndex < this.heap.length && this.heap[rightIndex] > this.heap[largest]) {
-            largest = rightIndex;
+        if (right < this.heap.length && this.heap[right] > this.heap[maxIndex]) {
+            maxIndex = right;
         }
 
-        if (largest !== index) {
-            this.swap(index, largest);
-            this.heapifyDown(largest);
+        if (index !== maxIndex) {
+            this.swap(index, maxIndex);
+            this.heapifyDown(maxIndex);
         }
     }
 
@@ -61,19 +59,18 @@ class PriorityQueue {
 
     // Remove the maximum element from the priority queue
     pop() {
-        if (this.isEmpty()) {
-            return null;
-        }
-        const maxValue = this.heap[0];
-        this.swap(0, this.heap.length - 1);
-        this.heap.pop();
+        if (this.heap.length === 0) return null;
+        if (this.heap.length === 1) return this.heap.pop();
+
+        let root = this.heap[0];
+        this.heap[0] = this.heap.pop();
         this.heapifyDown(0);
-        return maxValue;
+        return root;
     }
 
     // Get the maximum element without removing it
     top() {
-        return this.isEmpty() ? null : this.heap[0];
+        return this.heap.length === 0 ? null : this.heap[0];
     }
 
     // Check if the priority queue is empty

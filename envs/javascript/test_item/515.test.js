@@ -6,24 +6,31 @@
  * @returns {string | null} - The formatted date string in the format 'yyyy-mm-dd_HH:MM:SS', or null if the input date string is invalid.
  */
 function formatDateString(dateStr) {
-    const dateRegex = /^([a-zA-Z]{3}),\s+(\d{2})\s+([a-zA-Z]{3})\s+(\d{4})\s+(\d{2}):(\d{2}):(\d{2})\s+([+\-]\d{4})\s+\((\w+)\)$/;
-    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
-    const match = dateStr.match(dateRegex);
+    // Define the regex pattern to match the input date format
+    const pattern = /^(\w{3}), (\d{2}) (\w{3}) (\d{4}) (\d{2}):(\d{2}):(\d{2}) ([+-]\d{4}) \((\w{3})\)$/;
+    
+    // Match the input string against the pattern
+    const match = dateStr.match(pattern);
+    
+    // If the input string does not match the pattern, return null
     if (!match) {
         return null;
     }
-
-    const day = match[2];
-    const month = monthNames.indexOf(match[3]) + 1;
-    const year = match[4];
-    const hours = match[5];
-    const minutes = match[6];
-    const seconds = match[7];
-    const timezoneOffset = match[8];
-
-    const formattedDate = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}_${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-
+    
+    // Extract the components of the date string
+    const [_, dayOfWeek, day, month, year, hours, minutes, seconds, timezone, timezoneAbbr] = match;
+    
+    // Create a new Date object using the extracted components
+    const date = new Date(`${month} ${day}, ${year} ${hours}:${minutes}:${seconds} ${timezone}`);
+    
+    // Check if the date is valid
+    if (isNaN(date.getTime())) {
+        return null;
+    }
+    
+    // Format the date to the desired output format
+    const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}_${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}:${String(date.getSeconds()).padStart(2, '0')}`;
+    
     return formattedDate;
 }
 describe('TestFormatDateString', () => {

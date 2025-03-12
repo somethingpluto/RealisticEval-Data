@@ -9,14 +9,25 @@
  * @returns {Array} A two-dimensional array (matrix) filled with the initial value.
  */
 function createMatrix(rows, columns, initialValue) {
+    // Initialize the matrix as an empty array
     const matrix = [];
+
+    // Loop through the number of rows
     for (let i = 0; i < rows; i++) {
+        // Initialize the current row as an empty array
         const row = [];
+
+        // Loop through the number of columns
         for (let j = 0; j < columns; j++) {
+            // Push the initial value into the current row
             row.push(initialValue);
         }
+
+        // Push the current row into the matrix
         matrix.push(row);
     }
+
+    // Return the created matrix
     return matrix;
 }
 describe('createMatrix', () => {

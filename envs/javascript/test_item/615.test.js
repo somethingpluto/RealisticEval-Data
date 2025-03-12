@@ -7,15 +7,26 @@
  *                  does not contain enough elements or if the period is invalid (<= 0).
  */
 function calculate(values, period) {
+    // Check if the period is valid
     if (period <= 0) {
         return NaN;
     }
+
+    // Check if the array has enough elements
     if (values.length < period) {
         return NaN;
     }
+
+    // Get the last 'period' elements from the array
     const lastElements = values.slice(-period);
+
+    // Calculate the sum of the last 'period' elements
     const sum = lastElements.reduce((acc, val) => acc + val, 0);
-    return sum / period;
+
+    // Calculate the average
+    const average = sum / period;
+
+    return average;
 }
 describe('Test Answer', () => {
     

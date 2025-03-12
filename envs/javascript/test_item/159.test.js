@@ -5,7 +5,16 @@
  * @returns {string} The file name without the extension. If no extension is found, returns the original file name.
  */
 function removeFileExtension(file_name) {
-    return file_name.replace(/\.[^/.]+$/, '');
+    // Find the last occurrence of the dot character
+    const lastDotIndex = file_name.lastIndexOf('.');
+
+    // If no dot is found or the dot is the first character, return the original file name
+    if (lastDotIndex === -1 || lastDotIndex === 0) {
+        return file_name;
+    }
+
+    // Return the substring from the start to the last dot index
+    return file_name.substring(0, lastDotIndex);
 }
 describe('removeFileExtension', () => {
     test('should remove the file extension from a standard file', () => {

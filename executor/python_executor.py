@@ -1,45 +1,31 @@
 import argparse
+import glob
 import json
-import os.path
-
+import time
+from pathlib import Path
 import pandas as pd
-
 import subprocess
 from tqdm import tqdm
 
-PYTHON_RUN_ENV = "../envs/python/temp"
-def delete_non_python_and_ipynb_files(directory):
-    """
-    删除指定目录下所有非 Python (.py) 和非 Jupyter Notebook (.ipynb) 文件
+from executor.utils import delete_non_python_and_ipynb_files
 
-    :param directory: 需要检查的目录路径
-    """
-    # 确保目录存在
-    if not os.path.isdir(directory):
-        print(f"目录 '{directory}' 不存在。")
-        return
+PYTHON_RUN_ENV = "../envs/python/qa_item"
 
-    # 遍历目录中的所有文件和子目录
-    for filename in os.listdir(directory):
-        file_path = os.path.join(directory, filename)
-
-        # 如果是文件且扩展名不是.py或.ipynb，则删除该文件
-        if os.path.isfile(file_path) and not (filename.endswith('.py') or filename.endswith('.ipynb')):
-            try:
-                os.remove(file_path)
-                print(f"已删除文件: {file_path}")
-            except Exception as e:
-                print(f"无法删除文件 {file_path}: {e}")
 
 class PythonExecutor:
-    def __init__(self, type, model_name=""):
+    def __init__(self, model_name, type):
         self._env_path = PYTHON_RUN_ENV
         self.model_name = model_name
         self.type = type
         self.language = "python"
+        self.base_path = None
+        self.answer_file_path = self._generate_file_path()
+
+    def _generate_file_path(self):
+        return rf"E:\code\code_back\python_project\llm\qa\model_answer\{self.model_name}_answer\{self.language}_answer_{self.type}.jsonl"
 
     def single_run(self, code, test_code):
-        with open(f"{self._env_path}/temp.py", "w", encoding="utf8") as file:
+        with open(f"{self._env_path}/qa_item.py", "w", encoding="utf8") as file:
             file.write(code)
             file.write("\n")
             file.write(test_code)
@@ -48,19 +34,20 @@ class PythonExecutor:
             file.write("\n")
             file.write("    unittest.main()")
             file.flush()
-            self._execute(f"{self._env_path}/temp.py")
+            self._execute(f"{self._env_path}/qa_item.py")
 
-    def batch_run(self, file_path):
+    def _batch_generate(self):
         result_list = []
-        data_list = []
-        with open(file_path, "r", encoding="utf8") as file:
+        self.base_path = Path(f"{PYTHON_RUN_ENV}/{self.model_name}")
+        self.base_path.mkdir(exist_ok=True, parents=True)
+        with open(self.answer_file_path, "r", encoding="utf8") as file:
             json_lines = [line.strip() for line in file.readlines()]
             for item in json_lines:
                 result_list.append(json.loads(item))
-
         for item in tqdm(result_list):
             try:
-                print(item["task_id"])
+                task_id = item["task_id"]
+                print(task_id)
                 language_item = item['language_version_list']["python"]
                 answer_list = language_item["answer_list"]
                 test_code = language_item["test_code"]
@@ -69,7 +56,7 @@ class PythonExecutor:
                     code = answer['response_code']
                     if code == None or code == "":
                         continue
-                    with open(f"{self._env_path}/temp.py", "w", encoding="utf8") as file:
+                    with open(f"{self.base_path}/{item['task_id']}_{index}.py", "w", encoding="utf8") as file:
                         file.write(code)
                         file.write("\n")
                         if addition_info != "":
@@ -80,31 +67,32 @@ class PythonExecutor:
                         file.write("\n")
                         file.write("    unittest.main()")
                         file.flush()
-                    stdout, stderr, returncode = self._execute(f"{self._env_path}/temp.py")
-                    item["result_return_code"] = returncode
-                    item["stderr"] = stderr
-                    item["stdout"] = stdout
-                    item["answer_index"] = index
-                    item["model"] = answer["model_name"]
-                    with open(f"{self._env_path}/temp.py", "r", encoding="utf8") as f:
-                        item["full_content"] = f.read()
-                    data_list.append(item)
-                    # xlsx_data_list = item.values()
-                    # print(xlsx_data_list)
-                    # append_row_to_xlsx(f"../analysis/model_answer_result/{self.model_name}/{self.type}/{self.model_name}_{self.language}_{self.type}.xlsx",xlsx_data_list)
-                    # append_row_to_xlsx(rf"C:\Users\pluto\Desktop\temp\{self.model_name}\{self.model_name}_{self.language}_{self.type}.xlsx",xlsx_data_list)
             except Exception as e:
                 print(e)
                 continue
-            delete_non_python_and_ipynb_files("./")
-        result_data = pd.DataFrame(data_list)
-        result_data.to_excel(f"../analysis/model_answer_result/{self.model_name}/{self.type}/{self.model_name}_{self.language}_{self.type}.xlsx",engine="xlsxwriter")
 
+    def batch_run(self):
+        self._batch_generate()
+        result_list = []
+        file_list = glob.glob(f"{self.base_path}/**/*.py", recursive=True)
+        for file_path in file_list:
+            temp = {}
+            command = rf"D:\sdk\python\venvs\realisticeval\Scripts\python.exe {file_path}"
+            task_id = file_path.split("\\")[-1].split("_")[0]
+            print(f"run_test:{task_id}")
+            temp["task_id"] = task_id
+            try:
+                stdout, stderr, return_code = self._execute(command)
+            except Exception as e:
+                return_code = 1
+            temp["result_return_code"] = return_code
+            temp["model"] = self.model_name
+            result_list.append(temp)
+        Path(f"../model_answer_new/{self.model_name}").mkdir(parents=True, exist_ok=True)
+        pd.DataFrame(result_list).to_csv(
+            f"../model_answer/{self.model_name}/{self.type}/{self.model_name}_{self.language}_{self.type}.csv")
 
-    def _execute(self, file_path):
-        abs_path = os.path.abspath(file_path)
-        # TODO: 替换为本机python环境中的python.exe文件路径
-        command = rf"D:\sdk\python\venvs\realisticeval\Scripts\python.exe {abs_path}"
+    def _execute(self, command):
         process = subprocess.Popen(
             command,
             stdout=subprocess.PIPE,
@@ -117,19 +105,21 @@ class PythonExecutor:
         try:
             # 等待进程结束或超时
             stdout, stderr = process.communicate(timeout=10)
-            print(stdout)
-            print(stderr)
+            try:
+                return_code = process.returncode
+            except Exception as e:
+                return_code = 1
             print("Process completed with return code:", process.returncode)
-            return stdout, stderr, process.returncode
+            process.kill()
+            return stdout, stderr, return_code
         except subprocess.TimeoutExpired:
             print("Process is being killed after timeout")
             process.kill()
 
 
-
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model_name", type=str, help="model_answer_file_path", required=True)
+    parser.add_argument("--model_name", type=str, help="model_name", required=True)
     parser.add_argument("--type", type=str, help="type pass1 or pass10", required=True)
     args = parser.parse_args()
     return args
@@ -137,6 +127,7 @@ def parse_args():
 
 if __name__ == '__main__':
     args = parse_args()
-    executor = PythonExecutor(args.type, args.model_name)
-    file_path = rf"E:\code\code_back\python_project\llm\qa\{args.model_name}_answer\python_answer_{args.type}.jsonl"
-    executor.batch_run(file_path)
+    executor = PythonExecutor(args.model_name, args.type)
+    executor.batch_run()
+    time.sleep(4)
+    delete_non_python_and_ipynb_files("./")

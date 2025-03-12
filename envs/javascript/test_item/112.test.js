@@ -5,14 +5,13 @@
  * @returns {string} - The converted Markdown string.
  */
 function convertHtmlHeadingsToMarkdown(html) {
-    // Regular expression to match HTML heading tags
-    const headingRegex = /<h(\d)>(.*?)<\/h\1>/g;
-    // Replace HTML heading tags with corresponding Markdown headings
-    return html.replace(headingRegex, (match, level, text) => {
-        // Map HTML heading level to Markdown heading level
-        const markdownLevel = parseInt(level);
-        // Create Markdown heading
-        return `${'#'.repeat(markdownLevel)} ${text}`;
+    // Regular expression to match HTML heading tags (h1-h6)
+    const headingRegex = /<h([1-6])[^>]*>(.*?)<\/h\1>/gi;
+
+    // Replace each heading tag with the corresponding Markdown heading
+    return html.replace(headingRegex, (match, level, content) => {
+        // Create the Markdown heading by repeating the '#' character based on the level
+        return '#'.repeat(parseInt(level)) + ' ' + content;
     });
 }
 describe('convertHtmlHeadingsToMarkdown', () => {

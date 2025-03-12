@@ -1,3 +1,6 @@
+const fs = require('fs');
+const readline = require('readline');
+
 /**
  * Reads numerical columns from a file starting from the line after the last line containing '/'.
  *
@@ -6,38 +9,45 @@
  * @throws {Error} - If the file does not contain any '/' character.
  */
 function readColumns(fileName) {
-    const fs = require('fs');
-    const readline = require('readline');
+    return new Promise((resolve, reject) => {
+        const data = [];
+        let foundSlash = false;
+        let readData = false;
 
-    let lastLineWithSlash = null;
-    let numericalData = [];
+        const rl = readline.createInterface({
+            input: fs.createReadStream(fileName),
+            output: process.stdout,
+            terminal: false
+        });
 
-    const fileStream = fs.createReadStream(fileName);
-    const rl = readline.createInterface({
-        input: fileStream,
-        crlfDelay: Infinity
-    });
+        rl.on('line', (line) => {
+            if (line.includes('/')) {
+                foundSlash = true;
+                readData = false;
+            } else if (foundSlash) {
+                readData = true;
+                foundSlash = false;
+            }
 
-    rl.on('line', (line) => {
-        if (line.includes('/')) {
-            lastLineWithSlash = line;
-        }
-    });
-
-    rl.on('close', () => {
-        if (!lastLineWithSlash) {
-            throw new Error('File does not contain any "/" character.');
-        }
-
-        const linesAfterLastSlash = fs.readFileSync(fileName).toString().split('\n').slice(fs.readFileSync(fileName).toString().split('\n').indexOf(lastLineWithSlash) + 1);
-        linesAfterLastSlash.forEach((line) => {
-            const numbers = line.trim().split(/\s+/).map(Number);
-            if (numbers.length > 0) {
-                numericalData.push(numbers);
+            if (readData) {
+                const numbers = line.split(/\s+/).map(Number);
+                if (numbers.every(num => !isNaN(num))) {
+                    data.push(numbers);
+                }
             }
         });
 
-        return numericalData;
+        rl.on('close', () => {
+            if (!foundSlash) {
+                reject(new Error('File does not contain any "/" character.'));
+            } else {
+                resolve(data);
+            }
+        });
+
+        rl.on('error', (err) => {
+            reject(err);
+        });
     });
 }
 describe('TestReadColumns', () => {

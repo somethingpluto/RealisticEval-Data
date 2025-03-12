@@ -1,22 +1,30 @@
 /**
  * Abbreviates a number to a string with a suffix based on its magnitude. 
  * Suffixes: ["", "k", "M", "B", "T"]; 1000 is k, 1000000 is M, 1000000000 is B.
- * For example:
- *      input: 999 output: 999
- *      input: 1549 output: 1.5k
- *      input: 1000 output: 1k
- *      input: 1234567890123 output: 1.2T
  * @param {number} number - The number to abbreviate.
  * @returns {string} - The abbreviated string representation of the number.
  */
 function abbreviateNumber(number) {
     const suffixes = ["", "k", "M", "B", "T"];
-    const tier = Math.log10(Math.abs(number)) / 3 | 0;
-    if (tier === 0) return number;
-    const suffix = suffixes[tier];
-    const scale = Math.pow(10, tier * 3);
-    const scaledNumber = number / scale;
-    return scaledNumber.toFixed(1) + suffix;
+    let magnitude = 0;
+
+    while (number >= 1000 && magnitude < suffixes.length - 1) {
+        number /= 1000;
+        magnitude++;
+    }
+
+    // Round to one decimal place if necessary
+    if (number >= 1000) {
+        number = Math.round(number);
+    } else if (number >= 100) {
+        number = Math.round(number * 10) / 10;
+    } else if (number >= 10) {
+        number = Math.round(number * 100) / 100;
+    } else {
+        number = Math.round(number * 1000) / 1000;
+    }
+
+    return number + suffixes[magnitude];
 }
 describe('abbreviateNumber', () => {
     test('should return the same number for values less than 1000', () => {

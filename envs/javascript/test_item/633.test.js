@@ -1,27 +1,23 @@
+const fs = require('fs').promises;
+const readline = require('readline');
+const { Readable } = require('stream');
+
 /**
  * Reads a CSV file and parses each line into a list of strings.
  *
  * @param {string} filePath - The path to the CSV file.
- * @returns {Promise<Array<Array<string>>>} A promise that resolves to a list of string lists, where each list represents a line from the CSV.
+ * @returns {Promise<Array<Array<string>>>} A list of string lists, where each list represents a line from the CSV.
  */
 async function readCsv(filePath) {
-  const fs = require('fs').promises;
-  const csv = require('csv-parser');
+    const fileContent = await fs.readFile(filePath, 'utf-8');
+    const lines = fileContent.split('\n');
 
-  const results = [];
-
-  return new Promise((resolve, reject) => {
-    fs.createReadStream(filePath)
-      .pipe(csv())
-      .on('data', (data) => results.push(Object.values(data)))
-      .on('end', () => {
-        resolve(results);
-      })
-      .on('error', (error) => {
-        reject(error);
-      });
-  });
+    return lines.map(line => {
+        return line.split(',').map(value => value.trim());
+    });
 }
+
+module.exports = readCsv;
 const fs = require('fs');
 
 describe('TestAnswer', () => {

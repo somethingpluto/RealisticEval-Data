@@ -3,7 +3,7 @@
  *
  * This function takes a 2D array representing a game board and prints
  * it in a formatted manner, displaying the contents of each cell.
- * The board is assumed to be a square of size 3x3, and each cell can
+ * The board is assumed to to be a square of size 3x3, and each cell can
  * contain either a character representing a player's move ('X' or 'O')
  * or an empty space (' ').
  *
@@ -16,19 +16,14 @@
  *              of size 3x3, and each character can be 'X', 'O', or ' '.
  */
 function printBoard(board) {
-    const separator = '-------------';
-    const cellFormat = '| %s |';
+    const rowSeparator = '-------------';
+    const cellSeparator = '|';
 
-    console.log(separator);
-    for (let i = 0; i < board.length; i++) {
-        let row = '';
-        for (let j = 0; j < board[i].length; j++) {
-            row += cellFormat.replace('%s', board[i][j]);
-        }
-        console.log(row);
-        if (i < board.length - 1) {
-            console.log(separator);
-        }
+    console.log(rowSeparator);
+    for (let row of board) {
+        let rowString = row.map(cell => ` ${cell} `).join(cellSeparator);
+        console.log(`${cellSeparator}${rowString}${cellSeparator}`);
+        console.log(rowSeparator);
     }
 }
 describe("printBoard outputs correct format", () => {

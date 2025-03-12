@@ -4,8 +4,9 @@
  * @returns {boolean} - Whether the string contains a phone number.
  */
 function containsPhoneNumber(s) {
-    const phoneNumberRegex = /^(?:\+1\s?)?(?:\(\d{3}\)|\d{3})[\s-]?\d{3}[\s-]?\d{4}$/;
-    return phoneNumberRegex.test(s);
+    // Regular expression to match phone numbers in the specified formats
+    const phoneRegex = /(\+\d{1,2}-)?(\d{3}-|\d{3}\s)\d{3}(-|\s)\d{4}/;
+    return phoneRegex.test(s);
 }
 describe('TestPhoneNumberDetection', () => {
     it('should detect international prefix', () => {

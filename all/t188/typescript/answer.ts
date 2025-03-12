@@ -13,7 +13,7 @@ function shellSort(arr: number[]): void {
                 arr[j] = arr[j - gap];
             }
 
-            // Put temp (the original arr[i]) in its correct location
+            // Put qa_item (the original arr[i]) in its correct location
             arr[j] = temp;
         }
     }

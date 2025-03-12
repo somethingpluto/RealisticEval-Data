@@ -8,15 +8,15 @@
  * @returns {Uint8Array} A byte array representing the binary data encoded in the hex string.
  */
 function hexStringToByteArray(hexStr) {
-    // Ensure the hex string has an even length
+    // Ensure the hex string has an even number of characters by adding a leading zero if necessary
     if (hexStr.length % 2 !== 0) {
         hexStr = '0' + hexStr;
     }
 
-    // Create an empty array to hold the byte array
+    // Initialize the byte array
     const byteArray = new Uint8Array(hexStr.length / 2);
 
-    // Convert the hex string to a byte array
+    // Convert each pair of hex characters to a byte
     for (let i = 0; i < hexStr.length; i += 2) {
         byteArray[i / 2] = parseInt(hexStr.substr(i, 2), 16);
     }

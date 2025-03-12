@@ -6,20 +6,18 @@
  * @returns {number} - The line number corresponding to the given index.
  */
 function getLineNumber(content, index) {
-    let lineNumber = 1;
-    let currentIndex = 0;
+    if (index < 0 || index >= content.length) {
+        throw new Error("Index out of bounds");
+    }
 
-    for (let i = 0; i < content.length; i++) {
+    let lineNumber = 1;
+    for (let i = 0; i < index; i++) {
         if (content[i] === '\n') {
             lineNumber++;
         }
-        if (i === index) {
-            currentIndex = lineNumber;
-            break;
-        }
     }
 
-    return currentIndex;
+    return lineNumber;
 }
 describe('getLineNumber', () => {
     test('returns 1 for the first character', () => {

@@ -1,59 +1,54 @@
 class Node {
-    constructor(val) { // Constructor to initialize the node
-        this.data = val;   // Data value of the node
-        this.next = null;  // Pointer to the next node in the linked list
+    constructor(val) {
+        this.data = val;
+        this.next = null;
     }
 }
 
-// Queue class
 class Queue {
-    constructor() { // Constructor to initialize the queue
-        this.head = null;  // Pointer to the front of the queue
-        this.tail = null;  // Pointer to the end of the queue
+    constructor() {
+        this.head = null;
+        this.tail = null;
     }
 
-    // Function to check if the queue is empty
-    isEmpty() { 
-        return this.head === null; // Return true if the queue is empty
+    isEmpty() {
+        return this.head === null;
     }
 
-    // Function to add an element to the end of the queue
     enqueue(value) {
-        const newNode = new Node(value); // Create a new node
+        const newNode = new Node(value);
 
         if (this.tail) {
-            this.tail.next = newNode; // Link the new node at the end
+            this.tail.next = newNode;
         } else {
-            this.head = newNode; // If the queue is empty, the new node is also the head
+            this.head = newNode;
         }
-        this.tail = newNode; // Update the tail to the new node
+        this.tail = newNode;
     }
 
-    // Function to remove and return the front element of the queue
     dequeue() {
         if (this.isEmpty()) {
             console.error("Queue is empty. Cannot dequeue.");
-            return null; // Return null if the queue is empty
+            return null;
         }
 
-        const temp = this.head; // Temporarily store the head node
-        const value = this.head.data; // Get the data from the head node
-        this.head = this.head.next; // Move head to the next node
+        const temp = this.head;
+        const value = this.head.data;
+        this.head = this.head.next;
 
         if (this.head === null) {
-            this.tail = null; // If the queue becomes empty, update the tail as well
+            this.tail = null;
         }
 
-        return value; // Return the dequeued value
+        return value;
     }
 
-    // Function to get the front element without removing it
     front() {
         if (this.isEmpty()) {
             console.error("Queue is empty. Cannot access front.");
-            return null; // Return null for invalid access
+            return null;
         }
-        return this.head.data; // Return the front value
+        return this.head.data;
     }
 }
 describe("Queue Operations", () => {

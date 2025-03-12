@@ -6,13 +6,12 @@ const fs = require('fs');
  * @param {string} outputFilePath - The file path where the JSON will be saved.
  */
 function saveAsJSON(data, outputFilePath) {
-  try {
-    const jsonData = JSON.stringify(data, null, 2); // Convert data to JSON string with indentation
-    fs.writeFileSync(outputFilePath, jsonData); // Write JSON string to file
-    console.log(`Data saved to ${outputFilePath}`);
-  } catch (error) {
-    console.error(`Error saving data to ${outputFilePath}:`, error);
-  }
+    try {
+        const jsonData = JSON.stringify(data, null, 2);
+        fs.writeFileSync(outputFilePath, jsonData, 'utf8');
+    } catch (error) {
+        console.error(`Error saving JSON file: ${error.message}`);
+    }
 }
 describe('saveAsJSON', () => {
     const mockFilePath = 'test.json';

@@ -5,25 +5,18 @@
  * @returns {Array<number>} An array containing the maximum width (in characters) of each column across all rows. The width of a column is defined by the longest string present in that column.
  */
 function calculateColumnWidths(data) {
-    if (!Array.isArray(data) || !data.length || !Array.isArray(data[0])) {
-        throw new Error('Input must be a non-empty two-dimensional array');
-    }
+    if (data.length === 0) return [];
 
-    const columnWidths = data[0].map(() => 0);
+    const numColumns = data[0].length;
+    const columnWidths = new Array(numColumns).fill(0);
 
     for (const row of data) {
-        if (!Array.isArray(row)) {
-            throw new Error('Each row must be an array');
-        }
-        if (row.length !== columnWidths.length) {
-            throw new Error('All rows must have the same number of columns');
-        }
-        row.forEach((value, index) => {
-            if (typeof value !== 'string') {
-                throw new Error('All values in the row must be strings');
+        for (let col = 0; col < numColumns; col++) {
+            const cellWidth = row[col].length;
+            if (cellWidth > columnWidths[col]) {
+                columnWidths[col] = cellWidth;
             }
-            columnWidths[index] = Math.max(columnWidths[index], value.length);
-        });
+        }
     }
 
     return columnWidths;

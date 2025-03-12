@@ -5,18 +5,27 @@
  * @return {string} A substring enclosed within the first pair of braces, or an error message if braces are missing.
  */
 function extractStringFromBraces(input) {
-    const openingBraceIndex = input.indexOf('{');
-    const closingBraceIndex = input.indexOf('}');
-
-    if (openingBraceIndex === -1 || closingBraceIndex === -1) {
-        return 'Error: Missing braces';
+    // Find the position of the first opening brace '{'
+    const startIndex = input.indexOf('{');
+    
+    // If there is no opening brace, return an error message
+    if (startIndex === -1) {
+        return "Error: No opening brace found.";
     }
-
-    if (openingBraceIndex > closingBraceIndex) {
-        return 'Error: Braces are not properly balanced';
+    
+    // Find the position of the first closing brace '}' after the opening brace
+    const endIndex = input.indexOf('}', startIndex);
+    
+    // If there is no closing brace, return an error message
+    if (endIndex === -1) {
+        return "Error: No closing brace found.";
     }
-
-    return input.substring(openingBraceIndex + 1, closingBraceIndex);
+    
+    // Extract the substring between the opening and closing braces
+    const extractedString = input.substring(startIndex + 1, endIndex);
+    
+    // Return the extracted string
+    return extractedString;
 }
 describe("Test cases for extractStringFromBraces function", () => {
 

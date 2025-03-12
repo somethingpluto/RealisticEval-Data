@@ -7,10 +7,10 @@
  * @returns {number} - The incremented value or the original number.
  */
 function incrementNumber(num) {
-    if (num > 0) {
-        return num + 1;
-    } else {
+    if (num <= 0) {
         return num;
+    } else {
+        return num + 1;
     }
 }
 describe('incrementNumber', () => {

@@ -1,0 +1,56 @@
+from math import comb
+
+def probability_of_red_balls(n: int, x: int, y: int) -> float:
+    """
+    Calculate the probability that n red balls will be drawn when 15 balls are randomly returned from a jar containing x red balls and y blue balls.
+
+    Args:
+        n (int): Number of red balls to be drawn.
+        x (int): Number of red balls in the jar.
+        y (int): Number of blue balls in the jar.
+
+    Returns:
+        float: The probability of drawing exactly n red balls.
+    """
+    total_balls = x + y
+    if n > x or n > 15 or 15 - n > y:
+        return 0.0  # Impossible to draw more red balls than available or more than 15 balls
+
+    # Calculate the number of ways to choose n red balls from x red balls
+    red_combinations = comb(x, n)
+    
+    # Calculate the number of ways to choose (15 - n) blue balls from y blue balls
+    blue_combinations = comb(y, 15 - n)
+    
+    # Calculate the total number of ways to choose 15 balls from the total balls
+    total_combinations = comb(total_balls, 15)
+    
+    # The probability is the ratio of the favorable combinations to the total combinations
+    probability = (red_combinations * blue_combinations) / total_combinations
+    
+    return probability
+import unittest
+from math import isclose
+
+
+class TestProbabilityOfRedBalls(unittest.TestCase):
+
+    def test_half_red_balls(self):
+        # Scenario where half of the drawn balls are expected to be red
+        result = probability_of_red_balls(7, 10, 10)
+        expected_result = probability_of_red_balls(7, 10, 10)  # Calculate manually or from another tool
+        self.assertTrue(isclose(result, expected_result), "Test with half red balls failed")
+
+    def test_some_red_balls(self):
+        # Scenario with some red balls in the jar, expecting a few red draws
+        result = probability_of_red_balls(5, 5, 10)
+        expected_result = probability_of_red_balls(5, 5, 10)  # Calculate manually or from another tool
+        self.assertTrue(isclose(result, expected_result), "Test with some red balls failed")
+
+    def test_extreme_case(self):
+        # Extreme scenario where the probability is low for the chosen n
+        result = probability_of_red_balls(15, 1, 99)
+        expected_result = probability_of_red_balls(15, 1, 99)  # Calculate manually or from another tool
+        self.assertTrue(isclose(result, expected_result), "Test with extreme case failed")
+if __name__ == '__main__':
+    unittest.main()

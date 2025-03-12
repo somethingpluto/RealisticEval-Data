@@ -8,10 +8,14 @@
  * @throws {Error} - Throws an error if the account number is not exactly 17 characters long.
  */
 function hideBankAccount(account) {
-    if (account.length !== 17) {
-        throw new Error('Account number must be exactly 17 characters long.');
+    if (typeof account !== 'string' || account.length !== 17) {
+        throw new Error('The account number must be exactly 17 characters long.');
     }
-    return '****' + account.slice(-4);
+
+    const hiddenPart = '****';
+    const visiblePart = account.slice(-4);
+
+    return hiddenPart + visiblePart;
 }
 describe('hideBankAccount', () => {
     test('should return "****4567" for an account number of "12345678901234567"', () => {

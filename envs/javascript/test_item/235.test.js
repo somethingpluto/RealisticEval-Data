@@ -9,26 +9,30 @@
  * @returns {number} Bearing in degrees from the starting point to the ending point, ranging from 0 to 360.
  */
 function calculateBearing(lat1, lon1, lat2, lon2) {
-    // Convert the latitudes and longitudes from degrees to radians
+    // Convert latitude and longitude from degrees to radians
     const toRadians = (degrees) => degrees * (Math.PI / 180);
+    const toDegrees = (radians) => radians * (180 / Math.PI);
+
     const lat1Rad = toRadians(lat1);
     const lon1Rad = toRadians(lon1);
     const lat2Rad = toRadians(lat2);
     const lon2Rad = toRadians(lon2);
 
-    // Calculate the differences in the latitudes and longitudes
-    const deltaLat = lat2Rad - lat1Rad;
+    // Calculate the difference in longitudes
     const deltaLon = lon2Rad - lon1Rad;
 
-    // Calculate the azimuth using the haversine formula
-    let y = Math.sin(deltaLon) * Math.cos(lat2Rad);
-    let x = Math.cos(lat1Rad) * Math.sin(lat2Rad) - Math.sin(lat1Rad) * Math.cos(lat2Rad) * Math.cos(deltaLon);
-    let brng = Math.atan2(y, x);
+    // Calculate the azimuth using the spherical law of cosines
+    const y = Math.sin(deltaLon) * Math.cos(lat2Rad);
+    const x = Math.cos(lat1Rad) * Math.sin(lat2Rad) - Math.sin(lat1Rad) * Math.cos(lat2Rad) * Math.cos(deltaLon);
+    const bearingRad = Math.atan2(y, x);
 
     // Convert the bearing from radians to degrees
-    brng = (brng * 180 / Math.PI + 360) % 360;
+    let bearingDeg = toDegrees(bearingRad);
 
-    return brng;
+    // Normalize the bearing to be between 0 and 360 degrees
+    bearingDeg = (bearingDeg + 360) % 360;
+
+    return bearingDeg;
 }
 describe('TestCalculateBearing', () => {
     it('should calculate north bearing correctly', () => {

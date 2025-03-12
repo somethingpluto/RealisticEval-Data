@@ -1,31 +1,49 @@
+const fs = require('fs');
+const xml2js = require('xml2js');
+
 /**
  * Parses a XAML file, extracts the key-value pairs within the 'String' elements, and returns the result in a dictionary.
  * @param {string} xamlFile - Path to the XAML file.
  * @returns {Object} A dictionary containing the key-value pairs extracted from 'String' elements.
  */
 function parseXamlToDict(xamlFile) {
-    return fetch(xamlFile)
-        .then(response => response.text())
-        .then(xamlText => {
-            const parser = new DOMParser();
-            const xmlDoc = parser.parseFromString(xamlText, "text/xml");
-            const stringElements = xmlDoc.getElementsByTagName("String");
-
-            const result = {};
-            for (let i = 0; i < stringElements.length; i++) {
-                const key = stringElements[i].getAttribute("Key");
-                const value = stringElements[i].textContent;
-                if (key) {
-                    result[key] = value;
-                }
+    return new Promise((resolve, reject) => {
+        // Read the XAML file
+        fs.readFile(xamlFile, 'utf8', (err, data) => {
+            if (err) {
+                reject(err);
+                return;
             }
 
-            return result;
-        })
-        .catch(error => {
-            console.error("Error parsing XAML file:", error);
-            return {};
+            // Parse the XML content
+            xml2js.parseString(data, { explicitArray: false }, (parseErr, result) => {
+                if (parseErr) {
+                    reject(parseErr);
+                    return;
+                }
+
+                const dict = {};
+
+                // Extract the 'String' elements
+                if (result.ResourceDictionary && result.ResourceDictionary.String) {
+                    const strings = result.ResourceDictionary.String;
+
+                    // Handle both single and multiple 'String' elements
+                    if (Array.isArray(strings)) {
+                        strings.forEach(string => {
+                            if (string.$.Key && string._) {
+                                dict[string.$.Key] = string._;
+                            }
+                        });
+                    } else if (strings.$.Key && strings._) {
+                        dict[strings.$.Key] = strings._;
+                    }
+                }
+
+                resolve(dict);
+            });
         });
+    });
 }
 const { parse } = require('xml2js');
 

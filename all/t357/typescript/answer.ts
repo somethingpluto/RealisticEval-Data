@@ -12,7 +12,7 @@ function hillSort(arr: number[]): void {
             for (j = i; j >= gap && arr[j - gap] > temp; j -= gap) {
                 arr[j] = arr[j - gap];
             }
-            // Put temp (the original arr[i]) in its correct location
+            // Put qa_item (the original arr[i]) in its correct location
             arr[j] = temp;
         }
     }

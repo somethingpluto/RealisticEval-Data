@@ -5,18 +5,20 @@
  * @returns {Object} A new object containing only valid values.
  */
 function cleanDictionary(inputDict) {
-    const cleanedDict = {};
+    const result = {};
+
     for (const key in inputDict) {
         if (inputDict.hasOwnProperty(key)) {
             const value = inputDict[key];
-            if (typeof value === 'string' && value.trim() !== '') {
-                cleanedDict[key] = value;
-            } else if (typeof value !== 'string' && !isNaN(value) && value !== null) {
-                cleanedDict[key] = value;
+
+            // Check if the value is valid
+            if (value !== null && value !== undefined && !Number.isNaN(value) && (typeof value !== 'string' || value.trim() !== '')) {
+                result[key] = value;
             }
         }
     }
-    return cleanedDict;
+
+    return result;
 }
 describe('TestCleanDictionary', () => {
     describe('testValidStrings', () => {

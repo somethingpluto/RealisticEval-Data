@@ -13,16 +13,16 @@
  */
 function formatBytes(bytes, options = {}) {
     const { decimals = 0, sizeType = "normal" } = options;
-    const units = sizeType === "normal" ? ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"] : ["B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"];
-    const base = sizeType === "normal" ? 1000 : 1024;
-    let unitIndex = 0;
+    const base = sizeType === "accurate" ? 1024 : 1000;
+    const units = sizeType === "accurate" ? ["B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"] : ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
 
-    while (bytes >= base && unitIndex < units.length - 1) {
-        bytes /= base;
-        unitIndex++;
-    }
+    if (bytes === 0) return `0 ${units[0]}`;
 
-    return `${bytes.toFixed(decimals)} ${units[unitIndex]}`;
+    const exponent = Math.floor(Math.log(bytes) / Math.log(base));
+    const value = bytes / Math.pow(base, exponent);
+    const unit = units[exponent];
+
+    return `${value.toFixed(decimals)} ${unit}`;
 }
 describe('formatBytes', () => {
     test('should return "0 Byte" for 0 bytes', () => {

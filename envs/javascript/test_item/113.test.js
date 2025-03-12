@@ -7,21 +7,22 @@
  * @returns {string} A single string containing all CSS rules, or an empty string if the sheet is invalid or inaccessible.
  */
 function getCSSFromSheet(sheet) {
-  if (!sheet || !(sheet instanceof CSSStyleSheet)) {
-    return '';
-  }
-
-  let cssText = '';
-  try {
-    for (const rule of sheet.cssRules) {
-      cssText += rule.cssText + '\n';
+    if (!sheet || !sheet.cssRules) {
+        return '';
     }
-  } catch (error) {
-    console.error('Error accessing CSSStyleSheet:', error);
-    return '';
-  }
 
-  return cssText;
+    let cssString = '';
+
+    try {
+        for (let i = 0; i < sheet.cssRules.length; i++) {
+            cssString += sheet.cssRules[i].cssText + '\n';
+        }
+    } catch (e) {
+        console.error('Error accessing CSS rules:', e);
+        return '';
+    }
+
+    return cssString.trim();
 }
 describe('getCSSFromSheet', () => {
     let styleSheet;

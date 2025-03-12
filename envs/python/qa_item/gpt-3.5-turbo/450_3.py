@@ -1,0 +1,44 @@
+import re
+
+def is_valid_password(password: str) -> bool:
+    if len(password) < 8:
+        return False
+    
+    if re.search(r'\d', password) is None:
+        return False
+    
+    if re.search(r'[a-z]', password) is None:
+        return False
+    
+    if re.search(r'[A-Z]', password) is None:
+        return False
+    
+    if re.search(r'[!@#$%^&*()-+=]', password) is None:
+        return False
+    
+    return True
+import unittest
+
+
+class TestPasswordValidator(unittest.TestCase):
+
+    def test_valid_password(self):
+        self.assertTrue(is_valid_password("Password1!"))
+
+    def test_password_without_number(self):
+        self.assertFalse(is_valid_password("Password!"))
+
+    def test_password_without_uppercase(self):
+        self.assertFalse(is_valid_password("password1!"))
+
+    def test_password_without_lowercase(self):
+        self.assertFalse(is_valid_password("PASSWORD1!"))
+
+    def test_password_without_punctuation(self):
+        self.assertFalse(is_valid_password("Password1"))
+
+    def test_password_shorter_than_8_characters(self):
+        self.assertFalse(is_valid_password("Pass1!"))
+
+if __name__ == '__main__':
+    unittest.main()

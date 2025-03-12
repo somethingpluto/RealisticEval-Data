@@ -5,11 +5,18 @@
  * @returns {string | null} - The extracted date string in YYYY-MM-DD format if found, else null.
  */
 function extractDateFromFileName(fileName) {
-    const datePattern = /\b(\d{4})-(\d{2})-(\d{2})\b/;
-    const match = fileName.match(datePattern);
+    // Regular expression to match dates in the format YYYY-MM-DD
+    const dateRegex = /\b(\d{4})-(\d{2})-(\d{2})\b/;
+    
+    // Search for the date in the file name
+    const match = fileName.match(dateRegex);
+    
+    // If a match is found, return the date in YYYY-MM-DD format
     if (match) {
         return `${match[1]}-${match[2]}-${match[3]}`;
     }
+    
+    // If no match is found, return null
     return null;
 }
 describe('TestExtractDateFromFilename', () => {

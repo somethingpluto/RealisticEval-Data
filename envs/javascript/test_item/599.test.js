@@ -5,30 +5,41 @@ class MaxHeap {
 
     // Helper function to maintain the max heap property
     heapifyUp(index) {
-        let parentIndex = Math.floor((index - 1) / 2);
-        if (index > 0 && this.heap[index] > this.heap[parentIndex]) {
-            this.swap(index, parentIndex);
-            this.heapifyUp(parentIndex);
+        while (index > 0) {
+            const parentIndex = Math.floor((index - 1) / 2);
+            if (this.heap[index] > this.heap[parentIndex]) {
+                // Swap the elements if the child is greater than the parent
+                [this.heap[index], this.heap[parentIndex]] = [this.heap[parentIndex], this.heap[index]];
+                index = parentIndex;
+            } else {
+                break;
+            }
         }
     }
 
     // Helper function to maintain the max heap property after deletion
     heapifyDown(index) {
-        let leftChildIndex = 2 * index + 1;
-        let rightChildIndex = 2 * index + 2;
-        let largest = index;
+        const length = this.heap.length;
+        while (true) {
+            const leftChildIndex = 2 * index + 1;
+            const rightChildIndex = 2 * index + 2;
+            let largestIndex = index;
 
-        if (leftChildIndex < this.heap.length && this.heap[leftChildIndex] > this.heap[largest]) {
-            largest = leftChildIndex;
-        }
+            if (leftChildIndex < length && this.heap[leftChildIndex] > this.heap[largestIndex]) {
+                largestIndex = leftChildIndex;
+            }
 
-        if (rightChildIndex < this.heap.length && this.heap[rightChildIndex] > this.heap[largest]) {
-            largest = rightChildIndex;
-        }
+            if (rightChildIndex < length && this.heap[rightChildIndex] > this.heap[largestIndex]) {
+                largestIndex = rightChildIndex;
+            }
 
-        if (largest !== index) {
-            this.swap(index, largest);
-            this.heapifyDown(largest);
+            if (largestIndex !== index) {
+                // Swap the elements if the child is greater than the parent
+                [this.heap[index], this.heap[largestIndex]] = [this.heap[largestIndex], this.heap[index]];
+                index = largestIndex;
+            } else {
+                break;
+            }
         }
     }
 
@@ -45,10 +56,10 @@ class MaxHeap {
         }
 
         const max = this.heap[0];
-        const last = this.heap.pop();
+        const lastElement = this.heap.pop();
 
         if (!this.isEmpty()) {
-            this.heap[0] = last;
+            this.heap[0] = lastElement;
             this.heapifyDown(0);
         }
 
@@ -68,11 +79,6 @@ class MaxHeap {
     // Get the size of the heap
     size() {
         return this.heap.length;
-    }
-
-    // Helper function to swap elements at two indices
-    swap(i, j) {
-        [this.heap[i], this.heap[j]] = [this.heap[j], this.heap[i]];
     }
 }
 describe("MaxHeap Operations", () => {

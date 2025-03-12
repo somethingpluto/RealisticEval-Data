@@ -1,3 +1,6 @@
+const fs = require('fs');
+const path = require('path');
+
 /**
  * Reads question from the given mapping file and returns an array where each element is a tuple containing the compiled regular expression and replacement strings.
  * 
@@ -6,45 +9,42 @@
  * @throws {Error} - Throws an error if the mapping file does not exist or if any line in the file does not contain exactly one comma.
  */
 function readMappingFile(mappingFilePath) {
-    const fs = require('fs');
-    const path = require('path');
-
     // Check if the file exists
     if (!fs.existsSync(mappingFilePath)) {
-        throw new Error('Mapping file does not exist.');
+        throw new Error(`File does not exist: ${mappingFilePath}`);
     }
 
-    // Read the file and split into lines
-    const lines = fs.readFileSync(mappingFilePath, 'utf-8').split('\n');
+    // Read the file content
+    const fileContent = fs.readFileSync(mappingFilePath, 'utf-8');
 
-    // Initialize an array to store the tuples
-    const tuples = [];
+    // Split the file content by lines
+    const lines = fileContent.split('\n').filter(line => line.trim() !== '');
+
+    // Initialize the result array
+    const result = [];
 
     // Process each line
-    for (const line of lines) {
-        // Skip empty lines and comments
-        if (line.trim() === '' || line.trim().startsWith('//')) {
-            continue;
-        }
-
-        // Split the line into regex and replacement parts
+    lines.forEach(line => {
+        // Split the line by comma
         const parts = line.split(',');
 
         // Check if the line contains exactly one comma
         if (parts.length !== 2) {
-            throw new Error('Invalid line in mapping file: ' + line);
+            throw new Error(`Invalid line in mapping file: ${line}`);
         }
 
-        // Compile the regex and add it to the array with the replacement string
-        try {
-            const regex = new RegExp(parts[0].trim(), 'g');
-            tuples.push([regex, parts[1].trim()]);
-        } catch (error) {
-            throw new Error('Invalid regex in mapping file: ' + parts[0]);
-        }
-    }
+        // Extract the regex pattern and replacement string
+        const regexPattern = parts[0].trim();
+        const replacementString = parts[1].trim();
 
-    return tuples;
+        // Compile the regex pattern
+        const regex = new RegExp(regexPattern);
+
+        // Add the tuple to the result array
+        result.push([regex, replacementString]);
+    });
+
+    return result;
 }
 jest.mock('fs', () => ({
   ...jest.requireActual('fs'),

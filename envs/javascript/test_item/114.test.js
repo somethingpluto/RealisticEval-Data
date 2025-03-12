@@ -1,13 +1,11 @@
 /**
- * sorts an array of objects by the timestamp property.
+ * Sorts an array of objects by the timestamp property.
  *
  * @param {Object[]} array - The array of objects to be sorted.
  * @returns {Object[]} The sorted array, based on the timestamp property.
  */
 function sortByTimestamp(array) {
-  return array.sort((a, b) => {
-    return new Date(a.timestamp) - new Date(b.timestamp);
-  });
+    return array.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
 }
 describe('sortByTimestamp function', () => {
     test('should return an empty array when input is empty', () => {

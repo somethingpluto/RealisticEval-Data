@@ -6,24 +6,27 @@
  * @returns {string[]} A list of duplicate IPs excluding those in the ignore list.
  */
 function findDuplicateIPs(ipList, ignoreList) {
-    const ipCount = {};
-    const duplicates = [];
+    const ipCountMap = new Map();
+    const duplicates = new Set();
 
     // Count occurrences of each IP
-    ipList.forEach(ip => {
-        if (!ignoreList.includes(ip)) {
-            ipCount[ip] = (ipCount[ip] || 0) + 1;
-        }
-    });
-
-    // Find IPs with more than one occurrence
-    for (const ip in ipCount) {
-        if (ipCount[ip] > 1) {
-            duplicates.push(ip);
+    for (const ip of ipList) {
+        if (ipCountMap.has(ip)) {
+            ipCountMap.set(ip, ipCountMap.get(ip) + 1);
+        } else {
+            ipCountMap.set(ip, 1);
         }
     }
 
-    return duplicates;
+    // Identify duplicates excluding those in the ignore list
+    for (const [ip, count] of ipCountMap.entries()) {
+        if (count > 1 && !ignoreList.includes(ip)) {
+            duplicates.add(ip);
+        }
+    }
+
+    // Convert Set to Array
+    return Array.from(duplicates);
 }
 describe('TestFindDuplicateIPs', () => {
   it('should handle basic duplicates', () => {

@@ -7,15 +7,9 @@
  */
 function flipPointCloud(pointCloud, axis) {
     return pointCloud.map(point => {
-        if (axis === 0) {
-            return [-point[0], point[1], point[2]];
-        } else if (axis === 1) {
-            return [point[0], -point[1], point[2]];
-        } else if (axis === 2) {
-            return [point[0], point[1], -point[2]];
-        } else {
-            throw new Error('Invalid axis. Please specify 0 for x, 1 for y, or 2 for z.');
-        }
+        const flippedPoint = [...point];
+        flippedPoint[axis] = -flippedPoint[axis];
+        return flippedPoint;
     });
 }
 describe('TestFlipPointCloud', () => {

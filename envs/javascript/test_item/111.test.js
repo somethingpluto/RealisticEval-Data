@@ -6,15 +6,19 @@
  * @returns {Blob} A Blob containing the Markdown formatted string of the conversation.
  */
 function convertChatToMarkdown(chat, title = "ChatGPT Conversation") {
-    let markdown = `# ${title}\n\n`;
+    // Create the Markdown content
+    let markdownContent = `# ${title}\n\n`;
+
+    // Iterate over each message in the chat array
     chat.forEach((message, index) => {
-        if (index % 2 === 0) {
-            markdown += `## User\n\n${message}\n\n`;
-        } else {
-            markdown += `## Assistant\n\n${message}\n\n`;
-        }
+        // Determine if the message is from the user or the assistant
+        const sender = index % 2 === 0 ? "User" : "Assistant";
+        markdownContent += `**${sender}:** ${message}\n\n`;
     });
-    const blob = new Blob([markdown], { type: 'text/markdown' });
+
+    // Create a Blob object with the Markdown content
+    const blob = new Blob([markdownContent], { type: 'text/markdown' });
+
     return blob;
 }
 describe('convertChatToMarkdown', () => {

@@ -8,36 +8,41 @@ const path = require('path');
  * @returns {Array} Merged array of JSON objects.
  */
 function concatenateJsonArrays(directory) {
-  // Ensure the directory exists
-  if (!fs.existsSync(directory)) {
-    throw new Error(`Directory ${directory} does not exist.`);
-  }
+    // Initialize an empty array to hold the merged results
+    let mergedArray = [];
 
-  // Read the directory and filter out non-JSON files
-  const files = fs.readdirSync(directory).filter(file => path.extname(file) === '.json');
+    // Read the directory contents
+    const files = fs.readdirSync(directory);
 
-  // Initialize an empty array to hold the merged results
-  let mergedArray = [];
+    // Iterate over each file in the directory
+    files.forEach(file => {
+        // Construct the full file path
+        const filePath = path.join(directory, file);
 
-  // Iterate over each file and concatenate the arrays
-  files.forEach(file => {
-    const filePath = path.join(directory, file);
-    const fileContent = fs.readFileSync(filePath, 'utf8');
-    const jsonArray = JSON.parse(fileContent);
+        // Check if the file is a JSON file
+        if (path.extname(file) === '.json') {
+            try {
+                // Read the file content
+                const fileContent = fs.readFileSync(filePath, 'utf8');
 
-    // Check if the parsed content is an array
-    if (!Array.isArray(jsonArray)) {
-      throw new Error(`File ${file} does not contain a root-level array.`);
-    }
+                // Parse the JSON content
+                const jsonArray = JSON.parse(fileContent);
 
-    // Concatenate the arrays
-    mergedArray = mergedArray.concat(jsonArray);
-  });
+                // Check if the parsed content is an array
+                if (Array.isArray(jsonArray)) {
+                    // Concatenate the array to the merged array
+                    mergedArray = mergedArray.concat(jsonArray);
+                }
+            } catch (error) {
+                // Handle any errors (e.g., invalid JSON)
+                console.error(`Error reading or parsing file ${file}:`, error);
+            }
+        }
+    });
 
-  return mergedArray;
+    // Return the merged array
+    return mergedArray;
 }
-
-module.exports = concatenateJsonArrays;
 const fs = require('fs');
 const path = require('path');
 describe('concatenateJsonArrays', () => {

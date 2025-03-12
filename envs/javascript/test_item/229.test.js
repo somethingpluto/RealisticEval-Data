@@ -1,22 +1,20 @@
 /**
  * Converts a file size in bytes to a human-readable format.
- * For example:
- *     input: 2120
- *     output: 2KB
  * 
  * @param {number} sizeBytes - The size in bytes to be converted.
  * @returns {string} The converted size in a human-readable format (e.g., "2KB", "1MB").
  */
 function convertFileSize(sizeBytes) {
-    const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+    const units = ["B", "KB", "MB", "GB", "TB"];
+    let size = sizeBytes;
     let unitIndex = 0;
 
-    while (sizeBytes >= 1024 && unitIndex < units.length - 1) {
-        sizeBytes /= 1024;
+    while (size >= 1024 && unitIndex < units.length - 1) {
+        size /= 1024;
         unitIndex++;
     }
 
-    return `${sizeBytes.toFixed(2)}${units[unitIndex]}`;
+    return `${Math.round(size)}${units[unitIndex]}`;
 }
 describe('TestFileSizeConverter', () => {
   test('test_zero_bytes', () => {

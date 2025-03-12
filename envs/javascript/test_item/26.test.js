@@ -6,11 +6,12 @@
  */
 function convertToCommaSeparated(inputString) {
     // Define the separators to be replaced
-    const separators = /[*;/:-]/g;
-    // Replace all separators with commas
-    const result = inputString.replace(separators, ',');
-    // Return the result
-    return result;
+    const separators = /[*,;/:-]/g;
+    
+    // Replace all occurrences of the separators with commas
+    const commaSeparatedString = inputString.replace(separators, ',');
+    
+    return commaSeparatedString;
 }
 describe('TestConvertToCommaSeparated', () => {
     it('should convert basic separators correctly', () => {

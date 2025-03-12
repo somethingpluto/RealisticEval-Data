@@ -12,35 +12,24 @@
  *                If the nth occurrence does not exist, returns the date of the last occurrence of that weekday in the month.
  */
 function findNthWeekdayOfSpecificYear(y, m, n, k) {
-    // Adjust month and weekday for zero-based indexing
-    m = m - 1;
-    k = k - 1;
+    // Create a new date object for the first day of the given month and year
+    let date = new Date(y, m - 1, 1);
 
-    // Create a date object for the first day of the month
-    let date = new Date(y, m, 1);
-
-    // Initialize a counter for the occurrences
-    let count = 0;
-
-    // Loop until the nth occurrence is found or the end of the month is reached
-    while (date.getMonth() === m) {
-        // Check if the current day is the desired weekday
-        if (date.getDay() === k) {
-            count++;
-        }
-
-        // If the nth occurrence is found, return the date
-        if (count === n) {
-            return new Date(date);
-        }
-
-        // Move to the next day
+    // Adjust the date to the first occurrence of the desired weekday (k)
+    while (date.getDay() !== k) {
         date.setDate(date.getDate() + 1);
     }
 
-    // If the nth occurrence is not found, return the last occurrence of the weekday in the month
-    date.setDate(date.getDate() - 1);
-    return new Date(date);
+    // Calculate the nth occurrence of the weekday
+    date.setDate(date.getDate() + (n - 1) * 7);
+
+    // Check if the calculated date is still within the same month
+    if (date.getMonth() !== m - 1) {
+        // If not, find the last occurrence of the weekday in the month
+        date.setDate(date.getDate() - 7);
+    }
+
+    return date;
 }
 describe('TestFindNthWeekdayOfSpecificYear', () => {
   describe('Regular Occurrence', () => {

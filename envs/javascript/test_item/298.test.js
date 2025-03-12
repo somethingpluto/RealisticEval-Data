@@ -7,18 +7,31 @@
  * @returns {string} - The formatted string or an empty string if the input is invalid.
  */
 function setEurValue(value) {
-    if (typeof value !== 'number' && isNaN(parseFloat(value))) {
+    // Check if the input is a number or can be converted to a number
+    const num = parseFloat(value);
+
+    // If the input is not a valid number, return an empty string
+    if (isNaN(num)) {
         return '';
     }
 
-    let num = parseFloat(value);
+    // If the number is less than 1000, return it as a string
     if (num < 1000) {
         return num.toString();
-    } else if (num >= 1000 && num < 1000000) {
+    }
+
+    // If the number is in the thousands range
+    if (num >= 1000 && num < 1000000) {
         return (num / 1000).toFixed(1) + 'k';
-    } else if (num >= 1000000) {
+    }
+
+    // If the number is in the millions range
+    if (num >= 1000000) {
         return (num / 1000000).toFixed(1) + 'm';
     }
+
+    // Default return an empty string (shouldn't reach here)
+    return '';
 }
 describe('setEurValue', () => {
     test('formats standard values correctly', () => {

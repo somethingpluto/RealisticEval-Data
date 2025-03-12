@@ -8,6 +8,14 @@
  * @returns {number | null} - The decimal value of the score as a float, or null if the input is invalid
  */
 function convertScoreToDecimal(scoreStr) {
+    // Check if the input is a valid string
+    if (typeof scoreStr !== 'string') {
+        return null;
+    }
+
+    // Trim any whitespace from the input string
+    scoreStr = scoreStr.trim();
+
     // Check if the input is a decimal number
     if (!isNaN(scoreStr)) {
         return parseFloat(scoreStr);
@@ -15,15 +23,17 @@ function convertScoreToDecimal(scoreStr) {
 
     // Check if the input is a fraction
     const fractionParts = scoreStr.split('/');
-    if (fractionParts.length === 2 && !isNaN(fractionParts[0]) && !isNaN(fractionParts[1])) {
+    if (fractionParts.length === 2) {
         const numerator = parseFloat(fractionParts[0]);
         const denominator = parseFloat(fractionParts[1]);
-        if (denominator !== 0) {
+
+        // Check if both parts are valid numbers
+        if (!isNaN(numerator) && !isNaN(denominator) && denominator !== 0) {
             return numerator / denominator;
         }
     }
 
-    // If the input is neither a decimal nor a valid fraction, return null
+    // If the input is neither a valid decimal nor a valid fraction, return null
     return null;
 }
 describe('TestConvertScoreToDecimal', () => {

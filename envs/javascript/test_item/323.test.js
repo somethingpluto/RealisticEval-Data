@@ -1,11 +1,12 @@
 /**
- * verify that a string is a valid username and check that the username contains only letters, numbers, and underscores
+ * Verify that a string is a valid username and check that the username contains only letters, numbers, and underscores.
  *
  * @param {string} username - The username to be validated.
  * @returns {boolean} - Returns true if the username matches the regex pattern, indicating it is valid;
  *                      returns false if the username contains any characters outside of letters, numbers, and underscores.
  */
 function isValidUsername(username) {
+    // Regular expression to match only letters, numbers, and underscores
     const regex = /^[a-zA-Z0-9_]+$/;
     return regex.test(username);
 }

@@ -1,37 +1,35 @@
 /**
  * Extracts the contents of the outermost brackets from the input string.
- * For example:
- *   input: "Text [with [nested] brackets] and more text"
- *   output: "with [nested] brackets"
  * 
  * @param {string} s - The input string containing brackets.
  * @returns {string} - The contents within the outermost brackets, or an empty string if no brackets are found.
  */
 function extractOutermostBrackets(s) {
-    let depth = 0;
-    let start = -1;
-    let end = -1;
+    let startIndex = s.indexOf('[');
+    let endIndex = -1;
+    let bracketCount = 0;
 
-    for (let i = 0; i < s.length; i++) {
+    if (startIndex === -1) {
+        return '';
+    }
+
+    for (let i = startIndex; i < s.length; i++) {
         if (s[i] === '[') {
-            if (depth === 0) {
-                start = i + 1;
-            }
-            depth++;
+            bracketCount++;
         } else if (s[i] === ']') {
-            depth--;
-            if (depth === 0) {
-                end = i;
+            bracketCount--;
+            if (bracketCount === 0) {
+                endIndex = i;
                 break;
             }
         }
     }
 
-    if (start !== -1 && end !== -1) {
-        return s.substring(start, end);
+    if (endIndex === -1) {
+        return '';
     }
 
-    return '';
+    return s.substring(startIndex + 1, endIndex);
 }
 describe('TestExtractOutermostBrackets', () => {
     it('should extract single parentheses', () => {

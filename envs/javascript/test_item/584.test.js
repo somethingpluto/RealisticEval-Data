@@ -5,15 +5,22 @@
  * @returns {boolean} - True if the string is in PASCAL_CASE, otherwise false.
  */
 function isPascalCase(input) {
-    // Check if the input is a string
-    if (typeof input !== 'string') {
+    // Check if the input is a non-empty string
+    if (typeof input !== 'string' || input.length === 0) {
         return false;
     }
 
-    // Check if the string is in PASCAL_CASE
-    // PASCAL_CASE means the first letter is uppercase and the rest are lowercase
-    // and there are no spaces or non-alphanumeric characters
-    return /^[A-Z][a-z0-9]*$/g.test(input);
+    // Check if the first character is uppercase
+    if (!/^[A-Z]/.test(input)) {
+        return false;
+    }
+
+    // Check if the rest of the string is alphanumeric and contains no spaces
+    if (!/^[A-Z][a-zA-Z0-9]*$/.test(input)) {
+        return false;
+    }
+
+    return true;
 }
 describe('isPascalCase', () => {
     test('should return true for a valid PascalCase string', () => {

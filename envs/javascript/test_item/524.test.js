@@ -6,7 +6,7 @@
  * @returns {Array<Array<number>>} - A 2D array of the scaled point cloud with shape [N, 3].
  */
 function scalePointCloud(pointCloud, scaleFactor) {
-    return pointCloud.map(point => point.map(coord => coord * scaleFactor));
+    return pointCloud.map(point => point.map(coordinate => coordinate * scaleFactor));
 }
 describe('TestScalePointCloud', () => {
     const scalePointCloud = require('./scalePointCloud'); // Import the scalePointCloud function

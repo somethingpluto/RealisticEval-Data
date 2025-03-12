@@ -12,23 +12,18 @@ function safeSplice(inputArray, amountToRemove, indexToRemove, replaceWith) {
     // Create a copy of the input array to avoid mutating the original array
     const newArray = [...inputArray];
 
-    // Check if the index is within the bounds of the array
-    if (indexToRemove < 0 || indexToRemove > newArray.length) {
-        throw new Error('Index out of bounds');
+    // Handle the case where indexToRemove is out of bounds
+    if (indexToRemove < 0 || indexToRemove >= newArray.length) {
+        return newArray;
     }
 
-    // Check if the amount to remove is within the bounds of the array
-    if (amountToRemove < 0 || indexToRemove + amountToRemove > newArray.length) {
-        throw new Error('Amount to remove is out of bounds');
+    // Handle the case where amountToRemove is greater than the number of elements from indexToRemove to the end of the array
+    if (amountToRemove > newArray.length - indexToRemove) {
+        amountToRemove = newArray.length - indexToRemove;
     }
 
-    // If replaceWith is provided, replace the removed elements with it
-    if (replaceWith !== undefined) {
-        newArray.splice(indexToRemove, amountToRemove, replaceWith);
-    } else {
-        // Otherwise, just remove the specified number of elements
-        newArray.splice(indexToRemove, amountToRemove);
-    }
+    // Perform the splice operation on the copied array
+    newArray.splice(indexToRemove, amountToRemove, replaceWith);
 
     return newArray;
 }

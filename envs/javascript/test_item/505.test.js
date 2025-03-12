@@ -5,9 +5,7 @@
  * @returns {string} The converted snake_case string.
  */
 function camelToSnake(camelStr) {
-    return camelStr.replace(/([A-Z])/g, function(match) {
-        return '_' + match.toLowerCase();
-    });
+    return camelStr.replace(/([A-Z])/g, '_$1').toLowerCase();
 }
 describe('TestCamelToSnake', () => {
     it('test basic CamelCase to snake_case conversion', () => {

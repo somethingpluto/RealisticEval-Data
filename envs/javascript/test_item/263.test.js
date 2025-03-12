@@ -14,7 +14,8 @@ function spiral_traversal(matrix) {
     if (matrix.length === 0) return [];
 
     let result = [];
-    let top = 0, bottom = matrix.length - 1, left = 0, right = matrix[0].length - 1;
+    let top = 0, bottom = matrix.length - 1;
+    let left = 0, right = matrix[0].length - 1;
 
     while (top <= bottom && left <= right) {
         // Traverse from left to right along the top row
@@ -29,7 +30,6 @@ function spiral_traversal(matrix) {
         }
         right--;
 
-        // Make sure we are still within the bounds of the matrix
         if (top <= bottom) {
             // Traverse from right to left along the bottom row
             for (let i = right; i >= left; i--) {
@@ -38,7 +38,6 @@ function spiral_traversal(matrix) {
             bottom--;
         }
 
-        // Make sure we are still within the bounds of the matrix
         if (left <= right) {
             // Traverse from bottom to top along the left column
             for (let i = bottom; i >= top; i--) {

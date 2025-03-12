@@ -5,17 +5,14 @@
  * @returns {number} The rotation angle in radians, extracted from the affine matrix.
  */
 function getRotation(matrix) {
-  // Extract the relevant components of the affine matrix
-  const a = matrix[0][0];
-  const b = matrix[0][1];
-  const c = matrix[1][0];
-  const d = matrix[1][1];
+    // Extract the relevant elements from the affine matrix
+    const a = matrix[0][0];
+    const b = matrix[0][1];
 
-  // Calculate the rotation angle using the arctangent function
-  const angle = Math.atan2(b, a);
+    // Calculate the rotation angle using the arctangent function
+    const angle = Math.atan2(b, a);
 
-  // Return the rotation angle in radians
-  return angle;
+    return angle;
 }
 const assert = require('assert');
 

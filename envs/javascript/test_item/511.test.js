@@ -5,16 +5,19 @@
  * @returns {string} An ANSI escape code for the specified RGB color.
  */
 function hexToAnsi(hexColor) {
-    // Remove the hash at the start if it exists
-    hexColor = hexColor.replace(/^#/, '');
+    // Remove the '#' if it exists
+    hexColor = hexColor.replace('#', '');
 
-    // Parse the hexadecimal values
-    let r = parseInt(hexColor.substr(0, 2), 16);
-    let g = parseInt(hexColor.substr(2, 2), 16);
-    let b = parseInt(hexColor.substr(4, 2), 16);
+    // Parse the hex color into its RGB components
+    const r = parseInt(hexColor.substring(0, 2), 16);
+    const g = parseInt(hexColor.substring(2, 4), 16);
+    const b = parseInt(hexColor.substring(4, 6), 16);
 
-    // Convert RGB to ANSI escape code
-    return `\u001b[38;2;${r};${g};${b}m`;
+    // Convert RGB to ANSI 256 color code
+    const ansiColor = 16 + (36 * Math.round(r / 255 * 5)) + (6 * Math.round(g / 255 * 5)) + Math.round(b / 255 * 5);
+
+    // Return the ANSI escape code
+    return `\x1b[38;5;${ansiColor}m`;
 }
 describe('TestHexToAnsi', () => {
     describe('testValidColors', () => {

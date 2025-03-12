@@ -5,29 +5,23 @@
  * @returns {Array<Array<string>>} An array where each sub-array represents a row in the table.
  */
 function parseMarkdownTable(mdTable) {
-    // Split the table into rows
-    const rows = mdTable.split('\n');
-    
-    // Extract the header row
-    const headers = rows[0].split('|').filter(Boolean);
-    
-    // Extract the data rows
-    const dataRows = rows.slice(2).filter(Boolean);
-    
-    // Parse each data row into an array of strings
-    const parsedRows = dataRows.map(row => {
-        return row.split('|').filter(Boolean).map(cell => cell.trim());
+    // Split the table into lines
+    const lines = mdTable.trim().split('\n');
+
+    // Remove the header separator line (e.g., "|---|---|")
+    if (lines.length > 1 && lines[1].trim().startsWith('|') && lines[1].trim().endsWith('|')) {
+        lines.splice(1, 1);
+    }
+
+    // Parse each line into an array of cells
+    const rows = lines.map(line => {
+        // Remove leading and trailing pipes
+        const trimmedLine = line.trim().replace(/^\||\|$/g, '');
+        // Split by pipes and trim each cell
+        return trimmedLine.split('|').map(cell => cell.trim());
     });
-    
-    // Create an array of tuples (arrays) representing the table rows
-    const tableRows = parsedRows.map(row => {
-        return row.reduce((tuple, cell, index) => {
-            tuple[headers[index]] = cell;
-            return tuple;
-        }, {});
-    });
-    
-    return tableRows;
+
+    return rows;
 }
 describe('parseMarkdownTable', () => {
     it('should correctly parse a standard table', () => {

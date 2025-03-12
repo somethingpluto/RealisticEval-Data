@@ -22,7 +22,7 @@
  */
 function calculateSteeringAngle(angularVelocity, speed, wheelbase) {
     if (speed <= 0) {
-        throw new Error('Speed must be greater than zero.');
+        throw new Error("Speed must be greater than zero.");
     }
 
     const steeringAngle = Math.atan((angularVelocity * wheelbase) / speed);

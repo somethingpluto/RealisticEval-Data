@@ -8,8 +8,14 @@
  * @return {string} A short format string derived from the first characters of each segment.
  */
 function convertToShortFormat(inputStr) {
+    // Split the input string by underscores
     const segments = inputStr.split('_');
-    return segments.map(segment => segment[0]).join('');
+    
+    // Map each segment to its first character
+    const shortFormat = segments.map(segment => segment[0]).join('');
+    
+    // Return the resulting short format string
+    return shortFormat;
 }
 describe('TestConvertToShortFormat', () => {
     it('test basic case', () => {

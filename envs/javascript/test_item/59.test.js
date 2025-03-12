@@ -8,18 +8,40 @@
  * @returns {number} The probability that all x drawn balls are red.
  */
 function probabilityRedBalls(x, n, m) {
+    // Total number of balls in the jar
+    const totalBalls = n + m;
+
+    // Check if it's possible to draw x red balls
     if (x > n) {
-        return 0; // Not enough red balls to draw x balls
+        return 0; // Not enough red balls to draw x red balls
     }
-    let totalCombinations = factorial(n + m) / (factorial(n) * factorial(m));
-    let redCombinations = factorial(n) / factorial(n - x);
-    return redCombinations / totalCombinations;
+
+    // Calculate the number of ways to choose x red balls from n red balls
+    const chooseRed = binomialCoefficient(n, x);
+
+    // Calculate the number of ways to choose (x) balls from the total (n + m) balls
+    const chooseTotal = binomialCoefficient(totalBalls, x);
+
+    // The probability is the ratio of the number of ways to choose x red balls
+    // to the number of ways to choose x balls from the total number of balls
+    return chooseRed / chooseTotal;
 }
 
-function factorial(num) {
+/**
+ * Helper function to calculate the binomial coefficient (n choose k).
+ * 
+ * @param {number} n - Total number of items.
+ * @param {number} k - Number of items to choose.
+ * 
+ * @returns {number} The binomial coefficient.
+ */
+function binomialCoefficient(n, k) {
+    if (k > n) return 0;
+    if (k === 0 || k === n) return 1;
+
     let result = 1;
-    for (let i = 2; i <= num; i++) {
-        result *= i;
+    for (let i = 1; i <= k; i++) {
+        result *= (n - i + 1) / i;
     }
     return result;
 }

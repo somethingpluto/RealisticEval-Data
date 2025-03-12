@@ -7,7 +7,10 @@
  * @returns {string} The formatted currency string.
  */
 function formatCurrency(value, currencyCode, locale = "en-US") {
-    return new Intl.NumberFormat(locale, { style: 'currency', currency: currencyCode }).format(value);
+    return new Intl.NumberFormat(locale, {
+        style: 'currency',
+        currency: currencyCode
+    }).format(value);
 }
 describe('formatCurrency function tests', () => {
     test('should format currency in US dollars', () => {

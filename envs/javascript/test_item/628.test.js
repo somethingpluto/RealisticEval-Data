@@ -1,4 +1,5 @@
 const fs = require('fs');
+const readline = require('readline');
 
 /**
  * Modifies a specific line in the given file.
@@ -9,28 +10,29 @@ const fs = require('fs');
  * @returns {void}
  */
 function modifyLineInFile(filePath, lineNumber, newValue) {
-  fs.readFile(filePath, 'utf8', (err, data) => {
-    if (err) {
-      console.error(`Error reading file: ${err}`);
-      return;
-    }
-
-    const lines = data.split('\n');
-    if (lineNumber < 1 || lineNumber > lines.length) {
-      console.error('Line number is out of range.');
-      return;
-    }
-
-    lines[lineNumber - 1] = newValue;
-
-    fs.writeFile(filePath, lines.join('\n'), 'utf8', (err) => {
-      if (err) {
-        console.error(`Error writing file: ${err}`);
-        return;
-      }
-      console.log(`Line ${lineNumber} has been updated.`);
+    const tempFilePath = `${filePath}.tmp`;
+    const readStream = fs.createReadStream(filePath);
+    const writeStream = fs.createWriteStream(tempFilePath);
+    const rl = readline.createInterface({
+        input: readStream,
+        output: writeStream,
+        terminal: false
     });
-  });
+
+    let currentLineNumber = 1;
+
+    rl.on('line', (line) => {
+        if (currentLineNumber === lineNumber) {
+            writeStream.write(`${newValue}\n`);
+        } else {
+            writeStream.write(`${line}\n`);
+        }
+        currentLineNumber++;
+    });
+
+    rl.on('close', () => {
+        fs.renameSync(tempFilePath, filePath);
+    });
 }
 const fs = require('fs');
 const path = require('path');

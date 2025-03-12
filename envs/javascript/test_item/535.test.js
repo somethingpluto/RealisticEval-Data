@@ -7,7 +7,19 @@
  * @returns {string} - The compressed HTML string with reduced whitespace.
  */
 function compressHtml(html) {
-    return html.replace(/\s+/g, ' ').trim();
+    // Remove comments
+    html = html.replace(/<!--[\s\S]*?-->/g, '');
+
+    // Remove newlines, tabs, and multiple spaces
+    html = html.replace(/\s+/g, ' ');
+
+    // Remove spaces around tags
+    html = html.replace(/>\s+</g, '><');
+
+    // Trim leading and trailing spaces
+    html = html.trim();
+
+    return html;
 }
 describe('compressHtml', () => {
     it('should remove newlines and tabs', () => {

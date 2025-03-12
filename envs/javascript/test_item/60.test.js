@@ -1,4 +1,69 @@
-npm install csv-parser
+const fs = require('fs');
+const path = require('path');
+const csv = require('csv-parser');
+
+/**
+ * Finds the common columns of all CSV files in a directory and returns these column names as a list.
+ * @param {string} directory - The directory path.
+ * @returns {Array<string>} - List of common column names.
+ */
+function findCommonColumns(directory) {
+    return new Promise((resolve, reject) => {
+        // Read all files in the directory
+        fs.readdir(directory, (err, files) => {
+            if (err) {
+                reject(err);
+                return;
+            }
+
+            // Filter out non-CSV files
+            const csvFiles = files.filter(file => path.extname(file).toLowerCase() === '.csv');
+
+            if (csvFiles.length === 0) {
+                resolve([]);
+                return;
+            }
+
+            // Initialize an array to hold the column names of the first file
+            let commonColumns = null;
+
+            // Function to process each file
+            const processFile = (file, index) => {
+                const filePath = path.join(directory, file);
+                const stream = fs.createReadStream(filePath).pipe(csv());
+
+                // Collect column names from the current file
+                const columns = new Set();
+
+                stream.on('headers', (headers) => {
+                    headers.forEach(header => columns.add(header));
+                });
+
+                stream.on('end', () => {
+                    if (commonColumns === null) {
+                        // First file, initialize commonColumns with the current columns
+                        commonColumns = new Set(columns);
+                    } else {
+                        // Intersect commonColumns with the current columns
+                        commonColumns = new Set([...commonColumns].filter(column => columns.has(column)));
+                    }
+
+                    // If this was the last file, resolve the promise with the common columns
+                    if (index === csvFiles.length - 1) {
+                        resolve([...commonColumns]);
+                    }
+                });
+
+                stream.on('error', (error) => {
+                    reject(error);
+                });
+            };
+
+            // Process each CSV file
+            csvFiles.forEach((file, index) => processFile(file, index));
+        });
+    });
+}
 const fs = require('fs');
 const path = require('path');
 const Papa = require('papaparse');

@@ -6,28 +6,21 @@
  * @returns {Array<Array<number>>} The sheared matrix.
  */
 function applyShearX(matrix, shearFactor) {
-    // Create a new matrix to store the sheared values
-    const shearedMatrix = [];
+    const rows = matrix.length;
+    const cols = matrix[0].length;
 
-    // Iterate over each row in the original matrix
-    for (let i = 0; i < matrix.length; i++) {
-        const row = matrix[i];
-        const newRow = [];
+    // Create a new matrix with the same dimensions
+    const shearedMatrix = Array.from({ length: rows }, () => Array(cols).fill(0));
 
-        // Iterate over each column in the row
-        for (let j = 0; j < row.length; j++) {
-            // Apply the shear transformation to each element
-            // The shear transformation formula is: new_x = x + shearFactor * y
-            // Since we are shearing along the x-axis, we only need to modify the x-coordinate
-            const newX = row[j] + shearFactor * i;
-            newRow.push(newX);
+    for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+            const newX = j + shearFactor * i;
+            if (newX >= 0 && newX < cols) {
+                shearedMatrix[i][newX] = matrix[i][j];
+            }
         }
-
-        // Add the new row to the sheared matrix
-        shearedMatrix.push(newRow);
     }
 
-    // Return the sheared matrix
     return shearedMatrix;
 }
 const assert = require('assert');

@@ -1,3 +1,5 @@
+const fs = require('fs').promises;
+
 /**
  * Appends the specified string to the beginning of each line of the file.
  * 
@@ -5,20 +7,25 @@
  * @param {string} prefix - String to append to the beginning of each line.
  */
 async function prependToEachLine(file_path, prefix) {
-  try {
-    // Read the file
-    const data = await fs.promises.readFile(file_path, 'utf8');
-    // Split the file into lines
-    const lines = data.split('\n');
-    // Prepend the prefix to each line
-    const modifiedLines = lines.map(line => prefix + line);
-    // Join the modified lines back into a single string
-    const modifiedData = modifiedLines.join('\n');
-    // Write the modified data back to the file
-    await fs.promises.writeFile(file_path, modifiedData, 'utf8');
-  } catch (error) {
-    console.error('Error:', error);
-  }
+    try {
+        // Read the file content
+        let fileContent = await fs.readFile(file_path, 'utf8');
+        
+        // Split the content into lines
+        let lines = fileContent.split('\n');
+        
+        // Prepend the prefix to each line
+        let modifiedLines = lines.map(line => prefix + line);
+        
+        // Join the lines back into a single string
+        let modifiedContent = modifiedLines.join('\n');
+        
+        // Write the modified content back to the file
+        await fs.writeFile(file_path, modifiedContent, 'utf8');
+        
+    } catch (error) {
+        console.error('Error occurred while processing the file:', error);
+    }
 }
 const fs = require('fs').promises;
 const os = require('os');

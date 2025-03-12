@@ -6,11 +6,13 @@
  * @returns {number[]} The rotated array with elements shifted to the left by one position.
  */
 function rotateListElements(elements) {
-    if (elements.length === 0) {
-        return [];
+    if (elements.length <= 1) {
+        return elements;
     }
+    
     const firstElement = elements.shift();
     elements.push(firstElement);
+    
     return elements;
 }
 describe('TestRotateListElements', () => {

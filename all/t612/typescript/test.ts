@@ -1,7 +1,7 @@
 import * as path from 'path';
 
 describe('TestFindAndReplace', () => {
-    const tempDir = path.join(__dirname, 'temp');
+    const tempDir = path.join(__dirname, 'qa_item');
 
     beforeAll(() => {
         // Create a temporary directory for the tests

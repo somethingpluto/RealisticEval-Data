@@ -1,0 +1,44 @@
+from datetime import timedelta
+import re
+
+def gen_timeout_timedelta(time_string: str) -> timedelta:
+    total_seconds = 0
+    matches = re.findall(r'(\d+)([dhms]+)', time_string)
+    for match in matches:
+        value, unit = int(match[0]), match[1]
+        if unit == 'd':
+            total_seconds += value * 86400
+        elif unit == 'h':
+            total_seconds += value * 3600
+        elif unit == 'm':
+            total_seconds += value * 60
+        elif unit == 's':
+            total_seconds += value
+        elif unit == 'ms':
+            total_seconds += value / 1000
+    return timedelta(seconds=total_seconds)
+import unittest
+from datetime import timedelta
+
+
+class TestGenTimeoutTimedelta(unittest.TestCase):
+    def test_single_unit_days(self):
+        self.assertEqual(gen_timeout_timedelta("5d"), timedelta(days=5))
+
+
+    def test_single_unit_hours(self):
+        self.assertEqual(gen_timeout_timedelta("8h"), timedelta(hours=8))
+
+    def test_single_unit_minutes(self):
+        self.assertEqual(gen_timeout_timedelta("45m"), timedelta(minutes=45))
+
+    def test_single_unit_seconds(self):
+        self.assertEqual(gen_timeout_timedelta("30s"), timedelta(seconds=30))
+
+    def test_complex_mix(self):
+        self.assertEqual(gen_timeout_timedelta("2d 20h 30m"), timedelta(days=2, hours=20, minutes=30))
+
+    def test_no_units(self):
+        self.assertEqual(gen_timeout_timedelta(""), timedelta(0))
+if __name__ == '__main__':
+    unittest.main()

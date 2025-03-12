@@ -5,7 +5,16 @@
  * @return {string[]} An array of strings, each representing a word from the input string. Returns an empty array if the input string is empty or contains only spaces.
  */
 function splitString(str) {
-    return str.trim().split(/\s+/);
+    // Trim the input string to remove leading and trailing spaces
+    const trimmedStr = str.trim();
+
+    // Check if the trimmed string is empty
+    if (trimmedStr === '') {
+        return [];
+    }
+
+    // Split the string by spaces and return the resulting array
+    return trimmedStr.split(/\s+/);
 }
 describe('splitString function', () => {
     test('Split a regular sentence', () => {

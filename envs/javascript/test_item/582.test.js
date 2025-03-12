@@ -8,10 +8,22 @@
  * @returns {string} - The query string.
  */
 function toQueryString(params) {
-    return Object.keys(params)
-        .map(key => encodeURIComponent(key) + '=' + encodeURIComponent(params[key]))
-        .join('&')
-        .replace(/^&/, '?');
+    if (typeof params !== 'object' || params === null) {
+        return '';
+    }
+
+    const queryString = Object.keys(params)
+        .map(key => {
+            const value = params[key];
+            if (value === undefined || value === null) {
+                return '';
+            }
+            return `${encodeURIComponent(key)}=${encodeURIComponent(value)}`;
+        })
+        .filter(Boolean) // Remove empty strings
+        .join('&');
+
+    return queryString ? `?${queryString}` : '';
 }
 describe('toQueryString', () => {
 

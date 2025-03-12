@@ -5,7 +5,7 @@
  * @returns {number[]} - A new array containing only the odd numbers.
  */
 function filterOutEvenNumbers(array) {
-    return array.filter(number => number % 2 !== 0);
+    return array.filter(num => num % 2 !== 0);
 }
 describe('filterOutEvenNumbers', () => {
     test('removes all even numbers from the array', () => {

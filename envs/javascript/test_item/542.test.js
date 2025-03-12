@@ -7,11 +7,13 @@
  */
 function calculateDiscount(originalPrice, actualPrice) {
     if (originalPrice <= 0 || actualPrice <= 0 || actualPrice > originalPrice) {
-        throw new Error('Invalid input values');
+        throw new Error("Invalid input: originalPrice must be greater than actualPrice and both must be positive.");
     }
 
-    const discountPercentage = ((originalPrice - actualPrice) / originalPrice) * 100;
-    return Math.round(discountPercentage * 100) / 100;
+    const discountAmount = originalPrice - actualPrice;
+    const discountPercentage = (discountAmount / originalPrice) * 100;
+
+    return parseFloat(discountPercentage.toFixed(2));
 }
 describe('calculateDiscount', () => {
     test('should return 25.00% discount for original price of 100 and actual price of 75', () => {

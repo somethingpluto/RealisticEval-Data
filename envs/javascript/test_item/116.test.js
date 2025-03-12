@@ -8,11 +8,24 @@
  * @returns {Array} - An array containing the x and y differences, accounting for wrap-around.
  */
 function toroidalDiff(thisPoint, otherPoint, width, height) {
-    let dx = Math.abs(thisPoint.x - otherPoint.x);
-    let dy = Math.abs(thisPoint.y - otherPoint.y);
-    let xDiff = Math.min(dx, width - dx);
-    let yDiff = Math.min(dy, height - dy);
-    return [xDiff, yDiff];
+    // Calculate the raw differences
+    let dx = otherPoint.x - thisPoint.x;
+    let dy = otherPoint.y - thisPoint.y;
+
+    // Adjust for toroidal wrap-around
+    if (dx > width / 2) {
+        dx -= width;
+    } else if (dx < -width / 2) {
+        dx += width;
+    }
+
+    if (dy > height / 2) {
+        dy -= height;
+    } else if (dy < -height / 2) {
+        dy += height;
+    }
+
+    return [dx, dy];
 }
 describe('toroidalDiff', () => {
     test('should return the direct difference when no wrapping is needed', () => {

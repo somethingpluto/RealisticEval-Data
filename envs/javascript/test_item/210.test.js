@@ -1,16 +1,14 @@
 /**
- * Implement the Fibonacci sequence
+ * Implement the Fibonacci sequence using recursion.
  *
  * @param {number} n - Which Fibonacci number to calculate.
  * @return {number}
  */
 function fibonacciRecursive(n) {
-  // Base cases: 0th Fibonacci number is 0, 1st Fibonacci number is 1
-  if (n === 0) return 0;
-  if (n === 1) return 1;
-
-  // Recursive case: nth Fibonacci number is the sum of the (n-1)th and (n-2)th Fibonacci numbers
-  return fibonacciRecursive(n - 1) + fibonacciRecursive(n - 2);
+    if (n <= 1) {
+        return n;
+    }
+    return fibonacciRecursive(n - 1) + fibonacciRecursive(n - 2);
 }
 describe("Fibonacci sequence", () => {
     // Test Case 1: Fibonacci of 0

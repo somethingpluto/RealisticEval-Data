@@ -29,7 +29,7 @@ describe('TestProcessCSV', () => {
     const inputFilePath = 'input.csv';
     const outputFilePath = 'output.csv';
 
-    // Write input data to a temp CSV file
+    // Write input data to a qa_item CSV file
     writeFileSync(inputFilePath, input_data);
 
     // Process the CSV
@@ -38,7 +38,7 @@ describe('TestProcessCSV', () => {
     // Read the output
     const outputData = readFileSync(outputFilePath, 'utf8');
 
-    // Clean up temp files
+    // Clean up qa_item files
     unlinkSync(inputFilePath);
     unlinkSync(outputFilePath);
 

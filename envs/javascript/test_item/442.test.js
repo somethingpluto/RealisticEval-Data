@@ -5,20 +5,25 @@
  * @returns {Object|Array} - The converted data.
  */
 function convertStringsToNumbers(data) {
-    if (Array.isArray(data)) {
-        return data.map(item => convertStringsToNumbers(item));
+    if (typeof data === 'string') {
+        // Attempt to convert the string to a number
+        const num = Number(data);
+        return isNaN(num) ? data : num;
+    } else if (Array.isArray(data)) {
+        // Recursively process each element in the array
+        return data.map(convertStringsToNumbers);
     } else if (typeof data === 'object' && data !== null) {
+        // Recursively process each property in the object
         const result = {};
         for (const key in data) {
-            result[key] = convertStringsToNumbers(data[key]);
+            if (data.hasOwnProperty(key)) {
+                result[key] = convertStringsToNumbers(data[key]);
+            }
         }
         return result;
-    } else if (typeof data === 'string') {
-        const number = parseFloat(data);
-        return isNaN(number) ? data : number;
-    } else {
-        return data;
     }
+    // Return the data as-is if it's not a string, array, or object
+    return data;
 }
 describe('TestConvertStringsToNumbers', () => {
     describe('test_flat_dict', () => {

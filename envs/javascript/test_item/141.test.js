@@ -6,13 +6,17 @@
  * @returns {boolean} - Returns true if both arrays contain the same unique elements, otherwise returns false.
  */
 function compareArrays(arr1, arr2) {
+    // Check if the arrays have the same length
     if (arr1.length !== arr2.length) {
         return false;
     }
 
-    const sortedArr1 = arr1.slice().sort();
-    const sortedArr2 = arr2.slice().sort();
+    // Create a copy of arr1 and sort it
+    const sortedArr1 = [...arr1].sort();
+    // Create a copy of arr2 and sort it
+    const sortedArr2 = [...arr2].sort();
 
+    // Compare the sorted arrays element by element
     for (let i = 0; i < sortedArr1.length; i++) {
         if (sortedArr1[i] !== sortedArr2[i]) {
             return false;

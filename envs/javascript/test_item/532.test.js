@@ -6,19 +6,26 @@
  *                          identical letters before a different letter is found.
  */
 function countLetterChanges(inputString) {
-    let result = [];
+    if (inputString.length === 0) return [];
+
+    const counts = [];
+    let currentChar = inputString[0];
     let count = 1;
 
-    for (let i = 0; i < inputString.length; i++) {
-        if (inputString[i] === inputString[i + 1]) {
+    for (let i = 1; i < inputString.length; i++) {
+        if (inputString[i] === currentChar) {
             count++;
         } else {
-            result.push(count);
+            counts.push(count);
+            currentChar = inputString[i];
             count = 1;
         }
     }
 
-    return result;
+    // Push the last count
+    counts.push(count);
+
+    return counts;
 }
 describe('countLetterChanges', () => {
     test('should count consecutive letters correctly', () => {

@@ -1,95 +1,113 @@
 /**
- * Node class for a circular linked list
- */
-class Node {
-  constructor(data) {
-    this.data = data;
-    this.next = null;
-  }
-}
-
-/**
- * PrimeGame class to encapsulate the game logic
- */
-class PrimeGame {
-  constructor(n) {
-    this.head = null;
-    this.tail = null;
-    this.n = n;
-    this.createPlayers();
-  }
-
-  /**
-   * Create a circular linked list of players
-   */
-  createPlayers() {
-    for (let i = 1; i <= this.n; i++) {
-      const newNode = new Node(i);
-      if (!this.head) {
-        this.head = newNode;
-        this.tail = newNode;
-      } else {
-        this.tail.next = newNode;
-        this.tail = newNode;
-      }
-      this.tail.next = this.head; // Make it circular
-    }
-  }
-
-  /**
-   * Check if a number is prime
-   * @param {number} num - The number to check
-   * @return {boolean} - True if the number is prime, false otherwise
-   */
-  isPrime(num) {
-    if (num <= 1) return false;
-    for (let i = 2; i <= Math.sqrt(num); i++) {
-      if (num % i === 0) return false;
-    }
-    return true;
-  }
-
-  /**
-   * Find the order of players being removed
-   * @return {Array<number>} - An array of integers representing the order of players being removed from the ring
-   */
-  findOrder() {
-    const order = [];
-    let current = this.head;
-    let count = 1;
-
-    while (this.n > 0) {
-      if (this.isPrime(count)) {
-        order.push(current.data);
-        if (current === this.head) {
-          this.head = current.next;
-        }
-        if (current === this.tail) {
-          this.tail = this.head;
-        }
-        const temp = current.next;
-        current.next = null;
-        current = temp;
-        this.n--;
-      } else {
-        current = current.next;
-      }
-      count++;
-    }
-
-    return order;
-  }
-}
-
-/**
  * Simulate a game based on the order of prime numbers, using a circular linked list to represent the cyclic structure of players, and remove players one by one.
+ *
+ * This function creates an instance of the PrimeGame class, which encapsulates the logic
+ * for simulating the game. It then calls the findOrder method on the PrimeGame object
+ * to determine and return the order in which players are removed based on the sequence of prime numbers.
  *
  * @param {number} n - The number of players in the game.
  * @return {Array<number>} - An array of integers representing the order of players being removed from the ring.
  */
 function findOrder(n) {
-  const game = new PrimeGame(n);
-  return game.findOrder();
+    class Node {
+        constructor(value) {
+            this.value = value;
+            this.next = null;
+        }
+    }
+
+    class CircularLinkedList {
+        constructor() {
+            this.head = null;
+            this.tail = null;
+            this.size = 0;
+        }
+
+        append(value) {
+            const newNode = new Node(value);
+            if (!this.head) {
+                this.head = newNode;
+                this.tail = newNode;
+                newNode.next = newNode;
+            } else {
+                this.tail.next = newNode;
+                newNode.next = this.head;
+                this.tail = newNode;
+            }
+            this.size++;
+        }
+
+        remove(node) {
+            if (this.size === 1) {
+                this.head = null;
+                this.tail = null;
+            } else {
+                let current = this.head;
+                while (current.next !== node) {
+                    current = current.next;
+                }
+                current.next = node.next;
+                if (node === this.head) {
+                    this.head = node.next;
+                }
+                if (node === this.tail) {
+                    this.tail = current;
+                }
+            }
+            this.size--;
+        }
+    }
+
+    class PrimeGame {
+        constructor(n) {
+            this.players = new CircularLinkedList();
+            for (let i = 1; i <= n; i++) {
+                this.players.append(i);
+            }
+        }
+
+        *generatePrimes() {
+            const isPrime = (num) => {
+                if (num <= 1) return false;
+                if (num <= 3) return true;
+                if (num % 2 === 0 || num % 3 === 0) return false;
+                for (let i = 5; i * i <= num; i += 6) {
+                    if (num % i === 0 || num % (i + 2) === 0) return false;
+                }
+                return true;
+            };
+
+            let num = 2;
+            while (true) {
+                if (isPrime(num)) {
+                    yield num;
+                }
+                num++;
+            }
+        }
+
+        findOrder() {
+            const order = [];
+            let current = this.players.head;
+            const primeGenerator = this.generatePrimes();
+
+            while (this.players.size > 0) {
+                const prime = primeGenerator.next().value;
+                for (let i = 1; i < prime; i++) {
+                    current = current.next;
+                }
+                order.push(current.value);
+                const next = current.next;
+                this.players.remove(current);
+                current = next;
+            }
+
+            return order;
+        }
+    }
+
+    const game = new PrimeGame(n);
+    return game.findOrder();
 }
 describe("FindOrder Test Cases", () => {
     // Test Case 1: Minimum valid input with 2 players

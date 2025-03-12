@@ -10,19 +10,26 @@
  *          each holding an array of corresponding titles found in the markdown.
  */
 function parseMarkdownTitles(markdown) {
+    // Initialize arrays to hold titles of different levels
     const titles = {
         level1: [],
         level2: [],
         level3: []
     };
 
-    const regex = /#{1,3} (.+)/g;
-    let match;
-    while ((match = regex.exec(markdown)) !== null) {
-        const level = match[0].length;
-        const title = match[1];
-        titles[`level${level}`].push(title);
-    }
+    // Split the markdown text into lines
+    const lines = markdown.split('\n');
+
+    // Iterate over each line to find and categorize titles
+    lines.forEach(line => {
+        if (line.startsWith('# ')) {
+            titles.level1.push(line.slice(2).trim());
+        } else if (line.startsWith('## ')) {
+            titles.level2.push(line.slice(3).trim());
+        } else if (line.startsWith('### ')) {
+            titles.level3.push(line.slice(4).trim());
+        }
+    });
 
     return titles;
 }

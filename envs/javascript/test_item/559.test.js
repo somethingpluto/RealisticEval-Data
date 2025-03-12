@@ -5,7 +5,18 @@
  * @returns {boolean} - Returns true if the file is a C++ header file, false otherwise.
  */
 function isCppHeaderFile(fileName) {
-    return fileName.endsWith('.h') || fileName.endsWith('.hpp') || fileName.endsWith('.hxx');
+    // Define the common C++ header file extensions
+    const cppHeaderExtensions = ['.h', '.hpp', '.hh', '.hxx'];
+
+    // Check if the file name ends with any of the C++ header file extensions
+    for (let extension of cppHeaderExtensions) {
+        if (fileName.endsWith(extension)) {
+            return true;
+        }
+    }
+
+    // If no matching extension is found, return false
+    return false;
 }
 describe('isCppHeaderFile', () => {
     test('returns true for a .h file', () => {

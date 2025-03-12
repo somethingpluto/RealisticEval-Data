@@ -4,14 +4,11 @@
  * Iterate over list items on a web page and remove ads that contain a specific class name
  */
 function removeAds() {
-    // Get all list items on the page
-    const listItems = document.querySelectorAll('li');
+    const adClassName = 'ad-class'; // Replace with the actual class name of the ads
+    const listItems = document.querySelectorAll('li'); // Assuming ads are within <li> elements
 
-    // Iterate over each list item
     listItems.forEach(item => {
-        // Check if the list item contains the ad class
-        if (item.classList.contains('ad-class')) {
-            // Remove the ad list item from the DOM
+        if (item.classList.contains(adClassName)) {
             item.remove();
         }
     });

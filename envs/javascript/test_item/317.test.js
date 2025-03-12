@@ -5,13 +5,11 @@
  * @returns {number} - The count of letters in the string.
  */
 function countLetters(str) {
-    let count = 0;
-    for (let i = 0; i < str.length; i++) {
-        if (str[i].match(/[a-z]/i)) {
-            count++;
-        }
-    }
-    return count;
+    // Use a regular expression to match only letters (a-z, A-Z)
+    const letterMatches = str.match(/[a-zA-Z]/g);
+    
+    // If there are no matches, return 0; otherwise, return the length of the matches array
+    return letterMatches ? letterMatches.length : 0;
 }
 describe('countLetters', () => {
     test('should return 10 for the string "Hello, World!"', () => {

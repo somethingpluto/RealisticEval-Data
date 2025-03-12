@@ -1,15 +1,12 @@
 /**
  * Removes comments from the provided string. Comments start with a '#' and end at the newline.
  * 
- * Example:
- *   Input: "Hello, world! # This is a comment"
- *   Output: "Hello, world!"
- * 
  * @param {string} string - The input string containing potential comments.
  * @returns {string} The string with all comments removed.
  */
 function removeComments(string) {
-    return string.split('\n').map(line => line.split('#')[0].trim()).join(' ').trim();
+    // Use a regular expression to match comments and replace them with an empty string
+    return string.replace(/#.*\n?/g, '');
 }
 describe('TestRemoveComments', () => {
     describe('test_single_line_comment', () => {

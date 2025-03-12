@@ -7,14 +7,29 @@
  * @returns {Object} An object containing the sorted scores, names, and IDs.
  */
 function reorderData(imageScores, imageNames, imageIDs) {
-    const sortedIndices = imageScores.map((score, index) => index)
-        .sort((a, b) => imageScores[a] - imageScores[b]);
+    // Create an array of objects containing scores, names, and IDs
+    let imageData = imageScores.map((score, index) => {
+        return {
+            score: score,
+            name: imageNames[index],
+            id: imageIDs[index]
+        };
+    });
 
-    const resultScores = sortedIndices.map(index => imageScores[index]);
-    const resultNames = sortedIndices.map(index => imageNames[index]);
-    const resultIDs = sortedIndices.map(index => imageIDs[index]);
+    // Sort the array of objects based on the score in ascending order
+    imageData.sort((a, b) => a.score - b.score);
 
-    return { resultScores, resultNames, resultIDs };
+    // Extract the sorted scores, names, and IDs
+    let resultScores = imageData.map(data => data.score);
+    let resultNames = imageData.map(data => data.name);
+    let resultIDs = imageData.map(data => data.id);
+
+    // Return the sorted data as an object
+    return {
+        resultScores,
+        resultNames,
+        resultIDs
+    };
 }
 describe('reorderData', () => {
 

@@ -7,21 +7,21 @@
  */
 function findMaxDifference(l) {
     if (l.length < 2) {
-        return 0;
+        return 0; // If there are fewer than 2 elements, the maximum difference is 0.
     }
 
+    let maxDiff = 0;
     let minElement = l[0];
-    let maxDifference = 0;
 
     for (let i = 1; i < l.length; i++) {
-        if (l[i] < minElement) {
-            minElement = l[i];
+        if (l[i] > minElement) {
+            maxDiff = Math.max(maxDiff, l[i] - minElement);
         } else {
-            maxDifference = Math.max(maxDifference, l[i] - minElement);
+            minElement = l[i];
         }
     }
 
-    return maxDifference;
+    return maxDiff;
 }
 describe('findMaxDifference', () => {
     test('General case', () => {

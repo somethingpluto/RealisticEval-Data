@@ -6,10 +6,16 @@
  * @param {number} b - The ending index of the range to be reversed.
  */
 function reverseRange(arr, a, b) {
+    // Ensure the range is valid
+    if (a < 0 || b >= arr.length || a > b) {
+        throw new Error("Invalid range specified.");
+    }
+
+    // Reverse the elements in the specified range
     while (a < b) {
-        const temp = arr[a];
-        arr[a] = arr[b];
-        arr[b] = temp;
+        // Swap elements at indices a and b
+        [arr[a], arr[b]] = [arr[b], arr[a]];
+        // Move towards the center
         a++;
         b--;
     }

@@ -5,24 +5,30 @@
  * @returns {string} A compressed string representation of the hash.
  */
 function compressHash(hash) {
-    // Convert the buffer to a hexadecimal string
-    let hexString = hash.toString('hex');
+    const base64Chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+    let compressedString = '';
+    let bitBuffer = 0;
+    let bitCount = 0;
 
-    // Compress the hexadecimal string by replacing certain patterns with shorter representations
-    let compressedString = hexString.replace(/0{5,}/g, '0') // Replace sequences of 5 or more zeros with '0'
-                                   .replace(/1{5,}/g, '1') // Replace sequences of 5 or more ones with '1'
-                                   .replace(/2{5,}/g, '2') // Replace sequences of 5 or more twos with '2'
-                                   .replace(/3{5,}/g, '3') // Replace sequences of 5 or more threes with '3'
-                                   .replace(/4{5,}/g, '4') // Replace sequences of 5 or more fours with '4'
-                                   .replace(/5{5,}/g, '5') // Replace sequences of 5 or more fives with '5'
-                                   .replace(/6{5,}/g, '6') // Replace sequences of 5 or more sixes with '6'
-                                   .replace(/7{5,}/g, '7') // Replace sequences of 5 or more sevens with '7'
-                                   .replace(/8{5,}/g, '8') // Replace sequences of 5 or more eights with '8'
-                                   .replace(/9{5,}/g, '9'); // Replace sequences of 5 or more nines with '9'
+    for (let i = 0; i < hash.length; i++) {
+        bitBuffer = (bitBuffer << 8) | hash[i];
+        bitCount += 8;
+
+        while (bitCount >= 6) {
+            bitCount -= 6;
+            const index = (bitBuffer >>> bitCount) & 0x3F;
+            compressedString += base64Chars[index];
+        }
+    }
+
+    if (bitCount > 0) {
+        const index = (bitBuffer << (6 - bitCount)) & 0x3F;
+        compressedString += base64Chars[index];
+    }
 
     // Ensure the compressed string is at least 5 characters long
-    if (compressedString.length < 5) {
-        compressedString = '0' + compressedString; // Prepend a zero if the string is shorter than 5 characters
+    while (compressedString.length < 5) {
+        compressedString += base64Chars[0];
     }
 
     return compressedString;

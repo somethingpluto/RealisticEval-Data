@@ -8,17 +8,18 @@
  *   time[2] - number of minutes (optional)
  *   time[3] - number of seconds (optional)
  * @returns {number} - The total number of seconds
- *
- * @example
- * calculateTotalSeconds([1, 2, 3, 4]); // returns 93784
- * calculateTotalSeconds([0, 2, 3]); // returns 7380
  */
 function calculateTotalSeconds(time = [0, 0, 0, 0]) {
-  const secondsInDay = 86400;
-  const secondsInHour = 3600;
-  const secondsInMinute = 60;
-
-  return (time[0] * secondsInDay) + (time[1] * secondsInHour) + (time[2] * secondsInMinute) + time[3];
+    const [days = 0, hours = 0, minutes = 0, seconds = 0] = time;
+    
+    const secondsInADay = 86400;
+    const secondsInAnHour = 3600;
+    const secondsInAMinute = 60;
+    
+    return (days * secondsInADay) + 
+           (hours * secondsInAnHour) + 
+           (minutes * secondsInAMinute) + 
+           seconds;
 }
 describe('TestCalculateTotalSeconds', () => {
   describe('test_complete_time', () => {

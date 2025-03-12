@@ -1,0 +1,47 @@
+import pandas as pd
+
+def fill_missing_with_first_valid(df: pd.DataFrame, column_name: str) -> pd.DataFrame:
+    """
+    Fills missing values in the specified column of the DataFrame with the first valid value in that column.
+    Args:
+        df (pd.DataFrame): The pandas DataFrame.
+        column_name (str): The name of the column to fill missing values.
+
+    Returns:
+        pd.DataFrame: The DataFrame with missing values filled.
+    """ 
+    return df[column_name].fillna(method='ffill')
+import unittest
+
+import pandas as pd
+
+
+class TestFillMissingWithFirstValid(unittest.TestCase):
+
+    def test_basic_filling(self):
+        df = pd.DataFrame({'A': [1, None, 3, None], 'B': ['foo', 'bar', None, 'baz']})
+        result = fill_missing_with_first_valid(df, 'B')
+        expected = pd.DataFrame({'A': [1, None, 3, None], 'B': ['foo', 'bar', 'foo', 'baz']})
+        pd.testing.assert_frame_equal(result, expected)
+
+    def test_no_missing_values(self):
+        df = pd.DataFrame({'A': [1, 2, 3], 'B': ['foo', 'bar', 'baz']})
+        result = fill_missing_with_first_valid(df, 'B')
+        expected = pd.DataFrame({'A': [1, 2, 3], 'B': ['foo', 'bar', 'baz']})
+        pd.testing.assert_frame_equal(result, expected)
+
+
+    def test_single_valid_value(self):
+        df = pd.DataFrame({'A': [1, None, None, 4], 'B': [None, 'bar', None, None]})
+        result = fill_missing_with_first_valid(df, 'B')
+        expected = pd.DataFrame({'A': [1, None, None, 4], 'B': ['bar', 'bar', 'bar', 'bar']})
+        pd.testing.assert_frame_equal(result, expected)
+
+    def test_multiple_valid_values(self):
+        df = pd.DataFrame({'A': [1, None, 3, 4], 'B': [None, 'bar', 'foo', None]})
+        result = fill_missing_with_first_valid(df, 'B')
+        expected = pd.DataFrame({'A': [1, None, 3, 4], 'B': ['bar', 'bar', 'foo', 'bar']})
+        pd.testing.assert_frame_equal(result, expected)
+
+if __name__ == '__main__':
+    unittest.main()

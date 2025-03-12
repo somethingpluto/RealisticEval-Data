@@ -11,7 +11,15 @@ const math = require('mathjs');
  *                            the matrix and the vector.
  */
 function matrixVectorMultiplication(matrix, vector) {
-    return math.multiply(matrix, vector);
+    // Convert the matrix and vector to mathjs matrices
+    const mathMatrix = math.matrix(matrix);
+    const mathVector = math.matrix(vector);
+
+    // Perform the multiplication
+    const result = math.multiply(mathMatrix, mathVector);
+
+    // Convert the result back to a 1D array
+    return result.toArray();
 }
 const math = require('mathjs');
 

@@ -8,16 +8,17 @@
  * @return {number} The number of days in the specified month of the specified year.
  */
 function getDaysInMonth(year, month) {
-    if (month < 1 || month > 12) {
-        throw new Error('Month must be between 1 and 12');
-    }
+    // Adjust month to be 0-indexed for JavaScript's Date object
+    month -= 1;
 
-    const daysInMonth = [31, isLeapYear(year) ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-    return daysInMonth[month - 1];
-}
+    // Create a new Date object for the first day of the next month
+    const nextMonth = new Date(year, month + 1, 1);
 
-function isLeapYear(year) {
-    return (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
+    // Subtract one day to get the last day of the specified month
+    nextMonth.setDate(nextMonth.getDate() - 1);
+
+    // Return the day of the month (which is the number of days in the month)
+    return nextMonth.getDate();
 }
 describe('getDaysInMonth', () => {
     test('Leap year February', () => {

@@ -6,18 +6,14 @@
  * @returns {any} - The item to be logged. Can be of any type.
  */
 function log(item) {
-    try {
-        if (typeof item === 'string' || typeof item === 'number' || typeof item === 'boolean') {
-            console.log(item);
-        } else if (Array.isArray(item)) {
-            console.log(item);
-        } else if (typeof item === 'object' && item !== null) {
-            console.log(JSON.stringify(item, null, 2));
-        } else {
-            throw new Error('Unsupported type');
-        }
-    } catch (error) {
-        console.error('Error logging item:', error.message);
+    if (typeof item === 'string' || typeof item === 'number') {
+        console.log(item);
+    } else if (Array.isArray(item)) {
+        console.log(JSON.stringify(item, null, 2));
+    } else if (typeof item === 'object' && item !== null) {
+        console.log(JSON.stringify(item, null, 2));
+    } else {
+        console.error(`Error: Unsupported type - ${typeof item}`);
     }
     return item;
 }

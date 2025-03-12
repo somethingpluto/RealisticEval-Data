@@ -7,13 +7,20 @@
  * @yields {string} Each line of the content wrapped to the specified width.
  */
 function* wrapContentGenerator(content, width = 80) {
-    let lines = content.split('\n');
-    for (let line of lines) {
-        while (line.length > width) {
-            yield line.slice(0, width);
-            line = line.slice(width);
+    let currentLine = '';
+    let words = content.split(' ');
+
+    for (let word of words) {
+        if (currentLine.length + word.length + (currentLine ? 1 : 0) <= width) {
+            currentLine += (currentLine ? ' ' : '') + word;
+        } else {
+            yield currentLine;
+            currentLine = word;
         }
-        yield line;
+    }
+
+    if (currentLine) {
+        yield currentLine;
     }
 }
 describe('TestWrapContentGenerator', () => {

@@ -1,4 +1,4 @@
-const fs = require('fs');import { readFile as fsReadFile, writeFile as fsWriteFile } from 'fs';
+const fs = require('fs');import fs from 'fs';
 
 /**
  * Reads the content of a file synchronously and returns it as a string.
@@ -8,12 +8,11 @@ const fs = require('fs');import { readFile as fsReadFile, writeFile as fsWriteFi
  * @throws {Error} - Throws an error if the file cannot be read.
  */
 function readFile(filePath) {
-  try {
-    const content = fsReadFile(filePath, 'utf8');
-    return content;
-  } catch (error) {
-    throw new Error(`Failed to read file: ${error.message}`);
-  }
+    try {
+        return fs.readFileSync(filePath, 'utf-8');
+    } catch (error) {
+        throw new Error(`Error reading file: ${error.message}`);
+    }
 }
 
 /**
@@ -24,11 +23,11 @@ function readFile(filePath) {
  * @throws {Error} - Throws an error if the file cannot be written.
  */
 function writeFile(filePath, data) {
-  try {
-    fsWriteFile(filePath, data, 'utf8');
-  } catch (error) {
-    throw new Error(`Failed to write to file: ${error.message}`);
-  }
+    try {
+        fs.writeFileSync(filePath, data, 'utf-8');
+    } catch (error) {
+        throw new Error(`Error writing file: ${error.message}`);
+    }
 }
 // Mock fs in your Jest tests
 jest.mock('fs');

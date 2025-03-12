@@ -8,12 +8,14 @@
  *      domain is the part after '@'
  */
 function extractEmailDetails(email) {
-    const atIndex = email.indexOf('@');
-    if (atIndex === -1) {
-        throw new Error('Invalid email address: missing "@" symbol');
-    }
-    const username = email.substring(0, atIndex);
-    const domain = email.substring(atIndex + 1);
+    // Split the email address at the '@' symbol
+    const parts = email.split('@');
+
+    // Extract the username and domain
+    const username = parts[0];
+    const domain = parts[1];
+
+    // Return the result as an array
     return [username, domain];
 }
 describe('TestExtractEmailDetails', () => {

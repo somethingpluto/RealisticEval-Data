@@ -8,14 +8,26 @@
 function removeCommonIndentation(multilineText) {
     // Split the input string into an array of lines
     const lines = multilineText.split('\n');
-    // Find the minimum common leading indentation
-    const minIndentation = lines.reduce((min, line) => {
-        const indentation = line.match(/^\s*/)[0].length;
-        return Math.min(min, indentation);
-    }, Infinity);
+
+    // Filter out empty lines to avoid counting them in the indentation calculation
+    const nonEmptyLines = lines.filter(line => line.trim().length > 0);
+
+    // Find the minimum indentation level by counting leading spaces/tabs
+    let minIndent = Infinity;
+    for (const line of nonEmptyLines) {
+        const leadingWhitespace = line.match(/^\s*/)[0];
+        minIndent = Math.min(minIndent, leadingWhitespace.length);
+    }
+
+    // If no common indentation is found, return the original text
+    if (minIndent === Infinity) {
+        return multilineText;
+    }
+
     // Remove the common leading indentation from each line
-    const sanitizedLines = lines.map(line => line.slice(minIndentation));
-    // Join the lines back into a single string
+    const sanitizedLines = lines.map(line => line.slice(minIndent));
+
+    // Join the sanitized lines back into a single string
     return sanitizedLines.join('\n');
 }
 describe('TestRemoveCommonIndentation', () => {

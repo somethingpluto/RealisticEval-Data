@@ -15,9 +15,11 @@
  */
 function calculateBMI(weight, height) {
     if (weight <= 0 || height <= 0) {
-        throw new Error('Weight and height must be positive numbers.');
+        throw new Error("Weight and height must be positive values.");
     }
-    return weight / (height * height);
+
+    const bmi = weight / (height * height);
+    return bmi;
 }
 describe("BMI calculations", () => {
     // Test case for valid inputs with expected BMI value

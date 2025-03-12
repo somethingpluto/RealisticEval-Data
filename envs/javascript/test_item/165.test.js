@@ -5,7 +5,10 @@
  * @returns {string} The URL-safe Base64 encoded string.
  */
 export function base64ToUrlSafe(base64) {
-    return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    return base64
+        .replace(/\+/g, '-') // Replace '+' with '-'
+        .replace(/\//g, '_') // Replace '/' with '_'
+        .replace(/=+$/, ''); // Remove any trailing '='
 }
 describe('base64ToUrlSafe', () => {
 

@@ -1,19 +1,27 @@
 /**
  * Iterates through the array of elements until the first null is encountered,
- * returning a new array that includes all elements before the first null.
+ * returning a new array that includes all elements before the null.
  *
  * @param {Array} array - The array to iterate through.
  * @returns {Array} - A new array containing elements before the first null.
  */
 function elementsBeforeNull(array) {
-  const result = [];
-  for (let i = 0; i < array.length; i++) {
-    if (array[i] === null) {
-      break;
+    // Initialize an empty array to store the elements before the first null
+    let result = [];
+
+    // Iterate through the input array
+    for (let i = 0; i < array.length; i++) {
+        // Check if the current element is null
+        if (array[i] === null) {
+            // If null is found, break out of the loop
+            break;
+        }
+        // If not null, add the element to the result array
+        result.push(array[i]);
     }
-    result.push(array[i]);
-  }
-  return result;
+
+    // Return the result array containing elements before the first null
+    return result;
 }
 
 describe('elementsBeforeNull', () => {

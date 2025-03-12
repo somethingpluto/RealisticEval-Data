@@ -8,14 +8,17 @@
  * @returns {string} - A formatted string indicating the number of posts.
  */
 function formatPostCount(count) {
-    if (count === 0) {
-        return "00 Posts";
-    } else if (count === 1) {
-        return "01 Post";
-    } else {
-        const formattedCount = count < 10 ? `0${count}` : count;
-        return `${formattedCount} Posts`;
-    }
+    // Ensure the count is a number
+    count = Number(count);
+
+    // Format the count to always have two digits
+    const formattedCount = count.toString().padStart(2, '0');
+
+    // Determine the correct pluralization of "Post"
+    const postLabel = count === 1 ? 'Post' : 'Posts';
+
+    // Return the formatted string
+    return `${formattedCount} ${postLabel}`;
 }
 describe('formatPostCount', () => {
     test('should return "01 Post" for count of 1', () => {

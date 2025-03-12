@@ -6,11 +6,25 @@
  * @returns {Array<Array<number>>} - An N x 3 array of the translated point cloud.
  */
 function translatePointCloud(pointCloud, translationVector) {
-    return pointCloud.map(point => [
-        point[0] + translationVector[0],
-        point[1] + translationVector[1],
-        point[2] + translationVector[2]
-    ]);
+    // Ensure the translation vector has exactly 3 elements
+    if (translationVector.length !== 3) {
+        throw new Error("Translation vector must have exactly 3 elements.");
+    }
+
+    // Translate each point in the point cloud
+    return pointCloud.map(point => {
+        // Ensure each point has exactly 3 elements
+        if (point.length !== 3) {
+            throw new Error("Each point in the point cloud must have exactly 3 elements.");
+        }
+
+        // Translate the point by adding the corresponding elements of the translation vector
+        return [
+            point[0] + translationVector[0],
+            point[1] + translationVector[1],
+            point[2] + translationVector[2]
+        ];
+    });
 }
 describe('TestTranslatePointCloud', () => {
     describe('test_simple_translation', () => {

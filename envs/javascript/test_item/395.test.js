@@ -10,16 +10,13 @@ function sumCalibrationValues(calibrationDocument) {
     let totalSum = 0;
 
     for (const line of calibrationDocument) {
-        const numbers = line.match(/\d+/g);
-        if (numbers) {
-            for (const number of numbers) {
-                if (number.length > 1) {
-                    const firstDigit = number[0];
-                    const lastDigit = number[number.length - 1];
-                    const calibrationValue = parseInt(firstDigit + lastDigit, 10);
-                    totalSum += calibrationValue;
-                }
-            }
+        // Extract all digits from the line
+        const digits = line.match(/\d/g);
+
+        if (digits && digits.length >= 2) {
+            // Combine the first and last digits to form a two-digit number
+            const calibrationValue = parseInt(digits[0] + digits[digits.length - 1]);
+            totalSum += calibrationValue;
         }
     }
 

@@ -5,14 +5,16 @@
  * @returns {string} A string representing the hexadecimal values of the bytes in the input array. If the input array is empty, returns an empty string.
  */
 function byteArrayToHexString(byteArray) {
+    if (byteArray.length === 0) {
+        return '';
+    }
+
     let hexString = '';
     for (let i = 0; i < byteArray.length; i++) {
-        let hex = byteArray[i].toString(16);
-        if (hex.length === 1) {
-            hex = '0' + hex;
-        }
+        let hex = byteArray[i].toString(16).padStart(2, '0');
         hexString += hex;
     }
+
     return hexString;
 }
 describe('TestAnswer', () => {

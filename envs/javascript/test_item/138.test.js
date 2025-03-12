@@ -7,11 +7,14 @@
  */
 function removePunctuation(str) {
     // Remove punctuation using a regular expression
-    let cleanedStr = str.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"");
-    // Convert to lowercase
+    let cleanedStr = str.replace(/[^\w\s]/g, '');
+    
+    // Convert the string to lowercase
     cleanedStr = cleanedStr.toLowerCase();
+    
     // Trim whitespace from both ends
     cleanedStr = cleanedStr.trim();
+    
     return cleanedStr;
 }
 describe('removePunctuation', () => {

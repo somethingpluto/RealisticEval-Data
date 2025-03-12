@@ -10,30 +10,38 @@ const Jimp = require('jimp');
  *                                   where 1 is for white pixels and 0 is for black pixels.
  */
 async function convertImageToBits(imagePath) {
-  try {
-    const image = await Jimp.read(imagePath);
-    image.grayscale(); // Convert image to grayscale
-    const binaryData = [];
+    try {
+        // Load the image
+        const image = await Jimp.read(imagePath);
 
-    // Iterate over each pixel in the image
-    for (let y = 0; y < image.bitmap.height; y++) {
-      for (let x = 0; x < image.bitmap.width; x++) {
-        const pixel = image.getPixelColor(x, y);
-        const { r, g, b } = Jimp.intToRGBA(pixel);
-        // Check if the pixel is white
-        if (r === 255 && g === 255 && b === 255) {
-          binaryData.push(1);
-        } else {
-          binaryData.push(0);
+        // Convert the image to black and white mode
+        image.greyscale();
+
+        // Get the width and height of the image
+        const width = image.getWidth();
+        const height = image.getHeight();
+
+        // Initialize an array to hold the binary representation
+        const bits = [];
+
+        // Iterate over each pixel in the image
+        for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++) {
+                // Get the color of the pixel
+                const color = Jimp.intToRGBA(image.getPixelColor(x, y));
+
+                // Determine if the pixel is white or black
+                const isWhite = color.r === 255 && color.g === 255 && color.b === 255;
+
+                // Push the corresponding bit to the array
+                bits.push(isWhite ? 1 : 0);
+            }
         }
-      }
-    }
 
-    return binaryData;
-  } catch (error) {
-    console.error('Error converting image to bits:', error);
-    throw error;
-  }
+        return bits;
+    } catch (error) {
+        throw new Error(`Failed to convert image to bits: ${error.message}`);
+    }
 }
 const fs = require('fs');
 const Jimp = require('jimp');

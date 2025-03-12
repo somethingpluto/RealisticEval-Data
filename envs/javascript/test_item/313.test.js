@@ -6,59 +6,27 @@
  * @returns {string} - Returns "dark" if the background is too dark, "bright" if it is too bright, or "normal" if it is neither.
  */
 function isBackgroundTooDarkOrBright() {
-  // Select a major element of the web page, for example, the body
-  const element = document.body;
+    // Get the background color of the body element
+    const backgroundColor = window.getComputedStyle(document.body).backgroundColor;
 
-  // Get the computed style of the element
-  const style = window.getComputedStyle(element);
+    // Convert the background color to RGB values
+    const rgb = backgroundColor.match(/\d+/g).map(Number);
 
-  // Extract the background color
-  const bgColor = style.backgroundColor;
+    // Calculate the brightness of the background color
+    const brightness = (rgb[0] * 299 + rgb[1] * 587 + rgb[2] * 114) / 1000;
 
-  // Parse the background color to RGB
-  const rgb = parseColor(bgColor);
+    // Define thresholds for dark and bright backgrounds
+    const darkThreshold = 125;
+    const brightThreshold = 185;
 
-  // Calculate the luminance of the background color
-  const luminance = calculateLuminance(rgb);
-
-  // Define thresholds for dark and bright
-  const darkThreshold = 50; // Adjust this value as needed
-  const brightThreshold = 200; // Adjust this value as needed
-
-  // Determine if the background is too dark, too bright, or normal
-  if (luminance < darkThreshold) {
-    return "dark";
-  } else if (luminance > brightThreshold) {
-    return "bright";
-  } else {
-    return "normal";
-  }
-}
-
-// Helper function to parse a CSS color value to RGB
-function parseColor(color) {
-  if (color.startsWith("rgb")) {
-    // Remove the 'rgb(' and ')' from the string
-    color = color.substring(4, color.length - 1);
-    // Split the string into an array of numbers
-    const values = color.split(",");
-    // Convert the array of strings to an array of numbers
-    return values.map(value => parseInt(value.trim()));
-  } else {
-    // If the color is not in RGB format, return null
-    return null;
-  }
-}
-
-// Helper function to calculate the luminance of an RGB color
-function calculateLuminance(rgb) {
-  // Calculate the luminance using the formula for sRGB
-  const r = rgb[0] / 255;
-  const g = rgb[1] / 255;
-  const b = rgb[2] / 255;
-  return 0.2126 * (r <= 0.03928 ? r / 12.92 : Math.pow((r + 0.055) / 1.055, 2.4)) +
-         0.7152 * (g <= 0.03928 ? g / 12.92 : Math.pow((g + 0.055) / 1.055, 2.4)) +
-         0.0722 * (b <= 0.03928 ? b / 12.92 : Math.pow((b + 0.055) / 1.055, 2.4));
+    // Determine if the background is too dark, too bright, or normal
+    if (brightness < darkThreshold) {
+        return "dark";
+    } else if (brightness > brightThreshold) {
+        return "bright";
+    } else {
+        return "normal";
+    }
 }
 /**
  * @jest-environment jsdom

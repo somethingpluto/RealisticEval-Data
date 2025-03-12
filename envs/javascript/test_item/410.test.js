@@ -5,22 +5,26 @@
  * @returns {boolean} - True if the XOR sums of the specified columns match the required values; otherwise, false.
  */
 function checkXorSum(combination) {
-    // Assuming the first row of the combination array contains the required XOR sums
-    const requiredSums = combination[0];
-    const numRows = combination.length;
-    const numCols = combination[0].length;
+    // Define the required XOR sums for each column
+    const requiredXorSums = [0, 0, 0]; // Example required XOR sums for columns 0, 1, and 2
 
-    // Iterate over each column index
-    for (let col = 0; col < numCols; col++) {
-        let xorSum = 0;
+    // Check if the combination array has the correct number of columns
+    if (combination.length === 0 || combination[0].length !== requiredXorSums.length) {
+        return false;
+    }
 
-        // Iterate over each row in the column
-        for (let row = 1; row < numRows; row++) {
-            xorSum ^= combination[row][col];
+    // Calculate the XOR sum for each column
+    const xorSums = new Array(requiredXorSums.length).fill(0);
+
+    for (let row of combination) {
+        for (let i = 0; i < row.length; i++) {
+            xorSums[i] ^= row[i];
         }
+    }
 
-        // Check if the calculated XOR sum matches the required sum for this column
-        if (xorSum !== requiredSums[col]) {
+    // Compare the calculated XOR sums with the required XOR sums
+    for (let i = 0; i < requiredXorSums.length; i++) {
+        if (xorSums[i] !== requiredXorSums[i]) {
             return false;
         }
     }

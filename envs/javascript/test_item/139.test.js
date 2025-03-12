@@ -6,18 +6,31 @@
  * @returns {object} An object containing the cleaned summary text and an array of categories.
  */
 function parseCategoriesFromSummary(summarizedOutput = '') {
-    let categories = [];
-    let cleanedSummary = summarizedOutput;
+    // Initialize the result object
+    const result = {
+        cleanedSummary: summarizedOutput,
+        categories: []
+    };
 
-    const categoriesRegex = /Categories:\s*\[(.*?)\]/;
-    const match = summarizedOutput.match(categoriesRegex);
+    // Define the regex pattern to match the categories section
+    const categoriesPattern = /Categories:\s*\[([^\]]+)\]/;
 
+    // Execute the regex on the summarized output
+    const match = summarizedOutput.match(categoriesPattern);
+
+    // If a match is found, extract the categories
     if (match) {
-        categories = match[1].split(',').map(category => category.trim());
-        cleanedSummary = summarizedOutput.replace(categoriesRegex, '').trim();
+        // Extract the categories string from the match
+        const categoriesString = match[1];
+
+        // Split the categories string into an array
+        result.categories = categoriesString.split(',').map(category => category.trim());
+
+        // Remove the categories section from the summarized output
+        result.cleanedSummary = summarizedOutput.replace(match[0], '').trim();
     }
 
-    return { cleanedSummary, categories };
+    return result;
 }
 describe('parseCategoriesFromSummary', () => {
     test('extracts categories and cleans the summary correctly', () => {

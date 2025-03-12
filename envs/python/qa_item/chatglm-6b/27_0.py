@@ -1,0 +1,87 @@
+
+import os
+import json
+from typing import List
+
+def concatenate_json_arrays(directory: str) -> List:
+    """
+    concatenate the root-level array JSON files in the specified directory
+    Args:
+        directory (str): directory dir path
+
+    Returns: merged question
+
+    """
+    # Get the list of files in the directory
+    files = [f for f in os.listdir(directory) if f.endswith('.json')]
+
+    # Iterate over the files and merge their arrays
+    merged_arrays = []
+    for file in files:
+        if file.endswith('.json'):
+            json_data = json.load(open(file, 'r'))
+            merged_arrays.extend([json_data['array'] for json_data in json_data.get('data', [])])
+        else:
+            merged_arrays.append(file)
+
+    return merged_arrays
+
+import json
+import os
+import unittest
+
+
+class TestConcatenateJsonArrays(unittest.TestCase):
+
+    def setUp(self):
+        # Set up a test.js directory and test.js files
+        self.test_dir = 'test_json'
+        os.makedirs(self.test_dir, exist_ok=True)
+        # Create test.js JSON files
+        self.create_test_file('array1.json', [1, 2, 3])
+        self.create_test_file('array2.json', ['a', 'b', 'c'])
+        self.create_test_file('not_array.json', {'key': 'value'})
+        self.create_test_file('empty.json', [])
+        self.create_test_file('non_json.txt', "This is not a JSON file.")
+
+    def tearDown(self):
+        # Clean up: Remove created files and directory
+        for filename in os.listdir(self.test_dir):
+            os.remove(os.path.join(self.test_dir, filename))
+        os.rmdir(self.test_dir)
+
+    def create_test_file(self, filename, content):
+        # Helper method to create JSON files
+        with open(os.path.join(self.test_dir, filename), 'w') as f:
+            json.dump(content, f)
+
+    def test_concatenate_valid_json_arrays(self):
+        # Test with valid JSON arrays
+        result = concatenate_json_arrays(self.test_dir)
+        self.assertCountEqual(result, [1, 2, 3, 'a', 'b', 'c'])
+
+    def test_ignore_non_array_json(self):
+        # Test that non-array JSON files are ignored
+        result = concatenate_json_arrays(self.test_dir)
+        self.assertNotIn('key', result)
+
+    def test_ignore_non_json_files(self):
+        # Test that non-JSON files are ignored
+        result = concatenate_json_arrays(self.test_dir)
+        self.assertNotIn("This is not a JSON file.", result)
+
+    def test_handle_empty_arrays(self):
+        # Test concatenation includes empty arrays
+        result = concatenate_json_arrays(self.test_dir)
+        self.assertNotIn([], result)
+
+    def test_empty_directory(self):
+        # Test with no JSON files in the directory
+        empty_dir = 'empty_test_json'
+        os.makedirs(empty_dir, exist_ok=True)
+        result = concatenate_json_arrays(empty_dir)
+        self.assertEqual(result, [])
+        os.rmdir(empty_dir)
+
+if __name__ == '__main__':
+    unittest.main()

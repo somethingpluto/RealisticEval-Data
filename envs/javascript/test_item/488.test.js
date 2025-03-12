@@ -7,33 +7,31 @@ const { exec } = require('child_process');
  * @returns {Promise<string | null>} - A promise that resolves to the local IP address if found, otherwise null.
  */
 async function getLocalIP(interface = 'Wi-Fi') {
-  return new Promise((resolve, reject) => {
-    // Construct the command to get the IP address of the specified network interface
-    const command = `ipconfig | findstr /C:"${interface}" /C:"IPv4 Address"`;
+    return new Promise((resolve, reject) => {
+        exec(`ipconfig | findstr /R /C:"${interface}"`, (error, stdout, stderr) => {
+            if (error) {
+                reject(error);
+                return;
+            }
 
-    // Execute the command
-    exec(command, (error, stdout, stderr) => {
-      if (error) {
-        reject(error);
-        return;
-      }
+            if (stderr) {
+                reject(new Error(stderr));
+                return;
+            }
 
-      // Parse the output to find the IP address
-      const lines = stdout.split('\n');
-      const ipAddressLine = lines.find(line => line.includes('IPv4 Address'));
-      if (ipAddressLine) {
-        // Extract the IP address from the line
-        const ipAddress = ipAddressLine.split(': ')[1].trim();
-        resolve(ipAddress);
-      } else {
-        resolve(null);
-      }
+            const lines = stdout.split('\n');
+            for (const line of lines) {
+                const match = line.match(/IPv4 Address[^:]*:\s*(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})/);
+                if (match) {
+                    resolve(match[1]);
+                    return;
+                }
+            }
+
+            resolve(null);
+        });
     });
-  });
 }
-
-// Example usage:
-// getLocalIP('Wi-Fi').then(ip => console.log(ip)).catch(err => console.error(err));
 describe('TestGetLocalIP', () => {
     beforeEach(() => {
         jest.spyOn(console, 'error').mockImplementation(() => {});

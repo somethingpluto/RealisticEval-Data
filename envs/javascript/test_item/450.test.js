@@ -10,13 +10,19 @@
  * @returns {boolean} Returns true if the password meets all requirements; otherwise, false.
  */
 function isValidPassword(password) {
-    const hasNumber = /[0-9]/.test(password);
+    // Check if the password length is at least 8 characters
+    if (password.length < 8) {
+        return false;
+    }
+
+    // Regular expressions to check for required characters
+    const hasNumber = /\d/.test(password);
     const hasLowercase = /[a-z]/.test(password);
     const hasUppercase = /[A-Z]/.test(password);
     const hasPunctuation = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-    const isValidLength = password.length >= 8;
 
-    return hasNumber && hasLowercase && hasUppercase && hasPunctuation && isValidLength;
+    // Return true only if all conditions are met
+    return hasNumber && hasLowercase && hasUppercase && hasPunctuation;
 }
 describe('Password Validator Tests', () => {
     test('Valid password', () => {

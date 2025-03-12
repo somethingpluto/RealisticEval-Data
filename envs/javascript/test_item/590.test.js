@@ -22,18 +22,31 @@
  *       URL, or version; it only parses the input string.
  */
 function parseHttpRequestLine(response) {
-    const requestLineRegex = /^(GET|POST|PUT|DELETE|HEAD|OPTIONS|PATCH|TRACE|CONNECT) (.+) HTTP\/(\d\.\d)$/;
-    const match = response.match(requestLineRegex);
-
-    if (match) {
-        return {
-            method: match[1],
-            url: match[2],
-            http_version: match[3]
-        };
-    } else {
+    // Check if the response is a string and not empty
+    if (typeof response !== 'string' || response.trim() === '') {
         return {};
     }
+
+    // Split the response by the CRLF sequence to get the first line
+    const firstLine = response.split('\r\n')[0];
+
+    // Split the first line by spaces to extract method, url, and http version
+    const parts = firstLine.split(' ');
+
+    // Check if the first line has the expected number of parts
+    if (parts.length !== 3) {
+        return {};
+    }
+
+    // Destructure the parts array into variables
+    const [method, url, httpVersion] = parts;
+
+    // Return an object with the parsed values
+    return {
+        method: method || '',
+        url: url || '',
+        http_version: httpVersion || ''
+    };
 }
 describe('parseHttpRequestLine', () => {
     test('Valid POST request line', () => {

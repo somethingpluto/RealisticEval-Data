@@ -6,30 +6,31 @@
  * @throws {Error} if the limit is less than 2.
  */
 function generatePrimes(limit) {
-  if (limit < 2) {
-    throw new Error('Limit must be greater than or equal to 2.');
-  }
-
-  const primes = [];
-  const sieve = new Array(limit + 1).fill(true);
-  sieve[0] = sieve[1] = false;
-
-  for (let i = 2; i <= Math.sqrt(limit); i++) {
-    if (sieve[i]) {
-      primes.push(i);
-      for (let j = i * i; j <= limit; j += i) {
-        sieve[j] = false;
-      }
+    if (limit < 2) {
+        throw new Error("Limit must be at least 2.");
     }
-  }
 
-  for (let i = Math.sqrt(limit) + 1; i <= limit; i++) {
-    if (sieve[i]) {
-      primes.push(i);
+    // Initialize the sieve array
+    const sieve = new Array(limit + 1).fill(true);
+    sieve[0] = sieve[1] = false; // 0 and 1 are not prime numbers
+
+    for (let i = 2; i * i <= limit; i++) {
+        if (sieve[i]) {
+            for (let j = i * i; j <= limit; j += i) {
+                sieve[j] = false;
+            }
+        }
     }
-  }
 
-  return primes;
+    // Collect all prime numbers
+    const primes = [];
+    for (let i = 2; i <= limit; i++) {
+        if (sieve[i]) {
+            primes.push(i);
+        }
+    }
+
+    return primes;
 }
 describe("Sieve of Eratosthenes Test Cases", () => {
     // Test Case 1: Small limit (10)

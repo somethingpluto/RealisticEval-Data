@@ -10,14 +10,12 @@
  * @returns {boolean} - True if the rectangles intersect vertically, False otherwise.
  */
 function intersectVertically(rect1, rect2) {
-    // Extract the y-coordinates of the bottom and top of each rectangle
-    const y1Top = rect1[3];
-    const y1Bottom = rect1[1];
-    const y2Top = rect2[3];
-    const y2Bottom = rect2[1];
+    // Extract the y-coordinates of the rectangles
+    const [, y1_rect1, , y2_rect1] = rect1;
+    const [, y1_rect2, , y2_rect2] = rect2;
 
-    // Check if the rectangles intersect vertically
-    return !(y1Top < y2Bottom || y2Top < y1Bottom);
+    // Check for vertical intersection
+    return !(y2_rect1 <= y1_rect2 || y2_rect2 <= y1_rect1);
 }
 describe('intersectVertically', () => {
     it('should return true for overlapping rectangles', () => {

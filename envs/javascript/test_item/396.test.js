@@ -8,6 +8,7 @@ function lengthOfLIS(nums) {
     if (nums.length === 0) return 0;
 
     let dp = new Array(nums.length).fill(1);
+    let maxLength = 1;
 
     for (let i = 1; i < nums.length; i++) {
         for (let j = 0; j < i; j++) {
@@ -15,9 +16,10 @@ function lengthOfLIS(nums) {
                 dp[i] = Math.max(dp[i], dp[j] + 1);
             }
         }
+        maxLength = Math.max(maxLength, dp[i]);
     }
 
-    return Math.max(...dp);
+    return maxLength;
 }
 describe('TestLengthOfLIS', () => {
   it('should return 0 for an empty list', () => {

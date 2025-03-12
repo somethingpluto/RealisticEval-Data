@@ -5,8 +5,10 @@
  * @returns {boolean} - True if the email address is valid, False otherwise.
  */
 function isValidEmail(email) {
-    // Regular expression to validate email addresses
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    // Regular expression for validating an email address
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    
+    // Test the email against the regex
     return emailRegex.test(email);
 }
 describe('Email Validation', () => {

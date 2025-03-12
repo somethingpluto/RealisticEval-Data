@@ -5,22 +5,20 @@
  * @returns {number} The proportion of red in the list of pixels, as a value between 0 and 1.
  */
 function calculateRedProportion(pixels) {
-    if (!Array.isArray(pixels) || pixels.length === 0) {
-        throw new Error('Invalid input: pixels must be a non-empty array');
-    }
+    if (pixels.length === 0) return 0;
 
     let totalRed = 0;
-    let totalPixels = pixels.length;
+    let totalIntensity = 0;
 
-    for (let i = 0; i < totalPixels; i++) {
-        const [r, g, b] = pixels[i];
-        if (typeof r !== 'number' || typeof g !== 'number' || typeof b !== 'number') {
-            throw new Error('Invalid pixel format: each pixel must be an array of three numbers [R, G, B]');
-        }
-        totalRed += r;
+    for (let i = 0; i < pixels.length; i++) {
+        const [R, G, B] = pixels[i];
+        totalRed += R;
+        totalIntensity += (R + G + B);
     }
 
-    return totalRed / (totalPixels * 255);
+    if (totalIntensity === 0) return 0;
+
+    return totalRed / totalIntensity;
 }
 describe('TestCalculateRedProportion', () => {
     it('should return 1.0 when all pixels are fully red', () => {

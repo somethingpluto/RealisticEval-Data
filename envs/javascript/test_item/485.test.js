@@ -5,13 +5,6 @@
  * a tuple containing the modified SQL string and a list of parameter values
  * ordered according to their new positions in the query.
  * 
- * Example:
- *   Input:
- *     sql: "SELECT * FROM users WHERE id = $user_id AND status = $status"
- *     params: {'user_id': 42, 'status': 'active'}
- *   Output:
- *     ["SELECT * FROM users WHERE id = $1 AND status = $2", [42, 'active']]
- * 
  * @param {string} sql - The original SQL query string with named parameters.
  * @param {Object} params - A dictionary mapping parameter names to their values.
  * @returns {Array} - An array where the first element is the modified SQL query string
@@ -19,15 +12,21 @@
  *                    parameter values sorted according to the order of the positional parameters.
  */
 function prepareQuery(sql, params) {
-    let paramPositions = {};
+    let paramNames = Object.keys(params);
     let paramValues = [];
-    let modifiedSql = sql.replace(/\$(\w+)/g, (match, paramName) => {
-        if (!paramPositions[paramName]) {
-            paramPositions[paramName] = paramValues.length + 1;
-            paramValues.push(params[paramName]);
+    let paramRegex = /\$(\w+)/g;
+
+    let modifiedSql = sql.replace(paramRegex, (match, paramName) => {
+        if (params.hasOwnProperty(paramName)) {
+            let index = paramNames.indexOf(paramName);
+            if (index !== -1) {
+                paramValues.push(params[paramName]);
+                return `$${paramValues.length}`;
+            }
         }
-        return `$${paramPositions[paramName]}`;
+        return match; // If the parameter is not found in the params object, leave it as is.
     });
+
     return [modifiedSql, paramValues];
 }
 describe('TestPrepareQuery', () => {

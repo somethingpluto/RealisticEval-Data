@@ -1,19 +1,21 @@
 /**
- * modify the ABC string by inserting the specified clef (e.g., "clef=bass") after the tone line (K: ), or "bass" if no clef is specified.
+ * Modify the ABC string by inserting the specified clef (e.g., "clef=bass") after the tone line (K: ), or "bass" if no clef is specified.
  *
  * @param {string} abc - The ABC notation string.
  * @param {string} [clef="bass"] - The clef to set (default is "bass").
  * @returns {string} - The updated ABC notation string with the new clef.
  */
 function changedClef(abc, clef = "bass") {
-    const toneLineRegex = /K:\s*(.*)/;
-    const match = abc.match(toneLineRegex);
-    if (match) {
-        const toneLine = match[1];
-        const updatedToneLine = `K:${toneLine} clef=${clef}`;
-        return abc.replace(toneLineRegex, updatedToneLine);
+    // Define the pattern to match the tone line (K: )
+    const toneLinePattern = /(K:[^\n]*)/;
+    
+    // Check if the tone line exists in the ABC string
+    if (toneLinePattern.test(abc)) {
+        // Replace the tone line with the tone line followed by the clef
+        return abc.replace(toneLinePattern, `$1 clef=${clef}`);
     } else {
-        return abc;
+        // If no tone line is found, append the clef at the end of the string
+        return `${abc}\nclef=${clef}`;
     }
 }
 describe('changedClef', () => {

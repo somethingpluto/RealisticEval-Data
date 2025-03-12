@@ -12,19 +12,22 @@
  *          input arrays, with updates applied from the second array.
  */
 function mergeOrUpdate(arr1, arr2, getId) {
+    // Create a map to store items from arr1 indexed by their unique ID
     const map = new Map();
 
-    // Add all items from the first array to the map
-    arr1.forEach(item => {
-        map.set(getId(item), item);
-    });
+    // Populate the map with items from arr1
+    for (const item of arr1) {
+        const id = getId(item);
+        map.set(id, item);
+    }
 
-    // Update the map with items from the second array
-    arr2.forEach(item => {
-        map.set(getId(item), item);
-    });
+    // Iterate over arr2 and update or add items to the map
+    for (const item of arr2) {
+        const id = getId(item);
+        map.set(id, item);
+    }
 
-    // Convert the map values back to an array
+    // Convert the map back to an array and return it
     return Array.from(map.values());
 }
 describe('mergeOrUpdate', () => {

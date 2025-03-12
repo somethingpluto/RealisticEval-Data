@@ -7,7 +7,7 @@ interface DataObject {
 }
 
 describe('classifyJsonObjectsByPid', () => {
-  const tempDir = fs.mkdtempSync(path.join(__dirname, 'temp-'));
+  const tempDir = fs.mkdtempSync(path.join(__dirname, 'qa_item-'));
   const sourceFile = path.join(tempDir, 'source.json');
   const matchFile = path.join(tempDir, 'match.json');
   const mismatchFile = path.join(tempDir, 'mismatch.json');

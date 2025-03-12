@@ -1,5 +1,5 @@
 /**
- * Realize the basic functions of the question structure queue: enqueue, dequeue, get the front element of the queue, judge whether it is empty, output all elements
+ * Realize the basic functions of the question structure queue: enqueue, dequeue, get the front element of the queue, judge whether it is empty, output all elements.
  */
 class Queue {
     constructor() {
@@ -49,11 +49,11 @@ class Queue {
      * @returns {string} A string containing all elements in the queue, separated by spaces.
      */
     printQueue() {
-        let result = "";
+        let str = "";
         for (let i = 0; i < this.items.length; i++) {
-            result += this.items[i] + " ";
+            str += this.items[i] + " ";
         }
-        return result.trim();
+        return str.trim();
     }
 }
 describe('Queue Class', () => {

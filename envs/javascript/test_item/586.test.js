@@ -5,28 +5,14 @@
  * @returns {boolean} - True if the string is in SNAKE_CASE, otherwise false.
  */
 function isSnakeCase(input) {
-    // Check if the input is a string
-    if (typeof input !== 'string') {
+    // Check if the input is a non-empty string
+    if (typeof input !== 'string' || input.length === 0) {
         return false;
     }
 
-    // Check if the string contains any uppercase letters
-    if (/[A-Z]/.test(input)) {
-        return false;
-    }
-
-    // Check if the string contains underscores and only lowercase letters
-    if (/[^a-z_]/.test(input) || input[0] === '_' || input[input.length - 1] === '_') {
-        return false;
-    }
-
-    // Check if the string contains consecutive underscores
-    if (/_{2,}/.test(input)) {
-        return false;
-    }
-
-    // If all checks pass, the string is in SNAKE_CASE
-    return true;
+    // Check if the string matches the SNAKE_CASE pattern
+    const snakeCasePattern = /^[A-Z_]+$/;
+    return snakeCasePattern.test(input);
 }
 describe('isSnakeCase', () => {
     test('should return true for a valid snake_case string', () => {

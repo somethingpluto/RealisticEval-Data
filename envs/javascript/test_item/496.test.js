@@ -5,17 +5,15 @@
  * @return {Array<number>} An array representing the ith row of Pascal's Triangle
  */
 function pascalTriangleRow(i) {
-    if (i === 0) {
-        return [1];
+    if (i < 0) {
+        return [];
     }
 
-    let row = [1];
+    const row = [1];
 
-    for (let j = 1; j < i; j++) {
-        row[j] = row[j - 1] * (i - j + 1) / j;
+    for (let j = 1; j <= i; j++) {
+        row.push(row[j - 1] * (i - j + 1) / j);
     }
-
-    row.push(1);
 
     return row;
 }

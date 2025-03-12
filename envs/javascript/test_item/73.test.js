@@ -6,21 +6,38 @@
  * @throws {Error} - If arrays in the object are of different lengths.
  */
 function dictOfListsToListOfDicts(dictOfLists) {
-    const keys = Object.keys(dictOfLists);
-    const lists = keys.map(key => dictOfLists[key]);
-    const maxLength = Math.max(...lists.map(list => list.length));
-
-    if (lists.some(list => list.length !== maxLength)) {
-        throw new Error('Arrays in the object are of different lengths.');
+    // Check if the input is an object
+    if (typeof dictOfLists !== 'object' || dictOfLists === null || Array.isArray(dictOfLists)) {
+        throw new Error('Input must be an object.');
     }
 
+    // Extract all the keys and values from the input object
+    const keys = Object.keys(dictOfLists);
+    const values = Object.values(dictOfLists);
+
+    // Check if all arrays have the same length
+    const lengths = values.map(arr => arr.length);
+    const allSameLength = lengths.every(len => len === lengths[0]);
+
+    if (!allSameLength) {
+        throw new Error('Arrays in the object must be of the same length.');
+    }
+
+    // Initialize the result array
     const result = [];
-    for (let i = 0; i < maxLength; i++) {
-        const item = {};
+
+    // Iterate over the length of the arrays
+    for (let i = 0; i < lengths[0]; i++) {
+        // Create a new dictionary for the current index
+        const newDict = {};
+
+        // Populate the new dictionary with key-value pairs from the input object
         keys.forEach((key, index) => {
-            item[key] = lists[index][i];
+            newDict[key] = values[index][i];
         });
-        result.push(item);
+
+        // Add the new dictionary to the result array
+        result.push(newDict);
     }
 
     return result;

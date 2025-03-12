@@ -1,3 +1,6 @@
+const fs = require('fs');
+const readline = require('readline');
+
 /**
  * Finds the minimum distance between two words in a text file, considering each line as a separate sequence.
  * @param {string} filePath - The path to the file to read.
@@ -7,27 +10,47 @@
  *                  Returns [null, Infinity] if one or both words are not found in any line.
  */
 function getMinSeqNumAndDistance(filePath, word1, word2) {
-    const fs = require('fs');
-    let fileContent = fs.readFileSync(filePath, 'utf8');
-    let lines = fileContent.split('\n');
     let minDistance = Infinity;
-    let minSeqNum = null;
+    let minLineNumber = null;
 
-    for (let i = 0; i < lines.length; i++) {
-        let line = lines[i].trim().toLowerCase();
-        let index1 = line.indexOf(word1.toLowerCase());
-        let index2 = line.indexOf(word2.toLowerCase());
+    const fileStream = fs.createReadStream(filePath);
+    const rl = readline.createInterface({
+        input: fileStream,
+        crlfDelay: Infinity
+    });
 
-        if (index1 !== -1 && index2 !== -1) {
-            let distance = Math.abs(index1 - index2) - 1;
-            if (distance < minDistance) {
-                minDistance = distance;
-                minSeqNum = i + 1;
+    let lineNumber = 0;
+
+    rl.on('line', (line) => {
+        lineNumber++;
+        const words = line.split(/\s+/);
+        let index1 = -1;
+        let index2 = -1;
+
+        for (let i = 0; i < words.length; i++) {
+            if (words[i] === word1) {
+                index1 = i;
+            } else if (words[i] === word2) {
+                index2 = i;
+            }
+
+            if (index1 !== -1 && index2 !== -1) {
+                const distance = Math.abs(index1 - index2);
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    minLineNumber = lineNumber;
+                }
             }
         }
-    }
+    });
 
-    return [minSeqNum, minDistance === Infinity ? null : minDistance];
+    rl.on('close', () => {
+        if (minDistance === Infinity) {
+            return [null, Infinity];
+        } else {
+            return [minLineNumber, minDistance];
+        }
+    });
 }
 const fs = require('fs');
 describe('TestGetMinDistance', () => {

@@ -15,16 +15,24 @@
  *         - 7 for Sunday
  */
 function dayOfWeek(year, month, day) {
-    // Zeller's Congruence algorithm
+    // Adjust month and year for Zeller's Congruence
     if (month < 3) {
         month += 12;
         year -= 1;
     }
+
+    // Zeller's Congruence formula
+    const q = day;
+    const m = month;
     const K = year % 100;
     const J = Math.floor(year / 100);
-    const f = day + Math.floor((13 * (month + 1)) / 5) + K + Math.floor(K / 4) + Math.floor(J / 4) - 2 * J;
-    const dayOfWeek = (f % 7) + 1;
-    return dayOfWeek;
+
+    const h = (q + Math.floor((13 * (m + 1)) / 5) + K + Math.floor(K / 4) + Math.floor(J / 4) + 5 * J) % 7;
+
+    // Convert Zeller's result to ISO week day (1 = Monday, ..., 7 = Sunday)
+    const d = ((h + 5) % 7) + 1;
+
+    return d;
 }
 describe("Day of Week Calculation", () => {
     test("January 1, 2024 is a Monday", () => {

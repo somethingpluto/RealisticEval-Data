@@ -1,48 +1,66 @@
 const fs = require('fs');
+const readline = require('readline');
 
 class WordDistanceFinder {
-  /**
-   * Find the minimum distance between two specified words (word1 and word2) from the file and return in which line the distance occurred.
-   *
-   * @param {string} filePath - The path to the file.
-   * @param {string} word1 - The first word to search for.
-   * @param {string} word2 - The second word to search for.
-   * @returns {[number | null, number | null]} - An array containing the line number and the minimum distance, or [null, null] if not found.
-   */
-  getMinDistance(filePath, word1, word2) {
-    let lines = fs.readFileSync(filePath, 'utf-8').split('\n');
-    let word1Indexes = [];
-    let word2Indexes = [];
-    let minDistance = null;
-    let lineNumber = null;
+    /**
+     * Find the minimum distance between two specified words (word1 and word2) from the file and return in which line the distance occurred.
+     *
+     * @param {string} filePath - The path to the file.
+     * @param {string} word1 - The first word to search for.
+     * @param {string} word2 - The second word to search for.
+     * @returns {[number | null, number | null]} - An array containing the line number and the minimum distance, or [null, null] if not found.
+     */
+    static getMinDistance(filePath, word1, word2) {
+        return new Promise((resolve, reject) => {
+            let minDistance = Infinity;
+            let lineNumber = null;
+            let lastWord1Index = -1;
+            let lastWord2Index = -1;
 
-    lines.forEach((line, index) => {
-      let words = line.trim().split(/\s+/);
-      words.forEach((word, wordIndex) => {
-        if (word === word1) {
-          word1Indexes.push({ line: index + 1, wordIndex });
-        } else if (word === word2) {
-          word2Indexes.push({ line: index + 1, wordIndex });
-        }
-      });
-    });
+            const rl = readline.createInterface({
+                input: fs.createReadStream(filePath),
+                output: process.stdout,
+                terminal: false
+            });
 
-    if (word1Indexes.length === 0 || word2Indexes.length === 0) {
-      return [null, null];
+            rl.on('line', (line) => {
+                const words = line.split(/\s+/);
+                for (let i = 0; i < words.length; i++) {
+                    if (words[i] === word1) {
+                        lastWord1Index = i;
+                        if (lastWord2Index !== -1) {
+                            const distance = Math.abs(lastWord1Index - lastWord2Index);
+                            if (distance < minDistance) {
+                                minDistance = distance;
+                                lineNumber = lineNumber === null ? 1 : lineNumber + 1;
+                            }
+                        }
+                    } else if (words[i] === word2) {
+                        lastWord2Index = i;
+                        if (lastWord1Index !== -1) {
+                            const distance = Math.abs(lastWord1Index - lastWord2Index);
+                            if (distance < minDistance) {
+                                minDistance = distance;
+                                lineNumber = lineNumber === null ? 1 : lineNumber + 1;
+                            }
+                        }
+                    }
+                }
+            });
+
+            rl.on('close', () => {
+                if (minDistance === Infinity) {
+                    resolve([null, null]);
+                } else {
+                    resolve([lineNumber, minDistance]);
+                }
+            });
+
+            rl.on('error', (err) => {
+                reject(err);
+            });
+        });
     }
-
-    word1Indexes.forEach((word1Index) => {
-      word2Indexes.forEach((word2Index) => {
-        let distance = Math.abs(word1Index.wordIndex - word2Index.wordIndex);
-        if (minDistance === null || distance < minDistance) {
-          minDistance = distance;
-          lineNumber = Math.min(word1Index.line, word2Index.line);
-        }
-      });
-    });
-
-    return [lineNumber, minDistance];
-  }
 }
 
 module.exports = WordDistanceFinder;

@@ -8,33 +8,22 @@
  * @returns {number} - The total time in milliseconds.
  */
 function genTimeoutTimedelta(timeString) {
-    const timeRegex = /(\d+)([dhms])/g;
-    let totalMilliseconds = 0;
+    const timeUnits = {
+        'd': 24 * 60 * 60 * 1000, // days to milliseconds
+        'h': 60 * 60 * 1000,      // hours to milliseconds
+        'm': 60 * 1000,           // minutes to milliseconds
+        's': 1000,                // seconds to milliseconds
+        'ms': 1                   // milliseconds to milliseconds
+    };
+
+    const regex = /(\d+)(d|h|m|s|ms)/g;
     let match;
+    let totalMilliseconds = 0;
 
-    while ((match = timeRegex.exec(timeString)) !== null) {
-        const value = parseInt(match[1]);
+    while ((match = regex.exec(timeString)) !== null) {
+        const value = parseInt(match[1], 10);
         const unit = match[2];
-
-        switch (unit) {
-            case 'd':
-                totalMilliseconds += value * 24 * 60 * 60 * 1000;
-                break;
-            case 'h':
-                totalMilliseconds += value * 60 * 60 * 1000;
-                break;
-            case 'm':
-                totalMilliseconds += value * 60 * 1000;
-                break;
-            case 's':
-                totalMilliseconds += value * 1000;
-                break;
-            case 'ms':
-                totalMilliseconds += value;
-                break;
-            default:
-                throw new Error(`Invalid time unit: ${unit}`);
-        }
+        totalMilliseconds += value * timeUnits[unit];
     }
 
     return totalMilliseconds;

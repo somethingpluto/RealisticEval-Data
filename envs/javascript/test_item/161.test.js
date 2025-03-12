@@ -5,23 +5,28 @@
  * @returns {number[][]} An array of arrays, where each sub-array is a unique combination of numbers from the Map's values.
  */
 function generateCombinations(map) {
-    const combinations = [];
-
-    function combine(arr, prefix = []) {
-        for (let i = 0; i < arr.length; i++) {
-            const newPrefix = prefix.concat(arr[i]);
-            if (arr[i].length > 0) {
-                combine(arr.slice(i + 1), newPrefix);
-            } else {
-                combinations.push(newPrefix);
-            }
+    // Helper function to generate combinations recursively
+    function combine(currentCombination, keys) {
+        if (keys.length === 0) {
+            return [currentCombination];
         }
+
+        const key = keys[0];
+        const values = map.get(key);
+        const remainingKeys = keys.slice(1);
+
+        let result = [];
+        for (const value of values) {
+            const newCombination = currentCombination.concat(value);
+            result = result.concat(combine(newCombination, remainingKeys));
+        }
+
+        return result;
     }
 
-    const values = Array.from(map.values());
-    combine(values);
-
-    return combinations;
+    // Start the combination process with an empty array and all keys
+    const keys = Array.from(map.keys());
+    return combine([], keys);
 }
 describe('generateCombinations', () => {
     test('generates combinations for a single key with multiple values', () => {

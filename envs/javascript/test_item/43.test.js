@@ -1,10 +1,6 @@
 /**
  * Converts RGB color to HSV color.
  * 
- * Example:
- *   Input: 0, 0, 255
- *   Output: [240, 100, 100]
- * 
  * @param {number} r - The red value (0-255)
  * @param {number} g - The green value (0-255)
  * @param {number} b - The blue value (0-255)
@@ -12,25 +8,38 @@
  * @returns {Array<number>} An array representing the HSV values [H, S, V]
  */
 function rgbToHsv(r, g, b) {
-    r /= 255, g /= 255, b /= 255;
-    var max = Math.max(r, g, b), min = Math.min(r, g, b);
-    var h, s, v = max;
+    r = r / 255;
+    g = g / 255;
+    b = b / 255;
 
-    var d = max - min;
-    s = max === 0 ? 0 : d / max;
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    const delta = max - min;
 
-    if (max === min) {
-        h = 0; // achromatic
+    let h, s, v;
+
+    if (delta === 0) {
+        h = 0;
+    } else if (max === r) {
+        h = ((g - b) / delta) % 6;
+    } else if (max === g) {
+        h = ((b - r) / delta) + 2;
     } else {
-        switch (max) {
-            case r: h = (g - b) / d + (g < b ? 6 : 0); break;
-            case g: h = (b - r) / d + 2; break;
-            case b: h = (r - g) / d + 4; break;
-        }
-        h /= 6;
+        h = ((r - g) / delta) + 4;
     }
 
-    return [Math.round(h * 360), Math.round(s * 100), Math.round(v * 100)];
+    h = Math.round(h * 60);
+    if (h < 0) h += 360;
+
+    v = Math.round(max * 100);
+
+    if (max === 0) {
+        s = 0;
+    } else {
+        s = Math.round((delta / max) * 100);
+    }
+
+    return [h, s, v];
 }
 describe('Test RGB to HSV Conversion', () => {
   it('converts pure red color correctly', () => {

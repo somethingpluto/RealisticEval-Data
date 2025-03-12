@@ -6,35 +6,37 @@
  * @returns {Object} The sanitized dictionary.
  */
 function sanitizeData(data, keyToRemove = null) {
-    // If the data is not an object or is null, return it as is
-    if (typeof data !== 'object' || data === null) {
+    // If keyToRemove is not provided, return the data as is
+    if (!keyToRemove || !Array.isArray(keyToRemove) || keyToRemove.length === 0) {
         return data;
     }
 
-    // If no keys to remove are specified, return the data as is
-    if (!keyToRemove || !Array.isArray(keyToRemove)) {
-        return data;
+    // Helper function to recursively sanitize the data
+    function recursiveSanitize(obj) {
+        // If the current data is not an object, return it as is
+        if (typeof obj !== 'object' || obj === null || Array.isArray(obj)) {
+            return obj;
+        }
+
+        // Create a new object to store the sanitized data
+        const sanitizedObj = {};
+
+        // Iterate over the keys of the current object
+        for (const key in obj) {
+            if (obj.hasOwnProperty(key)) {
+                // If the key is not in the list of keys to remove, process it
+                if (!keyToRemove.includes(key)) {
+                    // Recursively sanitize the value
+                    sanitizedObj[key] = recursiveSanitize(obj[key]);
+                }
+            }
+        }
+
+        return sanitizedObj;
     }
 
-    // Create a shallow copy of the data to avoid mutating the original object
-    const sanitizedData = { ...data };
-
-    // Iterate over each key in the list of keys to remove
-    keyToRemove.forEach(key => {
-        // If the key exists in the data, delete it
-        if (sanitizedData.hasOwnProperty(key)) {
-            delete sanitizedData[key];
-        }
-    });
-
-    // Recursively sanitize each value in the data
-    for (const key in sanitizedData) {
-        if (sanitizedData.hasOwnProperty(key)) {
-            sanitizedData[key] = sanitizeData(sanitizedData[key], keyToRemove);
-        }
-    }
-
-    return sanitizedData;
+    // Start the recursive sanitization process
+    return recursiveSanitize(data);
 }
 describe('TestSanitizeData', () => {
   it('test_empty_dict', () => {

@@ -1,0 +1,75 @@
+
+def extract_json(response: str) -> str:
+    """
+    Extracts the first complete JSON object from a given string.
+
+    The function looks for the first occurrence of an opening curly brace '{'
+    and searches for the corresponding closing curly brace '}'. It tracks
+    the balance of braces to ensure that the JSON object is complete.
+
+    If a complete JSON object is found, it returns the substring that
+    represents that object. If no opening brace is found or if the braces
+    are unbalanced (i.e., incomplete), it returns an empty string.
+
+    Args:
+        response: The input string from which to extract the JSON object.
+
+    Returns:
+        A string containing the first complete JSON object, or an
+        empty string if no complete object is found.
+    """
+    # Initialize a list to store the balanced braces
+    balanced_ braces = []
+
+    # Start searching for the JSON object
+    for char in response:
+        if char == '{':
+            # Check if the current brace is balanced
+            if balanced_ braces and char == '}':
+                # If the current brace is balanced, return the substring
+                return response[: balanced_ braces.index(char) + 1]
+            elif char =='':
+                # If the current brace is not balanced, add it to the list
+                balanced_ braces.append(char)
+                continue
+        elif char == '}':
+            # If the current brace is balanced, return the substring
+            return response[: balanced_ braces.index(char) + 1]
+        else:
+            # If the current character is not a brace, add it to the list
+            balanced_ braces.append(char)
+
+    # If no JSON object is found, return an empty string
+    return ''
+
+import unittest
+
+
+class TestExtractJson(unittest.TestCase):
+
+    def test_extract_json_returns_empty_string_for_input_without_braces(self):
+        input_str = "No braces here"
+        self.assertEqual(extract_json(input_str), "")
+
+    def test_extract_json_extracts_single_json_object(self):
+        input_str = "Here is some text before { \"key\": \"value\" } and some text after."
+        self.assertEqual(extract_json(input_str), "{ \"key\": \"value\" }")
+
+    def test_extract_json_handles_nested_json_objects(self):
+        input_str = "Some text { \"outer\": { \"inner\": \"value\" } } more text."
+        self.assertEqual(extract_json(input_str), "{ \"outer\": { \"inner\": \"value\" } }")
+
+    def test_extract_json_returns_empty_string_for_unmatched_braces(self):
+        input_str = "Here is an incomplete JSON { \"key\": \"value\" "
+        self.assertEqual(extract_json(input_str), "")
+
+    def test_extract_json_returns_correct_json_when_multiple_braces_are_present(self):
+        input_str = "Start { { \"key\": \"value\" } and some other text { \"another\": \"object\" }} end."
+        self.assertEqual(extract_json(input_str),
+                         "{ { \"key\": \"value\" } and some other text { \"another\": \"object\" }}")
+
+    def test_extract_json_extracts_first_json_object_when_multiple_are_present(self):
+        input_str = "Text before { \"first\": \"value1\" } text in between { \"second\": \"value2\" }"
+        self.assertEqual(extract_json(input_str), "{ \"first\": \"value1\" }")
+if __name__ == '__main__':
+    unittest.main()

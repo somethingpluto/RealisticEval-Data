@@ -4,35 +4,25 @@
  * Add a CSS rule to the HTML document to highlight search results
  */
 function checkCSSHighlightAndAdd() {
-  // Define the CSS rule to be added
-  const cssRule = `
-    .search-highlight {
-      background-color: yellow;
-      font-weight: bold;
+    // Check if the CSS rule already exists
+    const styleSheet = document.styleSheets[0];
+    let ruleExists = false;
+
+    for (let i = 0; i < styleSheet.cssRules.length; i++) {
+        if (styleSheet.cssRules[i].selectorText === '.search-highlight') {
+            ruleExists = true;
+            break;
+        }
     }
-  `;
 
-  // Create a style element
-  const styleElement = document.createElement('style');
-
-  // Check if the style element is already in the document
-  if (document.head.querySelector('style[data-search-highlight]')) {
-    // If it exists, do nothing
-    return;
-  }
-
-  // Add the CSS rule to the style element
-  styleElement.appendChild(document.createTextNode(cssRule));
-
-  // Add a data attribute to the style element to identify it
-  styleElement.setAttribute('data-search-highlight', '');
-
-  // Append the style element to the head of the document
-  document.head.appendChild(styleElement);
+    // If the rule does not exist, add it
+    if (!ruleExists) {
+        styleSheet.insertRule(
+            '.search-highlight { background-color: yellow; }',
+            styleSheet.cssRules.length
+        );
+    }
 }
-
-// Call the function to add the CSS rule
-checkCSSHighlightAndAdd();
 describe('checkCSSHighlightAndAdd', () => {
     beforeEach(() => {
         // Clean up the document head and ensure at least one style sheet exists before each test

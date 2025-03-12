@@ -7,17 +7,16 @@ const math = require('mathjs');
  * @returns {Array<number>} A 2-element array containing the translation components (translation_x, translation_y).
  */
 function getTranslation(matrix) {
-  // Check if the input matrix is a 3x3 matrix
-  if (!Array.isArray(matrix) || matrix.length !== 3 || !matrix.every(row => Array.isArray(row) && row.length === 3)) {
-    throw new Error('Input must be a 3x3 matrix');
-  }
+    // Ensure the input is a valid 3x3 matrix
+    if (!Array.isArray(matrix) || matrix.length !== 3 || !matrix.every(row => Array.isArray(row) && row.length === 3)) {
+        throw new Error('Input must be a 3x3 matrix');
+    }
 
-  // Extract the translation components from the matrix
-  const translationX = matrix[2][0];
-  const translationY = matrix[2][1];
+    // Extract the translation components from the last column of the matrix
+    const translation_x = matrix[0][2];
+    const translation_y = matrix[1][2];
 
-  // Return the translation vector
-  return [translationX, translationY];
+    return [translation_x, translation_y];
 }
 const math = require('mathjs');
 

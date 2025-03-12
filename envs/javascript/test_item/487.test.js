@@ -5,7 +5,10 @@
  * @returns {boolean} - True if an email address is found, False otherwise.
  */
 function containsEmail(text) {
-    const emailRegex = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/;
+    // Regular expression to match a basic email address pattern
+    const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
+    
+    // Test the text against the regex
     return emailRegex.test(text);
 }
 describe('TestContainsEmail', () => {

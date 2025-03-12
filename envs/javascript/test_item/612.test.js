@@ -1,4 +1,5 @@
 const fs = require('fs');
+const path = require('path');
 
 /**
  * Finds and replaces text in a specified file.
@@ -9,23 +10,28 @@ const fs = require('fs');
  * @throws {Error} If an I/O error occurs reading from the file or writing to the file.
  */
 function findAndReplaceInFile(filePath, searchString, replaceString) {
-  // Read the file content
-  fs.readFile(filePath, 'utf8', (err, data) => {
-    if (err) {
-      throw new Error(`Error reading file: ${err.message}`);
+    // Validate the file path
+    if (!fs.existsSync(filePath)) {
+        throw new Error(`File not found: ${filePath}`);
     }
 
-    // Replace the search string with the replace string
-    const modifiedData = data.replace(searchString, replaceString);
+    // Read the file content
+    let fileContent;
+    try {
+        fileContent = fs.readFileSync(filePath, 'utf8');
+    } catch (err) {
+        throw new Error(`Error reading file: ${err.message}`);
+    }
 
-    // Write the modified content back to the file
-    fs.writeFile(filePath, modifiedData, 'utf8', (err) => {
-      if (err) {
+    // Perform the find and replace operation
+    const updatedContent = fileContent.split(searchString).join(replaceString);
+
+    // Write the updated content back to the file
+    try {
+        fs.writeFileSync(filePath, updatedContent, 'utf8');
+    } catch (err) {
         throw new Error(`Error writing to file: ${err.message}`);
-      }
-      console.log('Text replaced successfully.');
-    });
-  });
+    }
 }
 const fs = require('fs');
 const path = require('path');

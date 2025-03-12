@@ -10,23 +10,23 @@
  * @returns {number} The computed output index.
  */
 function computeOutputIndex(idx1, idx2) {
-    // Convert the indices to binary strings
-    const binaryIdx1 = idx1.toString(2);
-    const binaryIdx2 = idx2.toString(2);
+    // Convert the indices to little-endian bitstrings
+    let bitstring1 = idx1.toString(2).split('').reverse().join('');
+    let bitstring2 = idx2.toString(2).split('').reverse().join('');
 
-    // Pad the binary strings with leading zeros to make them the same length
-    const maxLength = Math.max(binaryIdx1.length, binaryIdx2.length);
-    const paddedIdx1 = binaryIdx1.padStart(maxLength, '0');
-    const paddedIdx2 = binaryIdx2.padStart(maxLength, '0');
+    // Ensure both bitstrings are of the same length by padding with zeros
+    const maxLength = Math.max(bitstring1.length, bitstring2.length);
+    bitstring1 = bitstring1.padEnd(maxLength, '0');
+    bitstring2 = bitstring2.padEnd(maxLength, '0');
 
-    // Compute the XOR of the binary strings
-    let xorResult = '';
+    // Perform XOR operation on the bitstrings
+    let resultBitstring = '';
     for (let i = 0; i < maxLength; i++) {
-        xorResult += (paddedIdx1[i] ^ paddedIdx2[i]).toString();
+        resultBitstring += (bitstring1[i] === bitstring2[i]) ? '0' : '1';
     }
 
-    // Convert the XOR result back to an integer
-    const outputIndex = parseInt(xorResult, 2);
+    // Convert the result bitstring back to an integer in little-endian
+    const outputIndex = parseInt(resultBitstring.split('').reverse().join(''), 2);
 
     return outputIndex;
 }

@@ -1,3 +1,5 @@
+const fs = require('fs');
+
 /**
  * Reads a log file containing JSON entries and extracts training loss and test accuracy.
  * JSON entries such as {"test_acc1": 88.5, "train_loss": 0.75}.
@@ -8,22 +10,29 @@
  *   - testAcc1List (Array): A list of test accuracy values extracted from the log.
  */
 function readLog(logFilePath) {
-    const trainLossList = [];
-    const testAcc1List = [];
+    let trainLossList = [];
+    let testAcc1List = [];
 
-    // Read the file and parse each line as JSON
-    const fs = require('fs');
-    const logData = fs.readFileSync(logFilePath, 'utf8').split('\n');
+    try {
+        const logContent = fs.readFileSync(logFilePath, 'utf8');
+        const logEntries = logContent.trim().split('\n');
 
-    logData.forEach(line => {
-        const logEntry = JSON.parse(line);
-        if ('train_loss' in logEntry) {
-            trainLossList.push(logEntry.train_loss);
-        }
-        if ('test_acc1' in logEntry) {
-            testAcc1List.push(logEntry.test_acc1);
-        }
-    });
+        logEntries.forEach(entry => {
+            try {
+                const jsonEntry = JSON.parse(entry);
+                if (jsonEntry.train_loss !== undefined) {
+                    trainLossList.push(jsonEntry.train_loss);
+                }
+                if (jsonEntry.test_acc1 !== undefined) {
+                    testAcc1List.push(jsonEntry.test_acc1);
+                }
+            } catch (e) {
+                console.error(`Error parsing JSON entry: ${entry}`);
+            }
+        });
+    } catch (e) {
+        console.error(`Error reading log file: ${e.message}`);
+    }
 
     return [trainLossList, testAcc1List];
 }

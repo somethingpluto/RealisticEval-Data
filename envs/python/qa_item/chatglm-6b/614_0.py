@@ -1,0 +1,60 @@
+
+from typing import List
+
+def calculate_average_difference(numbers: List[int]) -> float:
+    """Calculates the average difference between consecutive integers in the provided list.
+
+    Args:
+        numbers (List[int]): A list of integers.
+
+    Returns:
+        float: The average difference between consecutive integers, or 0 if there are fewer than 2 integers.
+    """
+    # Iterate over the numbers list and calculate the average difference between consecutive elements
+    for i in range(len(numbers)):
+        # Calculate the difference between the current element and the previous element
+        diff = numbers[i] - numbers[i - 1]
+        # Calculate the average of the differences
+        average_diff = diff / len(numbers)
+        # Update the current element with the average difference
+        numbers[i] = average_diff
+    
+    return average_diff
+
+import unittest
+from typing import List
+
+
+class TestCalculateAverageDifference(unittest.TestCase):
+
+    def test_calculate_average_difference_positive_integers(self):
+        numbers: List[int] = [10, 20, 30, 40]
+        result = calculate_average_difference(numbers)
+        expected = 10.0
+        self.assertAlmostEqual(expected, result, msg="The average difference should be 10.0")
+
+    def test_calculate_average_difference_mixed_positive_and_negative(self):
+        numbers: List[int] = [-10, 0, 10, 20]
+        result = calculate_average_difference(numbers)
+        expected = 10.0
+        self.assertAlmostEqual(expected, result, msg="The average difference should be 10.0")
+
+    def test_calculate_average_difference_same_values(self):
+        numbers: List[int] = [5, 5, 5, 5]
+        result = calculate_average_difference(numbers)
+        expected = 0.0
+        self.assertAlmostEqual(expected, result, msg="The average difference should be 0.0 as all values are the same")
+
+    def test_calculate_average_difference_single_element(self):
+        numbers: List[int] = [100]
+        result = calculate_average_difference(numbers)
+        expected = 0.0  # Not enough data to calculate differences
+        self.assertAlmostEqual(expected, result, msg="The average difference should be 0.0 for a single element list")
+
+    def test_calculate_average_difference_empty_list(self):
+        numbers: List[int] = []
+        result = calculate_average_difference(numbers)
+        expected = 0.0  # Not enough data to calculate differences
+        self.assertAlmostEqual(expected, result, msg="The average difference should be 0.0 for an empty list")
+if __name__ == '__main__':
+    unittest.main()

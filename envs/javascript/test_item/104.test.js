@@ -2,15 +2,16 @@
  * The incoming thread object is converted into a JSON file, which is represented as a Blob object.
  * 
  * @param {Object} thread - The thread object to be converted.
- * @returns {Blob} A Blob object representing the JSON file.
+ * @returns {Blob} - The Blob object representing the JSON file.
  */
 function convertThreadToJSONFile(thread) {
     // Convert the thread object to a JSON string
-    const jsonString = JSON.stringify(thread);
-
-    // Create a Blob object with the JSON string and specify the MIME type
+    const jsonString = JSON.stringify(thread, null, 2);
+    
+    // Create a Blob object with the JSON string and set the MIME type to application/json
     const blob = new Blob([jsonString], { type: 'application/json' });
-
+    
+    // Return the Blob object
     return blob;
 }
 describe('convertThreadToJSONFile Function Tests', () => {

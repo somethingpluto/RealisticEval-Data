@@ -5,7 +5,7 @@ import unittest
 class TestFindAndReplace(unittest.TestCase):
     def setUp(self):
         # Create a temporary directory for the tests
-        self.temp_dir = os.path.join(os.path.dirname(__file__), 'temp')
+        self.temp_dir = os.path.join(os.path.dirname(__file__), 'qa_item')
         os.makedirs(self.temp_dir, exist_ok=True)
 
     def tearDown(self):

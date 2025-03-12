@@ -7,11 +7,22 @@
  * @returns A compressed string that does not exceed the specified length.
  */
 function compressString(input, maxLength = 18) {
+    if (typeof input !== 'string') {
+        throw new TypeError('Input must be a string');
+    }
+
     if (input.length <= maxLength) {
         return input;
-    } else {
-        return input.substring(0, maxLength - 3) + '...';
     }
+
+    const ellipsis = '...';
+    const maxLengthWithoutEllipsis = maxLength - ellipsis.length;
+
+    if (maxLengthWithoutEllipsis <= 0) {
+        return ellipsis;
+    }
+
+    return input.slice(0, maxLengthWithoutEllipsis) + ellipsis;
 }
 describe('compressString', () => {
     it('should return the original string if it is shorter than the max length', () => {

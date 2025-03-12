@@ -1,13 +1,15 @@
 /**
- * produces a character array of length 52 containing all lowercase uppercase letters in alphabetical order
+ * Produces a character array of length 52 containing all lowercase and uppercase letters in alphabetical order.
  *
  * @returns {string[]} An array of alphabet characters from 'a' to 'z' and 'A' to 'Z'.
  */
 function getAllAlphabets() {
     const alphabets = [];
     for (let i = 0; i < 26; i++) {
-        alphabets.push(String.fromCharCode(97 + i)); // lowercase letters
-        alphabets.push(String.fromCharCode(65 + i)); // uppercase letters
+        alphabets.push(String.fromCharCode(97 + i)); // 'a' to 'z'
+    }
+    for (let i = 0; i < 26; i++) {
+        alphabets.push(String.fromCharCode(65 + i)); // 'A' to 'Z'
     }
     return alphabets;
 }

@@ -1,4 +1,27 @@
-npm install js-yaml
+const fs = require('fs');
+const yaml = require('js-yaml');
+
+/**
+ * Reads a YAML file and returns its content as a JavaScript object or array.
+ *
+ * @param {string} filePath - The path to the YAML file.
+ * @returns {Object|Array} - Parsed YAML content as a JavaScript data structure.
+ * @throws {Error} - If the specified file does not exist or there is an error parsing the YAML file.
+ */
+function readYaml(filePath) {
+    try {
+        // Read the file content
+        const fileContent = fs.readFileSync(filePath, 'utf8');
+        
+        // Parse the YAML content
+        const parsedContent = yaml.load(fileContent);
+        
+        return parsedContent;
+    } catch (error) {
+        // Rethrow the error with a more descriptive message if needed
+        throw new Error(`Error reading or parsing YAML file: ${error.message}`);
+    }
+}
 describe('TestReadYaml', () => {
     let validYamlFile = 'test_valid.yaml';
     let invalidYamlFile = 'test_invalid.yaml';

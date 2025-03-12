@@ -8,26 +8,25 @@ const path = require('path');
  * @returns {string[]} - An array of paths to Markdown files.
  */
 function findMarkdownFiles(dir) {
-  let markdownFiles = [];
+    let markdownFiles = [];
 
-  function searchDirectory(currentDir) {
-    const files = fs.readdirSync(currentDir);
+    function traverseDirectory(currentDir) {
+        const files = fs.readdirSync(currentDir);
 
-    files.forEach(file => {
-      const filePath = path.join(currentDir, file);
-      const stat = fs.statSync(filePath);
+        files.forEach(file => {
+            const filePath = path.join(currentDir, file);
+            const stat = fs.statSync(filePath);
 
-      if (stat.isDirectory()) {
-        searchDirectory(filePath);
-      } else if (path.extname(file) === '.md') {
-        markdownFiles.push(filePath);
-      }
-    });
-  }
+            if (stat.isDirectory()) {
+                traverseDirectory(filePath);
+            } else if (stat.isFile() && path.extname(file).toLowerCase() === '.md') {
+                markdownFiles.push(filePath);
+            }
+        });
+    }
 
-  searchDirectory(dir);
-
-  return markdownFiles;
+    traverseDirectory(dir);
+    return markdownFiles;
 }
 const fs = require('fs');
 const path = require('path');

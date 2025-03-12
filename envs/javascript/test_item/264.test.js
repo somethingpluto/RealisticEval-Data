@@ -8,57 +8,53 @@ const path = require('path');
  * @param {string} logFilePath - Path to the log file.
  */
 function extractLogEntries(logFilePath) {
-  // Define the severity levels and their corresponding output files
-  const severityLevels = {
-    WARNING: 'warnings.log',
-    ERROR: 'errors.log',
-    CRITICAL: 'criticals.log',
-    ALERT: 'alerts.log'
-  };
+    // Define the log levels and corresponding output file paths
+    const logLevels = {
+        WARNING: 'warning_logs.txt',
+        ERROR: 'error_logs.txt',
+        CRITICAL: 'critical_logs.txt',
+        ALERT: 'alert_logs.txt'
+    };
 
-  // Read the log file
-  fs.readFile(logFilePath, 'utf8', (err, data) => {
-    if (err) {
-      console.error(`Error reading the log file: ${err}`);
-      return;
-    }
+    // Initialize an object to hold the log entries for each level
+    const logEntries = {
+        WARNING: [],
+        ERROR: [],
+        CRITICAL: [],
+        ALERT: []
+    };
 
-    // Split the log file into individual log entries
-    const logEntries = data.split('\n');
-
-    // Iterate over each log entry and save it to the appropriate file
-    logEntries.forEach(entry => {
-      const severity = getSeverity(entry);
-      if (severity) {
-        const logFile = severityLevels[severity];
-        if (logFile) {
-          fs.appendFile(logFile, `${entry}\n`, err => {
-            if (err) {
-              console.error(`Error writing to ${logFile}: ${err}`);
-            }
-          });
+    // Read the log file
+    fs.readFile(logFilePath, 'utf8', (err, data) => {
+        if (err) {
+            console.error(`Error reading log file: ${err.message}`);
+            return;
         }
-      }
+
+        // Split the log file content by lines
+        const lines = data.split('\n');
+
+        // Iterate through each line to extract log entries
+        lines.forEach(line => {
+            for (const level in logLevels) {
+                if (line.includes(level)) {
+                    logEntries[level].push(line);
+                    break;
+                }
+            }
+        });
+
+        // Write each type of log entry to a different file
+        for (const level in logLevels) {
+            const outputFilePath = path.join(path.dirname(logFilePath), logLevels[level]);
+            fs.writeFile(outputFilePath, logEntries[level].join('\n'), 'utf8', err => {
+                if (err) {
+                    console.error(`Error writing ${level} log file: ${err.message}`);
+                }
+            });
+        }
     });
-  });
 }
-
-/**
- * Helper function to determine the severity level of a log entry.
- *
- * @param {string} entry - A single log entry.
- * @returns {string|null} - The severity level of the log entry or null if not recognized.
- */
-function getSeverity(entry) {
-  if (entry.includes('WARNING')) return 'WARNING';
-  if (entry.includes('ERROR')) return 'ERROR';
-  if (entry.includes('CRITICAL')) return 'CRITICAL';
-  if (entry.includes('ALERT')) return 'ALERT';
-  return null;
-}
-
-// Example usage:
-// extractLogEntries('path/to/your/logfile.log');
 const fs = require('fs');
 
 describe('TestExtractLogEntries', () => {

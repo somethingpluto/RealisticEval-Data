@@ -12,22 +12,30 @@
  * @returns {Object} An object containing the year, month, week of the month, and day of the week.
  */
 function getCurrentDateInfo(testDate = new Date()) {
-    const date = testDate;
-    const year = date.getFullYear();
-    const monthNames = ["January", "February", "March", "April", "May", "June",
-        "July", "August", "September", "October", "November", "December"
+    const months = [
+        'January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'
     ];
-    const month = monthNames[date.getMonth()];
-    const dayOfWeekNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-    const dayOfWeek = dayOfWeekNames[date.getDay()];
-    const firstDayOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
-    const weekNumber = Math.ceil((((date - firstDayOfMonth) / 1000) / 60 / 60 / 24 + 1) / 7);
+
+    const daysOfWeek = [
+        'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'
+    ];
+
+    const year = testDate.getFullYear();
+    const month = months[testDate.getMonth()];
+    const dayOfWeek = daysOfWeek[testDate.getDay()];
+
+    // Calculate the week of the month
+    const firstDayOfMonth = new Date(testDate.getFullYear(), testDate.getMonth(), 1);
+    const firstDayOfWeek = firstDayOfMonth.getDay();
+    const dayOfMonth = testDate.getDate();
+    const weekOfMonth = Math.ceil((dayOfMonth + firstDayOfWeek) / 7);
 
     return {
-        'year': year,
-        'month': month,
-        'week_of_the_month': weekNumber,
-        'day_of_the_week': dayOfWeek
+        year: year,
+        month: month,
+        week_of_the_month: weekOfMonth,
+        day_of_the_week: dayOfWeek
     };
 }
 describe('TestGetCurrentDateInfo', () => {

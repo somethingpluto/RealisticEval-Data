@@ -1,73 +1,73 @@
 class UniqueDeque {
-  constructor() {
+    constructor() {
+        /**
+         * Initialize a UniqueDeque object using an array and a Set.
+         * The array stores elements in order, while the Set ensures uniqueness.
+         */
+        this._array = [];
+        this._set = new Set();
+    }
+
     /**
-     * Initialize a UniqueDeque object using an array and a Set.
-     * The array stores elements in order, while the Set ensures uniqueness.
+     * Add an item to the deque if it is not already present.
+     *
+     * @param {*} item - The item to add.
+     * @returns {boolean} - True if the item was added, False if it was already present.
      */
-    this._array = [];
-    this._set = new Set();
-  }
-
-  /**
-   * Add an item to the deque if it is not already present.
-   *
-   * @param {*} item - The item to add.
-   * @returns {boolean} - True if the item was added, False if it was already present.
-   */
-  add(item) {
-    if (!this._set.has(item)) {
-      this._array.push(item);
-      this._set.add(item);
-      return true;
+    add(item) {
+        if (!this._set.has(item)) {
+            this._array.push(item);
+            this._set.add(item);
+            return true;
+        }
+        return false;
     }
-    return false;
-  }
 
-  /**
-   * Remove an item from the deque if it exists.
-   *
-   * @param {*} item - The item to remove.
-   * @returns {boolean} - True if the item was removed, False if it was not found.
-   */
-  delete(item) {
-    const index = this._array.indexOf(item);
-    if (index !== -1) {
-      this._array.splice(index, 1);
-      this._set.delete(item);
-      return true;
+    /**
+     * Remove an item from the deque if it exists.
+     *
+     * @param {*} item - The item to remove.
+     * @returns {boolean} - True if the item was removed, False if it was not found.
+     */
+    delete(item) {
+        if (this._set.has(item)) {
+            this._set.delete(item);
+            const index = this._array.indexOf(item);
+            this._array.splice(index, 1);
+            return true;
+        }
+        return false;
     }
-    return false;
-  }
 
-  /**
-   * Check if an item is present in the deque.
-   *
-   * @param {*} item - The item to check.
-   * @returns {boolean} - True if the item is present, False otherwise.
-   */
-  contains(item) {
-    return this._set.has(item);
-  }
-
-  /**
-   * Get the number of elements in the deque.
-   *
-   * @returns {number} - The number of unique elements in the deque.
-   */
-  get length() {
-    return this._array.length;
-  }
-
-  /**
-   * Create an iterator for the deque.
-   *
-   * @returns {Iterator} - An iterator over the elements in the deque.
-   */
-  *[Symbol.iterator]() {
-    for (const item of this._array) {
-      yield item;
+    /**
+     * Check if an item is present in the deque.
+     *
+     * @param {*} item - The item to check.
+     * @returns {boolean} - True if the item is present, False otherwise.
+     */
+    contains(item) {
+        return this._set.has(item);
     }
-  }
+
+    /**
+     * Get the number of elements in the deque.
+     *
+     * @returns {number} - The number of unique elements in the deque.
+     */
+    get length() {
+        return this._array.length;
+    }
+
+    /**
+     * Create an iterator for the deque.
+     *
+     * @returns {Iterator} - An iterator over the elements in the deque.
+     */
+    *[Symbol.iterator]() {
+        for (const item of this._array) {
+            yield item;
+        }
+    }
 }
 describe('TestUniqueDeque', () => {
   describe('test_add_unique_elements', () => {

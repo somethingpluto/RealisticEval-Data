@@ -10,13 +10,20 @@
  * @throws {Error} - Throws an error if any value in inputArray is outside the range [inputMin, inputMax].
  */
 function scaleToRange(inputArray, inputMin, inputMax, outputMin, outputMax) {
-    const scaledArray = inputArray.map(value => {
+    // Validate input values
+    for (let value of inputArray) {
         if (value < inputMin || value > inputMax) {
-            throw new Error(`Value ${value} is outside the range [${inputMin}, ${inputMax}]`);
+            throw new Error(`Value ${value} is outside the range [${inputMin}, ${inputMax}].`);
         }
-        return outputMin + (outputMax - outputMin) * ((value - inputMin) / (inputMax - inputMin));
+    }
+
+    // Calculate the scaling factor
+    const scaleFactor = (outputMax - outputMin) / (inputMax - inputMin);
+
+    // Scale the values
+    return inputArray.map(value => {
+        return outputMin + (value - inputMin) * scaleFactor;
     });
-    return scaledArray;
 }
 describe('scaleToRange function tests', () => {
     test('simple scaling', () => {

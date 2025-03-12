@@ -8,29 +8,31 @@
  * @returns {number | null} - The equivalent duration in milliseconds, or null if the input is invalid.
  */
 function convertHmsToMilliseconds(timeStr) {
-    const regex = /(\d+h)?(\d+min)?(\d+s)?/;
+    if (typeof timeStr !== 'string') {
+        return null;
+    }
+
+    const regex = /^(\d+h)?(\d+min)?(\d+s)?$/;
     const match = timeStr.match(regex);
 
     if (!match) {
         return null;
     }
 
-    let hours = 0;
-    let minutes = 0;
-    let seconds = 0;
+    let hours = 0, minutes = 0, seconds = 0;
 
     if (match[1]) {
-        hours = parseInt(match[1], 10);
+        hours = parseInt(match[1].replace('h', ''), 10);
     }
     if (match[2]) {
-        minutes = parseInt(match[2], 10);
+        minutes = parseInt(match[2].replace('min', ''), 10);
     }
     if (match[3]) {
-        seconds = parseInt(match[3], 10);
+        seconds = parseInt(match[3].replace('s', ''), 10);
     }
 
-    const milliseconds = hours * 3600000 + minutes * 60000 + seconds * 1000;
-    return milliseconds;
+    const totalMilliseconds = (hours * 3600 + minutes * 60 + seconds) * 1000;
+    return totalMilliseconds;
 }
 describe('TestConvertHmsToMilliseconds', () => {
   test('test_basic_conversion', () => {

@@ -12,10 +12,10 @@ function areSetsEqual(set1, set2, rtol = 1e-5, atol = 1e-6) {
         return false;
     }
 
-    for (let num1 of set1) {
+    for (let value of set1) {
         let found = false;
-        for (let num2 of set2) {
-            if (Math.abs(num1 - num2) <= atol + rtol * Math.abs(num2)) {
+        for (let otherValue of set2) {
+            if (Math.abs(value - otherValue) <= atol + rtol * Math.abs(otherValue)) {
                 found = true;
                 break;
             }

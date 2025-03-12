@@ -9,7 +9,8 @@
  * @return {number} The spatial weight.
  */
 function spatialWeight(spatial_diff, sigma_space) {
-    return Math.exp(- (spatial_diff * spatial_diff) / (2 * sigma_space * sigma_space));
+    const exponent = -(Math.pow(spatial_diff, 2) / (2 * Math.pow(sigma_space, 2)));
+    return Math.exp(exponent);
 }
 describe('Spatial Weight Calculation Tests', () => {
     

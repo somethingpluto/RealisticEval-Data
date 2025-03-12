@@ -2,16 +2,22 @@
  * Finds the median of a given array of numbers.
  * 
  * @param {number[]} arr - The array of numbers to find the median of.
- * 
- * @returns {number} The median of the array.
+ * @returns {number} - The median value of the array.
  */
 function findMedian(arr) {
-    const sortedArr = arr.slice().sort((a, b) => a - b);
-    const len = sortedArr.length;
-    if (len % 2 === 0) {
-        return (sortedArr[len / 2 - 1] + sortedArr[len / 2]) / 2;
+    // Sort the array in ascending order
+    arr.sort((a, b) => a - b);
+
+    // Find the middle index
+    const midIndex = Math.floor(arr.length / 2);
+
+    // Check if the array length is odd or even
+    if (arr.length % 2 === 0) {
+        // If even, return the average of the two middle numbers
+        return (arr[midIndex - 1] + arr[midIndex]) / 2;
     } else {
-        return sortedArr[Math.floor(len / 2)];
+        // If odd, return the middle number
+        return arr[midIndex];
     }
 }
 describe('findMedian', () => {

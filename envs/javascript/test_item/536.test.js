@@ -4,9 +4,17 @@
  * @returns {string} The formatted date string.
  */
 function getDate() {
-    const date = new Date();
-    const options = { year: 'numeric', month: 'long', day: 'numeric' };
-    return date.toLocaleDateString('en-US', options);
+    const months = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+    ];
+
+    const now = new Date();
+    const month = months[now.getMonth()];
+    const day = now.getDate();
+    const year = now.getFullYear();
+
+    return `${month} ${day}, ${year}`;
 }
 describe('getDate', () => {
     // Mock the Date object to control the current date for testing

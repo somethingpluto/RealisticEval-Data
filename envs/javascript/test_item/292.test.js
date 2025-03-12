@@ -7,11 +7,14 @@
  * @returns {number} - The calculated remaining payment.
  */
 function calculateRemainingPayment(principal, interestRate, numberOfPayments) {
-    // Calculate the monthly payment using the formula: M = P * r * (1 + r)^n / ((1 + r)^n – 1)
-    const monthlyPayment = principal * interestRate * Math.pow(1 + interestRate, numberOfPayments) / (Math.pow(1 + interestRate, numberOfPayments) - 1);
+    // Calculate the monthly payment using the formula for a fixed-rate loan
+    const monthlyPayment = principal * (interestRate * Math.pow(1 + interestRate, numberOfPayments)) / (Math.pow(1 + interestRate, numberOfPayments) - 1);
 
-    // Calculate the remaining payment by subtracting the total payments made from the monthly payment
-    const remainingPayment = monthlyPayment * (numberOfPayments - 1);
+    // Calculate the total amount paid after all payments
+    const totalPaid = monthlyPayment * numberOfPayments;
+
+    // Calculate the remaining payment by subtracting the principal from the total paid
+    const remainingPayment = totalPaid - principal;
 
     return remainingPayment;
 }

@@ -12,25 +12,28 @@
  * @returns A string indicating the relative time from the current date to the message creation date.
  */
 function getRelativeTime(messageDate) {
-  const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
-  const messageDay = new Date(messageDate.getFullYear(), messageDate.getMonth(), messageDate.getDate());
+    const currentDate = new Date();
+    const messageTime = messageDate.getTime();
+    const currentTime = currentDate.getTime();
 
-  if (messageDay.getTime() === today.getTime()) {
-    return "Today";
-  } else if (messageDay.getTime() === yesterday.getTime()) {
-    return "Yesterday";
-  } else if (now.getTime() - messageDay.getTime() < 7 * 24 * 60 * 60 * 1000) {
-    const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-    return daysOfWeek[messageDay.getDay()];
-  } else {
-    const year = messageDate.getFullYear();
-    const month = (messageDate.getMonth() + 1).toString().padStart(2, '0');
-    const day = messageDate.getDate().toString().padStart(2, '0');
-    return `${year}/${month}/${day}`;
-  }
+    const oneDay = 24 * 60 * 60 * 1000;
+    const oneWeek = 7 * oneDay;
+
+    const timeDifference = currentTime - messageTime;
+
+    if (timeDifference < oneDay && messageDate.getDate() === currentDate.getDate()) {
+        return "Today";
+    } else if (timeDifference < 2 * oneDay && messageDate.getDate() === currentDate.getDate() - 1) {
+        return "Yesterday";
+    } else if (timeDifference < oneWeek) {
+        const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+        return daysOfWeek[messageDate.getDay()];
+    } else {
+        const year = messageDate.getFullYear();
+        const month = String(messageDate.getMonth() + 1).padStart(2, '0');
+        const day = String(messageDate.getDate()).padStart(2, '0');
+        return `${year}/${month}/${day}`;
+    }
 }
 describe('getRelativeTime', () => {
     beforeAll(() => {

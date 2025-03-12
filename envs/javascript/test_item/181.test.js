@@ -7,13 +7,12 @@ const fs = require('fs');
  * @returns {Buffer} A byte array containing the content of the file.
  */
 function readFileToByteArray(filePath) {
-  try {
-    const fileContent = fs.readFileSync(filePath);
-    return fileContent;
-  } catch (error) {
-    console.error(`Error reading file: ${error.message}`);
-    return null;
-  }
+    try {
+        const fileContent = fs.readFileSync(filePath);
+        return fileContent;
+    } catch (error) {
+        throw new Error(`Failed to read file: ${error.message}`);
+    }
 }
 const fs = require('fs');
 const path = require('path');

@@ -6,15 +6,24 @@
  * @returns {boolean} True if the remaining part after removing ".bit" is a valid 3-digit integer, otherwise false.
  */
 function assert999(bitName) {
-    // Remove the ".bit" suffix
-    const numberPart = bitName.replace(".bit", "");
-
-    // Check if the remaining part is a number and within the range of 0 to 999
-    if (!isNaN(numberPart) && numberPart >= 0 && numberPart <= 999) {
-        return true;
-    } else {
+    // Check if the string ends with ".bit"
+    if (!bitName.endsWith('.bit')) {
         return false;
     }
+
+    // Remove the ".bit" suffix
+    const numberPart = bitName.slice(0, -4);
+
+    // Check if the remaining part is a number
+    if (isNaN(numberPart)) {
+        return false;
+    }
+
+    // Convert the string to a number
+    const number = parseInt(numberPart, 10);
+
+    // Check if the number is within the range of 0 to 999
+    return number >= 0 && number <= 999;
 }
 describe('assert999', () => {
     /**

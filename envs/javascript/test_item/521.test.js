@@ -11,26 +11,24 @@
  *                   maintaining the order from filterWords.
  */
 function wordFilterCounter(text, filterWords) {
-    // Initialize an object to store the word counts
+    // Initialize an object to store the counts
     const wordCounts = {};
 
-    // Iterate over each word in the filterWords array
-    filterWords.forEach(word => {
-        // Use a regular expression to find all occurrences of the word in the text
-        // The regular expression is case-insensitive and allows for word boundaries
-        const regex = new RegExp(`\\b${word}\\b`, 'gi');
-        const matches = text.match(regex);
+    // Convert the text to lowercase and split it into words
+    const words = text.toLowerCase().split(/\W+/);
 
-        // If matches are found, set the count in the wordCounts object
-        if (matches) {
-            wordCounts[word] = matches.length;
-        } else {
-            // If no matches are found, set the count to 0
-            wordCounts[word] = 0;
+    // Initialize the wordCounts object with the filterWords
+    filterWords.forEach(word => {
+        wordCounts[word] = 0;
+    });
+
+    // Count the occurrences of each filter word in the text
+    words.forEach(word => {
+        if (wordCounts.hasOwnProperty(word)) {
+            wordCounts[word]++;
         }
     });
 
-    // Return the wordCounts object
     return wordCounts;
 }
 describe('TestWordFilterCounter', () => {

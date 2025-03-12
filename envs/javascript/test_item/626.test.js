@@ -1,3 +1,6 @@
+const fs = require('fs');
+const readline = require('readline');
+
 /**
  * Reads a file from the specified path, processes each line to remove inline comments,
  * removes line breaks, and returns an array of the processed line contents.
@@ -6,31 +9,39 @@
  * @returns {string[]} An array of strings, each representing a processed line from the file.
  */
 function readFileAndProcessLines(path) {
-  const fs = require('fs');
-  const pathModule = require('path');
+    return new Promise((resolve, reject) => {
+        const processedLines = [];
 
-  // Read the file content
-  const fileContent = fs.readFileSync(path, 'utf8');
+        const readStream = fs.createReadStream(path, { encoding: 'utf8' });
+        const rl = readline.createInterface({
+            input: readStream,
+            crlfDelay: Infinity
+        });
 
-  // Split the content into lines
-  const lines = fileContent.split('\n');
+        rl.on('line', (line) => {
+            // Remove inline comments (assuming comments start with '//')
+            const commentIndex = line.indexOf('//');
+            if (commentIndex !== -1) {
+                line = line.substring(0, commentIndex);
+            }
 
-  // Process each line
-  const processedLines = lines.map(line => {
-    // Remove inline comments
-    const commentIndex = line.indexOf('//');
-    if (commentIndex !== -1) {
-      line = line.substring(0, commentIndex);
-    }
+            // Remove any trailing whitespace and line breaks
+            line = line.trim();
 
-    // Remove line breaks
-    return line.trim();
-  });
+            // Only add non-empty lines to the result
+            if (line) {
+                processedLines.push(line);
+            }
+        });
 
-  // Filter out empty lines
-  const filteredLines = processedLines.filter(line => line.length > 0);
+        rl.on('close', () => {
+            resolve(processedLines);
+        });
 
-  return filteredLines;
+        readStream.on('error', (err) => {
+            reject(err);
+        });
+    });
 }
 const fs = require('fs');
 

@@ -1,21 +1,20 @@
 /**
  * Remove the part before the first uppercase letter and the first lowercase letter from the string.
  *
- * @example
- * removePartsOfString("1234AbCde5678") // returns ["AbCde5678"]
- *
  * @param {...string} strings - Accepts one or more strings as variable arguments
  * @returns {Array<string>} - An array of processed strings
  */
 function removePartsOfString(...strings) {
     return strings.map(str => {
-        let upperIndex = str.search(/[A-Z]/);
-        let lowerIndex = str.search(/[a-z]/);
-        let startIndex = Math.min(upperIndex, lowerIndex);
-        if (startIndex === -1) {
-            startIndex = Math.max(upperIndex, lowerIndex);
+        const upperCaseIndex = str.search(/[A-Z]/);
+        const lowerCaseIndex = str.search(/[a-z]/);
+
+        if (upperCaseIndex === -1 || lowerCaseIndex === -1) {
+            return str; // If no uppercase or lowercase letter is found, return the original string
         }
-        return str.slice(startIndex);
+
+        const firstIndex = Math.min(upperCaseIndex, lowerCaseIndex);
+        return str.slice(firstIndex);
     });
 }
 describe('TestRemovePartsOfString', () => {

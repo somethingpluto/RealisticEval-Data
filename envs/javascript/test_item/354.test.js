@@ -9,7 +9,8 @@
  * @return {number} The Gaussian weight.
  */
 function gaussianWeight(intensityDiff, sigmaColor) {
-    return Math.exp(- (intensityDiff * intensityDiff) / (2 * sigmaColor * sigmaColor));
+    const exponent = -(intensityDiff ** 2) / (2 * sigmaColor ** 2);
+    return Math.exp(exponent);
 }
 describe("Gaussian Weight Calculation Tests", () => {
 

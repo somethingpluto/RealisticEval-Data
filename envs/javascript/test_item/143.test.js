@@ -1,27 +1,25 @@
 /**
- * Convert Arabic digits in the string to corresponding English digits
- * @param {string} str - The input string containing Arabic digits
- * @returns {string} - The string with Arabic digits replaced by English digits
+ * Convert Arabic digits in the string to corresponding English digits.
+ * @param {string} str - The input string containing Arabic digits.
+ * @returns {string} - The string with Arabic digits replaced by English digits.
  */
 function arabicToEnglishNumbers(str) {
-  // Mapping of Arabic digits to English digits
-  const arabicToEnglish = {
-    '٠': '0',
-    '١': '1',
-    '٢': '2',
-    '٣': '3',
-    '٤': '4',
-    '٥': '5',
-    '٦': '6',
-    '٧': '7',
-    '٨': '8',
-    '٩': '9'
-  };
+    // Mapping of Arabic digits to English digits
+    const arabicToEnglishMap = {
+        '٠': '0',
+        '١': '1',
+        '٢': '2',
+        '٣': '3',
+        '٤': '4',
+        '٥': '5',
+        '٦': '6',
+        '٧': '7',
+        '٨': '8',
+        '٩': '9'
+    };
 
-  // Replace Arabic digits with English digits
-  return str.replace(/[٠١٢٣٤٥٦٧٨٩]/g, function(match) {
-    return arabicToEnglish[match];
-  });
+    // Replace each Arabic digit with the corresponding English digit
+    return str.split('').map(char => arabicToEnglishMap[char] || char).join('');
 }
 describe('arabicToEnglishNumbers', () => {
     test('should convert Arabic numerals to English numerals', () => {

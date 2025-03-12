@@ -1,50 +1,53 @@
+/**
+ * Achieves topological sorting based on depth-first search (DFS).
+ *
+ * @param {Array<number>} vertices - A list of vertices in the graph. Each vertex should be a unique integer.
+ * @param {Array<[number, number]>} edges - A list of tuples where each tuple represents a directed edge
+ *                                          in the graph and is formed as [start_vertex, end_vertex].
+ * @returns {Array<number>} - A list of vertices in topological order. If the graph contains a cycle,
+ *                            and thus cannot have a valid topological ordering, an empty array is returned.
+ */
 function topologicalSortDFS(vertices, edges) {
-    const graph = new Map();
-    const inDegree = new Map();
-    const visited = new Set();
-    const stack = [];
+    // Create an adjacency list from the edges
+    const adjacencyList = {};
+    vertices.forEach(vertex => adjacencyList[vertex] = []);
+    edges.forEach(([start, end]) => adjacencyList[start].push(end));
 
-    // Initialize graph and in-degree map
-    vertices.forEach(vertex => {
-        graph.set(vertex, []);
-        inDegree.set(vertex, 0);
-    });
+    // Arrays to keep track of the state of each vertex
+    const visited = new Array(vertices.length).fill(false);
+    const departure = new Array(vertices.length).fill(-1);
+    let time = 0;
+    const topoOrder = [];
 
-    // Build the graph and populate in-degrees
-    edges.forEach(([start, end]) => {
-        graph.get(start).push(end);
-        inDegree.set(end, inDegree.get(end) + 1);
-    });
-
-    // Find all vertices with in-degree of 0 and start DFS
-    vertices.forEach(vertex => {
-        if (inDegree.get(vertex) === 0) {
-            dfs(vertex);
-        }
-    });
-
-    // If the stack is empty, there is a cycle, return an empty array
-    if (stack.length === 0) {
-        return [];
-    }
-
-    // Return the topological order
-    return stack.reverse();
-
+    // Helper function to perform DFS
     function dfs(vertex) {
-        if (visited.has(vertex)) {
-            return;
-        }
-
-        visited.add(vertex);
-        graph.get(vertex).forEach(neighbor => {
-            if (!visited.has(neighbor)) {
-                dfs(neighbor);
+        visited[vertex] = true;
+        for (const neighbor of adjacencyList[vertex]) {
+            if (!visited[neighbor]) {
+                if (!dfs(neighbor)) {
+                    return false; // Cycle detected
+                }
+            } else if (departure[neighbor] === -1) {
+                return false; // Back edge detected, indicating a cycle
             }
-        });
-
-        stack.push(vertex);
+        }
+        // Record the departure time
+        departure[vertex] = time++;
+        topoOrder.push(vertex);
+        return true;
     }
+
+    // Perform DFS on each unvisited vertex
+    for (const vertex of vertices) {
+        if (!visited[vertex]) {
+            if (!dfs(vertex)) {
+                return []; // Cycle detected, return empty array
+            }
+        }
+    }
+
+    // Reverse the order to get the topological sort
+    return topoOrder.reverse();
 }
 describe('TestTopologicalSortDFS', () => {
     describe('test_simple_chain', () => {

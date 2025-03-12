@@ -22,25 +22,25 @@ class TreeNode {
 function averageOfLevels(root) {
   if (!root) return [];
 
-  const averages = [];
+  const result = [];
   const queue = [root];
 
-  while (queue.length) {
-      const levelSize = queue.length;
-      let sum = 0;
+  while (queue.length > 0) {
+    const levelSize = queue.length;
+    let levelSum = 0;
 
-      for (let i = 0; i < levelSize; i++) {
-          const node = queue.shift();
-          sum += node.val;
+    for (let i = 0; i < levelSize; i++) {
+      const currentNode = queue.shift();
+      levelSum += currentNode.val;
 
-          if (node.left) queue.push(node.left);
-          if (node.right) queue.push(node.right);
-      }
+      if (currentNode.left) queue.push(currentNode.left);
+      if (currentNode.right) queue.push(currentNode.right);
+    }
 
-      averages.push(sum / levelSize);
+    result.push(levelSum / levelSize);
   }
 
-  return averages;
+  return result;
 }
 class TreeNode {
   /**

@@ -9,36 +9,40 @@ const csvParser = require('csv-parser');
  * @returns {Promise<string>} A promise that resolves to the parsed SQL insert statements.
  */
 function csvToSqlInsert(csvFilePath) {
-  return new Promise((resolve, reject) => {
-    const results = [];
-    const tableName = path.parse(csvFilePath).name; // Get the table name without the extension and suffix
-    const sqlInserts = [];
+    return new Promise((resolve, reject) => {
+        const tableName = path.basename(csvFilePath, path.extname(csvFilePath));
+        let sqlInsert = `INSERT INTO ${tableName} (`;
+        let firstRow = true;
 
-    fs.createReadStream(csvFilePath)
-      .pipe(csvParser())
-      .on('data', (data) => results.push(data))
-      .on('end', () => {
-        const columns = Object.keys(results[0]).join(', ');
-        results.forEach((row) => {
-          const values = Object.values(row).map((value) => `'${value}'`).join(', ');
-          sqlInserts.push(`INSERT INTO ${tableName} (${columns}) VALUES (${values});`);
-        });
-        resolve(sqlInserts.join('\n'));
-      })
-      .on('error', (error) => {
-        reject(error);
-      });
-  });
+        fs.createReadStream(csvFilePath)
+            .pipe(csvParser())
+            .on('data', (row) => {
+                if (firstRow) {
+                    const columns = Object.keys(row).join(', ');
+                    sqlInsert += `${columns}) VALUES `;
+                    firstRow = false;
+                }
+
+                const values = Object.values(row).map(value => {
+                    if (typeof value === 'string') {
+                        return `'${value.replace(/'/g, "''")}'`;
+                    }
+                    return value;
+                }).join(', ');
+
+                sqlInsert += `(${values}), `;
+            })
+            .on('end', () => {
+                // Remove the trailing comma and space
+                sqlInsert = sqlInsert.slice(0, -2);
+                sqlInsert += ';';
+                resolve(sqlInsert);
+            })
+            .on('error', (error) => {
+                reject(error);
+            });
+    });
 }
-
-// Example usage:
-// csvToSqlInsert('path/to/your/file.csv')
-//   .then((sqlInserts) => {
-//     console.log(sqlInserts);
-//   })
-//   .catch((error) => {
-//     console.error('Error:', error);
-//   });
 const fs = require('fs');
 const path = require('path');
 const csvParser = require('csv-parser');

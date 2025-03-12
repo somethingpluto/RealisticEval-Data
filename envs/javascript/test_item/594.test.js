@@ -11,12 +11,20 @@
  *             The array will be cleared before storing the new tokens.
  */
 function splitComma(str, vect) {
-    vect.length = 0; // Clear the array
-    const tokens = str.split(','); // Split the string by commas
-    for (const token of tokens) {
-        const trimmedToken = token.trim(); // Trim whitespace from each token
-        if (trimmedToken !== '') { // Store non-empty tokens
-            vect.push(trimmedToken);
+    // Clear the provided array
+    vect.length = 0;
+
+    // Split the string by commas
+    const tokens = str.split(',');
+
+    // Iterate through the tokens
+    for (let token of tokens) {
+        // Trim whitespace from each token
+        token = token.trim();
+
+        // Add non-empty tokens to the array
+        if (token) {
+            vect.push(token);
         }
     }
 }

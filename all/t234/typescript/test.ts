@@ -7,7 +7,7 @@ describe('TestAppendOrSkipRow', () => {
 
   beforeEach(() => {
     // Set up a mock CSV file using a temporary file
-    const tempFilePath = 'temp.csv';
+    const tempFilePath = 'qa_item.csv';
     mockFile = fs.createWriteStream(tempFilePath);
     mockFile.write('Alice,30,USA\nBob,25,UK\nCharlie,35,Canada\n');
     mockFile.end();
@@ -21,7 +21,7 @@ describe('TestAppendOrSkipRow', () => {
 
   afterEach(() => {
     // Clean up the temporary file
-    fs.unlinkSync('temp.csv');
+    fs.unlinkSync('qa_item.csv');
   });
 
   it('should append a new row when there are no matching values', () => {
@@ -29,7 +29,7 @@ describe('TestAppendOrSkipRow', () => {
     appendOrSkipRow(mockFile, reader, new_row);
 
     // Reset pointer to read from the start
-    mockFile = fs.createReadStream('temp.csv');
+    mockFile = fs.createReadStream('qa_item.csv');
     reader = csvParser();
 
     const results: string[][] = [];
@@ -48,7 +48,7 @@ describe('TestAppendOrSkipRow', () => {
     appendOrSkipRow(mockFile, reader, new_row);
 
     // Reset pointer to read from the start
-    mockFile = fs.createReadStream('temp.csv');
+    mockFile = fs.createReadStream('qa_item.csv');
     reader = csvParser();
 
     const results: string[][] = [];
@@ -67,7 +67,7 @@ describe('TestAppendOrSkipRow', () => {
     appendOrSkipRow(mockFile, reader, new_row);
 
     // Reset pointer to read from the start
-    mockFile = fs.createReadStream('temp.csv');
+    mockFile = fs.createReadStream('qa_item.csv');
     reader = csvParser();
 
     const results: string[][] = [];
@@ -89,7 +89,7 @@ describe('TestAppendOrSkipRow', () => {
 
     for (const row of new_rows) {
       appendOrSkipRow(mockFile, reader, row);
-      mockFile = fs.createReadStream('temp.csv');
+      mockFile = fs.createReadStream('qa_item.csv');
       reader = csvParser();
     }
 

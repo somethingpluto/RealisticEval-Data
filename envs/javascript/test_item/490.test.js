@@ -8,16 +8,25 @@
  *                     with balanced code block delimiters.
  */
 function formatStr(x) {
+    // Ensure the input is a string
     if (typeof x !== 'string') {
         x = String(x);
     }
 
-    const lines = x.split('\n');
-    const formattedLines = [];
+    // Split the string into lines
+    let lines = x.split('\n');
 
-    let codeBlockDepth = 0;
-    for (const line of lines) {
-        if (line.startsWith('
+    // Initialize variables to track code block delimiters
+    let codeBlockStart = false;
+    let codeBlockEnd = false;
+    let codeBlockLines = [];
+
+    // Process each line
+    for (let i = 0; i < lines.length; i++) {
+        let line = lines[i];
+
+        // Check for code block delimiters
+        if (line.trim().startsWith('
 describe('TestFormatStr', () => {
     it('test_simple_string', () => {
         // Test a simple string input.

@@ -6,20 +6,23 @@
 function bubbleSort(arr) {
     let n = arr.length;
     let swapped;
+
     do {
         swapped = false;
-        for (let i = 1; i < n; i++) {
-            if (arr[i - 1] > arr[i]) {
+        for (let i = 0; i < n - 1; i++) {
+            if (arr[i] > arr[i + 1]) {
                 // Swap the elements
-                let temp = arr[i - 1];
-                arr[i - 1] = arr[i];
-                arr[i] = temp;
+                let temp = arr[i];
+                arr[i] = arr[i + 1];
+                arr[i + 1] = temp;
                 swapped = true;
             }
         }
-        // Reduce n by 1 because the last element is already in place
+        // Reduce the length of the array to be sorted
         n--;
     } while (swapped);
+
+    return arr;
 }
 describe("BubbleSort Test Cases", () => {
     // Test Case 1: Sorting an already sorted array

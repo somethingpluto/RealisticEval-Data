@@ -14,14 +14,14 @@ class Trie {
      * @param {string} word - The word to insert.
      */
     insert(word) {
-        let currentNode = this.root;
+        let node = this.root;
         for (let char of word) {
-            if (!currentNode.children[char]) {
-                currentNode.children[char] = new TrieNode();
+            if (!node.children[char]) {
+                node.children[char] = new TrieNode();
             }
-            currentNode = currentNode.children[char];
+            node = node.children[char];
         }
-        currentNode.isEndOfWord = true;
+        node.isEndOfWord = true;
     }
 
     /**
@@ -30,14 +30,14 @@ class Trie {
      * @returns {boolean} - Returns true if the word is found, false otherwise.
      */
     search(word) {
-        let currentNode = this.root;
+        let node = this.root;
         for (let char of word) {
-            if (!currentNode.children[char]) {
+            if (!node.children[char]) {
                 return false;
             }
-            currentNode = currentNode.children[char];
+            node = node.children[char];
         }
-        return currentNode.isEndOfWord;
+        return node.isEndOfWord === true;
     }
 
     /**
@@ -46,12 +46,12 @@ class Trie {
      * @returns {boolean} - Returns true if there is any word with the prefix, false otherwise.
      */
     startsWith(prefix) {
-        let currentNode = this.root;
+        let node = this.root;
         for (let char of prefix) {
-            if (!currentNode.children[char]) {
+            if (!node.children[char]) {
                 return false;
             }
-            currentNode = currentNode.children[char];
+            node = node.children[char];
         }
         return true;
     }

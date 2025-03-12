@@ -3,43 +3,44 @@
  * @param {document} document
  */
 function extractCSVDataFromHTML(document) {
-    // Find all table elements in the document
+    // Initialize an empty array to hold the final data
+    let csvData = [];
+
+    // Get all the tables in the document
     const tables = document.querySelectorAll('table');
-    const tableData = [];
 
     // Iterate over each table
     tables.forEach(table => {
-        // Find the tbody element within the table
-        const tbody = table.querySelector('tbody');
-        if (!tbody) return; // Skip if no tbody is found
+        // Initialize an empty array to hold the rows of the current table
+        let tableData = [];
 
-        // Find all tr elements within the tbody
-        const rows = tbody.querySelectorAll('tr');
-        const rowData = [];
+        // Get all the rows in the current table
+        const rows = table.querySelectorAll('tr');
 
         // Iterate over each row
         rows.forEach(row => {
-            // Find all td elements within the row
-            const cells = row.querySelectorAll('td');
-            const cellData = [];
+            // Initialize an empty array to hold the cells of the current row
+            let rowData = [];
+
+            // Get all the cells in the current row
+            const cells = row.querySelectorAll('th, td');
 
             // Iterate over each cell
             cells.forEach(cell => {
-                // Extract the text content of the cell
-                const cellText = cell.textContent.trim();
-                cellData.push(cellText);
+                // Push the cell's text content to the rowData array
+                rowData.push(cell.textContent.trim());
             });
 
-            // Add the row data to the rowData array
-            rowData.push(cellData);
+            // Push the rowData array to the tableData array
+            tableData.push(rowData);
         });
 
-        // Add the table data to the tableData array
-        tableData.push(rowData);
+        // Push the tableData array to the csvData array
+        csvData.push(tableData);
     });
 
-    // Return the two-dimensional array containing table data
-    return tableData;
+    // Return the final csvData array
+    return csvData;
 }
 const { JSDOM } = require('jsdom');
 

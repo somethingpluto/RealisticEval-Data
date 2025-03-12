@@ -6,10 +6,13 @@
  */
 function isCompliantIP(ip) {
     // Regular expression to match a valid IPv4 address
-    const ipv4Pattern = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+    const ipv4Regex = /^(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\.(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\.(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\.(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])$/;
     
-    // Check if the IP address matches the pattern
-    return ipv4Pattern.test(ip);
+    // Regular expression to match a valid IPv6 address
+    const ipv6Regex = /^(?:[A-F0-9]{1,4}:){7}[A-F0-9]{1,4}$/i;
+
+    // Check if the IP matches either IPv4 or IPv6 pattern
+    return ipv4Regex.test(ip) || ipv6Regex.test(ip);
 }
 describe('TestIsCompliantIP', () => {
   test('test_private_ip', () => {

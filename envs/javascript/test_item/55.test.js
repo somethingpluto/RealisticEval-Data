@@ -1,32 +1,45 @@
 /**
  * Calculates the minimum number of elements to delete so that the elements in the array are not duplicate.
  * 
- * Example:
- *   input: [3, 3, 1, 2, 2, 1]
- *   output: 3
- *
  * @param {Array<number>} nums - Integer array of numbers
  * @returns {number} The minimum number of moves to make every value in nums unique
  */
 function minRemovalsToMakeUnique(nums) {
-    const numCounts = {};
+    // Create a frequency map to count occurrences of each number
+    const frequencyMap = new Map();
+    
     for (const num of nums) {
-        if (numCounts[num]) {
-            numCounts[num]++;
+        if (frequencyMap.has(num)) {
+            frequencyMap.set(num, frequencyMap.get(num) + 1);
         } else {
-            numCounts[num] = 1;
+            frequencyMap.set(num, 1);
         }
     }
-
-    let totalRemovals = 0;
-    const counts = Object.values(numCounts).sort((a, b) => b - a);
+    
+    // Create an array to store the counts of each number
+    const counts = Array.from(frequencyMap.values());
+    
+    // Sort the counts in descending order
+    counts.sort((a, b) => b - a);
+    
+    let removals = 0;
+    const uniqueCounts = new Set();
+    
     for (const count of counts) {
-        if (count > 1) {
-            totalRemovals += count - 1;
+        let currentCount = count;
+        
+        // Ensure the current count is unique
+        while (currentCount > 0 && uniqueCounts.has(currentCount)) {
+            currentCount--;
+            removals++;
+        }
+        
+        if (currentCount > 0) {
+            uniqueCounts.add(currentCount);
         }
     }
-
-    return totalRemovals;
+    
+    return removals;
 }
 describe('TestMinRemovalsToMakeUnique', () => {
   test('test_basic_array', () => {

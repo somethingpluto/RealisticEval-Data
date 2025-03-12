@@ -20,12 +20,40 @@ class QuadratureRule {
  * @returns {[number[], number[], number[], QuadratureRule]} - The computed coefficients and the quadrature rule.
  */
 function lanczos(n, quadratureRule) {
-    // Placeholder implementation for the Lanczos function
-    // This function should contain the actual algorithm for computing the coefficients
-    // and the orthogonal polynomials based on the Lanczos recursion relation.
-    // The return value should be an array containing the coefficients, the polynomials,
-    // the nodes, and the weights of the quadrature rule.
-    return [[], [], [], quadratureRule];
+    const { x, w } = quadratureRule;
+    const alpha = new Array(n).fill(0);
+    const beta = new Array(n).fill(0);
+    const gamma = new Array(n).fill(0);
+
+    // Initialize the first polynomial
+    let p0 = new Array(x.length).fill(1);
+    let p1 = x.map((xi) => xi);
+
+    // Compute the coefficients
+    for (let k = 0; k < n; k++) {
+        alpha[k] = dotProduct(p1, p1, w) / dotProduct(p1, p0, w);
+        beta[k] = dotProduct(p1, p1, w) / dotProduct(p0, p0, w);
+        gamma[k] = dotProduct(p1, p1, w) / dotProduct(p1, p1, w);
+
+        if (k < n - 1) {
+            const pNext = x.map((xi, i) => (xi - alpha[k]) * p1[i] - beta[k] * p0[i]);
+            p0 = p1;
+            p1 = pNext;
+        }
+    }
+
+    return [alpha, beta, gamma, quadratureRule];
+}
+
+/**
+ * Computes the dot product of two vectors with respect to the weights.
+ * @param {number[]} u - The first vector.
+ * @param {number[]} v - The second vector.
+ * @param {number[]} w - The weights.
+ * @returns {number} - The dot product.
+ */
+function dotProduct(u, v, w) {
+    return u.reduce((sum, ui, i) => sum + ui * v[i] * w[i], 0);
 }
 class QuadratureRule {
     constructor(x, w) {

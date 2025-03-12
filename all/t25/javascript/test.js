@@ -9,7 +9,7 @@ describe('Classify JSON Objects by PID', () => {
   
   beforeAll(() => {
     // Create a temporary directory
-    tempDir = fs.mkdtempSync(path.join(__dirname, 'temp-'));
+    tempDir = fs.mkdtempSync(path.join(__dirname, 'qa_item-'));
     
     // Create temporary files for testing
     sourceFile = path.join(tempDir, 'source.json');

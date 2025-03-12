@@ -1,3 +1,6 @@
+const fs = require('fs').promises;
+const diff = require('diff');
+
 /**
  * Compare the contents of two files and print the differences in unified diff format.
  *
@@ -8,58 +11,37 @@
  * @throws {Error} If there is an error reading the files.
  */
 async function compareFiles(file1Path, file2Path) {
-  const fs = require('fs').promises;
-  const path = require('path');
+    try {
+        // Read the contents of both files
+        const [file1Content, file2Content] = await Promise.all([
+            fs.readFile(file1Path, 'utf8'),
+            fs.readFile(file2Path, 'utf8')
+        ]);
 
-  // Check if both files exist
-  try {
-    await fs.access(file1Path);
-    await fs.access(file2Path);
-  } catch (error) {
-    throw new Error('One or both files do not exist.');
-  }
+        // Generate the diff
+        const differences = diff.createPatch(
+            file1Path,
+            file1Content,
+            file2Content,
+            '',
+            ''
+        );
 
-  try {
-    // Read the contents of both files
-    const file1Content = await fs.readFile(file1Path, 'utf8');
-    const file2Content = await fs.readFile(file2Path, 'utf8');
+        // Split the patch into lines
+        const diffLines = differences.split('\n').slice(4); // Skip the header lines
 
-    // Split the contents into lines
-    const file1Lines = file1Content.split('\n');
-    const file2Lines = file2Content.split('\n');
+        // Filter out any empty lines
+        const filteredDiffLines = diffLines.filter(line => line.trim() !== '');
 
-    // Compare the lines and generate the diff
-    const diff = [];
-    let lineNum = 1;
-    let file1Index = 0, file2Index = 0;
-
-    while (file1Index < file1Lines.length || file2Index < file2Lines.length) {
-      if (file1Index < file1Lines.length && file2Index < file2Lines.length && file1Lines[file1Index] === file2Lines[file2Index]) {
-        // Lines are the same
-        diff.push(`@@ -${lineNum},${file1Lines.length - lineNum + 1} +${lineNum},${file2Lines.length - lineNum + 1} @@`);
-        diff.push(` ${file1Lines[file1Index]}`);
-        lineNum++;
-        file1Index++;
-        file2Index++;
-      } else if (file1Index < file1Lines.length && (file2Index >= file2Lines.length || file1Lines[file1Index] !== file2Lines[file2Index])) {
-        // Line exists in file1 but not in file2
-        diff.push(`@@ -${lineNum},${file1Lines.length - lineNum + 1} +${lineNum},${file2Lines.length - lineNum + 1} @@`);
-        diff.push(`-${file1Lines[file1Index]}`);
-        lineNum++;
-        file1Index++;
-      } else if (file2Index < file2Lines.length && (file1Index >= file1Lines.length || file1Lines[file1Index] !== file2Lines[file2Index])) {
-        // Line exists in file2 but not in file1
-        diff.push(`@@ -${lineNum},${file1Lines.length - lineNum + 1} +${lineNum},${file2Lines.length - lineNum + 1} @@`);
-        diff.push(`+${file2Lines[file2Index]}`);
-        lineNum++;
-        file2Index++;
-      }
+        return filteredDiffLines;
+    } catch (error) {
+        // Handle errors related to file reading or other issues
+        if (error.code === 'ENOENT') {
+            throw new Error(`File not found: ${error.path}`);
+        } else {
+            throw new Error(`Error reading files: ${error.message}`);
+        }
     }
-
-    return diff;
-  } catch (error) {
-    throw new Error('Error reading the files.');
-  }
 }
 describe('TestCompareFiles', () => {
   let file1Path;

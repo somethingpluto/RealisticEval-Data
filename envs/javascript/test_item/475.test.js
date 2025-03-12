@@ -7,8 +7,16 @@
  * @param {Object} [kwargs] - Keyword arguments that map keys to their replacement values.
  * @returns {string} The formatted string with placeholders replaced by values.
  */
-function safeFormat(template, kwargs = {}) {
-    return template.replace(/{(\w+)}/g, (match, key) => kwargs[key] || match);
+function safeFormat(template, ...kwargs) {
+    // Combine all kwargs into a single object
+    const kwargsObj = kwargs.reduce((acc, obj) => ({ ...acc, ...obj }), {});
+
+    // Use a regular expression to find all placeholders in the template
+    return template.replace(/{([^{}]+)}/g, (match, key) => {
+        // Replace the placeholder with the corresponding value from kwargsObj,
+        // or leave it unchanged if the key is not found
+        return kwargsObj.hasOwnProperty(key) ? kwargsObj[key] : match;
+    });
 }
 describe('TestSafeFormat', () => {
   describe('test_full_replacement', () => {

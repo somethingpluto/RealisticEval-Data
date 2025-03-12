@@ -1,13 +1,17 @@
 /**
- * calculates the Euclidean distance between two points in a 2D space.
+ * Calculates the Euclidean distance between two points in a 2D space.
  *
  * @param {Array<number>} point1 - The first point as an array of coordinates [x1, y1].
  * @param {Array<number>} point2 - The second point as an array of coordinates [x2, y2].
  * @returns {number} The Euclidean distance between the two points.
  */
 function calculateEuclideanDistance(point1, point2) {
-    const dx = point2[0] - point1[0];
-    const dy = point2[1] - point1[1];
+    const [x1, y1] = point1;
+    const [x2, y2] = point2;
+    
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    
     return Math.sqrt(dx * dx + dy * dy);
 }
 describe('TestCalculateEuclideanDistance', () => {

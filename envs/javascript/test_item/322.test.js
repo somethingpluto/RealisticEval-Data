@@ -1,13 +1,13 @@
 /**
- * verify that a string is a valid email address
+ * Verify that a string is a valid email address
  *
  * @param {string} email - The email address to be validated.
  * @returns {boolean} - Returns true if the email matches the regex pattern, indicating it is valid,
  *                      or false otherwise.
  */
 function isValidEmail(email) {
-    const regexPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return regexPattern.test(email);
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return emailRegex.test(email);
 }
 describe('isValidEmail', () => {
     test('should return true for a valid simple email', () => {

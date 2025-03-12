@@ -10,14 +10,16 @@ function calculateAge(birthDateString) {
     }
 
     const birthDate = new Date(birthDateString);
+
     if (isNaN(birthDate.getTime())) {
         return '';
     }
 
     const today = new Date();
     let age = today.getFullYear() - birthDate.getFullYear();
-    const m = today.getMonth() - birthDate.getMonth();
-    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+    const monthDifference = today.getMonth() - birthDate.getMonth();
+
+    if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
         age--;
     }
 

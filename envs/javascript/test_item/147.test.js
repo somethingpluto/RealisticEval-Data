@@ -1,16 +1,12 @@
 /**
  * Converts an ArrayBuffer to a string.
  *
- * @param {ArrayBuffer} buffer - The ArrayBuffer to be converted.
- * @returns {string} The string representation of the ArrayBuffer.
+ * @param buffer - The ArrayBuffer to be converted.
+ * @returns The string representation of the ArrayBuffer.
  */
 function arrayBufferToString(buffer) {
-  // Create a Uint8Array view of the ArrayBuffer
-  const uint8Array = new Uint8Array(buffer);
-
-  // Convert the Uint8Array to a string using TextDecoder
-  const decoder = new TextDecoder('utf-8');
-  return decoder.decode(uint8Array);
+    const decoder = new TextDecoder('utf-8');
+    return decoder.decode(buffer);
 }
 describe('arrayBufferToString', () => {
     test('should return an empty string for an empty ArrayBuffer', () => {

@@ -1,23 +1,34 @@
 /**
  * Calculate the years, months, days, hours, and minutes that have passed from the birth date to the current date and return them as an array. The contents of the array are the values of these units.
- * @param {Date} birthDate
- * @return {Array} [years, months, days, hours, minutes]
+ * @param birthDate
  */
 function getTimeSinceBornUntilNow(birthDate) {
     const now = new Date();
-    const diffInMs = now - birthDate;
+    const birth = new Date(birthDate);
 
-    const millisecondsPerMinute = 60 * 1000;
-    const millisecondsPerHour = 60 * millisecondsPerMinute;
-    const millisecondsPerDay = 24 * millisecondsPerHour;
-    const millisecondsPerMonth = 30 * millisecondsPerDay; // Approximation
-    const millisecondsPerYear = 365 * millisecondsPerDay; // Approximation
+    let years = now.getFullYear() - birth.getFullYear();
+    let months = now.getMonth() - birth.getMonth();
+    let days = now.getDate() - birth.getDate();
+    let hours = now.getHours() - birth.getHours();
+    let minutes = now.getMinutes() - birth.getMinutes();
 
-    const years = Math.floor(diffInMs / millisecondsPerYear);
-    const months = Math.floor((diffInMs % millisecondsPerYear) / millisecondsPerMonth);
-    const days = Math.floor((diffInMs % millisecondsPerMonth) / millisecondsPerDay);
-    const hours = Math.floor((diffInMs % millisecondsPerDay) / millisecondsPerHour);
-    const minutes = Math.floor((diffInMs % millisecondsPerHour) / millisecondsPerMinute);
+    // Adjust for negative values
+    if (minutes < 0) {
+        hours--;
+        minutes += 60;
+    }
+    if (hours < 0) {
+        days--;
+        hours += 24;
+    }
+    if (days < 0) {
+        months--;
+        days += new Date(now.getFullYear(), now.getMonth(), 0).getDate();
+    }
+    if (months < 0) {
+        years--;
+        months += 12;
+    }
 
     return [years, months, days, hours, minutes];
 }

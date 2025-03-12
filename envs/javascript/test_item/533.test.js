@@ -5,12 +5,17 @@
  * @returns {string} A new string with the characters shuffled.
  */
 function shuffleString(inputString) {
-    let array = inputString.split('');
-    for (let i = array.length - 1; i > 0; i--) {
-        let j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
+    // Convert the string into an array of characters
+    let charArray = inputString.split('');
+
+    // Shuffle the array using the Fisher-Yates (Knuth) shuffle algorithm
+    for (let i = charArray.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [charArray[i], charArray[j]] = [charArray[j], charArray[i]];
     }
-    return array.join('');
+
+    // Join the array back into a string and return it
+    return charArray.join('');
 }
 describe('shuffleString', () => {
     test('should return a string of the same length as the input', () => {

@@ -6,23 +6,24 @@
  * @returns {Array<number>} A list containing all prime numbers within the specified range.
  */
 function findPrimes(lowerBound, upperBound) {
+    // Helper function to check if a number is prime
+    function isPrime(num) {
+        if (num <= 1) return false;
+        if (num <= 3) return true;
+        if (num % 2 === 0 || num % 3 === 0) return false;
+        for (let i = 5; i * i <= num; i += 6) {
+            if (num % i === 0 || num % (i + 2) === 0) return false;
+        }
+        return true;
+    }
+
     const primes = [];
-    for (let num = lowerBound; num <= upperBound; num++) {
-        if (isPrime(num)) {
-            primes.push(num);
+    for (let i = lowerBound; i <= upperBound; i++) {
+        if (isPrime(i)) {
+            primes.push(i);
         }
     }
     return primes;
-}
-
-function isPrime(num) {
-    if (num <= 1) return false;
-    if (num <= 3) return true;
-    if (num % 2 === 0 || num % 3 === 0) return false;
-    for (let i = 5; i * i <= num; i += 6) {
-        if (num % i === 0 || num % (i + 2) === 0) return false;
-    }
-    return true;
 }
 describe('findPrimes', () => {
     test('find primes in range', () => {

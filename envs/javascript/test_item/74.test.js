@@ -8,19 +8,25 @@
  * @throws {Error} Throws an error if the bit length is not 32 or 64.
  */
 function convertDecimalToBinary(decimalValue, bitLength) {
-  if (bitLength !== 32 && bitLength !== 64) {
-    throw new Error('Invalid bit length. Please use 32 or 64.');
-  }
+    if (bitLength !== 32 && bitLength !== 64) {
+        throw new Error("Bit length must be either 32 or 64.");
+    }
 
-  const binaryString = decimalValue.toString(2);
+    // Convert the decimal value to a binary string
+    let binaryString = decimalValue.toString(2);
 
-  if (bitLength === 32) {
-    return binaryString.padStart(32, '0');
-  } else if (bitLength === 64) {
-    return binaryString.padStart(64, '0');
-  }
+    // Determine the number of leading zeros needed
+    let leadingZerosNeeded = bitLength - binaryString.length;
 
-  return null;
+    // If the binary string is longer than the desired bit length, truncate it
+    if (leadingZerosNeeded < 0) {
+        binaryString = binaryString.slice(-bitLength);
+    } else {
+        // Pad the binary string with leading zeros
+        binaryString = '0'.repeat(leadingZerosNeeded) + binaryString;
+    }
+
+    return binaryString;
 }
 describe('convertDecimalToBinary', () => {
     test('basic 32-bit conversion for 3.14', () => {

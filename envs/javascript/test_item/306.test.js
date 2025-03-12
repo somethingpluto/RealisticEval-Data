@@ -7,10 +7,21 @@
  * @returns {number} - The hashed price, mapped to the specified range with two decimal places.
  */
 function getPrice(recipeId, minVal = 10, maxVal = 30) {
-    const hash = [...recipeId].reduce((hash, char) => hash + char.charCodeAt(0), 0);
-    const range = maxVal - minVal;
-    const scaledHash = (hash % range) + minVal;
-    return parseFloat(scaledHash.toFixed(2));
+    // Convert the recipeId to a hash value
+    let hash = 0;
+    for (let i = 0; i < recipeId.length; i++) {
+        hash = (hash << 5) - hash + recipeId.charCodeAt(i);
+        hash |= 0; // Convert to 32bit integer
+    }
+
+    // Normalize the hash value to a range between 0 and 1
+    const normalizedHash = (hash - (-Math.pow(2, 31))) / (Math.pow(2, 31) - (-Math.pow(2, 31)));
+
+    // Map the normalized hash value to the specified price range
+    const price = minVal + (maxVal - minVal) * normalizedHash;
+
+    // Return the price rounded to two decimal places
+    return parseFloat(price.toFixed(2));
 }
 describe('getPrice', () => {
     test('should return a number within the default range for a given recipe ID', () => {

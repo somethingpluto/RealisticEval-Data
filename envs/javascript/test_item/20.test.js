@@ -1,16 +1,15 @@
 /**
  * Transforms the input text by finding and modifying patterns that match the format '(*...*)'.
  * Specifically, it removes any asterisks inside the parentheses while preserving the outer format.
- * For example:
- *     input: *he*l*lo*
- *     output: *hello*
  *
  * @param {string} text - The input text containing patterns to be transformed.
  * @returns {string} - The transformed text with asterisks inside '(*...*)' patterns removed.
  */
 function removeInnerAsterisks(text) {
-    return text.replace(/\*([^*]+)\*/g, function(match, p1) {
-        return '*' + p1.replace(/\*/g, '') + '*';
+    // Use a regular expression to match the pattern '(*...*)'
+    return text.replace(/\*([^*]*)\*/g, (match, p1) => {
+        // Remove asterisks inside the parentheses
+        return `*${p1.replace(/\*/g, '')}*`;
     });
 }
 describe('remove_inner_asterisks', () => {

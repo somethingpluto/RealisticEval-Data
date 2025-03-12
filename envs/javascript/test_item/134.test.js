@@ -8,18 +8,15 @@
  * @returns {boolean} - Returns true if the username is valid; otherwise, false.
  */
 function isValidUsername(username) {
-    // Check if the username is a string
-    if (typeof username !== 'string') {
-        return false;
-    }
-
     // Check if the username length is between 5 and 16 characters
     if (username.length < 5 || username.length > 16) {
         return false;
     }
 
-    // Check if the username contains only alphanumeric characters and spaces
+    // Regular expression to match only alphanumeric characters and spaces
     const regex = /^[a-zA-Z0-9 ]+$/;
+
+    // Test the username against the regular expression
     return regex.test(username);
 }
 describe('isValidUsername', () => {

@@ -2,24 +2,18 @@
  * Converts Arabic numerals in a string to English numerals.
  * This function iterates over each character in the input string, replacing Arabic numerals (٠-٩)
  * with their corresponding English numerals (0-9) while leaving other characters unchanged.
- * For example:
- *      input: ٠١٢٣٤٥٦٧٨٩
- *      output: 012345678
  *
  * @param {string} value - The string containing Arabic numerals to be converted.
  * @returns {string} The converted string with Arabic numerals replaced by English numerals.
  */
 function arabicToEnglishNumbers(value) {
-    let result = '';
-    for (let i = 0; i < value.length; i++) {
-        const charCode = value.charCodeAt(i);
-        if (charCode >= 1632 && charCode <= 1641) {
-            result += String.fromCharCode(charCode - 1632);
-        } else {
-            result += value.charAt(i);
-        }
-    }
-    return result;
+    const arabicNumerals = '٠١٢٣٤٥٦٧٨٩';
+    const englishNumerals = '0123456789';
+
+    return value.split('').map(char => {
+        const index = arabicNumerals.indexOf(char);
+        return index !== -1 ? englishNumerals[index] : char;
+    }).join('');
 }
 describe('arabicToEnglishNumbers', () => {
     test('converts single Arabic numerals to English', () => {
