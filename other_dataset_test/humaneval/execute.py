@@ -1,5 +1,6 @@
+import argparse
 import glob
-import os
+import os.path
 import subprocess
 from pathlib import Path
 
@@ -8,9 +9,16 @@ import pandas as pd
 from other_dataset_test.humaneval.data_loader import human_eval_data_with_answer_load
 
 
-def make_all_tes_file(data_list: list):
-    for data in data_list:
-        task_id = data["task_id"].replace("/", "_")
+def make_all_tes_file(model_name: str, data_list: list):
+    """生成所有的python 文件
+
+    Args:
+        data_list (list):
+    """
+    # 创建对应的文件夹
+    dir_path = f"./test/{model_name}"
+    Path(dir_path).mkdir(exist_ok=True, parents=True)
+    for task_id, data in enumerate(data_list):
         test = data["test"]
         answer_list = data["answer_list"]
         func_name = data["entry_point"]
@@ -18,7 +26,7 @@ def make_all_tes_file(data_list: list):
             try:
                 index = answer["index"]
                 response_code = answer["response_code"]
-                file_path = f"./test/{task_id}_{index}.py"
+                file_path = f"./test/{model_name}/{task_id}_{index}.py"
                 test_file_path = Path(file_path)
                 if not test_file_path.exists():
                     test_file_path.touch(exist_ok=True)
@@ -33,7 +41,7 @@ def make_all_tes_file(data_list: list):
                 continue
 
 
-def execute(test_file_dir: str, task: dict):
+def execute(test_file_dir: str, model_name: str, type: str):
     result_list = []
     file_list = glob.glob(f"{test_file_dir}/**/*.py", recursive=True)
     for file in file_list:
@@ -41,7 +49,9 @@ def execute(test_file_dir: str, task: dict):
             temp_result = {}
             command = rf"D:\sdk\python\venvs\RealisticEval-Data\Scripts\python.exe {file}"
             stdout, stderr, code = command_execute(command)
-            temp_result["file"] = file.split("\\")[-1]
+            file_info = file.split("\\")[-1].split("_")
+            temp_result["task_id"] = file_info[0]
+            temp_result["index"] = file_info[1].replace(".py", "")
             temp_result["stdout"] = stdout
             temp_result["stderr"] = stderr
             temp_result["return_code"] = code
@@ -50,14 +60,7 @@ def execute(test_file_dir: str, task: dict):
         except Exception as e:
             temp_result["stderr"] = f"{e}"
             result_list.append(temp_result)
-    pd.DataFrame(result_list).to_excel(f"./result/{task['model']}_{task['type']}.xlsx", index=False)
-    clear_test_env(test_file_dir)
-
-
-def clear_test_env(test_file_dir: str):
-    file_list = glob.glob(f"{test_file_dir}/**/*.py", recursive=True)
-    for file in file_list:
-        os.remove(file)
+    pd.DataFrame(result_list).sort_values(by='task_id').to_excel(f"./result/{model_name}_{type}.xlsx", index=False)
 
 
 def command_execute(command: str):
@@ -65,28 +68,18 @@ def command_execute(command: str):
     return result.stdout, result.stderr, result.returncode
 
 
-if __name__ == '__main__':
-    task_list = [
-        # {
-        #     "model": "codegeex4-all-9b_answer",
-        #     "type": "pass1"
-        # },
-        # {
-        #     "model": "codegeex4-all-9b_answer",
-        #     "type": "pass10"
-        # },
-        {
-            "model": "deepseek-coder-6.7b-instruct",
-            "type": "pass1"
-        },
-        {
-            "model": "deepseek-coder-6.7b-instruct",
-            "type": "pass10"
-        },
-    ]
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--model_name", type=str, help="model name", required=True)
+    parser.add_argument("--type", type=str, help="use which gpu", required=True)
+    args = parser.parse_args()
+    return args
 
-    for task in task_list:
-        data_list = human_eval_data_with_answer_load(
-            f"E:\code\code_back\python_project\llm\qa\humaneval\\{task['model']}_answer\python_answer_{task['type']}.jsonl")
-        make_all_tes_file(data_list=data_list)
-        execute("./test", task)
+
+if __name__ == '__main__':
+    args = parse_args()
+    base_file = "E:\code\code_back\python_project\llm\qa\other_benchmark\humaneval"
+    result_data_path = os.path.join(base_file, f"{args.model_name}_answer", f"python_answer_{args.type}.jsonl")
+    data = human_eval_data_with_answer_load(result_data_path)
+    make_all_tes_file(args.model_name, data)
+    execute(f"./test/{args.model_name}", args.model_name, args.type)
