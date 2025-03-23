@@ -1,0 +1,58 @@
+def check(candidate):
+
+    # Check some simple cases
+    assert candidate(['**', '*', '+'], [2, 3, 4, 5]) == 37
+    assert candidate(['+', '*', '-'], [2, 3, 4, 5]) == 9
+    assert candidate(['//', '*'], [7, 3, 4]) == 8, "This prints if this assert fails 1 (good for debugging!)"
+
+    # Check some edge cases that are easy to work out by hand.
+    assert True, "This prints if this assert fails 2 (also good for debugging!)"
+
+
+def do_algebra(operator, operand):
+    """
+    Given two lists operator, and operand. The first list has basic algebra operations, and 
+    the second list is a list of integers. Use the two given lists to build the algebric
+    expression and return the evaluation of this expression.
+
+    The basic algebra operations:
+    Addition ( + ) 
+    Subtraction ( - ) 
+    Multiplication ( * ) 
+    Floor division ( // ) 
+    Exponentiation ( ** ) 
+
+    Example:
+    operator['+', '*', '-']
+    array = [2, 3, 4, 5]
+    result = 2 + 3 * 4 - 5
+    => result = 9
+
+    Note:
+        The length of operator list is equal to the length of operand list minus one.
+        operand is a list of of non-negative integers.
+        Operator list has at least one operator, and operand list has at least two operands.
+
+    """
+    operator_list = list(operator)
+     operand_list = list( operand )
+    result = 0
+    for operator, operand in zip(operator_list, operand_list):
+        if operator == '+':
+            result += operand
+        elif operator == '-':
+            result -= operand
+        elif operator == '*':
+            result *= operand
+        elif operator == '/':
+            result /= operand
+        elif operator == '**':
+            result *= operand
+            if len( operand_list[-1]) == 0:
+                break
+            result += operand_list[-1]
+
+    return result
+
+candidate = do_algebra
+check(candidate)

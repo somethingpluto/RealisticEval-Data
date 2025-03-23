@@ -16,7 +16,7 @@ def make_all_tes_file(model_name: str, data_list: list):
         data_list (list):
     """
     # 创建对应的文件夹
-    dir_path = f"./test/{model_name}"
+    dir_path = f"./test/{model_name}/{args.type}"
     Path(dir_path).mkdir(exist_ok=True, parents=True)
     for task_id, data in enumerate(data_list):
         test = data["test"]
@@ -26,7 +26,7 @@ def make_all_tes_file(model_name: str, data_list: list):
             try:
                 index = answer["index"]
                 response_code = answer["response_code"]
-                file_path = f"./test/{model_name}/{task_id}_{index}.py"
+                file_path = f"{dir_path}/{task_id}_{index}.py"
                 test_file_path = Path(file_path)
                 if not test_file_path.exists():
                     test_file_path.touch(exist_ok=True)
@@ -82,4 +82,4 @@ if __name__ == '__main__':
     result_data_path = os.path.join(base_file, f"{args.model_name}_answer", f"python_answer_{args.type}.jsonl")
     data = human_eval_data_with_answer_load(result_data_path)
     make_all_tes_file(args.model_name, data)
-    execute(f"./test/{args.model_name}", args.model_name, args.type)
+    execute(f"./test/{args.model_name}/{args.type}", args.model_name, args.type)
